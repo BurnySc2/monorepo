@@ -18,7 +18,8 @@ async def main():
         "http://olympus.realpython.org/dice",
     ] * 80
     await download_all_sites(sites)
-    await do_math(6)
+
+    math_result = await do_math(6)
 
 
 @require(
@@ -45,7 +46,13 @@ async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientRespons
         # tasks = []
         # for url in sites:
         #     tasks.append(download_site(session, url))
+
         responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Or alternatively to the above:
+        # responses = await asyncio.gather(
+        #     *(download_site(session, url) for url in sites), return_exceptions=True
+        # )
     return responses
 
 
@@ -56,8 +63,8 @@ async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientRespons
     "Return value needs to be a number",
     lambda args, result: isinstance(result, (int, float)),
 )
-async def do_math(value: Union[int, float]) -> Union[int, float]:
-    return value + 3
+async def do_math(number: Union[int, float]) -> Union[int, float]:
+    return number + 3
 
 
 if __name__ == "__main__":
