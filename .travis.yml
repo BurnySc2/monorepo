@@ -2,19 +2,21 @@ language: python
 dist: xenial
 sudo: required
 env:
+
 python:
     - "3.6"
     - "3.7"
     - "3.7-dev"
+
 install:
     - "pipenv install"
+
 script:
     - "pipenv run pytest tests/test_functions.py"
+
 matrix:
     allow_failures:
         - python: "3.7-dev"
-    include:
-        - python: "3.7"
-          env: LINTING=true
-          script:
-              - "make lint test"
+#    include:
+#        - python: "3.7"
+#          env: LINTING=true
