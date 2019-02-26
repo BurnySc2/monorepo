@@ -3,7 +3,13 @@
 import sys
 
 sys.path.append("..")
-from main import do_math, download_site, download_all_sites
+from main import (
+    do_math,
+    download_site,
+    download_all_sites,
+    find_sums,
+    cpu_bound_summing,
+)
 import pytest
 import aiohttp
 from hypothesis import given
@@ -44,3 +50,8 @@ async def test_do_math_integers(value):
 @given(st.floats(allow_infinity=False, allow_nan=False))
 async def test_do_math_floats(value):
     assert 3 + value == await do_math(value)
+
+
+@given(st.integers(min_value=0, max_value=10000))
+def test_cpu_bound_summing(number):
+    assert sum(i * i for i in range(number)) == cpu_bound_summing(number)

@@ -11,6 +11,9 @@ from multiprocessing import Process, Lock, Pool
 # Type annotation / hints
 from typing import List, Iterable, Union
 
+# Other
+import time
+
 
 async def main():
     sites: List[str] = [
@@ -20,6 +23,11 @@ async def main():
     await download_all_sites(sites)
 
     math_result = await do_math(6)
+
+    start_time = time.perf_counter()
+    do_multiprocessing()
+    end_time = time.perf_counter()
+    print(f"Time for multiprocessing taken: {end_time - start_time}")
 
 
 @require(
@@ -65,6 +73,31 @@ async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientRespons
 )
 async def do_math(number: Union[int, float]) -> Union[int, float]:
     return number + 3
+
+
+@require("Argument has to be integer", lambda args: isinstance(args.number, int))
+@ensure("Returnvalue has to be integer", lambda args, result: isinstance(result, int))
+@ensure(
+    "Returnvalue has to be zero or larger than zero", lambda args, result: result >= 0
+)
+def cpu_bound_summing(number: int) -> int:
+    return sum(i * i for i in range(number))
+
+
+@require("Argument has to be iterable", lambda args: iter(args.numbers))
+@ensure(
+    "Result needs to be same size as argument",
+    lambda args, result: len(args) == len(result),
+)
+def find_sums(numbers: List[int]) -> List[int]:
+    with Pool() as pool:
+        result = pool.map(cpu_bound_summing, numbers)
+    return result
+
+
+def do_multiprocessing():
+    numbers: List[int] = [5_000_000 + x for x in range(20)]
+    sums: List[int] = find_sums(numbers)
 
 
 if __name__ == "__main__":
