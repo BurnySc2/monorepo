@@ -17,6 +17,3 @@ script:
 matrix:
     allow_failures:
         - python: "3.7-dev"
-#    include:
-#        - python: "3.7"
-#          env: LINTING=true

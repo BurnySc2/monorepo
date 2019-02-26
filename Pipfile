@@ -7,6 +7,8 @@ name = "pypi"
 aiohttp = "*"
 pytest = "*"
 pytest-asyncio = "*"
+dpcontracts = "*"
+hypothesis = "*"
 
 [dev-packages]
 
