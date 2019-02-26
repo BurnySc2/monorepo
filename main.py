@@ -33,12 +33,12 @@ async def download_site(session, url):
 async def download_all_sites(sites):
     async with aiohttp.ClientSession() as session:
         tasks = [download_site(session, url) for url in sites]
+        # Alternatively:
         # tasks = []
         # for url in sites:
         #     tasks.append(download_site(session, url))
         responses = await asyncio.gather(*tasks, return_exceptions=True)
         response_lengths = [response.content_length for response in responses]
-        # print(f"Response lengths: {response_lengths}")
     return responses
 
 
