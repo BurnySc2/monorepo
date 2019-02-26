@@ -8,9 +8,15 @@ import asyncio
 import aiohttp
 from multiprocessing import Process, Lock, Pool
 
+# Type annotation / hints
+from typing import List, Iterable, Union
+
 
 async def main():
-    sites = ["http://www.jython.org", "http://olympus.realpython.org/dice"] * 80
+    sites: List[str] = [
+        "http://www.jython.org",
+        "http://olympus.realpython.org/dice",
+    ] * 80
     await download_all_sites(sites)
     await do_math(6)
 
@@ -25,12 +31,14 @@ async def main():
     "Return value has to be a response",
     lambda args, result: isinstance(result, aiohttp.ClientResponse),
 )
-async def download_site(session, url):
+async def download_site(
+    session: aiohttp.ClientSession, url: str
+) -> aiohttp.ClientResponse:
     async with session.get(url) as response:
         return response
 
 
-async def download_all_sites(sites):
+async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientResponse]:
     async with aiohttp.ClientSession() as session:
         tasks = [download_site(session, url) for url in sites]
         # Alternatively:
@@ -38,7 +46,6 @@ async def download_all_sites(sites):
         # for url in sites:
         #     tasks.append(download_site(session, url))
         responses = await asyncio.gather(*tasks, return_exceptions=True)
-        response_lengths = [response.content_length for response in responses]
     return responses
 
 
@@ -49,12 +56,12 @@ async def download_all_sites(sites):
     "Return value needs to be a number",
     lambda args, result: isinstance(result, (int, float)),
 )
-async def do_math(number):
-    return number + 3
+async def do_math(value: Union[int, float]) -> Union[int, float]:
+    return value + 3
 
 
 if __name__ == "__main__":
-    loop = asyncio.new_event_loop()
+    loop: asyncio.BaseEventLoop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(main())
