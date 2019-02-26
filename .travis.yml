@@ -9,7 +9,6 @@ python:
     - "3.7-dev"
     - "3.8-dev"
     - "3.9-dev"
-    - "4.0-dev"
 
 install:
     - "pipenv install"
@@ -25,4 +24,3 @@ matrix:
         - python: "3.7-dev"
         - python: "3.8-dev"
         - python: "3.9-dev"
-        - python: "4.0-dev"
