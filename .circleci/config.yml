@@ -1,72 +1,29 @@
 version: 2
 jobs:
-  # Define job for python 3.6
-  build-python36:
-    docker:
-      - image: python:3.6.0
+  build:
     working_directory: ~/repo
-    steps:
-      - checkout  # checkout source code to working directory
-#      - run: chown -R circleci:circleci /usr/local/bin
-#      - run: chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
-#      - restore_cache:  # ensure this step occurs *before* installing dependencies
-#          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-      - run:
-          command: |
-            cd ~/repo
-            ls
-            python --version
-            python -m pip install --upgrade pip
-            python -m pip install pipenv
-            python -m pipenv install --dev
-#      - save_cache:
-#          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-#          paths:
-#            - ".venv"
-#            - "/usr/local/bin"
-#            - "/usr/local/lib/python3.6/site-packages"
-      # Run tests
-      - run:
-          name: run tests
-          command: |
-            python -m pipenv run pytest tests/
-
-  # Define job for python 3.7
-  build-python37:
     docker:
-      - image: python:3.7.0
-    working_directory: ~/repo
+      - image: python/python:3.7.0 # primary container for the build job
     steps:
       - checkout  # checkout source code to working directory
 #      - run: sudo chown -R circleci:circleci /usr/local/bin
 #      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
-#      - restore_cache:  # ensure this step occurs *before* installing dependencies
-#          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+      - restore_cache:  # ensure this step occurs *before* installing dependencies
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
           command: |  # use pipenv to install dependencies
-            cd ~/repo
-            ls
-            python --version
-            python -m pip install --upgrade pip
-            python -m pip install pipenv
-            python -m pipenv install --dev
-#      - save_cache:
-#          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-#          paths:
-#            - ".venv"
-#            - "/usr/local/bin"
-#            - "/usr/local/lib/python3.7/site-packages"
+            pip install --upgrade pip
+            pip install pipenv
+            pipenv install --dev
+      - save_cache:
+          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ".venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.6/site-packages"
+
       # Run tests
       - run:
           name: run tests
           command: |
-            python -m pipenv run pytest tests/
-
-# Execute tests
-workflows:
-  version: 2
-  build:
-    jobs:
-      - build-python36
-      - build-python37
-#      - build-python38
+            pipenv run pytest tests/
