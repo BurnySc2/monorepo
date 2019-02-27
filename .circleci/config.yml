@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build-python36:
+  build:
     working_directory: ~/repo
     docker:
       - image: circleci/python:3.6.4 # primary container for the build job
@@ -12,13 +12,9 @@ jobs:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
           command: |  # use pipenv to install dependencies
-            cd ~/repo
             sudo python3 -m pip install --upgrade pip
             sudo pip install pipenv
             pipenv install --dev
-#            pip install --upgrade pip
-#            pip install pipenv
-#            pipenv install --dev
       - save_cache:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
@@ -31,6 +27,40 @@ jobs:
           name: run tests
           command: |
             pipenv run pytest tests/
+
+#version: 2
+#jobs:
+#  build-python36:
+#    working_directory: ~/repo
+#    docker:
+#      - image: circleci/python:3.6.4 # primary container for the build job
+#    steps:
+#      - checkout  # checkout source code to working directory
+#      - run: sudo chown -R circleci:circleci /usr/local/bin
+#      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+#      - restore_cache:  # ensure this step occurs *before* installing dependencies
+#          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+#      - run:
+#          command: |  # use pipenv to install dependencies
+#            cd ~/repo
+#            sudo python3 -m pip install --upgrade pip
+#            sudo pip install pipenv
+#            pipenv install --dev
+##            pip install --upgrade pip
+##            pip install pipenv
+##            pipenv install --dev
+#      - save_cache:
+#          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+#          paths:
+#            - ".venv"
+#            - "/usr/local/bin"
+#            - "/usr/local/lib/python3.6/site-packages"
+#
+#      # Run tests
+#      - run:
+#          name: run tests
+#          command: |
+#            pipenv run pytest tests/
 
 #  build-python37:
 #    working_directory: ~/repo
