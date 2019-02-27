@@ -18,12 +18,10 @@ jobs:
           command: |  # use pipenv to install dependencies
             pip install --upgrade pip
             pip install pipenv
-            pipenv uninstall --all
             pipenv install --dev
       - save_cache:
           key: py36-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
-            - ".venv"
             - "/usr/local/bin"
             - "/usr/local/lib/python3.6/site-packages"
 
@@ -48,12 +46,10 @@ jobs:
           command: |  # use pipenv to install dependencies
             pip install --upgrade pip
             pip install pipenv
-            pipenv --python 3.7 uninstall --all
             pipenv --python 3.7 install --dev
       - save_cache:
           key: py37-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
-            - ".venv"
             - "/usr/local/bin"
             - "/usr/local/lib/python3.7/site-packages"
 
@@ -61,8 +57,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            pipenv --python 3.7 --rm
-            pipenv --python 3.7 run python3.7 -m pytest tests/
+            pipenv --python 3.7 run pytest tests/
 
 
 # Execute tests
