@@ -26,6 +26,7 @@ jobs:
           command: |
             sudo python3 -m pip install --upgrade pip
             sudo python3 -m pip install pipenv
+            cd ~/repo
             pipenv install --dev
 
       # Run tests
