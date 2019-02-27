@@ -93,9 +93,9 @@ jobs:
 
 
 # Execute tests
-workflows:
-  version: 2
-  build:
-    jobs:
-      - build
+#workflows:
+#  version: 2
+#  build:
+#    jobs:
+#      - build
 #      - build-python37
