@@ -1,35 +1,34 @@
+# Statistics:
+# https://circleci.com/gh/organizations/BurnySc2/settings#usage
+
 version: 2
 jobs:
   build-python36:
     working_directory: ~/repo
     docker:
-      - image: circleci/python:3.6.4 # primary container for the build job
+      - image: python:3.6 # primary container for the build job
     steps:
       - checkout  # checkout source code to working directory
-      - run: sudo chown -R circleci:circleci /usr/local/bin
-      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
-#      - restore_cache:  # ensure this step occurs *before* installing dependencies
-#          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+#      - run: sudo chown -R circleci:circleci /usr/local/bin
+#      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+      - restore_cache:  # ensure this step occurs *before* installing dependencies
+          key: py36-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
           command: |  # use pipenv to install dependencies
             pip install --upgrade pip
             pip install pipenv
             pipenv install --dev
-#      - save_cache:
-#          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-#          paths:
-#            - ".venv"
-#            - "/usr/local/bin"
-#            - "/usr/local/lib/python3.6/site-packages"
+      - save_cache:
+          key: py36-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ".venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.6/site-packages"
 
       # Run tests
       - run:
           name: run tests
           command: |
-            ls
-            cd ~/repo
-            ls
-            pipenv run ls
             pipenv run pytest tests/
 
 #version: 2
