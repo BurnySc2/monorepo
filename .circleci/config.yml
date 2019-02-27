@@ -3,11 +3,11 @@ jobs:
   build-python36:
     working_directory: ~/repo
     docker:
-      - image: python:3.6.0 # primary container for the build job
+      - image: circleci/python:3.6.4 # primary container for the build job
     steps:
       - checkout  # checkout source code to working directory
-#      - run: sudo chown -R circleci:circleci /usr/local/bin
-#      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
+      - run: sudo chown -R circleci:circleci /usr/local/bin
+      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.6/site-packages
       - restore_cache:  # ensure this step occurs *before* installing dependencies
           key: py3.6-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
