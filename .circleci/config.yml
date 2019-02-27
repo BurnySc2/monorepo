@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build-python3.6:
+  build-python36:
     working_directory: ~/repo
     docker:
       - image: python:3.6.0 # primary container for the build job
@@ -28,7 +28,7 @@ jobs:
           command: |
             pipenv run pytest tests/
 
-  build-python3.7:
+  build-python37:
     working_directory: ~/repo
     docker:
       - image: python:3.7.0 # primary container for the build job
@@ -55,3 +55,13 @@ jobs:
           name: run tests
           command: |
             pipenv run pytest tests/
+
+
+
+# Execute tests
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build-python36
+      - build-python37
