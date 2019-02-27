@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/BurnySc2/python-template.svg?token=uZSbyQZSCPfwrTxZ8beQ&branch=master)](https://travis-ci.com/BurnySc2/python-template)
+
+
 # python-template
 Template for any of my upcoming Python projects
 
