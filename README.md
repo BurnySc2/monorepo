@@ -23,6 +23,8 @@ install packages using the `pip install` command here:
 `pipenv graph`
 ### Check security
 `pipenv check`
+### Remove the virtual environment
+`pipenv --rm`
 ### Uninstall all packages in the venv without editing pipfile
 `pipenv uninstall --all`
 ### Install dev packages to be able to run tests
