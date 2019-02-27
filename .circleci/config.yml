@@ -6,7 +6,7 @@ jobs:
   build-python36:
     working_directory: ~/repo
     docker:
-      - image: python:3.6 # primary container for the build job
+      - image: python:3.6.0 # primary container for the build job
     steps:
       - checkout  # checkout source code to working directory
 #      - run: sudo chown -R circleci:circleci /usr/local/bin
