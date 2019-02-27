@@ -12,9 +12,9 @@ jobs:
       - restore_cache:  # ensure this step occurs *before* installing dependencies
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
-          command: |  # use pipenv to install dependencies
-            python -m pip install --upgrade pip
-            pip install pipenv
+          command: |
+            python3 -m pip install --upgrade pip
+            pip3 install pipenv
             pipenv install --dev
       - save_cache:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
@@ -41,8 +41,8 @@ jobs:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
           command: |  # use pipenv to install dependencies
-            python -m pip install --upgrade pip
-            pip install pipenv
+            python3 -m pip install --upgrade pip
+            pip3 install pipenv
             pipenv install --dev
       - save_cache:
           key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
