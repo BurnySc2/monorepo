@@ -1,8 +1,10 @@
 # The following results in errors "ValueError: attempted relative import beyond top-level package"
 # from ..main import do_math, download_site
-import sys
 
-sys.path.append("..")
+import sys, os
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+
 from main import (
     do_math,
     download_site,
