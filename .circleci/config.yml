@@ -3,8 +3,8 @@ jobs:
   build:
     working_directory: ~/circleci-demo-python-django
     docker:
-      - image: circleci/python:3.6  # primary container for the build job
-      - image: circleci/python:3.7
+      - image: circleci/python:3.6-jessie # primary container for the build job
+      - image: circleci/python:3.7-rc-node
 
     steps:
       - checkout  # checkout source code to working directory
