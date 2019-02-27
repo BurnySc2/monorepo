@@ -62,7 +62,7 @@ jobs:
           name: run tests
           command: |
             pipenv --python 3.7 --rm
-            pipenv --python 3.7 run python -m pytest tests/
+            pipenv --python 3.7 run python3.7 -m pytest tests/
 
 
 # Execute tests
