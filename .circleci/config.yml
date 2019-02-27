@@ -15,6 +15,7 @@ jobs:
       - restore_cache:  # ensure this step occurs *before* installing dependencies
           key: py36-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
+          name: Install dependencies
           command: |  # use pipenv to install dependencies
             pip install --upgrade pip
             pip install pipenv
@@ -43,6 +44,7 @@ jobs:
       - restore_cache:  # ensure this step occurs *before* installing dependencies
           key: py37-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
       - run:
+          name: Install dependencies
           command: |  # use pipenv to install dependencies
             pip install --upgrade pip
             pip install pipenv
@@ -57,7 +59,7 @@ jobs:
       - run:
           name: run tests
           command: |
-            pipenv --python 3.7 run pytest tests/
+            pipenv --python 3.7 run python -m pytest tests/
 
 
 # Execute tests
