@@ -47,7 +47,7 @@ jobs:
           command: |  # use pipenv to install dependencies
             pip install --upgrade pip
             pip install pipenv
-            pipenv install --dev
+            pipenv --python 3.7 install --dev
       - save_cache:
           key: py37-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
