@@ -29,6 +29,7 @@ jobs:
             ls
             cd ~/repo
             ls
+            pipenv run ls
             pipenv run pytest tests/
 
 #version: 2
