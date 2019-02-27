@@ -5,12 +5,12 @@ name = "pypi"
 
 [packages]
 aiohttp = "*"
-pytest = "*"
-pytest-asyncio = "*"
 dpcontracts = "*"
-hypothesis = "*"
 
 [dev-packages]
+pytest = "*"
+pytest-asyncio = "*"
+hypothesis = "*"
 
 [requires]
 python_version = "3.6"

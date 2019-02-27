@@ -20,7 +20,10 @@ async def main():
         "http://www.jython.org",
         "http://olympus.realpython.org/dice",
     ] * 80
+    start_time = time.perf_counter()
     await download_all_sites(sites)
+    end_time = time.perf_counter()
+    print(f"Time for sites download taken: {end_time - start_time}")
 
     math_result = await do_math(6)
 
@@ -49,18 +52,22 @@ async def download_site(
 
 async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientResponse]:
     async with aiohttp.ClientSession() as session:
-        tasks = [download_site(session, url) for url in sites]
-        # Alternatively:
-        # tasks = []
-        # for url in sites:
-        #     tasks.append(download_site(session, url))
+        tasks = []
+        for url in sites:
+            # In python 3.7: asyncio.create_task instead of asyncio.ensure_future
+            task = asyncio.ensure_future(download_site(session, url))
+            tasks.append(task)
 
-        responses = await asyncio.gather(*tasks, return_exceptions=True)
+        # Run all tasks in "parallel" and wait until all of them are completed
+        # responses = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # Or alternatively to the above:
-        # responses = await asyncio.gather(
-        #     *(download_site(session, url) for url in sites), return_exceptions=True
-        # )
+        # Or to iterate over tasks as they complete (random order)
+        responses = []
+        for future in asyncio.as_completed(tasks):
+            response = await future
+            response_url = str(response.url)
+            responses.append(response)
+
     return responses
 
 
@@ -85,11 +92,7 @@ def cpu_bound_summing(number: int) -> int:
 
 
 @require("Argument has to be iterable", lambda args: iter(args.numbers))
-@ensure(
-    "Result needs to be same size as argument",
-    lambda args, result: len(args) == len(result),
-)
-def find_sums(numbers: List[int]) -> List[int]:
+def find_sums(numbers: Iterable[int]) -> List[int]:
     with Pool() as pool:
         result = pool.map(cpu_bound_summing, numbers)
     return result
@@ -101,9 +104,12 @@ def do_multiprocessing():
 
 
 if __name__ == "__main__":
-    loop: asyncio.BaseEventLoop = asyncio.new_event_loop()
+    loop: asyncio.BaseEventLoop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(main())
     finally:
         loop.close()
+
+    # In Python 3.7 it is just::
+    # asyncio.run(main())

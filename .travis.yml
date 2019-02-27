@@ -11,7 +11,7 @@ python:
     - "3.9-dev"
 
 install:
-    - "pipenv install"
+    - "pipenv install --dev"
 
 script:
 #    Test only a single file:

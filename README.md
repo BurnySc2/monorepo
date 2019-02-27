@@ -3,8 +3,14 @@ Template for any of my upcoming Python projects
 
 
 # To get to the current stage of the repo
-- install `pipenv` using command `pip install pipenv`
-- install packages using the `pip install` command, e.g. `pipenv install aiohttp pytest pytest-asyncio`
+install `pipenv` using command `pip install pipenv`
+
+install packages using the `pip install` command here:
+
+`pipenv install aiohttp dpcontracts`
+
+`pipenv install --dev pytest pytest-asyncio hypothesis`
+
 
 
 # Useful Pipenv commands
@@ -14,6 +20,12 @@ Template for any of my upcoming Python projects
 `pipenv graph`
 ### Check security
 `pipenv check`
+### Uninstall all packages in the venv without editing pipfile
+`pipenv uninstall --all`
+### Install dev packages to be able to run tests
+`pipenv install --dev`
+
+`pipenv run pytest tests`
 
 
 # Run python files
