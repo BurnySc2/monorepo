@@ -1,11 +1,9 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/circleci-demo-python-django
+    working_directory: ~/repo
     docker:
       - image: circleci/python:3.6.4 # primary container for the build job
-      - image: circleci/python:3.7.2
-
     steps:
       - checkout  # checkout source code to working directory
       - run: sudo chown -R circleci:circleci /usr/local/bin
