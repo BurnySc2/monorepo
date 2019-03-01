@@ -17,10 +17,10 @@ jobs:
   include:
     - stage: test python 3.6
       script:
-        # Pull docker image
-        - docker pull python:3.6
+        # Pull docker image, this step could be skipped
+        - docker pull python:3.6-alpine
         # Create docker container called "app" from image "python:3.6"
-        - docker run -it -d --name app python:3.6
+        - docker run -it -d --name app python:3.6-alpine
         # List contents of current folder
         - ls
         # Copy repository files and folders to docker container
@@ -34,13 +34,13 @@ jobs:
         - docker exec -i app bash -c "cd /root/template && pipenv install --dev"
         # Run tests
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
-        # Remove container
+        # Shut down and remove container
         - docker rm -f app
 
     - stage: test python 3.7
       script:
-        - docker pull python:3.7
-        - docker run -it -d --name app python:3.7
+        - docker pull python:3.7-slim
+        - docker run -it -d --name app python:3.7-slim
         - docker cp . app:/root/template
         - docker exec app pip install --upgrade pipenv
         # Specify python version because it is different from the required version "python 3.6"
