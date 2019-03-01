@@ -1,12 +1,18 @@
 language: python
-dist: xenial
 
-python:
-    - "3.6"
-    - "3.7"
-    - "3.7-dev"
-    - "3.8-dev"
-    - "3.9-dev"
+# Most tests run in container mode because it's faster to start up,
+# but a few below use different configurations (as of July 2018
+# only trusty is available in containers).
+dist: trusty
+sudo: false
+
+jobs:
+    include:
+        - python: "3.6"
+        - python: "3.7"
+        - python: "3.7-dev"
+        - python: "3.8-dev"
+        - python: "3.9-dev"
 
 install:
     - "pipenv install --dev"
