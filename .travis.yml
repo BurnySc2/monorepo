@@ -3,16 +3,33 @@ language: python
 # Most tests run in container mode because it's faster to start up,
 # but a few below use different configurations (as of July 2018
 # only trusty is available in containers).
-dist: trusty
-sudo: false
 
-jobs:
+matrix:
     include:
-        - python: "3.6"
-        - python: "3.7"
+        - os: linux
+          dist: trusty
+          sudo: false
+          python: "3.6"
+
+        - os: linux
+          dist: trusty
+          sudo: false
+          python: "3.7"
+
+        - os: linux
+          dist: trusty
+          sudo: false
+          python: "3.7-dev"
+
+        - os: linux
+          dist: trusty
+          sudo: false
+          python: "3.8-dev"
+
+    allow_failures:
         - python: "3.7-dev"
         - python: "3.8-dev"
-        - python: "3.9-dev"
+
 
 install:
     - "pipenv install --dev"
@@ -22,9 +39,3 @@ script:
 #    - "pipenv run pytest tests/test_functions.py"
 #    Test the whole folder of test files:
     - "pipenv run pytest tests/"
-
-matrix:
-    allow_failures:
-        - python: "3.7-dev"
-        - python: "3.8-dev"
-        - python: "3.9-dev"
