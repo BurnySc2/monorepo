@@ -29,11 +29,11 @@ matrix:
   fast_finish: true
 
 install:
-#  - "pip install --upgrade --user pip"
   - "pip install --upgrade pipenv"
   - "pipenv install --dev"
 
 script:
+  - python --version
 #  Test only a single file:
 #  - "pipenv run pytest tests/test_functions.py"
 #  Test the whole folder of test files:
