@@ -45,8 +45,8 @@ matrix:
   fast_finish: true
 
 install:
-  - "pip install --upgrade pip"
-  - "pip install --upgrade pipenv"
+  - "pip install --upgrade --user pip"
+  - "pip install --upgrade --user pipenv"
   - "pipenv install --dev"
 
 script:
