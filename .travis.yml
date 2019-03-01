@@ -18,9 +18,9 @@ jobs:
     - stage: test python 3.6
       script:
         # Pull docker image, this step could be skipped
-        - docker pull python:3.6-alpine
+        - docker pull python:3.6-slim
         # Create docker container called "app" from image "python:3.6"
-        - docker run -it -d --name app python:3.6-alpine
+        - docker run -it -d --name app python:3.6-slim
         # List contents of current folder
         - ls
         # Copy repository files and folders to docker container
