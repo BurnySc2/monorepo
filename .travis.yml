@@ -5,9 +5,7 @@ sudo: false
 python:
   - "3.6"
   - "3.7"
-  - "3.7-dev"
-  - "3.8-dev"
-  - "3.9-dev"
+  - "3.8"
 
 install:
   - "pip install --upgrade pip"
@@ -22,6 +20,4 @@ script:
 
 matrix:
   allow_failures:
-    - python: "3.7-dev"
-    - python: "3.8-dev"
-    - python: "3.9-dev"
+    - python: "3.8"
