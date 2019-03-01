@@ -1,6 +1,8 @@
 language: python
 sudo: false
+# Defining it at the top will override it from trusty to xenial
 dist: xenial
+
 
 # See: https://docs.travis-ci.com/user/build-matrix/
 matrix:
@@ -34,9 +36,12 @@ matrix:
   # Now, the build result will be determined as soon as all the required jobs finish, based on these results, while the rest of the allow_failures jobs continue to run.
   fast_finish: true
 
+
 install:
+  # Implicitly also upgrades pip version
   - "pip install --upgrade pipenv"
   - "pipenv install --dev"
+
 
 script:
   - python --version
