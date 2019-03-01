@@ -42,6 +42,7 @@ or `pipenv shell` and then run using `main.py`
 # Run Tests
 Single file:
 `pipenv run pytest tests/test_functions.py`
+
 Test all files in folder:
 `pipenv run pytest tests/`
 

@@ -1,53 +1,71 @@
+sudo: required
 language: python
-sudo: false
-# Defining it at the top will override it from default (trusty) to xenial
-# Xenial allows python 3.7 and dev versions of python
-dist: xenial
-
-
-# See: https://docs.travis-ci.com/user/build-matrix/
-matrix:
-  include:
-    - python: "3.6"
-      os: linux
-
-    - python: "3.7"
-      os: linux
-
-    # TODO: uncomment when 3.8 is released
-#    - python: "3.8"
-#      os: linux
-
-    - python: "3.6-dev"
-      os: linux
-
-    - python: "3.7-dev"
-      os: linux
-
-    - python: "3.8-dev"
-      os: linux
-
-
-  # Builds that are allowed to fail
-  allow_failures:
-    - python: "3.8"
-    - python: "3.6-dev"
-    - python: "3.7-dev"
-    - python: "3.8-dev"
-
-  # Now, the build result will be determined as soon as all the required jobs finish, based on these results, while the rest of the allow_failures jobs continue to run.
-  fast_finish: true
+services: docker
 
 
 install:
-  # Implicitly also upgrades pip version
-  - "pip install --upgrade pipenv"
-  - "pipenv install --dev"
-
+  - docker build -t test_image "python:3.6" .
+  - docker run -d --name app test_image
+  - docker ps -a
 
 script:
-  - python --version
-#  Test only a single file:
-#  - "pipenv run pytest tests/test_functions.py"
-#  Test the whole folder of test files:
-  - "pipenv run pytest tests/"
+  - docker exec app python -m pip install --upgrade pipenv
+  - docker exec app pipenv install --dev
+  - docker exec app pipenv run pytest tests/
+
+
+
+#language: python
+#sudo: false
+## Defining it at the top will override it from default (trusty) to xenial
+## Xenial allows python 3.7 and dev versions of python
+## Also trusty is deprecated, see: https://docs.travis-ci.com/user/reference/overview/#deprecated-virtualization-environments
+#dist: xenial
+#
+#
+## See: https://docs.travis-ci.com/user/build-matrix/
+#matrix:
+#  include:
+#    - python: "3.6"
+#      os: linux
+#
+#    - python: "3.7"
+#      os: linux
+#
+#    # TODO: uncomment when 3.8 is released
+##    - python: "3.8"
+##      os: linux
+#
+#    - python: "3.6-dev"
+#      os: linux
+#
+#    - python: "3.7-dev"
+#      os: linux
+#
+#    - python: "3.8-dev"
+#      os: linux
+#
+#
+#  # Builds that are allowed to fail
+#  allow_failures:
+#    - python: "3.8"
+#    - python: "3.6-dev"
+#    - python: "3.7-dev"
+#    - python: "3.8-dev"
+#
+#  # Now, the build result will be determined as soon as all the required jobs finish, based on these results, while the rest of the allow_failures jobs continue to run.
+#  fast_finish: true
+#
+#
+#install:
+#  # Implicitly also upgrades pip version
+#  - "pip install --upgrade pipenv"
+#  - "pipenv install --dev"
+#
+#
+#script:
+#  - python --version
+##  Test only a single file:
+##  - "pipenv run pytest tests/test_functions.py"
+##  Test the whole folder of test files:
+#  - "pipenv run pytest tests/"
