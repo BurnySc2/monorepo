@@ -4,7 +4,7 @@ services: docker
 
 
 install:
-  - docker build -t test_image "python:3.6" .
+  - docker build -t test_image python:3.6
   - docker run -d --name app test_image
   - docker ps -a
 
@@ -13,7 +13,8 @@ script:
   - docker exec app pipenv install --dev
   - docker exec app pipenv run pytest tests/
 
-
+after_script:
+  - docker rm -f app
 
 #language: python
 #sudo: false
