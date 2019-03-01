@@ -29,7 +29,7 @@ matrix:
   fast_finish: true
 
 install:
-  - "pip install --upgrade --user pip"
+#  - "pip install --upgrade --user pip"
   - "pip install --upgrade --user pipenv"
   - "pipenv install --dev"
 
