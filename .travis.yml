@@ -1,5 +1,5 @@
 language: python
-dist: trusty
+dist: precise
 sudo: false
 
 # See: https://docs.travis-ci.com/user/build-matrix/
