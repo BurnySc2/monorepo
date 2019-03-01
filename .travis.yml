@@ -2,25 +2,65 @@ sudo: required
 language: python
 services: docker
 
-install:
-  # Build new image with name "test_image"
-  - docker build -t "test_image" -f "tests/Dockerfile" .
-  # Create new container with name "app".
-  # Run with -it to keep container from exiting
-  - docker run -it -d --name app test_image
-  # List running containers
+before_install:
+  - docker pull python 3.6
+  - docker pull python 3.7
   - docker ps -a
 
-script:
-#  - docker exec app python -m pip install --upgrade pipenv
-#  - docker exec app pipenv install --dev
-  # Run Tests
-  - docker exec app pipenv run pytest tests/
+jobs:
+  include:
+    - stage: pull docker images
+      script:
+      - docker pull python 3.6
+      - docker pull python 3.7
+      - docker ps -a
+    - stage: test python 3.6
+      script:
+        # Create docker container called "app" from image "python:3.6"
+        docker run -it -d --name app python:3.6
+        # List contents of current folder
+        ls
+        # Copy repository files and folders to docker container
+        docker cp . app:/root/template
+        # List contents of container
+        docker exec app ls /root/template
+        # Upgrade pipenv (and implicitly pip)
+        docker exec app pip install --upgrade pipenv
+        # Create pipenv virtual environment and install dev packages for testing
+        docker exec -i app bash -c "cd /root/template && pipenv install --dev"
+        # Run tests
+        docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
+        # Remove container
+        docker rm -f app
+    - stage: test python 3.7
+      script:
+        docker run -it -d --name app python:3.7
+        docker cp . app:/root/template
+        docker exec app pip install --upgrade pipenv
+        docker exec -i app bash -c "cd /root/template && pipenv install --dev"
+        docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
+        docker rm -f app
 
-after_script:
-  # Delete container
-  - docker rm -f app
 
+#install:
+#  # Build new image with name "test_image"
+#  - docker build -t "test_image" -f "tests/Dockerfile" .
+#  # Create new container with name "app".
+#  # Run with -it to keep container from exiting
+#  - docker run -it -d --name app test_image
+#  # List running containers
+#  - docker ps -a
+#
+#script:
+##  - docker exec app python -m pip install --upgrade pipenv
+##  - docker exec app pipenv install --dev
+#  # Run Tests
+#  - docker exec app pipenv run pytest tests/
+#
+#after_script:
+#  # Delete container
+#  - docker rm -f app
+#
 
 
 
