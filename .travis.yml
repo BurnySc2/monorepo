@@ -14,19 +14,22 @@ matrix:
     python: "3.6"
 
     - os: linux
-    dist: trusty
-    sudo: false
+    dist: xenial
+    sudo: required
+    services:
+      - docker
     python: "3.7"
+    env: BUILD_SDIST=true
 
-    - os: linux
-    dist: trusty
-    sudo: false
-    python: "3.7-dev"
-
-    - os: linux
-    dist: trusty
-    sudo: false
-    python: "3.8-dev"
+#    - os: linux
+#    dist: trusty
+#    sudo: false
+#    python: "3.7-dev"
+#
+#    - os: linux
+#    dist: trusty
+#    sudo: false
+#    python: "3.8-dev"
 
   allow_failures:
     - python: "3.7-dev"
