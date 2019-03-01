@@ -5,11 +5,6 @@ sudo: required
 language: python
 services: docker
 
-#before_install:
-#  - docker pull python 3.6
-#  - docker pull python 3.7
-##  - docker ps -a
-
 jobs:
   include:
     - stage: test python 3.6
@@ -33,6 +28,7 @@ jobs:
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
         # Remove container
         - docker rm -f app
+
     - stage: test python 3.7
       script:
         - docker run -it -d --name app python:3.7
@@ -44,35 +40,20 @@ jobs:
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
         - docker rm -f app
 
-
-#install:
-#  # Build new image with name "test_image"
-#  - docker build -t "test_image" -f "tests/Dockerfile" .
-#  # Create new container with name "app".
-#  # Run with -it to keep container from exiting
-#  - docker run -it -d --name app test_image
-#  # List running containers
-#  - docker ps -a
-#
-#script:
-##  - docker exec app python -m pip install --upgrade pipenv
-##  - docker exec app pipenv install --dev
-#  # Run Tests
-#  - docker exec app pipenv run pytest tests/
-#
-#after_script:
-#  # Delete container
-#  - docker rm -f app
-#
+    - stage: test python 3.8
+      script:
+        - docker run -it -d --name app python:3.8
+        - docker cp . app:/root/template
+        - docker exec app pip install --upgrade pipenv
+        # Specify python version because it is different from the required version "python 3.6"
+        - docker exec -i app bash -c "cd /root/template && pipenv --python python install --dev"
+        # Dont have to specify python version here
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
+        - docker rm -f app
 
 
 
-
-
-
-
-
-
+# Testing using just python environments without docker:
 
 #language: python
 #sudo: false
