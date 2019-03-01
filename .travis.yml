@@ -38,8 +38,10 @@ jobs:
         - docker run -it -d --name app python:3.7
         - docker cp . app:/root/template
         - docker exec app pip install --upgrade pipenv
+        # Specify python version because it is different from the required version "python 3.6"
         - docker exec -i app bash -c "cd /root/template && pipenv --python python install --dev"
-        - docker exec -i app bash -c "cd /root/template && pipenv --python python run pytest tests/"
+        # Dont have to specify python version here
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
         - docker rm -f app
 
 
