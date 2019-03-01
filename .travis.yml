@@ -5,26 +5,32 @@
 matrix:
   include:
     - os: linux
+      dist: xenial
       python: "3.6"
       sudo: false
 
+    - os: linux
+#      dist: xenial
+      python: "3.7"
+      sudo: false
+
+    - os: linux
+#      dist: xenial
+      python: "3.8"
+      sudo: false
+
 #    - os: linux
-#      python: "3.7"
-#      sudo: false
-#
-#    - os: linux
-#      python: "3.8"
-#      sudo: false
-#
-#    - os: linux
+#      dist: xenial
 #      python: "3.6-dev"
 #      sudo: false
 #
 #    - os: linux
+#      dist: xenial
 #      python: "3.7-dev"
 #      sudo: false
 #
 #    - os: linux
+#      dist: xenial
 #      python: "3.8-dev"
 #      sudo: false
 
@@ -44,6 +50,9 @@ install:
   - "pipenv install --dev"
 
 script:
+  # Print Python version
+  - "python --version
+
 #  Test only a single file:
 #  - "pipenv run pytest tests/test_functions.py"
 #  Test the whole folder of test files:
