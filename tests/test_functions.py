@@ -39,7 +39,7 @@ async def test_download_all_sites():
 @pytest.mark.asyncio
 async def test_do_math():
     res = await do_math(7)
-    assert 11 == res
+    assert 10 == res
 
 
 @pytest.mark.asyncio
