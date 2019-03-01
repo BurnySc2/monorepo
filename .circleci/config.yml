@@ -1,38 +1,38 @@
-# Statistics:
-# https://circleci.com/gh/organizations/BurnySc2/settings#usage
-
-version: 2
-jobs:
-  # Python 3.6 tests
-  build-python36:
-    working_directory: ~/repo
-    docker:
-      - image: python:3.6
-    steps:
-      - checkout  # checkout source code to working directory
-      - restore_cache:  # ensure this step occurs *before* installing dependencies
-          key: py36-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-      - run:
-          name: Install dependencies
-          command: |  # use pipenv to install dependencies
-            pip install --upgrade pip
-            pip install pipenv
-            pipenv install --dev
-      - save_cache:
-          key: py36-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-          paths:
-            - "/usr/local/bin"
-            - "/usr/local/lib/python3.6/site-packages"
-
-      # Run tests
-      - run:
-          name: run tests
-          command: |
-            pipenv run pytest tests/
-
-# Execute tests
-workflows:
-  version: 2
-  build:
-    jobs:
-      - build-python36
+## Statistics:
+## https://circleci.com/gh/organizations/BurnySc2/settings#usage
+#
+#version: 2
+#jobs:
+#  # Python 3.6 tests
+#  build-python36:
+#    working_directory: ~/repo
+#    docker:
+#      - image: python:3.6
+#    steps:
+#      - checkout  # checkout source code to working directory
+#      - restore_cache:  # ensure this step occurs *before* installing dependencies
+#          key: py36-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+#      - run:
+#          name: Install dependencies
+#          command: |  # use pipenv to install dependencies
+#            pip install --upgrade pip
+#            pip install pipenv
+#            pipenv install --dev
+#      - save_cache:
+#          key: py36-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+#          paths:
+#            - "/usr/local/bin"
+#            - "/usr/local/lib/python3.6/site-packages"
+#
+#      # Run tests
+#      - run:
+#          name: run tests
+#          command: |
+#            pipenv run pytest tests/
+#
+## Execute tests
+#workflows:
+#  version: 2
+#  build:
+#    jobs:
+#      - build-python36
