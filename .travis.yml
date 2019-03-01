@@ -1,3 +1,6 @@
+# Use http://www.yamllint.com/
+# to validate .yml file
+
 sudo: required
 language: python
 services: docker
@@ -11,8 +14,8 @@ jobs:
   include:
     - stage: pull docker images
       script:
-      - docker pull python 3.6
-      - docker pull python 3.7
+      - docker pull python:3.6
+      - docker pull python:3.7
       - docker ps -a
     - stage: test python 3.6
       script:
