@@ -14,33 +14,33 @@ jobs:
       - docker pull python 3.6
       - docker pull python 3.7
       - docker ps -a
-#    - stage: test python 3.6
-#      script:
-#        # Create docker container called "app" from image "python:3.6"
-#        - docker run -it -d --name app python:3.6
-#        # List contents of current folder
-##        ls
-#        # Copy repository files and folders to docker container
-#        - docker cp . app:/root/template
-#        # List contents of container
-#        - docker exec app ls /root/template
-#        # Upgrade pipenv (and implicitly pip)
-#        - docker exec app pip install --upgrade pipenv
-#        # Create pipenv virtual environment and install dev packages for testing
-#        # Command origins from here: https://stackoverflow.com/a/28037991/10882657
-#        - docker exec -i app bash -c "cd /root/template && pipenv install --dev"
-#        # Run tests
-#        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
-#        # Remove container
-#        docker rm -f app
-#    - stage: test python 3.7
-#      script:
-#        - docker run -it -d --name app python:3.7
-#        - docker cp . app:/root/template
-#        - docker exec app pip install --upgrade pipenv
-#        - docker exec -i app bash -c "cd /root/template && pipenv install --dev"
-#        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
-#        - docker rm -f app
+    - stage: test python 3.6
+      script:
+        # Create docker container called "app" from image "python:3.6"
+        - docker run -it -d --name app python:3.6
+        # List contents of current folder
+#        ls
+        # Copy repository files and folders to docker container
+        - docker cp . app:/root/template
+        # List contents of container
+        - docker exec app ls /root/template
+        # Upgrade pipenv (and implicitly pip)
+        - docker exec app pip install --upgrade pipenv
+        # Create pipenv virtual environment and install dev packages for testing
+        # Command origins from here: https://stackoverflow.com/a/28037991/10882657
+        - docker exec -i app bash -c "cd /root/template && pipenv install --dev"
+        # Run tests
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
+        # Remove container
+        - docker rm -f app
+    - stage: test python 3.7
+      script:
+        - docker run -it -d --name app python:3.7
+        - docker cp . app:/root/template
+        - docker exec app pip install --upgrade pipenv
+        - docker exec -i app bash -c "cd /root/template && pipenv install --dev"
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
+        - docker rm -f app
 
 
 #install:
