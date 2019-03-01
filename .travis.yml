@@ -1,17 +1,38 @@
-language: python
-dist: xenial
-os: linux
-sudo: false
+# language: python
+
 
 # See: https://docs.travis-ci.com/user/build-matrix/
 matrix:
   include:
-    - python: "3.6"
-    - python: "3.7"
-    - python: "3.8"
-    - python: "3.6-dev"
-    - python: "3.7-dev"
-    - python: "3.8-dev"
+    - os: linux
+      dist: xenial
+      python: "3.6"
+      sudo: false
+
+    - os: linux
+      dist: xenial
+      python: "3.7"
+      sudo: false
+
+    - os: linux
+      dist: xenial
+      python: "3.8"
+      sudo: false
+
+    - os: linux
+      dist: xenial
+      python: "3.6-dev"
+      sudo: false
+
+    - os: linux
+      dist: xenial
+      python: "3.7-dev"
+      sudo: false
+
+    - os: linux
+      dist: xenial
+      python: "3.8-dev"
+      sudo: false
 
   # Builds that are allowed to fail
   allow_failures:
@@ -29,9 +50,6 @@ install:
   - "pipenv install --dev"
 
 script:
-  # Print Python version
-  - "python --version
-
 #  Test only a single file:
 #  - "pipenv run pytest tests/test_functions.py"
 #  Test the whole folder of test files:
