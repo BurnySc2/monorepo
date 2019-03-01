@@ -1,22 +1,17 @@
 language: python
 dist: xenial
 os: linux
+sudo: false
 
 # See: https://docs.travis-ci.com/user/build-matrix/
 matrix:
   include:
     - python: "3.6"
-      sudo: false
     - python: "3.7"
-      sudo: false
     - python: "3.8"
-      sudo: false
     - python: "3.6-dev"
-      sudo: false
     - python: "3.7-dev"
-      sudo: false
     - python: "3.8-dev"
-      sudo: false
 
   # Builds that are allowed to fail
   allow_failures:
