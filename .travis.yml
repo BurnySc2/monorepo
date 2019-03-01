@@ -6,9 +6,14 @@ language: python
 services: docker
 
 jobs:
+  # Now, the build result will be determined as soon as all the required jobs finish, based on these results, while the rest of the allow_failures jobs continue to run.
   fast_finish: true
+
+  # Jobs that are allowed to fail
   allow_failures:
     - stage: test python 3.8
+
+  # Jobs that are being run
   include:
     - stage: test python 3.6
       script:
@@ -46,13 +51,12 @@ jobs:
 
     - stage: test python 3.8
       script:
-        - docker pull python:3.8
-        - docker run -it -d --name app python:3.8
+        # TODO: Change to normal python 3.8 version once 3.8 is released
+        - docker pull python:3.8-rc
+        - docker run -it -d --name app python:3.8-rc
         - docker cp . app:/root/template
         - docker exec app pip install --upgrade pipenv
-        # Specify python version because it is different from the required version "python 3.6"
         - docker exec -i app bash -c "cd /root/template && pipenv --python python install --dev"
-        # Dont have to specify python version here
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
         - docker rm -f app
 
