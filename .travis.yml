@@ -12,17 +12,14 @@ services: docker
 
 jobs:
   include:
-    - stage: pull docker images
-      script:
-      - docker pull python:3.6
-      - docker pull python:3.7
-      - docker ps -a
     - stage: test python 3.6
       script:
+        # Pull docker image
+        - docker pull python:3.6
         # Create docker container called "app" from image "python:3.6"
         - docker run -it -d --name app python:3.6
         # List contents of current folder
-#        ls
+        - ls
         # Copy repository files and folders to docker container
         - docker cp . app:/root/template
         # List contents of container
@@ -41,8 +38,8 @@ jobs:
         - docker run -it -d --name app python:3.7
         - docker cp . app:/root/template
         - docker exec app pip install --upgrade pipenv
-        - docker exec -i app bash -c "cd /root/template && pipenv install --dev"
-        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/"
+        - docker exec -i app bash -c "cd /root/template && pipenv --python python install --dev"
+        - docker exec -i app bash -c "cd /root/template && pipenv --python python run pytest tests/"
         - docker rm -f app
 
 
