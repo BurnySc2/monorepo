@@ -1,6 +1,7 @@
 language: python
 sudo: false
-# Defining it at the top will override it from trusty to xenial
+# Defining it at the top will override it from default (trusty) to xenial
+# Xenial allows python 3.7 and dev versions of python
 dist: xenial
 
 
@@ -13,8 +14,9 @@ matrix:
     - python: "3.7"
       os: linux
 
-    - python: "3.8"
-      os: linux
+    # TODO: uncomment when 3.8 is released
+#    - python: "3.8"
+#      os: linux
 
     - python: "3.6-dev"
       os: linux
