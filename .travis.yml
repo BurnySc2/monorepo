@@ -30,7 +30,7 @@ matrix:
 
 install:
 #  - "pip install --upgrade --user pip"
-  - "pip install --upgrade --user pipenv"
+  - "pip install --upgrade pipenv"
   - "pipenv install --dev"
 
 script:
