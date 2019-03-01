@@ -1,4 +1,6 @@
+# Example copied from https://github.com/simplejson/simplejson/blob/master/.travis.yml
 language: python
+
 
 # Most tests run in container mode because it's faster to start up,
 # but a few below use different configurations (as of July 2018
