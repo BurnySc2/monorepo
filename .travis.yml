@@ -1,5 +1,5 @@
 language: python
-dist: precise
+dist: xenial
 sudo: false
 
 # See: https://docs.travis-ci.com/user/build-matrix/
@@ -7,8 +7,10 @@ matrix:
   include:
     - python: "3.6"
       os: linux
+      dist: trusty
     - python: "3.7"
       os: linux
+      dist: xenial
 #    - python: "3.8"
 #      os: linux
 #    - python: "3.6-dev"
