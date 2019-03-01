@@ -2,19 +2,34 @@ sudo: required
 language: python
 services: docker
 
-
 install:
+  # Build new image with name "test_image"
   - docker build -t "test_image" -f "tests/Dockerfile" .
-  - docker run -d --name app test_image
+  # Create new container with name "app".
+  # Run with -it to keep container from exiting
+  - docker run -it -d --name app test_image
+  # List running containers
   - docker ps -a
 
 script:
-  - docker exec app python -m pip install --upgrade pipenv
-  - docker exec app pipenv install --dev
+#  - docker exec app python -m pip install --upgrade pipenv
+#  - docker exec app pipenv install --dev
+  # Run Tests
   - docker exec app pipenv run pytest tests/
 
 after_script:
+  # Delete container
   - docker rm -f app
+
+
+
+
+
+
+
+
+
+
 
 #language: python
 #sudo: false
