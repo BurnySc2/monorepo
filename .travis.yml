@@ -14,10 +14,10 @@ matrix:
       python: "3.7"
       sudo: false
 
-    - os: linux
+#    - os: linux
 #      dist: xenial
-      python: "3.8"
-      sudo: false
+#      python: "3.8"
+#      sudo: false
 
 #    - os: linux
 #      dist: xenial
@@ -35,11 +35,11 @@ matrix:
 #      sudo: false
 
   # Builds that are allowed to fail
-  allow_failures:
-    - python: "3.8"
-    - python: "3.6-dev"
-    - python: "3.7-dev"
-    - python: "3.8-dev"
+#  allow_failures:
+#    - python: "3.8"
+#    - python: "3.6-dev"
+#    - python: "3.7-dev"
+#    - python: "3.8-dev"
 
   # Now, the build result will be determined as soon as all the required jobs finish, based on these results, while the rest of the allow_failures jobs continue to run.
   fast_finish: true
