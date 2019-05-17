@@ -31,7 +31,7 @@ jobs:
         - docker exec app pip install --upgrade pipenv
         # Change directory, create pipenv virtual environment and install dev packages from Pipfile for testing
         # Command origins from here: https://stackoverflow.com/a/28037991/10882657
-        - docker exec -i app bash -c "cd /root/template && pipenv install --dev"
+        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.6"
         # Change directory and run tests
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
         # Shut down and remove container

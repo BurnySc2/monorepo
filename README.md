@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.com/BurnySc2/python-template.svg?token=uZSbyQZSCPfwrTxZ8beQ&branch=master)](https://travis-ci.com/BurnySc2/python-template)
-[![CircleCI](https://circleci.com/gh/BurnySc2/python-template.svg?style=svg&circle-token=91cdb40ab349e017babf6f537a24267d65ba4204)](https://circleci.com/gh/BurnySc2/python-template)
 
 # python-template
 Template for any of my upcoming Python projects
