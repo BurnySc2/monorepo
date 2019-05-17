@@ -5,13 +5,7 @@ import sys, os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from main import (
-    do_math,
-    download_site,
-    download_all_sites,
-    find_sums,
-    cpu_bound_summing,
-)
+from main import do_math, download_site, download_all_sites, find_sums, cpu_bound_summing
 import pytest
 import aiohttp
 from hypothesis import given
@@ -31,9 +25,7 @@ async def test_download_site():
 async def test_download_all_sites():
     urls = ["http://www.jython.org"] * 2
     results = await download_all_sites(urls)
-    assert website_content_length * 2 == sum(
-        result.content_length for result in results
-    )
+    assert website_content_length * 2 == sum(result.content_length for result in results)
 
 
 @pytest.mark.asyncio

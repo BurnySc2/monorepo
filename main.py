@@ -16,10 +16,7 @@ import time
 
 
 async def main():
-    sites: List[str] = [
-        "http://www.jython.org",
-        "http://olympus.realpython.org/dice",
-    ] * 80
+    sites: List[str] = ["http://www.jython.org", "http://olympus.realpython.org/dice"] * 80
     start_time = time.perf_counter()
     await download_all_sites(sites)
     end_time = time.perf_counter()
@@ -33,19 +30,11 @@ async def main():
     print(f"Time for multiprocessing taken: {end_time - start_time}")
 
 
-@require(
-    "First argument has to be a session object",
-    lambda args: isinstance(args.session, aiohttp.ClientSession),
-)
+@require("First argument has to be a session object", lambda args: isinstance(args.session, aiohttp.ClientSession))
 @require("Second argument has to be a url", lambda args: isinstance(args.url, str))
 @require("Second argument can not be empty", lambda args: args.url != "")
-@ensure(
-    "Return value has to be a response",
-    lambda args, result: isinstance(result, aiohttp.ClientResponse),
-)
-async def download_site(
-    session: aiohttp.ClientSession, url: str
-) -> aiohttp.ClientResponse:
+@ensure("Return value has to be a response", lambda args, result: isinstance(result, aiohttp.ClientResponse))
+async def download_site(session: aiohttp.ClientSession, url: str) -> aiohttp.ClientResponse:
     async with session.get(url) as response:
         return response
 
@@ -71,22 +60,15 @@ async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientRespons
     return responses
 
 
-@require(
-    "Argument has to be a number", lambda args: isinstance(args.number, (int, float))
-)
-@ensure(
-    "Return value needs to be a number",
-    lambda args, result: isinstance(result, (int, float)),
-)
+@require("Argument has to be a number", lambda args: isinstance(args.number, (int, float)))
+@ensure("Return value needs to be a number", lambda args, result: isinstance(result, (int, float)))
 async def do_math(number: Union[int, float]) -> Union[int, float]:
     return number + 3
 
 
 @require("Argument has to be integer", lambda args: isinstance(args.number, int))
 @ensure("Returnvalue has to be integer", lambda args, result: isinstance(result, int))
-@ensure(
-    "Returnvalue has to be zero or larger than zero", lambda args, result: result >= 0
-)
+@ensure("Returnvalue has to be zero or larger than zero", lambda args, result: result >= 0)
 def cpu_bound_summing(number: int) -> int:
     return sum(i * i for i in range(number))
 
