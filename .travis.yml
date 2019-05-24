@@ -65,7 +65,7 @@ jobs:
         - docker exec -i app sh -c "cd /root/template && pwd"
         - docker exec --workdir /root/template app pwd
         - docker exec -i app sh -c "cd /root/template && python main.py"
-        - docker exec -i app sh -c "cd /root/template && pipenv run main.py"
+        - docker exec -i app sh -c "cd /root/template && python -m pipenv run main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
         - docker cp app:/root/template/hello_world.txt $TRAVIS_BUILD_DIR
         # Shut down and remove container
