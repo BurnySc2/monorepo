@@ -56,14 +56,14 @@ jobs:
         - docker run -it -d --name app python:3.7-slim
         # Copy files to container
         - docker cp . app:/root/template
-        -
+
         # Install requirements, couldn't get it to work with pipenv so run it directly with python
         # docker exec -i app bash -c "cd /root/template && python -m pipenv --python 3.7 run main.py"
         # Error: the command main.py could not be found within PATH or Pipfile's [scripts].
 
         # Create requirements.txt from Pipfile
         - docker exec -i app bash -c "cd /root/template && pip install pipenv"
-        - docker exec -i app bash -c "cd /root/template && pipenv run pip freeze > requirements.txt"
+        - docker exec -i app bash -c "cd /root/template && pipenv --python 3.7 run pip freeze > requirements.txt"
         - docker exec -i app bash -c "cd /root/template && cat requirements.txt"
         # Install python requirements from requirements.txt
         - docker exec -i app bash -c "cd /root/template && pip install -r requirements.txt"
