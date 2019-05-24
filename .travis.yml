@@ -61,7 +61,7 @@ jobs:
         #        - docker cp app:/root/template/hello_world.txt .
       deploy:
         - provider: releases
-          api_key: $GITHUB_OAUTH_TOKEN
+          api_key: "$GITHUB_OAUTH_TOKEN"
 #          api_key: "GITHUB OAUTH TOKEN"
           file: "main.py"
           skip_cleanup: true
