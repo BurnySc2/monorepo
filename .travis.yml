@@ -116,6 +116,7 @@ stages:
 #  - test python 3.8
   - name: GitHub Release
     # Only run deploy if DEPLOY is in commit message
+
     if: $TRAVIS_COMMIT_MESSAGE =~ ^(DEPLOY)
 
 
