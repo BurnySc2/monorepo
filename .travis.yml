@@ -51,6 +51,7 @@ jobs:
         # Generate file by running main.py once
         - docker exec -i -w /root/template app ls
         - docker exec -i -w /root/template app pipenv run main.py
+        - docker exec -i app sh -c "cd /root/template && pipenv run main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
         - docker cp app:/root/template/hello_world.txt .
         - docker rm -f app
