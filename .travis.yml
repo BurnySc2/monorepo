@@ -48,20 +48,21 @@ jobs:
         - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.7"
         # Dont have to specify python version here
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
-        # Generate file by running main.py once
-#        - docker exec -i app sh -c "cd /root/template && ls"
-#        - docker exec -i app sh -c "cd /root/template && pwd"
-#        - docker exec -i app sh -c "cd /root/template && pipenv run main.py"
-        # Copy generated hello_world.txt file from docker container to host work directory
-#        - docker cp app:/root/template/hello_world.txt .
         - docker rm -f app
+
     - stage: GitHub Release
       script:
         - echo "Deploying to GitHub releases ..."
+        # Generate file by running main.py once
+        #        - docker exec -i app sh -c "cd /root/template && ls"
+        #        - docker exec -i app sh -c "cd /root/template && pwd"
+        #        - docker exec -i app sh -c "cd /root/template && pipenv run main.py"
+        # Copy generated hello_world.txt file from docker container to host work directory
+        #        - docker cp app:/root/template/hello_world.txt .
       deploy:
         - provider: releases
-#        api_key: $GITHUB_OAUTH_TOKEN
-          api_key: "GITHUB OAUTH TOKEN"
+          api_key: $GITHUB_OAUTH_TOKEN
+#          api_key: "GITHUB OAUTH TOKEN"
           file: "main.py"
           skip_cleanup: true
           on:
