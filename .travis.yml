@@ -63,7 +63,7 @@ jobs:
         - echo "3 different pwd approaches"
         - docker exec -i app bash -c "cd /root/template && pwd"
         - docker exec -i app sh -c "cd /root/template && pwd"
-        - docker exec -i -w /root/template app pwd
+        - docker exec -w /root/template app pwd
         - docker exec -i app sh -c "cd /root/template && python run main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
         - docker cp app:/root/template/hello_world.txt $TRAVIS_BUILD_DIR
@@ -81,6 +81,7 @@ jobs:
         - provider: releases
           api_key: "$GITHUB_OAUTH_TOKEN"
           file:
+            - "main.py"
             - "hello_world.txt"
           skip_cleanup: true
           on:
