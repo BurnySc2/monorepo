@@ -57,13 +57,13 @@ jobs:
         # Copy files to container
         - docker cp . app:/root/template
         # Install requirements, couldn't get it to work with pipenv so run it directly with python
-        - docker exec -i app pip install hypothesis
+        - docker exec -i app pip install hypothesis aiohttp pipenv
         # Generate file by running main.py once
         - docker exec -i app sh -c "cd /root/template && ls"
         - echo "3 different pwd approaches"
         - docker exec -i app bash -c "cd /root/template && pwd"
         - docker exec -i app sh -c "cd /root/template && pwd"
-        - docker exec -w /root/template app pwd
+        - docker exec --workdir /root/template app pwd
         - docker exec -i app sh -c "cd /root/template && python main.py"
         - docker exec -i app sh -c "cd /root/template && pipenv run main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
