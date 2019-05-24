@@ -37,18 +37,18 @@ jobs:
 #        # Shut down and remove container
 #        - docker rm -f app
 
-    - stage: test python 3.7
-      script:
-        - docker pull python:3.7-slim
-        - docker run -it -d --name app python:3.7-slim
-        - docker cp . app:/root/template
-        - docker exec app pip install --upgrade pipenv
-        # Specify python version in the install progress because it is different from the required version "python 3.6" according to the pipfile
-        # The version will only have to be specified here, because this will create a new virtual environment. The run command in the next line line will then use the existing environment
-        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.7"
-        # Dont have to specify python version here
-        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
-        - docker rm -f app
+#    - stage: test python 3.7
+#      script:
+#        - docker pull python:3.7-slim
+#        - docker run -it -d --name app python:3.7-slim
+#        - docker cp . app:/root/template
+#        - docker exec app pip install --upgrade pipenv
+#        # Specify python version in the install progress because it is different from the required version "python 3.6" according to the pipfile
+#        # The version will only have to be specified here, because this will create a new virtual environment. The run command in the next line line will then use the existing environment
+#        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.7"
+#        # Dont have to specify python version here
+#        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
+#        - docker rm -f app
 
     - stage: GitHub Release
       script:
