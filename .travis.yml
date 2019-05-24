@@ -108,7 +108,6 @@ jobs:
           on:
             # Would be only master branch otherwise
             all_branches: true
-            tags: false
             # More info: https://docs.travis-ci.com/user/conditions-v1
             # Only run deploy if DEPLOY is at the start of the commit message
             condition: "$TRAVIS_COMMIT_MESSAGE =~ ^(DEPLOY)"
