@@ -10,55 +10,55 @@ jobs:
   fast_finish: true
 
   # Jobs that are allowed to fail
-#  allow_failures:
-#    - stage: test python 3.8
+  allow_failures:
+    - stage: test python 3.8
 
   # Jobs that are being run
   include:
-#    - stage: test python 3.6
-#      script:
-#        # Pull docker image, this step could be skipped
-#        - docker pull python:3.6-slim
-#        # Create docker container called "app" from image "python:3.6-slim", the "-alpine" versions have no "bash" installed so you can't do "cd /root/my_folder"
-#        - docker run -it -d --name app python:3.6-slim
-#        # List contents of current folder
-#        - ls
-#        # Copy repository files and folders to docker container
-#        - docker cp . app:/root/template
-#        # List contents of container
-#        - docker exec app ls /root/template
-#        # Upgrade pipenv (and implicitly pip)
-#        - docker exec app pip install --upgrade pipenv
-#        # Change directory, create pipenv virtual environment and install dev packages from Pipfile for testing
-#        # Command origins from here: https://stackoverflow.com/a/28037991/10882657
-#        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.6"
-#        # Change directory and run tests
-#        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
-#        # Shut down and remove container
-#        - docker rm -f app
-#    - stage: test python 3.7
-#      script:
-#        - docker pull python:3.7-slim
-#        - docker run -it -d --name app python:3.7-slim
-#        - docker cp . app:/root/template
-#        - docker exec app pip install --upgrade pipenv
-#        # Specify python version in the install progress because it is different from the required version "python 3.6" according to the pipfile
-#        # The version will only have to be specified here, because this will create a new virtual environment. The run command in the next line line will then use the existing environment
-#        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.7"
-#        # Dont have to specify python version here
-#        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
-#        - docker rm -f app
-#
-#    - stage: test python 3.8
-#      script:
-#        # TODO: Change to normal python 3.8 version once 3.8 is released
-#        - docker pull python:3.8-rc-slim
-#        - docker run -it -d --name app python:3.8-rc-slim
-#        - docker cp . app:/root/template
-#        - docker exec app pip install --upgrade pipenv
-#        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.8"
-#        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
-#        - docker rm -f app
+    - stage: test python 3.6
+      script:
+        # Pull docker image, this step could be skipped
+        - docker pull python:3.6-slim
+        # Create docker container called "app" from image "python:3.6-slim", the "-alpine" versions have no "bash" installed so you can't do "cd /root/my_folder"
+        - docker run -it -d --name app python:3.6-slim
+        # List contents of current folder
+        - ls
+        # Copy repository files and folders to docker container
+        - docker cp . app:/root/template
+        # List contents of container
+        - docker exec app ls /root/template
+        # Upgrade pipenv (and implicitly pip)
+        - docker exec app pip install --upgrade pipenv
+        # Change directory, create pipenv virtual environment and install dev packages from Pipfile for testing
+        # Command origins from here: https://stackoverflow.com/a/28037991/10882657
+        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.6"
+        # Change directory and run tests
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
+        # Shut down and remove container
+        - docker rm -f app
+    - stage: test python 3.7
+      script:
+        - docker pull python:3.7-slim
+        - docker run -it -d --name app python:3.7-slim
+        - docker cp . app:/root/template
+        - docker exec app pip install --upgrade pipenv
+        # Specify python version in the install progress because it is different from the required version "python 3.6" according to the pipfile
+        # The version will only have to be specified here, because this will create a new virtual environment. The run command in the next line line will then use the existing environment
+        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.7"
+        # Dont have to specify python version here
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
+        - docker rm -f app
+
+    - stage: test python 3.8
+      script:
+        # TODO: Change to normal python 3.8 version once 3.8 is released
+        - docker pull python:3.8-rc-slim
+        - docker run -it -d --name app python:3.8-rc-slim
+        - docker cp . app:/root/template
+        - docker exec app pip install --upgrade pipenv
+        - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.8"
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
+        - docker rm -f app
 
     - stage: GitHub Release
       script:
@@ -106,7 +106,7 @@ jobs:
             - "hello_world.txt"
           skip_cleanup: true
           on:
-            # Would be only master branch otherwise
+            # Would be only master branch otherwise, default is false
             all_branches: true
             # More info: https://docs.travis-ci.com/user/conditions-v1
             # Only run deploy if DEPLOY is at the start of the commit message
