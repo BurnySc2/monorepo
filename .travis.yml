@@ -48,7 +48,16 @@ jobs:
         - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.7"
         # Dont have to specify python version here
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
+        # Copy generated hello_world.txt file from docker container to host work directory
+        - docker cp app:/root/template/hello_world.txt .
         - docker rm -f app
+      deploy:
+        - provider: releases
+          api_key: "GITHUB OAUTH TOKEN"
+          file: "hello_world.txt"
+          skip_cleanup: true
+          on:
+            tags: false
 
     - stage: test python 3.8
       script:

@@ -12,7 +12,7 @@ from multiprocessing import Process, Lock, Pool
 from typing import List, Iterable, Union
 
 # Other
-import time
+import time, os, sys
 
 
 async def main():
@@ -28,6 +28,8 @@ async def main():
     do_multiprocessing()
     end_time = time.perf_counter()
     print(f"Time for multiprocessing taken: {end_time - start_time}")
+
+    create_file()
 
 
 @require("First argument has to be a session object", lambda args: isinstance(args.session, aiohttp.ClientSession))
@@ -83,6 +85,13 @@ def find_sums(numbers: Iterable[int]) -> List[int]:
 def do_multiprocessing():
     numbers: List[int] = [5_000_000 + x for x in range(20)]
     sums: List[int] = find_sums(numbers)
+
+
+def create_file():
+    path = os.path.dirname(__file__)
+    example_file = os.path.join(path, "hello_world.txt")
+    with open(example_file, "w") as f:
+        f.write("Hello world!\n")
 
 
 if __name__ == "__main__":
