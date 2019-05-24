@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 aiohttp = "*"
-dpcontracts = "*"
+idna-ssl = "*"
 
 [dev-packages]
 pytest = "*"

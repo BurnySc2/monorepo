@@ -36,7 +36,6 @@ jobs:
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
         # Shut down and remove container
         - docker rm -f app
-
     - stage: test python 3.7
       script:
         - docker pull python:3.7-slim
@@ -61,61 +60,54 @@ jobs:
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
         - docker rm -f app
 
+    - stage: GitHub Release
+      script:
+        # Pull image and create container 'app'
+        - docker run -it -d --name app python:3.7-slim
+        # Copy files to container
+        - docker cp . app:/root/template
 
+        # Echo commit and message
+        - echo "Commit message:"
+        - echo "$TRAVIS_COMMIT_MESSAGE"
 
-# Testing using just python environments without docker:
+        # Install requirements, couldn't get it to work with pipenv so run it directly with python
+        # docker exec -i app bash -c "cd /root/template && python -m pipenv --python 3.7 run main.py"
+        # Error: the command main.py could not be found within PATH or Pipfile's [scripts].
 
-#language: python
-#sudo: false
-## Defining it at the top will override it from default (trusty) to xenial
-## Xenial allows python 3.7 and dev versions of python
-## Also trusty is deprecated, see: https://docs.travis-ci.com/user/reference/overview/#deprecated-virtualization-environments
-#dist: xenial
-#
-#
-## See: https://docs.travis-ci.com/user/build-matrix/
-#matrix:
-#  include:
-#    - python: "3.6"
-#      os: linux
-#
-#    - python: "3.7"
-#      os: linux
-#
-#    # TODO: uncomment when 3.8 is released
-##    - python: "3.8"
-##      os: linux
-#
-#    - python: "3.6-dev"
-#      os: linux
-#
-#    - python: "3.7-dev"
-#      os: linux
-#
-#    - python: "3.8-dev"
-#      os: linux
-#
-#
-#  # Builds that are allowed to fail
-#  allow_failures:
-#    - python: "3.8"
-#    - python: "3.6-dev"
-#    - python: "3.7-dev"
-#    - python: "3.8-dev"
-#
-#  # Now, the build result will be determined as soon as all the required jobs finish, based on these results, while the rest of the allow_failures jobs continue to run.
-#  fast_finish: true
-#
-#
-#install:
-#  # Implicitly also upgrades pip version
-#  - "pip install --upgrade pipenv"
-#  - "pipenv install --dev"
-#
-#
-#script:
-#  - python --version
-##  Test only a single file:
-##  - "pipenv run pytest tests/test_functions.py"
-##  Test the whole folder of test files:
-#  - "pipenv run pytest tests/"
+        # Create requirements.txt from Pipfile, use 'lock -r --dev' to also dump dev requirements from Pipfile
+        - docker exec -i app bash -c "cd /root/template && pip install pipenv"
+        - docker exec -i app bash -c "cd /root/template && pipenv --python 3.7 lock -r > requirements.txt"
+        - docker exec -i app bash -c "cd /root/template && cat requirements.txt"
+        # Install python requirements from requirements.txt
+        - docker exec -i app bash -c "cd /root/template && pip install -r requirements.txt"
+        # Generate test file hello_world.txt by running main.py
+        - docker exec -i app bash -c "cd /root/template && python main.py"
+        # Copy generated hello_world.txt file from docker container to host work directory
+        - docker cp app:/root/template/hello_world.txt .
+        # This works too:
+#        - docker cp app:/root/template/hello_world.txt $TRAVIS_BUILD_DIR
+        # Shut down and remove container
+        - docker rm -f app
+
+      # To successfully deploy, you have to add a github oauth token environment variable to your account
+      # Follow this guide to set up your token: https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
+      # Or:
+      # Go to github and login, go to https://github.com/settings/tokens and generate new token that has access to 'repo' (the first scope)
+      # Copy the newly generated oauth token
+      # Go to travis dashboard and hit settings on your profile, https://travis-ci.com/BurnySc2/python-template/settings would be the URL for this repo
+      # Under 'Environment Variables' add your oauth token as value, and name it '$GITHUB_OAUTH_TOKEN' without the '$'
+      deploy:
+        - provider: releases
+          # Required for travis to upload to releases page
+          api_key: "$GITHUB_OAUTH_TOKEN"
+          file:
+            - "main.py"
+            - "hello_world.txt"
+          skip_cleanup: true
+          on:
+            # Would be only master branch otherwise, default is false
+            all_branches: true
+            # More info: https://docs.travis-ci.com/user/conditions-v1
+            # Only run deploy if DEPLOY is at the start of the commit message
+            condition: "$TRAVIS_COMMIT_MESSAGE =~ ^(DEPLOY)"
