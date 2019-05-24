@@ -50,7 +50,7 @@ jobs:
         - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
         # Generate file by running main.py once
         - docker exec -i app bash -c "cd /root/template && ls"
-        - docker exec -i app bash -c "cd /root/template && pipenv run /root/template/main.py"
+        - docker exec -i app bash -c "cd /root/template && pipenv run main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
         - docker cp app:/root/template/hello_world.txt .
         - docker rm -f app
