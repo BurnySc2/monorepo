@@ -109,9 +109,9 @@ jobs:
             # Would be only master branch otherwise
             all_branches: true
             tags: false
-            condition:
-              # Only run deploy if DEPLOY is in commit message
-              commit_message =~ /^(DEPLOY)/
+#            condition:
+#              # Only run deploy if DEPLOY is in commit message
+#              commit_message =~ /^(DEPLOY)/
 
 
 
