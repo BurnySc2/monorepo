@@ -55,12 +55,17 @@ jobs:
         # Copy generated hello_world.txt file from docker container to host work directory
 #        - docker cp app:/root/template/hello_world.txt .
         - docker rm -f app
+    - stage: GitHub Release
+      script:
+        - echo "Deploying to GitHub releases ..."
       deploy:
         - provider: releases
+#        api_key: $GITHUB_OAUTH_TOKEN
           api_key: "GITHUB OAUTH TOKEN"
           file: "main.py"
           skip_cleanup: true
           on:
+            all_branches: true
             tags: false
 
 #    - stage: test python 3.8
