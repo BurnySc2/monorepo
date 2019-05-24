@@ -52,8 +52,12 @@ jobs:
 
     - stage: GitHub Release
       script:
+        # Pull image and create container 'app'
+        - docker run -it -d --name app python:3.7-slim
+        # Copy files to container
+        - docker cp . app:/root/template
         # Install requirements, couldn't get it to work with pipenv so run it directly with python
-        - docker exec -i app python -m pip install hypothesis
+        - docker exec -i app pip install hypothesis
         # Generate file by running main.py once
         - docker exec -i app sh -c "cd /root/template && ls"
         - echo "3 different pwd approaches"
@@ -63,6 +67,8 @@ jobs:
         - docker exec -i app sh -c "cd /root/template && python run main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
         - docker cp app:/root/template/hello_world.txt $TRAVIS_BUILD_DIR
+        # Shut down and remove container
+        - docker rm -f app
 
       # To successfully deploy, you have to add a github oauth token environment variable to your account
       # Follow this guide to set up your token: https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
