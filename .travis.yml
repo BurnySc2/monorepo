@@ -63,7 +63,7 @@ jobs:
 
     - stage: GitHub Release
       # Only run stage if DEPLOY is in commit message
-      if: $TRAVIS_COMMIT_MESSAGE !~ /(DEPLOY)/
+      if: $TRAVIS_COMMIT_MESSAGE =~ /(DEPLOY)/
       script:
         # Pull image and create container 'app'
         - docker run -it -d --name app python:3.7-slim
@@ -112,8 +112,6 @@ jobs:
           on:
             # Would be only master branch otherwise
             all_branches: true
-            # Requires a tag in a commit to be able to trigger the deploy
-            # https://git-scm.com/book/en/v2/Git-Basics-Tagging
             tags: false
 
 
