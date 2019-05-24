@@ -56,16 +56,22 @@ jobs:
         - docker run -it -d --name app python:3.7-slim
         # Copy files to container
         - docker cp . app:/root/template
+        -
         # Install requirements, couldn't get it to work with pipenv so run it directly with python
-        - docker exec -i app pip install hypothesis aiohttp pipenv
-        # Generate file by running main.py once
-        - docker exec -i app sh -c "cd /root/template && ls"
-        - docker exec -i app sh -c "cd /root/template && pwd"
-        - docker exec -i app sh -c "cd /root/template && python main.py"
-        - docker exec -i app sh -c "cd /root/template && python -m pipenv run --python 3.7 main.py"
-        - docker exec -i app sh -c "cd /root/template && python -m pipenv --python 3.7 run main.py"
+        # docker exec -i app bash -c "cd /root/template && python -m pipenv --python 3.7 run main.py"
+        # Error: the command main.py could not be found within PATH or Pipfile's [scripts].
+
+        # Create requirements.txt from pipfile
+        - docker exec -i app bash -c "cd /root/template && pipenv run pip freeze > requirements.txt
+        - docker exec -i app bash -c "cd /root/template && cat requirements.txt"
+        # Install python requirements from requirements.txt
+        - docker exec -i app bash -c "cd /root/template && pip install -r requirements.txt"
+        # Generate test file hello_world.txt by running main.py
+        - docker exec -i app bash -c "cd /root/template && python main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
-        - docker cp app:/root/template/hello_world.txt $TRAVIS_BUILD_DIR
+        - docker cp app:/root/template/hello_world.txt .
+        # This works too:
+#        - docker cp app:/root/template/hello_world.txt $TRAVIS_BUILD_DIR
         # Shut down and remove container
         - docker rm -f app
 
