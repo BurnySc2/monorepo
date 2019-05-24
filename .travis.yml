@@ -112,7 +112,7 @@ jobs:
             condition:
               # Only run deploy if DEPLOY is in commit message
 
-              $TRAVIS_COMMIT_MESSAGE =~ /(DEPLOY)/
+              commit_message =~ /^(DEPLOY)/
 
 
 
