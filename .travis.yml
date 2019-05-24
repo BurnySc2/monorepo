@@ -94,6 +94,7 @@ jobs:
             # Would be only master branch otherwise
             all_branches: true
             # Requires a tag in a commit to be able to trigger the deploy
+            # https://git-scm.com/book/en/v2/Git-Basics-Tagging
             tags: true
 
 #    - stage: test python 3.8
