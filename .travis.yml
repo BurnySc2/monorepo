@@ -62,7 +62,7 @@ jobs:
 #        - docker rm -f app
 
     - stage: GitHub Release
-#      if: $TRAVIS_COMMIT_MESSAGE =~ /(DEPLOY)/
+      if: $TRAVIS_COMMIT_MESSAGE =~ /(DEPLOY)/
       # Only run stage if DEPLOY is in commit message
       script:
         # Pull image and create container 'app'
