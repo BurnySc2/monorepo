@@ -28,6 +28,7 @@ async def main():
     end_time = time.perf_counter()
     print(f"Time for multiprocessing taken: {end_time - start_time}")
 
+    print(f"Creating hello world file...")
     create_file()
 
 
@@ -78,9 +79,10 @@ def do_multiprocessing():
 
 def create_file():
     path = os.path.dirname(__file__)
-    example_file = os.path.join(path, "hello_world.txt")
-    with open(example_file, "w") as f:
+    example_file_path = os.path.join(path, "hello_world.txt")
+    with open(example_file_path, "w") as f:
         f.write("Hello world!\n")
+    print(f"Hello world file created in path {example_file_path}")
 
 
 if __name__ == "__main__":
