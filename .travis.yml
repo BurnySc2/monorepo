@@ -71,7 +71,6 @@ jobs:
         # Echo commit and message
         - echo "Commit message:"
         - echo "$TRAVIS_COMMIT_MESSAGE"
-        - echo $TRAVIS_COMMIT_MESSAGE =~ /(DEPLOY)/
 
         # Install requirements, couldn't get it to work with pipenv so run it directly with python
         # docker exec -i app bash -c "cd /root/template && python -m pipenv --python 3.7 run main.py"
