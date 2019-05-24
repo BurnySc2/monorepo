@@ -111,7 +111,6 @@ jobs:
             tags: false
             condition:
               # Only run deploy if DEPLOY is in commit message
-
               commit_message =~ /^(DEPLOY)/
 
 
