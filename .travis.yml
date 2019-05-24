@@ -52,22 +52,36 @@ jobs:
 
     - stage: GitHub Release
       script:
-        - echo "Deploying to GitHub releases ..."
+        # Install requirements, couldn't get it to work with pipenv so run it directly with python
+        - docker exec -i app python -m pip install hypothesis
         # Generate file by running main.py once
-        #        - docker exec -i app sh -c "cd /root/template && ls"
-        #        - docker exec -i app sh -c "cd /root/template && pwd"
-        #        - docker exec -i app sh -c "cd /root/template && pipenv run main.py"
+        - docker exec -i app sh -c "cd /root/template && ls"
+        - echo "3 different pwd approaches"
+        - docker exec -i app bash -c "cd /root/template && pwd"
+        - docker exec -i app sh -c "cd /root/template && pwd"
+        - docker exec -i -w /root/template app pwd
+        - docker exec -i app sh -c "cd /root/template && python run main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
-        #        - docker cp app:/root/template/hello_world.txt .
+        - docker cp app:/root/template/hello_world.txt $TRAVIS_BUILD_DIR
+      """
+      To successfully deploy, you have to add a github oauth token environment variable to your account
+      Follow this guide to set up your token: https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line
+      Or:
+      Go to github and login, go to https://github.com/settings/tokens and generate new token that has access to 'repo' (the first scope)
+      Copy the newly generated oauth token
+      Go to travis dashboard and hit settings on your profile, https://travis-ci.com/BurnySc2/python-template/settings would be the URL for this repo
+      Under 'Environment Variables' add your oauth token as value, and name it '$GITHUB_OAUTH_TOKEN' without the '$'
+      """
       deploy:
         - provider: releases
           api_key: "$GITHUB_OAUTH_TOKEN"
-#          api_key: "GITHUB OAUTH TOKEN"
-          #
-          file: "main.py"
+          file:
+            - "hello_world.txt"
           skip_cleanup: true
           on:
+            # Would be only master branch otherwise
             all_branches: true
+            # Would only upload if this commit wasn't tagged
             tags: false
 
 #    - stage: test python 3.8
