@@ -108,64 +108,6 @@ jobs:
             # Would be only master branch otherwise
             all_branches: true
             tags: false
-            # Only run deploy if DEPLOY is in commit message
-            condition: \
-              "$TRAVIS_COMMIT_MESSAGE =~ ^(DEPLOY)"
-
-
-# Testing using just python environments without docker:
-
-#language: python
-#sudo: false
-## Defining it at the top will override it from default (trusty) to xenial
-## Xenial allows python 3.7 and dev versions of python
-## Also trusty is deprecated, see: https://docs.travis-ci.com/user/reference/overview/#deprecated-virtualization-environments
-#dist: xenial
-#
-#
-## See: https://docs.travis-ci.com/user/build-matrix/
-#matrix:
-#  include:
-#    - python: "3.6"
-#      os: linux
-#
-#    - python: "3.7"
-#      os: linux
-#
-#    # TODO: uncomment when 3.8 is released
-##    - python: "3.8"
-##      os: linux
-#
-#    - python: "3.6-dev"
-#      os: linux
-#
-#    - python: "3.7-dev"
-#      os: linux
-#
-#    - python: "3.8-dev"
-#      os: linux
-#
-#
-#  # Builds that are allowed to fail
-#  allow_failures:
-#    - python: "3.8"
-#    - python: "3.6-dev"
-#    - python: "3.7-dev"
-#    - python: "3.8-dev"
-#
-#  # Now, the build result will be determined as soon as all the required jobs finish, based on these results, while the rest of the allow_failures jobs continue to run.
-#  fast_finish: true
-#
-#
-#install:
-#  # Implicitly also upgrades pip version
-#  - "pip install --upgrade pipenv"
-#  - "pipenv install --dev"
-#
-#
-#script:
-#  - python --version
-##  Test only a single file:
-##  - "pipenv run pytest tests/test_functions.py"
-##  Test the whole folder of test files:
-#  - "pipenv run pytest tests/"
+            # More info: https://docs.travis-ci.com/user/conditions-v1
+            # Only run deploy if DEPLOY is at the start of the commit message
+            condition: "$TRAVIS_COMMIT_MESSAGE =~ ^(DEPLOY)"
