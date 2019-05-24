@@ -59,7 +59,7 @@ jobs:
           file: "hello_world.txt"
           skip_cleanup: true
           on:
-            tags: false
+            tags: true
 
     - stage: test python 3.8
       script:
