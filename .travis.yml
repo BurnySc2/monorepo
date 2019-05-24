@@ -61,9 +61,8 @@ jobs:
         # docker exec -i app bash -c "cd /root/template && python -m pipenv --python 3.7 run main.py"
         # Error: the command main.py could not be found within PATH or Pipfile's [scripts].
 
-        # Create requirements.txt from Pipfile
+        # Create requirements.txt from Pipfile, use 'lock -r --dev' to also dump dev requirements from Pipfile
         - docker exec -i app bash -c "cd /root/template && pip install pipenv"
-#        - docker exec -i app bash -c "cd /root/template && pipenv --python 3.7 run pip freeze > requirements.txt"
         - docker exec -i app bash -c "cd /root/template && pipenv --python 3.7 lock -r > requirements.txt"
         - docker exec -i app bash -c "cd /root/template && cat requirements.txt"
         # Install python requirements from requirements.txt
