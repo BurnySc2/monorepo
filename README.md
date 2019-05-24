@@ -30,6 +30,8 @@ install packages using the `pip install` command here:
 `pipenv install --dev`
 
 `pipenv run pytest tests`
+### Write requirements.txt from Pipfile
+pipenv lock -r > requirements.txt
 
 
 # Run python files
