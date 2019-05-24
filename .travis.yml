@@ -99,6 +99,7 @@ jobs:
       # Under 'Environment Variables' add your oauth token as value, and name it '$GITHUB_OAUTH_TOKEN' without the '$'
       deploy:
         - provider: releases
+          # Required for travis to upload to releases page
           api_key: "$GITHUB_OAUTH_TOKEN"
           file:
             - "main.py"
