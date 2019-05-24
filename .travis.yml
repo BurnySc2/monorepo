@@ -109,9 +109,14 @@ jobs:
             # Would be only master branch otherwise
             all_branches: true
             tags: false
-            # Only run deploy if DEPLOY is in commit message
-            condition: "$TRAVIS_COMMIT_MESSAGE" =~ /^(DEPLOY)/
 
+stages:
+  - test python 3.6
+  - test python 3.7
+  - test python 3.8
+  - name: GitHub Release
+    # Only run deploy if DEPLOY is in commit message
+    if: $TRAVIS_COMMIT_MESSAGE =~ /^(DEPLOY)/
 
 
 
