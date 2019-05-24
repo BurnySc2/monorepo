@@ -93,8 +93,8 @@ jobs:
           on:
             # Would be only master branch otherwise
             all_branches: true
-            # Would only upload if this commit wasn't tagged
-            tags: false
+            # Requires a tag in a commit to be able to trigger the deploy
+            tags: true
 
 #    - stage: test python 3.8
 #      script:
