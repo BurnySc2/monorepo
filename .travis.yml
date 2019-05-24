@@ -57,6 +57,12 @@ jobs:
         # Copy files to container
         - docker cp . app:/root/template
 
+        # Echo commit and message
+        - echo "Commit:"
+        - echo "$TRAVIS_COMMIT"
+        - echo "Commit message:"
+        - echo "$TRAVIS_COMMIT_MESSAGE"
+
         # Install requirements, couldn't get it to work with pipenv so run it directly with python
         # docker exec -i app bash -c "cd /root/template && python -m pipenv --python 3.7 run main.py"
         # Error: the command main.py could not be found within PATH or Pipfile's [scripts].
@@ -94,7 +100,7 @@ jobs:
             # Would be only master branch otherwise
             all_branches: true
             # Requires a tag in a commit to be able to trigger the deploy
-            # https://git-scm.com/book/en/v2/Git-Basics-Tagging  
+            # https://git-scm.com/book/en/v2/Git-Basics-Tagging
             tags: true
 
 #    - stage: test python 3.8
