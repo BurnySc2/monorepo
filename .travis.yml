@@ -63,7 +63,7 @@ jobs:
         - echo "3 different pwd approaches"
         - docker exec -i app bash -c "cd /root/template && pwd"
         - docker exec -i app sh -c "cd /root/template && pwd"
-        - docker exec --workdir /root/template app pwd
+        - docker exec -it -w /root/template app pwd
         - docker exec -i app sh -c "cd /root/template && python main.py"
         - docker exec -i app sh -c "cd /root/template && python -m pipenv run main.py"
         # Copy generated hello_world.txt file from docker container to host work directory
