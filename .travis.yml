@@ -51,9 +51,8 @@ jobs:
 
     - stage: test python 3.8
       script:
-        # TODO: Change to normal python 3.8 version once 3.8 is released
-        - docker pull python:3.8-rc-slim
-        - docker run -it -d --name app python:3.8-rc-slim
+        - docker pull python:3.8-slim
+        - docker run -it -d --name app python:3.8-slim
         - docker cp . app:/root/template
         - docker exec app pip install --upgrade pipenv
         - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.8"
@@ -100,6 +99,7 @@ jobs:
         - provider: releases
           # Required for travis to upload to releases page
           api_key: "$GITHUB_OAUTH_TOKEN"
+          # Use this to provide all files in a folder with certain extension: https://github.com/streamlink/streamlink-twitch-gui/blob/b72514908db637319cf528ad2784501f928fbf68/.travis.yml#L49-L55
           file:
             - "main.py"
             - "hello_world.txt"
