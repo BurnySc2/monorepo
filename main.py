@@ -1,6 +1,7 @@
 # Coroutines and multiprocessing
 import asyncio
 import aiohttp
+import aiofiles
 from multiprocessing import Process, Lock, Pool
 
 # Type annotation / hints
@@ -14,6 +15,17 @@ async def main():
     sites: List[str] = ["http://www.jython.org", "http://olympus.realpython.org/dice"] * 80
     start_time = time.perf_counter()
     await download_all_sites(sites)
+
+    # Download an image with download speed throttle
+    async with aiohttp.ClientSession() as session:
+        result: bool = await download_image(
+            session,
+            url="https://i.imgur.com/YqEyx1l.jpg",
+            file_path="test/image.png",
+            temp_file_path="test/image_download_not_complete",
+            download_speed=100 * 2 ** 10,
+        )
+
     end_time = time.perf_counter()
     print(f"Time for sites download taken: {end_time - start_time}")
 
@@ -26,6 +38,64 @@ async def main():
 
     print(f"Creating hello world file...")
     create_file()
+
+
+async def download_image(
+    session: aiohttp.ClientSession,
+    url: str,
+    file_path: str,
+    temp_file_path: str,
+    download_speed: int = -1,
+    chunk_size: int = 1024,
+) -> bool:
+    """
+    Downloads an image (or a file even) from "url" and saves it to "temp_file_path". When the download is complete, it renames the file at "temp_file_path" to "file_path".
+    It respects "download_speed" in bytes per second. If no parameter was given, it will ignore the download limit.
+
+    Returns boolean if download was successful.
+    """
+    downloaded: int = 0
+    # Download start time
+    time_last_subtracted = time.perf_counter()
+    # Affects sleep time and check size for download speed, should be between 0.1 and 1
+    accuracy: float = 0.1
+
+    # Check if file exists
+    if not os.path.isfile(file_path):
+        try:
+            async with session.get(url) as response:
+                # Assume everything went well with the response, no connection or server errors
+                assert response.status == 200
+                # Open file in binary write mode
+                async with aiofiles.open(temp_file_path, "wb") as f:
+                    # Download file in chunks
+                    async for data in response.content.iter_chunked(chunk_size):
+                        # Write data to file in asyncio-mode using aiofiles
+                        await f.write(data)
+                        # Keep track of how much was downloaded
+                        downloaded += chunk_size
+                        # Wait if downloaded size has reached its download throttle limit
+                        while 0 < download_speed and download_speed * accuracy < downloaded:
+                            time_temp = time.perf_counter()
+                            # This size should be the estimated downloaded size in the passed time
+                            estimated_download_size = download_speed * (time_temp - time_last_subtracted)
+                            downloaded -= estimated_download_size
+                            time_last_subtracted = time_temp
+                            await asyncio.sleep(accuracy)
+            await asyncio.sleep(0.1)
+            try:
+                os.rename(temp_file_path, file_path)
+                return True
+            except PermissionError:
+                # The file might be open by another process
+                print(f"Permissionerror: Unable to rename file from ({temp_file_path}) to ({file_path})")
+        except asyncio.TimeoutError:
+            # The The server might suddenly not respond
+            print(f"Received timeout error in url ({url}) in file path ({file_path})!")
+    else:
+        # The file already exists!
+        print(f"File for url ({url}) in file path ({file_path}) already exists!")
+    return False
 
 
 async def download_site(session: aiohttp.ClientSession, url: str) -> aiohttp.ClientResponse:

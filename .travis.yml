@@ -10,9 +10,9 @@ jobs:
   fast_finish: true
 
   # Jobs that are allowed to fail
-  allow_failures:
-    - stage: test python 3.6
-    - stage: test python 3.8
+#  allow_failures:
+#    - stage: test python 3.6
+#    - stage: test python 3.8
 
   # Jobs that are being run
   include:
@@ -34,7 +34,7 @@ jobs:
         # Command origins from here: https://stackoverflow.com/a/28037991/10882657
         - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.6"
         # Change directory and run tests
-        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest test/ --hypothesis-show-statistics"
         # Shut down and remove container
         - docker rm -f app
 
@@ -49,7 +49,7 @@ jobs:
         # The version will only have to be specified here, because this will create a new virtual environment. The run command in the next line line will then use the existing environment
         - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.7"
         # Dont have to specify python version here
-        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest test/ --hypothesis-show-statistics"
         - docker rm -f app
 
     - stage: test python 3.8
@@ -59,7 +59,7 @@ jobs:
         - docker cp . app:/root/template
         - docker exec app pip install --upgrade pipenv
         - docker exec -i app bash -c "cd /root/template && pipenv install --dev --python 3.8"
-        - docker exec -i app bash -c "cd /root/template && pipenv run pytest tests/ --hypothesis-show-statistics"
+        - docker exec -i app bash -c "cd /root/template && pipenv run pytest test/ --hypothesis-show-statistics"
         - docker rm -f app
 
     - stage: GitHub Release
