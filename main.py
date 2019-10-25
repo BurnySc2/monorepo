@@ -20,9 +20,10 @@ async def main():
     async with aiohttp.ClientSession() as session:
         result: bool = await download_image(
             session,
-            url="https://i.imgur.com/YqEyx1l.jpg",
+            url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
             file_path="test/image.png",
             temp_file_path="test/image_download_not_complete",
+            # Download at speed of 100kb/s
             download_speed=100 * 2 ** 10,
         )
 
