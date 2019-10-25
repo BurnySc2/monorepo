@@ -1,7 +1,6 @@
 # Coroutines and multiprocessing
 import asyncio
 import aiohttp
-import aiofiles
 from multiprocessing import Process, Lock, Pool
 
 # Type annotation / hints
@@ -68,11 +67,11 @@ async def download_image(
                 # Assume everything went well with the response, no connection or server errors
                 assert response.status == 200
                 # Open file in binary write mode
-                async with aiofiles.open(temp_file_path, "wb") as f:
+                with open(temp_file_path, "wb") as f:
                     # Download file in chunks
                     async for data in response.content.iter_chunked(chunk_size):
                         # Write data to file in asyncio-mode using aiofiles
-                        await f.write(data)
+                        f.write(data)
                         # Keep track of how much was downloaded
                         downloaded += chunk_size
                         # Wait if downloaded size has reached its download throttle limit

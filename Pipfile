@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 aiohttp = "*"
 idna-ssl = "*"
-aiofiles = "*"
 
 [dev-packages]
 pytest = "*"

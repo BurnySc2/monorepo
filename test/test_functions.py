@@ -1,6 +1,3 @@
-# The following results in errors "ValueError: attempted relative import beyond top-level package"
-# from ..main import do_math, download_site
-
 import sys
 import os
 
