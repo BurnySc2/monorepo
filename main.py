@@ -1,16 +1,27 @@
+# Other
+import time, os, sys
+import time
+from contextlib import contextmanager
+
 # Coroutines and multiprocessing
 import asyncio
 import aiohttp
 from multiprocessing import Process, Lock, Pool
 
+# Simple logging https://github.com/Delgan/loguru
+from loguru import logger
+
+logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
+
 # Type annotation / hints
 from typing import List, Iterable, Union
 
-# Other
-import time, os, sys
-
 
 async def main():
+    logger.info("Simple {} logger output", "loguru")
+
+    measure_time()
+
     sites: List[str] = ["http://www.jython.org", "http://olympus.realpython.org/dice"] * 80
     start_time = time.perf_counter()
     await download_all_sites(sites)
@@ -38,6 +49,23 @@ async def main():
 
     print(f"Creating hello world file...")
     create_file()
+
+
+def measure_time():
+    @contextmanager
+    def time_this(label: str):
+        start = time.perf_counter_ns()
+        try:
+            yield
+        finally:
+            end = time.perf_counter_ns()
+            print(f"TIME {label}: {(end-start)/1e9} sec")
+
+    # Use like this
+    if __name__ == "__main__":
+        with time_this("square rooting"):
+            for n in range(10 ** 7):
+                x = n ** 0.5
 
 
 async def download_image(

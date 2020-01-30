@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: [3.6, 3.7, 3.8]
 
     steps:
@@ -20,7 +20,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       # Use pip requirements.txt cache https://github.com/actions/cache/blob/master/examples.md#python---pip
-      # Apparently you cant use cache when using pipenv
+      # Apparently you can't use cache when using pipenv (but perhaps when specifying the pipenv environment folder?)
 
       - name: Install dependencies
         run: |

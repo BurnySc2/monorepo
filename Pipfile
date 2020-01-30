@@ -11,6 +11,7 @@ idna-ssl = "*"
 pytest = "*"
 pytest-asyncio = "*"
 hypothesis = "*"
+loguru = "*"
 
 [requires]
 python_version = "3.6"
