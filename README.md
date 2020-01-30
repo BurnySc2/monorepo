@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/BurnySc2/python-template.svg?token=uZSbyQZSCPfwrTxZ8beQ&branch=master)](https://travis-ci.com/BurnySc2/python-template)
+[![Actions Status](https://github.com/BurnySc2/python-template/workflows/RunTests/badge.svg)](https://github.com/BurnySc2/python-template/actions)
 
 # python-template
 Template for any of my upcoming Python projects
