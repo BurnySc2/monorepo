@@ -6,12 +6,16 @@ name = "pypi"
 [packages]
 aiohttp = "*"
 idna-ssl = "*"
+loguru = "*"
+aiocontextvars = "*"
+atomicwrites = "*"
+contextvars = "*"
+win32-setctime = "*"
 
 [dev-packages]
 pytest = "*"
 pytest-asyncio = "*"
 hypothesis = "*"
-loguru = "*"
 
 [requires]
 python_version = "3.6"

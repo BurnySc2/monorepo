@@ -1,5 +1,8 @@
 # Other
-import time, os, sys
+import time
+import os
+import sys
+import re
 import time
 from contextlib import contextmanager
 
@@ -19,6 +22,8 @@ from typing import List, Iterable, Union
 
 async def main():
     logger.info("Simple {} logger output", "loguru")
+
+    regex_match_test()
 
     measure_time()
 
@@ -66,6 +71,18 @@ def measure_time():
         with time_this("square rooting"):
             for n in range(10 ** 7):
                 x = n ** 0.5
+
+
+def regex_match_test():
+    """
+    Match pattern:
+    HH:MM:SS
+    """
+    assert re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "00:00:00")
+    assert not re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "0:00:00")
+    assert not re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "00:0:00")
+    assert not re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "00:00:0")
+    assert not re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "00:0000")
 
 
 async def download_image(
