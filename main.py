@@ -78,11 +78,11 @@ def regex_match_test():
     Match pattern:
     HH:MM:SS
     """
-    assert re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "00:00:00")
-    assert not re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "0:00:00")
-    assert not re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "00:0:00")
-    assert not re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "00:00:0")
-    assert not re.fullmatch("(\d{2}):(\d{2}):(\d{2})", "00:0000")
+    assert re.fullmatch(r"(\d{2}):(\d{2}):(\d{2})", "00:00:00")
+    assert not re.fullmatch(r"(\d{2}):(\d{2}):(\d{2})", "0:00:00")
+    assert not re.fullmatch(r"(\d{2}):(\d{2}):(\d{2})", "00:0:00")
+    assert not re.fullmatch(r"(\d{2}):(\d{2}):(\d{2})", "00:00:0")
+    assert not re.fullmatch(r"(\d{2}):(\d{2}):(\d{2})", "00:0000")
 
 
 async def download_image(
