@@ -26,12 +26,6 @@ jobs:
         run: |
           python -m pip install poetry
 
-      - name: Set up cache
-        uses: actions/cache@v1
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
-
       - name: Install dependencies
         run: |
           poetry install
