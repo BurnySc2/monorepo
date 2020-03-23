@@ -85,6 +85,62 @@ def regex_match_test():
     assert not re.fullmatch(r"(\d{2}):(\d{2}):(\d{2})", "00:0000")
 
 
+def generate_roman_number(n: int) -> str:
+    """
+    Allowed roman numbers:
+    IV, VI, IX, XI, XC, LC, XXXIX, XLI
+    Disallowed:
+    IIV, VIIII, XXXX, IXL, XIL
+    """
+    if 4000 < n:
+        raise ValueError(f"Input too big: {n}")
+    number_list = [
+        (1000, "M"),
+        (900, "CM"),
+        (500, "D"),
+        (400, "CD"),
+        (100, "C"),
+        (90, "XC"),
+        (50, "L"),
+        (40, "XL"),
+        (10, "X"),
+        (9, "IX"),
+        (5, "V"),
+        (4, "IV"),
+        (1, "I"),
+    ]
+    string_as_list = []
+    for divisor, character in number_list:
+        if n >= divisor:
+            count, n = divmod(n, divisor)
+            string_as_list.extend(count * [character])
+    return "".join(string_as_list)
+
+
+def regex_match_roman_number(roman_number: str) -> bool:
+    """ Returns True if input string is a roman number
+    First row: Look ahead -> dont match empty string
+    Second row: 1000-3000
+    Third row: 3400 or 3900, connected with 100, 200, 300, or 500, 600, 700 or 800
+    Same pattern for 4th and 5th row
+    """
+    numbers_1_to_3889 = r"""
+    (?=[MDCLXVI])
+        M{0,3}
+            ( C[MD] | D?C{0,3} )
+                ( X[CL] | L?X{0,3} )
+                    ( I[XV] | V?I{0,3} )
+    """.replace(
+        " ", ""
+    ).replace(
+        "\n", ""
+    )
+    return bool(re.fullmatch(numbers_1_to_3889, roman_number))
+
+# TODO write as test
+# for i in range(1, 3500):
+#     assert regex_match_roman_number(generate_roman_number(i)), f"{i}"
+
 async def download_image(
     session: aiohttp.ClientSession,
     url: str,
