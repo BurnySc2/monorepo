@@ -37,4 +37,4 @@ jobs:
 
       - name: Publish
         run: |
-          poetry publish
+          poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}
