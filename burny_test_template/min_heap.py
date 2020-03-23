@@ -1,7 +1,7 @@
 from typing import List, Optional
 import math
 
-class MinHeap:
+class Minheap:
     def __init__(self):
         """ Implementation of binary heap as min-heap """
         self.heap: List[int] = [-1]
@@ -105,7 +105,7 @@ class MinHeap:
 
 
 if __name__ == "__main__":
-    p = MinHeap()
+    p = Minheap()
     build_list = [1, 2, 3, 4, 5, 6, 7]
     p.build(build_list)
     assert len(p.heap) == 8, f"build() function or insert() function not working as expected"
