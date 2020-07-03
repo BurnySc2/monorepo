@@ -38,8 +38,26 @@ jobs:
         run: |
           poetry build
 
+      # Publish package on pypi
       - name: Publish
         continue-on-error: true
         run: |
           poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}
 
+#      # Push files to remote server
+#      # https://github.com/marketplace/actions/scp-files
+#      # https://github.com/appleboy/scp-action/blob/master/action.yml
+#      - name: Copy files via ssh passphrase
+#        uses: appleboy/scp-action@master
+#        with:
+#          # Host ip address
+#          host: ${{ secrets.HOST }}
+#          port: 22
+#          # My username on the host machine
+#          username: ${{ secrets.USERNAME }}
+#          # Contents of .ssh/id_dsa, private RSA key
+#          key: ${{ secrets.KEY }}
+#          # Passphrase to decrypt private key
+#          passphrase: ${{ secrets.PASSPHRASE }}
+#          source: "."
+#          target: "/home/burnysc2/temp"
