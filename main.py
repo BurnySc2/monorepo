@@ -20,7 +20,12 @@ from multiprocessing import Process, Lock, Pool
 # Simple logging https://github.com/Delgan/loguru
 from loguru import logger
 
-logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
+# Remove previous default handlers
+logger.remove()
+# Log to console
+logger.add(sys.stdout, level="INFO")
+# Log to file, max size 1 mb
+logger.add("main.log", rotation="1 MB", level="INFO")
 
 # Type annotation / hints
 from typing import List, Iterable, Union, Set
@@ -179,7 +184,8 @@ async def download_image(
                 # Assume everything went well with the response, no connection or server errors
                 assert response.status == 200
                 # Open file in binary write mode
-                with open(temp_file_path, "wb") as f:
+                # with open(temp_file_path, "wb") as f:
+                with temp_file_path.open("wb") as f:
                     # Download file in chunks
                     async for data in response.content.iter_chunked(chunk_size):
                         # Write data to file in asyncio-mode using aiofiles
@@ -196,7 +202,8 @@ async def download_image(
                             await asyncio.sleep(accuracy)
             await asyncio.sleep(0.1)
             try:
-                os.rename(temp_file_path, file_path)
+                # os.rename(temp_file_path, file_path)
+                temp_file_path.rename(file_path)
                 return True
             except PermissionError:
                 # The file might be open by another process
@@ -309,12 +316,12 @@ def test_data_class_to_and_from_json():
 
 
 if __name__ == "__main__":
-    loop: asyncio.BaseEventLoop = asyncio.get_event_loop()
+    loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     try:
         loop.run_until_complete(main())
     finally:
         loop.close()
 
-    # In Python 3.7 it is just::
+    # In Python 3.7+ it is just:
     # asyncio.run(main())

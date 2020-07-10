@@ -7,6 +7,7 @@ from main import do_math, download_site, download_all_sites, find_sums, cpu_boun
 import pytest
 import aiohttp
 import time
+from pathlib import Path
 from hypothesis import given
 import hypothesis.strategies as st
 
@@ -14,7 +15,8 @@ import hypothesis.strategies as st
 @pytest.mark.asyncio
 async def test_download_image():
     # With this download throttle, it should take at least 9 seconds to download the 1mb image at 100kb/s
-    download_path = "test/image.png"
+    download_path = Path(__file__).parent / "image.png"
+    download_path_not_complete = Path(__file__).parent / "image_download_not_complete"
 
     # Cleanup from last time
     if os.path.isfile(download_path):
@@ -26,7 +28,7 @@ async def test_download_image():
             session,
             url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
             file_path=download_path,
-            temp_file_path="test/image_download_not_complete",
+            temp_file_path=download_path_not_complete,
             download_speed=100 * 2 ** 10,
         )
     t1 = time.perf_counter()
@@ -45,7 +47,7 @@ async def test_download_image():
             session,
             url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
             file_path=download_path,
-            temp_file_path="test/image_download_not_complete",
+            temp_file_path=download_path_not_complete,
         )
     t1 = time.perf_counter()
     assert result

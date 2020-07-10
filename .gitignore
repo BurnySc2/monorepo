@@ -110,3 +110,4 @@ venv.bak/
 hello_world.txt
 image.png
 dataclass_test.json
+main.log
