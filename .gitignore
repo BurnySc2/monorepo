@@ -106,5 +106,7 @@ venv.bak/
 # Pycharm
 .idea/
 
+# Test files from main.py
 hello_world.txt
 image.png
+dataclass_test.json

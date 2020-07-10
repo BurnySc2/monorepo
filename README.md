@@ -29,6 +29,10 @@ or
 `poetry install --no-dev`
 ### Add dependencies
 `poetry add <package-name>`
+
+Add dev dependency:
+
+`poetry add <package-name> --dev`
 ### Remove dependencies
 `poetry remove <package-name>`
 ### Update dependencies

@@ -4,7 +4,13 @@ import os
 import sys
 import re
 import time
+import json
 from contextlib import contextmanager
+from pathlib import Path
+from dataclasses import dataclass
+
+# https://pypi.org/project/dataclasses-json/#description
+from dataclasses_json import DataClassJsonMixin
 
 # Coroutines and multiprocessing
 import asyncio
@@ -17,7 +23,7 @@ from loguru import logger
 logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
 # Type annotation / hints
-from typing import List, Iterable, Union
+from typing import List, Iterable, Union, Set
 
 
 async def main():
@@ -36,24 +42,27 @@ async def main():
         result: bool = await download_image(
             session,
             url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
-            file_path="test/image.png",
-            temp_file_path="test/image_download_not_complete",
+            file_path=Path("test/image.png"),
+            temp_file_path=Path("test/image_download_not_complete"),
             # Download at speed of 100kb/s
             download_speed=100 * 2 ** 10,
         )
 
     end_time = time.perf_counter()
-    print(f"Time for sites download taken: {end_time - start_time}")
+    logger.info(f"Time for sites download taken: {end_time - start_time}")
 
     math_result = await do_math(6)
 
     start_time = time.perf_counter()
     do_multiprocessing()
     end_time = time.perf_counter()
-    print(f"Time for multiprocessing taken: {end_time - start_time}")
+    logger.info(f"Time for multiprocessing taken: {end_time - start_time}")
 
-    print(f"Creating hello world file...")
+    logger.info(f"Creating hello world file...")
     create_file()
+
+    logger.info(f"Testing writing dataclass to json and re-load and compare both objects")
+    test_data_class_to_and_from_json()
 
 
 def measure_time():
@@ -64,7 +73,7 @@ def measure_time():
             yield
         finally:
             end = time.perf_counter_ns()
-            print(f"TIME {label}: {(end-start)/1e9} sec")
+            logger.info(f"TIME {label}: {(end-start)/1e9} sec")
 
     # Use like this
     if __name__ == "__main__":
@@ -137,15 +146,17 @@ def regex_match_roman_number(roman_number: str) -> bool:
     )
     return bool(re.fullmatch(numbers_1_to_3889, roman_number))
 
+
 # TODO write as test
 # for i in range(1, 3500):
 #     assert regex_match_roman_number(generate_roman_number(i)), f"{i}"
 
+
 async def download_image(
     session: aiohttp.ClientSession,
     url: str,
-    file_path: str,
-    temp_file_path: str,
+    file_path: Path,
+    temp_file_path: Path,
     download_speed: int = -1,
     chunk_size: int = 1024,
 ) -> bool:
@@ -162,7 +173,7 @@ async def download_image(
     accuracy: float = 0.1
 
     # Check if file exists
-    if not os.path.isfile(file_path):
+    if not file_path.exists():
         try:
             async with session.get(url) as response:
                 # Assume everything went well with the response, no connection or server errors
@@ -189,13 +200,13 @@ async def download_image(
                 return True
             except PermissionError:
                 # The file might be open by another process
-                print(f"Permissionerror: Unable to rename file from ({temp_file_path}) to ({file_path})")
+                logger.info(f"Permissionerror: Unable to rename file from ({temp_file_path}) to ({file_path})")
         except asyncio.TimeoutError:
             # The The server might suddenly not respond
-            print(f"Received timeout error in url ({url}) in file path ({file_path})!")
+            logger.info(f"Received timeout error in url ({url}) in file path ({file_path})!")
     else:
         # The file already exists!
-        print(f"File for url ({url}) in file path ({file_path}) already exists!")
+        logger.info(f"File for url ({url}) in file path ({file_path}) already exists!")
     return False
 
 
@@ -245,11 +256,56 @@ def do_multiprocessing():
 
 
 def create_file():
-    path = os.path.dirname(__file__)
-    example_file_path = os.path.join(path, "hello_world.txt")
+    example_file_path = Path(__file__).parent / "hello_world.txt"
     with open(example_file_path, "w") as f:
         f.write("Hello world!\n")
-    print(f"Hello world file created in path {example_file_path}")
+    logger.info(f"Hello world file created in path {example_file_path}")
+
+
+@dataclass()
+class MyDataClass(DataClassJsonMixin):
+    name: str
+    value: int
+    other: Set[int]
+
+
+@dataclass()
+class MyDataClassList(DataClassJsonMixin):
+    some_dataclasses: List[MyDataClass]
+    other_dataclasses: List[MyDataClass]
+
+
+def save_objects_to_json(path: Path, my_dataclass_list: MyDataClassList):
+    """ Save the given data class object to json file. """
+    # Or: with open(path, "w") as f:
+    with path.open("w") as f:
+        f.write(my_dataclass_list.to_json(indent=4))
+
+
+def load_objects_from_json(path: Path) -> MyDataClassList:
+    """ Load a json file and re-create a data class list object from it. """
+    # Or: with open(path) as f:
+    with path.open() as f:
+        return MyDataClassList.from_json(f.read())
+
+
+def test_data_class_to_and_from_json():
+    """ Creates a dataclass, saves to json, re-loads it from json file and compares them. """
+    # Create objects
+    # Note: interestingly the class holds a set but the written json file contains a list - reloading the list automatically converts it to a set again
+    my_first_object = MyDataClass("burny", 420, {1, 2, 3})
+    my_second_object = MyDataClass("not_burny", 123, {4, 2, 0})
+    data_class_list = MyDataClassList([my_first_object], [my_second_object])
+
+    # Write and reload from file
+    test_path = Path("dataclass_test.json")
+    save_objects_to_json(test_path, data_class_list)
+    data_class_list_loaded = load_objects_from_json(test_path)
+
+    # Compare
+    assert data_class_list_loaded == data_class_list
+    assert data_class_list_loaded.some_dataclasses[0] == data_class_list.some_dataclasses[0]
+    assert data_class_list_loaded.other_dataclasses[0] == data_class_list.other_dataclasses[0]
 
 
 if __name__ == "__main__":
