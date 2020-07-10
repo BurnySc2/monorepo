@@ -111,3 +111,6 @@ hello_world.txt
 image.png
 dataclass_test.json
 main.log
+
+# Ignore local data folder
+/data
