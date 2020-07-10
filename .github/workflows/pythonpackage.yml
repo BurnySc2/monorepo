@@ -61,6 +61,7 @@ jobs:
 #          passphrase: ${{ secrets.PASSPHRASE }}
 #          source: "."
 #          target: "/home/burnysc2/temp"
+#        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.7'
 
 #      # Log in to remote host and execute scripts
 #      - name: Executing remote ssh commands using passphrase
@@ -72,4 +73,6 @@ jobs:
 #          key: ${{ secrets.KEY }}
 #          passphrase: ${{ secrets.PASSPHRASE }}
 #          script: |
-#            whoami
+#            cd /home/burnysc2/temp
+#            python3 -m poetry install --no-dev
+#        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.7'
