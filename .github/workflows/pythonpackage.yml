@@ -74,5 +74,6 @@ jobs:
 #          passphrase: ${{ secrets.PASSPHRASE }}
 #          script: |
 #            cd /home/burnysc2/temp
-#            python3 -m poetry install --no-dev
+#            python3.8 -m pip install poetry --user
+#            python3.8 -m poetry install --no-dev
 #        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.7'
