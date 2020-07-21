@@ -34,6 +34,11 @@ jobs:
         run: |
           poetry run pytest
 
+      - name: Run radon (cyclomatic complexity report)
+        # './' denotes the current directory
+        run: |
+          pipenv run radon cc ./ -a -nb
+
       - name: Build
         run: |
           poetry build
