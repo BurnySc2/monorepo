@@ -6,11 +6,6 @@ optional = false
 python-versions = ">=3.5"
 version = "0.2.2"
 
-[package.dependencies]
-[package.dependencies.contextvars]
-python = "<3.7"
-version = "2.4"
-
 [[package]]
 category = "main"
 description = "Async http client/server framework (asyncio)"
@@ -25,14 +20,6 @@ attrs = ">=17.3.0"
 chardet = ">=2.0,<4.0"
 multidict = ">=4.5,<5.0"
 yarl = ">=1.0,<2.0"
-
-[package.dependencies.idna-ssl]
-python = "<3.7"
-version = ">=1.0"
-
-[package.dependencies.typing-extensions]
-python = "<3.7"
-version = ">=3.6.5"
 
 [package.extras]
 speedups = ["aiodns", "brotlipy", "cchardet"]
@@ -96,15 +83,6 @@ immutables = ">=0.9"
 
 [[package]]
 category = "main"
-description = "A backport of the dataclasses module for Python 3.6"
-marker = "python_version == \"3.6\""
-name = "dataclasses"
-optional = false
-python-versions = ">=3.6, <3.7"
-version = "0.7"
-
-[[package]]
-category = "main"
 description = "Easily serialize dataclasses to and from JSON"
 name = "dataclasses-json"
 optional = false
@@ -116,10 +94,6 @@ marshmallow = ">=3.3.0,<4.0.0"
 marshmallow-enum = ">=1.5.1,<2.0.0"
 stringcase = "1.2.0"
 typing-inspect = ">=0.4.0"
-
-[package.dependencies.dataclasses]
-python = ">=3.6,<3.7"
-version = "*"
 
 [package.extras]
 dev = ["pytest", "ipython", "mypy (>=0.710)", "hypothesis", "portray", "flake8", "simplejson"]
@@ -237,10 +211,6 @@ version = "0.4.1"
 [package.dependencies]
 colorama = ">=0.3.4"
 win32-setctime = ">=1.0.0"
-
-[package.dependencies.aiocontextvars]
-python = "<3.7"
-version = ">=0.2.0"
 
 [package.extras]
 dev = ["codecov (>=2.0.15)", "colorama (>=0.3.4)", "flake8 (>=3.7.7)", "isort (>=4.3.20)", "tox (>=3.9.0)", "tox-travis (>=0.12)", "pytest (>=4.6.2)", "pytest-cov (>=2.7.1)", "Sphinx (>=2.2.1)", "sphinx-autobuild (>=0.7.1)", "sphinx-rtd-theme (>=0.4.3)", "black (>=19.3b0)"]
@@ -519,9 +489,9 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "29db3fe3e193fd98834c5cc330629736795595b4adf92663e0553bd05ff5d3fa"
+content-hash = "f8a4fe21413ac1ded161575e487052cae5b39681f0dcb9d17ea4b69344c81b64"
 lock-version = "1.0"
-python-versions = "^3.6"
+python-versions = "^3.7"
 
 [metadata.files]
 aiocontextvars = [
@@ -564,10 +534,6 @@ colorama = [
 ]
 contextvars = [
     {file = "contextvars-2.4.tar.gz", hash = "sha256:f38c908aaa59c14335eeea12abea5f443646216c4e29380d7bf34d2018e2c39e"},
-]
-dataclasses = [
-    {file = "dataclasses-0.7-py3-none-any.whl", hash = "sha256:3459118f7ede7c8bea0fe795bff7c6c2ce287d01dd226202f7c9ebc0610a7836"},
-    {file = "dataclasses-0.7.tar.gz", hash = "sha256:494a6dcae3b8bcf80848eea2ef64c0cc5cd307ffc263e17cdf42f3e5420808e6"},
 ]
 dataclasses-json = [
     {file = "dataclasses-json-0.5.1.tar.gz", hash = "sha256:6e38b11b178e404124bffd6d213736bc505338e8a4c718596efec8d32eb96f5a"},
