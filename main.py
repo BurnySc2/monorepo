@@ -93,7 +93,7 @@ def measure_time():
     # Use like this
     if __name__ == "__main__":
         with time_this("square rooting"):
-            for n in range(10 ** 7):
+            for n in range(10 ** 4):
                 x = n ** 0.5
 
 
@@ -167,7 +167,6 @@ def test_all_roman_numbers():
         assert regex_match_roman_number(generate_roman_number(i)), f"{generate_roman_number(i)} != {i}"
         if i == 3999:
             logger.info(f"3999 in roman number is: {generate_roman_number(i)}")
-
 
 
 async def download_image(
