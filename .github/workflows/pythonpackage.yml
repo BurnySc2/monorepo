@@ -36,7 +36,7 @@ jobs:
 
       - name: Run main.py
         run: |
-          poetry run main.py
+          poetry run python main.py
 
       - name: Run radon (cyclomatic complexity report)
         # './' denotes the current directory
