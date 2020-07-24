@@ -37,7 +37,7 @@ jobs:
       - name: Run radon (cyclomatic complexity report)
         # './' denotes the current directory
         run: |
-          pipenv run radon cc ./ -a -nb
+          poetry run radon cc ./ -a -nb
 
       - name: Build
         run: |
