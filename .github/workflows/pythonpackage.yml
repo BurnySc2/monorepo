@@ -46,12 +46,14 @@ jobs:
       - name: Build
         run: |
           poetry build
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.7'
 
       # Publish package on pypi
       - name: Publish
         continue-on-error: true
         run: |
           poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.7'
 
 #      # Push files to remote server
 #      # https://github.com/marketplace/actions/scp-files
