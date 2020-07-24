@@ -20,6 +20,9 @@ from multiprocessing import Process, Lock, Pool
 # Simple logging https://github.com/Delgan/loguru
 from loguru import logger
 
+# Database
+import sqlite3
+
 # Remove previous default handlers
 logger.remove()
 # Log to console
@@ -68,6 +71,13 @@ async def main():
 
     logger.info(f"Testing writing dataclass to json and re-load and compare both objects")
     test_data_class_to_and_from_json()
+
+    logger.info(f"Validating all roman numbers up to 3999")
+    test_all_roman_numbers()
+
+    logger.info(f"Testing database interaction")
+    test_database()
+    test_database_with_classes()
 
 
 def measure_time():
@@ -138,7 +148,7 @@ def regex_match_roman_number(roman_number: str) -> bool:
     Third row: 3400 or 3900, connected with 100, 200, 300, or 500, 600, 700 or 800
     Same pattern for 4th and 5th row
     """
-    numbers_1_to_3889 = r"""
+    numbers_1_to_3999 = r"""
     (?=[MDCLXVI])
         M{0,3}
             ( C[MD] | D?C{0,3} )
@@ -149,12 +159,15 @@ def regex_match_roman_number(roman_number: str) -> bool:
     ).replace(
         "\n", ""
     )
-    return bool(re.fullmatch(numbers_1_to_3889, roman_number))
+    return bool(re.fullmatch(numbers_1_to_3999, roman_number))
 
 
-# TODO write as test
-# for i in range(1, 3500):
-#     assert regex_match_roman_number(generate_roman_number(i)), f"{i}"
+def test_all_roman_numbers():
+    for i in range(1, 4000):
+        assert regex_match_roman_number(generate_roman_number(i)), f"{generate_roman_number(i)} != {i}"
+        if i == 3999:
+            logger.info(f"3999 in roman number is: {generate_roman_number(i)}")
+
 
 
 async def download_image(
@@ -313,6 +326,88 @@ def test_data_class_to_and_from_json():
     assert data_class_list_loaded == data_class_list
     assert data_class_list_loaded.some_dataclasses[0] == data_class_list.some_dataclasses[0]
     assert data_class_list_loaded.other_dataclasses[0] == data_class_list.other_dataclasses[0]
+
+
+def test_database():
+    connection = sqlite3.connect(":memory:")
+    # conn = sqlite3.connect("example.db")
+    cursor = connection.cursor()
+
+    # Creates a new table "people" with 3 columns: text, real, integer
+    cursor.execute("CREATE TABLE people (name text, age integer, height real)")
+
+    # Insert via string
+    cursor.execute("INSERT INTO people VALUES ('Someone', 80, 1.60)")
+    # Insert by tuple
+    cursor.execute("INSERT INTO people VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
+
+    friends = [
+        ("Someone Else1", 40, 1.70),
+        ["Someone Else2", 30, 1.75],
+        ("Someone Else3", 20, 1.80),
+        ("Someone Else4", 20, 1.85),
+    ]
+    # Insert many over iterable
+    cursor.executemany("INSERT INTO people VALUES (?, ?, ?)", friends)
+
+    # Delete an entry https://www.w3schools.com/sql/sql_delete.asp
+    cursor.execute("DELETE FROM people WHERE age==40")
+
+    # Update entries https://www.w3schools.com/sql/sql_update.asp
+    cursor.execute("UPDATE people SET height=1.90, age=35 WHERE name=='Someone Else'")
+
+    # Save database to hard drive, don't have to save when it is just in memory
+    # conn.commit()
+
+    # SELECT: returns selected fields of the results, use * for all https://www.w3schools.com/sql/sql_select.asp
+    # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
+    # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
+    for row in cursor.execute(
+        "SELECT name, age, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
+    ):
+        logger.info(f"Row: {row}")
+
+    cursor.close()
+    connection.close()
+
+
+@dataclass
+class Point:
+    x: float
+    y: float
+
+    @staticmethod
+    def serialize(p: "Point") -> bytes:
+        return f"{p.x};{p.y}".encode("ascii")
+
+    @staticmethod
+    def deserialize(byte: bytes) -> "Point":
+        x, y = list(map(float, byte.split(b";")))
+        return Point(x, y)
+
+
+def test_database_with_classes():
+    # Register the adapter / serializer
+    sqlite3.register_adapter(Point, Point.serialize)
+
+    # Register the converter
+    sqlite3.register_converter("point", Point.deserialize)
+
+    connection = sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES)
+    cursor = connection.cursor()
+    # Creates new table
+    cursor.execute("CREATE TABLE points (name text, p point)")
+
+    points = [
+        ["p1", Point(4.0, -3.2)],
+        ["p2", Point(8.0, -6.4)],
+    ]
+    cursor.executemany("INSERT INTO points VALUES (?, ?)", points)
+    for row in cursor.execute("SELECT * FROM points"):
+        logger.info(f"Row: {row}")
+
+    cursor.close()
+    connection.close()
 
 
 if __name__ == "__main__":
