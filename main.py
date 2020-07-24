@@ -148,7 +148,7 @@ def regex_match_roman_number(roman_number: str) -> bool:
     Third row: 3400 or 3900, connected with 100, 200, 300, or 500, 600, 700 or 800
     Same pattern for 4th and 5th row
     """
-    numbers_1_to_3999 = r"""
+    numbers_1_to_3999 = """
     (?=[MDCLXVI])
         M{0,3}
             ( C[MD] | D?C{0,3} )

@@ -4,17 +4,6 @@
 Template for any of my upcoming Python projects
 
 
-# To get to the current stage of the repo
-install `poetry` using command `pip install poetry`
-
-install packages using the `pip install` command here:
-
-`poetry install aiohttp dpcontracts`
-
-`poetry install --dev pytest pytest-asyncio hypothesis`
-
-
-
 # Useful Poetry commands
 https://python-poetry.org/docs/cli/
 ### Create new project
