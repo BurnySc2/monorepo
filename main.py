@@ -328,46 +328,56 @@ def test_data_class_to_and_from_json():
 
 
 def test_database():
-    connection = sqlite3.connect(":memory:")
-    # conn = sqlite3.connect("example.db")
-    cursor = connection.cursor()
+    db = sqlite3.connect(":memory:")
+    # db = sqlite3.connect("example.db")
 
     # Creates a new table "people" with 3 columns: text, real, integer
-    cursor.execute("CREATE TABLE people (name text, age integer, height real)")
+    # Fields marked with PRIMARY KEY are columns with unique values (?)
+    db.execute("CREATE TABLE people (name text PRIMARY KEY, age integer, height real)")
 
     # Insert via string
-    cursor.execute("INSERT INTO people VALUES ('Someone', 80, 1.60)")
+    db.execute("INSERT INTO people VALUES ('Someone', 80, 1.60)")
     # Insert by tuple
-    cursor.execute("INSERT INTO people VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
+    db.execute("INSERT INTO people VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
 
     friends = [
         ("Someone Else1", 40, 1.70),
-        ["Someone Else2", 30, 1.75],
+        ("Someone Else2", 30, 1.75),
         ("Someone Else3", 20, 1.80),
         ("Someone Else4", 20, 1.85),
     ]
     # Insert many over iterable
-    cursor.executemany("INSERT INTO people VALUES (?, ?, ?)", friends)
+    db.executemany("INSERT INTO people VALUES (?, ?, ?)", friends)
 
     # Delete an entry https://www.w3schools.com/sql/sql_delete.asp
-    cursor.execute("DELETE FROM people WHERE age==40")
+    db.execute("DELETE FROM people WHERE age==40")
 
     # Update entries https://www.w3schools.com/sql/sql_update.asp
-    cursor.execute("UPDATE people SET height=1.90, age=35 WHERE name=='Someone Else'")
+    db.execute("UPDATE people SET height=1.90, age=35 WHERE name=='Someone Else'")
+
+    # Insert a value if it doesnt exist, or replace if it exists
+    db.execute("REPLACE INTO people VALUES ('Someone Else5', 32, 2.01)")
+
+    # Insert entries or update if it exists, 'upsert' https://www.sqlite.org/lang_UPSERT.html
+    db.execute(
+        "INSERT INTO people VALUES ('Someone Else', 35, 1.95) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
+    )
+    db.execute(
+        "INSERT INTO people VALUES ('Someone Else5', 32, 2.00) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
+    )
 
     # Save database to hard drive, don't have to save when it is just in memory
-    # conn.commit()
+    # db.commit()
 
     # SELECT: returns selected fields of the results, use * for all https://www.w3schools.com/sql/sql_select.asp
     # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
     # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
-    for row in cursor.execute(
+    for row in db.execute(
         "SELECT name, age, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
     ):
         logger.info(f"Row: {row}")
 
-    cursor.close()
-    connection.close()
+    db.close()
 
 
 @dataclass
@@ -392,21 +402,19 @@ def test_database_with_classes():
     # Register the converter
     sqlite3.register_converter("point", Point.deserialize)
 
-    connection = sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES)
-    cursor = connection.cursor()
+    db = sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES)
     # Creates new table
-    cursor.execute("CREATE TABLE points (name text, p point)")
+    db.execute("CREATE TABLE points (name text, p point)")
 
     points = [
         ["p1", Point(4.0, -3.2)],
         ["p2", Point(8.0, -6.4)],
     ]
-    cursor.executemany("INSERT INTO points VALUES (?, ?)", points)
-    for row in cursor.execute("SELECT * FROM points"):
+    db.executemany("INSERT INTO points VALUES (?, ?)", points)
+    for row in db.execute("SELECT * FROM points"):
         logger.info(f"Row: {row}")
 
-    cursor.close()
-    connection.close()
+    db.close()
 
 
 if __name__ == "__main__":
