@@ -66,6 +66,8 @@ async def main():
     end_time = time.perf_counter()
     logger.info(f"Time for multiprocessing taken: {end_time - start_time}")
 
+    mass_replace()
+
     logger.info(f"Creating hello world file...")
     create_file()
 
@@ -270,8 +272,18 @@ def find_sums(numbers: Iterable[int]) -> List[int]:
 
 
 def do_multiprocessing():
-    numbers: List[int] = [5_000_000 + x for x in range(20)]
+    numbers: List[int] = [5_000 + x for x in range(20)]
     sums: List[int] = find_sums(numbers)
+
+
+def mass_replace():
+    text = "my text cond\nition1 condition2"
+    replace_dict = {"cond\nition1": "loves", "condition2": "fun"}
+    # In case there is escape characters in k, it will not work without "re.escape"
+    replace_dict = dict((re.escape(k), v) for k, v in replace_dict.items())
+    pattern = re.compile("|".join(replace_dict.keys()))
+    new_text = pattern.sub(lambda m: replace_dict[re.escape(m.group(0))], text)
+    logger.info(f"Mass replaced\n{text}\nto\n{new_text}")
 
 
 def create_file():
