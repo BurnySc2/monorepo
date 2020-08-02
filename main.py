@@ -23,12 +23,12 @@ from loguru import logger
 # Database
 import sqlite3
 
-# Remove previous default handlers
+# Remove previous default handlers2
 logger.remove()
 # Log to console
 logger.add(sys.stdout, level="INFO")
 # Log to file, max size 1 mb
-logger.add("main.log", rotation="1 MB", level="INFO")
+logger.add("main.log", rotation="1 MB", retention="7 days", level="INFO")
 
 # Type annotation / hints
 from typing import List, Iterable, Union, Set
@@ -277,6 +277,7 @@ def do_multiprocessing():
 
 
 def mass_replace():
+    # Source: https://stackoverflow.com/a/6117124
     text = "my text cond\nition1 condition2"
     replace_dict = {"cond\nition1": "loves", "condition2": "fun"}
     # In case there is escape characters in k, it will not work without "re.escape"
@@ -388,6 +389,8 @@ def test_database():
         "SELECT name, age, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
     ):
         logger.info(f"Row: {row}")
+
+    # TODO: How to add or remove a column from existing database?
 
     db.close()
 
