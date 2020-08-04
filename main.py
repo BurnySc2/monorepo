@@ -372,12 +372,13 @@ def test_database():
     db.execute("REPLACE INTO people VALUES ('Someone Else5', 32, 2.01)")
 
     # Insert entries or update if it exists, 'upsert' https://www.sqlite.org/lang_UPSERT.html
-    db.execute(
-        "INSERT INTO people VALUES ('Someone Else', 35, 1.95) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
-    )
-    db.execute(
-        "INSERT INTO people VALUES ('Someone Else5', 32, 2.00) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
-    )
+    # Might not work on old sqlite3 versions
+    # db.execute(
+    #     "INSERT INTO people VALUES ('Someone Else', 35, 1.95) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
+    # )
+    # db.execute(
+    #     "INSERT INTO people VALUES ('Someone Else5', 32, 2.00) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
+    # )
 
     # Save database to hard drive, don't have to save when it is just in memory
     # db.commit()
