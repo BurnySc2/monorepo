@@ -9,6 +9,10 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.7"
+# Numeric python
+numpy = "^1.19.1"
+# Improve performance by writing C or C++ similar code
+cython = "^3.0a6"
 # Write and read classes to/from json
 dataclasses-json = "^0.5.1"
 # Network access
