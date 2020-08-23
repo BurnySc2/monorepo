@@ -1,6 +1,7 @@
 from typing import List
 import itertools
 
+
 class Node:
     def __init__(self, value: any, left: "Node" = None, right: "Node" = None):
         self.value: any = value
@@ -22,6 +23,7 @@ class Node:
             else:
                 self.right = Node(value)
 
+
 class Tree:
     def __init__(self):
         self.root: Node = None
@@ -41,6 +43,7 @@ class Tree:
 
     def popmin(self):
         """ Finds the minimum value and returns it """
+
     def popmax(self):
         """ Finds the maximum value and returns it """
 
@@ -54,7 +57,7 @@ class Tree:
             for value, j in zip(row, itertools.product("01", repeat=i)):
                 # ["00", "01", "10", "11"]
                 cur: Node = self.root
-                for j2 in j[:-1]: # "0", then "1" etc
+                for j2 in j[:-1]:  # "0", then "1" etc
                     if j2 == "0":
                         cur = cur.left
                     else:
@@ -89,7 +92,8 @@ class Tree:
 
     # TODO balance the tree, turn tree into min or max heap tree
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     t = Tree()
     """
         A 
@@ -97,13 +101,7 @@ if __name__ == '__main__':
     D E   F  G
          H I
     """
-    t.root = Node("A", Node(
-        "B", Node("D"), Node("E")
-    ), Node(
-        "C", Node(
-            "F", Node("H"), Node("I")
-        ), Node("G")
-    ))
+    t.root = Node("A", Node("B", Node("D"), Node("E")), Node("C", Node("F", Node("H"), Node("I")), Node("G")))
     print()
     t.in_order_traversal(t.root)
     print()
@@ -119,17 +117,15 @@ if __name__ == '__main__':
          E S    I
               O   N
     """
-    t.root = Node("E", Node(
-        "A", Node("S"), Node("Y")
-    ), Node(
-        "Q", Node(
-            "U", Node("E"), Node("S")
-        ), Node("T", None, Node("I", Node("O", Node("N"))))
-    ))
+    t.root = Node(
+        "E",
+        Node("A", Node("S"), Node("Y")),
+        Node("Q", Node("U", Node("E"), Node("S")), Node("T", None, Node("I", Node("O", Node("N"))))),
+    )
     print()
     # t.in_order_traversal(t.root)
     # print()
-    t.pre_order_traversal(t.root) # EASYQUESTION
+    t.pre_order_traversal(t.root)  # EASYQUESTION
     # print()
     # t.post_order_traversal(t.root)
     print()
@@ -141,28 +137,28 @@ if __name__ == '__main__':
          E  S   O
            T     N
     """
-    t.root = Node("E", Node(
-        "A", Node("S"), Node("Y")
-    ), Node(
-        "Q", Node(
-            "U", Node("E"), Node("S", Node("T"))
-        ), Node("I", None, Node("O", Node("N")))
-    ))
+    t.root = Node(
+        "E",
+        Node("A", Node("S"), Node("Y")),
+        Node("Q", Node("U", Node("E"), Node("S", Node("T"))), Node("I", None, Node("O", Node("N")))),
+    )
     print()
     # t.in_order_traversal(t.root)
     # print()
-    t.pre_order_traversal(t.root) # EASYQUESTION
+    t.pre_order_traversal(t.root)  # EASYQUESTION
     # print()
     # t.post_order_traversal(t.root)
     print()
 
     t = Tree()
-    t.load("""
+    t.load(
+        """
 A
  C
   FG
     HI  
-    """)
+    """
+    )
     t.in_order_traversal(t.root)
     print()
     t.pre_order_traversal(t.root)

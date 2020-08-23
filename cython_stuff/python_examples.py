@@ -33,8 +33,8 @@ def primes_slow(nb_primes: int):
 
 from typing import Tuple, Dict, Deque, Optional
 import numpy as np
-from collections import deque
 
+from collections import deque
 
 def dijkstra_slow(
     grid: np.ndarray, start: Tuple[int, int], goal: Tuple[int, int], diagonal=False

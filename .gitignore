@@ -114,3 +114,6 @@ main.log
 
 # Ignore local data folder
 /data
+
+# Header files
+*.h

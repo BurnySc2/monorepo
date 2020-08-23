@@ -52,8 +52,8 @@ if __name__ == "__main__":
     q.enqueue(2)
     q.enqueue(3)
 
-    print(q.front) # Node(value: 1, next: Node(value: 2, next: Node(value: 3, next: None)))
-    print(q.tail) # Node(value: 3, next: None)
+    print(q.front)  # Node(value: 1, next: Node(value: 2, next: Node(value: 3, next: None)))
+    print(q.tail)  # Node(value: 3, next: None)
 
     a = q.dequeue()
     assert a == 1

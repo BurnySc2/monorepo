@@ -6,7 +6,7 @@ import time
 from loguru import logger
 import numpy as np
 
-from cython_stuff.cython_examples import two_sum, two_sum_vector, primes, primes_vector, test_map, dijkstra
+from cython_stuff.cython_examples import two_sum, two_sum_vector, primes, primes_vector, test_map, test_vec
 from cython_stuff.python_examples import two_sum_slow, primes_slow, dijkstra_slow
 
 
@@ -24,38 +24,39 @@ def time_this(label: str):
 if __name__ == "__main__":
     # d = {(1, 2): (3, 4)}
     # print(test_map({}, [1, 2]))
+    print(test_vec([], (1, 2)))
 
-    limit = 10 ** 3
-    grid = np.array(
-        [
-            [1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 0, 1, 1],
-            [1, 1, 1, 1, 1, 0, 1, 1],
-            [1, 1, 1, 1, 1, 0, 1, 1],
-            [1, 1, 0, 0, 0, 0, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1],
-        ]
-    )
-    start = (0, 0)
-    end = (7, 7)
-    path = dijkstra(grid, start, end, True)
-    logger.info(f"Path: {path}")
-
-    with time_this("Dijkstra cython"):
-        for n in range(limit):
-            dijkstra(grid, start, end)
-    with time_this("Dijkstra cython diagonal"):
-        for n in range(limit):
-            dijkstra(grid, start, end, True)
-
-    with time_this("Dijkstra native"):
-        for n in range(limit):
-            dijkstra_slow(grid, start, end)
-    with time_this("Dijkstra native diagonal"):
-        for n in range(limit):
-            dijkstra_slow(grid, start, end, True)
+    # limit = 10 ** 3
+    # grid = np.array(
+    #     [
+    #         [1, 1, 1, 1, 1, 1, 1, 1],
+    #         [1, 1, 1, 1, 1, 1, 1, 1],
+    #         [1, 1, 1, 1, 1, 0, 1, 1],
+    #         [1, 1, 1, 1, 1, 0, 1, 1],
+    #         [1, 1, 1, 1, 1, 0, 1, 1],
+    #         [1, 1, 0, 0, 0, 0, 1, 1],
+    #         [1, 1, 1, 1, 1, 1, 1, 1],
+    #         [1, 1, 1, 1, 1, 1, 1, 1],
+    #     ]
+    # )
+    # start = (0, 0)
+    # end = (7, 7)
+    # path = dijkstra(grid, start, end, True)
+    # logger.info(f"Path: {path}")
+    #
+    # with time_this("Dijkstra cython"):
+    #     for n in range(limit):
+    #         dijkstra(grid, start, end)
+    # with time_this("Dijkstra cython diagonal"):
+    #     for n in range(limit):
+    #         dijkstra(grid, start, end, True)
+    #
+    # with time_this("Dijkstra native"):
+    #     for n in range(limit):
+    #         dijkstra_slow(grid, start, end)
+    # with time_this("Dijkstra native diagonal"):
+    #     for n in range(limit):
+    #         dijkstra_slow(grid, start, end, True)
 
     # Test two sum, which uses array or cpp vector (and both use cpp map)
     # limit = 10 ** 4

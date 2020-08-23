@@ -103,40 +103,59 @@ def primes_vector(unsigned int nb_primes):
     return p
 
 
-# import numpy as np
-# cimport numpy as np
-# /home/burny/.local/share/virtualenvs/python-template-i7NJz989/lib/python3.7/site-packages/numpy/core/include
 
 ctypedef cpp_vector[int] point
-ctypedef cpp_map[point, point] my_map
-cdef int in_bounds(int y, int x, int height, int width):
-    if 0 <= y < height and 0 <= x < width:
-        return 1
-    return 0
+# ctypedef cpp_map[point, point] my_map
+# cdef int in_bounds(int y, int x, int height, int width):
+#     if 0 <= y < height and 0 <= x < width:
+#         return 1
+#     return 0
+#
+# cdef int is_wall(long[:, :] grid, int y, int x):
+#     if grid[y, x] == 0:
+#         return 1
+#     return 0
+#
 
-cdef int is_wall(long[:, :] grid, int y, int x):
-    if grid[y, x] == 0:
-        return 1
-    return 0
+# cdef cppclass MyNode:
+#     float distance
+#     point current
+#     point previous
+#     # 'Less than' trait https://stackoverflow.com/questions/22537683/how-to-make-a-c-mapping-from-c-struct-to-int-in-cython
+#     bint lessthan "operator<"(const MyNode t) const:
+#          return this.distance > t.distance
 
 def test_map(cpp_map[point, point] came_from, point p):
     came_from[[1, 2]] = [3, 4]
     return came_from[p]
+def test_vec(list my_vec, (int, int) p):
+    my_vec.append(p)
+    return my_vec
 
-cdef cpp_vector[point] generate_path(my_map came_from, point start, point goal):
-    cdef cpp_vector[point] path
-    while start != goal:
-        path.push_back(goal)
-        goal = came_from[goal]
-    return path
+from libcpp.algorithm cimport push_heap, pop_heap
+def test_p_queue(queue, a, b, c):
+    # cdef cpp_priority_queue[int] my_queue
+    push_heap(queue, a)
+    push_heap(queue, b)
+    push_heap(queue, c)
+    # my_queue.push(a)
+    # my_queue.push(b)
+    # my_queue.push(c)
+    return queue
 
-cdef cppclass MyNode:
-    float distance
-    point current
-    point previous
-    # 'Less than' trait https://stackoverflow.com/questions/22537683/how-to-make-a-c-mapping-from-c-struct-to-int-in-cython
-    bint lessthan "operator<"(const MyNode t) const:
-         return this.distance > t.distance
+"""
+cython question:
+
+
+"""
+
+# cdef cpp_vector[point] generate_path(my_map came_from, point start, point goal):
+#     cdef cpp_vector[point] path
+#     while start != goal:
+#         path.push_back(goal)
+#         goal = came_from[goal]
+#     return path
+#
 
 # Constructor of 'MyNode'
 # cdef MyNode make_node(float distance, point current, point previous) nogil:
@@ -146,67 +165,68 @@ cdef cppclass MyNode:
 #     node.previous = previous
 #     return node
 
-def dijkstra(long[:, :] grid, point start, point goal, diagonal=False):
-    cdef:
-        cpp_vector[point] path
-        double distance
-        my_map came_from
-        cpp_priority_queue[MyNode] open_set
-        double[8] distances
-        # cpp_vector[float] distances
-        cpp_vector[point] neighbors
-        # int[8] neighbors_y, neighbors_x
-        point new_point, current_point, previous_point
-        MyNode node, new_node
-        int neighbors_amount
-    if start == goal:
-        return 0, path
-    node.distance = 0
-    node.current = start
-    node.previous = start
-    open_set.push(node)
-    sqrt2 = 2 ** 0.5
-    distances = [1, 1, 1, 1, sqrt2, sqrt2, sqrt2, sqrt2]
-    neighbors = [(-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
-    # neighbors_y = [-1, 0, 1, 0, -1, -1, 1, 1]
-    # neighbors_x = [0, -1, 0, 1, -1, 1, -1, 1]
-    if diagonal:
-        neighbors_amount = 8
-    else:
-        neighbors_amount = 4
-    height = grid.shape[0]
-    width = grid.shape[1]
 
-    while not open_set.empty():
-        node = open_set.top()
-        open_set.pop()
-        if came_from.count(node.current) > 0:
-            continue
-        # distance_dict[node.current] = node.distance
-        came_from[node.current] = node.previous
+# def dijkstra(long[:, :] grid, start, goal, diagonal=False):
+#     return dijkstra_(grid, start, goal, diagonal)
 
-        # Generate Path if goal has been reached
-        if came_from.count(goal) > 0:
-            return node.distance, generate_path(came_from, start, goal)[::-1]
 
-        for i in range(neighbors_amount):
-            node_dist = distances[i]
-            neighbor = neighbors[i]
-            # neighbor_y = neighbors_y[i]
-            # neighbor_x = neighbors_x[i]
-            new_point = node.current[0] + neighbor[0], node.current[1] + neighbor[1]
-            # new_point = node.current[0] + neighbor_y, node.current[1] + neighbor_x
-            if in_bounds(new_point[0], new_point[1], height, width) == 0:
-                continue
-            if is_wall(grid, new_point[0], new_point[1]) == 1:
-                continue
-            if came_from.count(new_point) > 0:
-                continue
-            new_distance = node.distance + node_dist
-            # new_node = make_node(new_distance, new_point, node.current)
-            new_node.distance = new_distance
-            new_node.current = new_point
-            new_node.previous = node.current
-            open_set.push(new_node)
+from collections import deque
+# from collections cimport deque
+from heapq import heappush, heappop
+# from heapq cimport heappush, heappop
 
-    return -1, path
+
+# cdef (double, cpp_vector[(int, int)]) dijkstra_(long[:, :] grid, start, goal, diagonal=False):
+#     cdef:
+#         int neighbors_amount
+#     if start == goal:
+#         return 0, []
+#     open_set = [(0, start, None)]
+#     neighbors = [(-1, 0), (0, -1), (1, 0), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+#     sqrt2 = 2 ** 0.5
+#     distances = [1., 1., 1., 1., sqrt2, sqrt2, sqrt2, sqrt2]
+#     neighbors_amount = 4
+#     if diagonal:
+#         neighbors_amount = 8
+#     height = grid.shape[0]
+#     width = grid.shape[1]
+#     distance_dict = {}
+#     came_from = {}
+#
+#     def in_bounds(point) -> bool:
+#         nonlocal height, width
+#         return 0 <= point[0] < height and 0 <= point[1] < width
+#
+#     def is_wall(point) -> bool:
+#         nonlocal grid
+#         return grid[point[0]][point[1]] != 0
+#
+#     def generate_path():
+#         path = []
+#         current = goal
+#         while current != start:
+#             path.append(current)
+#             current = came_from[current]
+#         return path
+
+
+
+    # while open_set:
+    #     current_distance, current_point, previous_point = heappop(open_set)
+    #     if current_point in came_from:
+    #         continue
+    #     distance_dict[current_point] = current_distance
+    #     came_from[current_point] = previous_point
+    #     for node_dist, neighbor in zip(distances, neighbors):
+    #         new_point = current_point[0] + neighbor[0], current_point[1] + neighbor[1]
+    #         if not in_bounds(new_point):
+    #             continue
+    #         if is_wall(new_point):
+    #             continue
+    #         new_distance = current_distance + node_dist
+    #         if new_point in distance_dict and distance_dict[new_point] >= new_distance:
+    #             continue
+    #         heappush(open_set, (new_distance, new_point, current_point))
+    #     if goal in came_from:
+    #         return distance_dict[goal], generate_path()
+    # return -1, []
