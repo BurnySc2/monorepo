@@ -11,10 +11,9 @@ These are lexicographically ordered permutations.
 
 
 def permutation(my_list: List[Any]) -> List[Any]:
-    # Length of list: at least 1
+    assert len(my_list) > 0
     if len(my_list) == 1:
-        yield my_list
-        return
+        return [my_list]
     result = []
     for i in range(len(my_list)):
         middle = my_list[i]
@@ -25,7 +24,7 @@ def permutation(my_list: List[Any]) -> List[Any]:
 
 
 def permutation_generator(my_list: List[Any]) -> Generator[Any, None, None]:
-    # Length of list: at least 1
+    assert len(my_list) > 0
     if len(my_list) == 1:
         yield my_list
         return
@@ -36,7 +35,7 @@ def permutation_generator(my_list: List[Any]) -> Generator[Any, None, None]:
 
 
 def permutation_backwards_generator(my_list: List[Any]) -> Generator[Any, None, None]:
-    # Length of list: at least 1
+    assert len(my_list) > 0
     if len(my_list) == 1:
         yield my_list
         return
@@ -137,9 +136,6 @@ def _test_permutations(limit: int = 6):
 
     prev = None
     for p in permutation_generator(list("ABCD")):
-        # next = get_next_permutation(p.copy())
-        # p2 = get_previous_permutation(next.copy())
-        # assert p == p2, f"{p} == {p2}"
         if prev is not None:
             assert prev == get_previous_permutation(p.copy()), (prev, get_previous_permutation(p.copy()))
             assert p == get_next_permutation(prev.copy()), (p, get_next_permutation(prev.copy()))
@@ -147,7 +143,7 @@ def _test_permutations(limit: int = 6):
 
     from string import ascii_uppercase
 
-    for length in range(limit):
+    for length in range(1, limit):
         string = ascii_uppercase[:length]
         for index, perm in enumerate(permutation_generator(list(string))):
             perm2 = get_permutation_at_index(list(string), index)
