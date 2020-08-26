@@ -76,6 +76,38 @@ def get_permutation_at_index(original: List[Any], index: int) -> List[Any]:
     return [original[quotient]] + get_permutation_at_index(original[:quotient] + original[quotient + 1 :], remainder)
 
 
+def get_next_permutation(perm: List[Any]):
+    if len(perm) <= 1:
+        return perm
+    for i in reversed(range(len(perm) - 1)):
+        last = perm[i]
+        for j in reversed(range(i + 1, len(perm))):
+            prev = perm[j]
+            if prev > last:
+                perm[i], perm[j] = perm[j], perm[i]
+                if len(perm[i + 1 :]) > 1:
+                    perm[i + 1 :] = sorted(perm[i + 1 :])
+                return perm
+    perm.sort()
+    return perm
+
+
+def get_previous_permutation(perm: List[Any]):
+    if len(perm) <= 1:
+        return perm
+    for i in reversed(range(len(perm) - 1)):
+        last = perm[i]
+        for j in reversed(range(i + 1, len(perm))):
+            prev = perm[j]
+            if prev < last:
+                perm[i], perm[j] = perm[j], perm[i]
+                if len(perm[i + 1 :]) > 1:
+                    perm[i + 1 :] = sorted(perm[i + 1 :], reverse=True)
+                return perm
+    perm.sort(reverse=True)
+    return perm
+
+
 def _test_permutations(limit: int = 6):
     correct_perms = ["ABC", "ACB", "BAC", "BCA", "CAB", "CBA"]
     for p, correct in zip(permutation_generator(list("ABC")), correct_perms):
@@ -94,6 +126,24 @@ def _test_permutations(limit: int = 6):
     assert list(permutation_generator(list("ABCD"))) == list(
         reversed(list(permutation_backwards_generator(list("ABCD"))))
     )
+
+    assert get_next_permutation(list("ABC")) == list("ACB"), get_next_permutation(list("ABC"))
+    assert get_next_permutation(list("ACB")) == list("BAC"), get_next_permutation(list("ACB"))
+    assert get_next_permutation(list("CBA")) == list("ABC"), get_next_permutation(list("CBA"))
+
+    assert get_previous_permutation(list("ACB")) == list("ABC"), get_previous_permutation(list("ABC"))
+    assert get_previous_permutation(list("BAC")) == list("ACB"), get_previous_permutation(list("ACB"))
+    assert get_previous_permutation(list("ABC")) == list("CBA"), get_previous_permutation(list("CBA"))
+
+    prev = None
+    for p in permutation_generator(list("ABCD")):
+        # next = get_next_permutation(p.copy())
+        # p2 = get_previous_permutation(next.copy())
+        # assert p == p2, f"{p} == {p2}"
+        if prev is not None:
+            assert prev == get_previous_permutation(p.copy()), (prev, get_previous_permutation(p.copy()))
+            assert p == get_next_permutation(prev.copy()), (p, get_next_permutation(prev.copy()))
+        prev = p
 
     from string import ascii_uppercase
 
