@@ -23,6 +23,9 @@ from loguru import logger
 # Database
 import sqlite3
 
+# Image manipulation
+from PIL import Image
+
 # Remove previous default handlers2
 logger.remove()
 # Log to console
@@ -80,6 +83,11 @@ async def main():
     logger.info(f"Testing database interaction")
     test_database()
     test_database_with_classes()
+
+    # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
+
+    logger.info(f"Converting all .jpg images in /images folder")
+    mass_convert_images()
 
 
 def measure_time():
@@ -427,6 +435,18 @@ class Point:
     def deserialize(byte: bytes) -> "Point":
         x, y = list(map(float, byte.split(b";")))
         return Point(x, y)
+
+
+def mass_convert_images():
+    images_folder = Path(__file__).parent / "images"
+    for file_path in images_folder.iterdir():
+        if file_path.suffix != ".jpg":
+            continue
+        file_name = file_path.stem
+        output_path = file_path.parent / (file_name + ".png")
+
+        im = Image.open(file_path)
+        im.save(output_path)
 
 
 def test_database_with_classes():
