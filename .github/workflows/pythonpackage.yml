@@ -22,13 +22,15 @@ jobs:
       # Use pip requirements.txt cache https://github.com/actions/cache/blob/master/examples.md#python---pip
       # Apparently you can't use cache when using pipenv (but perhaps when specifying the pipenv environment folder?)
 
-      - name: Print environment variables
+      - name: Print environment variables (windows)
         run: |
           ls env:
+        if: matrix.os == 'windows-latest'
 
-      - name: Print python location
+      - name: Print python location (windows)
         run: |
           echo $env:pythonLocation
+        if: matrix.os == 'windows-latest'
 
       - name: Install poetry
         run: |
