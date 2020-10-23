@@ -36,6 +36,9 @@ logger.add("main.log", rotation="1 MB", retention="7 days", level="INFO")
 # Type annotation / hints
 from typing import List, Iterable, Union, Set
 
+# dpath https://pypi.org/project/dpath/
+from dpath.util import get, new, merge
+
 
 async def main():
     logger.info("Simple {} logger output", "loguru")
@@ -76,6 +79,8 @@ async def main():
 
     logger.info(f"Testing writing dataclass to json and re-load and compare both objects")
     test_data_class_to_and_from_json()
+
+    modify_dictionary()
 
     logger.info(f"Validating all roman numbers up to 3999")
     test_all_roman_numbers()
@@ -364,6 +369,27 @@ def test_data_class_to_and_from_json():
     assert data_class_list_loaded == data_class_list
     assert data_class_list_loaded.some_dataclasses[0] == data_class_list.some_dataclasses[0]
     assert data_class_list_loaded.other_dataclasses[0] == data_class_list.other_dataclasses[0]
+
+
+def modify_dictionary():
+    my_dict = {}
+
+    # Create new path in dict
+    new(my_dict, ["this", "is", "my", "path"], value=5)
+
+    # Merge dict
+    to_merge = {"this": {"is": {"another": {"dict": 6}}}}
+    merge(my_dict, to_merge)
+
+    # Get a value, if it doesn't
+    value = get(my_dict, ["this", "is", "my", "path"])
+    assert value == 5
+    value = get(my_dict, ["this", "path", "doesnt", "exist"], default=4)
+    assert value == 4
+    value = get(my_dict, ["this", "is", "another", "dict"], default=6)
+    assert value == 6
+
+    logger.info(my_dict)
 
 
 def test_database():
