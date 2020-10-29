@@ -26,18 +26,18 @@ import sqlite3
 # Image manipulation
 from PIL import Image
 
-# Remove previous default handlers2
+# Simpler dict manipulation https://pypi.org/project/dpath/
+from dpath.util import get, new, merge
+
+# Remove previous default handlers
 logger.remove()
 # Log to console
 logger.add(sys.stdout, level="INFO")
-# Log to file, max size 1 mb
+# Log to file, max size 1 mb, max log file age 7 days
 logger.add("main.log", rotation="1 MB", retention="7 days", level="INFO")
 
 # Type annotation / hints
 from typing import List, Iterable, Union, Set
-
-# dpath https://pypi.org/project/dpath/
-from dpath.util import get, new, merge
 
 
 async def main():
@@ -282,9 +282,8 @@ async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientRespons
         responses = []
         for future in asyncio.as_completed(tasks):
             response = await future
-            response_url = str(response.url)
+            # response_url = str(response.url)
             responses.append(response)
-
     return responses
 
 
