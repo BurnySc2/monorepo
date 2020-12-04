@@ -1,17 +1,17 @@
-from typing import List
+from typing import List, Any
 import itertools
 
 
 class Node:
     def __init__(self, value: any, left: "Node" = None, right: "Node" = None):
-        self.value: any = value
+        self.value: Any = value
         self.left: Node = left
         self.right: Node = right
 
     def __repr__(self):
         return f"Node(value: {self.value}, left: {self.left}, right: {self.right})"
 
-    def add(self, value: any):
+    def add(self, value: Any):
         if value < self.value:
             if self.left is not None:
                 self.left.add(value)

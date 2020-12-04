@@ -3,13 +3,13 @@ from heapq import heappush, heappop, heappushpop
 
 
 def two_sum_slow(nums: List[int], target: int) -> List[int]:
-    my_dict = {}
+    my_dict: Dict[int, int] = {}
     for index, value in enumerate(nums):
         val = target - value
         if val in my_dict:
             return [my_dict[val], index]
         my_dict[value] = index
-
+    return []
 
 def primes_slow(nb_primes: int):
     """ Find the first X amount of primes. """

@@ -28,6 +28,7 @@ contextvars = "^2.4"
 win32-setctime = "^1.0.1"
 pillow = "^7.2.0"
 dpath = "^2.0.1"
+mypy = "^0.790"
 
 [tool.poetry.dev-dependencies]
 # Test library

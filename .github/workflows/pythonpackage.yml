@@ -53,6 +53,10 @@ jobs:
         run: |
           poetry run radon cc ./ -a -nb
 
+      - name: Run mypy (type checking)
+        run: |
+          poetry run mypy .
+
       - name: Build
         run: |
           poetry build

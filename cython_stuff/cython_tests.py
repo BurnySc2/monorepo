@@ -4,7 +4,6 @@ from contextlib import contextmanager
 import time
 
 from loguru import logger
-import numpy as np
 
 from cython_stuff.cython_examples import two_sum, two_sum_vector, primes, primes_vector, test_map, test_vec
 from cython_stuff.python_examples import two_sum_slow, primes_slow, dijkstra_slow

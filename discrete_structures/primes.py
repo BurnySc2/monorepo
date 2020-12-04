@@ -24,7 +24,7 @@ def prime_factors(n: int, primes: List[int] = None) -> Counter:
     if primes is None:
         primes = sieve_of_eratosthenes(int(n ** 0.5 + 1))
     i = 0
-    factors = Counter()
+    factors: Counter[int, int] = Counter()
     while n > 1 and i < len(primes):
         prime = primes[i]
         assert prime <= n

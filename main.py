@@ -216,7 +216,7 @@ async def download_image(
 
     Returns boolean if download was successful.
     """
-    downloaded: int = 0
+    downloaded: float = 0
     # Download start time
     time_last_subtracted = time.perf_counter()
     # Affects sleep time and check size for download speed, should be between 0.1 and 1
