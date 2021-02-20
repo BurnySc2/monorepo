@@ -32,6 +32,7 @@ pillow = "^8.1.0"
 pendulum = "^2.1.2"
 dpath = "^2.0.1"
 mypy = "^0.812"
+watchgod = "^0.7"
 
 [tool.poetry.dev-dependencies]
 # Test library

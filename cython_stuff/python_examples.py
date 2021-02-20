@@ -11,6 +11,7 @@ def two_sum_slow(nums: List[int], target: int) -> List[int]:
         my_dict[value] = index
     return []
 
+
 def primes_slow(nb_primes: int):
     """ Find the first X amount of primes. """
     primes = []

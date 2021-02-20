@@ -175,7 +175,7 @@ def generate_roman_number(n: int) -> str:
 
 
 def regex_match_roman_number(roman_number: str) -> bool:
-    """ Returns True if input string is a roman number
+    """Returns True if input string is a roman number
     First row: Look ahead -> dont match empty string
     Second row: 1000-3000
     Third row: 3400 or 3900, connected with 100, 200, 300, or 500, 600, 700 or 800

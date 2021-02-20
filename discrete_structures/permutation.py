@@ -47,7 +47,7 @@ def permutation_backwards_generator(my_list: List[Any]) -> Generator[Any, None, 
 
 
 def get_index_of_permutation(original: List[Any], perm: List[Any]) -> int:
-    """ Returns the index of a lexicographically ordered permutation.
+    """Returns the index of a lexicographically ordered permutation.
     assert get_index_of_permutation(list("ABC"), list("ABC")) == 0
     assert get_index_of_permutation(list("ABC"), list("CBA")) == 5
     assert get_index_of_permutation(list("ABCD"), list("DCBA")) == 23
@@ -63,7 +63,7 @@ def get_index_of_permutation(original: List[Any], perm: List[Any]) -> int:
 
 
 def get_permutation_at_index(original: List[Any], index: int) -> List[Any]:
-    """ Returns lexicographically ordered permutation at index 'index'.
+    """Returns lexicographically ordered permutation at index 'index'.
     assert get_permutation_at_index(list("ABC"), 0) == list("ABC")
     assert get_permutation_at_index(list("ABC"), 5) == list("CBA")
     assert get_permutation_at_index(list("ABCD"), 23) == list("DCBA")
