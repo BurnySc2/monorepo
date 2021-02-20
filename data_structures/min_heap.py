@@ -100,7 +100,7 @@ class MinHeap:
         self._move_down(self.heap[1], 1)
 
     def build(self, my_list: list):
-        self.heap: List[int] = [-1]
+        self.heap = [-1]
         for i in my_list:
             self.insert(i)
 

@@ -1,7 +1,10 @@
+from typing import Optional
+
+
 class Node:
     def __init__(self, value: int, next_node: "Node" = None):
         self.value: int = value
-        self.next: Node = next_node
+        self.next: Optional[Node] = next_node
 
     def __repr__(self):
         return f"Node(value: {self.value}, next: {self.next})"
@@ -9,8 +12,8 @@ class Node:
 
 class Queue:
     def __init__(self):
-        self.front: Node = None
-        self.tail: Node = None
+        self.front: Optional[Node] = None
+        self.tail: Optional[Node] = None
         self.size: int = 0
 
     def enqueue(self, value: int):

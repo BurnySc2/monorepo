@@ -1,12 +1,12 @@
-from typing import List, Any
+from typing import List, Any, Optional
 import itertools
 
 
 class Node:
-    def __init__(self, value: any, left: "Node" = None, right: "Node" = None):
+    def __init__(self, value: Any, left: "Node" = None, right: "Node" = None):
         self.value: Any = value
-        self.left: Node = left
-        self.right: Node = right
+        self.left: Optional[Node] = left
+        self.right: Optional[Node] = right
 
     def __repr__(self):
         return f"Node(value: {self.value}, left: {self.left}, right: {self.right})"
@@ -56,16 +56,18 @@ class Tree:
                 continue
             for value, j in zip(row, itertools.product("01", repeat=i)):
                 # ["00", "01", "10", "11"]
-                cur: Node = self.root
+                cur: Optional[Node] = self.root
                 for j2 in j[:-1]:  # "0", then "1" etc
-                    if j2 == "0":
-                        cur = cur.left
+                    if cur:
+                        if j2 == "0":
+                            cur = cur.left
+                        else:
+                            cur = cur.right
+                if cur:
+                    if j[-1] == "0":
+                        cur.left = Node(value)
                     else:
-                        cur = cur.right
-                if j[-1] == "0":
-                    cur.left = Node(value)
-                else:
-                    cur.right = Node(value)
+                        cur.right = Node(value)
 
     # TODO: Export tree to latex TIKZ
 

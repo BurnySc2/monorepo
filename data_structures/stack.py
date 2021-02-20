@@ -1,13 +1,16 @@
+from typing import Optional
+
+
 class Item:
     def __init__(self, value: int):
         self.value: int = value
-        self.next: Item = None
+        self.next: Optional[Item] = None
 
 
 class Stack:
     def __init__(self):
         """ The stack will be initialized empty. """
-        self.top: Item = None
+        self.top: Optional[Item] = None
 
     def push(self, value: int) -> None:
         """

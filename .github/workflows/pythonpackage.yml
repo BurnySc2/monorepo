@@ -55,7 +55,7 @@ jobs:
 
       - name: Run mypy (type checking)
         run: |
-          poetry run mypy .
+          poetry run mypy --ignore-missing-imports .
 
       - name: Build
         run: |

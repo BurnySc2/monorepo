@@ -12,9 +12,9 @@ def two_sum_slow(nums: List[int], target: int) -> List[int]:
     return []
 
 
-def primes_slow(nb_primes: int):
+def primes_slow(nb_primes: int) -> List[int]:
     """ Find the first X amount of primes. """
-    primes = []
+    primes: List[int] = []
     len_p = 0  # The current number of elements in primes.
     n = 2
     while len_p < nb_primes:
@@ -43,7 +43,7 @@ def dijkstra_slow(
 ) -> Tuple[float, Deque[Tuple[int, int]]]:
     if start == goal:
         return 0, deque()
-    open_set: List[Tuple[int, Tuple[int, int], Optional[Tuple[int, int]]]] = [(0, start, None)]
+    open_list: List[Tuple[float, Tuple[int, int], Tuple[int, int]]] = [(0, start, start)]
     neighbors = [(-1, 0), (0, -1), (1, 0), (0, 1)]
     sqrt2 = 2 ** 0.5
     distances: List[float] = [1.0] * 4 + [sqrt2] * 4
@@ -69,8 +69,8 @@ def dijkstra_slow(
             current = came_from[current]
         return path
 
-    while open_set:
-        current_distance, current_point, previous_point = heappop(open_set)
+    while open_list:
+        current_distance, current_point, previous_point = heappop(open_list)
         if current_point in came_from:
             continue
         distance_dict[current_point] = current_distance
@@ -81,10 +81,10 @@ def dijkstra_slow(
                 continue
             if is_wall(new_point):
                 continue
-            new_distance = current_distance + node_dist
+            new_distance: float = current_distance + node_dist
             if new_point in distance_dict and distance_dict[new_point] >= new_distance:
                 continue
-            heappush(open_set, (new_distance, new_point, current_point))
+            heappush(open_list, (new_distance, new_point, current_point))
         if goal in came_from:
             return distance_dict[goal], generate_path()
     return -1, deque()

@@ -45,9 +45,6 @@ class BotRunner:
         await self.start_bot()
 
 
-runner: BotRunner = None
-
-
 async def file_watcher():
     """ End this script on .py file changes """
     logger.info("Started file watcher")
