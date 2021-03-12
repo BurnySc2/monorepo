@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 from typing import Generator, List, Any, Dict
 from math import factorial
+from string import ascii_uppercase
 
 from loguru import logger
 import time
@@ -140,8 +141,6 @@ def _test_permutations(limit: int = 6):
             assert prev == get_previous_permutation(p.copy()), (prev, get_previous_permutation(p.copy()))
             assert p == get_next_permutation(prev.copy()), (p, get_next_permutation(prev.copy()))
         prev = p
-
-    from string import ascii_uppercase
 
     for length in range(1, limit):
         string = ascii_uppercase[:length]

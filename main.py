@@ -397,12 +397,14 @@ def test_database():
 
     # Creates a new table "people" with 3 columns: text, real, integer
     # Fields marked with PRIMARY KEY are columns with unique values (?)
-    db.execute("CREATE TABLE people (name text PRIMARY KEY, age integer, height real)")
+    db.execute("CREATE TABLE people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)")
 
     # Insert via string
-    db.execute("INSERT INTO people VALUES ('Someone', 80, 1.60)")
+    db.execute("INSERT INTO people (name, age, height) VALUES ('Someone', 80, 1.60)")
     # Insert by tuple
-    db.execute("INSERT INTO people VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
+    db.execute("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
+    # Optional (name, age, height) if all columns are supplied
+    # db.execute("INSERT INTO people VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
 
     friends = [
         ("Someone Else1", 40, 1.70),
@@ -411,16 +413,22 @@ def test_database():
         ("Someone Else4", 20, 1.85),
     ]
     # Insert many over iterable
-    db.executemany("INSERT INTO people VALUES (?, ?, ?)", friends)
+    db.executemany("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", friends)
+
+    # Insert unique name again
+    try:
+        db.execute("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
+    except sqlite3.IntegrityError:
+        logger.info(f"Name already exists: Someone Else")
 
     # Delete an entry https://www.w3schools.com/sql/sql_delete.asp
-    db.execute("DELETE FROM people WHERE age==40")
+    db.execute("DELETE FROM people WHERE age=40")
 
     # Update entries https://www.w3schools.com/sql/sql_update.asp
-    db.execute("UPDATE people SET height=1.90, age=35 WHERE name=='Someone Else'")
+    db.execute("UPDATE people SET height=1.90, age=35 WHERE name='Someone Else'")
 
     # Insert a value if it doesnt exist, or replace if it exists
-    db.execute("REPLACE INTO people VALUES ('Someone Else5', 32, 2.01)")
+    db.execute("REPLACE INTO people (name, age, height) VALUES ('Someone Else5', 32, 2.01)")
 
     # Insert entries or update if it exists, 'upsert' https://www.sqlite.org/lang_UPSERT.html
     # Might not work on old sqlite3 versions
@@ -437,12 +445,13 @@ def test_database():
     # SELECT: returns selected fields of the results, use * for all https://www.w3schools.com/sql/sql_select.asp
     # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
     # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
-    for row in db.execute(
-        "SELECT name, age, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
-    ):
+    results = db.execute(
+        "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
+    )
+    for row in results:
         logger.info(f"Row: {row}")
 
-    # TODO: How to add or remove a column from existing database?
+    # TODO: How to add or remove a column in existing database?
 
     db.close()
 
@@ -483,7 +492,7 @@ def test_database_with_classes():
 
     db = sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES)
     # Creates new table
-    db.execute("CREATE TABLE points (name text, p point)")
+    db.execute("CREATE TABLE points (name TEXT, p point)")
 
     points = [
         ["p1", Point(4.0, -3.2)],
