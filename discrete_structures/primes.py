@@ -15,14 +15,14 @@ def sieve_of_eratosthenes(limit: int) -> List[int]:
     while value < limit:
         if sieve[value]:
             primes.append(value)
-            sieve[value ** 2 :: value] = [False] * len(sieve[value ** 2 :: value])
+            sieve[value**2::value] = [False] * len(sieve[value**2::value])
         value += 2
     return primes
 
 
 def prime_factors(n: int, primes: List[int] = None) -> Counter:
     if primes is None:
-        primes = sieve_of_eratosthenes(int(n ** 0.5 + 1))
+        primes = sieve_of_eratosthenes(int(n**0.5 + 1))
     i = 0
     factors: TypingCounter[int] = Counter()
     while n > 1 and i < len(primes):
@@ -80,21 +80,42 @@ def test_prime_functions():
         3: Counter({3: 1}),
         4: Counter({2: 2}),
         5: Counter({5: 1}),
-        6: Counter({2: 1, 3: 1}),
+        6: Counter({
+            2: 1,
+            3: 1
+        }),
         7: Counter({7: 1}),
         8: Counter({2: 3}),
         9: Counter({3: 2}),
-        10: Counter({2: 1, 5: 1}),
+        10: Counter({
+            2: 1,
+            5: 1
+        }),
         11: Counter({11: 1}),
-        12: Counter({2: 2, 3: 1}),
+        12: Counter({
+            2: 2,
+            3: 1
+        }),
         13: Counter({13: 1}),
-        14: Counter({2: 1, 7: 1}),
-        15: Counter({3: 1, 5: 1}),
+        14: Counter({
+            2: 1,
+            7: 1
+        }),
+        15: Counter({
+            3: 1,
+            5: 1
+        }),
         16: Counter({2: 4}),
         17: Counter({17: 1}),
-        18: Counter({3: 2, 2: 1}),
+        18: Counter({
+            3: 2,
+            2: 1
+        }),
         19: Counter({19: 1}),
-        20: Counter({2: 2, 5: 1}),
+        20: Counter({
+            2: 2,
+            5: 1
+        }),
     }
 
     for i in range(100):

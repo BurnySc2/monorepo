@@ -36,7 +36,6 @@ watchgod = "^0.7"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
-black = "^21.6b0"
 yapf = "^0.31.0"
 # Test library
 pytest = "^6.2.2"

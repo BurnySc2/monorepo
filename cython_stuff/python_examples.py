@@ -38,14 +38,15 @@ import numpy as np
 from collections import deque
 
 
-def dijkstra_slow(
-    grid: np.ndarray, start: Tuple[int, int], goal: Tuple[int, int], diagonal=False
-) -> Tuple[float, Deque[Tuple[int, int]]]:
+def dijkstra_slow(grid: np.ndarray,
+                  start: Tuple[int, int],
+                  goal: Tuple[int, int],
+                  diagonal=False) -> Tuple[float, Deque[Tuple[int, int]]]:
     if start == goal:
         return 0, deque()
     open_list: List[Tuple[float, Tuple[int, int], Tuple[int, int]]] = [(0, start, start)]
     neighbors = [(-1, 0), (0, -1), (1, 0), (0, 1)]
-    sqrt2 = 2 ** 0.5
+    sqrt2 = 2**0.5
     distances: List[float] = [1.0] * 4 + [sqrt2] * 4
     if diagonal:
         neighbors += [(-1, -1), (-1, 1), (1, -1), (1, 1)]

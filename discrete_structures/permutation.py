@@ -5,7 +5,6 @@ from string import ascii_uppercase
 
 from loguru import logger
 import time
-
 """
 These are lexicographically ordered permutations.
 """
@@ -18,7 +17,7 @@ def permutation(my_list: List[Any]) -> List[Any]:
     result = []
     for i in range(len(my_list)):
         middle = my_list[i]
-        remaining_list = my_list[:i] + my_list[i + 1 :]
+        remaining_list = my_list[:i] + my_list[i + 1:]
         for p in permutation(remaining_list):
             result.append([middle] + p)
     return result
@@ -30,7 +29,7 @@ def permutation_generator(my_list: List[Any]) -> Generator[Any, None, None]:
         yield my_list
         return
     for i, middle in enumerate(my_list):
-        remaining_list = my_list[:i] + my_list[i + 1 :]
+        remaining_list = my_list[:i] + my_list[i + 1:]
         for p in permutation_generator(remaining_list):
             yield [middle] + p
 
@@ -42,7 +41,7 @@ def permutation_backwards_generator(my_list: List[Any]) -> Generator[Any, None, 
         return
     for i in reversed(range(len(my_list))):
         middle = my_list[i]
-        remaining_list = my_list[:i] + my_list[i + 1 :]
+        remaining_list = my_list[:i] + my_list[i + 1:]
         for p in permutation_backwards_generator(remaining_list):
             yield [middle] + p
 
@@ -57,7 +56,7 @@ def get_index_of_permutation(original: List[Any], perm: List[Any]) -> int:
     result, factor, cur, length = 0, 1, 1, len(perm)
     values = {char: i for i, char in enumerate(original)}
     for j in reversed(range(length)):
-        result += factor * sum(1 for i in perm[j + 1 :] if values[i] < values[perm[j]])
+        result += factor * sum(1 for i in perm[j + 1:] if values[i] < values[perm[j]])
         factor *= cur
         cur += 1
     return result
@@ -73,7 +72,7 @@ def get_permutation_at_index(original: List[Any], index: int) -> List[Any]:
     if len(original) == 1:
         return original
     quotient, remainder = divmod(index, factorial(len(original) - 1))
-    return [original[quotient]] + get_permutation_at_index(original[:quotient] + original[quotient + 1 :], remainder)
+    return [original[quotient]] + get_permutation_at_index(original[:quotient] + original[quotient + 1:], remainder)
 
 
 def get_next_permutation(perm: List[Any]):
@@ -85,8 +84,8 @@ def get_next_permutation(perm: List[Any]):
             prev = perm[j]
             if prev > last:
                 perm[i], perm[j] = perm[j], perm[i]
-                if len(perm[i + 1 :]) > 1:
-                    perm[i + 1 :] = sorted(perm[i + 1 :])
+                if len(perm[i + 1:]) > 1:
+                    perm[i + 1:] = sorted(perm[i + 1:])
                 return perm
     perm.sort()
     return perm
@@ -101,8 +100,8 @@ def get_previous_permutation(perm: List[Any]):
             prev = perm[j]
             if prev < last:
                 perm[i], perm[j] = perm[j], perm[i]
-                if len(perm[i + 1 :]) > 1:
-                    perm[i + 1 :] = sorted(perm[i + 1 :], reverse=True)
+                if len(perm[i + 1:]) > 1:
+                    perm[i + 1:] = sorted(perm[i + 1:], reverse=True)
                 return perm
     perm.sort(reverse=True)
     return perm
@@ -123,9 +122,8 @@ def _test_permutations(limit: int = 6):
     assert get_index_of_permutation(list("ABCD"), list("ABCD")) == 0
     assert get_index_of_permutation(list("ABCD"), list("DCBA")) == 23
 
-    assert list(permutation_generator(list("ABCD"))) == list(
-        reversed(list(permutation_backwards_generator(list("ABCD"))))
-    )
+    assert list(permutation_generator(list("ABCD"))
+                ) == list(reversed(list(permutation_backwards_generator(list("ABCD")))))
 
     assert get_next_permutation(list("ABC")) == list("ACB"), get_next_permutation(list("ABC"))
     assert get_next_permutation(list("ACB")) == list("BAC"), get_next_permutation(list("ACB"))
@@ -164,7 +162,7 @@ if __name__ == "__main__":
             logger.info(f"TIME {label}: {(end-start)/1e9} sec")
 
     with time_this("Permutation"):
-        for n in range(10 ** 4):
+        for n in range(10**4):
             data = list("123")
             for p in permutation_generator(data):
                 pass

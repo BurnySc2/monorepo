@@ -151,14 +151,12 @@ if __name__ == "__main__":
     print()
 
     t = Tree()
-    t.load(
-        """
+    t.load("""
 A
  C
   FG
     HI  
-    """
-    )
+    """)
     t.in_order_traversal(t.root)
     print()
     t.pre_order_traversal(t.root)

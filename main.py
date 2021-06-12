@@ -59,7 +59,7 @@ async def main():
             file_path=Path("test/image.png"),
             temp_file_path=Path("test/image_download_not_complete"),
             # Download at speed of 100kb/s
-            download_speed=100 * 2 ** 10,
+            download_speed=100 * 2**10,
         )
 
     end_time = time.perf_counter()
@@ -108,8 +108,8 @@ def measure_time():
     # Use like this
     if __name__ == "__main__":
         with time_this("square rooting"):
-            for n in range(10 ** 4):
-                x = n ** 0.5
+            for n in range(10**4):
+                x = n**0.5
 
 
 def regex_match_test():
@@ -187,11 +187,7 @@ def regex_match_roman_number(roman_number: str) -> bool:
             ( C[MD] | D?C{0,3} )
                 ( X[CL] | L?X{0,3} )
                     ( I[XV] | V?I{0,3} )
-    """.replace(
-        " ", ""
-    ).replace(
-        "\n", ""
-    )
+    """.replace(" ", "").replace("\n", "")
     return bool(re.fullmatch(numbers_1_to_3999, roman_number))
 
 

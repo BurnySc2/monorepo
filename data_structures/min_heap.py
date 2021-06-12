@@ -9,7 +9,7 @@ class MinHeap:
 
     def __repr__(self):
         return_list = []
-        multiples_of_two = {2 ** n for n in range(1, 1 + int(math.log(len(self.heap), 2)))}
+        multiples_of_two = {2**n for n in range(1, 1 + int(math.log(len(self.heap), 2)))}
         for i, value in enumerate(self.heap[1:], start=1):
             if i in multiples_of_two:
                 return_list.append("\n")
