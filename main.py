@@ -495,8 +495,8 @@ def test_database_with_classes():
     db.execute("CREATE TABLE points (name TEXT, p point)")
 
     points = [
-        ["p1", Point(4.0, -3.2)],
-        ["p2", Point(8.0, -6.4)],
+        ["p1", Point(x=4.0, y=-3.2)],
+        ["p2", Point(x=8.0, y=-6.4)],
     ]
     db.executemany("INSERT INTO points VALUES (?, ?)", points)
     for row in db.execute("SELECT * FROM points"):

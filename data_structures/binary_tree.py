@@ -111,7 +111,6 @@ if __name__ == "__main__":
     print()
     t.post_order_traversal(t.root)
     print()
-
     """
         E 
      A     Q
@@ -131,7 +130,6 @@ if __name__ == "__main__":
     # print()
     # t.post_order_traversal(t.root)
     print()
-
     """
         E 
      A     Q

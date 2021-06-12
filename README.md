@@ -55,6 +55,7 @@ Single file:
 Test all files in folder:
 `poetry run pytest test/`
 
-
+# Autoformat all files
+`yapf ./**/*.py -i`
 
 

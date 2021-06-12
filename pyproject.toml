@@ -10,11 +10,11 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.7"
 # Numeric python
-numpy = "^1.20.1"
+numpy = "^1.20.3"
 # Improve performance by writing C or C++ similar code
 cython = "^3.0a6"
 # Write and read classes to/from json
-dataclasses-json = "^0.5.1"
+dataclasses-json = "^0.5.4"
 # Network access
 aiohttp = "^3.7.3"
 # Required by aiohttp on windows?
@@ -27,23 +27,26 @@ atomicwrites = "^1.3.0"
 contextvars = "^2.4"
 win32-setctime = "^1.0.3"
 # Image library
-pillow = "^8.1.0"
+pillow = "^8.2.0"
 # Better / easier datetime library
 pendulum = "^2.1.2"
 dpath = "^2.0.1"
-mypy = "^0.812"
+mypy = "^0.902"
 watchgod = "^0.7"
 
 [tool.poetry.dev-dependencies]
+# Autoformatter
+black = "^21.6b0"
+yapf = "^0.31.0"
 # Test library
 pytest = "^6.2.2"
-pytest-asyncio = "^0.14.0"
+pytest-asyncio = "^0.15.1"
 # Requirement for pytest < 3.8
 importlib_metadata = "^1.7.0"
 # Statistical testing
-hypothesis = "^6.2.0"
+hypothesis = "^6.14.0"
 # Cyclomatic complexity checker
-radon = "^4.3.2"
+radon = "^5.0.1"
 # Function profiler, checks how often functions get called
 snakeviz = "^2.1.0"
 # Line profiler, unable to install on windows?
