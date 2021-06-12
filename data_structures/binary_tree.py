@@ -98,7 +98,7 @@ class Tree:
 if __name__ == "__main__":
     t = Tree()
     """
-        A 
+        A
      B     C
     D E   F  G
          H I
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     t.post_order_traversal(t.root)
     print()
     """
-        E 
+        E
      A     Q
     S Y   U   T
          E S    I
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     # t.post_order_traversal(t.root)
     print()
     """
-        E 
+        E
      A     Q
     S Y   U   I
          E  S   O
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 A
  C
   FG
-    HI  
+    HI
     """)
     t.in_order_traversal(t.root)
     print()

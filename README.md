@@ -55,7 +55,8 @@ Single file:
 Test all files in folder:
 `poetry run pytest test/`
 
+# Run all pre-commit hook scripts
+`poetry run pre-commit run --all-files`
+
 # Autoformat all files
 `yapf ./**/*.py -i`
-
-
