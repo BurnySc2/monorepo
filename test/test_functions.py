@@ -95,3 +95,6 @@ async def test_do_math_floats(value):
 @given(st.integers(min_value=0, max_value=10000))
 def test_cpu_bound_summing(number):
     assert sum(i * i for i in range(number)) == cpu_bound_summing(number)
+
+
+# TODO test which expects exception

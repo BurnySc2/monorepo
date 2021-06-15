@@ -488,10 +488,17 @@ def test_database_with_classes():
 
 
 def plot_lists():
+    # TODO
     pass
 
 
 def plot_numpy_array():
+    # TODO
+    pass
+
+
+def plot_pandas_array():
+    # TODO
     pass
 
 
