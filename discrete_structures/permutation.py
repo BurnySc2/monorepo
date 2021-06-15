@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Generator, List, Any, Dict
+from typing import Generator, List, Any
 from math import factorial
 from string import ascii_uppercase
 
@@ -15,7 +15,7 @@ def permutation(my_list: List[Any]) -> List[Any]:
     if len(my_list) == 1:
         return [my_list]
     result = []
-    for i in range(len(my_list)):
+    for i, _ in enumerate(my_list):
         middle = my_list[i]
         remaining_list = my_list[:i] + my_list[i + 1:]
         for p in permutation(remaining_list):

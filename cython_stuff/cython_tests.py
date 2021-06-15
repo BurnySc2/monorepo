@@ -1,23 +1,20 @@
 # Compile using:
 # cythonize -a -i cython_examples.pyx
-from contextlib import contextmanager
 import time
 
-from loguru import logger
+# pylint: disable=E0611,E0401
+from cython_stuff.cython_examples import test_vec
 
-from cython_stuff.cython_examples import two_sum, two_sum_vector, primes, primes_vector, test_map, test_vec
-from cython_stuff.python_examples import two_sum_slow, primes_slow, dijkstra_slow
-
-
-@contextmanager
-def time_this(label: str):
-    start = time.perf_counter_ns()
-    try:
-        yield
-    finally:
-        end = time.perf_counter_ns()
-        logger.info(f"TIME {label}: {(end-start)/1e9} sec")
-
+# from contextlib import contextmanager
+# from loguru import logger
+# @contextmanager
+# def time_this(label: str):
+#     start = time.perf_counter_ns()
+#     try:
+#         yield
+#     finally:
+#         end = time.perf_counter_ns()
+#         logger.info(f"TIME {label}: {(end-start)/1e9} sec")
 
 # Use like this
 if __name__ == "__main__":

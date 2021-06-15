@@ -1,3 +1,5 @@
+from typing import Optional
+
 from loguru import logger
 import subprocess
 import asyncio
@@ -21,7 +23,7 @@ bot_file_path = current_folder / "main.py"
 
 class BotRunner:
     def __init__(self):
-        self.bot_process: subprocess.Popen = None
+        self.bot_process: Optional[subprocess.Popen] = None
 
     def __enter__(self):
         return self
@@ -31,8 +33,9 @@ class BotRunner:
 
     async def start_bot(self):
         # Command is 'python file.py' because we are already in a poetry environment
-        command_list = command_line + [bot_file_path.absolute()]
-        logger.info(f"Starting bot ...")
+        command_list = command_line + [str(bot_file_path.absolute())]
+        logger.info("Starting bot ...")
+        # pylint: disable=R1732
         self.bot_process = subprocess.Popen(command_list)
         logger.info(f"Started bot on pid {self.bot_process.pid}")
 
@@ -51,8 +54,8 @@ async def file_watcher():
     async for changes in awatch(".", watcher_cls=PythonWatcher, normal_sleep=5000):
         logger.info(f"Killing bot because of the following file changes: {changes}")
         runner.kill_bot()
-        logger.info(f"Killed bot. Ending run.py.")
-        exit()
+        logger.info("Killed bot. Ending run.py.")
+        sys.exit()
 
 
 async def bot_restarter():
@@ -61,7 +64,7 @@ async def bot_restarter():
     while 1:
         await asyncio.sleep(5)
         if runner.bot_process is None or runner.bot_process.poll() is not None:
-            logger.info(f"Restarting bot because it seems to have ended.")
+            logger.info("Restarting bot because it seems to have ended.")
             await runner.start_bot()
 
 
@@ -79,5 +82,6 @@ if __name__ == "__main__":
         with BotRunner() as runner:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(main())
+    # pylint: disable=W0703
     except Exception as e:
         logger.trace(e)

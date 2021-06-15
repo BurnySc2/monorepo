@@ -36,6 +36,8 @@ watchgod = "^0.7"
 [tool.poetry.dev-dependencies]
 # Autoformatter
 yapf = "^0.31.0"
+# Linting
+pylint = "^2.8.3"
 # Test library
 pytest = "^6.2.2"
 pytest-asyncio = "^0.15.1"

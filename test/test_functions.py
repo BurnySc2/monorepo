@@ -3,7 +3,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from main import do_math, download_site, download_all_sites, find_sums, cpu_bound_summing, download_image
+from main import do_math, download_site, download_all_sites, cpu_bound_summing, download_image
 import pytest
 import aiohttp
 import time
@@ -77,7 +77,7 @@ async def test_download_all_sites():
 @pytest.mark.asyncio
 async def test_do_math():
     res = await do_math(7)
-    assert 10 == res
+    assert res == 10
 
 
 @pytest.mark.asyncio

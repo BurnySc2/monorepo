@@ -14,8 +14,8 @@ def combination_generator(my_list: List[Any], n: int) -> Generator[Any, None, No
 
 
 def _is_sorted(my_list: List[Any]) -> bool:
-    for current, next in zip(my_list, my_list[1:]):
-        if current > next:
+    for current, next_value in zip(my_list, my_list[1:]):
+        if current > next_value:
             return False
     return True
 

@@ -1,6 +1,13 @@
 repos:
   - repo: local
     hooks:
+        - id: pylint
+          name: pylint
+          stages: [ commit ]
+          language: system
+          entry: poetry run pylint
+          types: [ python ]
+
         - id: yapf
           name: yapf
           stages: [ commit ]
@@ -21,13 +28,13 @@ repos:
           name: pytest
           stages: [ commit ]
           language: system
-          entry: poetry run pytest
-          types: [ python ]
+          entry: poetry run pytest test
+          pass_filenames: false
 
 #      - id: pytest-cov
 #        name: pytest
 #        stages: [push]
 #        language: system
-#        entry: poetry run pytest --cov --cov-fail-under=100
+#        entry: poetry run pytest --cov=. --cov-fail-under=100
 #        types: [python]
 #        pass_filenames: false

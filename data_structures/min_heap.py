@@ -20,13 +20,16 @@ class MinHeap:
     def get_parent(self, index: int) -> int:
         return self.heap[index // 2]
 
-    def get_parent_index(self, index: int) -> int:
+    @classmethod
+    def get_parent_index(cls, index: int) -> int:
         return index // 2
 
-    def get_left_child_index(self, index: int) -> int:
+    @classmethod
+    def get_left_child_index(cls, index: int) -> int:
         return index * 2
 
-    def get_right_child_index(self, index: int) -> int:
+    @classmethod
+    def get_right_child_index(cls, index: int) -> int:
         return index * 2 + 1
 
     def get_left_child(self, index: int) -> Optional[int]:
@@ -81,15 +84,15 @@ class MinHeap:
         self.heap.append(number)
         self._move_up(len(self.heap) - 1, len(self.heap) - 1)
 
-    def getMin(self) -> int:
+    def get_min(self) -> int:
         if len(self.heap) > 0:
             return self.heap[1]
-        raise IndexError("getMin from empty heap")
+        raise IndexError("get_min from empty heap")
 
-    def deleteMin(self):
+    def delete_min(self):
         # Swap minimum with last item in list before removing
         if len(self.heap) < 2:
-            raise IndexError("deleteMin from empty heap")
+            raise IndexError("delete_min from empty heap")
         if len(self.heap) < 3:
             self.heap.pop(1)
             return
@@ -109,18 +112,18 @@ if __name__ == "__main__":
     p = MinHeap()
     build_list = [1, 2, 3, 4, 5, 6, 7]
     p.build(build_list)
-    assert len(p.heap) == 8, f"build() function or insert() function not working as expected"
+    assert len(p.heap) == 8, "build() function or insert() function not working as expected"
     """ p:
     1
     2 3
     4 5 6 7
     """
     for i in build_list:
-        assert not p.is_empty(), f"Min heap should be not empty, but is returned to be empty"
-        value = p.getMin()
+        assert not p.is_empty(), "Min heap should be not empty, but is returned to be empty"
+        value = p.get_min()
         assert (
             value == i
-        ), f"getMin or deleteMin function not working as expected, received value '{value}' but should have been '{i}', heap:\n{p}"
-        p.deleteMin()
+        ), f"get_min or delete_min function not working as expected, received value '{value}' but should have been '{i}', heap:\n{p}"
+        p.delete_min()
 
-    assert p.is_empty(), f"Min heap should be empty, but isn't"
+    assert p.is_empty(), "Min heap should be empty, but isn't"

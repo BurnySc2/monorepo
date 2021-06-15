@@ -57,9 +57,9 @@ class Tree:
             for value, j in zip(row, itertools.product("01", repeat=i)):
                 # ["00", "01", "10", "11"]
                 cur: Optional[Node] = self.root
-                for j2 in j[:-1]:  # "0", then "1" etc
+                for k in j[:-1]:  # "0", then "1" etc
                     if cur:
-                        if j2 == "0":
+                        if k == "0":
                             cur = cur.left
                         else:
                             cur = cur.right

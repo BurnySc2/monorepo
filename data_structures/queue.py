@@ -1,10 +1,12 @@
 from typing import Optional
 
+from dataclasses import dataclass
 
+
+@dataclass()
 class Node:
-    def __init__(self, value: int, next_node: "Node" = None):
-        self.value: int = value
-        self.next: Optional[Node] = next_node
+    value: int
+    next: Optional["Node"] = None
 
     def __repr__(self):
         return f"Node(value: {self.value}, next: {self.next})"

@@ -1,10 +1,12 @@
 from typing import Optional
 
+from dataclasses import dataclass
 
+
+@dataclass()
 class Item:
-    def __init__(self, value: int):
-        self.value: int = value
-        self.next: Optional[Item] = None
+    value: int
+    next: Optional["Item"] = None
 
 
 class Stack:
@@ -75,11 +77,11 @@ if __name__ == "__main__":
         second_element == 5
     ), f"Push function does not work as intended, value on top of the stack should be 8 and second element should now be 5, but second element is ({second_element})"
 
-    value = s.pop()
-    assert value == 8, f"Pop function does not work as intended, expected value = 8, received value = ({value})"
+    my_value = s.pop()
+    assert my_value == 8, f"Pop function does not work as intended, expected value = 8, received value = ({my_value})"
 
-    value = s.pop()
-    assert value == 5, f"Pop function does not work as intended, expected value = 5, received value = ({value})"
+    my_value = s.pop()
+    assert my_value == 5, f"Pop function does not work as intended, expected value = 5, received value = ({my_value})"
 
     s.push(10)
     is_empty = s.is_empty()

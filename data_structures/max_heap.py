@@ -1,4 +1,4 @@
-from typing import List, Generator
+from typing import List
 import math
 
 # [
@@ -15,8 +15,8 @@ class MaxHeap:
     def __repr__(self):
         return_list = []
         multiples_of_two = {2**n for n in range(1, 1 + int(math.log(len(self.tree), 2)))}
-        for i, value in enumerate(self.tree[1:], start=1):
-            if i in multiples_of_two:
+        for index, value in enumerate(self.tree[1:], start=1):
+            if index in multiples_of_two:
                 return_list.append("\n")
             return_list.append(value)
             return_list.append(" ")
@@ -37,12 +37,14 @@ class MaxHeap:
         self.tree.append(value)
         self._move_up(index)
 
-    def _get_parent(self, index: int) -> int:
+    @classmethod
+    def _get_parent(cls, index: int) -> int:
         if index < 2:
             raise IndexError("root node has no parents")
         return index // 2
 
-    def _get_children(self, index: int) -> List[int]:
+    @classmethod
+    def _get_children(cls, index: int) -> List[int]:
         times_two = index * 2
         return [times_two, times_two + 1]
 
@@ -82,7 +84,7 @@ if __name__ == "__main__":
 
     for i in range(7, 0, -1):
         print(m)
-        value = m.pop()
-        assert i == value, f"Expected {i}, got {value}"
+        my_value = m.pop()
+        assert i == my_value, f"Expected {i}, got {my_value}"
 
     print(m)

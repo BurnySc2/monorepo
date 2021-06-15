@@ -1,27 +1,24 @@
 # Other
-import time
-import os
 import sys
 import re
 import time
-import json
 from contextlib import contextmanager
 from pathlib import Path
 from dataclasses import dataclass
 
-# https://pypi.org/project/dataclasses-json/#description
-from dataclasses_json import DataClassJsonMixin
-
-# Coroutines and multiprocessing
-import asyncio
-import aiohttp
-from multiprocessing import Process, Lock, Pool
-
-# Simple logging https://github.com/Delgan/loguru
-from loguru import logger
+# Type annotation / hints
+from typing import List, Iterable, Union, Set
 
 # Database
 import sqlite3
+
+# Coroutines and multiprocessing
+from multiprocessing import Pool
+import asyncio
+import aiohttp
+
+# https://pypi.org/project/dataclasses-json/#description
+from dataclasses_json import DataClassJsonMixin
 
 # Image manipulation
 from PIL import Image
@@ -29,15 +26,15 @@ from PIL import Image
 # Simpler dict manipulation https://pypi.org/project/dpath/
 from dpath.util import get, new, merge
 
+# Simple logging https://github.com/Delgan/loguru
+from loguru import logger
+
 # Remove previous default handlers
 logger.remove()
 # Log to console
 logger.add(sys.stdout, level="INFO")
 # Log to file, max size 1 mb, max log file age 7 days
 logger.add("main.log", rotation="1 MB", retention="7 days", level="INFO")
-
-# Type annotation / hints
-from typing import List, Iterable, Union, Set
 
 
 async def main():
@@ -53,7 +50,7 @@ async def main():
 
     # Download an image with download speed throttle
     async with aiohttp.ClientSession() as session:
-        result: bool = await download_image(
+        _result: bool = await download_image(
             session,
             url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
             file_path=Path("test/image.png"),
@@ -65,7 +62,7 @@ async def main():
     end_time = time.perf_counter()
     logger.info(f"Time for sites download taken: {end_time - start_time}")
 
-    math_result = await do_math(6)
+    _math_result = await do_math(6)
 
     start_time = time.perf_counter()
     do_multiprocessing()
@@ -74,24 +71,24 @@ async def main():
 
     mass_replace()
 
-    logger.info(f"Creating hello world file...")
+    logger.info("Creating hello world file...")
     create_file()
 
-    logger.info(f"Testing writing dataclass to json and re-load and compare both objects")
+    logger.info("Testing writing dataclass to json and re-load and compare both objects")
     test_data_class_to_and_from_json()
 
     modify_dictionary()
 
-    logger.info(f"Validating all roman numbers up to 3999")
+    logger.info("Validating all roman numbers up to 3999")
     test_all_roman_numbers()
 
-    logger.info(f"Testing database interaction")
+    logger.info("Testing database interaction")
     test_database()
     test_database_with_classes()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 
-    logger.info(f"Converting all .jpg images in /images folder")
+    logger.info("Converting all .jpg images in /images folder")
     mass_convert_images()
 
 
@@ -108,8 +105,8 @@ def measure_time():
     # Use like this
     if __name__ == "__main__":
         with time_this("square rooting"):
-            for n in range(10**4):
-                x = n**0.5
+            for i in range(10**4):
+                _x = i**0.5
 
 
 def regex_match_test():
@@ -149,22 +146,11 @@ def generate_roman_number(n: int) -> str:
     Disallowed:
     IIV, VIIII, XXXX, IXL, XIL
     """
-    if 4000 < n:
+    if n > 4000:
         raise ValueError(f"Input too big: {n}")
     number_list = [
-        (1000, "M"),
-        (900, "CM"),
-        (500, "D"),
-        (400, "CD"),
-        (100, "C"),
-        (90, "XC"),
-        (50, "L"),
-        (40, "XL"),
-        (10, "X"),
-        (9, "IX"),
-        (5, "V"),
-        (4, "IV"),
-        (1, "I"),
+        (1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"), (50, "L"), (40, "XL"), (10, "X"),
+        (9, "IX"), (5, "V"), (4, "IV"), (1, "I")
     ]
     string_as_list = []
     for divisor, character in number_list:
@@ -234,7 +220,7 @@ async def download_image(
                         # Keep track of how much was downloaded
                         downloaded += chunk_size
                         # Wait if downloaded size has reached its download throttle limit
-                        while 0 < download_speed and download_speed * accuracy < downloaded:
+                        while download_speed > 0 and download_speed * accuracy < downloaded:
                             time_temp = time.perf_counter()
                             # This size should be the estimated downloaded size in the passed time
                             estimated_download_size = download_speed * (time_temp - time_last_subtracted)
@@ -299,7 +285,7 @@ def find_sums(numbers: Iterable[int]) -> List[int]:
 
 def do_multiprocessing():
     numbers: List[int] = [5_000 + x for x in range(20)]
-    sums: List[int] = find_sums(numbers)
+    _sums: List[int] = find_sums(numbers)
 
 
 def mass_replace():
@@ -415,7 +401,7 @@ def test_database():
     try:
         db.execute("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
     except sqlite3.IntegrityError:
-        logger.info(f"Name already exists: Someone Else")
+        logger.info("Name already exists: Someone Else")
 
     # Delete an entry https://www.w3schools.com/sql/sql_delete.asp
     db.execute("DELETE FROM people WHERE age=40")

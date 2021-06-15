@@ -1,5 +1,9 @@
-from typing import List
-from heapq import heappush, heappop, heappushpop
+from typing import List, Tuple, Dict, Deque
+from heapq import heappush, heappop
+
+import numpy as np
+
+from collections import deque
 
 
 def two_sum_slow(nums: List[int], target: int) -> List[int]:
@@ -32,16 +36,12 @@ def primes_slow(nb_primes: int) -> List[int]:
     return primes
 
 
-from typing import Tuple, Dict, Deque, Optional
-import numpy as np
-
-from collections import deque
-
-
-def dijkstra_slow(grid: np.ndarray,
-                  start: Tuple[int, int],
-                  goal: Tuple[int, int],
-                  diagonal=False) -> Tuple[float, Deque[Tuple[int, int]]]:
+def dijkstra_slow(
+    grid: np.ndarray,
+    start: Tuple[int, int],
+    goal: Tuple[int, int],
+    diagonal=False,
+) -> Tuple[float, Deque[Tuple[int, int]]]:
     if start == goal:
         return 0, deque()
     open_list: List[Tuple[float, Tuple[int, int], Tuple[int, int]]] = [(0, start, start)]
