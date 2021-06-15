@@ -1,12 +1,33 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+  - repo: local
     hooks:
-    -   id: check-yaml
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
+        - id: yapf
+          name: yapf
+          stages: [ commit ]
+          language: system
+          entry: poetry run yapf -i
+          types: [ python ]
+          exclude: setup.py
 
--   repo: https://github.com/pre-commit/mirrors-yapf
-    rev: ''  # Use the sha / tag you want to point at
-    hooks:
-    -   id: yapf
+        - id: mypy
+          name: mypy
+          stages: [ commit ]
+          language: system
+          entry: poetry run mypy . --ignore-missing-imports
+          types: [python]
+          pass_filenames: false
+
+        - id: pytest
+          name: pytest
+          stages: [ commit ]
+          language: system
+          entry: poetry run pytest
+          types: [ python ]
+
+#      - id: pytest-cov
+#        name: pytest
+#        stages: [push]
+#        language: system
+#        entry: poetry run pytest --cov --cov-fail-under=100
+#        types: [python]
+#        pass_filenames: false

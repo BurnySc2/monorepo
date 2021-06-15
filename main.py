@@ -501,5 +501,13 @@ def test_database_with_classes():
     db.close()
 
 
+def plot_lists():
+    pass
+
+
+def plot_numpy_array():
+    pass
+
+
 if __name__ == "__main__":
     asyncio.run(main())

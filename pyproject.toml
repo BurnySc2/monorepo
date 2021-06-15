@@ -31,7 +31,6 @@ pillow = "^8.2.0"
 # Better / easier datetime library
 pendulum = "^2.1.2"
 dpath = "^2.0.1"
-mypy = "^0.902"
 watchgod = "^0.7"
 
 [tool.poetry.dev-dependencies]
@@ -40,6 +39,9 @@ yapf = "^0.31.0"
 # Test library
 pytest = "^6.2.2"
 pytest-asyncio = "^0.15.1"
+pytest-cov = "^2.12.1"
+# Type checking
+mypy = "^0.902"
 # Requirement for pytest < 3.8
 importlib_metadata = "^1.7.0"
 # Statistical testing
