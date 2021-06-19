@@ -19,6 +19,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
       # Use pip requirements.txt cache https://github.com/actions/cache/blob/master/examples.md#python---pip
       # Apparently you can't use cache when using pipenv (but perhaps when specifying the pipenv environment folder?)
 
