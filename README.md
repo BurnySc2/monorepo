@@ -55,8 +55,11 @@ Single file:
 Test all files in folder:
 `poetry run pytest test/`
 
-# Run all pre-commit hook scripts
-`poetry run pre-commit run --all-files`
+# Install and run all pre-commit hook scripts
+```py
+poetry run pre-commit install
+poetry run pre-commit run --all-files
+```
 
 This runs pylint, mypy, pytest tests, apply autoformatter yapf
 
