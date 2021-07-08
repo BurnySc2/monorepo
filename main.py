@@ -434,6 +434,7 @@ def test_database():
         logger.info(f"Row: {row}")
 
     # TODO: How to add or remove a column in existing database?
+    # TODO: How to join two databases?
 
     db.close()
 

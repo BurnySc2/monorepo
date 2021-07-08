@@ -12,7 +12,7 @@ python = "^3.7"
 # Numeric python
 numpy = "^1.20.3"
 # Improve performance by writing C or C++ similar code
-cython = "^3.0a6"
+cython = "^3.0.0a8"
 # Write and read classes to/from json
 dataclasses-json = "^0.5.4"
 # Network access
@@ -30,7 +30,9 @@ win32-setctime = "^1.0.3"
 pillow = "^8.2.0"
 # Better / easier datetime library
 pendulum = "^2.1.2"
+# Easier nested dictionary manipulation
 dpath = "^2.0.1"
+# File watcher
 watchgod = "^0.7"
 
 [tool.poetry.dev-dependencies]
@@ -42,8 +44,9 @@ pylint = "^2.8.3"
 pytest = "^6.2.2"
 pytest-asyncio = "^0.15.1"
 pytest-cov = "^2.12.1"
+pytest-benchmark = "^3.4.1"
 # Type checking
-mypy = "^0.902"
+mypy = "^0.910"
 # Requirement for pytest < 3.8
 importlib_metadata = "^1.7.0"
 # Statistical testing
