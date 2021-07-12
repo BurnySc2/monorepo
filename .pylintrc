@@ -12,7 +12,8 @@
 # R0801 duplicate code
 # W0621 redefining name from outer score
 # C0103 variable name does not conform snake case naming style
-disable=C0301,E501, C0114, C0115, C0116, R0913, C0413, C0411, W0511, W0105, R0801, W0621, C0103
+# R0903: Too few public methods of a class
+disable=C0301,E501, C0114, C0115, C0116, R0913, C0413, C0411, W0511, W0105, R0801, W0621, C0103, R0903
 
 [DESIGN]
 # Maximum number of locals for function / method body

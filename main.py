@@ -1,4 +1,5 @@
 # Other
+import os
 import sys
 import re
 import time
@@ -29,7 +30,12 @@ from dpath.util import get, new, merge
 # Simple logging https://github.com/Delgan/loguru
 from loguru import logger
 
+from sqlalchemy import create_engine, Column, String, Integer
+from sqlalchemy.orm import declarative_base, Session
+
 # Remove previous default handlers
+from tinydb import TinyDB, Query
+
 logger.remove()
 # Log to console
 logger.add(sys.stdout, level="INFO")
@@ -84,7 +90,9 @@ async def main():
 
     logger.info("Testing database interaction")
     test_database()
+    test_database_with_sqlalchemy()
     test_database_with_classes()
+    test_database_with_tinydb()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 
@@ -300,7 +308,8 @@ def mass_replace():
 
 
 def create_file():
-    example_file_path = Path(__file__).parent / "hello_world.txt"
+    example_file_path = Path(__file__).parent / "data" / "hello_world.txt"
+    os.makedirs(example_file_path.parent, exist_ok=True)
     with open(example_file_path, "w") as f:
         f.write("Hello world!\n")
     logger.info(f"Hello world file created in path {example_file_path}")
@@ -321,14 +330,12 @@ class MyDataClassList(DataClassJsonMixin):
 
 def save_objects_to_json(path: Path, my_dataclass_list: MyDataClassList):
     """ Save the given data class object to json file. """
-    # Or: with open(path, "w") as f:
     with path.open("w") as f:
         f.write(my_dataclass_list.to_json(indent=4))
 
 
 def load_objects_from_json(path: Path) -> MyDataClassList:
     """ Load a json file and re-create a data class list object from it. """
-    # Or: with open(path) as f:
     with path.open() as f:
         return MyDataClassList.from_json(f.read())
 
@@ -342,7 +349,8 @@ def test_data_class_to_and_from_json():
     data_class_list = MyDataClassList([my_first_object], [my_second_object])
 
     # Write and reload from file
-    test_path = Path("dataclass_test.json")
+    test_path = Path(__file__).parent / "data" / "dataclass_test.json"
+    os.makedirs(test_path.parent, exist_ok=True)
     save_objects_to_json(test_path, data_class_list)
     data_class_list_loaded = load_objects_from_json(test_path)
 
@@ -358,11 +366,11 @@ def modify_dictionary():
     # Create new path in dict
     new(my_dict, ["this", "is", "my", "path"], value=5)
 
-    # Merge dict
+    # Merge dict to "my_dict"
     to_merge = {"this": {"is": {"another": {"dict": 6}}}}
     merge(my_dict, to_merge)
 
-    # Get a value, if it doesn't
+    # Get a value, if it doesn't exist: return default
     value = get(my_dict, ["this", "is", "my", "path"])
     assert value == 5
     value = get(my_dict, ["this", "path", "doesnt", "exist"], default=4)
@@ -374,87 +382,178 @@ def modify_dictionary():
 
 
 def test_database():
-    db = sqlite3.connect(":memory:")
-    # db = sqlite3.connect("example.db")
+    with sqlite3.connect(":memory:") as db:
+        # with sqlite3.connect("example.db") as db:
 
-    # Creates a new table "people" with 3 columns: text, real, integer
-    # Fields marked with PRIMARY KEY are columns with unique values (?)
-    db.execute("CREATE TABLE people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)")
+        # Creates a new table "people" with 3 columns: text, real, integer
+        # Fields marked with PRIMARY KEY are columns with unique values (?)
+        db.execute(
+            "CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)"
+        )
 
-    # Insert via string
-    db.execute("INSERT INTO people (name, age, height) VALUES ('Someone', 80, 1.60)")
-    # Insert by tuple
-    db.execute("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
-    # Optional (name, age, height) if all columns are supplied
-    # db.execute("INSERT INTO people VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
-
-    friends = [
-        ("Someone Else1", 40, 1.70),
-        ("Someone Else2", 30, 1.75),
-        ("Someone Else3", 20, 1.80),
-        ("Someone Else4", 20, 1.85),
-    ]
-    # Insert many over iterable
-    db.executemany("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", friends)
-
-    # Insert unique name again
-    try:
+        # Insert via string
+        db.execute("INSERT INTO people (name, age, height) VALUES ('Someone', 80, 1.60)")
+        # Insert by tuple
         db.execute("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
-    except sqlite3.IntegrityError:
-        logger.info("Name already exists: Someone Else")
+        # Optional (name, age, height) if all columns are supplied
+        # db.execute("INSERT INTO people VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
 
-    # Delete an entry https://www.w3schools.com/sql/sql_delete.asp
-    db.execute("DELETE FROM people WHERE age=40")
+        friends = [
+            ("Someone Else1", 40, 1.70),
+            ("Someone Else2", 30, 1.75),
+            ("Someone Else3", 20, 1.80),
+            ("Someone Else4", 20, 1.85),
+        ]
+        # Insert many over iterable
+        db.executemany("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", friends)
 
-    # Update entries https://www.w3schools.com/sql/sql_update.asp
-    db.execute("UPDATE people SET height=1.90, age=35 WHERE name='Someone Else'")
+        # Insert unique name again
+        try:
+            db.execute("INSERT INTO people (name, age, height) VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
+        except sqlite3.IntegrityError:
+            logger.info("Name already exists: Someone Else")
 
-    # Insert a value if it doesnt exist, or replace if it exists
-    db.execute("REPLACE INTO people (name, age, height) VALUES ('Someone Else5', 32, 2.01)")
+        # Delete an entry https://www.w3schools.com/sql/sql_delete.asp
+        db.execute("DELETE FROM people WHERE age=40")
 
-    # Insert entries or update if it exists, 'upsert' https://www.sqlite.org/lang_UPSERT.html
-    # Might not work on old sqlite3 versions
-    # db.execute(
-    #     "INSERT INTO people VALUES ('Someone Else', 35, 1.95) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
-    # )
-    # db.execute(
-    #     "INSERT INTO people VALUES ('Someone Else5', 32, 2.00) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
-    # )
+        # Update entries https://www.w3schools.com/sql/sql_update.asp
+        db.execute("UPDATE people SET height=1.90, age=35 WHERE name='Someone Else'")
 
-    # Save database to hard drive, don't have to save when it is just in memory
-    # db.commit()
+        # Insert a value if it doesnt exist, or replace if it exists
+        db.execute("REPLACE INTO people (name, age, height) VALUES ('Someone Else5', 32, 2.01)")
 
-    # SELECT: returns selected fields of the results, use * for all https://www.w3schools.com/sql/sql_select.asp
-    # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
-    # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
-    results = db.execute(
-        "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
-    )
-    for row in results:
-        logger.info(f"Row: {row}")
+        # Insert entries or update if it exists, 'upsert' https://www.sqlite.org/lang_UPSERT.html
+        # Might not work on old sqlite3 versions
+        # db.execute(
+        #     "INSERT INTO people VALUES ('Someone Else', 35, 1.95) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
+        # )
+        # db.execute(
+        #     "INSERT INTO people VALUES ('Someone Else5', 32, 2.00) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
+        # )
 
-    # TODO: How to add or remove a column in existing database?
-    # TODO: How to join two databases?
+        # Save database to hard drive, don't have to save when it is just in memory
+        # db.commit()
 
-    db.close()
+        # SELECT: returns selected fields of the results, use * for all https://www.w3schools.com/sql/sql_select.asp
+        # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
+        # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
+        results = db.execute(
+            "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
+        )
+        for row in results:
+            logger.info(f"Row: {row}")
+
+        # TODO: How to add or remove a column in existing database?
+        # TODO: How to join two databases?
 
 
-@dataclass
-class Point:
-    x: float
-    y: float
+def test_database_with_sqlalchemy():
 
-    @staticmethod
-    def serialize(p: "Point") -> bytes:
-        return f"{p.x};{p.y}".encode("ascii")
+    # Declare tables https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_declaring_mapping.htm
+    Base = declarative_base()
 
-    @staticmethod
-    def deserialize(byte: bytes) -> "Point":
-        x, y = list(map(float, byte.split(b";")))
-        return Point(x, y)
+    class Customers(Base):
+        __tablename__ = 'customers'
+        id = Column(Integer, primary_key=True)
+
+        name = Column(String)
+        address = Column(String)
+        email = Column(String)
+
+    # Create engine https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_creating_session.htm
+    engine = create_engine("sqlite+pysqlite:///:memory:", echo=False, future=True)
+    # Create tables
+    Base.metadata.create_all(engine)
+
+    # Start session
+    with Session(engine, autocommit=False) as session:
+        # Insert new item https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_adding_objects.htm
+        c1 = Customers(name='Ravi Kumar', address='Station Road Nanded', email='ravi@gmail.com')
+        session.add(c1)
+
+        # Add multiple
+        session.add_all(
+            [
+                Customers(
+                    name='Komal Pande',
+                    address='Koti, Hyderabad',
+                    email='komal@gmail.com',
+                ),
+                Customers(
+                    name='Rajender Nath',
+                    address='Sector 40, Gurgaon',
+                    email='nath@gmail.com',
+                ),
+                Customers(
+                    name='S.M.Krishna',
+                    address='Budhwar Peth, Pune',
+                    email='smk@gmail.com',
+                ),
+            ]
+        )
+        session.commit()
+
+        # List all https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_using_query.htm
+        result = session.query(Customers).all()
+        row: Customers
+        for row in result:
+            logger.info(f"SQLAlchemy: Name: {row.name}, Address: {row.address}, Email: {row.email}")
+
+        # Filtered result
+        result2 = session.query(Customers).filter(Customers.name == 'Rajender Nath')
+        for row in result2:
+            logger.info(f"Filter result: Name: {row.name}, Address: {row.address}, Email: {row.email}")
+
+
+def test_database_with_classes():
+    @dataclass
+    class Point:
+        x: float
+        y: float
+
+        @staticmethod
+        def serialize(p: "Point") -> bytes:
+            return f"{p.x};{p.y}".encode("ascii")
+
+        @staticmethod
+        def deserialize(byte: bytes) -> "Point":
+            x, y = list(map(float, byte.split(b";")))
+            return Point(x, y)
+
+    # Register the adapter / serializer
+    sqlite3.register_adapter(Point, Point.serialize)
+
+    # Register the converter
+    sqlite3.register_converter("point", Point.deserialize)
+
+    with sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES) as db:
+        # Creates new table
+        db.execute("CREATE TABLE IF NOT EXISTS points (name TEXT, p point)")
+
+        points = [
+            ["p1", Point(x=4.0, y=-3.2)],
+            ["p2", Point(x=8.0, y=-6.4)],
+        ]
+        db.executemany("INSERT INTO points VALUES (?, ?)", points)
+        for row in db.execute("SELECT * FROM points"):
+            logger.info(f"Row: {row}")
+
+
+def test_database_with_tinydb():
+    db_path = Path(__file__).parent / "data" / "db.json"
+    os.makedirs(db_path.parent, exist_ok=True)
+    db = TinyDB(db_path)
+    User = Query()
+    # Insert
+    db.insert({'name': 'John', 'age': 22})
+    # Find
+    _result = db.search(User.name == 'John')
+    # Logical operators
+    _result = db.search((User.name == 'John') & (User.age < 30))
 
 
 def mass_convert_images():
+    """ Convert all .jpg images to .png """
     images_folder = Path(__file__).parent / "images"
     for file_path in images_folder.iterdir():
         if file_path.suffix != ".jpg":
@@ -466,39 +565,12 @@ def mass_convert_images():
         im.save(output_path)
 
 
-def test_database_with_classes():
-    # Register the adapter / serializer
-    sqlite3.register_adapter(Point, Point.serialize)
-
-    # Register the converter
-    sqlite3.register_converter("point", Point.deserialize)
-
-    db = sqlite3.connect(":memory:", detect_types=sqlite3.PARSE_DECLTYPES)
-    # Creates new table
-    db.execute("CREATE TABLE points (name TEXT, p point)")
-
-    points = [
-        ["p1", Point(x=4.0, y=-3.2)],
-        ["p2", Point(x=8.0, y=-6.4)],
-    ]
-    db.executemany("INSERT INTO points VALUES (?, ?)", points)
-    for row in db.execute("SELECT * FROM points"):
-        logger.info(f"Row: {row}")
-
-    db.close()
-
-
 def plot_lists():
     # TODO
     pass
 
 
 def plot_numpy_array():
-    # TODO
-    pass
-
-
-def plot_pandas_array():
     # TODO
     pass
 
