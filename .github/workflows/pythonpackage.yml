@@ -23,10 +23,9 @@ jobs:
       - name: Start MongoDB
         # Start mongo locally
         # docker run -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0
-        uses: supercharge/mongodb-github-action@1.6.0
+        uses: wbari/start-mongoDB@v0.2
         with:
-          mongodb-version: ${{ matrix.mongodb-version }}
-          mongodb-port: 27017
+          mongoDBVersion: ${{ matrix.mongodb-version }}
 
       - uses: actions/cache@v2
         with:
