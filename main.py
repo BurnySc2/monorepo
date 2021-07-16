@@ -8,7 +8,7 @@ from pathlib import Path
 from dataclasses import dataclass
 
 # Type annotation / hints
-from typing import List, Iterable, Union, Set
+from typing import List, Iterable, Union, Set, Dict
 
 # Database
 import sqlite3
@@ -29,13 +29,18 @@ from dpath.util import get, new, merge
 
 # Simple logging https://github.com/Delgan/loguru
 from loguru import logger
+from pymongo import MongoClient
+from pymongo.database import Database
 
 from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import declarative_base, Session
 
 from tinydb import TinyDB, Query
-# pylint: disable=E0611
-from vedis import Vedis
+
+import pymongo
+from pymongo.collection import Collection
+from pymongo.results import InsertOneResult, InsertManyResult
+from bson import ObjectId
 
 # Remove previous default handlers
 logger.remove()
@@ -95,6 +100,7 @@ async def main():
     test_database_with_sqlalchemy()
     test_database_with_classes()
     test_database_with_tinydb()
+    test_database_with_mongodb()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 
@@ -522,33 +528,84 @@ def test_database_with_sqlalchemy():
             logger.info(f"Filter result: Name: {row.name}, Address: {row.address}, Email: {row.email}")
 
 
-def test_database_with_vedis():
-    # https://vedis-python.readthedocs.io/en/latest/quickstart.html
-    db = Vedis(':mem:')
+def test_database_with_mongodb():
+    # Connect to client
+    with pymongo.MongoClient("mongodb://localhost:27017/") as my_client:
+        my_client: MongoClient
+        my_db_name = "python-template-db"
+        # Connect to db
+        my_db: Database = my_client[my_db_name]
+        # Check if db exists
+        db_list: List[str] = my_client.list_database_names()
+        if my_db_name in db_list:
+            logger.info(f"The database exists: {my_db_name}")
+            my_client.drop_database(my_db_name)
+        # Check if collection exists
+        collection_name = "customers"
+        col_list: List[str] = my_db.list_collection_names()
+        if collection_name in col_list:
+            logger.info(f"The collection exists: {collection_name}")
 
-    db['k1'] = 'v1'
-    # Returns length of value after appending new data.
-    db.append('k1', 'more data')
-    _ = db['k1']  # Returns 'v1more data'
-    del db['k1']
-    assert db['k1'] is None
+        # Drop all collections
+        for col_name in col_list:
+            col = my_db[col_name]
+            col.drop()
 
-    # Set multiple
-    db.mset(dict(k1='v1', k2='v2', k3='v3'))
-    # Get multiple
-    db.mget(['k1', 'k2', 'missing key', 'k3'])
+        # Connect to collection
+        my_col: Collection = my_db[collection_name]
+        # Insert example
+        my_dict = {"name": "John", "address": "Some Highway 37"}
+        x: InsertOneResult = my_col.insert_one(my_dict)
+        logger.info(f"Inserted id: {x.inserted_id}")
 
-    # Counter, returns current value
-    db.incr('counter')
-    db.incr_by('counter', 10)
+        # Insert Many
+        my_list = [
+            {
+                "name": "Amy",
+                "address": "Some other mountain 22"
+            }, {
+                "name": "Hannah",
+                "address": "Some Mountain 21"
+            }, {
+                "name": "Hannah",
+                "address": "Some Mountain 27"
+            }
+        ]
+        y: InsertManyResult = my_col.insert_many(my_list)
+        logger.info(f"Inserted ids: {list(map(str, y.inserted_ids))}")
+        assert len(y.inserted_ids) == 3
 
-    with db.transaction():
-        db['k1'] = 'v1'
-        db['k2'] = 'v2'
-    with db.transaction():
-        db['k1'] = 'modified'
-        # Undo changes
-        db.rollback()
+        # Find one
+        _z: Dict[str, Union[ObjectId, str]] = my_col.find_one()
+        # Find all
+        assert len(list(my_col.find())) == 4
+
+        # Find all with 'Mountain 21' in address
+        _result = my_col.find({"address": "Mountain 21"})
+
+        # https://docs.mongodb.com/manual/reference/operator/query/
+        # Find all that have 'Mountain' in address, like '%Mountain%'
+        # Remove 2nd argument to be case sensitive
+        my_regex = re.compile(".*Mountain.*", re.IGNORECASE)
+        _result = my_col.find({"address": my_regex})
+
+        # Only return (_id, name) of query
+        _result = my_col.find({}, {"_id": 1, "name": 1})
+
+        # Sort by name ASC, then by address DESC, both below works
+        # for i in my_col.find().sort("name", pymongo.ASCENDING).sort("address", pymongo.DESCENDING):
+        for i in my_col.find().sort([
+            ("name", pymongo.ASCENDING),
+            ("address", pymongo.DESCENDING),
+        ]):
+            logger.info(f"MongoDB item: {i}")
+
+        # Delete one
+        assert len(list(my_col.find())) == 4
+        my_col.delete_one({"address": my_regex})
+        assert len(list(my_col.find())) == 3
+        my_col.delete_many({"address": my_regex})
+        assert len(list(my_col.find())) == 1
 
 
 def test_database_with_classes():
@@ -586,6 +643,7 @@ def test_database_with_classes():
 
 
 def test_database_with_tinydb():
+    # Embedded pure-python dict based dictionary
     db_path = Path(__file__).parent / "data" / "db.json"
     os.makedirs(db_path.parent, exist_ok=True)
     db = TinyDB(db_path)
