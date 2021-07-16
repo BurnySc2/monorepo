@@ -60,7 +60,7 @@ jobs:
 
       - name: Run mypy (type checking)
         run: |
-          poetry run mypy --ignore-missing-imports .
+          poetry run mypy .
 
       - name: Build
         run: |

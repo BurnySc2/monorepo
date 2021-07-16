@@ -33,9 +33,11 @@ from loguru import logger
 from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import declarative_base, Session
 
-# Remove previous default handlers
 from tinydb import TinyDB, Query
+# pylint: disable=E0611
+from vedis import Vedis
 
+# Remove previous default handlers
 logger.remove()
 # Log to console
 logger.add(sys.stdout, level="INFO")
@@ -382,8 +384,8 @@ def modify_dictionary():
 
 
 def test_database():
+    # with sqlite3.connect("example.db") as db:
     with sqlite3.connect(":memory:") as db:
-        # with sqlite3.connect("example.db") as db:
 
         # Creates a new table "people" with 3 columns: text, real, integer
         # Fields marked with PRIMARY KEY are columns with unique values (?)
@@ -437,9 +439,25 @@ def test_database():
         # SELECT: returns selected fields of the results, use * for all https://www.w3schools.com/sql/sql_select.asp
         # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
         # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
+        logger.info("Example query")
         results = db.execute(
             "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
         )
+        for row in results:
+            logger.info(f"Row: {row}")
+
+        # Exclude entries where the same age is listed twice
+        # Here, age 20 is listed twice in the database, select all but those
+        results = db.execute(
+            """
+            SELECT id, name, age, height
+            FROM people
+            GROUP BY age
+            HAVING count(age) == 1
+            ORDER BY age ASC, height ASC
+            """
+        )
+        logger.info("Exclude query")
         for row in results:
             logger.info(f"Row: {row}")
 
@@ -448,7 +466,6 @@ def test_database():
 
 
 def test_database_with_sqlalchemy():
-
     # Declare tables https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_declaring_mapping.htm
     Base = declarative_base()
 
@@ -503,6 +520,35 @@ def test_database_with_sqlalchemy():
         result2 = session.query(Customers).filter(Customers.name == 'Rajender Nath')
         for row in result2:
             logger.info(f"Filter result: Name: {row.name}, Address: {row.address}, Email: {row.email}")
+
+
+def test_database_with_vedis():
+    # https://vedis-python.readthedocs.io/en/latest/quickstart.html
+    db = Vedis(':mem:')
+
+    db['k1'] = 'v1'
+    # Returns length of value after appending new data.
+    db.append('k1', 'more data')
+    _ = db['k1']  # Returns 'v1more data'
+    del db['k1']
+    assert db['k1'] is None
+
+    # Set multiple
+    db.mset(dict(k1='v1', k2='v2', k3='v3'))
+    # Get multiple
+    db.mget(['k1', 'k2', 'missing key', 'k3'])
+
+    # Counter, returns current value
+    db.incr('counter')
+    db.incr_by('counter', 10)
+
+    with db.transaction():
+        db['k1'] = 'v1'
+        db['k2'] = 'v2'
+    with db.transaction():
+        db['k1'] = 'modified'
+        # Undo changes
+        db.rollback()
 
 
 def test_database_with_classes():
