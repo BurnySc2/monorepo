@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         python-version: [3.7, 3.8, 3.9]
         mongodb-version: [5.0.0]
 
@@ -23,11 +23,6 @@ jobs:
         run: |
           docker run -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
         if: matrix.os == 'ubuntu-latest'
-
-      - name: Start MongoDB in docker (windows)
-        run: |
-          docker run -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}-nanoserver
-        if: matrix.os == 'windows-latest'
 
       - uses: actions/cache@v2
         with:

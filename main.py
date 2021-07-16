@@ -29,8 +29,6 @@ from dpath.util import get, new, merge
 
 # Simple logging https://github.com/Delgan/loguru
 from loguru import logger
-from pymongo import MongoClient
-from pymongo.database import Database
 
 from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import declarative_base, Session
@@ -40,6 +38,9 @@ from tinydb import TinyDB, Query
 import pymongo
 from pymongo.collection import Collection
 from pymongo.results import InsertOneResult, InsertManyResult
+from pymongo import MongoClient
+from pymongo.database import Database
+from pymongo.errors import ServerSelectionTimeoutError
 from bson import ObjectId
 
 # Remove previous default handlers
@@ -529,8 +530,17 @@ def test_database_with_sqlalchemy():
 
 
 def test_database_with_mongodb():
+    my_port = 27017
+    mongo_db_address = f"mongodb://localhost:{my_port}/"
+    try:
+        with pymongo.MongoClient(mongo_db_address) as _my_client:
+            pass
+    except ServerSelectionTimeoutError:
+        logger.warning(f"Could not find a running mongoDB instance on port '{my_port}' - aborting")
+        return
+
     # Connect to client
-    with pymongo.MongoClient("mongodb://localhost:27017/") as my_client:
+    with pymongo.MongoClient(mongo_db_address) as my_client:
         my_client: MongoClient
         my_db_name = "python-template-db"
         # Connect to db
