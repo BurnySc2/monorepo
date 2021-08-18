@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Union, Type
 
 from loguru import logger
+from lorem_text import lorem
 
 random.seed(420)
 
@@ -41,7 +42,7 @@ def generate_bool() -> bool:
 
 
 def generate_text() -> str:
-    return "TODO lorem ipsum"
+    return lorem.words(2)
 
 
 class SqlMetaclass:
@@ -155,5 +156,5 @@ if __name__ == '__main__':
         result_list = list(map(list, result))
 
         # Compare result to expected
-        expected = [56246, 'TODO lorem ipsum', 1412628, 'TODO lorem ipsum', 1639649]
+        expected = [56246, 'similique obcaecati', 572697, 'harum quaerat', 1603094]
         assert result_list[0] == expected, f"{result_list[0]} != {expected}"
