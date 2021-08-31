@@ -26,6 +26,8 @@ Add dev dependency:
 `poetry remove <package-name>`
 ### Update dependencies
 `poetry update`
+### List current and latest available version
+`poetry show -l`
 ### List of packages
 `poetry show`
 ### Validate pyproject.toml
@@ -35,9 +37,10 @@ Add dev dependency:
 ### Publish
 `poetry publish`
 ### Run a file
+`poetry run python main.py`
+
 `poetry run pytest`
 
-`poetry run main.py`
 ### Write requirements.txt from Poetry lock file
 `poetry export -f requirements.txt > requirements.txt`
 
