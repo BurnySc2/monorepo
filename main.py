@@ -17,6 +17,7 @@ from loguru import logger
 # Local examples
 from examples.databases.mongodb_example import test_database_with_mongodb
 from examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
+from examples.databases.sqlmodel_example import test_database_with_sqlmodel
 from examples.databases.tinydb_example import test_database_with_tinydb
 from examples.databases.sqlite_example import test_database
 from examples.databases.sqlite_with_classes import test_database_with_classes
@@ -88,6 +89,7 @@ async def main():
     test_database_with_classes()
     test_database_with_tinydb()
     test_database_with_mongodb()
+    test_database_with_sqlmodel()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 
