@@ -11,9 +11,9 @@ random.seed(420)
 
 # Source: https://github.com/smashew/NameDatabases
 this_folder = Path(__file__).parent
-with open(this_folder / "first_names.txt") as f:
+with (this_folder / "first_names.txt").open() as f:
     first_names = [i.strip() for i in f.readlines()]
-with open(this_folder / "last_names.txt") as f:
+with (this_folder / "last_names.txt").open() as f:
     last_names = [i.strip() for i in f.readlines()]
 
 
@@ -73,6 +73,7 @@ class SqlMetaclass:
     def generate_data(cls, db: sqlite3.Connection, amount: int = 1):
         name_fields = {"artist_name"}
         rows: List[List[Union[float, bool, str]]] = []
+        # TODO Overlapping items
         for _ in range(amount):
             row_entry: List[Union[float, bool, str]] = []
             for column_name, column_type in cls.__annotations__.items():
@@ -104,9 +105,22 @@ class SqlMetaclass:
         """, rows
         )
 
-    @classmethod
-    def print_table(cls, db: sqlite3.Connection):
-        pass
+    def add_item_to_db(self, db: sqlite3.Connection):
+        columns = [f"{column_name}" for column_name, column_type in self.__annotations__.items()]
+        columns_joined = ", ".join(columns)
+        values = [self.__dict__[column_name] for column_name in columns]
+        values_joined = ", ".join(map(repr, values))
+        table_name = self.__class__.__name__
+        insert_string = f"""
+        INSERT INTO {table_name} ({columns_joined})
+        VALUES ({values_joined})
+        """
+        logger.info(f"Inserting: values '{values_joined}' into columns '{columns_joined}' into table '{table_name}'")
+        db.execute(insert_string)
+
+    # @classmethod
+    # def print_table(cls, db: sqlite3.Connection):
+    #     pass
 
 
 # Define tables
@@ -117,13 +131,14 @@ class Song(SqlMetaclass):
     song_id: int
     song_name: str
     artist_id: int
+    album_id: int
     genre: str
     song_length: int
 
 
 @dataclass
 class Album(SqlMetaclass):
-    album_id: str
+    album_id: int
     album_name: str
     publish_year: int
 
@@ -143,18 +158,34 @@ if __name__ == '__main__':
             # Create tables
             cls.create_table(db)
             # Generate data
-            cls.generate_data(db, amount=5)
+            cls.generate_data(db, amount=3)
+
+        # Add custom items to db
+        Song(
+            song_id=generate_int(),
+            song_name=generate_name(),
+            artist_id=generate_int(),
+            album_id=1869690,
+            genre=generate_text(),
+            song_length=generate_int()
+        ).add_item_to_db(db)
 
         # Print data in database
+        # TODO print data as table where each column has same width
         result = db.execute("SELECT * FROM Song")
         for i in result:
             # logger.info(Song(*i))
             pass
 
         # Run test query
-        result = db.execute("SELECT * FROM Song LIMIT 1")
+        result = db.execute(
+            """
+        SELECT song_name, album_name, publish_year FROM Song JOIN Album
+        ON Song.album_id = Album.album_id
+        """
+        )
         result_list = list(map(list, result))
 
         # Compare result to expected
-        expected = [56246, 'similique obcaecati', 572697, 'harum quaerat', 1603094]
-        assert result_list[0] == expected, f"{result_list[0]} != {expected}"
+        expected = [['Jeannette Macha', 'doloribus unde', 1984]]
+        assert result_list == expected, f"{result_list} != {expected}"

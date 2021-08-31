@@ -3,7 +3,9 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from main import do_math, download_site, download_all_sites, cpu_bound_summing, download_image
+from main import do_math, download_all_sites, download_image
+from examples.other.download_upload import download_site
+from examples.other.multiprocessing_example import cpu_bound_summing
 import pytest
 import aiohttp
 import time
