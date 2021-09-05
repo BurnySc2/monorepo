@@ -26,6 +26,7 @@ from examples.dataclasses_and_dicts.import_export_dataclass import test_data_cla
 from examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
 from examples.other.asyncio_download_upload import download_all_sites, download_image
 from examples.other.file_interaction import create_file
+from examples.other.geometry_example import test_geometry_shapely
 from examples.other.image_manipulation import mass_convert_images
 from examples.other.measure_time import measure_time
 from examples.other.multiprocessing_example import do_math, do_multiprocessing
@@ -66,7 +67,7 @@ async def main():
     _math_result = await do_math(6)
 
     start_time = time.perf_counter()
-    do_multiprocessing()
+    _result2 = do_multiprocessing()
     end_time = time.perf_counter()
     logger.info(f"Time for multiprocessing taken: {end_time - start_time}")
 
@@ -90,6 +91,8 @@ async def main():
     test_database_with_tinydb()
     test_database_with_mongodb()
     test_database_with_sqlmodel()
+
+    test_geometry_shapely()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 

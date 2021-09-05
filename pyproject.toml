@@ -44,6 +44,8 @@ pymongo = "^3.12.0"
 lorem-text = "^1.5"
 # https://github.com/tiangolo/sqlmodel
 sqlmodel = "^0.0.4"
+# Geometry manipulation
+Shapely = "^1.7.1"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter

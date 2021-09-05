@@ -23,6 +23,6 @@ def find_sums(numbers: Iterable[int]) -> List[int]:
     return result
 
 
-def do_multiprocessing():
-    numbers: List[int] = [5_000 + x for x in range(200)]
-    _sums: List[int] = find_sums(numbers)
+def do_multiprocessing() -> List[int]:
+    numbers: List[int] = [50_000 + x for x in range(2_000)]
+    return find_sums(numbers)
