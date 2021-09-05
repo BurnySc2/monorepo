@@ -28,6 +28,8 @@ Add dev dependency:
 `poetry update`
 ### List current and latest available version
 `poetry show -l`
+### Same as above, but only show outdated
+`poetry show -o`
 ### List of packages
 `poetry show`
 ### Validate pyproject.toml

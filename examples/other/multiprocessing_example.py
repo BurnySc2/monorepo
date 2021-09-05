@@ -1,3 +1,4 @@
+import os
 from multiprocessing import Pool
 from typing import Union, Iterable, List
 
@@ -11,11 +12,17 @@ def cpu_bound_summing(number: int) -> int:
 
 
 def find_sums(numbers: Iterable[int]) -> List[int]:
-    with Pool() as pool:
+    # Run on a minimum of 4 processes / CPU cores
+    # If set to None or ommited, it will be automatically calculated based on the hardware
+    at_least_4_processes = os.cpu_count() or 4
+    at_least_4_processes = max(4, at_least_4_processes)
+    with Pool(processes=at_least_4_processes) as pool:
         result = pool.map(cpu_bound_summing, numbers)
+        # Returns an iterator of the result instead, for lazy evaluation:
+        # result = pool.imap(cpu_bound_summing, numbers)
     return result
 
 
 def do_multiprocessing():
-    numbers: List[int] = [5_000 + x for x in range(20)]
+    numbers: List[int] = [5_000 + x for x in range(200)]
     _sums: List[int] = find_sums(numbers)

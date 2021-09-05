@@ -24,7 +24,7 @@ from examples.databases.sqlite_with_classes import test_database_with_classes
 
 from examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
 from examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
-from examples.other.download_upload import download_all_sites, download_image
+from examples.other.asyncio_download_upload import download_all_sites, download_image
 from examples.other.file_interaction import create_file
 from examples.other.image_manipulation import mass_convert_images
 from examples.other.measure_time import measure_time
@@ -34,7 +34,7 @@ from examples.other.regex_example import test_all_roman_numbers, regex_match_tes
 logger.remove()  # Remove previous default handlers
 # Log to console
 logger.add(sys.stdout, level="INFO")
-# Log to file, max size 1 mb, max log file age 7 days
+# Log to file, max size 1 mb, max log file age 7 days before a new one gets created
 logger.add("main.log", rotation="1 MB", retention="7 days", level="INFO")
 
 

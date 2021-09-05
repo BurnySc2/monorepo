@@ -34,7 +34,6 @@ async def download_image(
                 # Assume everything went well with the response, no connection or server errors
                 assert response.status == 200
                 # Open file in binary write mode
-                # with open(temp_file_path, "wb") as f:
                 with temp_file_path.open("wb") as f:
                     # Download file in chunks
                     async for data in response.content.iter_chunked(chunk_size):
@@ -52,17 +51,16 @@ async def download_image(
                             await asyncio.sleep(accuracy)
             await asyncio.sleep(0.1)
             try:
-                # os.rename(temp_file_path, file_path)
                 temp_file_path.rename(file_path)
                 return True
             except PermissionError:
                 # The file might be open by another process
                 logger.info(f"Permissionerror: Unable to rename file from ({temp_file_path}) to ({file_path})")
         except asyncio.TimeoutError:
-            # The The server might suddenly not respond
+            # The server might suddenly not respond
             logger.info(f"Received timeout error in url ({url}) in file path ({file_path})!")
     else:
-        # The file already exists!
+        # The file already exists
         logger.info(f"File for url ({url}) in file path ({file_path}) already exists!")
     return False
 

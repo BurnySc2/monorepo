@@ -38,7 +38,9 @@ watchgod = "^0.7"
 SQLAlchemy = "^1.4.20"
 # Simple database that operates on dictionaries
 tinydb = "^4.5.0"
+# New popular database
 pymongo = "^3.12.0"
+# Generate text
 lorem-text = "^1.5"
 # https://github.com/tiangolo/sqlmodel
 sqlmodel = "^0.0.4"
@@ -68,13 +70,13 @@ snakeviz = "^2.1.0"
 # Required by line_profiler
 # ipython = "^7.16.1"
 # Enable pre commit hooks
-pre-commit = "^2.13.0"
+pre-commit = "^2.15.0"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.masonry.api"
 
-[[tool.mypy.overrides]]
+[tool.mypy]
 python_version = "3.7"
 ignore_missing_imports = true
 
