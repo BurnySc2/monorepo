@@ -34,11 +34,11 @@ Add dev dependency:
 `poetry show`
 ### Validate pyproject.toml
 `poetry check`
-### Build
+### Build for distribution
 `poetry build`
-### Publish
+### Publish on pypy
 `poetry publish`
-### Run a file
+### Run a file in virtual environment
 `poetry run python main.py`
 
 `poetry run pytest`
@@ -49,8 +49,8 @@ Add dev dependency:
 
 # Run python files
 - install `poetry` using command `pip install poetry`
-- run the python file `main.py` using `poetry run main.py`
-- or `poetry shell` and then run `main.py`
+- run the python file `main.py` using `poetry run python main.py`
+- or `poetry shell` and then run `python main.py`
 
 
 # Run Tests
@@ -58,7 +58,7 @@ Single file:
 `poetry run pytest test/test_functions.py`
 
 Test all files in folder:
-`poetry run pytest test/`
+`poetry run pytest`
 
 # Install and run all pre-commit hook scripts
 ```py
@@ -69,4 +69,4 @@ poetry run pre-commit run --all-files
 This runs pylint, mypy, pytest tests, apply autoformatter yapf
 
 # Autoformat all files
-`yapf ./**/*.py -i`
+`poetry run yapf ./**/*.py -i`
