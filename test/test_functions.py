@@ -3,7 +3,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from main import do_math, download_all_sites, download_image
+from main import do_math, download_all_sites, download_file
 from examples.async_await.asyncio_download_upload import download_site
 from examples.other.multiprocessing_example import cpu_bound_summing
 import pytest
@@ -17,45 +17,52 @@ import hypothesis.strategies as st
 @pytest.mark.asyncio
 async def test_download_image():
     # With this download throttle, it should take at least 9 seconds to download the 1mb image at 100kb/s
-    download_path = Path(__file__).parent / "image.png"
-    download_path_not_complete = Path(__file__).parent / "image_download_not_complete"
+    download_path = Path(__file__).parent / "my_file.zip"
+    download_path_not_complete = Path(__file__).parent / "my_file_incomplete"
 
     # Cleanup from last time
     if os.path.isfile(download_path):
         os.remove(download_path)
+    if os.path.isfile(download_path_not_complete):
+        os.remove(download_path_not_complete)
 
-    # Unsure why this test doest work anymore - they implemented a redirect instead of linking to the direct image? TODO Find a better test image
+    # https://www.thinkbroadband.com/download
+    file_url = "http://ipv4.download.thinkbroadband.com/5MB.zip"
 
-    # t0 = time.perf_counter()
-    # async with aiohttp.ClientSession() as session:
-    #     result: bool = await download_image(
-    #         session,
-    #         url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
-    #         file_path=download_path,
-    #         temp_file_path=download_path_not_complete,
-    #         download_speed=100 * 2 ** 10,
-    #     )
-    # t1 = time.perf_counter()
-    # assert result
-    # assert t1 - t0 > 9
-    # assert os.path.isfile(download_path)
-    #
-    # # Cleanup
-    # os.remove(download_path)
+    file_size = 5 * 2**20
+    download_speed = 1000 * 2**10
+    estimated_download_time = file_size / download_speed
+    assert estimated_download_time < 6
+    t0 = time.perf_counter()
+    async with aiohttp.ClientSession() as session:
+        result: bool = await download_file(
+            session,
+            url=file_url,
+            file_path=download_path,
+            temp_file_path=download_path_not_complete,
+            download_speed=download_speed,
+        )
+    t1 = time.perf_counter()
+    assert result
+    assert estimated_download_time * 0.8 < t1 - t0 < estimated_download_time * 1.2
+    assert os.path.isfile(download_path)
+
+    # Cleanup
+    os.remove(download_path)
 
     # Without throttle, it should take less than 3 seconds
     t0 = time.perf_counter()
     assert not os.path.isfile(download_path)
     async with aiohttp.ClientSession() as session:
-        result: bool = await download_image(
+        result: bool = await download_file(
             session,
-            url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
+            url=file_url,
             file_path=download_path,
             temp_file_path=download_path_not_complete,
         )
     t1 = time.perf_counter()
     assert result
-    assert t1 - t0 < 9
+    assert t1 - t0 < estimated_download_time * 0.8
     assert os.path.isfile(download_path)
 
     # Cleanup

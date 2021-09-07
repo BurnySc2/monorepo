@@ -1,4 +1,5 @@
 import asyncio
+import os
 import time
 from pathlib import Path
 from typing import List, Iterable
@@ -7,13 +8,13 @@ import aiohttp
 from loguru import logger
 
 
-async def download_image(
+async def download_file(
     session: aiohttp.ClientSession,
     url: str,
     file_path: Path,
     temp_file_path: Path,
     download_speed: int = -1,
-    chunk_size: int = 1024,
+    chunk_size: int = 4096,
 ) -> bool:
     """
     Downloads an image (or a file even) from "url" and saves it to "temp_file_path". When the download is complete, it renames the file at "temp_file_path" to "file_path".
@@ -88,3 +89,27 @@ async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientRespons
             # response_url = str(response.url)
             responses.append(response)
     return responses
+
+
+async def main():
+    download_path = Path(__file__).parent / "my_file.zip"
+    download_path_not_complete = Path(__file__).parent / "my_file_incomplete"
+    file_url = "http://ipv4.download.thinkbroadband.com/5MB.zip"
+
+    download_speed = 1000 * 2**10
+    async with aiohttp.ClientSession() as session:
+        _result: bool = await download_file(
+            session,
+            url=file_url,
+            file_path=download_path,
+            temp_file_path=download_path_not_complete,
+            download_speed=download_speed,
+        )
+    if download_path.exists():
+        os.remove(download_path)
+    if download_path_not_complete.exists():
+        os.remove(download_path_not_complete)
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

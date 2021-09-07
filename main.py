@@ -24,7 +24,7 @@ from examples.databases.sqlite_with_classes import test_database_with_classes
 
 from examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
 from examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
-from examples.async_await.asyncio_download_upload import download_all_sites, download_image
+from examples.async_await.asyncio_download_upload import download_all_sites, download_file
 from examples.async_await.rate_limited_example import api_rate_limited_example
 from examples.other.file_interaction import create_file
 from examples.other.geometry_example import test_geometry_shapely
@@ -53,7 +53,7 @@ async def main():
 
     # Download an image with download speed throttle
     async with aiohttp.ClientSession() as session:
-        _result: bool = await download_image(
+        _result: bool = await download_file(
             session,
             url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
             file_path=Path("test/image.png"),
