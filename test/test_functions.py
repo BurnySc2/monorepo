@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 from main import do_math, download_all_sites, download_image
-from examples.other.asyncio_download_upload import download_site
+from examples.async_await.asyncio_download_upload import download_site
 from examples.other.multiprocessing_example import cpu_bound_summing
 import pytest
 import aiohttp

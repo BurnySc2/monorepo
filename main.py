@@ -24,7 +24,8 @@ from examples.databases.sqlite_with_classes import test_database_with_classes
 
 from examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
 from examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
-from examples.other.asyncio_download_upload import download_all_sites, download_image
+from examples.async_await.asyncio_download_upload import download_all_sites, download_image
+from examples.async_await.rate_limited_example import api_rate_limited_example
 from examples.other.file_interaction import create_file
 from examples.other.geometry_example import test_geometry_shapely
 from examples.other.image_manipulation import mass_convert_images
@@ -60,6 +61,8 @@ async def main():
             # Download at speed of 100kb/s
             download_speed=100 * 2**10,
         )
+    # Gather a ton of responses from an API
+    api_rate_limited_example()
 
     end_time = time.perf_counter()
     logger.info(f"Time for sites download taken: {end_time - start_time}")
