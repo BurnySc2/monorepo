@@ -9,13 +9,16 @@ REQUEST_PER_SECOND = 200
 WORKERS_AMOUNT = 6
 MAX_RETRIES = 3
 WAIT_TIME = WORKERS_AMOUNT / REQUEST_PER_SECOND
+PRESERVE_ORDER = (i for i in range(10**1000))
 
 
 async def create_tasks(queue: asyncio.PriorityQueue):
     # https://jsonplaceholder.typicode.com/guide/
     logger.info("Creating tasks...")
     for i in range(1, 101):
-        await queue.put((i, (f"https://jsonplaceholder.typicode.com/posts/{i}", MAX_RETRIES)))
+        # Priority queue is implemented with heap - need another integer to compare between elements
+        # If elements have same priority, use the order in which they got created
+        await queue.put((i, next(PRESERVE_ORDER), f"https://jsonplaceholder.typicode.com/posts/{i}", MAX_RETRIES))
     logger.info(f"Queue contains {queue.qsize()} items now")
     logger.info(f"Estimated seconds of workload: {queue.qsize() / REQUEST_PER_SECOND:.2f} seconds")
 
@@ -42,12 +45,13 @@ async def do_stuff(session: ClientSession, url: str, retry: int, results: list) 
 async def worker(session: ClientSession, input_queue: asyncio.PriorityQueue, results: list):
     while not input_queue.empty():
         t0 = time.perf_counter()
-        item: Tuple[int, Tuple[str, int]] = await input_queue.get()
-        _priority, (url, retry) = item
+        item: Tuple[int, int, str, int] = await input_queue.get()
+        _priority, _, url, retry = item
         # Get and store results
         success = await do_stuff(session, url, retry, results)
         if not success:
-            await input_queue.put((_priority, (url, retry - 1)))
+            # Retry later
+            await input_queue.put((_priority, next(PRESERVE_ORDER), url, retry - 1))
         input_queue.task_done()
         t1 = time.perf_counter()
         # Respect rate limiting
