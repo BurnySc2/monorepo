@@ -62,7 +62,7 @@ async def main():
             download_speed=100 * 2**10,
         )
     # Gather a ton of responses from an API
-    api_rate_limited_example()
+    await api_rate_limited_example()
 
     end_time = time.perf_counter()
     logger.info(f"Time for sites download taken: {end_time - start_time}")

@@ -1,37 +1,53 @@
 import asyncio
-from asyncio import Queue
 import time
+from typing import Tuple, List
 
 from aiohttp import ClientSession, TCPConnector
 from loguru import logger
 
-REQUEST_PER_SECOND = 20
+REQUEST_PER_SECOND = 200
 WORKERS_AMOUNT = 6
+MAX_RETRIES = 3
 WAIT_TIME = WORKERS_AMOUNT / REQUEST_PER_SECOND
 
 
-async def create_tasks(queue: Queue):
+async def create_tasks(queue: asyncio.PriorityQueue):
     # https://jsonplaceholder.typicode.com/guide/
     logger.info("Creating tasks...")
     for i in range(1, 101):
-        await queue.put(f"https://jsonplaceholder.typicode.com/posts/{i}")
+        await queue.put((i, (f"https://jsonplaceholder.typicode.com/posts/{i}", MAX_RETRIES)))
     logger.info(f"Queue contains {queue.qsize()} items now")
     logger.info(f"Estimated seconds of workload: {queue.qsize() / REQUEST_PER_SECOND:.2f} seconds")
 
 
-async def do_stuff(session: ClientSession, url: str, results: list):
-    response = await session.get(url)
-    if response.ok:
-        response_json = await response.json()
-        results.append(response_json)
+async def do_stuff(session: ClientSession, url: str, retry: int, results: list) -> bool:
+    if retry <= 0:
+        # Amount of retries exhausted
+        return True
+    try:
+        response = await session.get(
+            url,
+            # How long each request can at most take
+            timeout=0.005,
+        )
+        if response.ok:
+            response_json = await response.json()
+            results.append(response_json)
+        return True
+    except asyncio.TimeoutError:
+        # Took too long to respond
+        return False
 
 
-async def worker(session: ClientSession, input_queue: Queue, results: list):
+async def worker(session: ClientSession, input_queue: asyncio.PriorityQueue, results: list):
     while not input_queue.empty():
         t0 = time.perf_counter()
-        url: str = await input_queue.get()
+        item: Tuple[int, Tuple[str, int]] = await input_queue.get()
+        _priority, (url, retry) = item
         # Get and store results
-        await do_stuff(session, url, results)
+        success = await do_stuff(session, url, retry, results)
+        if not success:
+            await input_queue.put((_priority, (url, retry - 1)))
         input_queue.task_done()
         t1 = time.perf_counter()
         # Respect rate limiting
@@ -40,20 +56,19 @@ async def worker(session: ClientSession, input_queue: Queue, results: list):
             await asyncio.sleep(wait_time)
 
 
-async def main():
-    queue = Queue()
-    results = []
+async def request_concurrently() -> float:
+    t0 = time.perf_counter()
+    queue: asyncio.PriorityQueue = asyncio.PriorityQueue()
+    results: List[dict] = []
     await create_tasks(queue)
     logger.info("Starting workers...")
     async with ClientSession(
         connector=TCPConnector(
             # Limit amount of connections this ClientSession should posses
-            limit=10,
+            limit=40,
             # Limit amount of connections per host
-            limit_per_host=8,
+            limit_per_host=20,
         ),
-        # How long each request can at most take - can be overridden in request individually
-        timeout=10,
     ) as session:
         await asyncio.gather(*(asyncio.create_task(worker(
             session,
@@ -61,14 +76,33 @@ async def main():
             results,
         )) for _ in range(WORKERS_AMOUNT)))
 
+    t1 = time.perf_counter()
     logger.info(f"Workers are done! Amount of results: {len(results)}")
-    for result in results:
-        logger.info(result)
+    return t1 - t0
 
 
-def api_rate_limited_example():
-    asyncio.run(main())
+async def request_sequentially() -> float:
+    logger.info("Starting sequentially...")
+    t0 = time.perf_counter()
+    async with ClientSession() as session:
+        for i in range(1, 101):
+            result = await session.get(f"https://jsonplaceholder.typicode.com/posts/{i}")
+            if result.ok:
+                await result.json()
+    t1 = time.perf_counter()
+    logger.info("Sequentially done!")
+    return t1 - t0
+
+
+async def api_rate_limited_example():
+    t_sequentially = await request_sequentially()
+    t_concurrently = await request_concurrently()
+    assert t_concurrently <= t_sequentially, f"{t_concurrently} <= {t_sequentially}"
+
+
+def main():
+    asyncio.run(api_rate_limited_example())
 
 
 if __name__ == '__main__':
-    api_rate_limited_example()
+    main()

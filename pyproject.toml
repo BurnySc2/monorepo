@@ -31,7 +31,7 @@ pillow = "^8.2.0"
 # Better / easier datetime library
 pendulum = "^2.1.2"
 # Easier nested dictionary manipulation
-dpath = "^2.0.1"
+dpath = "^2.0.3"
 # File watcher
 watchgod = "^0.7"
 # Database with ORM
@@ -62,7 +62,7 @@ mypy = "^0.910"
 # Requirement for pytest < 3.8
 importlib_metadata = "^1.7.0"
 # Statistical testing
-hypothesis = "^6.14.2"
+hypothesis = "^6.18.0"
 # Cyclomatic complexity checker
 radon = "^5.0.1"
 # Function profiler, checks how often functions get called

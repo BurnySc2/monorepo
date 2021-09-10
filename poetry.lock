@@ -176,11 +176,11 @@ python-versions = "*"
 
 [[package]]
 name = "dpath"
-version = "2.0.2"
+version = "2.0.3"
 description = "Filesystem-like pathing and searching for dictionaries"
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=3"
 
 [[package]]
 name = "filelock"
@@ -211,7 +211,7 @@ docs = ["sphinx"]
 
 [[package]]
 name = "hypothesis"
-version = "6.17.4"
+version = "6.20.1"
 description = "A library for property-based testing"
 category = "dev"
 optional = false
@@ -239,7 +239,7 @@ zoneinfo = ["importlib-resources (>=3.3.0)", "backports.zoneinfo (>=0.2.1)", "tz
 
 [[package]]
 name = "identify"
-version = "2.2.13"
+version = "2.2.14"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -940,7 +940,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7 <3.11"
-content-hash = "750235733f5acce084c3047d3c61c7d76faa425818d8b6d08ddad37ffef1e832"
+content-hash = "f96345052a15529ed4e62aa9dc9ce88a8f9b1083d1ffe6850aa608783cc7f596"
 
 [metadata.files]
 aiocontextvars = [
@@ -1129,8 +1129,8 @@ distlib = [
     {file = "distlib-0.3.2.zip", hash = "sha256:106fef6dc37dd8c0e2c0a60d3fca3e77460a48907f335fa28420463a6f799736"},
 ]
 dpath = [
-    {file = "dpath-2.0.2-py3-none-any.whl", hash = "sha256:a37fdf585c6f39992bb72742528ddf9b141c166fc5c1f2bedfa99c2a755aa9b1"},
-    {file = "dpath-2.0.2.tar.gz", hash = "sha256:040dbe4a101e1b6b1b65e9da258534f0f0b0ae00a3b1fd2d592fe8579ff837ae"},
+    {file = "dpath-2.0.3-py3-none-any.whl", hash = "sha256:3d05c2e3125fc9f1b579a5276d2f47de90fbfc0f30b2b3e52cdad76cc3283c1c"},
+    {file = "dpath-2.0.3.tar.gz", hash = "sha256:a7a89c32e747df3a9f2a446bb797472e359beba5339515b7a6f65b233b2a31a7"},
 ]
 filelock = [
     {file = "filelock-3.0.12-py3-none-any.whl", hash = "sha256:929b7d63ec5b7d6b71b0fa5ac14e030b3f70b75747cef1b10da9b879fef15836"},
@@ -1192,12 +1192,12 @@ greenlet = [
     {file = "greenlet-1.1.1.tar.gz", hash = "sha256:c0f22774cd8294078bdf7392ac73cf00bfa1e5e0ed644bd064fdabc5f2a2f481"},
 ]
 hypothesis = [
-    {file = "hypothesis-6.17.4-py3-none-any.whl", hash = "sha256:47b86bda10dba94bb9e5733dcb4df27fca8b421ebe81aad2516441272c374c10"},
-    {file = "hypothesis-6.17.4.tar.gz", hash = "sha256:fd5a2207aaaaea430fe1dd0fc4392edb1c95cb21034fdf69231113cc1ab86fa0"},
+    {file = "hypothesis-6.20.1-py3-none-any.whl", hash = "sha256:972d5ec98024e26f192202cf28aa68c9ec04be96227fa6d37744fcdb2047976f"},
+    {file = "hypothesis-6.20.1.tar.gz", hash = "sha256:1057f8f27a9f3e1eac341502ea4a43f5045161f797bb661e176a67b77c5b1795"},
 ]
 identify = [
-    {file = "identify-2.2.13-py2.py3-none-any.whl", hash = "sha256:7199679b5be13a6b40e6e19ea473e789b11b4e3b60986499b1f589ffb03c217c"},
-    {file = "identify-2.2.13.tar.gz", hash = "sha256:7bc6e829392bd017236531963d2d937d66fc27cadc643ac0aba2ce9f26157c79"},
+    {file = "identify-2.2.14-py2.py3-none-any.whl", hash = "sha256:113a76a6ba614d2a3dd408b3504446bcfac0370da5995aa6a17fd7c6dffde02d"},
+    {file = "identify-2.2.14.tar.gz", hash = "sha256:32f465f3c48083f345ad29a9df8419a4ce0674bf4a8c3245191d65c83634bdbf"},
 ]
 idna = [
     {file = "idna-3.2-py3-none-any.whl", hash = "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a"},
