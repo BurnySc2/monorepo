@@ -7,6 +7,8 @@ from loguru import logger
 def test_database():
     # with sqlite3.connect("example.db") as db:
     with sqlite3.connect(":memory:") as db:
+        # Instead of returning tuples, return dicts https://stackoverflow.com/a/55986968
+        db.row_factory = sqlite3.Row
 
         # Creates a new table "people" with 3 columns: text, real, integer
         # Fields marked with PRIMARY KEY are columns with unique values (?)
@@ -65,7 +67,8 @@ def test_database():
             "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
         )
         for row in results:
-            logger.info(f"Row: {row}")
+            row_as_dict = dict(row)
+            logger.info(f"Row: {row_as_dict}")
 
         # Exclude entries where the same age is listed twice
         # Here, age 20 is listed twice in the database, select all but those
@@ -78,9 +81,11 @@ def test_database():
             ORDER BY age ASC, height ASC
             """
         )
+
         logger.info("Exclude query")
         for row in results:
-            logger.info(f"Row: {row}")
+            row_as_dict = dict(row)
+            logger.info(f"Row: {row_as_dict}")
 
         # TODO: How to add or remove a column in existing database?
         # TODO: How to join two databases?

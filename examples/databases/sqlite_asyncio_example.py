@@ -82,7 +82,8 @@ async def test_asyncio_database():
             """
         )
         for row in results:
-            logger.info(f"Row: {row}")
+            row_as_dict = dict(row)
+            logger.info(f"Row: {row_as_dict}")
 
         # Entry does not exist
         result = await db.fetch_one("SELECT name FROM people WHERE age==999")
@@ -121,8 +122,8 @@ async def performance_test_asyncio_database():
 
 
 async def main():
-    # await test_asyncio_database()
-    await performance_test_asyncio_database()
+    await test_asyncio_database()
+    # await performance_test_asyncio_database()
 
 
 if __name__ == '__main__':
