@@ -46,6 +46,8 @@ lorem-text = "^1.5"
 sqlmodel = "^0.0.4"
 # Geometry manipulation
 Shapely = "^1.7.1"
+# https://www.encode.io/databases/
+databases = {extras = ["sqlite"], version = "^0.5.2"}
 
 [tool.poetry.dev-dependencies]
 # Autoformatter

@@ -84,3 +84,7 @@ def test_database():
 
         # TODO: How to add or remove a column in existing database?
         # TODO: How to join two databases?
+
+
+if __name__ == '__main__':
+    test_database()
