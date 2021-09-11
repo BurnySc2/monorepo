@@ -24,6 +24,11 @@ jobs:
           docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
         if: matrix.os == 'ubuntu-latest'
 
+      - name: Start Postgres in docker (linux)
+        run: |
+          docker run --rm -d --name postgresql-container -p 54321:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
+        if: matrix.os == 'ubuntu-latest'
+
       - uses: actions/cache@v2
         with:
           path: ~/.cache/pypoetry/virtualenvs

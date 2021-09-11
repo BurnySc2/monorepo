@@ -63,10 +63,11 @@ def test_database():
         # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
         # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
         logger.info("Example query")
-        results = db.execute(
+        results: sqlite3.Cursor = db.execute(
             "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
         )
         for row in results:
+            # Can also access values via row[0]
             row_as_dict = dict(row)
             logger.info(f"Row: {row_as_dict}")
 

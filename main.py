@@ -15,6 +15,7 @@ import aiohttp
 from loguru import logger
 
 # Local examples
+from examples.databases.asyncpg_asyncio_example import test_asyncpg_database, performance_test_asyncpg_database
 from examples.databases.mongodb_example import test_database_with_mongodb
 from examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
 from examples.databases.sqlite_asyncio_example import test_asyncio_database
@@ -88,21 +89,23 @@ async def main():
     logger.info("Validating all roman numbers up to 3999")
     test_all_roman_numbers()
 
-    logger.info("Testing database interaction")
-    test_database()
-    await test_asyncio_database()
-    test_database_with_sqlalchemy()
-    test_database_with_classes()
-    test_database_with_tinydb()
-    test_database_with_mongodb()
-    test_database_with_sqlmodel()
-
     test_geometry_shapely()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 
     logger.info("Converting all .jpg images in /images folder")
     mass_convert_images()
+
+    logger.info("Testing database interaction")
+    test_database()
+    await test_asyncpg_database()
+    await performance_test_asyncpg_database()
+    await test_asyncio_database()
+    test_database_with_sqlalchemy()
+    test_database_with_classes()
+    test_database_with_tinydb()
+    test_database_with_sqlmodel()
+    test_database_with_mongodb()
 
 
 def mass_replace():

@@ -6,7 +6,7 @@ from aiohttp import ClientSession, TCPConnector
 from loguru import logger
 
 REQUEST_PER_SECOND = 200
-WORKERS_AMOUNT = 6
+WORKERS_AMOUNT = 20
 MAX_RETRIES = 3
 WAIT_TIME = WORKERS_AMOUNT / REQUEST_PER_SECOND
 PRESERVE_ORDER = (i for i in range(10**1000))

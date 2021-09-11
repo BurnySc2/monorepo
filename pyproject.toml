@@ -48,6 +48,8 @@ sqlmodel = "^0.0.4"
 Shapely = "^1.7.1"
 # https://www.encode.io/databases/
 databases = {extras = ["sqlite"], version = "^0.5.2"}
+# Async database
+asyncpg = "^0.24.0"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter

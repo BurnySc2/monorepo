@@ -3,6 +3,7 @@ import asyncio
 import sqlite3
 import time
 from pathlib import Path
+from typing import List
 
 from databases import Database
 from loguru import logger
@@ -63,16 +64,18 @@ async def test_asyncio_database():
         # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
         # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
         logger.info("Example query")
-        results = await db.fetch_all(
+        results: List[sqlite3.Row] = await db.fetch_all(
             "SELECT id, name, age, height FROM people WHERE height>=1.70 and name != 'Someone Else2' ORDER BY age ASC, height ASC"
         )
         for row in results:
-            logger.info(f"Row: {row}")
+            # Can also access values via row[0]
+            row_as_dict = dict(row)
+            logger.info(f"Row: {row_as_dict}")
 
         # Exclude entries where the same age is listed twice
         # Here, age 20 is listed twice in the database, select all but those
         logger.info("Exclude query")
-        results = await db.fetch_all(
+        results: List[sqlite3.Row] = await db.fetch_all(
             """
             SELECT id, name, age, height
             FROM people
