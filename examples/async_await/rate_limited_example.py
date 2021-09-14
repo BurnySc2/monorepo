@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import Tuple, List
+from typing import List, Tuple
 
 from aiohttp import ClientSession, TCPConnector
 from loguru import logger

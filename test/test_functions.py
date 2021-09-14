@@ -1,17 +1,19 @@
-import sys
 import os
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from main import do_math, download_all_sites, download_file
-from examples.async_await.asyncio_download_upload import download_site
-from examples.other.multiprocessing_example import cpu_bound_summing
-import pytest
-import aiohttp
 import time
 from pathlib import Path
-from hypothesis import given
+
+import aiohttp
 import hypothesis.strategies as st
+import pytest
+from hypothesis import given
+
+from examples.async_await.asyncio_download_upload import download_site
+from examples.other.multiprocessing_example import cpu_bound_summing
+from main import do_math, download_all_sites, download_file
 
 
 @pytest.mark.asyncio

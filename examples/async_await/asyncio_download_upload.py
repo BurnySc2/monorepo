@@ -2,7 +2,7 @@ import asyncio
 import os
 import time
 from pathlib import Path
-from typing import List, Iterable
+from typing import Iterable, List
 
 import aiohttp
 from loguru import logger

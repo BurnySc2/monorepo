@@ -1,8 +1,8 @@
+import random
 import sqlite3
 from dataclasses import dataclass
-import random
 from pathlib import Path
-from typing import List, Union, Type
+from typing import List, Type, Union
 
 from loguru import logger
 from lorem_text import lorem

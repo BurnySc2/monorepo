@@ -1,14 +1,14 @@
 import re
-from typing import Dict, Union, List
+from typing import Dict, List, Union
 
 import pymongo
+from bson import ObjectId
 from loguru import logger
-from pymongo.collection import Collection
-from pymongo.results import InsertOneResult, InsertManyResult
 from pymongo import MongoClient
+from pymongo.collection import Collection
 from pymongo.database import Database
 from pymongo.errors import ServerSelectionTimeoutError
-from bson import ObjectId
+from pymongo.results import InsertManyResult, InsertOneResult
 
 
 def test_database_with_mongodb():

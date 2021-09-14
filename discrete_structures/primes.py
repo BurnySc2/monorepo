@@ -1,6 +1,7 @@
-from typing import List, Counter as TypingCounter
 import math
 from collections import Counter
+from typing import Counter as TypingCounter
+from typing import List
 
 
 def sieve_of_eratosthenes(limit: int) -> List[int]:

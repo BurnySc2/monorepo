@@ -28,27 +28,73 @@ repos:
 #  - id: pretty-format-toml
 #    args: [--autofix]
 
-# Python
-#- repo: https://github.com/pre-commit/pre-commit-hooks
-#  rev: v4.0.1
-#  hooks:
-#  - id: double-quote-string-fixer
 
-#- repo: https://github.com/asottile/pyupgrade
-#  rev: v2.26.0
+# Python autoformat
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.0.1
+  hooks:
+  - id: double-quote-string-fixer
+
+- repo: https://github.com/asottile/pyupgrade
+  rev: v2.26.0
+  hooks:
+  - id: pyupgrade
+
+# Remove unused imports
+- repo: https://github.com/hadialqattan/pycln
+  rev: v1.0.3
+  hooks:
+  - id: pycln
+    args: [--config=pyproject.toml]
+
+# Convert relative to absolute imports
+- repo: https://github.com/MarcoGorelli/absolufy-imports
+  rev: v0.3.0
+  hooks:
+  - id: absolufy-imports
+
+# Sort imports
+- repo: https://github.com/pycqa/isort
+  rev: 5.5.4
+  hooks:
+  - id: isort
+    files: \.(py)$
+    args: [--settings-path=pyproject.toml]
+
+- repo: local
+  hooks:
+  - id: yapf
+    name: yapf
+    stages: [commit]
+    language: system
+    entry: poetry run yapf -i
+    types: [python]
+    exclude: setup.py
+
+# Python checks
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.0.1
+  hooks:
+  - id: check-ast
+  - id: check-builtin-literals
+  - id: check-docstring-first
+  - id: debug-statements
+
+- repo: https://github.com/pre-commit/pygrep-hooks
+  rev: v1.9.0
+  hooks:
+  - id: python-no-eval
+  - id: python-no-log-warn
+  - id: python-use-type-annotations
+
+# Detect functions and variables that are never used
+#- repo: https://github.com/asottile/dead
+#  rev: v1.4.0
 #  hooks:
-#  - id: pyupgrade
+#  - id: dead
 
 #- repo: local
 #  hooks:
-#  - id: yapf
-#    name: yapf
-#    stages: [commit]
-#    language: system
-#    entry: poetry run yapf -i
-#    types: [python]
-#    exclude: setup.py
-#
 #  - id: pylint
 #    name: pylint
 #    stages: [commit]

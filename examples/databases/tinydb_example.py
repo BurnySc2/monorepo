@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from tinydb import TinyDB, Query
+from tinydb import Query, TinyDB
 
 
 def test_database_with_tinydb():

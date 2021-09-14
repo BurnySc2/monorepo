@@ -1,4 +1,4 @@
-from typing import Generator, List, Any, Iterable
+from typing import Any, Generator, Iterable, List
 
 
 def product_generator(*args: Iterable[Any], repeat: int = 1) -> Generator[Any, None, None]:

@@ -1,13 +1,13 @@
-from contextlib import contextmanager
-from typing import Generator, List, Any
-from math import factorial
-from string import ascii_uppercase
-
-from loguru import logger
-import time
 """
 These are lexicographically ordered permutations.
 """
+import time
+from contextlib import contextmanager
+from math import factorial
+from string import ascii_uppercase
+from typing import Any, Generator, List
+
+from loguru import logger
 
 
 def permutation(my_list: List[Any]) -> List[Any]:

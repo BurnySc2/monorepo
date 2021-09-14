@@ -1,13 +1,13 @@
+import asyncio
+import subprocess
+import sys
+from pathlib import Path
 from typing import Optional
 
 from loguru import logger
-import subprocess
-import asyncio
-from pathlib import Path
-import sys
 
 # https://github.com/samuelcolvin/watchgod
-from watchgod import awatch, PythonWatcher
+from watchgod import PythonWatcher, awatch
 
 # Remove previous default handlers
 logger.remove()

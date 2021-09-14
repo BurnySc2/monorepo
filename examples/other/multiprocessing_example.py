@@ -1,6 +1,6 @@
 import os
 from multiprocessing import Pool
-from typing import Union, Iterable, List
+from typing import Iterable, List, Union
 
 
 async def do_math(number: Union[int, float]) -> Union[int, float]:

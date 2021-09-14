@@ -1,9 +1,8 @@
-from typing import List, Tuple, Dict, Deque
-from heapq import heappush, heappop
+from collections import deque
+from heapq import heappop, heappush
+from typing import Deque, Dict, List, Tuple
 
 import numpy as np
-
-from collections import deque
 
 
 def two_sum_slow(nums: List[int], target: int) -> List[int]:

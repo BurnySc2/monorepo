@@ -1,4 +1,4 @@
-from typing import Generator, List, Any
+from typing import Any, Generator, List
 
 from discrete_structures.product import product_generator
 

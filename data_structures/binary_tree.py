@@ -1,5 +1,5 @@
-from typing import List, Any, Optional
 import itertools
+from typing import Any, List, Optional
 
 
 class Node:

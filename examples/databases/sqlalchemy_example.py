@@ -1,6 +1,6 @@
 from loguru import logger
-from sqlalchemy import create_engine, Column, String, Integer
-from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy.orm import Session, declarative_base
 
 
 def test_database_with_sqlalchemy():

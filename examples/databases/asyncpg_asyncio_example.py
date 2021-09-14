@@ -1,10 +1,9 @@
 # Database
 import asyncio
+import time
 from typing import List
 
 import asyncpg
-import time
-
 from loguru import logger
 
 _docker_command = 'docker run -d --rm --name postgresql-container -p 54321:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14'

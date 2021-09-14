@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Set, List
+from typing import List, Set
 
 # https://pypi.org/project/dataclasses-json/#description
 from dataclasses_json import DataClassJsonMixin
