@@ -1,35 +1,75 @@
 repos:
-  - repo: local
-    hooks:
-        - id: yapf
-          name: yapf
-          stages: [ commit ]
-          language: system
-          entry: poetry run yapf -i
-          types: [ python ]
-          exclude: setup.py
+# Check yaml files like this one and github actions
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.0.1
+  hooks:
+  - id: check-yaml
 
-        - id: pylint
-          name: pylint
-          stages: [ commit ]
-          language: system
-          entry: poetry run pylint
-          types: [ python ]
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.1.0
+  hooks:
+  - id: pretty-format-yaml
+    args: [--autofix, --indent, '2']
 
-        - id: mypy
-          name: mypy
-          stages: [ commit ]
-          language: system
-          entry: poetry run mypy . --ignore-missing-imports
-          types: [python]
-          pass_filenames: false
+- repo: https://github.com/sirosen/check-jsonschema
+  rev: 0.3.2
+  hooks:
+  - id: check-github-workflows
 
-        - id: pytest
-          name: pytest
-          stages: [ commit ]
-          language: system
-          entry: poetry run pytest test
-          pass_filenames: false
+# Check toml files like pyproject.toml
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.0.1
+  hooks:
+  - id: check-toml
+# This removes comments
+#- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+#  rev: v2.1.0
+#  hooks:
+#  - id: pretty-format-toml
+#    args: [--autofix]
+
+# Python
+#- repo: https://github.com/pre-commit/pre-commit-hooks
+#  rev: v4.0.1
+#  hooks:
+#  - id: double-quote-string-fixer
+
+#- repo: https://github.com/asottile/pyupgrade
+#  rev: v2.26.0
+#  hooks:
+#  - id: pyupgrade
+
+#- repo: local
+#  hooks:
+#  - id: yapf
+#    name: yapf
+#    stages: [commit]
+#    language: system
+#    entry: poetry run yapf -i
+#    types: [python]
+#    exclude: setup.py
+#
+#  - id: pylint
+#    name: pylint
+#    stages: [commit]
+#    language: system
+#    entry: poetry run pylint
+#    types: [python]
+#
+#  - id: mypy
+#    name: mypy
+#    stages: [commit]
+#    language: system
+#    entry: poetry run mypy .
+#    types: [python]
+#    pass_filenames: false
+#
+#  - id: pytest
+#    name: pytest
+#    stages: [commit]
+#    language: system
+#    entry: poetry run pytest test
+#    pass_filenames: false
 
 #      - id: pytest-cov
 #        name: pytest
