@@ -14,7 +14,7 @@ async def test_asyncio_database():
     async with Database(f'sqlite:///{db_path.absolute()}') as db:
         # Create table
         await db.execute(
-            'CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)'
+            'CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)',
         )
         # Clear table
         await db.execute('DELETE FROM people')
@@ -28,7 +28,7 @@ async def test_asyncio_database():
                 'name': 'Someone Else',
                 'age': 50,
                 'height': 1.65,
-            }
+            },
         )
 
         # Insert multiple via list of dict
@@ -45,7 +45,7 @@ async def test_asyncio_database():
         try:
             await db.execute(
                 'INSERT INTO people (name, age, height) VALUES (:name, :age, :height)',
-                dict(name='Someone Else', age=50, height=1.65)
+                dict(name='Someone Else', age=50, height=1.65),
             )
             assert False, "IntegrityError should've been raised"
         except sqlite3.IntegrityError:
@@ -65,7 +65,7 @@ async def test_asyncio_database():
         # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
         logger.info('Example query')
         results: List[sqlite3.Row] = await db.fetch_all(
-            "SELECT id, name, age, height FROM people WHERE height>=1.70 and name != 'Someone Else2' ORDER BY age ASC, height ASC"
+            "SELECT id, name, age, height FROM people WHERE height>=1.70 and name != 'Someone Else2' ORDER BY age ASC, height ASC",
         )
         for row in results:
             # Can also access values via row[0]
@@ -82,7 +82,7 @@ async def test_asyncio_database():
             GROUP BY age
             HAVING COUNT(age) == 1
             ORDER BY age ASC, height ASC
-            """
+            """,
         )
         for row in results:
             row_as_dict = dict(row)
@@ -98,7 +98,7 @@ async def performance_test_asyncio_database():
     async with Database(f'sqlite:///{db_path.absolute()}') as db:
         # Create table
         await db.execute(
-            'CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)'
+            'CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)',
         )
         # Clear table
         await db.execute('DELETE FROM people')
@@ -114,9 +114,9 @@ async def performance_test_asyncio_database():
                             'name': f'Someone{i}',
                             'age': i,
                             'height': '0.0',
-                        }
-                    )
-                )
+                        },
+                    ),
+                ),
             )
         await asyncio.gather(*tasks)
         t1 = time.perf_counter()

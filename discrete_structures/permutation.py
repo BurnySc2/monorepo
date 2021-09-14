@@ -122,8 +122,9 @@ def _test_permutations(limit: int = 6):
     assert get_index_of_permutation(list('ABCD'), list('ABCD')) == 0
     assert get_index_of_permutation(list('ABCD'), list('DCBA')) == 23
 
-    assert list(permutation_generator(list('ABCD'))
-                ) == list(reversed(list(permutation_backwards_generator(list('ABCD')))))
+    assert list(
+        permutation_generator(list('ABCD')),
+    ) == list(reversed(list(permutation_backwards_generator(list('ABCD')))))
 
     assert get_next_permutation(list('ABC')) == list('ACB'), get_next_permutation(list('ABC'))
     assert get_next_permutation(list('ACB')) == list('BAC'), get_next_permutation(list('ACB'))

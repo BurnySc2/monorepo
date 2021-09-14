@@ -49,14 +49,16 @@ def test_database_with_mongodb():
             my_list = [
                 {
                     'name': 'Amy',
-                    'address': 'Some other mountain 22'
-                }, {
+                    'address': 'Some other mountain 22',
+                },
+                {
                     'name': 'Hannah',
-                    'address': 'Some Mountain 21'
-                }, {
+                    'address': 'Some Mountain 21',
+                },
+                {
                     'name': 'Hannah',
-                    'address': 'Some Mountain 27'
-                }
+                    'address': 'Some Mountain 27',
+                },
             ]
             y: InsertManyResult = my_col.insert_many(my_list)
             logger.info(f'Inserted ids: {list(map(str, y.inserted_ids))}')
@@ -97,5 +99,5 @@ def test_database_with_mongodb():
     except ServerSelectionTimeoutError:
         logger.warning(f"Could not find a running mongoDB instance on port '{my_port}' - aborting")
         logger.warning(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0'"
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0'",
         )

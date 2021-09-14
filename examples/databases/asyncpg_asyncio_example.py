@@ -68,8 +68,8 @@ async def performance_test_asyncpg_database():
                     f'Someone{i}',
                     i,
                     0.0,
-                )
-            )
+                ),
+            ),
         )
     await asyncio.gather(*tasks)
     t1 = time.perf_counter()

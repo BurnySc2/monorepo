@@ -61,6 +61,11 @@ repos:
     files: \.(py)$
     args: [--settings-path=pyproject.toml]
 
+#- repo: https://github.com/asottile/add-trailing-comma
+#  rev: v2.1.0
+#  hooks:
+#  - id: add-trailing-comma
+
 - repo: local
   hooks:
   - id: yapf

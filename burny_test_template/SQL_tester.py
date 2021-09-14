@@ -102,7 +102,8 @@ class SqlMetaclass:
             f"""
         INSERT INTO {cls.__name__} ({columns_joined})
         VALUES ({values_questionmarks})
-        """, rows
+        """,
+            rows,
         )
 
     def add_item_to_db(self, db: sqlite3.Connection):
@@ -167,7 +168,7 @@ if __name__ == '__main__':
             artist_id=generate_int(),
             album_id=1869690,
             genre=generate_text(),
-            song_length=generate_int()
+            song_length=generate_int(),
         ).add_item_to_db(db)
 
         # Print data in database
@@ -182,7 +183,7 @@ if __name__ == '__main__':
             """
         SELECT song_name, album_name, publish_year FROM Song JOIN Album
         ON Song.album_id = Album.album_id
-        """
+        """,
         )
         result_list = list(map(list, result))
 

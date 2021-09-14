@@ -83,39 +83,39 @@ def test_prime_functions():
         5: Counter({5: 1}),
         6: Counter({
             2: 1,
-            3: 1
+            3: 1,
         }),
         7: Counter({7: 1}),
         8: Counter({2: 3}),
         9: Counter({3: 2}),
         10: Counter({
             2: 1,
-            5: 1
+            5: 1,
         }),
         11: Counter({11: 1}),
         12: Counter({
             2: 2,
-            3: 1
+            3: 1,
         }),
         13: Counter({13: 1}),
         14: Counter({
             2: 1,
-            7: 1
+            7: 1,
         }),
         15: Counter({
             3: 1,
-            5: 1
+            5: 1,
         }),
         16: Counter({2: 4}),
         17: Counter({17: 1}),
         18: Counter({
             3: 2,
-            2: 1
+            2: 1,
         }),
         19: Counter({19: 1}),
         20: Counter({
             2: 2,
-            5: 1
+            5: 1,
         }),
     }
 

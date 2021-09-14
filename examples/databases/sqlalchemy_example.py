@@ -44,7 +44,7 @@ def test_database_with_sqlalchemy():
                     address='Budhwar Peth, Pune',
                     email='smk@gmail.com',
                 ),
-            ]
+            ],
         )
         session.commit()
 

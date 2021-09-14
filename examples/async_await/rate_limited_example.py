@@ -74,11 +74,15 @@ async def request_concurrently() -> float:
             limit_per_host=20,
         ),
     ) as session:
-        await asyncio.gather(*(asyncio.create_task(worker(
-            session,
-            queue,
-            results,
-        )) for _ in range(WORKERS_AMOUNT)))
+        await asyncio.gather(
+            *(asyncio.create_task(
+                worker(
+                    session,
+                    queue,
+                    results,
+                ),
+            ) for _ in range(WORKERS_AMOUNT))
+        )
 
     t1 = time.perf_counter()
     logger.info(f'Workers are done! Amount of results: {len(results)}')

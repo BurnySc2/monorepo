@@ -13,7 +13,7 @@ def test_database():
         # Creates a new table "people" with 3 columns: text, real, integer
         # Fields marked with PRIMARY KEY are columns with unique values (?)
         db.execute(
-            'CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)'
+            'CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)',
         )
 
         # Insert via string
@@ -64,7 +64,7 @@ def test_database():
         # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
         logger.info('Example query')
         results: sqlite3.Cursor = db.execute(
-            "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC"
+            "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC",
         )
         for row in results:
             # Can also access values via row[0]
@@ -80,7 +80,7 @@ def test_database():
             GROUP BY age
             HAVING COUNT(age) == 1
             ORDER BY age ASC, height ASC
-            """
+            """,
         )
 
         logger.info('Exclude query')
