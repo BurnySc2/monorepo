@@ -14,7 +14,7 @@ class NodeOutcome(Enum):
 
 @dataclass
 class ActionNode:
-    child_actions: List["ActionNode"] = field(default_factory=list)
+    child_actions: List['ActionNode'] = field(default_factory=list)
     continue_on_success: bool = True
     continue_on_fail: bool = False
 
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
         def run_node(self) -> NodeOutcome:
             self.my_status += 1
-            logger.info(f"Counting up: {self.my_status}")
+            logger.info(f'Counting up: {self.my_status}')
             if self.my_status != 10:
                 return NodeOutcome.RUNNING
             return NodeOutcome.SUCCESS

@@ -6,7 +6,7 @@ from tinydb import TinyDB, Query
 
 def test_database_with_tinydb():
     # Embedded pure-python dict based dictionary
-    db_path = Path(__file__).parent.parent.parent / "data" / "db.json"
+    db_path = Path(__file__).parent.parent.parent / 'data' / 'db.json'
     os.makedirs(db_path.parent, exist_ok=True)
     db = TinyDB(db_path)
     User = Query()

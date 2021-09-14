@@ -17,14 +17,14 @@ class MaxHeap:
         multiples_of_two = {2**n for n in range(1, 1 + int(math.log(len(self.tree), 2)))}
         for index, value in enumerate(self.tree[1:], start=1):
             if index in multiples_of_two:
-                return_list.append("\n")
+                return_list.append('\n')
             return_list.append(value)
-            return_list.append(" ")
-        return "".join(str(x) for x in return_list)
+            return_list.append(' ')
+        return ''.join(str(x) for x in return_list)
 
     def pop(self):
         if len(self.tree) < 2:
-            raise IndexError("cant pop empty heap")
+            raise IndexError('cant pop empty heap')
         return_value = self.tree[1]
         if len(self.tree) > 2:
             self.tree[1] = self.tree[-1]
@@ -40,7 +40,7 @@ class MaxHeap:
     @classmethod
     def _get_parent(cls, index: int) -> int:
         if index < 2:
-            raise IndexError("root node has no parents")
+            raise IndexError('root node has no parents')
         return index // 2
 
     @classmethod
@@ -77,7 +77,7 @@ class MaxHeap:
             self._move_down(swap_child)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     m = MaxHeap()
     for i in range(1, 8):
         m.insert(i)
@@ -85,6 +85,6 @@ if __name__ == "__main__":
     for i in range(7, 0, -1):
         print(m)
         my_value = m.pop()
-        assert i == my_value, f"Expected {i}, got {my_value}"
+        assert i == my_value, f'Expected {i}, got {my_value}'
 
     print(m)

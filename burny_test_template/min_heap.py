@@ -12,10 +12,10 @@ class Minheap:
         multiples_of_two = {2**n for n in range(1, 1 + int(math.log(len(self.heap), 2)))}
         for i, value in enumerate(self.heap[1:], start=1):
             if i in multiples_of_two:
-                return_list.append("\n")
+                return_list.append('\n')
             return_list.append(value)
-            return_list.append(" ")
-        return "".join(str(x) for x in return_list)
+            return_list.append(' ')
+        return ''.join(str(x) for x in return_list)
 
     def get_parent(self, index: int) -> int:
         return self.heap[index // 2]
@@ -87,12 +87,12 @@ class Minheap:
     def get_min(self) -> int:
         if len(self.heap) > 0:
             return self.heap[1]
-        raise IndexError("get_min from empty heap")
+        raise IndexError('get_min from empty heap')
 
     def delete_min(self):
         # Swap minimum with last item in list before removing
         if len(self.heap) < 2:
-            raise IndexError("delete_min from empty heap")
+            raise IndexError('delete_min from empty heap')
         if len(self.heap) < 3:
             self.heap.pop(1)
             return
@@ -108,18 +108,18 @@ class Minheap:
             self.insert(i)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     p = Minheap()
     build_list = [1, 2, 3, 4, 5, 6, 7]
     p.build(build_list)
-    assert len(p.heap) == 8, "build() function or insert() function not working as expected"
+    assert len(p.heap) == 8, 'build() function or insert() function not working as expected'
     """ p:
     1
     2 3
     4 5 6 7
     """
     for i in build_list:
-        assert not p.is_empty(), "Min heap should be not empty, but is returned to be empty"
+        assert not p.is_empty(), 'Min heap should be not empty, but is returned to be empty'
         value = p.get_min()
         assert (
             value == i

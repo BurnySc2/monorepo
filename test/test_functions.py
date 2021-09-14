@@ -1,7 +1,7 @@
 import sys
 import os
 
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from main import do_math, download_all_sites, download_file
 from examples.async_await.asyncio_download_upload import download_site
@@ -17,8 +17,8 @@ import hypothesis.strategies as st
 @pytest.mark.asyncio
 async def test_download_file():
     # With this download throttle, it should take at least 9 seconds to download the 1mb image at 100kb/s
-    download_path = Path(__file__).parent / "my_file.zip"
-    download_path_not_complete = Path(__file__).parent / "my_file_incomplete"
+    download_path = Path(__file__).parent / 'my_file.zip'
+    download_path_not_complete = Path(__file__).parent / 'my_file_incomplete'
 
     # Cleanup from last time
     if os.path.isfile(download_path):
@@ -27,7 +27,7 @@ async def test_download_file():
         os.remove(download_path_not_complete)
 
     # https://www.thinkbroadband.com/download
-    file_url = "http://ipv4.download.thinkbroadband.com/5MB.zip"
+    file_url = 'http://ipv4.download.thinkbroadband.com/5MB.zip'
 
     file_size = 5 * 2**20
     download_speed = 2000 * 2**10
@@ -71,7 +71,7 @@ async def test_download_file():
 
 @pytest.mark.asyncio
 async def test_download_site():
-    url = "http://www.jython.org"
+    url = 'http://www.jython.org'
     async with aiohttp.ClientSession() as session:
         res = await download_site(session, url)
     assert res.content_length > 0
@@ -79,7 +79,7 @@ async def test_download_site():
 
 @pytest.mark.asyncio
 async def test_download_all_sites():
-    urls = ["http://www.jython.org"] * 2
+    urls = ['http://www.jython.org'] * 2
     results = await download_all_sites(urls)
     assert sum(result.content_length for result in results) > 0
 

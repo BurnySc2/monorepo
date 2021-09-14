@@ -16,7 +16,7 @@ def test_database_with_sqlalchemy():
         email = Column(String)
 
     # Create engine https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_creating_session.htm
-    engine = create_engine("sqlite+pysqlite:///:memory:", echo=False, future=True)
+    engine = create_engine('sqlite+pysqlite:///:memory:', echo=False, future=True)
     # Create tables
     Base.metadata.create_all(engine)
 
@@ -52,9 +52,9 @@ def test_database_with_sqlalchemy():
         result = session.query(Customers).all()
         row: Customers
         for row in result:
-            logger.info(f"SQLAlchemy: Name: {row.name}, Address: {row.address}, Email: {row.email}")
+            logger.info(f'SQLAlchemy: Name: {row.name}, Address: {row.address}, Email: {row.email}')
 
         # Filtered result
         result2 = session.query(Customers).filter(Customers.name == 'Rajender Nath')
         for row in result2:
-            logger.info(f"Filter result: Name: {row.name}, Address: {row.address}, Email: {row.email}")
+            logger.info(f'Filter result: Name: {row.name}, Address: {row.address}, Email: {row.email}')

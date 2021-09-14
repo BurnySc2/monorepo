@@ -125,5 +125,5 @@ def test_prime_functions():
             assert prime_factors(i) == prime_factors_dict[i]
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     test_prime_functions()

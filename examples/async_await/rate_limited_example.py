@@ -14,13 +14,13 @@ PRESERVE_ORDER = (i for i in range(10**1000))
 
 async def create_tasks(queue: asyncio.PriorityQueue):
     # https://jsonplaceholder.typicode.com/guide/
-    logger.info("Creating tasks...")
+    logger.info('Creating tasks...')
     for i in range(1, 101):
         # Priority queue is implemented with heap - need another integer to compare between elements
         # If elements have same priority, use the order in which they got created
-        await queue.put((i, next(PRESERVE_ORDER), f"https://jsonplaceholder.typicode.com/posts/{i}", MAX_RETRIES))
-    logger.info(f"Queue contains {queue.qsize()} items now")
-    logger.info(f"Estimated seconds of workload: {queue.qsize() / REQUEST_PER_SECOND:.2f} seconds")
+        await queue.put((i, next(PRESERVE_ORDER), f'https://jsonplaceholder.typicode.com/posts/{i}', MAX_RETRIES))
+    logger.info(f'Queue contains {queue.qsize()} items now')
+    logger.info(f'Estimated seconds of workload: {queue.qsize() / REQUEST_PER_SECOND:.2f} seconds')
 
 
 async def do_stuff(session: ClientSession, url: str, retry: int, results: list) -> bool:
@@ -65,7 +65,7 @@ async def request_concurrently() -> float:
     queue: asyncio.PriorityQueue = asyncio.PriorityQueue()
     results: List[dict] = []
     await create_tasks(queue)
-    logger.info("Starting workers...")
+    logger.info('Starting workers...')
     async with ClientSession(
         connector=TCPConnector(
             # Limit amount of connections this ClientSession should posses
@@ -81,27 +81,27 @@ async def request_concurrently() -> float:
         )) for _ in range(WORKERS_AMOUNT)))
 
     t1 = time.perf_counter()
-    logger.info(f"Workers are done! Amount of results: {len(results)}")
+    logger.info(f'Workers are done! Amount of results: {len(results)}')
     return t1 - t0
 
 
 async def request_sequentially() -> float:
-    logger.info("Starting sequentially...")
+    logger.info('Starting sequentially...')
     t0 = time.perf_counter()
     async with ClientSession() as session:
         for i in range(1, 101):
-            result = await session.get(f"https://jsonplaceholder.typicode.com/posts/{i}")
+            result = await session.get(f'https://jsonplaceholder.typicode.com/posts/{i}')
             if result.ok:
                 await result.json()
     t1 = time.perf_counter()
-    logger.info("Sequentially done!")
+    logger.info('Sequentially done!')
     return t1 - t0
 
 
 async def api_rate_limited_example():
     t_sequentially = await request_sequentially()
     t_concurrently = await request_concurrently()
-    assert t_concurrently <= t_sequentially, f"{t_concurrently} <= {t_sequentially}"
+    assert t_concurrently <= t_sequentially, f'{t_concurrently} <= {t_sequentially}'
 
 
 def main():

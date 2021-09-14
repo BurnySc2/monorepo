@@ -11,9 +11,9 @@ random.seed(420)
 
 # Source: https://github.com/smashew/NameDatabases
 this_folder = Path(__file__).parent
-with (this_folder / "first_names.txt").open() as f:
+with (this_folder / 'first_names.txt').open() as f:
     first_names = [i.strip() for i in f.readlines()]
-with (this_folder / "last_names.txt").open() as f:
+with (this_folder / 'last_names.txt').open() as f:
     last_names = [i.strip() for i in f.readlines()]
 
 
@@ -22,7 +22,7 @@ def generate_name() -> str:
     last = random.randint(0, len(last_names))
     first_name = first_names[first]
     last_name = last_names[last]
-    return f"{first_name} {last_name}"
+    return f'{first_name} {last_name}'
 
 
 def generate_int() -> int:
@@ -53,17 +53,17 @@ class SqlMetaclass:
         a.create_table(db)
         """
         database_column_types = {
-            str: "TEXT",
-            int: "INT",
-            float: "REAL",
-            bool: "BOOLEAN",
+            str: 'TEXT',
+            int: 'INT',
+            float: 'REAL',
+            bool: 'BOOLEAN',
         }
         columns = [
-            f"{column_name} {database_column_types[column_type]}"
+            f'{column_name} {database_column_types[column_type]}'
             for column_name, column_type in cls.__annotations__.items()
         ]
-        columns_joined = ", ".join(columns)
-        logger.info(f"Creating table {cls.__name__} with columns ({columns_joined})")
+        columns_joined = ', '.join(columns)
+        logger.info(f'Creating table {cls.__name__} with columns ({columns_joined})')
         db.execute(f"""
         CREATE TABLE {cls.__name__} ({columns_joined})
         """)
@@ -71,7 +71,7 @@ class SqlMetaclass:
 
     @classmethod
     def generate_data(cls, db: sqlite3.Connection, amount: int = 1):
-        name_fields = {"artist_name"}
+        name_fields = {'artist_name'}
         rows: List[List[Union[float, bool, str]]] = []
         # TODO Overlapping items
         for _ in range(amount):
@@ -79,7 +79,7 @@ class SqlMetaclass:
             for column_name, column_type in cls.__annotations__.items():
                 if column_name in name_fields:
                     row_entry.append(generate_name())
-                elif "year" in column_name:
+                elif 'year' in column_name:
                     row_entry.append(generate_year())
                 elif column_type == str:
                     row_entry.append(generate_text())
@@ -90,14 +90,14 @@ class SqlMetaclass:
                 elif column_type == bool:
                     row_entry.append(generate_bool())
                 else:
-                    raise TypeError(f"Column type must be one of: str, int, float, but was of type {column_type}")
+                    raise TypeError(f'Column type must be one of: str, int, float, but was of type {column_type}')
             rows.append(row_entry)
-        columns = [f"{column_name}" for column_name, column_type in cls.__annotations__.items()]
-        columns_joined = ", ".join(columns)
-        values_questionmarks = ",".join("?" for _ in columns)
+        columns = [f'{column_name}' for column_name, column_type in cls.__annotations__.items()]
+        columns_joined = ', '.join(columns)
+        values_questionmarks = ','.join('?' for _ in columns)
         logger.info(f"Inserting the following rows into table '{cls.__name__}':")
         for row in rows:
-            logger.info(f"{row}")
+            logger.info(f'{row}')
         db.executemany(
             f"""
         INSERT INTO {cls.__name__} ({columns_joined})
@@ -106,10 +106,10 @@ class SqlMetaclass:
         )
 
     def add_item_to_db(self, db: sqlite3.Connection):
-        columns = [f"{column_name}" for column_name, column_type in self.__annotations__.items()]
-        columns_joined = ", ".join(columns)
+        columns = [f'{column_name}' for column_name, column_type in self.__annotations__.items()]
+        columns_joined = ', '.join(columns)
         values = [self.__dict__[column_name] for column_name in columns]
-        values_joined = ", ".join(map(repr, values))
+        values_joined = ', '.join(map(repr, values))
         table_name = self.__class__.__name__
         insert_string = f"""
         INSERT INTO {table_name} ({columns_joined})
@@ -152,7 +152,7 @@ class Artist(SqlMetaclass):
 
 
 if __name__ == '__main__':
-    with sqlite3.connect(":memory:") as db:
+    with sqlite3.connect(':memory:') as db:
         cls: Type[SqlMetaclass]
         for cls in [Song, Album, Artist]:
             # Create tables
@@ -172,7 +172,7 @@ if __name__ == '__main__':
 
         # Print data in database
         # TODO print data as table where each column has same width
-        result = db.execute("SELECT * FROM Song")
+        result = db.execute('SELECT * FROM Song')
         for i in result:
             # logger.info(Song(*i))
             pass
@@ -188,4 +188,4 @@ if __name__ == '__main__':
 
         # Compare result to expected
         expected = [['Jeannette Macha', 'doloribus unde', 1984]]
-        assert result_list == expected, f"{result_list} != {expected}"
+        assert result_list == expected, f'{result_list} != {expected}'

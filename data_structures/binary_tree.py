@@ -3,13 +3,13 @@ import itertools
 
 
 class Node:
-    def __init__(self, value: Any, left: "Node" = None, right: "Node" = None):
+    def __init__(self, value: Any, left: 'Node' = None, right: 'Node' = None):
         self.value: Any = value
         self.left: Optional[Node] = left
         self.right: Optional[Node] = right
 
     def __repr__(self):
-        return f"Node(value: {self.value}, left: {self.left}, right: {self.right})"
+        return f'Node(value: {self.value}, left: {self.left}, right: {self.right})'
 
     def add(self, value: Any):
         if value < self.value:
@@ -48,23 +48,23 @@ class Tree:
         """ Finds the maximum value and returns it """
 
     def load(self, string: str):
-        height: List[str] = string.strip().split("\n")
+        height: List[str] = string.strip().split('\n')
         for i, row in enumerate(height, start=0):
             if i == 0:
                 assert len(row) == 1
                 self.root = Node(row)
                 continue
-            for value, j in zip(row, itertools.product("01", repeat=i)):
+            for value, j in zip(row, itertools.product('01', repeat=i)):
                 # ["00", "01", "10", "11"]
                 cur: Optional[Node] = self.root
                 for k in j[:-1]:  # "0", then "1" etc
                     if cur:
-                        if k == "0":
+                        if k == '0':
                             cur = cur.left
                         else:
                             cur = cur.right
                 if cur:
-                    if j[-1] == "0":
+                    if j[-1] == '0':
                         cur.left = Node(value)
                     else:
                         cur.right = Node(value)
@@ -74,12 +74,12 @@ class Tree:
     def in_order_traversal(self, node: Node):
         if node.left:
             self.in_order_traversal(node.left)
-        print(f"Value: {node.value}")
+        print(f'Value: {node.value}')
         if node.right:
             self.in_order_traversal(node.right)
 
     def pre_order_traversal(self, node: Node):
-        print(f"Value: {node.value}")
+        print(f'Value: {node.value}')
         if node.left:
             self.pre_order_traversal(node.left)
         if node.right:
@@ -90,12 +90,12 @@ class Tree:
             self.post_order_traversal(node.left)
         if node.right:
             self.post_order_traversal(node.right)
-        print(f"Value: {node.value}")
+        print(f'Value: {node.value}')
 
     # TODO balance the tree, turn tree into min or max heap tree
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     t = Tree()
     """
         A
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     D E   F  G
          H I
     """
-    t.root = Node("A", Node("B", Node("D"), Node("E")), Node("C", Node("F", Node("H"), Node("I")), Node("G")))
+    t.root = Node('A', Node('B', Node('D'), Node('E')), Node('C', Node('F', Node('H'), Node('I')), Node('G')))
     print()
     t.in_order_traversal(t.root)
     print()
@@ -119,9 +119,9 @@ if __name__ == "__main__":
               O   N
     """
     t.root = Node(
-        "E",
-        Node("A", Node("S"), Node("Y")),
-        Node("Q", Node("U", Node("E"), Node("S")), Node("T", None, Node("I", Node("O", Node("N"))))),
+        'E',
+        Node('A', Node('S'), Node('Y')),
+        Node('Q', Node('U', Node('E'), Node('S')), Node('T', None, Node('I', Node('O', Node('N'))))),
     )
     print()
     # t.in_order_traversal(t.root)
@@ -138,9 +138,9 @@ if __name__ == "__main__":
            T     N
     """
     t.root = Node(
-        "E",
-        Node("A", Node("S"), Node("Y")),
-        Node("Q", Node("U", Node("E"), Node("S", Node("T"))), Node("I", None, Node("O", Node("N")))),
+        'E',
+        Node('A', Node('S'), Node('Y')),
+        Node('Q', Node('U', Node('E'), Node('S', Node('T'))), Node('I', None, Node('O', Node('N')))),
     )
     print()
     # t.in_order_traversal(t.root)

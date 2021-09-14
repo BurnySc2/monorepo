@@ -29,12 +29,12 @@ def combinations_with_replacement_generator(iterable: List[Any], replacement: in
             yield tuple(pool[i] for i in indices)
 
 
-if __name__ == "__main__":
-    data = list("123")
+if __name__ == '__main__':
+    data = list('123')
     for p in combination_generator(data, 2):
         print(p)
 
-    print("###################")
+    print('###################')
 
     for p in combinations_with_replacement_generator(data, 2):
         print(p)

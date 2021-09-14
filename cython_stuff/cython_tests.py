@@ -17,7 +17,7 @@ from cython_stuff.cython_examples import test_vec
 #         logger.info(f"TIME {label}: {(end-start)/1e9} sec")
 
 # Use like this
-if __name__ == "__main__":
+if __name__ == '__main__':
     # d = {(1, 2): (3, 4)}
     # print(test_map({}, [1, 2]))
     print(test_vec([], (1, 2)))
