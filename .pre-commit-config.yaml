@@ -1,26 +1,29 @@
 repos:
-# Check yaml files like this one and github actions
+# Check yaml files like this one and github actions if they are valid
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.0.1
   hooks:
   - id: check-yaml
 
+# Autoformat yaml files
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
   rev: v2.1.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
 
+# Check github action workflow files
 - repo: https://github.com/sirosen/check-jsonschema
   rev: 0.3.2
   hooks:
   - id: check-github-workflows
 
-# Check toml files like pyproject.toml
+# Check toml files like pyproject.toml if it is valid
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.0.1
   hooks:
   - id: check-toml
+
 # This removes comments
 #- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
 #  rev: v2.1.0
@@ -28,13 +31,13 @@ repos:
 #  - id: pretty-format-toml
 #    args: [--autofix]
 
-
-# Python autoformat
+# As the name says
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.0.1
   hooks:
   - id: double-quote-string-fixer
 
+# Convert simple things like set([]) to set()
 - repo: https://github.com/asottile/pyupgrade
   rev: v2.26.0
   hooks:
@@ -61,11 +64,19 @@ repos:
     files: \.(py)$
     args: [--settings-path=pyproject.toml]
 
-#- repo: https://github.com/asottile/add-trailing-comma
-#  rev: v2.1.0
-#  hooks:
-#  - id: add-trailing-comma
+# Add trailing commas - might be unwanted in some places
+- repo: https://github.com/asottile/add-trailing-comma
+  rev: v2.1.0
+  hooks:
+  - id: add-trailing-comma
 
+# If project is written in Python 3.9+, it will autofix List[str] to list[str] etc
+#- repo: https://github.com/sondrelg/pep585-upgrade
+#  rev: ''  # Use the sha / tag you want to point at
+#  hooks:
+#  - id: upgrade-type-hints
+
+# Autoformat code
 - repo: local
   hooks:
   - id: yapf
@@ -76,10 +87,10 @@ repos:
     types: [python]
     exclude: setup.py
 
-# Python checks
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.0.1
   hooks:
+  # Check if python files are vlaid
   - id: check-ast
   - id: check-builtin-literals
   - id: check-docstring-first
@@ -88,8 +99,10 @@ repos:
 - repo: https://github.com/pre-commit/pygrep-hooks
   rev: v1.9.0
   hooks:
+  # Check for bad code
   - id: python-no-eval
   - id: python-no-log-warn
+  # Enforce type annotation instead of comment annotation
   - id: python-use-type-annotations
 
 # Detect functions and variables that are never used
@@ -98,34 +111,36 @@ repos:
 #  hooks:
 #  - id: dead
 
-#- repo: local
-#  hooks:
-#  - id: pylint
-#    name: pylint
-#    stages: [commit]
-#    language: system
-#    entry: poetry run pylint
-#    types: [python]
-#
-#  - id: mypy
-#    name: mypy
-#    stages: [commit]
-#    language: system
-#    entry: poetry run mypy .
-#    types: [python]
-#    pass_filenames: false
-#
-#  - id: pytest
-#    name: pytest
-#    stages: [commit]
-#    language: system
-#    entry: poetry run pytest test
-#    pass_filenames: false
+- repo: local
+  hooks:
+  - id: pylint
+    name: pylint
+    stages: [commit]
+    language: system
+    entry: poetry run pylint
+    types: [python]
 
-#      - id: pytest-cov
-#        name: pytest
-#        stages: [push]
-#        language: system
-#        entry: poetry run pytest --cov=. --cov-fail-under=100
-#        types: [python]
-#        pass_filenames: false
+  # Run mypy type checks
+  - id: mypy
+    name: mypy
+    stages: [commit]
+    language: system
+    entry: poetry run mypy .
+    types: [python]
+    pass_filenames: false
+
+  # Run tests
+  - id: pytest
+    name: pytest
+    stages: [commit]
+    language: system
+    entry: poetry run pytest test
+    pass_filenames: false
+
+#  - id: pytest-cov
+#    name: pytest
+#    stages: [push]
+#    language: system
+#    entry: poetry run pytest --cov=. --cov-fail-under=100
+#    types: [python]
+#    pass_filenames: false
