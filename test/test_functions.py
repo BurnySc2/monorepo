@@ -32,9 +32,9 @@ async def test_download_file():
     file_url = 'http://ipv4.download.thinkbroadband.com/5MB.zip'
 
     file_size = 5 * 2**20
-    download_speed = 2000 * 2**10
+    download_speed = 600 * 2**10
     estimated_download_time = file_size / download_speed
-    assert estimated_download_time < 3
+    assert estimated_download_time < 10
     t0 = time.perf_counter()
     async with aiohttp.ClientSession() as session:
         result: bool = await download_file(

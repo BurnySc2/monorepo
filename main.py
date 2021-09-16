@@ -42,6 +42,10 @@ logger.add(sys.stdout, level='INFO')
 logger.add('main.log', rotation='1 MB', retention='7 days', level='INFO')
 
 
+def main_sync():
+    asyncio.run(main())
+
+
 async def main():
     logger.info('Simple {} logger output', 'loguru')
 
@@ -130,4 +134,4 @@ def plot_numpy_array():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main_sync()
