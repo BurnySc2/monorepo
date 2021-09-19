@@ -256,7 +256,7 @@ docs = ["sphinx"]
 
 [[package]]
 name = "hypothesis"
-version = "6.21.4"
+version = "6.21.6"
 description = "A library for property-based testing"
 category = "dev"
 optional = false
@@ -284,7 +284,7 @@ zoneinfo = ["importlib-resources (>=3.3.0)", "backports.zoneinfo (>=0.2.1)", "tz
 
 [[package]]
 name = "identify"
-version = "2.2.14"
+version = "2.2.15"
 description = "File identification library for Python"
 category = "dev"
 optional = false
@@ -986,7 +986,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7 <3.11"
-content-hash = "9063e0a508c4d132f11e692bab6a2c3ae73f4b920a4951c23d887cea7f25734d"
+content-hash = "83a39cfc7d1053a894ef477f6f43d3647fc3fc3a0a71f09415ca5e3d92ebfbfd"
 
 [metadata.files]
 aiocontextvars = [
@@ -1261,12 +1261,12 @@ greenlet = [
     {file = "greenlet-1.1.1.tar.gz", hash = "sha256:c0f22774cd8294078bdf7392ac73cf00bfa1e5e0ed644bd064fdabc5f2a2f481"},
 ]
 hypothesis = [
-    {file = "hypothesis-6.21.4-py3-none-any.whl", hash = "sha256:0729766a5969bcde9d01a625c7dc3f64705efa7cb47e567504eacfebc08e4d3c"},
-    {file = "hypothesis-6.21.4.tar.gz", hash = "sha256:92810e59f01ed25a18589d92fd38c931a4c8509134c7a9d18ed1b6c3a8464f5e"},
+    {file = "hypothesis-6.21.6-py3-none-any.whl", hash = "sha256:1a96c67658f0fca00476380c2c7323066e2fb1d45a2b0874dd07fd0643b49b46"},
+    {file = "hypothesis-6.21.6.tar.gz", hash = "sha256:29b72005910f2a548d727e5d5accf862a6ae84e49176d748fb6ca040ef657592"},
 ]
 identify = [
-    {file = "identify-2.2.14-py2.py3-none-any.whl", hash = "sha256:113a76a6ba614d2a3dd408b3504446bcfac0370da5995aa6a17fd7c6dffde02d"},
-    {file = "identify-2.2.14.tar.gz", hash = "sha256:32f465f3c48083f345ad29a9df8419a4ce0674bf4a8c3245191d65c83634bdbf"},
+    {file = "identify-2.2.15-py2.py3-none-any.whl", hash = "sha256:de83a84d774921669774a2000bf87ebba46b4d1c04775f4a5d37deff0cf39f73"},
+    {file = "identify-2.2.15.tar.gz", hash = "sha256:528a88021749035d5a39fe2ba67c0642b8341aaf71889da0e1ed669a429b87f0"},
 ]
 idna = [
     {file = "idna-3.2-py3-none-any.whl", hash = "sha256:14475042e284991034cb48e06f6851428fb14c4dc953acd9be9a5e95c7b6dd7a"},
