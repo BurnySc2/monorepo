@@ -17,8 +17,8 @@ def test_database_with_mongodb():
     logger.info('Running mongodb test...')
     try:
         # Connect to client
+        my_client: MongoClient
         with pymongo.MongoClient(mongo_db_address) as my_client:
-            my_client: MongoClient
             my_db_name = 'python-template-db'
             # Connect to db
             my_db: Database = my_client[my_db_name]
