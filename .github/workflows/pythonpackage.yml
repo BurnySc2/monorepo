@@ -1,61 +1,42 @@
 name: RunTests
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
+  test_windows:
     env:
       SOMEENV: helloworld
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [windows-latest]
         python-version: [3.7, 3.8, 3.9]
-        mongodb-version: [5.0.0]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v1
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-
-    - name: Start MongoDB in docker (linux)
-      run: |
-        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
-      if: matrix.os == 'ubuntu-latest'
-
-    - name: Start Postgres in docker (linux)
-      run: |
-        docker run --rm -d --name postgresql-container -p 54321:5432 \
-          -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
-      if: matrix.os == 'ubuntu-latest'
 
     - uses: actions/cache@v2
       with:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
 
-      # Use pip requirements.txt cache https://github.com/actions/cache/blob/master/examples.md#python---pip
-      # Apparently you can't use cache when using pipenv (but perhaps when specifying the pipenv environment folder?)
-
     - name: Print environment variables (windows)
       run: |
         ls env:
-      if: matrix.os == 'windows-latest'
 
     - name: Print python location (windows)
       run: |
         echo $env:pythonLocation
-      if: matrix.os == 'windows-latest'
-
-    - name: Install poetry
-      run: |
-        python -m pip install poetry
 
     - name: Install dependencies
       run: |
+        python -m pip install poetry
         poetry install
 
     - name: Test with pytest
@@ -75,17 +56,98 @@ jobs:
       run: |
         poetry run mypy .
 
+  test_linux_mac:
+    env:
+      SOMEENV: helloworld
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: [3.7, 3.8, 3.9]
+        mongodb-version: [5.0.0]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Start MongoDB in docker (linux)
+      run: |
+        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
+      if: matrix.os == 'ubuntu-latest'
+
+    - name: Start Postgres in docker (linux)
+      run: |
+        docker run --rm -d --name postgresql-container -p 5432:5432 \
+          -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
+      if: matrix.os == 'ubuntu-latest'
+
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+    - name: Print environment variables (linux)
+      run: |
+        printenv
+
+    - name: Install dependencies
+      run: |
+        python -m pip install poetry
+        poetry install
+
+    - name: Test with pytest
+      run: |
+        poetry run pytest test
+
+    - name: Run main.py
+      run: |
+        poetry run python main.py
+
+    - name: Run radon (cyclomatic complexity report)
+      # './' denotes the current directory
+      run: |
+        poetry run radon cc ./ -a -nb
+
+    - name: Run mypy (type checking)
+      run: |
+        poetry run mypy .
+
+  build_and_publish:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.9]
+    runs-on: ${{ matrix.os }}
+    needs: [test_linux_mac, test_windows]
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-prod-${{ hashFiles('poetry.lock') }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install poetry
+        poetry install --no-dev
+
     - name: Build
       run: |
         poetry build
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.7'
 
       # Publish package on pypi
     - name: Publish
       continue-on-error: true
       run: |
         poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}
-      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.7'
 
     # Push files to remote server
     # https://github.com/marketplace/actions/scp-files
