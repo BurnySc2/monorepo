@@ -5,7 +5,7 @@ from typing import List, Tuple
 from aiohttp import ClientSession, TCPConnector
 from loguru import logger
 
-REQUEST_PER_SECOND = 200
+REQUEST_PER_SECOND = 2000
 WORKERS_AMOUNT = 20
 MAX_RETRIES = 3
 WAIT_TIME = WORKERS_AMOUNT / REQUEST_PER_SECOND
@@ -108,6 +108,8 @@ async def request_sequentially() -> float:
 async def api_rate_limited_example():
     t_sequentially = await request_sequentially()
     t_concurrently = await request_concurrently()
+    logger.info(t_sequentially)
+    logger.info(t_concurrently)
     assert t_concurrently <= t_sequentially, f'{t_concurrently} <= {t_sequentially}'
 
 

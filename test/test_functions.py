@@ -46,7 +46,7 @@ async def test_download_file():
         )
     t1 = time.perf_counter()
     assert result
-    assert estimated_download_time * 0.8 < t1 - t0 < estimated_download_time * 1.2
+    assert estimated_download_time * 0.5 < t1 - t0 < estimated_download_time * 2
     assert os.path.isfile(download_path)
 
     # Cleanup

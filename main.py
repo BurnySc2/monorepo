@@ -14,10 +14,9 @@ import aiohttp
 # Simple logging https://github.com/Delgan/loguru
 from loguru import logger
 
+# Local examples
 from examples.async_await.asyncio_download_upload import download_all_sites, download_file
 from examples.async_await.rate_limited_example import api_rate_limited_example
-
-# Local examples
 from examples.databases.asyncpg_asyncio_example import performance_test_asyncpg_database, test_asyncpg_database
 from examples.databases.mongodb_example import test_database_with_mongodb
 from examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
