@@ -28,7 +28,8 @@ from examples.databases.tinydb_example import test_database_with_tinydb
 from examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
 from examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
 from examples.other.file_interaction import create_file
-from examples.other.geometry_example import test_geometry_shapely
+
+# from examples.other.geometry_example import test_geometry_shapely
 from examples.other.image_manipulation import mass_convert_images
 from examples.other.measure_time import measure_time
 from examples.other.multiprocessing_example import do_math, do_multiprocessing
@@ -92,7 +93,7 @@ async def main():
     logger.info('Validating all roman numbers up to 3999')
     test_all_roman_numbers()
 
-    test_geometry_shapely()
+    # test_geometry_shapely()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 
