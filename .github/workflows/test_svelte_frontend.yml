@@ -1,4 +1,4 @@
-name: RunTests
+name: test_svelte_frontend
 
 on: [push, pull_request]
 
@@ -79,7 +79,7 @@ jobs:
 
     - name: Install npm dependencies
       run: |
-        cd $$SUBDIRECTORY
+        cd $SUBDIRECTORY
         npm install
 
     - name: Run e2e tests
