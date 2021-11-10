@@ -41,7 +41,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-    needs: [test_backend, test_integration]
+    needs: [test_backend]
 
     steps:
     - uses: actions/checkout@v2
