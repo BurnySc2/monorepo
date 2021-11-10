@@ -1,11 +1,8 @@
 [tool.poetry]
-name = "burny_test_template"
+name = "python_template"
 version = "0.2.0"
 description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
-packages = [
-    { include = "burny_test_template/*.py" },
-]
 
 [tool.poetry.dependencies]
 python = ">=3.7 <3.11"
@@ -50,6 +47,8 @@ sqlmodel = "^0.0"
 databases = {extras = ["sqlite"], version = "^0.5"}
 # Async database
 asyncpg = "^0.24"
+fastapi = "^0.70.0"
+uvicorn = "^0.15.0"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
@@ -77,8 +76,8 @@ snakeviz = "^2.1"
 pre-commit = "^2.15"
 
 [tool.poetry.scripts]
-# Can be launched via 'poetry run main'
-main = "main:main_sync"
+# Can be launched via 'poetry run python_examples_main'
+python_examples_main = "python_examples.main:main_sync"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]

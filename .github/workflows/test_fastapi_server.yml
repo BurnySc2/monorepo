@@ -1,0 +1,53 @@
+name: test_fastapi_server
+
+on: [push, pull_request]
+
+jobs:
+  test_backend:
+    env:
+      SUBDIRECTORY: fastapi_server
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.7', '3.8', '3.9', '3.10']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache poetry
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install poetry
+        poetry install
+
+    - name: Run Python tests
+      run: |
+        poetry run pytest $SUBDIRECTORY
+
+  deploy_backend:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    needs: [test_backend, test_integration]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Deploy backend
+      if: github.ref == 'refs/heads/master'
+      run: |
+        rm -rf data
+    # TODO Stop/disable service, upload to server, update poetry packages, start/enable service

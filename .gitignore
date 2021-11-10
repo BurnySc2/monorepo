@@ -114,6 +114,9 @@ hello_world.txt
 image.png
 dataclass_test.json
 main.log
+db.json
+sqlite_asyncio_example.db
+todos.db
 
 # Ignore local data folder
 /data

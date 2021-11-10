@@ -1,10 +1,14 @@
+import sys
+from pathlib import Path
+
+# Be able to launch from root folder
+sys.path.append(str(Path(__file__).parents[1]))
+
 # Other
 # Coroutines and multiprocessing
 import asyncio
 import re
-import sys
 import time
-from pathlib import Path
 
 # Type annotation / hints
 from typing import List
@@ -15,25 +19,28 @@ import aiohttp
 from loguru import logger
 
 # Local examples
-from examples.async_await.asyncio_download_upload import download_all_sites, download_file
-from examples.async_await.rate_limited_example import api_rate_limited_example
-from examples.databases.asyncpg_asyncio_example import performance_test_asyncpg_database, test_asyncpg_database
-from examples.databases.mongodb_example import test_database_with_mongodb
-from examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
-from examples.databases.sqlite_asyncio_example import test_asyncio_database
-from examples.databases.sqlite_example import test_database
-from examples.databases.sqlite_with_classes import test_database_with_classes
-from examples.databases.sqlmodel_example import test_database_with_sqlmodel
-from examples.databases.tinydb_example import test_database_with_tinydb
-from examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
-from examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
-from examples.other.file_interaction import create_file
+from python_examples.examples.async_await.asyncio_download_upload import download_all_sites, download_file
+from python_examples.examples.async_await.rate_limited_example import api_rate_limited_example
+from python_examples.examples.databases.asyncpg_asyncio_example import (
+    performance_test_asyncpg_database,
+    test_asyncpg_database,
+)
+from python_examples.examples.databases.mongodb_example import test_database_with_mongodb
+from python_examples.examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
+from python_examples.examples.databases.sqlite_asyncio_example import test_asyncio_database
+from python_examples.examples.databases.sqlite_example import test_database
+from python_examples.examples.databases.sqlite_with_classes import test_database_with_classes
+from python_examples.examples.databases.sqlmodel_example import test_database_with_sqlmodel
+from python_examples.examples.databases.tinydb_example import test_database_with_tinydb
+from python_examples.examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
+from python_examples.examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
+from python_examples.examples.other.file_interaction import create_file
 
-# from examples.other.geometry_example import test_geometry_shapely
-from examples.other.image_manipulation import mass_convert_images
-from examples.other.measure_time import measure_time
-from examples.other.multiprocessing_example import do_math, do_multiprocessing
-from examples.other.regex_example import regex_match_test, test_all_roman_numbers
+# from python_examples.examples.other.geometry_example import test_geometry_shapely
+from python_examples.examples.other.image_manipulation import mass_convert_images
+from python_examples.examples.other.measure_time import measure_time
+from python_examples.examples.other.multiprocessing_example import do_math, do_multiprocessing
+from python_examples.examples.other.regex_example import regex_match_test, test_all_roman_numbers
 
 logger.remove()  # Remove previous default handlers
 # Log to console
@@ -62,8 +69,8 @@ async def main():
         _result: bool = await download_file(
             session,
             url='https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png',
-            file_path=Path('test/image.png'),
-            temp_file_path=Path('test/image_download_not_complete'),
+            file_path=Path(__file__).parent / 'data' / 'image.png',
+            temp_file_path=Path(__file__).parent / 'data' / 'image_download_not_complete',
             # Download at speed of 100kb/s
             download_speed=100 * 2**10,
         )
@@ -109,7 +116,7 @@ async def main():
     test_database_with_classes()
     test_database_with_tinydb()
     test_database_with_sqlmodel()
-    test_database_with_mongodb()
+    await test_database_with_mongodb()
 
 
 def mass_replace():

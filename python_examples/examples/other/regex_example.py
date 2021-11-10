@@ -2,7 +2,7 @@ import re
 
 from loguru import logger
 
-from examples.other.roman_numbers import generate_roman_number
+from python_examples.examples.other.roman_numbers import generate_roman_number
 
 
 def regex_match_test():

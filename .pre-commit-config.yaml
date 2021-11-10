@@ -129,12 +129,20 @@ repos:
     types: [python]
     pass_filenames: false
 
-  # Run tests
+  # Run python examples tests
   - id: pytest
     name: pytest
     stages: [commit]
     language: system
-    entry: poetry run pytest test
+    entry: poetry run pytest python_examples
+    pass_filenames: false
+
+  # Run fastapi server tests
+  - id: pytest
+    name: pytest
+    stages: [commit]
+    language: system
+    entry: poetry run pytest fastapi_server
     pass_filenames: false
 
 #  - id: pytest-cov

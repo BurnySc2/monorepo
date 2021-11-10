@@ -1,19 +1,22 @@
 import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import time
 from pathlib import Path
 
 import aiohttp
-import hypothesis.strategies as st
 import pytest
-from hypothesis import given
 
-from examples.async_await.asyncio_download_upload import download_site
-from examples.other.multiprocessing_example import cpu_bound_summing
-from main import do_math, download_all_sites, download_file
+from python_examples.examples.async_await.asyncio_download_upload import (
+    download_all_sites,
+    download_file,
+    download_site,
+)
+
+
+@pytest.mark.asyncio
+async def test_download_all_sites():
+    urls = ['http://www.jython.org'] * 2
+    results = await download_all_sites(urls)
+    assert sum(result.content_length for result in results) > 0
 
 
 @pytest.mark.asyncio
@@ -77,36 +80,3 @@ async def test_download_site():
     async with aiohttp.ClientSession() as session:
         res = await download_site(session, url)
     assert res.content_length > 0
-
-
-@pytest.mark.asyncio
-async def test_download_all_sites():
-    urls = ['http://www.jython.org'] * 2
-    results = await download_all_sites(urls)
-    assert sum(result.content_length for result in results) > 0
-
-
-@pytest.mark.asyncio
-async def test_do_math():
-    res = await do_math(7)
-    assert res == 10
-
-
-@pytest.mark.asyncio
-@given(st.integers())
-async def test_do_math_integers(value):
-    assert 3 + value == await do_math(value)
-
-
-@pytest.mark.asyncio
-@given(st.floats(allow_infinity=False, allow_nan=False))
-async def test_do_math_floats(value):
-    assert 3 + value == await do_math(value)
-
-
-@given(st.integers(min_value=0, max_value=10000))
-def test_cpu_bound_summing(number):
-    assert sum(i * i for i in range(number)) == cpu_bound_summing(number)
-
-
-# TODO test which expects exception

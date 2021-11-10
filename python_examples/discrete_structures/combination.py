@@ -1,6 +1,6 @@
 from typing import Any, Generator, List
 
-from discrete_structures.product import product_generator
+from python_examples.discrete_structures.product import product_generator
 
 
 def combination_generator(my_list: List[Any], n: int) -> Generator[Any, None, None]:
