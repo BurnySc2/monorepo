@@ -5,7 +5,7 @@ description = ""
 authors = ["BurnySc2 <gamingburny@gmail.com>"]
 packages = [
     { include = "burny_test_template/*.py" },
-    { include = "burny_test_template/*.txt" },
+#    { include = "burny_test_template/*.txt" },
 ]
 
 
