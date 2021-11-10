@@ -11,7 +11,7 @@ from pymongo.errors import ServerSelectionTimeoutError
 from pymongo.results import InsertManyResult, InsertOneResult
 
 
-def test_database_with_mongodb():
+async def test_database_with_mongodb():
     my_port = 27017
     mongo_db_address = f'mongodb://localhost:{my_port}/'
     logger.info('Running mongodb test...')
