@@ -84,9 +84,6 @@ jobs:
 
     - name: Run e2e tests
       run: |
-        pwd
-        ls -la
-        cd $SUBDIRECTORY
         poetry run pytest $SUBDIRECTORY
 
   deploy_frontend:
@@ -120,6 +117,7 @@ jobs:
 
     - name: Build frontend
       run: |
+        cd $SUBDIRECTORY
         npm run build
 
     - name: Deploy to GitHub Pages
@@ -130,6 +128,6 @@ jobs:
         author: Deployer Bot <deploy@foo.bar>
         allow_empty_commit: false
         target_branch: gh-pages
-        build_dir: build
+        build_dir: $SUBDIRECTORY/build
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

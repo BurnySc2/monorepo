@@ -35,6 +35,7 @@ async def download_file(
                 # Assume everything went well with the response, no connection or server errors
                 assert response.status == 200
                 # Open file in binary write mode
+                os.makedirs(temp_file_path.parent, exist_ok=True)
                 with temp_file_path.open('wb') as f:
                     # Download file in chunks
                     async for data in response.content.iter_chunked(chunk_size):
@@ -51,6 +52,7 @@ async def download_file(
                             time_last_subtracted = time_temp
                             await asyncio.sleep(accuracy)
             await asyncio.sleep(0.1)
+            os.makedirs(file_path.parent, exist_ok=True)
             try:
                 temp_file_path.rename(file_path)
                 return True
