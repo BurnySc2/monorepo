@@ -19,7 +19,7 @@ jobs:
     - uses: actions/cache@v2
       with:
         path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-prod-${{ hashFiles('poetry.lock') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-prod-package-${{ hashFiles('poetry.lock') }}
 
     - name: Install dependencies
       run: |
@@ -29,7 +29,7 @@ jobs:
 
     - name: Build
       run: |
-        ls -la
+        cd $SUBDIRECTORY
         poetry build
 
       # Publish package on pypi
