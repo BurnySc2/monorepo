@@ -29,6 +29,7 @@ jobs:
 
     - name: Build
       run: |
+        ls -la
         poetry build
 
       # Publish package on pypi
