@@ -84,6 +84,7 @@ jobs:
 
     - name: Run e2e tests
       run: |
+        cd $SUBDIRECTORY
         poetry run pytest $SUBDIRECTORY
 
   deploy_frontend:

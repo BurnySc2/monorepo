@@ -36,4 +36,5 @@ jobs:
     - name: Publish
       continue-on-error: true
       run: |
+        cd $SUBDIRECTORY
         poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}
