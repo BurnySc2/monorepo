@@ -47,8 +47,11 @@ sqlmodel = "^0.0"
 databases = {extras = ["sqlite"], version = "^0.5"}
 # Async database
 asyncpg = "^0.24"
+# Fastapi server
 fastapi = "^0.70.0"
 uvicorn = "^0.15.0"
+# End to end tests
+seleniumbase = "^2.1.6"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter

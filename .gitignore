@@ -109,6 +109,11 @@ venv.bak/
 # Vscode
 .vscode/
 
+# Frontend
+build
+.svelte-kit
+node_modules
+
 # Test files from main.py
 hello_world.txt
 image.png
