@@ -1,11 +1,11 @@
-name: test_svelte_frontend
+name: test_react_frontend
 
 on: [push, pull_request]
 
 jobs:
   test_frontend:
     env:
-      SUBDIRECTORY: svelte_frontend
+      SUBDIRECTORY: react_frontend
     strategy:
       fail-fast: false
       matrix:
@@ -32,13 +32,14 @@ jobs:
         cd $SUBDIRECTORY
         npm install
 
-      # - name: Run tests
-      #   run: |
-      #       npm run test
+     - name: Run tests
+       run: |
+        cd $SUBDIRECTORY
+        npm run test
 
   test_e2e:
     env:
-      SUBDIRECTORY: svelte_frontend
+      SUBDIRECTORY: react_frontend
     strategy:
       fail-fast: false
       matrix:
@@ -88,7 +89,7 @@ jobs:
 
   deploy_frontend:
     env:
-      SUBDIRECTORY: svelte_frontend
+      SUBDIRECTORY: react_frontend
     strategy:
       matrix:
         os: [ubuntu-latest]

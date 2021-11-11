@@ -52,6 +52,8 @@ fastapi = "^0.70.0"
 uvicorn = "^0.15.0"
 # End to end tests
 seleniumbase = "^2.1.6"
+psutil = "^5.8.0"
+psycopg2 = "^2.9.1"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
