@@ -179,6 +179,11 @@ jobs:
         cd $SUBDIRECTORY
         npm run build
 
+    - name: print files
+      run: |
+        ls -la
+        ls -la $SUBDIRECTORY
+
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/master'
       uses: crazy-max/ghaction-github-pages@v2
