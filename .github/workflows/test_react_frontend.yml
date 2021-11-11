@@ -32,8 +32,8 @@ jobs:
         cd $SUBDIRECTORY
         npm install
 
-     - name: Run tests
-       run: |
+    - name: Run tests
+      run: |
         cd $SUBDIRECTORY
         npm run test
 
