@@ -179,14 +179,14 @@ jobs:
         cd $SUBDIRECTORY
         npm run build
 
-    - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/master'
-      uses: crazy-max/ghaction-github-pages@v2
-      with:
-        committer: Deployer Bot <deploy@foo.bar>
-        author: Deployer Bot <deploy@foo.bar>
-        allow_empty_commit: false
-        target_branch: gh-pages
-        build_dir: "${SUBDIRECTORY}/build"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#    - name: Deploy to GitHub Pages
+#      if: github.ref == 'refs/heads/master'
+#      uses: crazy-max/ghaction-github-pages@v2
+#      with:
+#        committer: Deployer Bot <deploy@foo.bar>
+#        author: Deployer Bot <deploy@foo.bar>
+#        allow_empty_commit: false
+#        target_branch: gh-pages
+#        build_dir: react_frontend/build
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

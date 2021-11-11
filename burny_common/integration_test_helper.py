@@ -4,7 +4,7 @@ import socket
 import subprocess
 import time
 from pathlib import Path
-from typing import Set
+from typing import Optional, Set
 
 import psutil
 import psycopg2
@@ -58,21 +58,24 @@ def remove_leftover_files(files: Set[Path]):
             os.remove(file)
 
 
-def find_next_free_port(port: int = 10_000, max_port: int = 65_535, exclude_ports: Set[int] = None) -> int:
+def is_port_free(port: int) -> bool:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.bind(('', port))
+        sock.close()
+        return True
+    except OSError:
+        return False
+
+
+def find_next_free_port(port: int = 10_000, max_port: int = 65_535, exclude_ports: Optional[Set[int]] = None) -> int:
     if exclude_ports is None:
         exclude_ports = set()
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while port <= max_port:
-        if port in exclude_ports:
-            port += 1
-            continue
-        try:
-            sock.bind(('', port))
-            sock.close()
+        if port not in exclude_ports and is_port_free(port):
             return port
-        except OSError:
-            port += 1
+        port += 1
     raise IOError('No free ports')
 
 
@@ -102,8 +105,9 @@ def start_svelte_dev_server(
     currently_running_node_processes = get_pid('node')
 
     frontend_folder = Path(__file__).parents[1] / 'svelte_frontend'
+    assert is_port_free(port), f'Unable to start svelte dev server because port {port} is blocked'
     logger.info(f'Starting frontend on port {port}')
-    _ = subprocess.Popen(['npx', 'svelte-kit', 'dev', '--port', f"{port}"], cwd=frontend_folder, env=env)
+    _ = subprocess.Popen(['npx', 'svelte-kit', 'dev', '--port', f'{port}'], cwd=frontend_folder, env=env)
 
     # Give it some time to create dev server and all (3?) node proccesses
     time.sleep(5)
@@ -156,6 +160,7 @@ def start_react_dev_server(
     logger.info(
         f"Starting frontend on port {port}, using backend proxy {env['REACT_APP_PROXY']} and websocket address {env['REACT_APP_WEBSOCKET']}",
     )
+    assert is_port_free(port), f'Unable to start react dev server because port {port} is blocked'
     _ = subprocess.Popen(['npx', 'react-scripts', 'start'], cwd=frontend_folder, env=env)
 
     # Give it some time to create dev server and all (3?) node proccesses
@@ -184,6 +189,8 @@ def start_fastapi_dev_server(
     remove_leftover_files({sqlite_test_file_path})
     env['SQLITE_FILENAME'] = sqlite_test_file_name
 
+    # Why does this return errors even when fastapi server is not running
+    # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
     logger.info(f'Starting backend on port {port}')
     _ = subprocess.Popen(
         ['poetry', 'run', 'uvicorn', 'fastapi_server.main:app', '--host', 'localhost', '--port', f'{port}'],

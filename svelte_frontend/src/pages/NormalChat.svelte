@@ -21,9 +21,9 @@
     let messages: Message[] = [{ timestamp: 123, author: 'yolo', message: 'example message' }]
 
     let ws: WebSocket | null = null
-    const ip = 'localhost:5000'
+    const ip = 'localhost:8000'
     const connect = () => {
-        ws = new WebSocket(`ws://${ip}/ws`)
+        ws = new WebSocket(`ws://${ip}/chatws`)
 
         ws.onmessage = (event) => {
             // Called when message received
@@ -143,7 +143,7 @@
     <div class="flex flex-column m2 rounded items-center">
         <div>Connect to chat</div>
         {#if waitingForUserNameResponse === ''}
-            <input type="text" placeholder="Username" class="rounded" bind:value={selectedUserName} />
+            <input id="username" type="text" placeholder="Username" class="rounded" bind:value={selectedUserName} />
         {:else}
             <input
                 type="text"
@@ -153,7 +153,7 @@
                 bind:value={waitingForUserNameResponse}
             />
         {/if}
-        <button on:click={tryToConnectUser} class="rounded p1">Connect</button>
+        <button id="connect" on:click={tryToConnectUser} class="rounded p1">Connect</button>
         <div>{errorMessage}</div>
     </div>
 {:else}
@@ -173,8 +173,8 @@
             {/each}
         </div>
         <div class="grid grid-cols-10">
-            <input class="col-span-9" type="text" on:keydown={handleKeydown} bind:value={chatMessage} />
-            <button class="col-span-1" on:click={sendChatMessage}>Send</button>
+            <input id="chatinput" class="col-span-9" type="text" on:keydown={handleKeydown} bind:value={chatMessage} />
+            <button id="sendmessage" class="col-span-1" on:click={sendChatMessage}>Send</button>
         </div>
     </div>
 {/if}

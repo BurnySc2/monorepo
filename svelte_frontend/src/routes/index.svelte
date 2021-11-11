@@ -15,7 +15,7 @@
         hash = location.hash
         url = hash.slice(1)
         if (url === '') {
-            setUrl(url)
+            setUrl("/")
         }
     })
 

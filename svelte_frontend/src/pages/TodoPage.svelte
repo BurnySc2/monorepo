@@ -6,7 +6,7 @@
     let cards: { id: number; content: string }[] = [{ id: 0, content: 'some todo text' }]
     let APIserverIsResponding = true
 
-    const api_server_ip = 'http://localhost:5000'
+    const api_server_ip = 'http://localhost:8000'
 
     onMount(async () => {
         // console.log("Loading todos")
@@ -91,6 +91,9 @@
         try {
             const requestOptions = {
                 method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
                     todo_description: newTodoText
                 })
