@@ -1,5 +1,5 @@
 import React from "react"
-import { HashRouter, Switch, Route, Link } from "react-router-dom"
+import { HashRouter, Routes, Route, Link } from "react-router-dom"
 import About from "../pages/About"
 import NormalChat from "../pages/NormalChat"
 import TodoPage from "../pages/TodoPage"
@@ -26,20 +26,12 @@ export default function MyRouter(): JSX.Element {
                 </div>
 
                 {/*What to display based on current page path*/}
-                <Switch>
-                    <Route path="/about">
-                        <About />
-                    </Route>
-                    <Route path="/chat">
-                        <NormalChat />
-                    </Route>
-                    <Route path="/todo">
-                        <TodoPage />
-                    </Route>
-                    <Route path="/">
-                        <HomePage />
-                    </Route>
-                </Switch>
+                <Routes>
+                    <Route path="/about" element={<About />} />
+                    <Route path="/chat" element={<NormalChat />} />
+                    <Route path="/todo" element={<TodoPage />} />
+                    <Route path="/" element={<HomePage />} />
+                </Routes>
             </div>
         </HashRouter>
     )
