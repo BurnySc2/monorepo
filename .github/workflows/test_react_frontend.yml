@@ -187,6 +187,6 @@ jobs:
         author: Deployer Bot <deploy@foo.bar>
         allow_empty_commit: false
         target_branch: gh-pages
-        build_dir: react_frontend/build
+        build_dir: "${SUBDIRECTORY}/build"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
