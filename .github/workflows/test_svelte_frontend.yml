@@ -153,7 +153,7 @@ jobs:
         os: [ubuntu-latest]
         node: ['16']
     runs-on: ${{ matrix.os }}
-    needs: [test_frontend, test_e2e]
+    needs: [test_frontend, test_e2e, test_integration]
 
     steps:
     - uses: actions/checkout@v2
