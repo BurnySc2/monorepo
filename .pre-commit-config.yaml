@@ -130,16 +130,16 @@ repos:
     pass_filenames: false
 
   # Run python examples tests
-  - id: pytest
-    name: pytest
+  - id: pytest_python_examples
+    name: pytest_python_examples
     stages: [commit]
     language: system
     entry: poetry run pytest python_examples
     pass_filenames: false
 
   # Run fastapi server tests
-  - id: pytest
-    name: pytest
+  - id: pytest_fastapi_server
+    name: pytest_fastapi_server
     stages: [commit]
     language: system
     entry: poetry run pytest fastapi_server

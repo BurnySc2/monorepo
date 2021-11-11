@@ -151,8 +151,8 @@ def start_backend_dev_server(
     NEWLY_CREATED_PROCESSES: Set[int],
     CREATED_FILES: Set[Path],
 ):
-    root_folder = Path(__file__).parent.parent
-    backend_folder = root_folder / 'backend'
+    root_folder = Path(__file__).parents[2]
+    backend_folder = root_folder / 'fastapi_server'
     currently_running_uvicorn_processes = get_pid('uvicorn')
     env = os.environ.copy()
     env['USE_MONGO_DB'] = 'True'
@@ -167,7 +167,7 @@ def start_backend_dev_server(
 
     logger.info(f'Starting backend on port {port}')
     _ = subprocess.Popen(
-        ['poetry', 'run', 'uvicorn', 'backend.main:app', '--host', 'localhost', '--port', f'{port}'],
+        ['poetry', 'run', 'uvicorn', 'fastapi_server.main:app', '--host', 'localhost', '--port', f'{port}'],
         cwd=root_folder,
         env=env,
     )
