@@ -22,6 +22,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Cache poetry
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pypoetry/virtualenvs
+        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
     - name: Start MongoDB in docker (linux)
       run: |
         docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
