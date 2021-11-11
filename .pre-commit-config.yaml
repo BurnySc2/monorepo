@@ -145,6 +145,22 @@ repos:
     entry: poetry run pytest fastapi_server
     pass_filenames: false
 
+  # Run svelte e2e tests
+  - id: svelte_e2e_tests
+    name: svelte_e2e_tests
+    stages: [commit]
+    language: system
+    entry: poetry run pytest svelte_frontend/test_frontend/test_e2e.py
+    pass_filenames: false
+
+  # Run react e2e tests
+  - id: react_e2e_tests
+    name: react_e2e_tests
+    stages: [commit]
+    language: system
+    entry: poetry run pytest react_frontend/test_frontend/test_e2e.py
+    pass_filenames: false
+
 #  - id: pytest-cov
 #    name: pytest
 #    stages: [push]

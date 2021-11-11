@@ -5,15 +5,15 @@ from typing import Set
 # https://seleniumbase.io/
 from seleniumbase import BaseCase
 
-from react_frontend.test_frontend.tester_helper import (
+from burny_common.integration_test_helper import (
     find_next_free_port,
     get_website_address,
     kill_processes,
     remove_leftover_files,
-    start_backend_dev_server,
-    start_frontend_dev_server,
+    start_fastapi_dev_server,
     start_mongodb,
     start_postgres,
+    start_react_dev_server,
 )
 
 
@@ -37,8 +37,8 @@ class MyTestClass(BaseCase):
         free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
         self.FRONTEND_ADDRESS = get_website_address(free_frontend_port)
         self.BACKEND_ADDRESS = f'http://localhost:{free_backend_port}'
-        start_backend_dev_server(free_backend_port, self.NEWLY_CREATED_PROCESSES, self.CREATED_FILES)
-        start_frontend_dev_server(
+        start_fastapi_dev_server(free_backend_port, self.NEWLY_CREATED_PROCESSES, self.CREATED_FILES)
+        start_react_dev_server(
             free_frontend_port,
             self.NEWLY_CREATED_PROCESSES,
             backend_proxy=f'localhost:{free_backend_port}',

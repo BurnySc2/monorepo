@@ -7,11 +7,11 @@ from pytest_benchmark.fixture import BenchmarkFixture
 # https://seleniumbase.io/
 from seleniumbase import BaseCase
 
-from react_frontend.test_frontend.tester_helper import (
+from burny_common.integration_test_helper import (
     find_next_free_port,
     get_website_address,
     kill_processes,
-    start_frontend_dev_server,
+    start_react_dev_server,
 )
 
 # Set in setup_module()
@@ -29,7 +29,7 @@ def setup_module():
     """
     port = find_next_free_port()
     FRONTEND_ADDRESS = get_website_address(port)
-    start_frontend_dev_server(port, NEWLY_CREATED_NODE_PROCESSES)
+    start_react_dev_server(port, NEWLY_CREATED_NODE_PROCESSES)
 
 
 def teardown_module():

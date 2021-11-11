@@ -93,8 +93,27 @@ def get_website_address(port: int) -> str:
     return f'{WEBSITE_IP}:{port}'
 
 
-def generate_css_file():
-    frontend_folder = Path(__file__).parents[1]
+def start_svelte_dev_server(
+    port: int,
+    NEWLY_CREATED_PROCESSES: Set[int],
+    _backend_proxy: str = 'localhost:8000',
+):
+    env = os.environ.copy()
+    currently_running_node_processes = get_pid('node')
+
+    frontend_folder = Path(__file__).parents[1] / 'svelte_frontend'
+    logger.info(f'Starting frontend on port {port}')
+    _ = subprocess.Popen(['npx', 'svelte-kit', 'dev', '--port', f"{port}"], cwd=frontend_folder, env=env)
+
+    # Give it some time to create dev server and all (3?) node proccesses
+    time.sleep(5)
+    new_processes = get_pid('node') - currently_running_node_processes
+    logger.info(f'New node processes: {new_processes}')
+    NEWLY_CREATED_PROCESSES |= new_processes
+
+
+def generate_react_tailwind_css_file():
+    frontend_folder = Path(__file__).parents[1] / 'react_frontend'
     index_css_path = frontend_folder / 'src' / 'index.css'
 
     # If it already exists, skip generation of file
@@ -112,7 +131,7 @@ def generate_css_file():
         time.sleep(1)
 
 
-def start_frontend_dev_server(
+def start_react_dev_server(
     port: int,
     NEWLY_CREATED_PROCESSES: Set[int],
     backend_proxy: str = 'localhost:8000',
@@ -131,9 +150,9 @@ def start_frontend_dev_server(
     currently_running_node_processes = get_pid('node')
 
     # pylint: disable=R1732
-    generate_css_file()
+    generate_react_tailwind_css_file()
 
-    frontend_folder = Path(__file__).parents[1]
+    frontend_folder = Path(__file__).parents[1] / 'react_frontend'
     logger.info(
         f"Starting frontend on port {port}, using backend proxy {env['REACT_APP_PROXY']} and websocket address {env['REACT_APP_WEBSOCKET']}",
     )
@@ -146,12 +165,12 @@ def start_frontend_dev_server(
     NEWLY_CREATED_PROCESSES |= new_processes
 
 
-def start_backend_dev_server(
+def start_fastapi_dev_server(
     port: int,
     NEWLY_CREATED_PROCESSES: Set[int],
     CREATED_FILES: Set[Path],
 ):
-    root_folder = Path(__file__).parents[2]
+    root_folder = Path(__file__).parents[1]
     backend_folder = root_folder / 'fastapi_server'
     currently_running_uvicorn_processes = get_pid('uvicorn')
     env = os.environ.copy()
@@ -292,7 +311,8 @@ if __name__ == '__main__':
     start_mongodb()
     free_frontend_port = find_next_free_port()
     free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
-    start_frontend_dev_server(free_frontend_port, set(), backend_proxy=f'http://localhost:{free_backend_port}')
-    start_backend_dev_server(free_backend_port, set(), set())
+    start_svelte_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
+    start_react_dev_server(free_frontend_port, set(), backend_proxy=f'http://localhost:{free_backend_port}')
+    start_fastapi_dev_server(free_backend_port, set(), set())
     while 1:
         time.sleep(1)

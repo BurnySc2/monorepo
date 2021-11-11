@@ -84,7 +84,7 @@ jobs:
 
     - name: Run e2e tests
       run: |
-        poetry run pytest $SUBDIRECTORY
+        poetry run pytest $SUBDIRECTORY/test_frontend/test_e2e.py
 
   deploy_frontend:
     env:

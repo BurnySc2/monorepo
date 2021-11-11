@@ -1,68 +1,57 @@
-import os
-import random
-import signal
-import subprocess
-import time
-from typing import Optional
+from typing import Optional, Set
 
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 from seleniumbase import BaseCase
 
+from burny_common.integration_test_helper import (
+    find_next_free_port,
+    get_website_address,
+    kill_processes,
+    start_svelte_dev_server,
+)
+
 # see https://github.com/seleniumbase/SeleniumBase
 # https://seleniumbase.io/
 
-WEBSITE_IP = 'http://localhost'
-# TODO replace with port picker
-WEBSITE_PORT = f'{random.randint(10_000, 65_535)}'
-WEBSITE_ADDRESS = f'{WEBSITE_IP}:{WEBSITE_PORT}'
-WEBSERVER_PROCESS: Optional[subprocess.Popen] = None
+# Set in setup_module()
+FRONTEND_ADDRESS = ''
+# Remember which node processes to close
+NEWLY_CREATED_NODE_PROCESSES: Set[int] = set()
 
 
-# pylint: disable=W0613
-def setup_module(module):
+def setup_module():
     """
     See https://docs.pytest.org/en/6.2.x/xunit_setup.html
     """
-    time.sleep(0.5)
-    # pylint: disable=R1732
-    MyTestClass.webserver_process = subprocess.Popen(['npx', 'svelte-kit', 'dev', '--port', WEBSITE_PORT])
-    time.sleep(5)
-
-
-# pylint: disable=W0613
-def teardown_module(module):
     # pylint: disable=W0603
-    global WEBSERVER_PROCESS
-    """ teardown any state that was previously setup with a call to
-    setup_class.
-    """
-    if WEBSERVER_PROCESS is not None:
-        time.sleep(0.1)
-        os.kill(WEBSERVER_PROCESS.pid, signal.SIGTERM)
-        time.sleep(0.1)
-        if WEBSERVER_PROCESS.poll() is None:
-            os.kill(WEBSERVER_PROCESS.pid, signal.SIGKILL)
-        time.sleep(0.1)
+    global FRONTEND_ADDRESS
+    port = find_next_free_port()
+    FRONTEND_ADDRESS = get_website_address(port)
+    start_svelte_dev_server(port, NEWLY_CREATED_NODE_PROCESSES)
 
-    WEBSERVER_PROCESS = None
+
+def teardown_module():
+    # Stop frontend server
+    kill_processes(NEWLY_CREATED_NODE_PROCESSES)
+    NEWLY_CREATED_NODE_PROCESSES.clear()
 
 
 class MyTestClass(BaseCase):
     def test_basic_site_display(self):
         """ Check if HOME site is visible """
-        self.open(WEBSITE_ADDRESS)
+        self.open(FRONTEND_ADDRESS)
         self.assert_text('BrowserStorage')
 
     def test_shows_todos(self):
         """ Check if the to-do site is visible """
-        self.open(WEBSITE_ADDRESS)
+        self.open(FRONTEND_ADDRESS)
         self.click('#todo')
         self.assert_text('Unable to connect to server')
 
     def test_add_todo(self):
         """ Add a new to-do entry """
-        self.open(WEBSITE_ADDRESS)
+        self.open(FRONTEND_ADDRESS)
         self.click('#todo')
         test_text = 'my amazing test todo text'
         self.write('#newTodoInput', test_text)
@@ -111,7 +100,7 @@ class MyBenchClass(BaseCase):
 
     def basic_site_display(self):
         """ Check if HOME site is visible """
-        self.open(WEBSITE_ADDRESS)
+        self.open(FRONTEND_ADDRESS)
         self.assert_text('BrowserStorage')
 
     def test_bench_basic_site_display(self):
@@ -120,7 +109,7 @@ class MyBenchClass(BaseCase):
 
     def add_todo(self):
         """ Add a new to-do entry """
-        self.open(WEBSITE_ADDRESS)
+        self.open(FRONTEND_ADDRESS)
         self.click('#todo')
         test_text = 'my amazing test todo text'
         self.write('#newTodoInput', test_text)
@@ -130,3 +119,8 @@ class MyBenchClass(BaseCase):
     def test_bench_add_todo(self):
         """ Benchmark how fast a to-do can be added """
         self.benchmark(self.add_todo)
+
+
+if __name__ == '__main__':
+    setup_module()
+    teardown_module()
