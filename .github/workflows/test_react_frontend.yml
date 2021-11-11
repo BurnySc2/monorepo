@@ -179,11 +179,6 @@ jobs:
         cd $SUBDIRECTORY
         npm run build
 
-    - name: print files
-      run: |
-        ls -la
-        ls -la $SUBDIRECTORY
-
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/master'
       uses: crazy-max/ghaction-github-pages@v2
@@ -192,6 +187,6 @@ jobs:
         author: Deployer Bot <deploy@foo.bar>
         allow_empty_commit: false
         target_branch: gh-pages
-        build_dir: $SUBDIRECTORY/build
+        build_dir: ${SUBDIRECTORY}/build
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
