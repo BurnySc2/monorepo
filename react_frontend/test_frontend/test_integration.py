@@ -27,7 +27,6 @@ class MyTestClass(BaseCase):
         # And which files to remove
         self.CREATED_FILES: Set[Path] = set()
 
-    # pylint: disable=R0201
     def setup_method(self, _method):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
@@ -46,7 +45,6 @@ class MyTestClass(BaseCase):
         start_mongodb()
         start_postgres()
 
-    # pylint: disable=R0201
     def teardown_method(self, _method):
         """ teardown any state that was previously setup with a setup_method
         call.

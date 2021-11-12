@@ -1,8 +1,3 @@
-import strawberry
-from fastapi.routing import APIRouter
-from strawberry.fastapi import GraphQLRouter
-
-strawberry_router = APIRouter()
 """
 Hello world example:
 
@@ -14,6 +9,11 @@ Hello world example:
     hello
 }
 """
+import strawberry
+from fastapi.routing import APIRouter
+from strawberry.fastapi import GraphQLRouter
+
+strawberry_router = APIRouter()
 
 
 @strawberry.type
