@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from fastapi_server.routes.chat import chat_router
+from fastapi_server.routes.graphql import strawberry_router
 from fastapi_server.routes.hello_world import background_task_function, hello_world_router
 from fastapi_server.routes.todolist import create_database_if_not_exist, get_db, todo_list_router
 
@@ -22,6 +23,7 @@ app = FastAPI()
 app.include_router(hello_world_router)
 app.include_router(chat_router)
 app.include_router(todo_list_router)
+app.include_router(strawberry_router)
 
 origins = [
     'https://burnysc2.github.io',
