@@ -197,8 +197,8 @@ def start_fastapi_dev_server(
         cwd=root_folder,
         env=env,
     )
-    # Give it some time to create dev server
-    time.sleep(1)
+    # Give it some time to create backend dev server
+    time.sleep(3)
     new_processes = get_pid('uvicorn') - currently_running_uvicorn_processes
     logger.info(f'New uvicorn processes: {new_processes}')
     NEWLY_CREATED_PROCESSES |= new_processes
