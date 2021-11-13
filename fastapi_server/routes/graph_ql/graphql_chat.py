@@ -18,9 +18,9 @@ class ChatMessage:
 active_users: Set[str] = set()
 chat_all_messages: List[ChatMessage] = []
 chat_message_id = 0
-queue_user_joined: asyncio.Queue[str] = asyncio.Queue()
-queue_user_left: asyncio.Queue[str] = asyncio.Queue()
-queue_new_message: asyncio.Queue[ChatMessage] = asyncio.Queue()
+queue_user_joined: 'asyncio.Queue[str]' = asyncio.Queue()
+queue_user_left: 'asyncio.Queue[str]' = asyncio.Queue()
+queue_new_message: 'asyncio.Queue[ChatMessage]' = asyncio.Queue()
 # ^^^^ TODO refactor ^^^^^^^
 
 
