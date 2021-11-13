@@ -48,7 +48,7 @@ async def startup_event():
 @app.on_event('shutdown')
 def shutdown_event():
     db = get_db()
-    if db():
+    if db:
         db.close()
     logger.info('Bye world!')
 

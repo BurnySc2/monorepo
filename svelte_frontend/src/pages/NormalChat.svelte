@@ -89,6 +89,7 @@
     }
 
     onMount(async () => {
+        // On page load: connect to websocket
         connect()
     })
 

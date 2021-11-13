@@ -49,10 +49,10 @@ class WebsocketChatManager:
             except RuntimeError:
                 await self.disconnect(connection)
 
-    def name_taken(self, name: str):
+    def name_taken(self, name: str) -> bool:
         return name in self.usernames
 
-    def verify(self, name: str, websocket: WebSocket):
+    def verify(self, name: str, websocket: WebSocket) -> bool:
         return name in self.usernames and self.usernames[name] == websocket
 
     async def connect_username(self, name: str, websocket: WebSocket):
@@ -64,7 +64,7 @@ class WebsocketChatManager:
     async def send_message_history(self, websocket: WebSocket):
         await self.send_personal_json({'newMessageHistory': [m.to_dict() for m in self.messages_history]}, websocket)
 
-    async def disconnect_username(self, name: str = None, websocket: WebSocket = None):
+    async def disconnect_username(self, name: str = None, websocket: WebSocket = None) -> str:
         if name is not None:
             assert name in self.usernames
             self.usernames.pop(name)
@@ -74,6 +74,7 @@ class WebsocketChatManager:
                 if ws == websocket:
                     self.usernames.pop(username)
                     return username
+        return ''
 
 
 websocket_chat_manager = WebsocketChatManager()

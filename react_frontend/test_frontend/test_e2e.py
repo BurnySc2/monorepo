@@ -22,7 +22,6 @@ NEWLY_CREATED_NODE_PROCESSES: Set[int] = set()
 
 def setup_module():
     """ Setup module can stay here because each new connection doesn't require a restart of frontend server """
-    # pylint: disable=W0603
     global FRONTEND_ADDRESS
     """
     See https://docs.pytest.org/en/6.2.x/xunit_setup.html

@@ -32,7 +32,6 @@ def get_db() -> Optional[sqlite3.Connection]:
 
 
 def create_database_if_not_exist():
-    # pylint: disable=W0603
     global db
     todos_db = Path(__file__).parents[1] / 'data' / SQLITE_FILENAME
     if not todos_db.is_file():

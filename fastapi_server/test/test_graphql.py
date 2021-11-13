@@ -2,6 +2,7 @@ from fastapi_server.routes.graphql import schema
 
 
 def test_query():
+    # https://strawberry.rocks/docs/operations/testing
     query = """
     {
         hello

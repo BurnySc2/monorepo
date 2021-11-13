@@ -64,7 +64,7 @@ class TestHypothesis(unittest.TestCase):
         assert response.status_code == 200
         assert response.json() == []
 
-        response = client.post(f'/api_body', data=json.dumps({'new_todo': new_todo}))
+        response = client.post('/api_body', data=json.dumps({'new_todo': new_todo}))
         assert response.status_code == 200
 
         response = client.get('/api')
@@ -82,7 +82,7 @@ class TestHypothesis(unittest.TestCase):
         assert response.json() == []
 
         response = client.post(
-            f'/api_model',
+            '/api_model',
             headers={
                 'Content-Type': 'application/json',
             },
@@ -106,7 +106,7 @@ class TestHypothesis(unittest.TestCase):
 
         for new_todo in todo_items:
             response = client.post(
-                f'/api_model',
+                '/api_model',
                 headers={
                     'Content-Type': 'application/json',
                 },
@@ -118,10 +118,10 @@ class TestHypothesis(unittest.TestCase):
         assert response.status_code == 200
         assert len(todo_items) == len(response.json())
 
-        items = [(item_id, item) for item_id, item in enumerate(todo_items, start=1)]
+        items = list(enumerate(todo_items, start=1))
         random.shuffle(items)
         items_amount = len(todo_items) - 1
-        for item_id, item in items:
+        for item_id, _item in items:
             response = client.delete(f'/api/{item_id}')
             assert response.status_code == 200
 
@@ -134,4 +134,4 @@ class TestHypothesis(unittest.TestCase):
 
         response = client.get('/api')
         assert response.status_code == 200
-        assert 0 == len(response.json())
+        assert len(response.json()) == 0

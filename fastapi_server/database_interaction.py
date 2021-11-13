@@ -17,7 +17,6 @@ class TodoItem(BaseModel):
 
 
 def create_database_if_not_exist():
-    # pylint: disable=W0603
     global db
     todos_db = Path(__file__).parent.parent / 'data' / 'todos.db'
     logger.info(todos_db)

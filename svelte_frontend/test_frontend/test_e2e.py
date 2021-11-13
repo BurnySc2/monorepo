@@ -24,7 +24,6 @@ def setup_module():
     """
     See https://docs.pytest.org/en/6.2.x/xunit_setup.html
     """
-    # pylint: disable=W0603
     global FRONTEND_ADDRESS
     port = find_next_free_port()
     FRONTEND_ADDRESS = get_website_address(port)

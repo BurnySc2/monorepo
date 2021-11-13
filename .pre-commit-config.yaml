@@ -64,12 +64,6 @@ repos:
     files: \.(py)$
     args: [--settings-path=pyproject.toml]
 
-# Add trailing commas - might be unwanted in some places
-- repo: https://github.com/asottile/add-trailing-comma
-  rev: v2.1.0
-  hooks:
-  - id: add-trailing-comma
-
 # If project is written in Python 3.9+, it will autofix List[str] to list[str] etc
 #- repo: https://github.com/sondrelg/pep585-upgrade
 #  rev: ''  # Use the sha / tag you want to point at
