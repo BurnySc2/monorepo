@@ -15,6 +15,12 @@ USE_LOCAL_SQLITE_DB: bool = ENV.get('USE_LOCAL_SQLITE_DB', 'True') == 'True'
 SQLITE_FILENAME: str = ENV.get('SQLITE_FILENAME', 'todos.db')
 # TODO use different database tables when using stage = dev/staging/prod
 
+
+def set_sqlite_filename(file_name: str):
+    global SQLITE_FILENAME
+    SQLITE_FILENAME = file_name
+
+
 todo_list_router = APIRouter()
 db: Optional[sqlite3.Connection] = None
 
@@ -28,7 +34,7 @@ def get_db() -> Optional[sqlite3.Connection]:
 def create_database_if_not_exist():
     # pylint: disable=W0603
     global db
-    todos_db = Path(__file__).parent.parent / 'data' / SQLITE_FILENAME
+    todos_db = Path(__file__).parents[1] / 'data' / SQLITE_FILENAME
     if not todos_db.is_file():
         os.makedirs(todos_db.parent, exist_ok=True)
         db = sqlite3.connect(todos_db)
@@ -41,6 +47,7 @@ def create_database_if_not_exist():
 
 @todo_list_router.get('/api')
 async def show_all_todos() -> List[Dict[str, str]]:
+    create_database_if_not_exist()
     todos = []
     if db:
         for row in db.execute('SELECT id, task FROM todos'):
@@ -54,6 +61,7 @@ async def show_all_todos() -> List[Dict[str, str]]:
 @todo_list_router.post('/api/{todo_description}')
 async def create_new_todo(todo_description: str):
     # https://fastapi.tiangolo.com/advanced/using-request-directly/
+    create_database_if_not_exist()
     if todo_description:
         logger.info(f'Attempting to insert new todo: {todo_description}')
         if db:
@@ -69,6 +77,7 @@ async def create_new_todo2(request: Request):
     Send a request with body {"new_todo": "<todo task description>"}
     """
     # https://fastapi.tiangolo.com/advanced/using-request-directly/
+    create_database_if_not_exist()
     request_body = await request.json()
     todo_item = request_body.get('new_todo', None)
     if todo_item:
@@ -91,6 +100,7 @@ async def create_new_todo3(item: Item):
     Send a request with body {"todo_description": "<todo task description>"}
     """
     # https://fastapi.tiangolo.com/tutorial/body/#import-pydantics-basemodel
+    create_database_if_not_exist()
     logger.info(f'Received item: {item}')
     if item and item.todo_description:
         logger.info(f'Attempting to insert new todo: {item.todo_description}')
@@ -102,6 +112,7 @@ async def create_new_todo3(item: Item):
 @todo_list_router.delete('/api/{todo_id}')
 async def remove_todo(todo_id: int):
     """ Example of using /api/itemid with DELETE request """
+    create_database_if_not_exist()
     logger.info(f'Attempting to remove todo id: {todo_id}')
     if db:
         db.execute('DELETE FROM todos WHERE id==(?)', [todo_id])

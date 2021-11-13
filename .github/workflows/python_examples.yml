@@ -1,15 +1,15 @@
-name: python_examples
+name: run_python_examples
 
 on: [push, pull_request]
 
 jobs:
-  test_linux_mac:
+  run_python_examples:
     env:
       SUBDIRECTORY: python_examples
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
         python-version: ['3.7', '3.8', '3.9', '3.10']
         mongodb-version: [5.0.0]
     runs-on: ${{ matrix.os }}
@@ -28,16 +28,14 @@ jobs:
         path: ~/.cache/pypoetry/virtualenvs
         key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
 
-    - name: Start MongoDB in docker (linux)
+    - name: Start MongoDB in docker
       run: |
         docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
-      if: matrix.os == 'ubuntu-latest'
 
-    - name: Start Postgres in docker (linux)
+    - name: Start Postgres in docker
       run: |
         docker run --rm -d --name postgresql-container -p 5432:5432 \
           -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
-      if: matrix.os == 'ubuntu-latest'
 
     - uses: actions/cache@v2
       with:
