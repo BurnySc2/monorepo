@@ -36,7 +36,7 @@
                 if ("message" in content) {
                     // Received example message
                     console.log(`Received: ${content.message}`)
-                } else if (content.hasOwnProperty("error")) {
+                } else if ("error" in content) {
                     // Error handling
                     if (content.error === "usernameTaken") {
                         errorMessage = `Username '${waitingForUserNameResponse}' is already taken!`
@@ -47,12 +47,12 @@
                     console.log(`Received new message: ${JSON.stringify(content.newMessage)}`)
 
                     messages = [...messages, content.newMessage]
-                } else if (content.hasOwnProperty("newMessageHistory")) {
+                } else if ("newMessageHistory" in content) {
                     // Received new message
                     console.log(`Received new message history: ${content.newMessage}`)
 
                     messages = [...messages, ...content.newMessageHistory]
-                } else if (content.hasOwnProperty("connectUser")) {
+                } else if ("connectUser" in content) {
                     // User connected, server accepted the username
                     console.log(`Successfully connected to server with username ${content.connectUser}`)
                     errorMessage = ""

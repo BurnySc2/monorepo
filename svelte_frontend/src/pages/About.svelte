@@ -1,5 +1,5 @@
 <script lang="ts">
-    export let defaultText: string = "this text"
+    export let defaultText = "this text"
     let someText = defaultText
 </script>
 

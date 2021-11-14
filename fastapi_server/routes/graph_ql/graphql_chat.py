@@ -1,9 +1,16 @@
 import asyncio
 import time
-from typing import AsyncGenerator, List, Optional, Set
+from collections import deque
+from typing import AsyncGenerator, Deque, List, Optional, Set
 
 import strawberry
-from loguru import logger
+
+
+@strawberry.type
+class Event:
+    id: int
+    timestamp: int
+    data: str
 
 
 @strawberry.type
@@ -15,12 +22,14 @@ class ChatMessage:
 
 
 # vvvv TODO refactor vvvvvvv
+# User joined, user left events
+event_id = 0
 active_users: Set[str] = set()
-chat_all_messages: List[ChatMessage] = []
+user_joined_events: List[Event] = []
+user_left_events: List[Event] = []
+# Messages
 chat_message_id = 0
-queue_user_joined: 'asyncio.Queue[str]' = asyncio.Queue()
-queue_user_left: 'asyncio.Queue[str]' = asyncio.Queue()
-queue_new_message: 'asyncio.Queue[ChatMessage]' = asyncio.Queue()
+messages: Deque[ChatMessage] = deque()
 # ^^^^ TODO refactor ^^^^^^^
 
 
@@ -32,7 +41,7 @@ class ChatSystemQuery:
 
     @strawberry.field
     def chat_messages(self) -> List[ChatMessage]:
-        return chat_all_messages
+        return list(messages)
 
     @strawberry.field
     def chat_hello(self) -> str:
@@ -43,17 +52,31 @@ class ChatSystemQuery:
 class ChatSystemMutation:
     @strawberry.mutation
     def chat_join_room(self, username: str) -> bool:
+        global event_id
         if username in active_users:
             return False
         active_users.add(username)
-        queue_user_joined.put_nowait(username)
+        event = Event(
+            id=event_id,
+            timestamp=int(time.time()),
+            data=username,
+        )  # type: ignore
+        event_id += 1
+        user_joined_events.append(event)
         return True
 
     @strawberry.mutation
     def chat_leave_room(self, username: str) -> Optional[bool]:
+        global event_id
         if username in active_users:
             active_users.remove(username)
-            queue_user_left.put_nowait(username)
+            event = Event(
+                id=event_id,
+                timestamp=int(time.time()),
+                data=username,
+            )  # type: ignore
+            event_id += 1
+            user_left_events.append(event)
             return True
         return False
 
@@ -68,8 +91,7 @@ class ChatSystemMutation:
             author=username,
             message=message,
         )  # type: ignore
-        chat_all_messages.append(new_message)
-        queue_new_message.put_nowait(new_message)
+        messages.append(new_message)
         return chat_message_id
 
 
@@ -77,26 +99,33 @@ class ChatSystemMutation:
 class ChatSystemSubscription:
     @strawberry.subscription
     async def chat_user_joined(self) -> AsyncGenerator[str, None]:
+        index = len(user_joined_events)
         while 1:
-            if queue_user_joined.empty():
-                await asyncio.sleep(0.01)
+            if len(user_joined_events) > index:
+                new_user: Event = user_joined_events[index]
+                index += 1
+                yield new_user.data
             else:
-                new_user = queue_user_joined.get_nowait()
-                logger.info(f'new user: {new_user}')
-                yield new_user
+                await asyncio.sleep(0.01)
 
     @strawberry.subscription
     async def chat_user_left(self) -> AsyncGenerator[str, None]:
+        index = len(user_left_events)
         while 1:
-            if queue_user_left.empty():
-                await asyncio.sleep(0.01)
+            if len(user_left_events) > index:
+                user_left: Event = user_left_events[index]
+                index += 1
+                yield user_left.data
             else:
-                yield queue_user_left.get_nowait()
+                await asyncio.sleep(0.01)
 
     @strawberry.subscription
     async def chat_new_message(self) -> AsyncGenerator[ChatMessage, None]:
+        index = len(messages)
         while 1:
-            if queue_new_message.empty():
-                await asyncio.sleep(0.01)
+            if len(messages) > index:
+                new_message = messages[index]
+                index += 1
+                yield new_message
             else:
-                yield queue_new_message.get_nowait()
+                await asyncio.sleep(0.01)

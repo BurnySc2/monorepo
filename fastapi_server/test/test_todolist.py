@@ -40,7 +40,7 @@ class TestHypothesis(unittest.TestCase):
         """ Called after the test run """
         cls.remove_db_file()
 
-    @settings(deadline=1_000)
+    @settings(deadline=2_000)
     @given(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
     def test_add_todo_list_item(self, new_todo: str):
         response = client.get('/api')
@@ -57,7 +57,7 @@ class TestHypothesis(unittest.TestCase):
             'id': 1,
         }]
 
-    @settings(deadline=1_000)
+    @settings(deadline=2_000)
     @given(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
     def test_add_todo_list_item_with_body(self, new_todo: str):
         response = client.get('/api')
@@ -74,7 +74,7 @@ class TestHypothesis(unittest.TestCase):
             'id': 1,
         }]
 
-    @settings(deadline=1_000)
+    @settings(deadline=2_000)
     @given(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
     def test_add_todo_list_item_with_model(self, new_todo: str):
         response = client.get('/api')
@@ -97,7 +97,7 @@ class TestHypothesis(unittest.TestCase):
             'id': 1,
         }]
 
-    @settings(max_examples=20, deadline=1_000)
+    @settings(max_examples=20, deadline=2_000)
     @given(st.lists(st.from_regex(TODO_ITEM_REGEX, fullmatch=True), max_size=100))
     def test_remove_todo_list_items(self, todo_items: List[str]):
         response = client.get('/api')

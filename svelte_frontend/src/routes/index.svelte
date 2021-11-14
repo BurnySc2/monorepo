@@ -2,6 +2,7 @@
     import TodoPage from "../pages/TodoPage.svelte"
     import Home from "../pages/Home.svelte"
     import About from "../pages/About.svelte"
+    import GraphqlChat from "../pages/GraphqlChat.svelte"
     import NormalChat from "../pages/NormalChat.svelte"
     import BrowserStorage from "../pages/BrowserStorage.svelte"
     import { onMount } from "svelte"
@@ -34,6 +35,7 @@
         <button class="m1 p1 rounded" id="home" on:click={() => setUrl("/")}>Home</button>
         <button class="m1 p1 rounded" id="about" on:click={() => setUrl("/about")}>About</button>
         <button class="m1 p1 rounded" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
+        <button class="m1 p1 rounded" id="graphqlchat" on:click={() => setUrl("/graphqlchat")}>Graphql Chat</button>
         <button class="m1 p1 rounded" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
         <button class="m1 p1 rounded" id="browserstorage" on:click={() => setUrl("/browserstorage")}
             >BrowserStorage</button
@@ -45,6 +47,8 @@
         <About defaultText="My other text" />
     {:else if url === "/chat"}
         <NormalChat />
+    {:else if url === "/graphqlchat"}
+        <GraphqlChat />
     {:else if url === "/todo"}
         <TodoPage />
     {:else if url === "/browserstorage"}
