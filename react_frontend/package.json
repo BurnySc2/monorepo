@@ -13,8 +13,8 @@
         "eslintfix": "npx eslint src/**/*.{ts,tsx} --max-warnings 0 --fix",
         "test": "react-scripts test --watchAll=false",
         "update": "npx npm-check-updates -u && npm run prune",
-        "prune": "rm package-lock.json -f && rm node_modules -rf && npm i",
-        "format": "npx prettier --write \"src/**/*.{json,js,ts,tsx}\""
+        "prune": "rm node_modules -rf && rm package-lock.json -f && npm i",
+        "format": "prettier --write \"src/**/*.{json,js,ts,tsx}\""
     },
     "scriptsComments": {
         "tailwind:dev": "Generate a index.css file which contains all tailwind.css classes",
@@ -43,11 +43,9 @@
     },
     "devDependencies": {
         "@testing-library/jest-dom": "^5.15.0",
-        "@types/jest": "^27.0.2",
         "@typescript-eslint/eslint-plugin": "^5.3.1",
         "eslint": "^7.32.0",
         "eslint-plugin-react": "^7.27.0",
-        "jest-dom": "^4.0.0",
         "npm-check-updates": "^12.0.2",
         "prettier": "2.4.1"
     },

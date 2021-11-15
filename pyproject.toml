@@ -38,7 +38,7 @@ tinydb = "^4.5"
 # New popular database mongodb
 pymongo = "^3.12"
 # Generate text
-lorem-text = "^1.5"
+lorem-text = "^2.1"
 # https://github.com/tiangolo/sqlmodel
 sqlmodel = "^0.0"
 # Geometry manipulation
@@ -66,7 +66,7 @@ yapf = "^0.31"
 pylint = "^2.8"
 # Test library
 pytest = "^6.2"
-pytest-asyncio = "^0.15"
+pytest-asyncio = "^0.16"
 pytest-cov = "^3.0"
 pytest-benchmark = "^3.4"
 # Type checking

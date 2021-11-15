@@ -709,7 +709,7 @@ dev = ["codecov (>=2.0.15)", "colorama (>=0.3.4)", "flake8 (>=3.7.7)", "tox (>=3
 
 [[package]]
 name = "lorem-text"
-version = "1.5"
+version = "2.1"
 description = "Dummy lorem ipsum text generator"
 category = "main"
 optional = false
@@ -1174,7 +1174,7 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xm
 
 [[package]]
 name = "pytest-asyncio"
-version = "0.15.1"
+version = "0.16.0"
 description = "Pytest support for asyncio."
 category = "dev"
 optional = false
@@ -1894,7 +1894,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7 <3.11"
-content-hash = "ff20c9b468f7b7f7a1411913400075458e63b427c20c7d5c03e099c36ba293f9"
+content-hash = "259868d39a8719274e1ad44aa46e1befd91321a14fb75d1e74619a0cf8737751"
 
 [metadata.files]
 aiocontextvars = [
@@ -2522,8 +2522,8 @@ loguru = [
     {file = "loguru-0.5.3.tar.gz", hash = "sha256:b28e72ac7a98be3d28ad28570299a393dfcd32e5e3f6a353dec94675767b6319"},
 ]
 lorem-text = [
-    {file = "lorem_text-1.5-py2.py3-none-any.whl", hash = "sha256:1997aa4efe8f6505d3d73056fb8c8d3d8e2847107329469d395388010e531036"},
-    {file = "lorem_text-1.5.tar.gz", hash = "sha256:3f151466814bd1ad66b9b41e8482c755d1e3bc78d6dad528f1f8586d868e8a7e"},
+    {file = "lorem_text-2.1-py2.py3-none-any.whl", hash = "sha256:b512779addd08dcc221460ce428f7911b198f66c5763410f3de6d788eb62ceb3"},
+    {file = "lorem_text-2.1.tar.gz", hash = "sha256:b984b5570295084012f5a9385672bab3470965c943b73d8d71a6efcd7a62b5c3"},
 ]
 mando = [
     {file = "mando-0.6.4-py2.py3-none-any.whl", hash = "sha256:4ce09faec7e5192ffc3c57830e26acba0fd6cd11e1ee81af0d4df0657463bd1c"},
@@ -3023,8 +3023,8 @@ pytest = [
     {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
 ]
 pytest-asyncio = [
-    {file = "pytest-asyncio-0.15.1.tar.gz", hash = "sha256:2564ceb9612bbd560d19ca4b41347b54e7835c2f792c504f698e05395ed63f6f"},
-    {file = "pytest_asyncio-0.15.1-py3-none-any.whl", hash = "sha256:3042bcdf1c5d978f6b74d96a151c4cfb9dcece65006198389ccd7e6c60eb1eea"},
+    {file = "pytest-asyncio-0.16.0.tar.gz", hash = "sha256:7496c5977ce88c34379df64a66459fe395cd05543f0a2f837016e7144391fcfb"},
+    {file = "pytest_asyncio-0.16.0-py3-none-any.whl", hash = "sha256:5f2a21273c47b331ae6aa5b36087047b4899e40f03f18397c0e65fa5cca54e9b"},
 ]
 pytest-benchmark = [
     {file = "pytest-benchmark-3.4.1.tar.gz", hash = "sha256:40e263f912de5a81d891619032983557d62a3d85843f9a9f30b98baea0cd7b47"},

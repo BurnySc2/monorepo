@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "burny_test_template"
-version = "0.3.0"
+version = "0.3.1"
 description = ""
 authors = ["BurnySc2 <gamingburny@gmail.com>"]
 packages = [
