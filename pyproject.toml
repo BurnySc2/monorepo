@@ -57,7 +57,7 @@ psutil = "^5.8.0"
 # Database connection
 psycopg2 = "^2.9.1"
 # Graphql backend implementation
-strawberry-graphql = {extras = ["debug-server"], version = "^0.85.1"}
+strawberry-graphql = {extras = ["debug-server"], version = "^0.86.1"}
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
@@ -95,6 +95,7 @@ build-backend = "poetry.masonry.api"
 [tool.mypy]
 python_version = "3.7"
 ignore_missing_imports = true
+plugins = "strawberry.ext.mypy_plugin"
 
 [tool.pycln]
 all = true

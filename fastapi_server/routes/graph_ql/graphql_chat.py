@@ -4,31 +4,30 @@ from collections import deque
 from typing import AsyncGenerator, Deque, List, Optional, Set
 
 import strawberry
+from loguru import logger
+
+from fastapi_server.routes.graph_ql.broadcaster import Broadcast, BroadcastEvent, Subscriber
+
+broadcast = Broadcast()
 
 
 @strawberry.type
 class Event:
-    id: int
     timestamp: int
     data: str
 
 
 @strawberry.type
 class ChatMessage:
-    id: int
     timestamp: int
     author: str
     message: str
 
 
 # vvvv TODO refactor vvvvvvv
-# User joined, user left events
-event_id = 0
+# Users
 active_users: Set[str] = set()
-user_joined_events: List[Event] = []
-user_left_events: List[Event] = []
 # Messages
-chat_message_id = 0
 messages: Deque[ChatMessage] = deque()
 # ^^^^ TODO refactor ^^^^^^^
 
@@ -51,81 +50,89 @@ class ChatSystemQuery:
 @strawberry.type
 class ChatSystemMutation:
     @strawberry.mutation
-    def chat_join_room(self, username: str) -> bool:
-        global event_id
+    async def chat_join_room(self, username: str) -> bool:
         if username in active_users:
+            # Disallow users to join twice with same nickname
             return False
         active_users.add(username)
         event = Event(
-            id=event_id,
             timestamp=int(time.time()),
             data=username,
-        )  # type: ignore
-        event_id += 1
-        user_joined_events.append(event)
+        )
+        await broadcast.publish(channel='chat_user_joined', message=event)
         return True
 
     @strawberry.mutation
-    def chat_leave_room(self, username: str) -> Optional[bool]:
-        global event_id
-        if username in active_users:
-            active_users.remove(username)
-            event = Event(
-                id=event_id,
-                timestamp=int(time.time()),
-                data=username,
-            )  # type: ignore
-            event_id += 1
-            user_left_events.append(event)
-            return True
-        return False
+    async def chat_leave_room(self, username: str) -> Optional[bool]:
+        if username not in active_users:
+            # Disallow users to chat who haven't joined
+            return False
+        active_users.remove(username)
+        event = Event(
+            timestamp=int(time.time()),
+            data=username,
+        )
+        await broadcast.publish(channel='chat_user_left', message=event)
+        return True
 
     @strawberry.mutation
-    def chat_send_message(self, username: str, message: str) -> int:
-        """ Return id of the new chat message. """
-        global chat_message_id
-        chat_message_id += 1
+    async def chat_send_message(self, username: str, message: str) -> bool:
+        if username not in active_users:
+            # Disallow users to chat who haven't joined
+            return False
         new_message = ChatMessage(
-            id=chat_message_id,
             timestamp=int(time.time()),
             author=username,
             message=message,
-        )  # type: ignore
+        )
+        # Store messages for new chatters
         messages.append(new_message)
-        return chat_message_id
+        # Broadcast message to all subscribers
+        await broadcast.publish(channel='chat_new_message', message=new_message)
+        return True
 
 
 @strawberry.type
 class ChatSystemSubscription:
     @strawberry.subscription
-    async def chat_user_joined(self) -> AsyncGenerator[str, None]:
-        index = len(user_joined_events)
-        while 1:
-            if len(user_joined_events) > index:
-                new_user: Event = user_joined_events[index]
-                index += 1
-                yield new_user.data
-            else:
-                await asyncio.sleep(0.01)
+    async def chat_user_joined(self) -> AsyncGenerator[Event, None]:
+        subscriber: Subscriber
+        async with broadcast.subscribe(channel='chat_user_joined') as subscriber:
+            event: BroadcastEvent
+            async for event in subscriber:
+                yield event.message
 
     @strawberry.subscription
-    async def chat_user_left(self) -> AsyncGenerator[str, None]:
-        index = len(user_left_events)
-        while 1:
-            if len(user_left_events) > index:
-                user_left: Event = user_left_events[index]
-                index += 1
-                yield user_left.data
-            else:
-                await asyncio.sleep(0.01)
+    async def chat_user_left(self) -> AsyncGenerator[Event, None]:
+        subscriber: Subscriber
+        async with broadcast.subscribe(channel='chat_user_left') as subscriber:
+            event: BroadcastEvent
+            async for event in subscriber:
+                yield event.message
 
     @strawberry.subscription
     async def chat_new_message(self) -> AsyncGenerator[ChatMessage, None]:
-        index = len(messages)
-        while 1:
-            if len(messages) > index:
-                new_message = messages[index]
-                index += 1
-                yield new_message
-            else:
-                await asyncio.sleep(0.01)
+        subscriber: Subscriber
+        async with broadcast.subscribe(channel='chat_new_message') as subscriber:
+            event: BroadcastEvent
+            try:
+                async for event in subscriber:
+                    yield event.message
+            finally:
+                # logger.info('Unsubscribed')
+                pass
+
+
+async def main():
+    subscriber: Subscriber
+    async with broadcast.subscribe(channel='chat_new_message') as subscriber:
+        logger.info('Subscribed')
+        await subscriber.queue.put(None)
+        event: BroadcastEvent
+        async for event in subscriber:
+            print(event)
+    logger.info('Unsubscribed')
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

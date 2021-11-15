@@ -27,7 +27,7 @@ export const subscribe = (
                         console.log("Error")
                     },
                     complete: () => {
-                        console.log("Completed")
+                        console.log("Subscription ended?")
                     },
                 }
             )

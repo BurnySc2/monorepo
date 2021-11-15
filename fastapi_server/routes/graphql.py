@@ -53,6 +53,6 @@ Subscription = merge_types('Subscription', (RootSubscription, ChatSystemSubscrip
 
 schema = strawberry.Schema(Query, mutation=Mutation, subscription=Subscription)
 
-graphql_app = GraphQLRouter(schema)
+graphql_app = GraphQLRouter(schema, graphiql=True, debug=False)
 
 strawberry_router.include_router(graphql_app, prefix='/graphql')
