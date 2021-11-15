@@ -18,7 +18,7 @@ const config = {
             fallback: null,
         }),
         paths: {
-            base: dev ? "" : "/fastapi-svelte-template",
+            base: dev ? "" : "/python-template",
         },
         appDir: "internal",
     },
