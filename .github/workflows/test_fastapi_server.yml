@@ -34,7 +34,7 @@ jobs:
 
     - name: Run Python tests
       run: |
-        poetry run pytest $SUBDIRECTORY
+        poetry run pytest ${{ env.SUBDIRECTORY }}
 
   deploy_backend:
     strategy:
