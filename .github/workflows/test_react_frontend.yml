@@ -25,16 +25,16 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-${{ matrix.node }}-${SUBDIRECTORY}-node-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
       run: |
-        cd $SUBDIRECTORY
+        cd ${{ env.SUBDIRECTORY }}
         npm install
 
     - name: Run tests
       run: |
-        cd $SUBDIRECTORY
+        cd ${{ env.SUBDIRECTORY }}
         npm run test
 
   test_e2e:
@@ -76,16 +76,16 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-${{ matrix.node }}-${SUBDIRECTORY}-node-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
       run: |
-        cd $SUBDIRECTORY
+        cd ${{ env.SUBDIRECTORY }}
         npm install
 
     - name: Run e2e tests
       run: |
-        poetry run pytest $SUBDIRECTORY/test_frontend/test_e2e.py
+        poetry run pytest ${{ env.SUBDIRECTORY }}/test_frontend/test_e2e.py
 
   test_integration:
     env:
@@ -126,11 +126,11 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-${{ matrix.node }}-${SUBDIRECTORY}-node-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
       run: |
-        cd $SUBDIRECTORY
+        cd ${{ env.SUBDIRECTORY }}
         npm install
 
     - name: Start MongoDB
@@ -143,7 +143,7 @@ jobs:
 
     - name: Run integration tests
       run: |
-        poetry run pytest $SUBDIRECTORY/test_frontend/test_integration.py
+        poetry run pytest ${{ env.SUBDIRECTORY }}/test_frontend/test_integration.py
 
   deploy_frontend:
     env:
@@ -167,16 +167,16 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-${{ matrix.node }}-${SUBDIRECTORY}-node-production-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ runner.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-production-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
       run: |
-        cd $SUBDIRECTORY
+        cd ${{ env.SUBDIRECTORY }}
         npm install --production
 
     - name: Build frontend
       run: |
-        cd $SUBDIRECTORY
+        cd ${{ env.SUBDIRECTORY }}
         npm run build
 
 #    - name: Deploy to GitHub Pages
