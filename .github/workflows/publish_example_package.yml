@@ -25,7 +25,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${SUBDIRECTORY}-${{ hashFiles('poetry.lock') }}
+        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install dependencies
       run: |
