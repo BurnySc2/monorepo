@@ -46,24 +46,24 @@ sqlmodel = "^0.0"
 # https://www.encode.io/databases/
 databases = {extras = ["sqlite"], version = "^0.5"}
 # Async database
-asyncpg = "^0.24"
+asyncpg = "^0.25"
 # Fastapi server
-fastapi = "^0.70.0"
-uvicorn = "^0.15.0"
+fastapi = "^0.70"
+uvicorn = "^0.15"
 # End to end tests
-seleniumbase = "^2.1.6"
+seleniumbase = "^2.2"
 # Info about the system
-psutil = "^5.8.0"
+psutil = "^5.8"
 # Database connection
-psycopg2 = "^2.9.1"
+psycopg2 = "^2.9"
 # Graphql backend implementation
-strawberry-graphql = {extras = ["debug-server"], version = "^0.86.1"}
+strawberry-graphql = {extras = ["debug-server"], version = "^0.90"}
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
 yapf = "^0.31"
 # Linting
-pylint = "^2.8"
+pylint = "^2.12"
 # Test library
 pytest = "^6.2"
 pytest-asyncio = "^0.16"
@@ -72,7 +72,7 @@ pytest-benchmark = "^3.4"
 # Type checking
 mypy = "^0.910"
 # Statistical testing
-hypothesis = "^6.21"
+hypothesis = "^6.27"
 # Cyclomatic complexity checker
 radon = "^5.0"
 # Function profiler, checks how often functions get called
