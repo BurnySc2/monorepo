@@ -1,6 +1,14 @@
 name: publish_example_package
 
-on: [push, pull_request]
+
+on:
+  push:
+    paths:
+    - example_package/**
+  pull_request:
+    branches:
+    - master
+    - develop
 
 jobs:
   build_and_publish:

@@ -1,6 +1,16 @@
 name: test_react_frontend
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+    - burny_common/**
+    - fastapi_server/**
+    - poetry.lock
+    - react_frontend/**
+  pull_request:
+    branches:
+    - master
+    - develop
 
 jobs:
   test_frontend:

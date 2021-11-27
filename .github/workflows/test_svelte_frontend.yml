@@ -1,6 +1,17 @@
 name: test_svelte_frontend
 
-on: [push, pull_request]
+
+on:
+  push:
+    paths:
+    - burny_common/**
+    - fastapi_server/**
+    - poetry.lock
+    - svelte_frontend/**
+  pull_request:
+    branches:
+    - master
+    - develop
 
 jobs:
   test_frontend:

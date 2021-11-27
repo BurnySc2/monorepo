@@ -1,6 +1,14 @@
 name: run_python_examples
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+    - python_examples/**
+    - poetry.lock
+  pull_request:
+    branches:
+    - master
+    - develop
 
 jobs:
   run_python_examples:
