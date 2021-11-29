@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
-import TodoItem from "../components/TodoItem"
-import { delete_, get, post } from "../functions/fetch_helper"
+import TodoItem from "../../components/TodoItem"
+import { delete_, get, post } from "../../functions/fetch_helper"
+import MyRouter from "../../components/MyRouter"
 
 type ITodoItem = {
     id: number
@@ -139,6 +140,7 @@ export default function TodoPage(): JSX.Element {
 
     return (
         <div>
+            <MyRouter />
             <div className="flex flex-col items-center">
                 <div className="flex">
                     {todoTextInput}

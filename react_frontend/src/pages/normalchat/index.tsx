@@ -1,5 +1,6 @@
 import React, { KeyboardEvent, useEffect, useState } from "react"
-import { Message, ChatMessage } from "../components/ChatMessage"
+import { Message, ChatMessage } from "../../components/ChatMessage"
+import MyRouter from "../../components/MyRouter"
 
 export default function NormalChat(): JSX.Element {
     // Accepted username by server
@@ -23,7 +24,7 @@ export default function NormalChat(): JSX.Element {
     // Websocket connection handling
     const [ws, setws] = useState<WebSocket | null>(null)
     const connect = () => {
-        const address = process.env.REACT_APP_WEBSOCKET
+        const address = process.env.NEXT_PUBLIC_REACT_APP_WEBSOCKET
         if (!address) {
             console.error("process.env.REACT_APP_WEBSOCKET is not set! Check your Env variables")
         }
@@ -178,25 +179,28 @@ export default function NormalChat(): JSX.Element {
     } else {
         // After user connected with username
         rendered_site = (
-            <div className="flex flex-col m-2">
-                <div id="chatbox" className="grid grid-cols-10 overflow-y-auto">
-                    {rendered_messages}
-                </div>
-                <div className="grid grid-cols-10 gap-2">
-                    <input
-                        id="chatinput"
-                        className="col-span-9 border-2"
-                        type="text"
-                        placeholder={"Write something!"}
-                        value={chatMessage}
-                        onChange={(e) => {
-                            setChatMessage(e.target.value)
-                        }}
-                        onKeyDown={handleKeydown}
-                    />
-                    <button id="sendmessage" className="col-span-1 border-2" onClick={sendChatMessage}>
-                        Send
-                    </button>
+            <div>
+                <MyRouter />
+                <div className="flex flex-col m-2">
+                    <div id="chatbox" className="grid grid-cols-10 overflow-y-auto">
+                        {rendered_messages}
+                    </div>
+                    <div className="grid grid-cols-10 gap-2">
+                        <input
+                            id="chatinput"
+                            className="col-span-9 border-2"
+                            type="text"
+                            placeholder={"Write something!"}
+                            value={chatMessage}
+                            onChange={(e) => {
+                                setChatMessage(e.target.value)
+                            }}
+                            onKeyDown={handleKeydown}
+                        />
+                        <button id="sendmessage" className="col-span-1 border-2" onClick={sendChatMessage}>
+                            Send
+                        </button>
+                    </div>
                 </div>
             </div>
         )

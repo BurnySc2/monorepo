@@ -138,30 +138,19 @@ def generate_react_tailwind_css_file():
 def start_react_dev_server(
     port: int,
     NEWLY_CREATED_PROCESSES: Set[int],
-    backend_proxy: str = 'localhost:8000',
+    _backend_proxy: str = 'localhost:3000',
 ):
     env = os.environ.copy()
-    # Set port for dev server
-    env['PORT'] = str(port)
-    # Don't open frontend in browser
-    env['BROWSER'] = 'none'
-    # Which ip and port to use when sending fetch requests to api
-    # Only REACT_APP_ prefixed env variables will be forwarded to the app: console.log(process.env)
-    # https://create-react-app.dev/docs/adding-custom-environment-variables
-    env['REACT_APP_PROXY'] = f'http://{backend_proxy}'
-    env['REACT_APP_WEBSOCKET'] = f'ws://{backend_proxy}'
 
     currently_running_node_processes = get_pid('node')
 
     # pylint: disable=R1732
-    generate_react_tailwind_css_file()
+    # generate_react_tailwind_css_file()
 
     frontend_folder = Path(__file__).parents[1] / 'react_frontend'
-    logger.info(
-        f"Starting frontend on port {port}, using backend proxy {env['REACT_APP_PROXY']} and websocket address {env['REACT_APP_WEBSOCKET']}",
-    )
-    assert is_port_free(port), f'Unable to start react dev server because port {port} is blocked'
-    _ = subprocess.Popen(['npx', 'react-scripts', 'start'], cwd=frontend_folder, env=env)
+    logger.info(f'Starting frontend on port {port}', )
+    # assert is_port_free(port), f'Unable to start react dev server because port {port} is blocked'
+    _ = subprocess.Popen(['npx', 'next', 'dev'], cwd=frontend_folder, env=env)
 
     # Give it some time to create dev server and all (3?) node proccesses
     time.sleep(5)
@@ -319,7 +308,7 @@ if __name__ == '__main__':
     free_frontend_port = find_next_free_port()
     free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
     start_svelte_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
-    start_react_dev_server(free_frontend_port, set(), backend_proxy=f'http://localhost:{free_backend_port}')
+    start_react_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
     start_fastapi_dev_server(free_backend_port, set(), set())
     while 1:
         time.sleep(1)

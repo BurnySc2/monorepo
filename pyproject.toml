@@ -9,7 +9,7 @@ python = ">=3.7 <3.11"
 # Numeric python
 numpy = "^1.21"
 # Improve performance by writing C or C++ similar code
-cython = "^3.0.0a8"
+cython = "^0.29"
 # Write and read classes to/from json
 dataclasses-json = "^0.5"
 # Network access

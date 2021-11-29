@@ -7,12 +7,7 @@ from pytest_benchmark.fixture import BenchmarkFixture
 # https://seleniumbase.io/
 from seleniumbase import BaseCase
 
-from burny_common.integration_test_helper import (
-    find_next_free_port,
-    get_website_address,
-    kill_processes,
-    start_react_dev_server,
-)
+from burny_common.integration_test_helper import get_website_address, kill_processes, start_react_dev_server
 
 # Set in setup_module()
 FRONTEND_ADDRESS = ''
@@ -26,7 +21,7 @@ def setup_module():
     """
     See https://docs.pytest.org/en/6.2.x/xunit_setup.html
     """
-    port = find_next_free_port()
+    port = 3000
     FRONTEND_ADDRESS = get_website_address(port)
     start_react_dev_server(port, NEWLY_CREATED_NODE_PROCESSES)
 
@@ -46,13 +41,13 @@ class MyTestClass(BaseCase):
     def test_shows_todos(self):
         """ Check if the to-do site is visible """
         self.open(FRONTEND_ADDRESS)
-        self.click('#todo')
+        self.click('#todopage')
         self.assert_text('Unable to connect to server - running local mode')
 
     def test_add_todo_submit1(self):
         """ Add a new to-do entry """
         self.open(FRONTEND_ADDRESS)
-        self.click('#todo')
+        self.click('#todopage')
         self.assert_text('Unable to connect to server - running local mode')
         test_text = 'my amazing test todo text1'
         self.write('#newTodoInput', test_text)
@@ -63,7 +58,7 @@ class MyTestClass(BaseCase):
     def test_add_todo_submit2(self):
         """ Add a new to-do entry """
         self.open(FRONTEND_ADDRESS)
-        self.click('#todo')
+        self.click('#todopage')
         self.assert_text('Unable to connect to server - running local mode')
         test_text = 'my amazing test todo text2'
         self.write('#newTodoInput', test_text)
@@ -74,7 +69,7 @@ class MyTestClass(BaseCase):
     def test_add_todo_submit3(self):
         """ Add a new to-do entry """
         self.open(FRONTEND_ADDRESS)
-        self.click('#todo')
+        self.click('#todopage')
         self.assert_text('Unable to connect to server - running local mode')
         test_text = 'my amazing test todo text3'
         self.write('#newTodoInput', test_text)
@@ -134,7 +129,7 @@ class MyBenchClass(BaseCase):
     def add_todo(self):
         """ Add a new to-do entry """
         self.open(FRONTEND_ADDRESS)
-        self.click('#todo')
+        self.click('#todopage')
         self.assert_text('Unable to connect to server - running local mode')
         test_text = 'my amazing test todo text'
         self.write('#newTodoInput', test_text)

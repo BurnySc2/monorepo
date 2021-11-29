@@ -6,7 +6,6 @@ from typing import Set
 from seleniumbase import BaseCase
 
 from burny_common.integration_test_helper import (
-    find_next_free_port,
     get_website_address,
     kill_processes,
     remove_leftover_files,
@@ -32,15 +31,15 @@ class MyTestClass(BaseCase):
         class.  setup_method is invoked for every test method of a class.
         See https://docs.pytest.org/en/6.2.x/xunit_setup.html
         """
-        free_frontend_port = find_next_free_port()
-        free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
+        free_frontend_port = 3000
+        free_backend_port = 8000
         self.FRONTEND_ADDRESS = get_website_address(free_frontend_port)
         self.BACKEND_ADDRESS = f'http://localhost:{free_backend_port}'
         start_fastapi_dev_server(free_backend_port, self.NEWLY_CREATED_PROCESSES, self.CREATED_FILES)
         start_react_dev_server(
             free_frontend_port,
             self.NEWLY_CREATED_PROCESSES,
-            backend_proxy=f'localhost:{free_backend_port}',
+            _backend_proxy=f'localhost:{free_backend_port}',
         )
         start_mongodb()
         start_postgres()
@@ -72,7 +71,7 @@ class MyTestClass(BaseCase):
         """ Add a new to-do entry """
         self.open(self.FRONTEND_ADDRESS)
         self.assert_text('Hello world!')
-        self.click('#todo')
+        self.click('#todopage')
         self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
         test_text = 'my amazing test todo text1'
         self.assert_text_not_visible(test_text)
@@ -85,7 +84,7 @@ class MyTestClass(BaseCase):
         """ Add a new to-do entry, same as above """
         self.open(self.FRONTEND_ADDRESS)
         self.assert_text('Hello world!')
-        self.click('#todo')
+        self.click('#todopage')
         self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
         test_text = 'my amazing test todo text2'
         self.assert_text_not_visible(test_text)
@@ -98,7 +97,7 @@ class MyTestClass(BaseCase):
         """ Add a new to-do entry, same as above """
         self.open(self.FRONTEND_ADDRESS)
         self.assert_text('Hello world!')
-        self.click('#todo')
+        self.click('#todopage')
         self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
         test_text = 'my amazing test todo text3'
         self.assert_text_not_visible(test_text)
@@ -111,7 +110,7 @@ class MyTestClass(BaseCase):
         """ Chat with yourself """
         self.open(self.FRONTEND_ADDRESS)
         self.assert_text('Hello world!')
-        self.click('#chat')
+        self.click('#normalchat')
         my_username = 'beep_boop'
 
         self.assert_text_not_visible(my_username)
@@ -134,7 +133,7 @@ class MyTestClass(BaseCase):
         """ Make sure chat between 2 people work """
         # Connect with robot1
         self.open(self.FRONTEND_ADDRESS)
-        self.click('#chat')
+        self.click('#normalchat')
         my_username1 = 'robot1'
         self.write('#username', my_username1)
         self.click('#connect')
@@ -148,7 +147,7 @@ class MyTestClass(BaseCase):
         # Connect with robot2
         self.open_new_window(True)
         self.open(self.FRONTEND_ADDRESS)
-        self.click('#chat')
+        self.click('#normalchat')
         my_username2 = 'robot2'
         self.write('#username', my_username2)
         self.click('#connect')

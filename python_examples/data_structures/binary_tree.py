@@ -5,8 +5,8 @@ from typing import Any, List, Optional
 class Node:
     def __init__(self, value: Any, left: 'Node' = None, right: 'Node' = None):
         self.value: Any = value
-        self.left: Optional[Node] = left
-        self.right: Optional[Node] = right
+        self.left: Optional['Node'] = left
+        self.right: Optional['Node'] = right
 
     def __repr__(self):
         return f'Node(value: {self.value}, left: {self.left}, right: {self.right})'

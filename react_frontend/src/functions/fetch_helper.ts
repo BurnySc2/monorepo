@@ -1,7 +1,7 @@
 const fetch2 = async (url: string, requestOptions: RequestInit = {}): Promise<Response> => {
     // Make use of env variable "REACT_APP_PROXY" because react doesnt let you override the package.json "proxy" setting with an env variable
     // If env variable is not set, use empty string and use default from package.json "proxy"
-    const address = process.env.REACT_APP_PROXY
+    const address = process.env.NEXT_PUBLIC_REACT_APP_PROXY
     if (!address) {
         console.error("process.env.REACT_APP_PROXY is not set! Check your Env variables")
     }
