@@ -158,7 +158,7 @@ repos:
     name: svelte_e2e_tests
     stages: [commit]
     language: system
-    entry: poetry run pytest svelte_frontend/test_frontend/test_e2e.py
+    entry: poetry run pytest svelte_frontend/test_frontend/test_e2e.py --benchmark-skip --headless
     pass_filenames: false
 
   # Run react e2e tests
@@ -166,7 +166,7 @@ repos:
     name: react_e2e_tests
     stages: [commit]
     language: system
-    entry: poetry run pytest react_frontend/test_frontend/test_e2e.py
+    entry: poetry run pytest react_frontend/test_frontend/test_e2e.py --benchmark-skip --headless
     pass_filenames: false
 
 #  - id: pytest-cov

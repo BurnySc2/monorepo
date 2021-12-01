@@ -58,6 +58,11 @@ psutil = "^5.8"
 psycopg2 = "^2.9"
 # Graphql backend implementation
 strawberry-graphql = {extras = ["debug-server"], version = "^0.90"}
+# Execute command on server via SSH, or push files via SFTP
+paramiko = "^2.8"
+types-paramiko = "^2.8"
+# Simpler argparse
+click = "^8.0"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
