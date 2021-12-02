@@ -531,7 +531,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "hypothesis"
-version = "6.29.0"
+version = "6.29.3"
 description = "A library for property-based testing"
 category = "dev"
 optional = false
@@ -542,7 +542,7 @@ attrs = ">=19.2.0"
 sortedcontainers = ">=2.1.0,<3.0.0"
 
 [package.extras]
-all = ["black (>=19.10b0)", "click (>=7.0)", "django (>=2.2)", "dpcontracts (>=0.4)", "lark-parser (>=0.6.5)", "libcst (>=0.3.16)", "numpy (>=1.9.0)", "pandas (>=0.25)", "pytest (>=4.6)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "rich (>=9.0.0)", "importlib-resources (>=3.3.0)", "importlib-metadata (>=3.6)", "backports.zoneinfo (>=0.2.1)", "tzdata (>=2020.4)"]
+all = ["black (>=19.10b0)", "click (>=7.0)", "django (>=2.2)", "dpcontracts (>=0.4)", "lark-parser (>=0.6.5)", "libcst (>=0.3.16)", "numpy (>=1.9.0)", "pandas (>=0.25)", "pytest (>=4.6)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "rich (>=9.0.0)", "importlib-resources (>=3.3.0)", "importlib-metadata (>=3.6)", "backports.zoneinfo (>=0.2.1)", "tzdata (>=2021.5)"]
 cli = ["click (>=7.0)", "black (>=19.10b0)", "rich (>=9.0.0)"]
 codemods = ["libcst (>=0.3.16)"]
 dateutil = ["python-dateutil (>=1.4)"]
@@ -555,7 +555,7 @@ pandas = ["pandas (>=0.25)"]
 pytest = ["pytest (>=4.6)"]
 pytz = ["pytz (>=2014.1)"]
 redis = ["redis (>=3.0.0)"]
-zoneinfo = ["importlib-resources (>=3.3.0)", "backports.zoneinfo (>=0.2.1)", "tzdata (>=2020.4)"]
+zoneinfo = ["importlib-resources (>=3.3.0)", "backports.zoneinfo (>=0.2.1)", "tzdata (>=2021.5)"]
 
 [[package]]
 name = "identify"
@@ -912,7 +912,7 @@ invoke = ["invoke (>=1.3)"]
 
 [[package]]
 name = "parso"
-version = "0.8.2"
+version = "0.8.3"
 description = "A Python Parser"
 category = "main"
 optional = false
@@ -1460,7 +1460,7 @@ urllib3 = {version = ">=1.26,<2.0", extras = ["secure"]}
 
 [[package]]
 name = "seleniumbase"
-version = "2.2.3"
+version = "2.2.4"
 description = "A complete web automation framework for end-to-end testing."
 category = "main"
 optional = false
@@ -1490,7 +1490,7 @@ more-itertools = {version = "8.12.0", markers = "python_version >= \"3.5\""}
 nose = "1.3.7"
 packaging = {version = ">=21.3", markers = "python_version >= \"3.6\""}
 parameterized = "0.8.1"
-parso = {version = "0.8.2", markers = "python_version >= \"3.6\""}
+parso = {version = "0.8.3", markers = "python_version >= \"3.6\""}
 "pdfminer.six" = {version = "20211012", markers = "python_version >= \"3.6\""}
 Pillow = {version = "8.4.0", markers = "python_version >= \"3.6\""}
 platformdirs = {version = "2.4.0", markers = "python_version >= \"3.6\""}
@@ -1677,7 +1677,7 @@ full = ["itsdangerous", "jinja2", "python-multipart", "pyyaml", "requests", "gra
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.90.2"
+version = "0.90.3"
 description = "A library for creating GraphQL APIs"
 category = "main"
 optional = false
@@ -2541,8 +2541,8 @@ h11 = [
     {file = "h11-0.12.0.tar.gz", hash = "sha256:47222cb6067e4a307d535814917cd98fd0a57b6788ce715755fa2b6c28b56042"},
 ]
 hypothesis = [
-    {file = "hypothesis-6.29.0-py3-none-any.whl", hash = "sha256:6f82f795fddbc428b8085cc4027bc36d1454ffd0a7db1e2d4ae4f927c40260ce"},
-    {file = "hypothesis-6.29.0.tar.gz", hash = "sha256:13f61e0775ba89483afbc6d6241e8edf2491f8569f8dd382a361288ec42e49dd"},
+    {file = "hypothesis-6.29.3-py3-none-any.whl", hash = "sha256:d19c10fd3b01d37313b31e192e83e50e55bd43d6d2868599596f29b35a0b85b5"},
+    {file = "hypothesis-6.29.3.tar.gz", hash = "sha256:4dc3f936cfa13431aa1a1188273a451d71a8375a5e8a04b368185f3f11398789"},
 ]
 identify = [
     {file = "identify-2.4.0-py2.py3-none-any.whl", hash = "sha256:eba31ca80258de6bb51453084bff4a923187cd2193b9c13710f2516ab30732cc"},
@@ -2824,8 +2824,8 @@ paramiko = [
     {file = "paramiko-2.8.1.tar.gz", hash = "sha256:85b1245054e5d7592b9088cc6d08da22445417912d3a3e48138675c7a8616438"},
 ]
 parso = [
-    {file = "parso-0.8.2-py2.py3-none-any.whl", hash = "sha256:a8c4922db71e4fdb90e0d0bc6e50f9b273d3397925e5e60a717e719201778d22"},
-    {file = "parso-0.8.2.tar.gz", hash = "sha256:12b83492c6239ce32ff5eed6d3639d6a536170723c6f3f1506869f1ace413398"},
+    {file = "parso-0.8.3-py2.py3-none-any.whl", hash = "sha256:c001d4636cd3aecdaf33cbb40aebb59b094be2a74c556778ef5576c175e19e75"},
+    {file = "parso-0.8.3.tar.gz", hash = "sha256:8c07be290bb59f03588915921e29e8a50002acaf2cdc5fa0e0114f91709fafa0"},
 ]
 "pdfminer.six" = [
     {file = "pdfminer.six-20211012-py3-none-any.whl", hash = "sha256:d3efb75c0249b51c1bf795e3a8bddf1726b276c77bf75fb136adea471ee2825b"},
@@ -3263,8 +3263,8 @@ selenium = [
     {file = "selenium-4.1.0-py3-none-any.whl", hash = "sha256:27e7b64df961d609f3d57237caa0df123abbbe22d038f2ec9e332fb90ec1a939"},
 ]
 seleniumbase = [
-    {file = "seleniumbase-2.2.3-py2.py3-none-any.whl", hash = "sha256:da7d83277c6581b64ad5f722795f2c889758ceb4cfedf33e222ff3ca3702e865"},
-    {file = "seleniumbase-2.2.3.tar.gz", hash = "sha256:e27f228417fcb607f039b2f1598efd2c127fdbd5ebea5bf6e869b5e3a5fef5fc"},
+    {file = "seleniumbase-2.2.4-py2.py3-none-any.whl", hash = "sha256:73d5aed222c6e7379f3a6fcc1113223770aacc9f09fa31ee2363a81a2c0fe5db"},
+    {file = "seleniumbase-2.2.4.tar.gz", hash = "sha256:dc96c5b54ff5f13cbfdff1142ba50cf8e600efb8b43899d13f7ceb405f0bc3a6"},
 ]
 sentinel = [
     {file = "sentinel-0.3.0-py3-none-any.whl", hash = "sha256:bd8710dd26752039c668604f6be2aaf741b56f7811c5924a4dcdfd74359244f3"},
@@ -3345,8 +3345,8 @@ starlette = [
     {file = "starlette-0.16.0.tar.gz", hash = "sha256:e1904b5d0007aee24bdd3c43994be9b3b729f4f58e740200de1d623f8c3a8870"},
 ]
 strawberry-graphql = [
-    {file = "strawberry-graphql-0.90.2.tar.gz", hash = "sha256:454263e4819a80a1a3df28c319d5dc8b41641724c2ab8ccba959082d47245eae"},
-    {file = "strawberry_graphql-0.90.2-py3-none-any.whl", hash = "sha256:708718d75e893b4eb998cccba1cf7ede629ab84c71edbcfdc597608c5604c7f4"},
+    {file = "strawberry-graphql-0.90.3.tar.gz", hash = "sha256:1a6eb2e02fed40a5e5933184bce3fcf314bc108e65b414c0925814117f1df912"},
+    {file = "strawberry_graphql-0.90.3-py3-none-any.whl", hash = "sha256:080f3abc3f98c58b9cfc29d43714acdc6b2e35da5a0902153471224b400205dc"},
 ]
 tinydb = [
     {file = "tinydb-4.5.0-py3-none-any.whl", hash = "sha256:ab2669b88ba1e1b3e1bd6da1a1e3ee284fde6fbf327fb16a206ac3954915f37f"},

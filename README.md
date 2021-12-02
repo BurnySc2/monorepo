@@ -12,10 +12,6 @@ Template for any of my upcoming Python projects
 https://python-poetry.org/docs/cli/
 ### Create new project
 `poetry init`
-
-or
-
-`poetry new <project-name>`
 ### Install dependencies
 `poetry install`
 
@@ -36,14 +32,8 @@ Add dev dependency:
 `poetry show -o`
 ### List of packages
 `poetry show`
-### Validate pyproject.toml
-`poetry check`
-### Build for distribution
-`poetry build`
-### Publish on pypy
-`poetry publish`
 ### Run a file in virtual environment
-`poetry run python main.py`
+`poetry run python python_examples/main.py`
 
 `poetry run pytest`
 
@@ -60,9 +50,22 @@ Add dev dependency:
 # Run Tests
 Single file:
 `poetry run pytest test/test_functions.py`
+Single function:
+`poetry run pytest test/test_functions.py::test_fuction_name`
 
-Test all files in folder:
+Test all files in project:
 `poetry run pytest`
+
+# Run and display code coverage 
+In pycharm: right click folder and `More Run/Debug` -> `Run pytest in '...' with coverage'`
+
+```
+poetry run pytest --cov=. --cov-report xml --cov-report html && poetry run coverage html
+```
+
+then use `coverage gutters` extension in VScode
+
+or open the generated html file in folder `htmlcov`
 
 # Install and run all pre-commit hook scripts
 ```py
