@@ -28,14 +28,15 @@ def test_fuzz_do_math(number):
         st.dictionaries(
             keys=st.integers(min_value=0, max_value=1_000), values=st.integers(min_value=0, max_value=1_000)
         ),
-        st.dictionaries(keys=st.integers(min_value=0, max_value=1_000), values=st.none()).map(dict.keys),
+        st.dictionaries(keys=st.integers(min_value=0, max_value=1_000),
+                        values=st.none()).map(dict.keys),  # type: ignore
         st.dictionaries(
             keys=st.integers(min_value=0, max_value=1_000), values=st.integers(min_value=0, max_value=1_000)
-        ).map(dict.values),
-        st.iterables(st.integers(min_value=0, max_value=1_000)),
+        ).map(dict.values),  # type: ignore
+        st.iterables(st.integers(min_value=0, max_value=1_000)),  # type: ignore
         st.dictionaries(
             keys=st.integers(min_value=0, max_value=1_000), values=st.integers(min_value=0, max_value=1_000)
-        ).map(ChainMap),
+        ).map(ChainMap),  # type: ignore
     )
 )
 def test_fuzz_find_sums(numbers):

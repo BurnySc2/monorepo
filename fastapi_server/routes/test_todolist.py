@@ -9,13 +9,29 @@ from fastapi.testclient import TestClient
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from fastapi_server.routes.todolist import set_sqlite_filename, todo_list_router
+from fastapi_server.routes.todolist import Item, set_sqlite_filename, todo_list_router
 
 SQLITE_FILENAME = 'test.db'
 set_sqlite_filename(SQLITE_FILENAME)
 client: TestClient = TestClient(todo_list_router)
 
 TODO_ITEM_REGEX = '[a-zA-Z0-9]{1,200}'
+
+
+@given(todo_description=st.text())
+def test_fuzz_Item(todo_description):
+    Item(todo_description=todo_description)
+
+
+# @pytest.mark.asyncio
+# @given(todo_description=st.text())
+# async def test_fuzz_create_new_todo(todo_description):
+#     await create_new_todo(todo_description=todo_description)
+
+# @pytest.mark.asyncio
+# @given(item=st.builds(Item))
+# async def test_fuzz_create_new_todo3(item):
+#     await create_new_todo3(item=item)
 
 
 class TestHypothesis(unittest.TestCase):
