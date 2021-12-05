@@ -77,7 +77,7 @@ pytest-benchmark = "^3.4"
 # Type checking
 mypy = "^0.910"
 # Statistical testing
-hypothesis = "^6.27"
+hypothesis = {extras = ["cli"], version = "^6.30"}
 # Cyclomatic complexity checker
 radon = "^5.0"
 # Function profiler, checks how often functions get called
