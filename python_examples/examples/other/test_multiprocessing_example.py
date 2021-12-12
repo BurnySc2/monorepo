@@ -3,6 +3,7 @@
 
 from collections import ChainMap
 
+import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -15,8 +16,9 @@ def test_fuzz_cpu_bound_summing(number):
 
 
 @given(number=st.one_of(st.floats(), st.integers()))
-def test_fuzz_do_math(number):
-    do_math(number=number)
+@pytest.mark.asyncio
+async def test_fuzz_do_math(number):
+    await do_math(number=number)
 
 
 @given(

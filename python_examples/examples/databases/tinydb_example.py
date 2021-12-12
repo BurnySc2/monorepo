@@ -16,3 +16,7 @@ def test_database_with_tinydb():
     _result = db.search(User.name == 'John')
     # Logical operators
     _result = db.search((User.name == 'John') & (User.age < 30))
+
+
+if __name__ == '__main__':
+    test_database_with_tinydb()

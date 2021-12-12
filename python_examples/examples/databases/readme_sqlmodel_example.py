@@ -127,7 +127,7 @@ def test_database_with_sqlmodel_readme_example():
         statement = select(Library)
         libaries = session.exec(statement)
         for library in libaries:
-            logger.info(f'Library ({library}) has books')
+            logger.info(f'Library ({library}) has books:')
             for book_inventory in library.books:
                 logger.info(f'    Book inventory ({book_inventory}) of book ({book_inventory.book})')
 

@@ -3,6 +3,7 @@
 
 from asyncio.queues import PriorityQueue
 
+import pytest
 from aiohttp.client import ClientSession
 from hypothesis import given
 from hypothesis import strategies as st
@@ -11,20 +12,9 @@ import python_examples.examples.async_await.rate_limited_example
 
 
 @given(queue=st.builds(PriorityQueue))
-def test_fuzz_create_tasks(queue):
-    python_examples.examples.async_await.rate_limited_example.create_tasks(queue=queue)
-
-
-@given(
-    session=st.builds(ClientSession),
-    url=st.text(),
-    retry=st.integers(),
-    results=st.builds(list),
-)
-def test_fuzz_do_stuff(session, url, retry, results):
-    python_examples.examples.async_await.rate_limited_example.do_stuff(
-        session=session, url=url, retry=retry, results=results
-    )
+@pytest.mark.asyncio
+async def test_fuzz_create_tasks(queue):
+    await python_examples.examples.async_await.rate_limited_example.create_tasks(queue=queue)
 
 
 @given(
@@ -32,7 +22,8 @@ def test_fuzz_do_stuff(session, url, retry, results):
     input_queue=st.builds(PriorityQueue),
     results=st.builds(list),
 )
-def test_fuzz_worker(session, input_queue, results):
-    python_examples.examples.async_await.rate_limited_example.worker(
+@pytest.mark.asyncio
+async def test_fuzz_worker(session, input_queue, results):
+    await python_examples.examples.async_await.rate_limited_example.worker(
         session=session, input_queue=input_queue, results=results
     )

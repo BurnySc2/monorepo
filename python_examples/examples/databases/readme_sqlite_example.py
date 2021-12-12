@@ -130,10 +130,12 @@ def test_database_with_sqlite_readme_example():
         results: sqlite3.Cursor = db.execute(
             """SELECT
             bookinventory.library_id, bookinventory.book_id, bookinventory.amount,
-            b.name, b.release_year, a.name AS author_name, a.birth_year
+            b.name, b.release_year, a.name AS author_name, a.birth_year,
+            l.name AS library_name, l.address AS library_address
             FROM bookinventory
             JOIN book b on bookinventory.book_id = b.id
             JOIN author a on b.author_id = a.id
+            JOIN library l on bookinventory.library_id = l.id
             WHERE bookinventory.amount >= 25 AND a.birth_year < 1910
             """,
         )
