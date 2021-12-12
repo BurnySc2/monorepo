@@ -1,12 +1,13 @@
-[![publish_example_package](https://github.com/BurnySc2/tools/actions/workflows/publish_example_package.yml/badge.svg?branch=master)](https://github.com/BurnySc2/tools/actions/workflows/publish_example_package.yml)
-[![python_examples](https://github.com/BurnySc2/tools/actions/workflows/python_examples.yml/badge.svg)](https://github.com/BurnySc2/tools/actions/workflows/python_examples.yml)
-[![test_fastapi_server](https://github.com/BurnySc2/tools/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/tools/actions/workflows/test_fastapi_server.yml)
-[![test_react_frontend](https://github.com/BurnySc2/tools/actions/workflows/test_react_frontend.yml/badge.svg)](https://github.com/BurnySc2/tools/actions/workflows/test_react_frontend.yml)
-[![test_svelte_frontend](https://github.com/BurnySc2/tools/actions/workflows/test_svelte_frontend.yml/badge.svg)](https://github.com/BurnySc2/tools/actions/workflows/test_svelte_frontend.yml)
+[![publish_example_package](https://github.com/BurnySc2/monorepo/actions/workflows/publish_example_package.yml/badge.svg?branch=master)](https://github.com/BurnySc2/monorepo/actions/workflows/publish_example_package.yml)
+[![python_examples](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml)
+[![test_fastapi_server](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml)
+[![test_react_frontend](https://github.com/BurnySc2/monorepo/actions/workflows/test_react_frontend.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_react_frontend.yml)
+[![test_svelte_frontend](https://github.com/BurnySc2/monorepo/actions/workflows/test_svelte_frontend.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_svelte_frontend.yml)
 
-# python-template
-Template for any of my upcoming Python projects
+# Monorepo
+My monorepo for various tools and showcases
 
+[Preview](https://burnysc2.github.io/monorepo/)
 
 # Useful Poetry commands
 https://python-poetry.org/docs/cli/

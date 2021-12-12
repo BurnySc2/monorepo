@@ -18,7 +18,7 @@ const config = {
             fallback: null,
         }),
         paths: {
-            base: dev ? "" : "/tools",
+            base: dev ? "" : "/monorepo",
         },
         appDir: "internal",
     },
