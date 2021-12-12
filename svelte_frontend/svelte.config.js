@@ -18,7 +18,7 @@ const config = {
             fallback: null,
         }),
         paths: {
-            base: dev ? "" : "/python-template",
+            base: dev ? "" : "/tools",
         },
         appDir: "internal",
     },
