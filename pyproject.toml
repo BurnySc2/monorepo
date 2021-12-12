@@ -49,7 +49,7 @@ databases = {extras = ["sqlite"], version = "^0.5"}
 asyncpg = "^0.25"
 # Fastapi server
 fastapi = "^0.70"
-uvicorn = "^0.15"
+uvicorn = "^0.16"
 # End to end tests
 seleniumbase = "^2.2"
 # Info about the system
@@ -57,7 +57,7 @@ psutil = "^5.8"
 # Database connection
 psycopg2 = "^2.9"
 # Graphql backend implementation
-strawberry-graphql = {extras = ["debug-server"], version = "^0.90"}
+strawberry-graphql = {extras = ["debug-server"], version = "^0.93"}
 # Execute command on server via SSH, or push files via SFTP
 paramiko = "^2.8"
 types-paramiko = "^2.8"

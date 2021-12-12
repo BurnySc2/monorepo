@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from loguru import logger
-from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, delete, select
 
 
 class Author(SQLModel, table=True):
@@ -35,10 +35,9 @@ class Library(SQLModel, table=True):
 
 
 class BookInventory(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    book_id: Optional[int] = Field(default=None, foreign_key='book.id')
+    book_id: Optional[int] = Field(default=None, primary_key=True, foreign_key='book.id')
     book: Optional[Book] = Relationship()
-    library_id: Optional[int] = Field(default=None, foreign_key='library.id')
+    library_id: Optional[int] = Field(default=None, primary_key=True, foreign_key='library.id')
     library: Optional[Library] = Relationship()
     amount: int
 
@@ -69,10 +68,16 @@ def test_database_with_sqlmodel_readme_example():
     library_inventory_4 = BookInventory(book=book_2, library=library_2, amount=30)
     library_2.books = [library_inventory_3, library_inventory_4]
 
+    # engine = create_engine('sqlite:///temp.db')
     engine = create_engine('sqlite:///:memory:')
 
     # 1) Create tables
     SQLModel.metadata.create_all(engine)
+    # Print all table names
+    for table in SQLModel.metadata.sorted_tables:
+        logger.info(table)
+    # Print schema of table
+    logger.info(Library.schema())
 
     # 2) Fill tables
     with Session(engine) as session:
@@ -108,6 +113,9 @@ def test_database_with_sqlmodel_readme_example():
             session.delete(book)
         session.commit()
 
+        assert_statement = select(Book).where(Book.name == 'This book was not written')
+        assert session.exec(assert_statement).first() is None
+
     # 6) Get data from other tables
     with Session(engine) as session:
         statement = select(Book)
@@ -139,6 +147,14 @@ def test_database_with_sqlmodel_readme_example():
             logger.info(
                 f'Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times and the author is ({book_inventory.book.author})'
             )
+
+    # 8) TODO: Run migration (verify and change table schema if necessary)
+
+    # 9) Clear table
+    with Session(engine) as session:
+        statement = delete(BookInventory)
+        session.exec(statement)
+        session.commit()
 
 
 if __name__ == '__main__':
