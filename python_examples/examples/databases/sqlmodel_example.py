@@ -1,7 +1,7 @@
 from typing import Optional
 
 from loguru import logger
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel, create_engine, or_, select
 
 
 class Hero(SQLModel, table=True):
@@ -21,15 +21,38 @@ def test_database_with_sqlmodel():
     SQLModel.metadata.create_all(engine)
 
     with Session(engine) as session:
-        session.add(hero_1)
-        session.add(hero_2)
-        session.add(hero_3)
+        for hero in [hero_1, hero_2, hero_3]:
+            session.add(hero)
         session.commit()
 
     with Session(engine) as session:
         statement = select(Hero).where(Hero.name == 'Spider-Boy')
         hero = session.exec(statement).first()
         logger.info(hero)
+
+        # Or statement
+        statement = select(Hero).where((Hero.name == 'Spider-Boy') | (Hero.name == 'Rusty-Man'))
+        heroes = session.exec(statement)
+        for hero in heroes:
+            logger.info(hero)
+
+        # Or statement, alternative way
+        statement = select(Hero).where(or_(Hero.name == 'Spider-Boy', Hero.name == 'Rusty-Man'))
+        heroes = session.exec(statement)
+        for hero in heroes:
+            logger.info(hero)
+
+        # And statement
+        statement = select(Hero).where(Hero.name == 'Spider-Boy', Hero.secret_name == 'Pedro Parqueador')
+        heroes = session.exec(statement)
+        for hero in heroes:
+            logger.info(hero)
+
+        # And statement, alternative way
+        statement = select(Hero).where(Hero.name == 'Spider-Boy').where(Hero.secret_name == 'Pedro Parqueador')
+        heroes = session.exec(statement)
+        for hero in heroes:
+            logger.info(hero)
 
 
 if __name__ == '__main__':

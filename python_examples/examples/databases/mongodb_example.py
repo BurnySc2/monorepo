@@ -42,8 +42,8 @@ async def test_database_with_mongodb():
             my_col: Collection = my_db[collection_name]
             # Insert example
             my_dict = {'name': 'John', 'address': 'Some Highway 37'}
-            x: InsertOneResult = my_col.insert_one(my_dict)
-            logger.info(f'Inserted id: {x.inserted_id}')
+            result: InsertOneResult = my_col.insert_one(my_dict)
+            logger.info(f'Inserted id: {result.inserted_id}')
 
             # Insert Many
             my_list = [
@@ -60,12 +60,12 @@ async def test_database_with_mongodb():
                     'address': 'Some Mountain 27',
                 },
             ]
-            y: InsertManyResult = my_col.insert_many(my_list)
-            logger.info(f'Inserted ids: {list(map(str, y.inserted_ids))}')
-            assert len(y.inserted_ids) == 3
+            result: InsertManyResult = my_col.insert_many(my_list)
+            logger.info(f'Inserted ids: {list(map(str, result.inserted_ids))}')
+            assert len(result.inserted_ids) == 3
 
             # Find one
-            _z: Dict[str, Union[ObjectId, str]] = my_col.find_one()
+            _result: Dict[str, Union[ObjectId, str]] = my_col.find_one()
             # Find all
             assert len(list(my_col.find())) == 4
 

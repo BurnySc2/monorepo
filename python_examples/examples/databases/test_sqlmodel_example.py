@@ -4,7 +4,7 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
-import python_examples.examples.databases.sqlmodel_example
+from python_examples.examples.databases.sqlmodel_example import Hero
 
 
 @given(
@@ -13,5 +13,5 @@ import python_examples.examples.databases.sqlmodel_example
     secret_name=st.text(),
     age=st.one_of(st.none(), st.integers()),
 )
-def test_fuzz_Hero(id_, name, secret_name, age):
-    python_examples.examples.databases.sqlmodel_example.Hero(id=id_, name=name, secret_name=secret_name, age=age)
+def test_hero(id_, name, secret_name, age):
+    Hero(id=id_, name=name, secret_name=secret_name, age=age)
