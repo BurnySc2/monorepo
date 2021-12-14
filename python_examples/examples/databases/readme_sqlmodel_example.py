@@ -1,7 +1,9 @@
 from typing import List, Optional
 
 from loguru import logger
+from sqlalchemy.sql import Delete
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, delete, select
+from sqlmodel.sql.expression import SelectOfScalar
 
 
 class Author(SQLModel, table=True):
@@ -81,11 +83,17 @@ def test_database_with_sqlmodel_readme_example():
 
     # 2) Fill tables
     with Session(engine) as session:
-        for row in [
-            author_1, author_2, author_3, publisher_1, publisher_2, publisher_3, book_1, book_2, book_3, book_4,
-            library_1, library_2
-        ]:
-            session.add(row)
+        session.add_all(
+            [
+                # Because library has references to the other objects, they automatically get added to the DB
+                # author_1, author_2, author_3,
+                # publisher_1, publisher_2, publisher_3,
+                # book_1, book_2, book_3,
+                book_4,
+                library_1,
+                library_2
+            ]
+        )
         session.commit()
 
     # 3) Select books
@@ -106,11 +114,17 @@ def test_database_with_sqlmodel_readme_example():
 
     # 5) Delete books
     with Session(engine) as session:
-        statement = select(Book).where(Book.name == 'This book was not written')
-        books = session.exec(statement)
-        for book in books:
-            logger.info(f'Removing book: {book}')
-            session.delete(book)
+        assert_statement = select(Book).where(Book.name == 'This book was not written')
+        assert session.exec(assert_statement).first() is not None, session.exec(assert_statement).first()
+
+        statement: Delete = delete(Book).where(Book.name == 'This book was not written')
+        session.exec(statement)
+        # Alternatively:
+        # statement = select(Book).where(Book.name == 'This book was not written')
+        # books = session.exec(statement)
+        # for book in books:
+        #     logger.info(f'Removing book: {book}')
+        #     session.delete(book)
         session.commit()
 
         assert_statement = select(Book).where(Book.name == 'This book was not written')
@@ -121,7 +135,7 @@ def test_database_with_sqlmodel_readme_example():
         statement = select(Book)
         books = session.exec(statement)
         for book in books:
-            logger.info(f'Book ({book}) has author ({book.author}) and publisher ({book.publisher})')
+            logger.info(f'Book({book}) has Author({book.author}) and Publisher({book.publisher})')
 
     with Session(engine) as session:
         statement = select(Library)
@@ -134,13 +148,9 @@ def test_database_with_sqlmodel_readme_example():
     # 7) Join two tables and apply filter
     # Find all books that are listed in libraries at least 25 times and where author was born before 1910
     with Session(engine) as session:
-        statement = select(
-            BookInventory,
-        ).join(
-            Book,
-        ).join(
-            Author,
-        ).where((BookInventory.amount >= 25) & (Author.birth_year < 1910))
+        statement: SelectOfScalar = select(BookInventory)
+        statement = statement.join(Book).join(Author)
+        statement = statement.where((BookInventory.amount >= 25) & (Author.birth_year < 1910))
 
         book_inventories = session.exec(statement)
         for book_inventory in book_inventories:

@@ -1,7 +1,7 @@
 import asyncio
 import time
 from collections import deque
-from typing import AsyncGenerator, Deque, List, Optional, Set
+from typing import AsyncGenerator, Deque, List, Set
 
 import strawberry
 from loguru import logger
@@ -63,7 +63,7 @@ class ChatSystemMutation:
         return True
 
     @strawberry.mutation
-    async def chat_leave_room(self, username: str) -> Optional[bool]:
+    async def chat_leave_room(self, username: str) -> bool:
         if username not in active_users:
             # Disallow users to chat who haven't joined
             return False
