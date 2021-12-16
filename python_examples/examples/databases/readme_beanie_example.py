@@ -1,0 +1,186 @@
+"""
+https://github.com/roman-right/beanie/
+https://roman-right.github.io/beanie/
+MongoDB GUI Interface: Robo 3T
+"""
+import asyncio
+from typing import List
+
+import motor
+from beanie import Document, init_beanie
+from beanie.odm.operators.update.general import Set
+from loguru import logger
+
+
+class Author(Document):
+    name: str
+    birth_year: int
+
+
+class Publisher(Document):
+    name: str
+    founded_year: int
+
+
+class Book(Document):
+    name: str
+    release_year: int
+    author: Author
+    publisher: Publisher
+
+
+class Library(Document):
+    name: str
+    address: str
+    books: List[Document]
+
+
+class BookInventory(Document):
+    amount: int
+    book: Book
+    library: Library
+
+
+# pylint: disable=R0914
+# pylint: disable=R0915
+async def test_database_with_beanie():
+    # Embedded pure-python dict based dictionary
+
+    client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://localhost:27017')
+
+    # 1) Create tables
+    await init_beanie(database=client.db_name, document_models=[Author, Publisher, Book, Library, BookInventory])
+
+    # Clear for reuse
+    await Book.find_all().delete()
+    await Author.find_all().delete()
+    await Publisher.find_all().delete()
+    await Library.find_all().delete()
+    await BookInventory.find_all().delete()
+
+    # 2) Fill tables
+    author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
+    author_2 = Author(name='Harper Lee', birth_year=1926)
+    author_3 = Author(name='George Orwell', birth_year=1903)
+    await Author.insert_many([
+        author_1,
+        author_2,
+        author_3,
+    ])
+
+    publisher_1 = Publisher(name='Aufbau-Verlag', founded_year=1945)
+    publisher_2 = Publisher(name='Hoffmann und Campe', founded_year=1781)
+    publisher_3 = Publisher(name='Heyne Verlag', founded_year=1934)
+    await Publisher.insert_many([
+        publisher_1,
+        publisher_2,
+        publisher_3,
+    ])
+
+    book_1 = Book(
+        name='The Lord of the Rings',
+        release_year=1954,
+        author=await Author.find_one(Author.name == author_1.name),
+        publisher=await Publisher.find_one(Publisher.name == publisher_1.name)
+    )
+    book_2 = Book(
+        name='To kill a Mockingbird',
+        release_year=1960,
+        author=await Author.find_one(Author.name == author_2.name),
+        publisher=await Publisher.find_one(Publisher.name == publisher_1.name)
+    )
+    book_3 = Book(
+        name='Nineteen Eighty-Four',
+        release_year=1949,
+        author=await Author.find_one(Author.name == author_3.name),
+        publisher=await Publisher.find_one(Publisher.name == publisher_3.name)
+    )
+    book_4 = Book(
+        name='This book was not written',
+        release_year=2100,
+        author=await Author.find_one(Author.name == author_3.name),
+        publisher=await Publisher.find_one(Publisher.name == publisher_3.name)
+    )
+    await Book.insert_many([
+        book_1,
+        book_2,
+        book_3,
+        book_4,
+    ])
+
+    library_1 = Library(name='New York Public Library', address='224 East 125th Street', books=[])
+    library_2 = Library(name='California State Library', address='900 N Street', books=[])
+    await Library.insert_many([
+        library_1,
+        library_2,
+    ])
+
+    library_inventory_1 = BookInventory(
+        book=await Book.find_one(Book.name == book_3.name),
+        library=await Library.find_one(Library.name == library_1.name),
+        amount=40
+    )
+    library_inventory_2 = BookInventory(
+        book=await Book.find_one(Book.name == book_2.name),
+        library=await Library.find_one(Library.name == library_1.name),
+        amount=15
+    )
+    library_inventory_3 = BookInventory(
+        book=await Book.find_one(Book.name == book_1.name),
+        library=await Library.find_one(Library.name == library_2.name),
+        amount=25
+    )
+    library_inventory_4 = BookInventory(
+        book=await Book.find_one(Book.name == book_2.name),
+        library=await Library.find_one(Library.name == library_2.name),
+        amount=30
+    )
+    await BookInventory.insert_many(
+        [
+            library_inventory_1,
+            library_inventory_2,
+            library_inventory_3,
+            library_inventory_4,
+        ]
+    )
+
+    # 3) Select books
+    # https://docs.mongoengine.org/guide/querying.html#query-operators
+    async for book in Book.find_many(Book.release_year < 1960):
+        logger.info(f'Found books released before 1960: {book}')
+
+    # 4) Update books
+    # TODO doesnt seem to work
+    await Book.find_many(Book.release_year < 1960).update(Set({Book.release_year: 1970}))
+
+    # 5) Delete books
+    await Book.find_many(Book.name == 'This book was not written').delete()
+
+    # 6) Get data from other tables
+    async for book in Book.find_all():
+        logger.info(f'Book ({book}) has author ({book.author}) and publisher ({book.publisher})')
+
+    async for book_inventory in BookInventory.find_all():
+        logger.info(
+            f'Library {book_inventory.library} has book inventory ({book_inventory}) of book ({book_inventory.book})'
+        )
+
+    # 7) Join two tables and apply filter
+    # Find all books that are listed in libraries at least 25 times and where author was born before 1910
+    async for book_inventory in BookInventory.find_many(
+        BookInventory.amount <= 25,
+    ).find_many(
+        BookInventory.book.author.birth_year < 1910,
+    ):
+        logger.info(
+            f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} times and the author is {book_inventory.book.author}'
+        )
+
+    # 8) TODO: Migration
+
+    # 9) Clear table
+    await Book.find_all().delete()
+
+
+if __name__ == '__main__':
+    asyncio.run(test_database_with_beanie())
