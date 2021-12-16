@@ -62,7 +62,11 @@ strawberry-graphql = {extras = ["debug-server"], version = "^0.93"}
 paramiko = "^2.8"
 types-paramiko = "^2.8"
 # Simpler argparse
-click = "^8.0"
+click = "^7.1"
+peewee = "^3.14.8"
+beanie = "^1.8.7"
+mongoengine = "^0.23.1"
+umongo = "^3.0.1"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
