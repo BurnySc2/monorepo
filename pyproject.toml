@@ -40,7 +40,7 @@ pymongo = "^3.12"
 # Generate text
 lorem-text = "^2.1"
 # https://github.com/tiangolo/sqlmodel
-sqlmodel = "^0.0"
+sqlmodel = "^0.0.5"
 # Geometry manipulation
 #Shapely = "^1.7"
 # https://www.encode.io/databases/
@@ -63,10 +63,12 @@ paramiko = "^2.8"
 types-paramiko = "^2.8"
 # Simpler argparse
 click = "^7.1"
+# SQL ORM
 peewee = "^3.14.8"
-beanie = "^1.8.7"
+# Sync mongoDB ODM
 mongoengine = "^0.23.1"
-umongo = "^3.0.1"
+# Async mongoDB ODM
+beanie = "^1.8.7"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter

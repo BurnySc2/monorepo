@@ -49,6 +49,7 @@ def test_database_with_mongoengine():
     # 1) Create tables
     connect('mongoengine_db')
 
+    # Clear db
     for i in [Author, Publisher, Book, Library, BookInventory]:
         for j in i.objects:
             j.delete()
