@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" href="/favicon.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link href="https://unpkg.com/basscss@8.0.2/css/basscss.min.css" rel="stylesheet" />
+        
+
+		
+
+		<link rel="modulepreload" href="/monorepo/internal/start-0823841a.js">
+		<link rel="modulepreload" href="/monorepo/internal/chunks/vendor-992f8604.js">
+		<link rel="modulepreload" href="/monorepo/internal/layout.svelte-299c010f.js">
+		<link rel="modulepreload" href="/monorepo/internal/pages/index.svelte-16f62d39.js">
+		<link rel="stylesheet" href="/monorepo/internal/assets/start-61d1577b.css">
+
+		<script type="module">
+			import { start } from "/monorepo/internal/start-0823841a.js";
+			start({
+				target: document.querySelector("#svelte"),
+				paths: {"base":"/monorepo","assets":""},
+				session: {},
+				host: location.host,
+				route: true,
+				spa: false,
+				trailing_slash: "never",
+				hydrate: {
+					status: 200,
+					error: null,
+					nodes: [
+						import("/monorepo/internal/layout.svelte-299c010f.js"),
+						import("/monorepo/internal/pages/index.svelte-16f62d39.js")
+					],
+					page: {
+						host: location.host, // TODO this is redundant
+						path: "\u002F",
+						query: new URLSearchParams(""),
+						params: {}
+					}
+				}
+			});
+		</script>
+    </head>
+    <body>
+        <div id="svelte">
+
+
+<main><div class="my2 flex justify-center"><button class="m1 p1 rounded" id="home">Home</button>
+        <button class="m1 p1 rounded" id="about">About</button>
+        <button class="m1 p1 rounded" id="chat">Chat</button>
+        <button class="m1 p1 rounded" id="graphqlchat">Graphql Chat</button>
+        <button class="m1 p1 rounded" id="todo">Todo</button>
+        <button class="m1 p1 rounded" id="browserstorage">BrowserStorage</button></div>
+    <div>Loading...</div></main>
+
+
+
+			
+		</div>
+    </body>
+</html>
