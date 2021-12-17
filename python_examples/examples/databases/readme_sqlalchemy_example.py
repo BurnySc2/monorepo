@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, List
 
 from loguru import logger
 from sqlalchemy import Column, ForeignKey, Integer, String, create_engine, delete
@@ -14,47 +14,47 @@ class MyBase:
         return f'{self.__class__.__name__}({items})'
 
 
-class Author(Base, MyBase):
+class Author(Base, MyBase):  # type: ignore
     __tablename__ = 'author'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     birth_year = Column(Integer)
 
 
-class Publisher(Base, MyBase):
+class Publisher(Base, MyBase):  # type: ignore
     __tablename__ = 'publisher'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     founded_year = Column(Integer)
 
 
-class Book(Base, MyBase):
+class Book(Base, MyBase):  # type: ignore
     __tablename__ = 'book'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     release_year = Column(Integer)
     author_id = Column(ForeignKey('author.id'))
-    author = relationship('Author')
+    author: Author = relationship('Author')  # type: ignore
     publisher_id = Column(ForeignKey('publisher.id'))
-    publisher = relationship('Publisher')
+    publisher: Publisher = relationship('Publisher')  # type: ignore
 
 
-class Library(Base, MyBase):
+class Library(Base, MyBase):  # type: ignore
     __tablename__ = 'library'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     address = Column(String)
     # Each library owns certain books with a certain amount
-    books = relationship('BookInventory', back_populates='library')
+    books: List['BookInventory'] = relationship('BookInventory', back_populates='library')  # type: ignore
 
 
-class BookInventory(Base, MyBase):
+class BookInventory(Base, MyBase):  # type: ignore
     __tablename__ = 'book_inventory'
     id = Column(Integer, primary_key=True)
     book_id = Column(Integer, ForeignKey('book.id'))
-    book = relationship('Book')
+    book: Book = relationship('Book')  # type: ignore
     library_id = Column(Integer, ForeignKey('library.id'))
-    library = relationship('Library')
+    library: Library = relationship('Library')  # type: ignore
     amount = Column(Integer)
 
 

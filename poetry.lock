@@ -94,7 +94,7 @@ tests = ["pytest", "pytest-asyncio", "mypy (>=0.800)"]
 name = "astroid"
 version = "2.9.0"
 description = "An abstract syntax tree for Python with inference support."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "~=3.6"
 
@@ -449,6 +449,43 @@ typing-inspect = ">=0.4.0"
 dev = ["pytest (>=6.2.3)", "ipython", "mypy (>=0.710)", "hypothesis", "portray", "flake8", "simplejson", "types-dataclasses"]
 
 [[package]]
+name = "deal"
+version = "4.19.0"
+description = "**Deal** is a Python library for [design by contract][wiki] (DbC) programming."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+astroid = "*"
+deal-solver = "*"
+hypothesis = "*"
+pygments = "*"
+typeguard = "*"
+vaa = ">=0.2.1"
+
+[package.extras]
+docs = ["m2r2", "myst-parser", "sphinx (>=3.5.0,<3.6.0)", "sphinx-rtd-theme (>=0.5.0,<0.6.0)"]
+lint = ["flake8", "flake8-commas", "flake8-quotes", "mypy (>=0.900)", "mypy_test (>=0.1.1)", "isort"]
+test = ["coverage", "pytest-cov", "isort", "marshmallow", "pytest", "urllib3", "sphinx"]
+
+[[package]]
+name = "deal-solver"
+version = "0.1.0"
+description = "z3-powered solver (theorem prover) for deal."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+astroid = "*"
+z3-solver = "*"
+
+[package.extras]
+lint = ["flake8", "flake8-bugbear", "flake8-commas", "flake8-quotes", "isort", "mypy (>=0.910)"]
+test = ["hypothesis", "pytest", "pytest-cov", "pytest-xdist"]
+
+[[package]]
 name = "decorator"
 version = "5.1.0"
 description = "Decorators for Humans"
@@ -571,7 +608,7 @@ python-versions = ">=3.6"
 name = "hypothesis"
 version = "6.31.6"
 description = "A library for property-based testing"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.6"
 
@@ -745,7 +782,7 @@ testing = ["Django (<3.1)", "colorama", "docopt", "pytest (<7.0.0)"]
 name = "lazy-object-proxy"
 version = "1.6.0"
 description = "A fast and thorough lazy object proxy."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
@@ -1731,7 +1768,7 @@ typing-extensions = ">=3.7.4"
 
 [[package]]
 name = "sqlmodel"
-version = "0.0.4"
+version = "0.0.5"
 description = "SQLModel, SQL databases in Python, designed for simplicity, compatibility, and robustness."
 category = "main"
 optional = false
@@ -1759,7 +1796,7 @@ full = ["itsdangerous", "jinja2", "python-multipart", "pyyaml", "requests", "gra
 
 [[package]]
 name = "strawberry-graphql"
-version = "0.93.4"
+version = "0.93.5"
 description = "A library for creating GraphQL APIs"
 category = "main"
 optional = false
@@ -1866,9 +1903,21 @@ wsproto = ">=0.14"
 name = "typed-ast"
 version = "1.4.3"
 description = "a fork of Python 2 and 3 ast modules with type comment support"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
+
+[[package]]
+name = "typeguard"
+version = "2.13.3"
+description = "Run-time type checker for Python"
+category = "main"
+optional = false
+python-versions = ">=3.5.3"
+
+[package.extras]
+doc = ["sphinx-rtd-theme", "sphinx-autodoc-typehints (>=1.2.0)"]
+test = ["pytest", "typing-extensions", "mypy"]
 
 [[package]]
 name = "types-cryptography"
@@ -1930,23 +1979,6 @@ mypy-extensions = ">=0.3.0"
 typing-extensions = ">=3.7.4"
 
 [[package]]
-name = "umongo"
-version = "3.0.1"
-description = "sync/async MongoDB ODM, yes."
-category = "main"
-optional = false
-python-versions = ">=3.7"
-
-[package.dependencies]
-marshmallow = ">=3.10.0"
-pymongo = ">=3.7.0"
-
-[package.extras]
-mongomock = ["mongomock"]
-motor = ["motor (>=2.0,<3.0)"]
-txmongo = ["txmongo (>=19.2.0)"]
-
-[[package]]
 name = "urllib3"
 version = "1.26.7"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -1981,6 +2013,18 @@ typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
 
 [package.extras]
 standard = ["httptools (>=0.2.0,<0.4.0)", "watchgod (>=0.6)", "python-dotenv (>=0.13)", "PyYAML (>=5.1)", "websockets (>=9.1)", "websockets (>=10.0)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "colorama (>=0.4)"]
+
+[[package]]
+name = "vaa"
+version = "0.2.1"
+description = "Validators Adapter. The common interface for all validators."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+validators = ["cerberus", "django", "djangorestframework", "marshmallow (>=3.0.1)", "pyschemes", "wtforms"]
+tests = ["pytest"]
 
 [[package]]
 name = "virtualenv"
@@ -2033,7 +2077,7 @@ dev = ["pytest (>=4.6.2)", "black (>=19.3b0)"]
 name = "wrapt"
 version = "1.13.3"
 description = "Module for decorators, wrappers and monkey patching."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 
@@ -2070,6 +2114,14 @@ multidict = ">=4.0"
 typing-extensions = {version = ">=3.7.4", markers = "python_version < \"3.8\""}
 
 [[package]]
+name = "z3-solver"
+version = "4.8.13.0"
+description = "an efficient SMT solver library"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "zipp"
 version = "3.6.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -2084,7 +2136,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7 <3.11"
-content-hash = "3aa0487c6e675fde47cab6e66abfbad51524f06ae5ed6a945575b2442604547d"
+content-hash = "94df7a368824da52f2562a3152fe93c17f09cf5c9b29dc67f1e864ec0bfe4447"
 
 [metadata.files]
 aiocontextvars = [
@@ -2478,6 +2530,14 @@ databases = [
 dataclasses-json = [
     {file = "dataclasses-json-0.5.6.tar.gz", hash = "sha256:1f60be3405dee30b86ffbf6a436db8ba5efaeeb676bfda358e516a97aa7dfce4"},
     {file = "dataclasses_json-0.5.6-py3-none-any.whl", hash = "sha256:1d7f3a284a49d350ddbabde0e7d0c5ffa34a144aaf1bcb5b9f2c87673ff0c76e"},
+]
+deal = [
+    {file = "deal-4.19.0-py3-none-any.whl", hash = "sha256:b168abb80ab3bdc6a40e0fc57ffe7ed347ae174980d35eea3837b571673a8627"},
+    {file = "deal-4.19.0.tar.gz", hash = "sha256:d78876501f1b6db674379efc171a8b3cc52ed2c96565deb3362cc5e0e94019cb"},
+]
+deal-solver = [
+    {file = "deal-solver-0.1.0.tar.gz", hash = "sha256:c42300b2bdf01df7315b409613145440bb393fbace0c2fd9795f59513c7a1990"},
+    {file = "deal_solver-0.1.0-py3-none-any.whl", hash = "sha256:ceb33883072c96141a5c25d497f9ffb459a2b7baebc50f4182ae10fd58ada1a1"},
 ]
 decorator = [
     {file = "decorator-5.1.0-py3-none-any.whl", hash = "sha256:7b12e7c3c6ab203a29e157335e9122cb03de9ab7264b137594103fd4a683b374"},
@@ -3455,16 +3515,16 @@ sqlalchemy2-stubs = [
     {file = "sqlalchemy2_stubs-0.0.2a19-py3-none-any.whl", hash = "sha256:aac7dca77a2c49e5f0934976421d5e25ae4dc5e27db48c01e055f81caa1e3ead"},
 ]
 sqlmodel = [
-    {file = "sqlmodel-0.0.4-py3-none-any.whl", hash = "sha256:441224eea75ea3799661dad0f9599bbd70322ce7d083f30f6741ebc807bc3ee6"},
-    {file = "sqlmodel-0.0.4.tar.gz", hash = "sha256:9503befd4374a8e84e9432b344dc9488e9ca2cc4bd1c944ab6837c1bae0b9837"},
+    {file = "sqlmodel-0.0.5-py3-none-any.whl", hash = "sha256:bcf083c53b2a94d044ae09d62322401bde5d5b669e8173a0e2a43932b03d99d6"},
+    {file = "sqlmodel-0.0.5.tar.gz", hash = "sha256:72c7ca0f0bbabcba9d03eb707b70761684f8f68e693ea58a89e4238f4d4faf0f"},
 ]
 starlette = [
     {file = "starlette-0.16.0-py3-none-any.whl", hash = "sha256:38eb24bf705a2c317e15868e384c1b8a12ca396e5a3c3a003db7e667c43f939f"},
     {file = "starlette-0.16.0.tar.gz", hash = "sha256:e1904b5d0007aee24bdd3c43994be9b3b729f4f58e740200de1d623f8c3a8870"},
 ]
 strawberry-graphql = [
-    {file = "strawberry-graphql-0.93.4.tar.gz", hash = "sha256:1c569a6cd0547c9fd9506805b1f14f63dd055ba30459ec54cbadc0dc56edcc07"},
-    {file = "strawberry_graphql-0.93.4-py3-none-any.whl", hash = "sha256:69b0e4cb64506e6fc9b65f13305a4fd3d3a358f81049334a0074daa41bea13c1"},
+    {file = "strawberry-graphql-0.93.5.tar.gz", hash = "sha256:b8274133e90557a234496af995dfbdbe09dbd993faa163eeb6a41c929e02e5c9"},
+    {file = "strawberry_graphql-0.93.5-py3-none-any.whl", hash = "sha256:73d68fd9e55f5965cc7cf7f9847b74c454098765fdc86a979faca7367ddcbc63"},
 ]
 tinydb = [
     {file = "tinydb-4.5.0-py3-none-any.whl", hash = "sha256:ab2669b88ba1e1b3e1bd6da1a1e3ee284fde6fbf327fb16a206ac3954915f37f"},
@@ -3565,6 +3625,10 @@ typed-ast = [
     {file = "typed_ast-1.4.3-cp39-cp39-win_amd64.whl", hash = "sha256:9c6d1a54552b5330bc657b7ef0eae25d00ba7ffe85d9ea8ae6540d2197a3788c"},
     {file = "typed_ast-1.4.3.tar.gz", hash = "sha256:fb1bbeac803adea29cedd70781399c99138358c26d05fcbd23c13016b7f5ec65"},
 ]
+typeguard = [
+    {file = "typeguard-2.13.3-py3-none-any.whl", hash = "sha256:5e3e3be01e887e7eafae5af63d1f36c849aaa94e3a0112097312aabfa16284f1"},
+    {file = "typeguard-2.13.3.tar.gz", hash = "sha256:00edaa8da3a133674796cf5ea87d9f4b4c367d77476e185e80251cc13dfbb8c4"},
+]
 types-cryptography = [
     {file = "types-cryptography-3.3.9.tar.gz", hash = "sha256:39b8ce64fe89a7e31ea49030ee19ad81724c38ca7283e2c1f91b2ecfeea8b102"},
     {file = "types_cryptography-3.3.9-py3-none-any.whl", hash = "sha256:2127dda3016ba9a6e518a76dec46a009a7da112ace79fc6b590fd028fa24db6b"},
@@ -3590,10 +3654,6 @@ typing-inspect = [
     {file = "typing_inspect-0.7.1-py3-none-any.whl", hash = "sha256:3cd7d4563e997719a710a3bfe7ffb544c6b72069b6812a02e9b414a8fa3aaa6b"},
     {file = "typing_inspect-0.7.1.tar.gz", hash = "sha256:047d4097d9b17f46531bf6f014356111a1b6fb821a24fe7ac909853ca2a782aa"},
 ]
-umongo = [
-    {file = "umongo-3.0.1-py2.py3-none-any.whl", hash = "sha256:042de87d2be21796a2189da5b2642861c392f7fc17f38b61fccf1d8faa237897"},
-    {file = "umongo-3.0.1.tar.gz", hash = "sha256:7d472eb33f56e307312c5ac6e376f3212bf549f3d9273c5e7118b2f9e9250e5a"},
-]
 urllib3 = [
     {file = "urllib3-1.26.7-py2.py3-none-any.whl", hash = "sha256:c4fdf4019605b6e5423637e01bc9fe4daef873709a7973e195ceba0a62bbc844"},
     {file = "urllib3-1.26.7.tar.gz", hash = "sha256:4987c65554f7a2dbf30c18fd48778ef124af6fab771a377103da0585e2336ece"},
@@ -3601,6 +3661,10 @@ urllib3 = [
 uvicorn = [
     {file = "uvicorn-0.16.0-py3-none-any.whl", hash = "sha256:d8c839231f270adaa6d338d525e2652a0b4a5f4c2430b5c4ef6ae4d11776b0d2"},
     {file = "uvicorn-0.16.0.tar.gz", hash = "sha256:eacb66afa65e0648fcbce5e746b135d09722231ffffc61883d4fac2b62fbea8d"},
+]
+vaa = [
+    {file = "vaa-0.2.1-py3-none-any.whl", hash = "sha256:8f638e47e633739f5fb2912d36c5c01f7d757ce9f9508745dcae1eb0b8f1778f"},
+    {file = "vaa-0.2.1.tar.gz", hash = "sha256:55a4419d8b094aacffb82d748b09abe5ca35fe603675ebdab7571373e7d3bf8a"},
 ]
 virtualenv = [
     {file = "virtualenv-20.10.0-py2.py3-none-any.whl", hash = "sha256:4b02e52a624336eece99c96e3ab7111f469c24ba226a53ec474e8e787b365814"},
@@ -3752,6 +3816,13 @@ yarl = [
     {file = "yarl-1.7.2-cp39-cp39-win32.whl", hash = "sha256:1edc172dcca3f11b38a9d5c7505c83c1913c0addc99cd28e993efeaafdfaa18d"},
     {file = "yarl-1.7.2-cp39-cp39-win_amd64.whl", hash = "sha256:797c2c412b04403d2da075fb93c123df35239cd7b4cc4e0cd9e5839b73f52c58"},
     {file = "yarl-1.7.2.tar.gz", hash = "sha256:45399b46d60c253327a460e99856752009fcee5f5d3c80b2f7c0cae1c38d56dd"},
+]
+z3-solver = [
+    {file = "z3-solver-4.8.13.0.tar.gz", hash = "sha256:eff1087d82132593c8851c89486e2512810d801d594d70526e2878b574bef797"},
+    {file = "z3_solver-4.8.13.0-py2.py3-none-macosx_10_16_x86_64.whl", hash = "sha256:058d9fac03aa4f6cd2be7c5fd578ea8ed7d49adb3ed844acba845e9623525881"},
+    {file = "z3_solver-4.8.13.0-py2.py3-none-manylinux1_x86_64.whl", hash = "sha256:65c7004f3642da288f15fbba8397f763c6f56746e320a5636cb1f2308027f50c"},
+    {file = "z3_solver-4.8.13.0-py2.py3-none-win32.whl", hash = "sha256:52a84e8368cbcd92ced06bbbf350db1d280573923c69025f519b6cc26ab74bb7"},
+    {file = "z3_solver-4.8.13.0-py2.py3-none-win_amd64.whl", hash = "sha256:d0a07e5fbe2a9d4ef4cfab5ffd2d770f3f138a47a2942dceb9aa5438d53e4dd7"},
 ]
 zipp = [
     {file = "zipp-3.6.0-py3-none-any.whl", hash = "sha256:9fe5ea21568a0a70e50f273397638d39b03353731e6cbbb3fd8502a33fec40bc"},

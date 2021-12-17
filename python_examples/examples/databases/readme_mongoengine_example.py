@@ -2,9 +2,11 @@
 https://github.com/MongoEngine/mongoengine
 MongoDB GUI Interface: Robo 3T
 """
+import sys
 
 from loguru import logger
 from mongoengine import Document, IntField, ListField, ReferenceField, StringField, connect
+from pymongo.errors import ServerSelectionTimeoutError
 
 
 class Author(Document):
@@ -50,9 +52,15 @@ def test_database_with_mongoengine():
     connect('mongoengine_db')
 
     # Clear db
-    for i in [Author, Publisher, Book, Library, BookInventory]:
-        for j in i.objects:
-            j.delete()
+    try:
+        for i in [Author, Publisher, Book, Library, BookInventory]:
+            for j in i.objects:
+                j.delete()
+    except ServerSelectionTimeoutError:
+        logger.error(
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0'",
+        )
+        sys.exit(1)
 
     # 2) Fill tables
     author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)

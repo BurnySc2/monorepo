@@ -1,45 +1,39 @@
 # This test code was written by the `hypothesis.extra.ghostwriter` module
 # and is provided under the Creative Commons Zero public domain dedication.
 
-from collections import ChainMap
+from typing import List
 
+import deal
 import pytest
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from python_examples.examples.other.multiprocessing_example import cpu_bound_summing, do_math, find_sums
+from python_examples.examples.other.multiprocessing_example import cpu_bound_summing, do_math, do_math_async, find_sums
 
 
-@given(number=st.integers(min_value=0, max_value=1_000))
+@deal.cases(do_math)
+def test_do_math(case):
+    _result = case()
+
+
+@given(st.one_of(st.integers(), st.floats(min_value=-10**15, max_value=10**15)))
+@pytest.mark.asyncio
+async def test_do_math_async(number: float):
+    result = await do_math_async(number)
+    assert result == number + 3
+
+
+@given(number=st.integers(min_value=0, max_value=10_000))
 def test_fuzz_cpu_bound_summing(number):
     cpu_bound_summing(number=number)
 
 
-@given(number=st.one_of(st.floats(), st.integers()))
-@pytest.mark.asyncio
-async def test_fuzz_do_math(number):
-    await do_math(number=number)
+@deal.cases(cpu_bound_summing)
+def test_cpu_bound_summing(case):
+    _result = case()
 
 
-@given(
-    numbers=st.one_of(
-        st.binary(),
-        st.lists(st.integers(min_value=0, max_value=1_000)),
-        st.sets(st.integers(min_value=0, max_value=1_000)),
-        st.frozensets(st.integers(min_value=0, max_value=1_000)),
-        st.dictionaries(
-            keys=st.integers(min_value=0, max_value=1_000), values=st.integers(min_value=0, max_value=1_000)
-        ),
-        st.dictionaries(keys=st.integers(min_value=0, max_value=1_000),
-                        values=st.none()).map(dict.keys),  # type: ignore
-        st.dictionaries(
-            keys=st.integers(min_value=0, max_value=1_000), values=st.integers(min_value=0, max_value=1_000)
-        ).map(dict.values),  # type: ignore
-        st.iterables(st.integers(min_value=0, max_value=1_000)),  # type: ignore
-        st.dictionaries(
-            keys=st.integers(min_value=0, max_value=1_000), values=st.integers(min_value=0, max_value=1_000)
-        ).map(ChainMap),  # type: ignore
-    )
-)
-def test_fuzz_find_sums(numbers):
-    find_sums(numbers=numbers)
+@settings(max_examples=10)
+@given(numbers=st.lists(st.integers(min_value=0, max_value=1_000), min_size=1, max_size=100))
+def test_find_sums(numbers: List[int]):
+    _result = find_sums(numbers)

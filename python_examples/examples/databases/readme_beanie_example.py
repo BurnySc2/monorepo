@@ -4,14 +4,18 @@ https://roman-right.github.io/beanie/
 MongoDB GUI Interface: Robo 3T
 """
 import asyncio
-from typing import List
+import sys
+from typing import ForwardRef, List
 
 import motor
 from beanie import Document, init_beanie
 from beanie.odm.operators.update.general import Set
 from loguru import logger
+from pydantic import Field
+from pymongo.errors import ServerSelectionTimeoutError
 
 
+# Queries can be cached https://roman-right.github.io/beanie/tutorial/cache/
 class Author(Document):
     name: str
     birth_year: int
@@ -29,16 +33,23 @@ class Book(Document):
     publisher: Publisher
 
 
+# BookInventory is defined later so we have to use ForwardRef
+ForwardRefBookInventory = ForwardRef('BookInventory')
+
+
 class Library(Document):
     name: str
     address: str
-    books: List[Document]
+    books: List[ForwardRefBookInventory] = Field(default_factory=list)  # type: ignore
 
 
 class BookInventory(Document):
     amount: int
     book: Book
     library: Library
+
+
+Library.update_forward_refs()
 
 
 # pylint: disable=R0914
@@ -49,7 +60,13 @@ async def test_database_with_beanie():
     client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://localhost:27017')
 
     # 1) Create tables
-    await init_beanie(database=client.db_name, document_models=[Author, Publisher, Book, Library, BookInventory])
+    try:
+        await init_beanie(database=client.db_name, document_models=[Author, Publisher, Book, Library, BookInventory])
+    except ServerSelectionTimeoutError:
+        logger.error(
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0'",
+        )
+        sys.exit(1)
 
     # Clear for reuse
     await Book.find_all().delete()
@@ -62,9 +79,10 @@ async def test_database_with_beanie():
     author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
     author_2 = Author(name='Harper Lee', birth_year=1926)
     author_3 = Author(name='George Orwell', birth_year=1903)
+    await author_1.insert()
+    # Alternatively:
+    await author_2.create()
     await Author.insert_many([
-        author_1,
-        author_2,
         author_3,
     ])
 
@@ -110,10 +128,8 @@ async def test_database_with_beanie():
 
     library_1 = Library(name='New York Public Library', address='224 East 125th Street', books=[])
     library_2 = Library(name='California State Library', address='900 N Street', books=[])
-    await Library.insert_many([
-        library_1,
-        library_2,
-    ])
+    await library_1.save()
+    await library_2.save()
 
     library_inventory_1 = BookInventory(
         book=await Book.find_one(Book.name == book_3.name),
@@ -135,45 +151,53 @@ async def test_database_with_beanie():
         library=await Library.find_one(Library.name == library_2.name),
         amount=30
     )
-    await BookInventory.insert_many(
-        [
-            library_inventory_1,
-            library_inventory_2,
-            library_inventory_3,
-            library_inventory_4,
-        ]
-    )
+
+    # Add library_inventory, which returns the inserted objects (or ids with insert_many
+    library_inventory_1 = await library_inventory_1.save()
+    library_inventory_2 = await library_inventory_2.save()
+    # Add them to library_1.books
+    library_1.books = [library_inventory_1, library_inventory_2]
+    # Save changes
+    _library_1 = await library_1.save()
+
+    library_inventory_3 = await library_inventory_3.save()
+    library_inventory_4 = await library_inventory_4.save()
+    library_2.books = [library_inventory_3, library_inventory_4]
+    _library_2 = await library_2.save()
 
     # 3) Select books
     # https://docs.mongoengine.org/guide/querying.html#query-operators
-    async for book in Book.find_many(Book.release_year < 1960):
+    async for book in Book.find(Book.release_year < 1960):  # pylint: disable=E1133
         logger.info(f'Found books released before 1960: {book}')
+    # Alternatively with mongodb syntax
+    # async for book in Book.find({"release_year": {"$lt": 1960}}):
+    #     logger.info(f'Found books released before 1960: {book}')
 
     # 4) Update books
-    # TODO doesnt seem to work
-    assert await Book.find_many(Book.release_year < 1960).count() == 2
-    await Book.find_many(Book.release_year < 1960).update(Set({Book.release_year: 1970}))
-    assert await Book.find_many(Book.release_year < 1960).count() == 0
+    assert await Book.find(Book.release_year < 1960).count() == 2
+    await Book.find(Book.release_year < 1960).update(Set({Book.release_year: 1970}))
+    # Alternatively with mongodb syntax
+    # await Book.find({"release_year": {"$lt": 1960}}).update({"$set": {"release_year": 1970}})
+    assert await Book.find(Book.release_year < 1960).count() == 0
 
     # 5) Delete books
-    assert await Book.find_many(Book.name == 'This book was not written').count() == 1
-    await Book.find_many(Book.name == 'This book was not written').delete()
-    assert await Book.find_many(Book.name == 'This book was not written').count() == 0
+    assert await Book.find(Book.name == 'This book was not written').count() == 1
+    await Book.find(Book.name == 'This book was not written').delete()
+    assert await Book.find(Book.name == 'This book was not written').count() == 0
 
     # 6) Get data from other tables
-    async for book in Book.find_all():
+    async for book in Book.find_all():  # pylint: disable=E1133
         logger.info(f'Book ({book}) has author ({book.author}) and publisher ({book.publisher})')
 
-    async for book_inventory in BookInventory.find_all():
+    async for book_inventory in BookInventory.find_all():  # pylint: disable=E1133
         logger.info(
             f'Library {book_inventory.library} has book inventory ({book_inventory}) of book ({book_inventory.book})'
         )
 
     # 7) Join two tables and apply filter
     # Find all books that are listed in libraries at least 25 times and where author was born before 1910
-    async for book_inventory in BookInventory.find_many(
+    async for book_inventory in BookInventory.find( # pylint: disable=E1133
         BookInventory.amount <= 25,
-    ).find_many(
         BookInventory.book.author.birth_year < 1910,
     ):
         logger.info(
