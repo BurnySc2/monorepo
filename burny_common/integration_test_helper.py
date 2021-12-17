@@ -7,13 +7,8 @@ from pathlib import Path
 from typing import Optional, Set
 
 import psutil
-import psycopg2
 import pymongo
 from loguru import logger
-from psycopg2 import OperationalError
-
-# pylint: disable=E0611
-from psycopg2._psycopg import connection, cursor
 from pymongo import MongoClient
 
 WEBSITE_IP = 'http://localhost'
@@ -232,13 +227,8 @@ def start_mongodb(mongo_db_port: int = 27017) -> int:
 
 def check_if_postgres_is_running(port: int = 5432) -> bool:
     # If we can connect to port 5432, postgres is already running
-    try:
-        conn: connection = psycopg2.connect(host='localhost', port=f'{port}', user='postgres', password='changeme')
-        _cur: cursor = conn.cursor()
-        conn.close()
-        return True
-    except OperationalError:
-        return False
+    # TODO find better way to figure out if postgress is running
+    return not is_port_free(port)
 
 
 # pylint: disable=R1732
@@ -303,12 +293,12 @@ if __name__ == '__main__':
     logger.info(f'Docker running: {check_if_docker_is_running()}')
     logger.info(f'Postgres running: {check_if_postgres_is_running()}')
     logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
-    start_postgres()
-    start_mongodb()
-    free_frontend_port = find_next_free_port()
-    free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
-    start_svelte_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
-    start_react_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
-    start_fastapi_dev_server(free_backend_port, set(), set())
-    while 1:
-        time.sleep(1)
+    # start_postgres()
+    # start_mongodb()
+    # free_frontend_port = find_next_free_port()
+    # free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
+    # start_svelte_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
+    # start_react_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
+    # start_fastapi_dev_server(free_backend_port, set(), set())
+    # while 1:
+    #     time.sleep(1)

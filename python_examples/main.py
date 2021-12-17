@@ -21,15 +21,9 @@ from loguru import logger
 # Local examples
 from python_examples.examples.async_await.asyncio_download_upload import download_all_sites, download_file
 from python_examples.examples.async_await.rate_limited_example import api_rate_limited_example
-from python_examples.examples.databases.asyncpg_asyncio_example import (
-    performance_test_asyncpg_database,
-    test_asyncpg_database,
-)
 from python_examples.examples.databases.mongodb_example import test_database_with_mongodb
 from python_examples.examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
-from python_examples.examples.databases.sqlite_asyncio_example import test_asyncio_database
 from python_examples.examples.databases.sqlite_example import test_database
-from python_examples.examples.databases.sqlite_with_classes import test_database_with_classes
 from python_examples.examples.databases.sqlmodel_example import test_database_with_sqlmodel
 from python_examples.examples.databases.tinydb_example import test_database_with_tinydb
 from python_examples.examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
@@ -109,11 +103,7 @@ async def main():
 
     logger.info('Testing database interaction')
     test_database()
-    await test_asyncpg_database()
-    await performance_test_asyncpg_database()
-    await test_asyncio_database()
     test_database_with_sqlalchemy()
-    test_database_with_classes()
     test_database_with_tinydb()
     test_database_with_sqlmodel()
     await test_database_with_mongodb()

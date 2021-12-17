@@ -2,7 +2,7 @@ import sys
 from io import StringIO
 
 import click
-import paramiko
+import paramiko  # type: ignore
 from click.testing import CliRunner
 from paramiko import SSHClient
 

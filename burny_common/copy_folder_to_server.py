@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import Optional, Set
 
 import click
-import paramiko
+import paramiko  # type: ignore
 from click.testing import CliRunner
 from paramiko import SSHClient
-from paramiko.sftp_client import SFTPClient
+from paramiko.sftp_client import SFTPClient  # type: ignore
 
 from burny_common.copy_file_to_server import copy_file_to_server_helper, generate_path
 

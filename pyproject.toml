@@ -8,8 +8,6 @@ authors = ["BuRny <gamingburny@gmail.com>"]
 python = ">=3.7 <3.11"
 # Numeric python
 numpy = "^1.21"
-# Improve performance by writing C or C++ similar code
-cython = "^0.29"
 # Write and read classes to/from json
 dataclasses-json = "^0.5"
 # Network access
@@ -42,25 +40,19 @@ lorem-text = "^2.1"
 # https://github.com/tiangolo/sqlmodel
 sqlmodel = "^0.0.5"
 # Geometry manipulation
-#Shapely = "^1.7"
-# https://www.encode.io/databases/
-databases = {extras = ["sqlite"], version = "^0.5"}
-# Async database
-asyncpg = "^0.25"
+Shapely = "^1.8"
 # Fastapi server
 fastapi = "^0.70"
 uvicorn = "^0.16"
 # End to end tests
-seleniumbase = "^2.2"
+seleniumbase = "^2.3.0"
 # Info about the system
 psutil = "^5.8"
-# Database connection
-psycopg2 = "^2.9"
 # Graphql backend implementation
 strawberry-graphql = {extras = ["debug-server"], version = "^0.93"}
 # Execute command on server via SSH, or push files via SFTP
 paramiko = "^2.8"
-types-paramiko = "^2.8"
+#types-paramiko = "^2.8"
 # Simpler argparse
 click = "^7.1"
 # SQL ORM
