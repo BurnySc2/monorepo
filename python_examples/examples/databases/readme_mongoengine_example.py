@@ -88,12 +88,17 @@ def test_database_with_mongoengine():
         logger.info(f'Found books released before 1960: {book}')
 
     # 4) Update books
+    assert Book.objects(release_year__lt=1960).count() == 2
     for book in Book.objects(release_year__lt=1960):
         book.release_year = 1970
+        book.save()
         logger.info(f'Found books released before 1960: {book}')
+    assert Book.objects(release_year__lt=1960).count() == 0
 
     # 5) Delete books
+    assert Book.objects(name='This book was not written').count() == 1
     Book.objects(name='This book was not written').delete()
+    assert Book.objects(name='This book was not written').count() == 0
 
     # 6) Get data from other tables
     for book in Book.objects:

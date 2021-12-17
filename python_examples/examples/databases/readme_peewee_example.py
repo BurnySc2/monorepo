@@ -100,14 +100,18 @@ def test_database_with_peewee_readme_example():
 
     # 4) Update books
     assert Book.select().where(Book.release_year < 1960).count() == 2
+
     for book in Book.select().where(Book.release_year < 1960):
         book.release_year = 1970
         book.save()
+
     assert Book.select().where(Book.release_year < 1960).count() == 0
 
     # 5) Delete books
     assert Book.select().where(Book.name == 'This book was not written').count() == 1
+
     Book.delete().where(Book.name == 'This book was not written').execute()
+
     assert Book.select().where(Book.name == 'This book was not written').count() == 0
 
     # 6) Get data from other tables

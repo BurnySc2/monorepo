@@ -151,10 +151,14 @@ async def test_database_with_beanie():
 
     # 4) Update books
     # TODO doesnt seem to work
+    assert await Book.find_many(Book.release_year < 1960).count() == 2
     await Book.find_many(Book.release_year < 1960).update(Set({Book.release_year: 1970}))
+    assert await Book.find_many(Book.release_year < 1960).count() == 0
 
     # 5) Delete books
+    assert await Book.find_many(Book.name == 'This book was not written').count() == 1
     await Book.find_many(Book.name == 'This book was not written').delete()
+    assert await Book.find_many(Book.name == 'This book was not written').count() == 0
 
     # 6) Get data from other tables
     async for book in Book.find_all():

@@ -113,18 +113,22 @@ def test_database_with_sqlalchemy_readme_example():
 
     # 4) Update books
     with Session(engine) as session:
+        assert session.query(Book).filter(Book.release_year < 1960).count() == 2
         statement: Query = session.query(Book)
         result: Iterable[Book] = statement.filter(Book.release_year < 1960)
         for book in result:
             logger.info(f'Changing release year on book: {book}')
             book.release_year = 1970
+        assert session.query(Book).filter(Book.release_year < 1960).count() == 0
         session.commit()
 
     # 5) Delete books
     with Session(engine) as session:
+        assert session.query(Book).filter(Book.name == 'This book was not written').count() == 1
         statement: Delete = delete(Book)
         statement: Delete = statement.where(Book.name == 'This book was not written')
         session.execute(statement)
+        assert session.query(Book).filter(Book.name == 'This book was not written').count() == 0
         # Alternatively:
         # result: Iterable[Book] = query.filter(Book.name == 'This book was not written')
         # for book in result:

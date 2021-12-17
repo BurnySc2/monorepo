@@ -112,10 +112,22 @@ def test_database_with_tinydb():
         logger.info(f'Found books released before 1960: {book}')
 
     # 4) Update books
+    amount = book_table.count(where('release_year') < 1960)
+    assert amount == 2, amount
+
     book_table.update({'release_year': 1970}, where('release_year') < 1960)
 
+    amount = book_table.count(where('release_year') < 1960)
+    assert amount == 0, amount
+
     # 5) Delete books
+    amount = book_table.count(where('name') == 'This book was not written')
+    assert amount == 1, amount
+
     book_table.remove(where('name') == 'This book was not written')
+
+    amount = book_table.count(where('name') == 'This book was not written')
+    assert amount == 0, amount
 
     # 6) Get data from other tables
     for book_raw in book_table:

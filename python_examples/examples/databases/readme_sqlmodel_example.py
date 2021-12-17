@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from loguru import logger
+from sqlalchemy import func
 from sqlalchemy.sql import Delete
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, delete, select
 from sqlmodel.sql.expression import SelectOfScalar
@@ -105,20 +106,35 @@ def test_database_with_sqlmodel_readme_example():
 
     # 4) Update books
     with Session(engine) as session:
+        count_statement = select(func.count()).select_from(Book).where(Book.release_year < 1960)
+        amount = session.exec(count_statement).first()
+        assert amount == 2, amount
+
         statement = select(Book).where(Book.release_year < 1960)
         books = session.exec(statement)
         for book in books:
             logger.info(f'Changing release year on book: {book}')
             book.release_year = 1970
+
+        amount = session.exec(count_statement).first()
+        assert amount == 0, amount
         session.commit()
 
     # 5) Delete books
     with Session(engine) as session:
+        count_statement = select(func.count()).select_from(Book).where(Book.name == 'This book was not written')
+        amount = session.exec(count_statement).first()
+        assert amount == 1, amount
+
         assert_statement = select(Book).where(Book.name == 'This book was not written')
-        assert session.exec(assert_statement).first() is not None, session.exec(assert_statement).first()
+        first_book_result = session.exec(assert_statement).first()
+        assert first_book_result is not None, first_book_result
 
         statement: Delete = delete(Book).where(Book.name == 'This book was not written')
         session.exec(statement)
+
+        amount = session.exec(count_statement).first()
+        assert amount == 0, amount
         # Alternatively:
         # statement = select(Book).where(Book.name == 'This book was not written')
         # books = session.exec(statement)
