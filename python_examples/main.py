@@ -29,8 +29,7 @@ from python_examples.examples.databases.tinydb_example import test_database_with
 from python_examples.examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
 from python_examples.examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
 from python_examples.examples.other.file_interaction import create_file
-
-# from python_examples.examples.other.geometry_example import test_geometry_shapely
+from python_examples.examples.other.geometry_example import test_geometry_shapely
 from python_examples.examples.other.image_manipulation import mass_convert_images
 from python_examples.examples.other.measure_time import measure_time
 from python_examples.examples.other.multiprocessing_example import do_math, do_multiprocessing
@@ -74,7 +73,7 @@ async def main():
     end_time = time.perf_counter()
     logger.info(f'Time for sites download taken: {end_time - start_time}')
 
-    _math_result = await do_math(6)
+    _math_result = do_math(6)
 
     start_time = time.perf_counter()
     _result2 = do_multiprocessing()
@@ -94,7 +93,7 @@ async def main():
     logger.info('Validating all roman numbers up to 3999')
     test_all_roman_numbers()
 
-    # test_geometry_shapely()
+    test_geometry_shapely()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 
