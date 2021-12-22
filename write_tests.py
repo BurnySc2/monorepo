@@ -1,3 +1,4 @@
+""" Deprecated. I personally don't like ghostwriter. You should probably use 'deal.cases()' instead. """
 import subprocess
 from pathlib import Path
 from typing import List

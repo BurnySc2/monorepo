@@ -1,11 +1,11 @@
 import sys
 from pathlib import Path
 
-# Be able to launch from root folder
-sys.path.append(str(Path(__file__).parents[1]))
+from fastapi_server.database.database import init_db
 
-import asyncio
-import os
+# Be able to launch from root folder
+
+sys.path.append(str(Path(__file__).parents[1]))
 
 import uvicorn
 from fastapi import FastAPI
@@ -14,10 +14,8 @@ from loguru import logger
 
 from fastapi_server.routes.chat import chat_router
 from fastapi_server.routes.graphql import strawberry_router
-from fastapi_server.routes.hello_world import background_task_function, hello_world_router
+from fastapi_server.routes.hello_world import hello_world_router
 from fastapi_server.routes.todolist import create_database_if_not_exist, get_db, todo_list_router
-
-ENV = os.environ.copy()
 
 app = FastAPI()
 app.include_router(hello_world_router)
@@ -40,8 +38,10 @@ app.add_middleware(
 
 @app.on_event('startup')
 async def startup_event():
-    asyncio.create_task(background_task_function('hello', other_text=' world!'))
+    # asyncio.create_task(background_task_function('hello', other_text=' world!'))
     create_database_if_not_exist()
+    # TODO: This init_db should probably not be in here
+    init_db()
     logger.info('Hello world!')
 
 

@@ -130,5 +130,5 @@ db.json
 sqlite_asyncio_example.db
 todos.db
 
-# Ignore local data folder
-/data
+# Fastapi files
+fastapi_server/data

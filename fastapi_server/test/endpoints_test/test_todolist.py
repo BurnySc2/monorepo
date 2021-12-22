@@ -23,17 +23,6 @@ def test_fuzz_Item(todo_description):
     Item(todo_description=todo_description)
 
 
-# @pytest.mark.asyncio
-# @given(todo_description=st.text())
-# async def test_fuzz_create_new_todo(todo_description):
-#     await create_new_todo(todo_description=todo_description)
-
-# @pytest.mark.asyncio
-# @given(item=st.builds(Item))
-# async def test_fuzz_create_new_todo3(item):
-#     await create_new_todo3(item=item)
-
-
 class TestHypothesis(unittest.TestCase):
     @staticmethod
     def remove_db_file():
@@ -59,6 +48,7 @@ class TestHypothesis(unittest.TestCase):
     @settings(deadline=2_000)
     @given(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
     def test_add_todo_list_item(self, new_todo: str):
+        # TODO Fix test
         response = client.get('/api')
         assert response.status_code == 200
         assert response.json() == []
@@ -76,6 +66,7 @@ class TestHypothesis(unittest.TestCase):
     @settings(deadline=2_000)
     @given(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
     def test_add_todo_list_item_with_body(self, new_todo: str):
+        # TODO Fix test
         response = client.get('/api')
         assert response.status_code == 200
         assert response.json() == []
@@ -93,6 +84,7 @@ class TestHypothesis(unittest.TestCase):
     @settings(deadline=2_000)
     @given(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
     def test_add_todo_list_item_with_model(self, new_todo: str):
+        # TODO Fix test
         response = client.get('/api')
         assert response.status_code == 200
         assert response.json() == []
@@ -116,6 +108,7 @@ class TestHypothesis(unittest.TestCase):
     @settings(max_examples=20, deadline=2_000)
     @given(st.lists(st.from_regex(TODO_ITEM_REGEX, fullmatch=True), max_size=100))
     def test_remove_todo_list_items(self, todo_items: List[str]):
+        # TODO Fix test
         response = client.get('/api')
         assert response.status_code == 200
         assert response.json() == []

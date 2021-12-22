@@ -63,6 +63,10 @@ mongoengine = "^0.23.1"
 beanie = "^1.8.7"
 # Contracts https://github.com/life4/deal
 deal = "^4.19.0"
+# Create sqlalchemy migrations
+alembic = "^1.7.5"
+# Load environment variables from .env file
+python-dotenv = "^0.19.2"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter

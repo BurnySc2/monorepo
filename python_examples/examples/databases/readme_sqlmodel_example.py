@@ -21,12 +21,12 @@ class Publisher(SQLModel, table=True):
 
 class Book(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
+    name: str = Field()
     release_year: int
-    author_id: Optional[int] = Field(default=None, foreign_key='author.id')
-    author: Optional[Author] = Relationship()
-    publisher_id: Optional[int] = Field(default=None, foreign_key='publisher.id')
-    publisher: Optional[Publisher] = Relationship()
+    author_id: int = Field(default=None, foreign_key='author.id')
+    author: Author = Relationship()
+    publisher_id: int = Field(default=None, foreign_key='publisher.id')
+    publisher: Publisher = Relationship()
 
 
 class Library(SQLModel, table=True):
@@ -38,10 +38,10 @@ class Library(SQLModel, table=True):
 
 
 class BookInventory(SQLModel, table=True):
-    book_id: Optional[int] = Field(default=None, primary_key=True, foreign_key='book.id')
-    book: Optional[Book] = Relationship()
-    library_id: Optional[int] = Field(default=None, primary_key=True, foreign_key='library.id')
-    library: Optional[Library] = Relationship()
+    book_id: int = Field(default=None, primary_key=True, foreign_key='book.id')
+    book: Book = Relationship()
+    library_id: int = Field(default=None, primary_key=True, foreign_key='library.id')
+    library: Library = Relationship()
     amount: int
 
 
@@ -106,11 +106,11 @@ def test_database_with_sqlmodel_readme_example():
 
     # 4) Update books
     with Session(engine) as session:
-        count_statement = select(func.count()).select_from(Book).where(Book.release_year < 1960)
+        count_statement: SelectOfScalar = select(func.count()).select_from(Book).where(Book.release_year < 1960)
         amount = session.exec(count_statement).first()
         assert amount == 2, amount
 
-        statement = select(Book).where(Book.release_year < 1960)
+        statement: SelectOfScalar = select(Book).where(Book.release_year < 1960)
         books = session.exec(statement)
         for book in books:
             logger.info(f'Changing release year on book: {book}')
@@ -122,7 +122,8 @@ def test_database_with_sqlmodel_readme_example():
 
     # 5) Delete books
     with Session(engine) as session:
-        count_statement = select(func.count()).select_from(Book).where(Book.name == 'This book was not written')
+        count_statement: SelectOfScalar = select(func.count()
+                                                 ).select_from(Book).where(Book.name == 'This book was not written')
         amount = session.exec(count_statement).first()
         assert amount == 1, amount
 
@@ -148,13 +149,13 @@ def test_database_with_sqlmodel_readme_example():
 
     # 6) Get data from other tables
     with Session(engine) as session:
-        statement = select(Book)
+        statement: SelectOfScalar = select(Book)
         books = session.exec(statement)
         for book in books:
             logger.info(f'Book({book}) has Author({book.author}) and Publisher({book.publisher})')
 
     with Session(engine) as session:
-        statement = select(Library)
+        statement: SelectOfScalar = select(Library)
         libaries = session.exec(statement)
         for library in libaries:
             logger.info(f'Library ({library}) has books:')
