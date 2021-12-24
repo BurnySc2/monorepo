@@ -1,3 +1,4 @@
+import contextlib
 import os
 import pathlib
 
@@ -20,32 +21,7 @@ TEST_DB_MEMORY_URL = f'sqlite:///{TEST_DB_MEMORY_PATH}'
 
 
 class BaseTest:
-    session: Session = None
-
-    @classmethod
-    def setup_method(cls):
-        cls.setup_example()
-        assert cls.session.bind.url.database in {TEST_DB_FILE_PATH, TEST_DB_MEMORY_PATH}
-
-    @classmethod
-    def setup_example(cls):
-        if cls.session is None:
-            # cls.session = cls.create_file_sesssion()
-            cls.session = cls.create_memory_sesssion()
-            assert cls.session.bind.url.database in {TEST_DB_FILE_PATH, TEST_DB_MEMORY_PATH}
-
-    @classmethod
-    def teardown_method(cls):
-        cls.teardown_example()
-
-    @classmethod
-    def teardown_example(cls, _token=None):
-        if cls.session is not None:
-            db_path = pathlib.Path(TEST_DB_FILE_PATH)
-            if cls.session.bind.url.database != TEST_DB_MEMORY_PATH and db_path.is_file():
-                os.remove(db_path)
-            cls.session.close()
-            cls.session = None
+    session: Session = None  # type: ignore
 
     @classmethod
     def create_file_sesssion(cls):
@@ -63,41 +39,68 @@ class BaseTest:
             return session
 
     @classmethod
+    @contextlib.contextmanager
+    def session_context(cls):
+        """
+        Used together with hypothesis: create a class-variable to be used in hypothesis. Unset once the test is over.
+        Session strategy doesn't seem to work as expected, nor does setup example and teardown example with sql.
+        """
+        if cls.session is not None:
+            # There's already another context manager running
+            yield cls.session
+        else:
+            try:
+                # cls.session = cls.create_file_sesssion()
+                cls.session = cls.create_memory_sesssion()
+                yield cls.session
+            finally:
+                if cls.session is not None:
+                    db_path = pathlib.Path(TEST_DB_FILE_PATH)
+                    # Remove file if it wasnt a memory database
+                    if cls.session.bind.url.database != TEST_DB_MEMORY_PATH and db_path.is_file():
+                        os.remove(db_path)
+                    cls.session.close()
+                    cls.session = None
+
+    @classmethod
+    @contextlib.contextmanager
+    def client_context(cls):
+        """ Same reasoning as above. """
+        # See https://sqlmodel.tiangolo.com/tutorial/fastapi/tests/#pytest-fixtures
+        # https://strawberry.rocks/docs/integrations/fastapi#context_getter
+        with cls.session_context() as _session:
+            app.dependency_overrides[get_session] = cls.get_session
+            client = TestClient(app)
+            yield client
+
+    @classmethod
     def get_session(cls) -> Session:
-        # Create session if not set
-        if cls.session is None:
-            cls.setup_example()
-        assert cls.session.bind.url.database in {TEST_DB_FILE_PATH, TEST_DB_MEMORY_PATH}
-        # Can this be "yield" instead?
+        assert isinstance(cls.session, Session)
+        assert cls.session.bind.url.database in {TEST_DB_FILE_PATH, TEST_DB_MEMORY_PATH}  # type: ignore
         return cls.session
 
     @classmethod
     def get_client(cls) -> TestClient:
-        # See https://sqlmodel.tiangolo.com/tutorial/fastapi/tests/#pytest-fixtures
-        # https://strawberry.rocks/docs/integrations/fastapi#context_getter
-        app.dependency_overrides[get_session] = cls.get_session
-        client = TestClient(app)
-        return client
+        with cls.client_context() as client:
+            return client
 
     @classmethod
     def get_schema(cls) -> strawberry.Schema:
         return schema
 
-    @pytest.fixture(name='session_fixture')
-    def session_fixture(self) -> Session:
-        yield self.get_session()
-
     @pytest.fixture(name='client_fixture')
-    def client_fixture(self):
-        yield self.get_client()
+    def client_fixture(self) -> TestClient:  # type: ignore
+        with self.client_context() as client:
+            yield client
+
+    @pytest.fixture(name='session_fixture')
+    def session_fixture(self) -> Session:  # type: ignore
+        with self.session_context() as session:
+            yield session
 
     @pytest.fixture(name='schema_fixture')
     def schema_fixture(self):
         yield self.get_schema()
-
-    @classmethod
-    def session_strategy(cls) -> SearchStrategy:
-        return st.builds(cls.get_session)
 
     @classmethod
     def client_strategy(cls) -> SearchStrategy:

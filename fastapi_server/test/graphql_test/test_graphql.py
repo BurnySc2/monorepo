@@ -3,16 +3,16 @@ A file for base test examples and how to use them in different ways.
 """
 import hypothesis.strategies as st
 import pytest
+import strawberry
 from hypothesis import given
 from hypothesis.strategies import DataObject
 from starlette.testclient import TestClient
 
-from fastapi_server.routes.graphql import schema
 from fastapi_server.test.base_test import BaseTest
 
 
 class TestGraphql(BaseTest):
-    def test_query(self, schema_fixture: schema):
+    def test_query(self, schema_fixture: strawberry.Schema):
         # https://strawberry.rocks/docs/operations/testing
         query = """
         query {
@@ -26,7 +26,7 @@ class TestGraphql(BaseTest):
         assert result.data == {'helloQuery': 'Hello World'}
 
     @pytest.mark.asyncio
-    async def test_query2(self, schema_fixture: schema):
+    async def test_query2(self, schema_fixture: strawberry.Schema):
         query = """
         query {
             helloQuery
@@ -41,14 +41,14 @@ class TestGraphql(BaseTest):
     def test_query_via_fastapi(self, client_fixture: TestClient):
         # See https://github.com/strawberry-graphql/strawberry/blob/main/tests/fastapi/test_query.py
         query = """
-        query {
-            helloQuery
-        }
+            query {
+                helloQuery
+            }
         """
         response = client_fixture.post('/graphql', json={'query': query})
         assert response.json() == {'data': {'helloQuery': 'Hello World'}}
 
-    def test_mutation(self, schema_fixture: schema):
+    def test_mutation(self, schema_fixture: strawberry.Schema):
         query = """
         mutation TestMutation($someInput: String!) {
             helloMutation(someInput: $someInput)
@@ -60,7 +60,7 @@ class TestGraphql(BaseTest):
         assert result.errors is None
         assert result.data == {'helloMutation': 'Hello Burny'}
 
-    def test_mutation2(self, schema_fixture: schema):
+    def test_mutation2(self, schema_fixture: strawberry.Schema):
         query = """
         mutation {
             helloMutation(someInput: "Burny")
@@ -73,7 +73,7 @@ class TestGraphql(BaseTest):
         assert result.data == {'helloMutation': 'Hello Burny'}
 
     @pytest.mark.asyncio
-    async def test_mutation3(self, schema_fixture: schema):
+    async def test_mutation3(self, schema_fixture: strawberry.Schema):
         query = """
         mutation TestMutation($someInput: String!) {
             helloMutation(someInput: $someInput)
@@ -97,7 +97,7 @@ class TestGraphql(BaseTest):
         assert response.json() == {'data': {'helloMutation': 'Hello Burny'}}
 
     @given(my_schema=BaseTest.schema_strategy(), data=st.data())
-    def test_mutation_hypothesis(self, my_schema: schema, data: DataObject):
+    def test_mutation_hypothesis(self, my_schema: strawberry.Schema, data: DataObject):
         some_input = data.draw(st.text())
         query = """
         mutation TestMutation($someInput: String!) {
@@ -111,7 +111,7 @@ class TestGraphql(BaseTest):
         assert result.data == {'helloMutation': f'Hello {some_input}'}
 
     @pytest.mark.asyncio
-    async def test_subscription(self, schema_fixture: schema):
+    async def test_subscription(self, schema_fixture: strawberry.Schema):
         query = """
         subscription {
             helloSubscription(target: 3)

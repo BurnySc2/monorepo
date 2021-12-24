@@ -5,7 +5,10 @@ import MyRouter from "../../components/MyRouter"
 
 type ITodoItem = {
     id: number
-    content: string
+    todo_text: string
+    created_timestamp: number
+    done_timestamp: number
+    done: boolean
 }
 
 export default function TodoPage(): JSX.Element {
@@ -92,7 +95,10 @@ export default function TodoPage(): JSX.Element {
         todos.forEach((todo) => {
             maxIndex = Math.max(todo.id, maxIndex)
         })
-        setTodos([...todos, { id: maxIndex + 1, content: newTodoText }])
+        setTodos([
+            ...todos,
+            { id: maxIndex + 1, todo_text: newTodoText, created_timestamp: 123, done: false, done_timestamp: -1 },
+        ])
         setNewTodoText("")
     }
 
@@ -125,7 +131,7 @@ export default function TodoPage(): JSX.Element {
             <TodoItem
                 index={index}
                 id={todoItem.id}
-                content={todoItem.content}
+                content={todoItem.todo_text}
                 deleteFunction={() => removeTodo(todoItem.id)}
                 key={todoItem.id}
             />

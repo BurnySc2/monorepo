@@ -3,7 +3,9 @@
     import TodoCard from "../components/TodoCard.svelte"
 
     let newTodoText = ""
-    let cards: { id: number; content: string }[] = [{ id: 0, content: "some todo text" }]
+    let cards: { id: number; todo_text: string; created_timestamp: number; done_timestamp: number; done: boolean }[] = [
+        { id: 0, todo_text: "some todo text", created_timestamp: 123, done_timestamp: -1, done: false },
+    ]
     let APIserverIsResponding = true
 
     const api_server_ip = "http://localhost:8000"
@@ -20,7 +22,7 @@
             maxIndex = Math.max(card.id, maxIndex)
         })
         maxIndex += 1
-        cards = [...cards, { id: maxIndex, content: newTodoText }]
+        cards = [...cards, { id: maxIndex, todo_text: newTodoText }]
     }
 
     const localRemove = (id: number) => {
@@ -134,11 +136,11 @@
     {#if !APIserverIsResponding}
         <div class="bg-red-300 rounded p1">Unable to connect to server - running local mode</div>
     {/if}
-    {#each cards as { id, content }, _i}
-        <TodoCard cardText={content} index={id} {removeTodo} />
+    {#each cards as { id, todo_text }, _i}
+        <TodoCard cardText={todo_text} index={id} {removeTodo} />
     {/each}
     <!-- Same as above -->
     <!-- {#each cards as card, i}
-        <TodoCard cardText={card.content} index={card.id} {removeTodo} />
+        <TodoCard cardText={card.todo_text} index={card.id} {removeTodo} />
     {/each} -->
 </main>

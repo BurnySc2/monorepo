@@ -1,14 +1,25 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
+from loguru import logger
 from sqlmodel import Session, SQLModel, create_engine
 
 load_dotenv()
 
+ROOT_FASTAPI_SERVER_PATH = Path(__file__).parents[1]
 DATABASE_PATH = os.environ.get('DATABASE_PATH')
-# engine = create_engine('sqlite:///temp.db')
-# engine = create_engine('sqlite:///:memory:')
-engine = create_engine(DATABASE_PATH)
+DATABASE_USE_MEMORY = os.environ.get('DATABASE_USE_MEMORY')
+assert DATABASE_PATH is not None
+if DATABASE_PATH == ':memory:' or DATABASE_USE_MEMORY == 'TRUE':
+    logger.info('Using memory database!')
+    engine = create_engine('sqlite:///:memory:')
+else:
+    correct_path = ROOT_FASTAPI_SERVER_PATH / DATABASE_PATH
+    # engine = create_engine('sqlite:///temp.db')
+    # engine = create_engine('sqlite:///:memory:')
+    logger.info(f'DB Path: {correct_path}')
+    engine = create_engine(f'sqlite:///{correct_path.absolute().__str__()}')
 
 
 def init_db():

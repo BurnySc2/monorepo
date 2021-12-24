@@ -10,12 +10,14 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name)
+fileConfig(config.config_file_name)  # type: ignore
 
 # add your model's MetaData object here
 
 # Define models here, assign them to a value so it doesn't get auto-removed on unused import
-from fastapi_server.models.user import User  # nopycln: import
+from fastapi_server.models.user import User
+
+_User = User
 
 target_metadata = SQLModel.metadata
 

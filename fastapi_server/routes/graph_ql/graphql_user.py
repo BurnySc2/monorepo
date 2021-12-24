@@ -5,7 +5,6 @@ from loguru import logger
 from sqlmodel import Session, select
 from strawberry.types import Info
 
-from fastapi_server.database.database import get_session
 from fastapi_server.models.user import User
 from fastapi_server.routes.graph_ql.broadcaster import Broadcast, BroadcastEvent, Subscriber
 
@@ -17,7 +16,7 @@ class UserSystemQuery:
     @strawberry.field
     def user_login(self, info: Info, email: str, password: str) -> str:
         session: Session = info.context['session']
-        # users = session.exec(select(User)).all()
+        # TODO Replace with actual password hash function
         statement = select(User).where(User.email == email, User.password_hashed == password)
         user = session.exec(statement).first()
         if user is None:
@@ -28,21 +27,23 @@ class UserSystemQuery:
 @strawberry.type
 class UserSystemMutation:
     @strawberry.mutation
-    def user_register(self, username: str, email: str, password: str, password_repeated: str) -> bool:
+    def user_register(self, info: Info, username: str, email: str, password: str, password_repeated: str) -> bool:
         if password != password_repeated:
             raise KeyError('not same pw')
+        # TODO Replace with actual password hash function
         password_hashed = hash(password)
-        with get_session() as session:
-            session.add(
-                User(
-                    username=username,
-                    email=email,
-                    password_hashed=password_hashed,
-                    is_admin=False,
-                    is_disabled=False,
-                    is_verified=False,
-                )
+        session: Session = info.context['session']
+        session.add(
+            User(
+                username=username,
+                email=email,
+                password_hashed=password_hashed,
+                is_admin=False,
+                is_disabled=False,
+                is_verified=False,
             )
+        )
+        session.commit()
         return True
 
 

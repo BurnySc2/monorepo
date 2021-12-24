@@ -11,8 +11,6 @@ from burny_common.integration_test_helper import (
     kill_processes,
     remove_leftover_files,
     start_fastapi_dev_server,
-    start_mongodb,
-    start_postgres,
     start_svelte_dev_server,
 )
 
@@ -43,8 +41,8 @@ class MyTestClass(BaseCase):
             self.NEWLY_CREATED_PROCESSES,
             _backend_proxy=f'localhost:{free_backend_port}',
         )
-        start_mongodb()
-        start_postgres()
+        # start_mongodb()
+        # start_postgres()
 
     def teardown_method(self, _method):
         """ teardown any state that was previously setup with a setup_method

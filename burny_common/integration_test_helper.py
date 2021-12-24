@@ -163,15 +163,12 @@ def start_fastapi_dev_server(
     backend_folder = root_folder / 'fastapi_server'
     currently_running_uvicorn_processes = get_pid('uvicorn')
     env = os.environ.copy()
-    env['USE_MONGO_DB'] = 'True'
-    env['USE_POSTGRES_DB'] = 'True'
-    env['USE_LOCAL_SQLITE_DB'] = 'True'
+    env['DATABASE_USE_MEMORY'] = 'TRUE'
 
     sqlite_test_file_name = 'todos_TEST.db'
     sqlite_test_file_path = backend_folder / 'data' / sqlite_test_file_name
     CREATED_FILES.add(sqlite_test_file_path)
     remove_leftover_files({sqlite_test_file_path})
-    env['SQLITE_FILENAME'] = sqlite_test_file_name
 
     # Why does this return errors even when fastapi server is not running
     # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
