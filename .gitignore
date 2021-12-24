@@ -119,7 +119,10 @@ node_modules
 react_frontend/src/index.css
 react_frontend/.next
 react_frontend/test_frontend/latest_logs
+react_frontend/latest_logs
 svelte_frontend/test_frontend/latest_logs
+svelte_frontend/latest_logs
+latest_logs
 
 # Test files from main.py
 hello_world.txt

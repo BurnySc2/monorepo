@@ -10,11 +10,11 @@ load_dotenv()
 ROOT_FASTAPI_SERVER_PATH = Path(__file__).parents[1]
 DATABASE_PATH = os.environ.get('DATABASE_PATH')
 DATABASE_USE_MEMORY = os.environ.get('DATABASE_USE_MEMORY')
-assert DATABASE_PATH is not None
 if DATABASE_PATH == ':memory:' or DATABASE_USE_MEMORY == 'TRUE':
     logger.info('Using memory database!')
     engine = create_engine('sqlite:///:memory:')
 else:
+    assert DATABASE_PATH is not None
     correct_path = ROOT_FASTAPI_SERVER_PATH / DATABASE_PATH
     # engine = create_engine('sqlite:///temp.db')
     # engine = create_engine('sqlite:///:memory:')
