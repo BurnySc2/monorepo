@@ -6,6 +6,7 @@ on:
     paths:
     - burny_common/**
     - fastapi_server/**
+    - poetry.lock
   pull_request:
     branches:
     - master

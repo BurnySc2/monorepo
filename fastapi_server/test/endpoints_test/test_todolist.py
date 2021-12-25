@@ -12,11 +12,35 @@ TODO_ITEM_REGEX = '[a-zA-Z0-9]{1,200}'
 
 
 class TestTodolist(BaseTest):
+    def test_add_todo_list_item_single(self):
+        new_todo = 'new todo text'
+        # client = method_client_fixture
+        with self.example_client_context() as client:
+            response = client.get('/api')
+            assert response.status_code == 200
+            count_before = len(response.json())
+
+            response = client.post(f'/api/{new_todo}')
+            assert response.status_code == 200
+
+            response = client.get('/api')
+            assert response.status_code == 200
+            count_after = len(response.json())
+            json_data = response.json()[-1]
+            json_data.pop('created_timestamp')
+            assert json_data == {
+                'id': 1,
+                'todo_text': new_todo,
+                'done_timestamp': -1,
+                'done': False,
+            }
+            assert count_after - count_before == 1
+
     @settings(deadline=2_000)
     @given(data=st.data())
     def test_add_todo_list_item(self, data: DataObject):
         new_todo = data.draw(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
-        with self.client_context() as client:
+        with self.example_client_context() as client:
             response = client.get('/api')
             assert response.status_code == 200
             assert response.json() == []
@@ -39,7 +63,7 @@ class TestTodolist(BaseTest):
     @given(data=st.data())
     def test_add_todo_list_item_with_body(self, data: DataObject):
         new_todo = data.draw(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
-        with self.client_context() as client:
+        with self.example_client_context() as client:
             response = client.get('/api')
             assert response.status_code == 200
             assert response.json() == []
@@ -62,7 +86,7 @@ class TestTodolist(BaseTest):
     @given(data=st.data())
     def test_add_todo_list_item_with_model(self, data: DataObject):
         new_todo = data.draw(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
-        with self.client_context() as client:
+        with self.example_client_context() as client:
             response = client.get('/api')
             assert response.status_code == 200
             assert response.json() == []
@@ -91,7 +115,7 @@ class TestTodolist(BaseTest):
     @given(data=st.data())
     def test_remove_todo_list_items(self, data: DataObject):
         todo_items: List[str] = data.draw(st.lists(st.from_regex(TODO_ITEM_REGEX, fullmatch=True), max_size=100))
-        with self.client_context() as client:
+        with self.example_client_context() as client:
             response = client.get('/api')
             assert response.status_code == 200
             assert response.json() == []

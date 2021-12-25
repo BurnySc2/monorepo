@@ -15,8 +15,8 @@ broadcast = Broadcast()
 class UserSystemQuery:
     @strawberry.field
     def user_login(self, info: Info, email: str, password: str) -> str:
-        session: Session = info.context['session']
         # TODO Replace with actual password hash function
+        session: Session = info.context['session']
         statement = select(User).where(User.email == email, User.password_hashed == password)
         user = session.exec(statement).first()
         if user is None:
@@ -33,6 +33,12 @@ class UserSystemMutation:
         # TODO Replace with actual password hash function
         password_hashed = hash(password)
         session: Session = info.context['session']
+        username_taken = session.exec(select(User).where(User.username == username)).first()
+        if username_taken is not None:
+            raise KeyError('username taken')
+        email_taken = session.exec(select(User).where(User.email == email)).first()
+        if email_taken is not None:
+            raise KeyError('email taken')
         session.add(
             User(
                 username=username,

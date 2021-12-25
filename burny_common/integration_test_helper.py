@@ -292,10 +292,10 @@ if __name__ == '__main__':
     logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
     # start_postgres()
     # start_mongodb()
-    # free_frontend_port = find_next_free_port()
-    # free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
-    # start_svelte_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
-    # start_react_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
-    # start_fastapi_dev_server(free_backend_port, set(), set())
-    # while 1:
-    #     time.sleep(1)
+    free_frontend_port = find_next_free_port()
+    free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
+    start_svelte_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
+    start_react_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
+    start_fastapi_dev_server(free_backend_port, set(), set())
+    while 1:
+        time.sleep(1)

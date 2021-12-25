@@ -38,14 +38,14 @@ class TestGraphql(BaseTest):
         assert result.errors is None
         assert result.data == {'helloQuery': 'Hello World'}
 
-    def test_query_via_fastapi(self, client_fixture: TestClient):
+    def test_query_via_fastapi(self, method_client_fixture: TestClient):
         # See https://github.com/strawberry-graphql/strawberry/blob/main/tests/fastapi/test_query.py
         query = """
             query {
                 helloQuery
             }
         """
-        response = client_fixture.post('/graphql', json={'query': query})
+        response = method_client_fixture.post('/graphql', json={'query': query})
         assert response.json() == {'data': {'helloQuery': 'Hello World'}}
 
     def test_mutation(self, schema_fixture: strawberry.Schema):
@@ -85,20 +85,21 @@ class TestGraphql(BaseTest):
         assert result.errors is None
         assert result.data == {'helloMutation': 'Hello Burny'}
 
-    def test_mutation_fastapi(self, client_fixture: TestClient):
+    def test_mutation_fastapi(self, method_client_fixture: TestClient):
         # See https://github.com/strawberry-graphql/strawberry/blob/main/tests/fastapi/test_query.py
         query = """
         mutation TestMutation($my_name: String!) {
             helloMutation(someInput: $my_name)
         }
         """
-        response = client_fixture.post('/graphql', json={'query': query, 'variables': {'my_name': 'Burny'}})
+        response = method_client_fixture.post('/graphql', json={'query': query, 'variables': {'my_name': 'Burny'}})
 
         assert response.json() == {'data': {'helloMutation': 'Hello Burny'}}
 
-    @given(my_schema=BaseTest.schema_strategy(), data=st.data())
-    def test_mutation_hypothesis(self, my_schema: strawberry.Schema, data: DataObject):
+    @given(data=st.data())
+    def test_mutation_hypothesis(self, data: DataObject):
         some_input = data.draw(st.text())
+        my_schema = BaseTest.get_schema()
         query = """
         mutation TestMutation($someInput: String!) {
             helloMutation(someInput: $someInput)
