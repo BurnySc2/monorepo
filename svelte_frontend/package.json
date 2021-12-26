@@ -2,7 +2,7 @@
     "name": "my-app",
     "version": "0.0.1",
     "scripts": {
-        "dev": "cross-env BACKEND_SERVER='http://localhost:8000' svelte-kit dev",
+        "dev": "cross-env BACKEND_SERVER='localhost:8000' svelte-kit dev",
         "build": "svelte-kit build",
         "preview": "svelte-kit preview",
         "check": "svelte-check --tsconfig ./tsconfig.json",
@@ -13,30 +13,30 @@
         "format": "prettier --write './**/*.{svelte,ts}'"
     },
     "devDependencies": {
-        "@typescript-eslint/eslint-plugin": "^5.3.1",
-        "@typescript-eslint/parser": "^5.3.1",
+        "@typescript-eslint/eslint-plugin": "^5.8.0",
+        "@typescript-eslint/parser": "^5.8.0",
         "cross-env": "^7.0.3",
-        "eslint": "^8.2.0",
+        "eslint": "^8.5.0",
         "eslint-config-prettier": "^8.3.0",
         "eslint-plugin-svelte3": "^3.2.1",
-        "npm-check-updates": "^12.0.2",
-        "prettier": "^2.4.1",
-        "prettier-plugin-svelte": "^2.5.0",
+        "npm-check-updates": "^12.0.5",
+        "prettier": "^2.5.1",
+        "prettier-plugin-svelte": "^2.5.1",
         "tslib": "^2.3.1",
         "webpack-cli": "^4.9.1",
-        "webpack-dev-server": "^4.5.0"
+        "webpack-dev-server": "^4.7.1"
     },
     "dependencies": {
         "@sveltejs/adapter-static": "^1.0.0-next.21",
         "@sveltejs/kit": "next",
-        "graphql": "^15.7.2",
-        "graphql-request": "^3.6.1",
+        "graphql": "^16.2.0",
+        "graphql-request": "^3.7.0",
         "graphql-ws": "^5.5.5",
         "moment": "^2.29.1",
-        "svelte": "^3.44.1",
-        "svelte-check": "^2.2.9",
-        "svelte-preprocess": "^4.9.8",
-        "typescript": "^4.4.4"
+        "svelte": "^3.44.3",
+        "svelte-check": "^2.2.11",
+        "svelte-preprocess": "^4.10.1",
+        "typescript": "^4.5.4"
     },
     "type": "module"
 }

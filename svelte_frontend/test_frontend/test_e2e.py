@@ -26,8 +26,9 @@ def setup_module():
     """
     global FRONTEND_ADDRESS
     port = find_next_free_port()
+    backend_port = find_next_free_port(exclude_ports={port})
     FRONTEND_ADDRESS = get_website_address(port)
-    start_svelte_dev_server(port, NEWLY_CREATED_NODE_PROCESSES)
+    start_svelte_dev_server(port, NEWLY_CREATED_NODE_PROCESSES, backend_proxy=f'localhost:{backend_port}')
 
 
 def teardown_module():

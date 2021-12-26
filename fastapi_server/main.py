@@ -31,7 +31,7 @@ app.add_middleware(
 @app.on_event('startup')
 async def startup_event():
     # asyncio.create_task(background_task_function('hello', other_text=' world!'))
-    # TODO: This init_db should probably not be in here
+    # TODO: This init_db should probably not be in here, use alembic instead
     init_db()
     logger.info('Hello world!')
 
