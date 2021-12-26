@@ -114,9 +114,15 @@
     }
 
     const disconnect = async () => {
-        unsubscribeUserJoinedEvent()
-        unsubscribeUserLeftEvent()
-        unsubscribeNewMessageEvent()
+        if (unsubscribeUserJoinedEvent) {
+            unsubscribeUserJoinedEvent()
+        }
+        if (unsubscribeUserLeftEvent) {
+            unsubscribeUserLeftEvent()
+        }
+        if (unsubscribeNewMessageEvent) {
+            unsubscribeNewMessageEvent()
+        }
         const disconnectMutation = gql`
         mutation {
             chatLeaveRoom (username: "${userName}")
