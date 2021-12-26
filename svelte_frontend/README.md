@@ -1,4 +1,4 @@
-# fastapi-react-typescript-template
+# fastapi-svelte-typescript-template
 
 # Requirement
 
@@ -21,7 +21,7 @@ npm install
 npm run dev
 ```
 
-Then to go http://localhost:8080 to preview the page
+Then to go http://localhost:3000 to preview the page
 
 # Deploy
 

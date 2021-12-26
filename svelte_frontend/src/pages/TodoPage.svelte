@@ -8,7 +8,8 @@
     ]
     let APIserverIsResponding = true
 
-    const api_server_ip = "http://localhost:8000"
+    const ip = process.env.BACKEND_SERVER || "localhost:8000"
+    const api_server_ip = `http://${ip}`
 
     onMount(async () => {
         // console.log("Loading todos")

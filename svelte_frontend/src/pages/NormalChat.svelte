@@ -22,7 +22,7 @@
     let messages: Message[] = [{ timestamp: 123, author: "yolo", message: "example message" }]
 
     let ws: WebSocket | null = null
-    const ip = "localhost:8000"
+    const ip = process.env.BACKEND_SERVER || "localhost:8000"
     const connect = () => {
         ws = new WebSocket(`ws://${ip}/chatws`)
 

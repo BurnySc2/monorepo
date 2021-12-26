@@ -8,7 +8,6 @@ import deal
 @deal.pre(lambda number: isinstance(number, int) or isinstance(number, float) and -10**15 < number < 10**15)
 @deal.post(lambda result: isinstance(result, (int, float)))
 @deal.ensure(lambda number, result: number != result)
-@deal.has()
 def do_math(number: Union[int, float]) -> Union[int, float]:
     return number + 3
 
@@ -16,7 +15,6 @@ def do_math(number: Union[int, float]) -> Union[int, float]:
 @deal.pre(lambda number: isinstance(number, int) or isinstance(number, float) and -10**15 < number < 10**15)
 @deal.post(lambda result: isinstance(result, (int, float)))
 @deal.ensure(lambda number, result: number != result)
-@deal.has()
 async def do_math_async(number: Union[int, float]) -> Union[int, float]:
     return number + 3
 

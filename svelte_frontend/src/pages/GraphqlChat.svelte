@@ -21,8 +21,9 @@
         message: string
     }
 
-    const GRAPHQL_ENDPOINT = "http://localhost:8000/graphql"
-    const GRAPHQL_WS_ENDPOINT = "ws://localhost:8000/graphql"
+    const ip = process.env.BACKEND_SERVER || "localhost:8000"
+    const GRAPHQL_ENDPOINT = `http://${ip}/graphql`
+    const GRAPHQL_WS_ENDPOINT = `ws://${ip}/graphql`
 
     // Active users in the room
     let activeChatters: string[] = []

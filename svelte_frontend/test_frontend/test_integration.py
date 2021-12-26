@@ -31,15 +31,14 @@ class MyTestClass(BaseCase):
         See https://docs.pytest.org/en/6.2.x/xunit_setup.html
         """
         free_frontend_port = find_next_free_port()
-        # TODO Figure out if I can send a port to svelte to have dynamic backend port
-        free_backend_port = 8000
+        free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
         self.FRONTEND_ADDRESS = get_website_address(free_frontend_port)
         self.BACKEND_ADDRESS = f'http://localhost:{free_backend_port}'
         start_fastapi_dev_server(free_backend_port, self.NEWLY_CREATED_PROCESSES, self.CREATED_FILES)
         start_svelte_dev_server(
             free_frontend_port,
             self.NEWLY_CREATED_PROCESSES,
-            _backend_proxy=f'localhost:{free_backend_port}',
+            backend_proxy=f'localhost:{free_backend_port}',
         )
         # start_mongodb()
         # start_postgres()

@@ -21,6 +21,11 @@ const config = {
             base: dev ? "" : "/monorepo",
         },
         appDir: "internal",
+        vite: {
+            define: {
+                "process.env": process.env,
+            },
+        },
     },
 }
 
