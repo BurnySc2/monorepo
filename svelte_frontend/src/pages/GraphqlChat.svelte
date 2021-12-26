@@ -182,7 +182,7 @@
 {:else}
     <!-- Connected -->
     <div class="flex flex-column">
-        <button on:click={disconnect}>Leave chatroom</button>
+        <button id="leavechatroom" on:click={disconnect}>Leave chatroom</button>
         <div id="Chat box" class="grid grid-cols-10 overflow-y-auto">
             <!-- Messages sent by everyone -->
             {#each messages as message}
