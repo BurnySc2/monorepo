@@ -8,6 +8,7 @@ from typing import Optional, Set
 
 import psutil
 import pymongo
+import requests
 from loguru import logger
 from pymongo import MongoClient
 
@@ -107,11 +108,13 @@ def start_svelte_dev_server(
         cwd=frontend_folder,
         env=env
     )
-    while is_port_free(port):
-        time.sleep(0.1)
-
     # Give it some time to create dev server and all (3?) node proccesses
-    # time.sleep(5)
+    with Timeout(10, 'Took more than 10 seconds'):
+        while is_port_free(port):
+            time.sleep(0.1)
+        while requests.get(get_website_address(port)).status_code != 200:
+            time.sleep(0.1)
+
     new_processes = get_pid('node') - currently_running_node_processes
     logger.info(f'New node processes: {new_processes}')
     NEWLY_CREATED_PROCESSES |= new_processes
@@ -142,8 +145,11 @@ def start_fastapi_dev_server(
         env=env,
     )
     # Give it some time to create backend dev server
-    while is_port_free(port):
-        time.sleep(0.1)
+    with Timeout(10, 'Took more than 10 seconds'):
+        while is_port_free(port):
+            time.sleep(0.1)
+        while requests.get(get_website_address(port)).status_code != 200:
+            time.sleep(0.1)
 
     new_processes = get_pid('uvicorn') - currently_running_uvicorn_processes
     logger.info(f'New uvicorn processes: {new_processes}')
