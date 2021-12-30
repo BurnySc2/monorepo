@@ -1,12 +1,11 @@
 import asyncio
 
 import strawberry
-from loguru import logger
 from sqlmodel import Session, select
 from strawberry.types import Info
 
 from fastapi_server.models.user import User
-from fastapi_server.routes.graph_ql.broadcaster import Broadcast, BroadcastEvent, Subscriber
+from fastapi_server.routes.graph_ql.broadcaster import Broadcast
 
 broadcast = Broadcast()
 
@@ -52,16 +51,19 @@ class UserSystemMutation:
         session.commit()
         return True
 
+    @strawberry.mutation
+    def user_send_password_reset_email(self, info: Info, email: str) -> bool:
+        # Check if email exists in db, send password reset with token
+        pass
+
+    @strawberry.mutation
+    def user_reset_password(self, info: Info, token: str) -> bool:
+        # Decypher email from token, if token is valid reset password and send a generated password per email
+        pass
+
 
 async def main():
-    subscriber: Subscriber
-    async with broadcast.subscribe(channel='chat_new_message') as subscriber:
-        logger.info('Subscribed')
-        await subscriber.queue.put(None)
-        event: BroadcastEvent
-        async for event in subscriber:
-            print(event)
-    logger.info('Unsubscribed')
+    pass
 
 
 if __name__ == '__main__':

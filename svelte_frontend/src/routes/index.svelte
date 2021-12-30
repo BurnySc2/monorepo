@@ -7,10 +7,14 @@
     import BrowserStorage from "../pages/BrowserStorage.svelte"
     import { onMount } from "svelte"
     import { dev } from "$app/env"
+    import Login from "../pages/Login.svelte"
+    import DevRouterHeader from "../components/DevComponentsHeader.svelte"
+    import DevComponents from "../components/DevComponents.svelte"
 
-    const PATH = dev ? "" : "/python-template"
+    const PATH = dev ? "" : "/monorepo"
     let url = ""
     let hash = ""
+    let SHOWCOMPONENTS = false
 
     onMount(() => {
         hash = location.hash
@@ -18,6 +22,7 @@
         if (url === "") {
             setUrl("/")
         }
+        SHOWCOMPONENTS = dev && url.startsWith("/component")
     })
 
     const setUrl = (newUrl: string) => {
@@ -30,21 +35,30 @@
     }
 </script>
 
-<main>
-    <div class="my2 flex justify-center">
-        <button class="m1 p1 rounded" id="home" on:click={() => setUrl("/")}>Home</button>
-        <button class="m1 p1 rounded" id="about" on:click={() => setUrl("/about")}>About</button>
-        <button class="m1 p1 rounded" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
-        <button class="m1 p1 rounded" id="graphqlchat" on:click={() => setUrl("/graphqlchat")}>Graphql Chat</button>
-        <button class="m1 p1 rounded" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
-        <button class="m1 p1 rounded" id="browserstorage" on:click={() => setUrl("/browserstorage")}
-            >BrowserStorage</button
-        >
-    </div>
+<div>
+    {#if SHOWCOMPONENTS}
+        <!-- Show different header when showing dev components -->
+        <DevRouterHeader {setUrl} />
+    {:else}
+        <div class="my2 flex justify-center">
+            <button class="m1 p1 rounded" id="home" on:click={() => setUrl("/")}>Home</button>
+            <button class="m1 p1 rounded" id="about" on:click={() => setUrl("/about")}>About</button>
+            <button class="m1 p1 rounded" id="login" on:click={() => setUrl("/login")}>Login</button>
+            <button class="m1 p1 rounded" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
+            <button class="m1 p1 rounded" id="graphqlchat" on:click={() => setUrl("/graphqlchat")}>Graphql Chat</button>
+            <button class="m1 p1 rounded" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
+            <button class="m1 p1 rounded" id="browserstorage" on:click={() => setUrl("/browserstorage")}
+                >BrowserStorage</button
+            >
+        </div>
+    {/if}
+
     {#if url === "/"}
         <Home />
     {:else if url === "/about"}
         <About defaultText="My other text" />
+    {:else if url === "/login"}
+        <Login />
     {:else if url === "/chat"}
         <NormalChat />
     {:else if url === "/graphqlchat"}
@@ -55,7 +69,10 @@
         <BrowserStorage />
     {:else if url === ""}
         <div>Loading...</div>
+    {:else if SHOWCOMPONENTS}
+        <!-- Dev Components -->
+        <DevComponents bind:url />
     {:else}
         <div>You seem to be lost!</div>
     {/if}
-</main>
+</div>

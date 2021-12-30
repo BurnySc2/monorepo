@@ -12,6 +12,7 @@ numpy = "^1.21"
 dataclasses-json = "^0.5"
 # Network access
 aiohttp = "^3.7"
+requests = "^2.26"
 # Required by aiohttp on windows?
 idna-ssl = "^1.1"
 # Simple logger
@@ -38,14 +39,16 @@ pymongo = "^3.12"
 # Generate text
 lorem-text = "^2.1"
 # https://github.com/tiangolo/sqlmodel
-sqlmodel = "^0.0.5"
+sqlmodel = "^0.0.6"
 # Geometry manipulation
 Shapely = "^1.8"
 # Fastapi server
 fastapi = "^0.70"
 uvicorn = "^0.16"
+# Python JSON Web Token implementation
+PyJWT = "^2.3"
 # End to end tests
-seleniumbase = "^2.3.0"
+seleniumbase = "=2.3.0"
 # Info about the system
 psutil = "^5.8"
 # Graphql backend implementation

@@ -8,7 +8,7 @@ from typing import Optional, Set
 
 import psutil
 import pymongo
-import requests
+import requests  # type: ignore
 from loguru import logger
 from pymongo import MongoClient
 
@@ -112,7 +112,13 @@ def start_svelte_dev_server(
     with Timeout(10, 'Took more than 10 seconds'):
         while is_port_free(port):
             time.sleep(0.1)
-        while requests.get(get_website_address(port)).status_code != 200:
+        while 1:
+            try:
+                result = requests.get(get_website_address(port))
+                if result.status_code == 200:
+                    break
+            except requests.exceptions.ConnectionError:
+                pass
             time.sleep(0.1)
 
     new_processes = get_pid('node') - currently_running_node_processes
@@ -148,7 +154,13 @@ def start_fastapi_dev_server(
     with Timeout(10, 'Took more than 10 seconds'):
         while is_port_free(port):
             time.sleep(0.1)
-        while requests.get(get_website_address(port)).status_code != 200:
+        while 1:
+            try:
+                result = requests.get(get_website_address(port))
+                if result.status_code == 200:
+                    break
+            except requests.exceptions.ConnectionError:
+                pass
             time.sleep(0.1)
 
     new_processes = get_pid('uvicorn') - currently_running_uvicorn_processes
@@ -258,7 +270,7 @@ def kill_processes(processes: Set[int]):
 
 
 if __name__ == '__main__':
-    logger.info(f'Docker running: {check_if_docker_is_running()}')
+    logger.info(f'Docker runni2ng: {check_if_docker_is_running()}')
     logger.info(f'Postgres running: {check_if_postgres_is_running()}')
     logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
     # start_postgres()
