@@ -1,8 +1,9 @@
 <script lang="ts">
     import { onDestroy } from "svelte"
     import moment from "moment"
-    import { request, gql } from "graphql-request"
+    import { gql } from "graphql-request"
     import { subscribe } from "../functions/subscriptions"
+    import { GRAPHQL_CLIENT } from "../functions/constants"
 
     // Accepted username by server
     let userName = ""
@@ -20,10 +21,6 @@
         author: string
         message: string
     }
-
-    const ip = process.env.BACKEND_SERVER || "localhost:8000"
-    const GRAPHQL_ENDPOINT = `http://${ip}/graphql`
-    const GRAPHQL_WS_ENDPOINT = `ws://${ip}/graphql`
 
     // Active users in the room
     let activeChatters: string[] = []
@@ -45,7 +42,8 @@
                 chatJoinRoom(username: "${selectedUserName}")
             }
         `
-        const joinChatroomResponse = await request(GRAPHQL_ENDPOINT, joinChatroomMutation)
+
+        const joinChatroomResponse = await GRAPHQL_CLIENT.request(joinChatroomMutation)
 
         if (joinChatroomResponse.chatJoinRoom) {
             userName = selectedUserName
@@ -60,7 +58,7 @@
                 chatUsers
             }
         `
-        const activeChattersResponse = await request(GRAPHQL_ENDPOINT, getChattersQuery)
+        const activeChattersResponse = await GRAPHQL_CLIENT.request(getChattersQuery)
         activeChatters = activeChattersResponse.chatUsers
 
         // Get all previous messages
@@ -73,11 +71,10 @@
                 }
             }
         `
-        const allMessagesResponse = await request(GRAPHQL_ENDPOINT, getMessagesQuery)
+        const allMessagesResponse = await GRAPHQL_CLIENT.request(getMessagesQuery)
         messages = allMessagesResponse.chatMessages
         // Subscribe to new events
         unsubscribeUserJoinedEvent = subscribe(
-            GRAPHQL_WS_ENDPOINT,
             gql`
                 subscription {
                     chatUserJoined {
@@ -88,7 +85,6 @@
             userJoinedEvent
         )
         unsubscribeUserLeftEvent = subscribe(
-            GRAPHQL_WS_ENDPOINT,
             gql`
                 subscription {
                     chatUserLeft {
@@ -99,7 +95,6 @@
             userLeftEvent
         )
         unsubscribeNewMessageEvent = subscribe(
-            GRAPHQL_WS_ENDPOINT,
             gql`
                 subscription {
                     chatNewMessage {
@@ -128,7 +123,7 @@
             chatLeaveRoom (username: "${userName}")
         }
         `
-        await request(GRAPHQL_ENDPOINT, disconnectMutation)
+        await GRAPHQL_CLIENT.request(disconnectMutation)
         userName = ""
     }
 
@@ -163,7 +158,7 @@
             }
         `
         chatMessage = ""
-        await request(GRAPHQL_ENDPOINT, sendChatMessageMutation)
+        await GRAPHQL_CLIENT.request(sendChatMessageMutation)
     }
 </script>
 

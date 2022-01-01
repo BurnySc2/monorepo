@@ -2,7 +2,10 @@ import sys
 from pathlib import Path
 
 # Be able to launch from root folder
-sys.path.append(str(Path(__file__).parents[1]))
+try:
+    sys.path.append(str(Path(__file__).parents[1]))
+except IndexError:
+    pass
 
 # Other
 # Coroutines and multiprocessing

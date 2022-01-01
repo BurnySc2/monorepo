@@ -3,10 +3,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from fastapi_server.database.database import init_db
+from fastapi_server.database.database import get_session, init_db
+from fastapi_server.models.user import User
 from fastapi_server.routes.chat import chat_router
 from fastapi_server.routes.graphql import strawberry_router
 from fastapi_server.routes.hello_world import hello_world_router
+from fastapi_server.routes.login import login_router
 from fastapi_server.routes.todolist import todo_list_router
 
 app = FastAPI()
@@ -14,6 +16,7 @@ app.include_router(hello_world_router)
 app.include_router(chat_router)
 app.include_router(todo_list_router)
 app.include_router(strawberry_router)
+app.include_router(login_router)
 
 origins = [
     'https://burnysc2.github.io',
@@ -33,6 +36,20 @@ async def startup_event():
     # asyncio.create_task(background_task_function('hello', other_text=' world!'))
     # TODO: This init_db should probably not be in here, use alembic instead
     init_db()
+    session = get_session()
+    user = session.exec(session.query(User).where(User.username == 'asd')).first()
+    if not user:
+        session.add(
+            User(
+                username='asd',
+                email='asd',
+                password_hashed='asd',
+                is_admin=False,
+                is_disabled=False,
+                is_verified=False,
+            )
+        )
+        session.commit()
     logger.info('Hello world!')
 
 

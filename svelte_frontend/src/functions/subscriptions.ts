@@ -1,17 +1,16 @@
+import { GRAPHQL_WS_ENDPOINT } from "./constants"
 import { createClient } from "graphql-ws"
 
 export const subscribe = (
-    endpoint_url: string | (() => string | Promise<string>),
     query: string,
     // Define what happens when data was received
     onNext: (data: any) => void
 ): (() => void) => {
-    // https://github.com/enisdenjo/graphql-ws#use-the-client
-    // Create client
-    const client = createClient({
-        url: endpoint_url,
-    })
     {
+        // https://github.com/enisdenjo/graphql-ws#use-the-client
+        const client = createClient({
+            url: GRAPHQL_WS_ENDPOINT,
+        })
         // Declare a unsubscribe function
         let unsubscribe: () => void
 

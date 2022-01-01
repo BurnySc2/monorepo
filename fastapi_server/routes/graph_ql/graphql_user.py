@@ -61,6 +61,11 @@ class UserSystemMutation:
         # Decypher email from token, if token is valid reset password and send a generated password per email
         pass
 
+    @strawberry.mutation
+    def user_check_logged_in(self, info: Info) -> bool:
+        # Read request cookies to check if user is logged in. Also check if the token in the cookie is valid
+        pass
+
 
 async def main():
     pass

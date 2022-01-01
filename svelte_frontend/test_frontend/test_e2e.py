@@ -25,10 +25,10 @@ def setup_module():
     See https://docs.pytest.org/en/6.2.x/xunit_setup.html
     """
     global FRONTEND_ADDRESS
-    port = find_next_free_port()
-    backend_port = find_next_free_port(exclude_ports={port})
-    FRONTEND_ADDRESS = get_website_address(port)
-    start_svelte_dev_server(port, NEWLY_CREATED_NODE_PROCESSES, backend_proxy=f'localhost:{backend_port}')
+    frontend_port = find_next_free_port()
+    backend_port = find_next_free_port(exclude_ports={frontend_port})
+    FRONTEND_ADDRESS = get_website_address(frontend_port)
+    start_svelte_dev_server(frontend_port, NEWLY_CREATED_NODE_PROCESSES, backend_proxy=f'localhost:{backend_port}')
 
 
 def teardown_module():
@@ -53,6 +53,7 @@ class MyTestClass(BaseCase):
         """ Add a new to-do entry """
         self.open(FRONTEND_ADDRESS)
         self.click('#todo')
+        self.assert_text('Unable to connect to server')
         test_text = 'my amazing test todo text'
         self.write('#newTodoInput', test_text)
         self.click('#submit1')

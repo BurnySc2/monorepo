@@ -1,7 +1,9 @@
 <script lang="ts">
     import Inputfield from "../components/Inputfield.svelte"
     import Button from "../components/Button.svelte"
-    import { request, gql } from "graphql-request"
+    import { gql } from "graphql-request"
+    import { GRAPHQL_CLIENT, LOGIN_ENDPOINT } from "../functions/constants"
+    import { toast, SvelteToast } from "@zerodevx/svelte-toast"
 
     let loginEmail = "asd"
     let loginPassword = "asd"
@@ -13,26 +15,45 @@
 
     let resetEmail = "asd"
 
-    const ip = process.env.BACKEND_SERVER || "localhost:8000"
-    const GRAPHQL_ENDPOINT = `http://${ip}/graphql`
-
     let loginSubmit = async () => {
-        let loginQuery = gql`
-            query LoginQuery($email: String!, $password: String!) {
-                userLogin(email: $email, password: $password)
+        try {
+            // eslint-disable-next-line no-undef
+            const requestOptions: RequestInit = {
+                method: "POST",
+                // Allow cookies to be set?
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: loginEmail,
+                    password: loginPassword,
+                }),
             }
-        `
-        let variables = {
-            email: loginEmail,
-            password: loginPassword,
+            // TODO Handle error: login unsuccessful etc
+            let response = await fetch(LOGIN_ENDPOINT, requestOptions)
+            if (response.ok) {
+                let _data = await response.json()
+                // https://github.com/zerodevx/svelte-toast
+                toast.push("Login successful!", {
+                    theme: {
+                        "--toastBackground": "#48BB78",
+                        "--toastBarBackground": "#2F855A",
+                    },
+                })
+            }
+        } catch {
+            // Catch error, server offline etc
         }
-        const data = await request(GRAPHQL_ENDPOINT, loginQuery, variables)
-        // TODO set login cookie if login successful
-        console.log("Do login submit request")
     }
     let registerSubmit = async () => {
         let registerQuery = gql`
-            mutation RegisterMutation($username: String!, $email: String!, $password: String!, $passwordRepeated: String!) {
+            mutation RegisterMutation(
+                $username: String!
+                $email: String!
+                $password: String!
+                $passwordRepeated: String!
+            ) {
                 userRegister(
                     username: $username
                     email: $email
@@ -47,7 +68,16 @@
             password: registerPassword,
             passwordRepeated: registerPasswordRepeated,
         }
-        const data = await request(GRAPHQL_ENDPOINT, registerQuery, variables)
+        const data = await GRAPHQL_CLIENT.request(registerQuery, variables)
+        if (data.userRegister) {
+            // https://github.com/zerodevx/svelte-toast
+            toast.push("Registration successful!", {
+                theme: {
+                    "--toastBackground": "#48BB78",
+                    "--toastBarBackground": "#2F855A",
+                },
+            })
+        }
         // TODO redirect to new screen if successfully registered
         console.log("Do register submit request")
     }
@@ -81,4 +111,5 @@
         <Inputfield descriptionText="Email" inputType="email" bind:bindVariable={resetEmail} />
         <Button buttonText="Reset Password" onClickFunction={resetSubmit} />
     </div>
+    <SvelteToast />
 </div>
