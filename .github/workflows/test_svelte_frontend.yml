@@ -240,5 +240,5 @@ jobs:
         build_dir: ${{ env.SUBDIRECTORY }}/build
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GH_PAT: ${{ secrets.monorepodev-deploy }}
+        GH_PAT: ${{ secrets.PAT_MONOREPODEV_DEPLOY }}
 
