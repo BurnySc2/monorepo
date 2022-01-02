@@ -8,6 +8,7 @@ on:
     - fastapi_server/**
     - poetry.lock
     - svelte_frontend/**
+    - .github/worksflows/test_svelte_frontend.yml
   pull_request:
     branches:
     - master
