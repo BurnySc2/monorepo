@@ -164,20 +164,20 @@
 
 {#if userName === ""}
     <!-- Before connection -->
-    <div class="flex flex-column m2 rounded items-center">
+    <div class="flex flex-col m-2 border-2 items-center">
         <div>Connect to graphql chat</div>
         {#if waitingForUserNameResponse === ""}
-            <input id="username" type="text" placeholder="Username" class="rounded" bind:value={selectedUserName} />
+            <input id="username" type="text" placeholder="Username" class="border-2" bind:value={selectedUserName} />
         {:else}
             <input
                 type="text"
                 placeholder="Username"
-                class="rounded"
+                class="border-2"
                 readonly
                 bind:value={waitingForUserNameResponse}
             />
         {/if}
-        <button id="connect" on:click={connect} class="rounded p1">Connect</button>
+        <button id="connect" on:click={connect} class="border-2 p-1">Connect</button>
         <div>{errorMessage}</div>
     </div>
 {:else}

@@ -3,4 +3,4 @@
     export let onClickFunction = async () => {}
 </script>
 
-<button on:click={onClickFunction()}>{buttonText}</button>
+<button class="border-2 p-1" on:click={onClickFunction()}>{buttonText}</button>

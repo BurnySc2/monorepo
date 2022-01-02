@@ -26,44 +26,44 @@
 
 <main>
     <div class="flex">
-        <div class="m1">Local Storage</div>
-        <div class="m1">{localStorageValue}</div>
+        <div class="m-1">Local Storage</div>
+        <div class="m-1">{localStorageValue}</div>
         <button
-            class="m1"
+            class="m-1"
             on:click={() => {
                 localStorageStore.update((n) => (parseInt(n) + 1).toString())
             }}>Increase</button
         >
         <button
-            class="m1"
+            class="m-1"
             on:click={() => {
                 localStorageStore.update((n) => (parseInt(n) - 1).toString())
             }}>Decrease</button
         >
         <button
-            class="m1"
+            class="m-1"
             on:click={() => {
                 localStorageStore.update((_) => "0")
             }}>Reset</button
         >
     </div>
     <div class="flex">
-        <div class="m1">Session Storage</div>
-        <div class="m1">{sessionStorageValue}</div>
+        <div class="m-1">Session Storage</div>
+        <div class="m-1">{sessionStorageValue}</div>
         <button
-            class="m1"
+            class="m-1"
             on:click={() => {
                 sessionStorageStore.update((n) => (parseInt(n) + 1).toString())
             }}>Increase</button
         >
         <button
-            class="m1"
+            class="m-1"
             on:click={() => {
                 sessionStorageStore.update((n) => (parseInt(n) - 1).toString())
             }}>Decrease</button
         >
         <button
-            class="m1"
+            class="m-1"
             on:click={() => {
                 sessionStorageStore.update((_) => "0")
             }}>Reset</button

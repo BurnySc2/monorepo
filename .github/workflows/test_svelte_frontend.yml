@@ -144,19 +144,12 @@ jobs:
         cd ${{ env.SUBDIRECTORY }}
         npm install
 
-    - name: Start MongoDB
-      run: |
-        docker run --rm -d --name mongodb_test -p 27017-27019:27017-27019 mongo:5.0.0
-
-    - name: Start Postgres
-      run: |
-        docker run --rm -d --name postgres_test -p 5432:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
-
     - name: Run integration tests
       run: |
         poetry run pytest ${{ env.SUBDIRECTORY }}/test_frontend/test_integration.py
 
   deploy_frontend:
+    if: github.ref == 'refs/heads/master'
     env:
       SUBDIRECTORY: svelte_frontend
     strategy:
@@ -191,7 +184,6 @@ jobs:
         npm run build
 
     - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/master'
       uses: crazy-max/ghaction-github-pages@v2
       with:
         committer: Deployer Bot <deploy@foo.bar>
@@ -201,3 +193,51 @@ jobs:
         build_dir: ${{ env.SUBDIRECTORY }}/build
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy_frontend_dev:
+    if: github.ref == 'refs/heads/develop'
+    env:
+      SUBDIRECTORY: svelte_frontend
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: ['16']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Node ${{ matrix.node }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node }}
+
+    - name: Cache npm
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-dev-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Install npm dependencies
+      run: |
+        cd ${{ env.SUBDIRECTORY }}
+        npm install --production
+
+    - name: Build frontend
+      run: |
+        cd ${{ env.SUBDIRECTORY }}
+        npm run build
+
+    - name: Deploy to GitHub Pages
+      uses: crazy-max/ghaction-github-pages@v2
+      with:
+        repo: monorepodev
+        committer: Deployer Bot <deploy@foo.bar>
+        author: Deployer Bot <deploy@foo.bar>
+        allow_empty_commit: false
+        target_branch: gh-pages
+        build_dir: ${{ env.SUBDIRECTORY }}/build
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_PAT: ${{ secrets.monorepodev-deploy }}
+

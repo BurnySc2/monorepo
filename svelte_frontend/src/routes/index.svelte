@@ -22,7 +22,6 @@
         if (url === "") {
             setUrl("/")
         }
-        SHOWCOMPONENTS = dev && url.startsWith("/component")
     })
 
     const setUrl = (newUrl: string) => {
@@ -32,6 +31,7 @@
             // window.history.replaceState({}, '',`${PATH}/${hash}`)
             window.history.pushState({}, "", `${PATH}/${hash}`)
         }
+        SHOWCOMPONENTS = dev && url.startsWith("/component")
     }
 </script>
 
@@ -41,15 +41,23 @@
         <DevRouterHeader {setUrl} />
     {:else}
         <div class="my2 flex justify-center">
-            <button class="m1 p1 rounded" id="home" on:click={() => setUrl("/")}>Home</button>
-            <button class="m1 p1 rounded" id="about" on:click={() => setUrl("/about")}>About</button>
-            <button class="m1 p1 rounded" id="login" on:click={() => setUrl("/login")}>Login</button>
-            <button class="m1 p1 rounded" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
-            <button class="m1 p1 rounded" id="graphqlchat" on:click={() => setUrl("/graphqlchat")}>Graphql Chat</button>
-            <button class="m1 p1 rounded" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
-            <button class="m1 p1 rounded" id="browserstorage" on:click={() => setUrl("/browserstorage")}
+            <button class="m-1 p-1 border-2" id="home" on:click={() => setUrl("/")}>Home</button>
+            <button class="m-1 p-1 border-2" id="about" on:click={() => setUrl("/about")}>About</button>
+            <button class="m-1 p-1 border-2" id="login" on:click={() => setUrl("/login")}>Login</button>
+            <button class="m-1 p-1 border-2" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
+            <button class="m-1 p-1 border-2" id="graphqlchat" on:click={() => setUrl("/graphqlchat")}
+                >Graphql Chat</button
+            >
+            <button class="m-1 p-1 border-2" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
+            <button class="m-1 p-1 border-2" id="browserstorage" on:click={() => setUrl("/browserstorage")}
                 >BrowserStorage</button
             >
+            {#if dev}
+                <!-- Dev Components -->
+                <button class="m-1 p-1 border-2" id="components" on:click={() => setUrl("/components")}
+                    >Components</button
+                >
+            {/if}
         </div>
     {/if}
 

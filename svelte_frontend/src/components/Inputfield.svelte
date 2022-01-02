@@ -5,7 +5,7 @@
     export let onChangeFunction = async () => {}
 </script>
 
-<label class="flex">
+<label class="flex gap-2">
     {descriptionText}
     {#if inputType === "text"}
         <input type="text" bind:value={bindVariable} on:change={onChangeFunction()} />

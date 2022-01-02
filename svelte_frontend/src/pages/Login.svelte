@@ -88,14 +88,14 @@
 </script>
 
 <div class="flex">
-    <div class="flex-column">
-        <div>LOGIN</div>
+    <div class="flex-col">
+        <div class="underline">LOGIN</div>
         <Inputfield descriptionText="Email" inputType="email" bind:bindVariable={loginEmail} />
         <Inputfield descriptionText="Password" inputType="password" bind:bindVariable={loginPassword} />
         <Button buttonText="Login" onClickFunction={loginSubmit} />
     </div>
     <div>
-        <div>REGISTER</div>
+        <div class="underline">REGISTER</div>
         <Inputfield descriptionText="Username" bind:bindVariable={registerUsername} />
         <Inputfield descriptionText="Email" inputType="email" bind:bindVariable={registerEmail} />
         <Inputfield descriptionText="Password" inputType="password" bind:bindVariable={registerPassword} />
@@ -107,7 +107,7 @@
         <Button buttonText="Register" onClickFunction={registerSubmit} />
     </div>
     <div>
-        <div>RESET PASSWORD</div>
+        <div class="underline">RESET PASSWORD</div>
         <Inputfield descriptionText="Email" inputType="email" bind:bindVariable={resetEmail} />
         <Button buttonText="Reset Password" onClickFunction={resetSubmit} />
     </div>

@@ -121,21 +121,21 @@
     }
 </script>
 
-<main class="flex flex-column items-center">
+<main class="flex flex-col items-center">
     <div class="flex">
         <input
             id="newTodoInput"
-            class="rounded my2 mx1"
+            class="border-2 my-2 mx-1"
             type="text"
             bind:value={newTodoText}
             placeholder="My new todo item"
         />
-        <button class="rounded my2 mx1" id="submit1" on:click={submitPressed}>Submit</button>
-        <button class="rounded my2 mx1" id="submit2" on:click={submitPressedBody}>SubmitBody</button>
-        <button class="rounded my2 mx1" id="submit3" on:click={submitPressedModel}>SubmitModel</button>
+        <button class="border-2 my-2 mx-1" id="submit1" on:click={submitPressed}>Submit</button>
+        <button class="border-2 my-2 mx-1" id="submit2" on:click={submitPressedBody}>SubmitBody</button>
+        <button class="border-2 my-2 mx-1" id="submit3" on:click={submitPressedModel}>SubmitModel</button>
     </div>
     {#if !APIserverIsResponding}
-        <div class="bg-red-300 rounded p1">Unable to connect to server - running local mode</div>
+        <div class="bg-red-300 border-2 p-1">Unable to connect to server - running local mode</div>
     {/if}
     {#each cards as { id, todo_text }, _i}
         <TodoCard cardText={todo_text} index={id} {removeTodo} />
