@@ -270,7 +270,7 @@ def kill_processes(processes: Set[int]):
 
 
 if __name__ == '__main__':
-    logger.info(f'Docker runni2ng: {check_if_docker_is_running()}')
+    logger.info(f'Docker running: {check_if_docker_is_running()}')
     logger.info(f'Postgres running: {check_if_postgres_is_running()}')
     logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
     # start_postgres()

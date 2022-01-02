@@ -43,7 +43,7 @@ class MyTestClass(BaseCase):
         self.open(FRONTEND_ADDRESS)
         self.assert_text('BrowserStorage')
 
-    def test_shows_todos(self):
+    def test_show_todos(self):
         """ Check if the to-do site is visible """
         self.open(FRONTEND_ADDRESS)
         self.click('#todo')

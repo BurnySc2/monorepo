@@ -53,6 +53,8 @@ Single file:
 `poetry run pytest test/test_functions.py`
 Single function:
 `poetry run pytest test/test_functions.py::test_fuction_name`
+Single function in class:
+`poetry run pytest test/test_functions.py::class_name::test_fuction_name`
 
 Test all files in project:
 `poetry run pytest`

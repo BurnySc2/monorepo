@@ -48,7 +48,7 @@ uvicorn = "^0.16"
 # Python JSON Web Token implementation
 PyJWT = "^2.3"
 # End to end tests
-seleniumbase = "=2.3.0"
+seleniumbase = "^2.3"
 # Info about the system
 psutil = "^5.8"
 # Graphql backend implementation
