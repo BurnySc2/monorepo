@@ -1,5 +1,5 @@
 <script>
-    export let setUrl
+    export let setUrl = () => {}
 </script>
 
 <div class="my-2 flex justify-center">
