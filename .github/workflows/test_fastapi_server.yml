@@ -7,7 +7,7 @@ on:
     - burny_common/**
     - fastapi_server/**
     - poetry.lock
-    - .github/worksflows/test_fastapi_server.yml
+    - .github/workflows/test_fastapi_server.yml
   pull_request:
     branches:
     - master
