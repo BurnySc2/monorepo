@@ -231,7 +231,7 @@ jobs:
     - name: Deploy to GitHub Pages
       uses: crazy-max/ghaction-github-pages@v2
       with:
-        repo: monorepodev
+        repo: burnysc2/monorepodev
         committer: Deployer Bot <deploy@foo.bar>
         author: Deployer Bot <deploy@foo.bar>
         allow_empty_commit: false
