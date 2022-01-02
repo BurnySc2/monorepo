@@ -11,10 +11,9 @@
     import DevRouterHeader from "../components/DevComponentsHeader.svelte"
     import DevComponents from "../components/DevComponents.svelte"
 
-    const PATH = dev ? "" : "/monorepo"
-    let url = ""
-    let hash = ""
-    let SHOWCOMPONENTS = false
+    let url: string
+    let hash: string
+    let SHOWCOMPONENTS: boolean
 
     onMount(() => {
         hash = location.hash
@@ -29,7 +28,7 @@
             url = newUrl
             hash = `#${newUrl}`
             // window.history.replaceState({}, '',`${PATH}/${hash}`)
-            window.history.pushState({}, "", `${PATH}/${hash}`)
+            window.history.pushState({}, "", `${process.env.BASE_URL}/${hash}`)
         }
         SHOWCOMPONENTS = dev && url.startsWith("/component")
     }

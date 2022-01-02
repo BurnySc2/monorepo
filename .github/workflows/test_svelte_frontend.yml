@@ -149,7 +149,7 @@ jobs:
       run: |
         poetry run pytest ${{ env.SUBDIRECTORY }}/test_frontend/test_integration.py
 
-  deploy_frontend:
+  deploy_frontend_master:
     if: github.ref == 'refs/heads/master'
     env:
       SUBDIRECTORY: svelte_frontend
@@ -195,7 +195,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy_frontend_dev:
+  deploy_frontend_develop:
     if: github.ref == 'refs/heads/develop'
     env:
       SUBDIRECTORY: svelte_frontend
