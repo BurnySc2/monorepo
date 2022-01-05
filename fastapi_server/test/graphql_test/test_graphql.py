@@ -12,6 +12,7 @@ from fastapi_server.test.base_test import BaseTest
 
 
 class TestGraphql(BaseTest):
+
     def test_query(self, schema_fixture: strawberry.Schema):
         # https://strawberry.rocks/docs/operations/testing
         query = """

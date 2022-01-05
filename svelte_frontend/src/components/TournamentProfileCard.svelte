@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     const raceIcons = {
         T: "https://spire.gg/static/games/SC2/race_TERRAN.svg",
         Z: "https://spire.gg/static/games/SC2/race_ZERG.svg",

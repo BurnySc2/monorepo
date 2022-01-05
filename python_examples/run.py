@@ -22,6 +22,7 @@ bot_file_path = current_folder / 'main.py'
 
 
 class BotRunner:
+
     def __init__(self):
         self.bot_process: Optional[subprocess.Popen] = None
 

@@ -16,6 +16,7 @@ from burny_common.integration_test_helper import (
 
 
 class MyTestClass(BaseCase):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.FRONTEND_ADDRESS = ''

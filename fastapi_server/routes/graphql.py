@@ -19,7 +19,7 @@ from sqlmodel import Session
 from strawberry.fastapi import GraphQLRouter
 from strawberry.tools import merge_types
 
-from fastapi_server.database.database import get_session
+from fastapi_server.helper.database import get_session
 from fastapi_server.routes.graph_ql.graphql_chat import ChatSystemMutation, ChatSystemQuery, ChatSystemSubscription
 from fastapi_server.routes.graph_ql.graphql_user import UserSystemMutation, UserSystemQuery
 
@@ -35,6 +35,7 @@ async def get_context(session: Session = Depends(get_session), ):
 
 @strawberry.type
 class RootQuery:
+
     @strawberry.field
     def hello_query(self) -> str:
         return 'Hello World'
@@ -42,6 +43,7 @@ class RootQuery:
 
 @strawberry.type
 class RootMutation:
+
     @strawberry.mutation
     def hello_mutation(self, some_input: Optional[str] = None) -> str:
         if some_input is None:
@@ -51,6 +53,7 @@ class RootMutation:
 
 @strawberry.type
 class RootSubscription:
+
     @strawberry.subscription
     async def hello_subscription(self, target: int = 100) -> AsyncGenerator[str, None]:
         count = 0

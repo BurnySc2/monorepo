@@ -20,6 +20,7 @@ class ChatMessage(DataClassJsonMixin):
 
 
 class WebsocketChatManager:
+
     def __init__(self):
         self.active_connections: List[WebSocket] = []
         self.usernames: Dict[str, WebSocket] = {}

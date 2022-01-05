@@ -5,6 +5,7 @@ from loguru import logger
 
 
 def measure_time():
+
     @contextmanager
     def time_this(label: str):
         start = time.perf_counter_ns()

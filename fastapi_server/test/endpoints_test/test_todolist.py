@@ -12,9 +12,9 @@ TODO_ITEM_REGEX = '[a-zA-Z0-9]{1,200}'
 
 
 class TestTodolist(BaseTest):
+
     def test_add_todo_list_item_single(self):
         new_todo = 'new todo text'
-        # client = method_client_fixture
         with self.example_client_context() as client:
             response = client.get('/api')
             assert response.status_code == 200
@@ -36,7 +36,7 @@ class TestTodolist(BaseTest):
             }
             assert count_after - count_before == 1
 
-    @settings(deadline=2_000)
+    @settings(max_examples=20, deadline=2_000)
     @given(data=st.data())
     def test_add_todo_list_item(self, data: DataObject):
         new_todo = data.draw(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
@@ -59,7 +59,7 @@ class TestTodolist(BaseTest):
                 'done': False,
             }
 
-    @settings(deadline=2_000)
+    @settings(max_examples=20, deadline=2_000)
     @given(data=st.data())
     def test_add_todo_list_item_with_body(self, data: DataObject):
         new_todo = data.draw(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))
@@ -82,7 +82,7 @@ class TestTodolist(BaseTest):
                 'done': False,
             }
 
-    @settings(deadline=2_000)
+    @settings(max_examples=20, deadline=2_000)
     @given(data=st.data())
     def test_add_todo_list_item_with_model(self, data: DataObject):
         new_todo = data.draw(st.from_regex(TODO_ITEM_REGEX, fullmatch=True))

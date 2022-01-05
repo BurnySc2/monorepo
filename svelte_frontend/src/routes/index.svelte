@@ -12,9 +12,9 @@
     import DevComponents from "../components/DevComponents.svelte"
 
     // Router url handling
-    let url: string
     let hash: string
-    // Header handling
+    let url: string
+    // Header handling for prod vs dev
     let SHOWCOMPONENTS: boolean
     // Required for tests: disallow interaction before GUI is ready
     let mounted = false
@@ -24,6 +24,8 @@
         url = hash.slice(1)
         if (url === "") {
             setUrl("/")
+        } else {
+            SHOWCOMPONENTS = dev && url.startsWith("/component")
         }
         mounted = true
     })
@@ -33,9 +35,9 @@
             url = newUrl
             hash = `#${newUrl}`
             // window.history.replaceState({}, '',`${PATH}/${hash}`)
-            window.history.pushState({}, "", `${process.env.BASE_URL}/${hash}`)
+            window.history.pushState({}, "", `${process.env.BASE_URL || ""}/${hash}`)
+            SHOWCOMPONENTS = dev && url.startsWith("/component")
         }
-        SHOWCOMPONENTS = dev && url.startsWith("/component")
     }
 </script>
 

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import TournamentGroupStage from "./TournamentGroupStage.svelte"
 
     let groups = [
@@ -8,7 +8,7 @@
             participants: [
                 {
                     rank: 1,
-                    id: 321,
+                    playerId: 321,
                     name: "MonstR",
                     matches: 3,
                     wins: 3,
@@ -19,7 +19,7 @@
                 },
                 {
                     rank: 2,
-                    id: 322,
+                    playerId: 322,
                     name: "Iba",
                     matches: 3,
                     wins: 2,
@@ -30,7 +30,7 @@
                 },
                 {
                     rank: 3,
-                    id: 323,
+                    playerId: 323,
                     name: "Neuling",
                     matches: 3,
                     wins: 1,
@@ -41,7 +41,7 @@
                 },
                 {
                     rank: 4,
-                    id: 324,
+                    playerId: 324,
                     name: "TerribleOne",
                     matches: 3,
                     wins: 0,
@@ -58,7 +58,7 @@
             participants: [
                 {
                     rank: 1,
-                    id: 321,
+                    playerId: 321,
                     name: "MonstR",
                     matches: 3,
                     wins: 3,
@@ -69,7 +69,7 @@
                 },
                 {
                     rank: 2,
-                    id: 322,
+                    playerId: 322,
                     name: "Iba",
                     matches: 3,
                     wins: 2,
@@ -80,7 +80,7 @@
                 },
                 {
                     rank: 3,
-                    id: 323,
+                    playerId: 323,
                     name: "Neuling",
                     matches: 3,
                     wins: 1,
@@ -91,7 +91,7 @@
                 },
                 {
                     rank: 4,
-                    id: 324,
+                    playerId: 324,
                     name: "TerribleOne",
                     matches: 3,
                     wins: 0,
@@ -108,7 +108,7 @@
             participants: [
                 {
                     rank: 1,
-                    id: 321,
+                    playerId: 321,
                     name: "MonstR",
                     matches: 3,
                     wins: 3,
@@ -119,7 +119,7 @@
                 },
                 {
                     rank: 2,
-                    id: 322,
+                    playerId: 322,
                     name: "Iba",
                     matches: 3,
                     wins: 2,
@@ -130,7 +130,7 @@
                 },
                 {
                     rank: 3,
-                    id: 323,
+                    playerId: 323,
                     name: "Neuling",
                     matches: 3,
                     wins: 1,
@@ -141,7 +141,7 @@
                 },
                 {
                     rank: 4,
-                    id: 324,
+                    playerId: 324,
                     name: "TerribleOne",
                     matches: 3,
                     wins: 0,
@@ -158,7 +158,7 @@
             participants: [
                 {
                     rank: 1,
-                    id: 321,
+                    playerId: 321,
                     name: "MonstR",
                     matches: 3,
                     wins: 3,
@@ -169,7 +169,7 @@
                 },
                 {
                     rank: 2,
-                    id: 322,
+                    playerId: 322,
                     name: "Iba",
                     matches: 3,
                     wins: 2,
@@ -180,7 +180,7 @@
                 },
                 {
                     rank: 3,
-                    id: 323,
+                    playerId: 323,
                     name: "Neuling",
                     matches: 3,
                     wins: 1,
@@ -191,7 +191,7 @@
                 },
                 {
                     rank: 4,
-                    id: 324,
+                    playerId: 324,
                     name: "TerribleOne",
                     matches: 3,
                     wins: 0,

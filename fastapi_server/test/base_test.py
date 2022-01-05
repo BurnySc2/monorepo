@@ -10,7 +10,7 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 from starlette.testclient import TestClient
 
-from fastapi_server.database.database import get_session
+from fastapi_server.helper.database import get_session
 from fastapi_server.main import app
 from fastapi_server.routes.graphql import schema
 

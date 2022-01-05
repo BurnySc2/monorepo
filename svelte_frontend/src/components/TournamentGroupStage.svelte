@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     // TODO add type
     import TournamentGroup from "./TournamentGroup.svelte"
 

@@ -34,6 +34,7 @@ messages: Deque[ChatMessage] = deque()
 
 @strawberry.type
 class ChatSystemQuery:
+
     @strawberry.field
     def chat_users(self) -> List[str]:
         return list(active_users)
@@ -49,6 +50,7 @@ class ChatSystemQuery:
 
 @strawberry.type
 class ChatSystemMutation:
+
     @strawberry.mutation
     async def chat_join_room(self, username: str) -> bool:
         if username in active_users:
@@ -94,6 +96,7 @@ class ChatSystemMutation:
 
 @strawberry.type
 class ChatSystemSubscription:
+
     @strawberry.subscription
     async def chat_user_joined(self) -> AsyncGenerator[Event, None]:
         subscriber: Subscriber

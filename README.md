@@ -9,6 +9,8 @@ My monorepo for various tools and showcases
 
 [Preview](https://burnysc2.github.io/monorepo/)
 
+[Dev branch Preview](https://burnysc2.github.io/monorepodev/)
+
 # Useful Poetry commands
 https://python-poetry.org/docs/cli/
 ### Create new project

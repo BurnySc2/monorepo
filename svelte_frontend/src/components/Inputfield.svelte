@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     export let descriptionText = "Description text"
     export let bindVariable = "Example text"
     export let inputType = "text"

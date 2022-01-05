@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import ButtonExample from "../components/Button.example.svelte"
     import InputfieldExample from "../components/Inputfield.example.svelte"
     import TournyGroupExample from "../components/TournamentGroup.example.svelte"

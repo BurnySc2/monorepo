@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     export let buttonText = "Button text"
     export let onClickFunction = async () => {}
 </script>

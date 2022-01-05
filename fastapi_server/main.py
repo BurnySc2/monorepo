@@ -3,7 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from fastapi_server.database.database import get_session, init_db
+from fastapi_server.helper.database import get_session, init_db
+from fastapi_server.helper.helper import hash_password
 from fastapi_server.models.user import User
 from fastapi_server.routes.chat import chat_router
 from fastapi_server.routes.graphql import strawberry_router
@@ -37,16 +38,31 @@ async def startup_event():
     # TODO: This init_db should probably not be in here, use alembic instead
     init_db()
     session = get_session()
-    user = session.exec(session.query(User).where(User.username == 'asd')).first()
+    # Add admin user
+    user = session.exec(session.query(User).where(User.username == 'admin')).first()
     if not user:
         session.add(
             User(
-                username='asd',
-                email='asd',
-                password_hashed='asd',
+                username='admin',
+                email='admin',
+                password_hashed=hash_password('admin'),
+                is_admin=True,
+                is_disabled=False,
+                is_verified=True,
+            )
+        )
+        session.commit()
+    # Add normal user
+    user = session.exec(session.query(User).where(User.username == 'user')).first()
+    if not user:
+        session.add(
+            User(
+                username='user',
+                email='user',
+                password_hashed=hash_password('user'),
                 is_admin=False,
                 is_disabled=False,
-                is_verified=False,
+                is_verified=True,
             )
         )
         session.commit()

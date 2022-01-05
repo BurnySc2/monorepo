@@ -1,6 +1,8 @@
 <script lang="ts">
-    import { onMount } from "svelte"
+    import { onDestroy, onMount } from "svelte"
     import moment from "moment"
+
+    let componentMounted = false
 
     // Accepted username by server
     let userName = ""
@@ -68,10 +70,12 @@
 
         ws.onclose = () => {
             // Called when connection is closed - e.g. when there was an error, when server shut down, or internet connection ended
-            const sleep_in_seconds = 5
+            const sleepInSeconds = 5
             setTimeout(() => {
-                connect()
-            }, sleep_in_seconds * 1000)
+                if (componentMounted) {
+                    connect()
+                }
+            }, sleepInSeconds * 1000)
         }
 
         ws.onopen = () => {
@@ -89,8 +93,13 @@
     }
 
     onMount(async () => {
+        componentMounted = true
         // On page load: connect to websocket
         connect()
+    })
+
+    onDestroy(async () => {
+        componentMounted = false
     })
 
     const tryToConnectUser = async () => {

@@ -4,6 +4,7 @@
     import { gql } from "graphql-request"
     import { GRAPHQL_CLIENT, LOGIN_ENDPOINT } from "../functions/constants"
     import { toast, SvelteToast } from "@zerodevx/svelte-toast"
+    import { onMount } from "svelte"
 
     let loginEmail = "asd"
     let loginPassword = "asd"
@@ -14,6 +15,13 @@
     let registerPasswordRepeated = "asd"
 
     let resetEmail = "asd"
+
+    let loggedInIsLoggedIn = false
+    let loggedInUsername = ""
+
+    onMount(async () => {
+        await checkUserLoggedIn()
+    })
 
     let loginSubmit = async () => {
         try {
@@ -41,6 +49,7 @@
                         "--toastBarBackground": "#2F855A",
                     },
                 })
+                await checkUserLoggedIn()
             }
         } catch {
             // Catch error, server offline etc
@@ -85,9 +94,22 @@
         // TODO write gql query, notify that reset was successful
         console.log("Do reset password submit request")
     }
+    let checkUserLoggedIn = async () => {
+        let userCheckLoggedInQuery = gql`
+            query {
+                userCheckLoggedIn
+                userGetUsernameFromToken
+            }
+        `
+        const data = await GRAPHQL_CLIENT.request(userCheckLoggedInQuery)
+        loggedInIsLoggedIn = data.userCheckLoggedIn
+        if (data.userCheckLoggedIn) {
+            loggedInUsername = data.userGetUsernameFromToken
+        }
+    }
 </script>
 
-<div class="flex">
+<div class="flex flex-wrap">
     <div class="flex-col">
         <div class="underline">LOGIN</div>
         <Inputfield descriptionText="Email" inputType="email" bind:bindVariable={loginEmail} />
@@ -110,6 +132,11 @@
         <div class="underline">RESET PASSWORD</div>
         <Inputfield descriptionText="Email" inputType="email" bind:bindVariable={resetEmail} />
         <Button buttonText="Reset Password" onClickFunction={resetSubmit} />
+    </div>
+    <div>
+        <div class="underline">IS LOGGED IN</div>
+        <div>Logged in: {loggedInIsLoggedIn}</div>
+        <div>Username: {loggedInUsername}</div>
     </div>
     <SvelteToast />
 </div>

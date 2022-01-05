@@ -46,6 +46,7 @@ def generate_text() -> str:
 
 
 class SqlMetaclass:
+
     @classmethod
     def create_table(cls, db: sqlite3.Connection):
         """

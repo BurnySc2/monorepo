@@ -38,6 +38,7 @@ def teardown_module():
 
 
 class MyTestClass(BaseCase):
+
     def test_basic_site_display(self):
         """ Check if HOME site is visible """
         self.open(FRONTEND_ADDRESS)
@@ -86,6 +87,7 @@ class MyTestClass(BaseCase):
 
 
 class MyBenchClass(BaseCase):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.benchmark: Optional[BenchmarkFixture] = None

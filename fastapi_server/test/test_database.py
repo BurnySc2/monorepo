@@ -8,6 +8,7 @@ from fastapi_server.test.base_test import BaseTest
 
 
 class TestDatabase(BaseTest):
+
     def test_user_add_single(self, method_session_fixture: Session):
         session = method_session_fixture
         assert isinstance(session, Session)
