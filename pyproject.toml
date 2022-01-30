@@ -109,7 +109,6 @@ build-backend = "poetry.masonry.api"
 [tool.mypy]
 python_version = "3.8"
 ignore_missing_imports = true
-plugins = "strawberry.ext.mypy_plugin"
 
 [tool.pycln]
 all = true
