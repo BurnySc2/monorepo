@@ -1,12 +1,9 @@
 import hashlib
 import os
-import time
-from typing import Optional
 
 import jwt
 from dotenv import load_dotenv
 from loguru import logger
-from strawberry.types import Info
 
 load_dotenv()
 
@@ -29,38 +26,6 @@ def jwt_decode(token: str, secret: str = SECRET) -> dict:
 
 def hash_password(password_plain: str, salt: bytes = SALT) -> str:
     return hashlib.pbkdf2_hmac('sha256', password_plain.encode(), salt=salt, iterations=10_000).hex()
-
-
-def get_token_from_info(info: Info) -> Optional[str]:
-    return info.context['request'].cookies.get('sessiontoken', None)
-
-
-def token_is_valid(token: str, secret: str = SECRET) -> bool:
-    data_from_token: dict = jwt_decode(token, secret=secret)
-    assert isinstance(data_from_token, dict)
-    assert 'expire_time' in data_from_token
-    assert isinstance(data_from_token['expire_time'], float)
-    assert 'username' in data_from_token
-    assert isinstance(data_from_token['username'], str)
-    return data_from_token.get('expire_time', -1) > time.time()
-
-
-def token_is_valid_from_info(info: Info):
-    session_token: Optional[str] = get_token_from_info(info)
-    return session_token is not None and token_is_valid(session_token)
-
-
-def get_username_from_token(token: str, secret: str = SECRET) -> str:
-    # Assume it is a valid token
-    return jwt_decode(token, secret=secret).get('username')  # type: ignore
-
-
-def username_from_info(info: Info) -> Optional[str]:
-    if token_is_valid_from_info(info):
-        session_token = get_token_from_info(info)
-        if session_token is not None:
-            return get_username_from_token(session_token)
-    return None
 
 
 if __name__ == '__main__':

@@ -7,17 +7,13 @@ from fastapi_server.helper.database import get_session, init_db
 from fastapi_server.helper.helper import hash_password
 from fastapi_server.models.user import User
 from fastapi_server.routes.chat import chat_router
-from fastapi_server.routes.graphql import strawberry_router
 from fastapi_server.routes.hello_world import hello_world_router
-from fastapi_server.routes.login import login_router
 from fastapi_server.routes.todolist import todo_list_router
 
 app = FastAPI()
 app.include_router(hello_world_router)
 app.include_router(chat_router)
 app.include_router(todo_list_router)
-app.include_router(strawberry_router)
-app.include_router(login_router)
 
 origins = [
     'https://burnysc2.github.io',

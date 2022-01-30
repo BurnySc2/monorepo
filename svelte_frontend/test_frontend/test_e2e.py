@@ -60,31 +60,6 @@ class MyTestClass(BaseCase):
         self.click('#submit1')
         self.assert_text(test_text)
 
-    def test_example(self):
-        url = 'https://store.xkcd.com/collections/posters'
-        # Go to url
-        self.open(url)
-        # Type in input field "xkcd book"
-        self.type('input[name="q"]', 'xkcd book')
-        # Click the search icon to start searching
-        self.click('input[value="Search"]')
-        # Assert that there is a header with class "h3" which has text: "xkcd: volume 0"
-        self.assert_text('xkcd: volume 0', 'h3')
-        # Go to new url
-        self.open('https://xkcd.com/353/')
-        self.assert_title('xkcd: Python')
-        self.assert_element('img[alt="Python"]')
-        # Click on <a> element with rel="license"
-        self.click('a[rel="license"]')
-        # Assert that there is this text on the website visible
-        self.assert_text('free to copy and reuse')
-        # Click go_back
-        self.go_back()
-        # Click the "About" link
-        self.click_link('About')
-        # Assert that there is a header with class "h2" which has text: "xkcd.com"
-        self.assert_exact_text('xkcd.com', 'h2')
-
 
 class MyBenchClass(BaseCase):
 

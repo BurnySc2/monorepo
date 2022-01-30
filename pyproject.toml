@@ -51,8 +51,6 @@ PyJWT = "^2.3"
 seleniumbase = "^2.3"
 # Info about the system
 psutil = "^5.8"
-# Graphql backend implementation
-strawberry-graphql = "^0.93"
 # Execute command on server via SSH, or push files via SFTP
 paramiko = "^2.8"
 #types-paramiko = "^2.8"

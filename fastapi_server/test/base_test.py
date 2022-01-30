@@ -2,17 +2,13 @@ import contextlib
 import os
 import pathlib
 
-import hypothesis.strategies as st
 import pytest
-import strawberry
-from hypothesis.strategies import SearchStrategy
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 from starlette.testclient import TestClient
 
 from fastapi_server.helper.database import get_session
 from fastapi_server.main import app
-from fastapi_server.routes.graphql import schema
 
 TEST_DB_FILE_PATH = 'test.db'
 TEST_DB_URL = f'sqlite:///{TEST_DB_FILE_PATH}'
@@ -84,7 +80,6 @@ class BaseTest:
     def method_client_context(cls):
         """ Same reasoning as above. """
         # See https://sqlmodel.tiangolo.com/tutorial/fastapi/tests/#pytest-fixtures
-        # https://strawberry.rocks/docs/integrations/fastapi#context_getter
         # app.dependency_overrides.clear()
         app.dependency_overrides[get_session] = cls.method_get_session
         cls.method_client = TestClient(app)
@@ -99,7 +94,6 @@ class BaseTest:
     def example_client_context(cls):
         """ Same reasoning as above. """
         # See https://sqlmodel.tiangolo.com/tutorial/fastapi/tests/#pytest-fixtures
-        # https://strawberry.rocks/docs/integrations/fastapi#context_getter
         with cls.example_session_context() as _session:
             app.dependency_overrides[get_session] = cls.example_get_session
             cls.example_client = TestClient(app)
@@ -145,16 +139,3 @@ class BaseTest:
     def example_session_fixture(self) -> Session:  # type: ignore
         assert isinstance(BaseTest.example_session, Session)
         yield BaseTest.example_session
-
-    @classmethod
-    def get_schema(cls) -> strawberry.Schema:
-        return schema
-
-    @pytest.fixture(name='schema_fixture')
-    def schema_fixture(self):
-        return BaseTest.get_schema()
-
-    @classmethod
-    def schema_strategy(cls) -> SearchStrategy:
-        """ Deprecated? """
-        return st.builds(cls.get_schema)
