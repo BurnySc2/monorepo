@@ -1,13 +1,14 @@
 <script lang="ts">
-    import TodoPage from "../pages/TodoPage.svelte"
-    import Home from "../pages/Home.svelte"
-    import About from "../pages/About.svelte"
-    import NormalChat from "../pages/NormalChat.svelte"
-    import BrowserStorage from "../pages/BrowserStorage.svelte"
-    import { onMount } from "svelte"
     import { dev } from "$app/env"
-    import DevRouterHeader from "../components/DevComponentsHeader.svelte"
+    import { onMount } from "svelte"
+
     import DevComponents from "../components/DevComponents.svelte"
+    import DevRouterHeader from "../components/DevComponentsHeader.svelte"
+    import About from "../pages/About.svelte"
+    import BrowserStorage from "../pages/BrowserStorage.svelte"
+    import Home from "../pages/Home.svelte"
+    import NormalChat from "../pages/NormalChat.svelte"
+    import TodoPage from "../pages/TodoPage.svelte"
 
     // Router url handling
     let hash: string

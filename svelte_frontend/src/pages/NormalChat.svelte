@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { onDestroy, onMount } from "svelte"
     import moment from "moment"
+    import { onDestroy, onMount } from "svelte"
 
     let componentMounted = false
 

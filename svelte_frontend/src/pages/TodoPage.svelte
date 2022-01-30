@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte"
+
     import TodoCard from "../components/TodoCard.svelte"
 
     let newTodoText = ""
