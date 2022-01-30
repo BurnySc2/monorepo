@@ -40,26 +40,26 @@
                     console.log(`Received: ${content.message}`)
                 } else if ("error" in content) {
                     // Error handling
-                    if (content.error === "usernameTaken") {
+                    if (content.error === "username taken") {
                         errorMessage = `Username '${waitingForUserNameResponse}' is already taken!`
                         waitingForUserNameResponse = ""
                     }
-                } else if ("newMessage" in content) {
+                } else if ("new_message" in content) {
                     // Received new message
-                    console.log(`Received new message: ${JSON.stringify(content.newMessage)}`)
+                    console.log(`Received new message: ${JSON.stringify(content.new_message)}`)
 
-                    messages = [...messages, content.newMessage]
-                } else if ("newMessageHistory" in content) {
+                    messages = [...messages, content.new_message]
+                } else if ("message_history" in content) {
                     // Received new message
-                    console.log(`Received new message history: ${content.newMessage}`)
+                    console.log(`Received new message history: ${JSON.stringify(content.message_history)}`)
 
-                    messages = [...messages, ...content.newMessageHistory]
-                } else if ("connectUser" in content) {
+                    messages = [...messages, ...content.message_history]
+                } else if ("connect_user" in content) {
                     // User connected, server accepted the username
-                    console.log(`Successfully connected to server with username ${content.connectUser}`)
+                    console.log(`Successfully connected to server with username '${content.connect_user}'`)
                     errorMessage = ""
                     waitingForUserNameResponse = ""
-                    userName = content.connectUser
+                    userName = content.connect_user
                 }
             } catch {
                 // Message was not in JSON format
@@ -106,12 +106,12 @@
         // Send a username to the server and see if it is available
         errorMessage = ""
         if (ws && ws.readyState === 1) {
-            console.log(`Trying to connect user ${selectedUserName}`)
+            console.log(`Trying to connect user '${selectedUserName}'`)
             if (waitingForUserNameResponse === "") {
                 waitingForUserNameResponse = selectedUserName
                 ws.send(
                     JSON.stringify({
-                        tryToConnectUser: selectedUserName,
+                        connect_user: selectedUserName,
                     })
                 )
             }
@@ -133,7 +133,7 @@
                 if (userName !== "") {
                     ws.send(
                         JSON.stringify({
-                            sendChatMessage: {
+                            chat_message: {
                                 timestamp: Date.now() / 1000,
                                 author: userName,
                                 message: chatMessage,
@@ -178,15 +178,21 @@
                 </div>
                 <!-- <div class="col-span-1">{moment(message.timestamp*1000).format("LTS")}</div> -->
                 {#if message.author === userName}
-                    <div class="col-span-1">You</div>
+                    <div class="col-span-1 px-2">You</div>
                 {:else}
-                    <div class="col-span-1">{message.author}</div>
+                    <div class="col-span-1 px-2">{message.author}</div>
                 {/if}
                 <div class="col-span-8">{message.message}</div>
             {/each}
         </div>
         <div class="grid grid-cols-10">
-            <input id="chatinput" class="col-span-9" type="text" on:keydown={handleKeydown} bind:value={chatMessage} />
+            <input
+                id="chatinput"
+                class="col-span-9 border-2 border-black"
+                type="text"
+                on:keydown={handleKeydown}
+                bind:value={chatMessage}
+            />
             <button id="sendmessage" class="col-span-1" on:click={sendChatMessage}>Send</button>
         </div>
     </div>
