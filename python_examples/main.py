@@ -34,7 +34,6 @@ from python_examples.examples.dataclasses_and_dicts.modify_dictionary import mod
 from python_examples.examples.other.file_interaction import create_file
 from python_examples.examples.other.geometry_example import test_geometry_shapely
 from python_examples.examples.other.image_manipulation import mass_convert_images
-from python_examples.examples.other.measure_time import measure_time
 from python_examples.examples.other.multiprocessing_example import do_math, do_multiprocessing
 from python_examples.examples.other.regex_example import regex_match_test, test_all_roman_numbers
 
@@ -53,8 +52,6 @@ async def main():
     logger.info('Simple {} logger output', 'loguru')
 
     regex_match_test()
-
-    measure_time()
 
     sites: List[str] = ['http://www.jython.org', 'http://olympus.realpython.org/dice'] * 80
     start_time = time.perf_counter()

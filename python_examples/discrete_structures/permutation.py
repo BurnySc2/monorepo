@@ -1,13 +1,11 @@
 """
 These are lexicographically ordered permutations.
 """
-import time
-from contextlib import contextmanager
 from math import factorial
 from string import ascii_uppercase
 from typing import Any, Generator, List
 
-from loguru import logger
+from burny_common.measure_time import time_this
 
 
 def permutation(my_list: List[Any]) -> List[Any]:
@@ -152,15 +150,6 @@ def _test_permutations(limit: int = 6):
 
 if __name__ == '__main__':
     _test_permutations()
-
-    @contextmanager
-    def time_this(label: str):
-        start = time.perf_counter_ns()
-        try:
-            yield
-        finally:
-            end = time.perf_counter_ns()
-            logger.info(f'TIME {label}: {(end-start)/1e9} sec')
 
     with time_this('Permutation'):
         for n in range(10**4):
