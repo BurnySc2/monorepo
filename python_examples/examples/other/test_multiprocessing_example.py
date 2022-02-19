@@ -33,7 +33,7 @@ def test_cpu_bound_summing(case):
     _result = case()
 
 
-@settings(max_examples=10)
+@settings(max_examples=10, deadline=1_000)
 @given(numbers=st.lists(st.integers(min_value=0, max_value=1_000), min_size=1, max_size=100))
 def test_find_sums(numbers: List[int]):
     _result = find_sums(numbers)
