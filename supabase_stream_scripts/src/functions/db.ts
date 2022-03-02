@@ -1,7 +1,7 @@
-import {supabase} from "./constants";
+import { supabase } from "./constants"
 
 type ITodoItem = {
-    id: number 
+    id: number
     todo_text: string
     created_at: string
     done_at?: string
@@ -15,6 +15,6 @@ export default {
                 return response.data as ITodoItem[]
             }
             return []
-        }
-    }
+        },
+    },
 }

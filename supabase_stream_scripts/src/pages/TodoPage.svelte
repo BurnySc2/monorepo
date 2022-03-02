@@ -1,9 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte"
 
-    import db from "../functions/db.ts"
-
     import TodoCard from "../components/TodoCard.svelte"
+    import db from "../functions/db.ts"
 
     let newTodoText = ""
     type ICard = {
@@ -35,7 +34,10 @@
             maxIndex = Math.max(card.id, maxIndex)
         })
         maxIndex += 1
-        cards = [...cards, { id: maxIndex, todo_text: newTodoText, created_timestamp: 123, done_timestamp: -1, done: false  }]
+        cards = [
+            ...cards,
+            { id: maxIndex, todo_text: newTodoText, created_timestamp: 123, done_timestamp: -1, done: false },
+        ]
     }
 
     const localRemove = (id: number) => {

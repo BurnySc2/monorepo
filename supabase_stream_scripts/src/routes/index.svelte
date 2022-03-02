@@ -6,8 +6,8 @@
     import BrowserStorage from "../pages/BrowserStorage.svelte"
     import Home from "../pages/Home.svelte"
     import NormalChat from "../pages/NormalChat.svelte"
+    import StreamManager from "../pages/StreamManager.svelte"
     import TodoPage from "../pages/TodoPage.svelte"
-    import StreamManager from "../pages/StreamManager.svelte";
 
     // Router url handling
     let hash: string
@@ -22,9 +22,8 @@
         url = hash.slice(1)
         if (url === "") {
             setUrl("/")
-        } else {
-            SHOWCOMPONENTS = dev && url.startsWith("/component")
         }
+        SHOWCOMPONENTS = dev && url.startsWith("/component")
         mounted = true
     })
 
@@ -34,7 +33,6 @@
             hash = `#${newUrl}`
             // window.history.replaceState({}, '',`${PATH}/${hash}`)
             window.history.pushState({}, "", `${process.env.BASE_URL || ""}/${hash}`)
-            SHOWCOMPONENTS = dev && url.startsWith("/component")
         }
     }
 </script>
@@ -43,7 +41,9 @@
     <div>
         <div class="my2 flex justify-center">
             <button class="m-1 p-1 border-2" id="home" on:click={() => setUrl("/")}>Home</button>
-            <button class="m-1 p-1 border-2" id="about" on:click={() => setUrl("/streammanager")}>Stream Manager</button>
+            <button class="m-1 p-1 border-2" id="streammanager" on:click={() => setUrl("/streammanager")}
+                >Stream Manager</button
+            >
             <button class="m-1 p-1 border-2" id="about" on:click={() => setUrl("/about")}>About</button>
             <button class="m-1 p-1 border-2" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
             <button class="m-1 p-1 border-2" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
@@ -54,7 +54,7 @@
 
         {#if url === "/"}
             <Home />
-        {:else if url === "/streammanager"}
+        {:else if url.startsWith("/streammanager")}
             <StreamManager defaultText="My other text" />
         {:else if url === "/about"}
             <About defaultText="My other text" />
