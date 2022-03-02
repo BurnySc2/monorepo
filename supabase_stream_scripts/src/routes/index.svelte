@@ -5,6 +5,7 @@
     import About from "../pages/About.svelte"
     import BrowserStorage from "../pages/BrowserStorage.svelte"
     import Home from "../pages/Home.svelte"
+    import MatchInfo from "../pages/MatchInfo.svelte"
     import NormalChat from "../pages/NormalChat.svelte"
     import StreamManager from "../pages/StreamManager.svelte"
     import TodoPage from "../pages/TodoPage.svelte"
@@ -17,6 +18,9 @@
     // Required for tests: disallow interaction before GUI is ready
     let mounted = false
 
+    let _dontShowHeadersOnUrl = ["/matchinfo"]
+    let showHeaders = true
+
     onMount(() => {
         hash = location.hash
         url = hash.slice(1)
@@ -24,6 +28,11 @@
             setUrl("/")
         }
         SHOWCOMPONENTS = dev && url.startsWith("/component")
+        _dontShowHeadersOnUrl.forEach((value) => {
+            if (url && url.startsWith(value)) {
+                showHeaders = false
+            }
+        })
         mounted = true
     })
 
@@ -39,23 +48,27 @@
 
 {#if mounted}
     <div>
-        <div class="my2 flex justify-center">
-            <button class="m-1 p-1 border-2" id="home" on:click={() => setUrl("/")}>Home</button>
-            <button class="m-1 p-1 border-2" id="streammanager" on:click={() => setUrl("/streammanager")}
-                >Stream Manager</button
-            >
-            <button class="m-1 p-1 border-2" id="about" on:click={() => setUrl("/about")}>About</button>
-            <button class="m-1 p-1 border-2" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
-            <button class="m-1 p-1 border-2" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
-            <button class="m-1 p-1 border-2" id="browserstorage" on:click={() => setUrl("/browserstorage")}
-                >BrowserStorage</button
-            >
-        </div>
+        {#if showHeaders}
+            <div class="my2 flex justify-center">
+                <button class="m-1 p-1 border-2" id="home" on:click={() => setUrl("/")}>Home</button>
+                <button class="m-1 p-1 border-2" id="streammanager" on:click={() => setUrl("/streammanager")}
+                    >Stream Manager</button
+                >
+                <button class="m-1 p-1 border-2" id="about" on:click={() => setUrl("/about")}>About</button>
+                <button class="m-1 p-1 border-2" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
+                <button class="m-1 p-1 border-2" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
+                <button class="m-1 p-1 border-2" id="browserstorage" on:click={() => setUrl("/browserstorage")}
+                    >BrowserStorage</button
+                >
+            </div>
+        {/if}
 
         {#if url === "/"}
             <Home />
         {:else if url.startsWith("/streammanager")}
             <StreamManager defaultText="My other text" />
+        {:else if url.startsWith("/matchinfo")}
+            <MatchInfo />
         {:else if url === "/about"}
             <About defaultText="My other text" />
         {:else if url === "/chat"}

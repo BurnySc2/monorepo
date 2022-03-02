@@ -1,11 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte"
 
-    import { supabase } from "../functions/constants"
+    import { races, servers, supabase } from "../functions/constants"
 
     // CONSTANTS
-    let races = ["Protoss", "Terran", "Zerg", "Random"]
-    let servers = ["Europe", "Americas", "Asia", "China"]
 
     let matchups = []
     races.forEach((race1, index1) => {
@@ -61,10 +59,6 @@
     onMount(async () => {
         loadTwitchUserFromSession()
         loadSc2Accounts()
-        // const response = await supabase.from("sc2accounts").select("*").order("id")
-        // if (response.status === 200) {
-        //     console.log(response.data)
-        // }
     })
 
     let loadTwitchUserFromSession = async () => {
