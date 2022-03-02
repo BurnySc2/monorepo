@@ -55,7 +55,7 @@ export const getCurrentScene = (gameData: IGameData, uiData: IUiData): ISceneNam
             return "replay"
         }
         return "game"
-    } else if (uiData === { activeScreens: ["ScreenLoading/ScreenLoading"] }) {
+    } else if (uiData.activeScreens === ["ScreenLoading/ScreenLoading"]) {
         return "loading"
     } else if (uiData.activeScreens.length !== 0) {
         return "menu"
