@@ -1,5 +1,6 @@
 <script lang="ts">
     import { dev } from "$app/env"
+    import { page } from "$app/stores"
     import { onDestroy, onMount } from "svelte"
 
     import {
@@ -28,23 +29,21 @@
         IValidGame,
     } from "../functions/interfaces"
 
-    let params = {
-        twitchUser: "BurnySc2",
-        server: "Europe",
-        sc2PollFrequency: 1.0,
-        maxOpponentMmrDifference: 1000,
-    }
     let sc2Accounts: ISC2Account[] = []
+    let params = {
+        // http://localhost:3000?twitchUser=BurnySc2&server=Europe&sc2PollFrequency=1&maxOpponentMmrDifference=1000#/matchinfo
+        // TODO instead of twitch user get twitch-id
+        twitchUser: $page.url.searchParams.get("twitchUser"),
+        server: $page.url.searchParams.get("server") as ISc2Server,
+        sc2PollFrequency: parseFloat($page.url.searchParams.get("sc2PollFrequency")),
+        maxOpponentMmrDifference: parseInt($page.url.searchParams.get("maxOpponentMmrDifference")),
+    }
     let info: IMatchInfo = resetInfo()
     let runningData: IRunningData = {
         scene: "unknown",
     }
 
     let running = false
-    // TODO
-    // get params from url, e.g. twitch username, and later with security: twitch id unique identifier from login
-    // send requests to sc2 game every second
-    // send request to nephest on new game
     onMount(async () => {
         await getMyAccounts()
         running = true

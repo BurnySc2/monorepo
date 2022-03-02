@@ -4,10 +4,9 @@
     import { races, servers, supabase } from "../functions/constants"
 
     // CONSTANTS
-
     let matchups = []
-    races.forEach((race1, index1) => {
-        races.forEach((race2, index2) => {
+    races.forEach((race1) => {
+        races.forEach((race2) => {
             matchups.push(`${race1[0]}v${race2[0]}`)
         })
     })
@@ -27,6 +26,8 @@
     let twitchUser: string = null
 
     let activeServerSelected = servers[0]
+
+    $: matchInfoOverlayLink = `${location.origin}?twitchUser=${twitchUser}&server=${activeServerSelected}&sc2PollFrequency=1&maxOpponentMmrDifference=1000#/matchinfo`
 
     let buildOrderAnnounceInChatAfterVoting = "Yes"
     let buildOrderVotingTimeDuration = 30
@@ -157,8 +158,8 @@
             <!--    GENERATE OVERLAY LINKS-->
             <button class="border-2 border-black p-2 hover:bg-blue-300">Generate new overlay links</button>
             <div>
-                <div>Your build order voting overlay link</div>
-                <textarea readonly>blabla</textarea>
+                <div>Your match info overlay link</div>
+                <textarea bind:value={matchInfoOverlayLink} readonly></textarea>
             </div>
         </div>
 
