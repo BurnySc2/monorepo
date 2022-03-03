@@ -9,6 +9,7 @@ Base = declarative_base()
 
 
 class MyBase:
+
     def __repr__(self) -> str:
         items = ', '.join(f'{key}={value}' for key, value in self.__dict__.items() if not key.startswith('_'))
         return f'{self.__class__.__name__}({items})'

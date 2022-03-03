@@ -114,13 +114,6 @@ repos:
     entry: bash -c "cd svelte_frontend && npm run format"
     pass_filenames: false
 
-  - id: format_react
-    name: format_react
-    stages: [commit]
-    language: system
-    entry: bash -c "cd react_frontend && npm run format"
-    pass_filenames: false
-
   - id: pylint
     name: pylint
     stages: [commit]
@@ -159,14 +152,6 @@ repos:
     stages: [commit]
     language: system
     entry: poetry run pytest svelte_frontend/test_frontend/test_e2e.py --benchmark-skip --headless
-    pass_filenames: false
-
-  # Run react e2e tests
-  - id: react_e2e_tests
-    name: react_e2e_tests
-    stages: [commit]
-    language: system
-    entry: poetry run pytest react_frontend/test_frontend/test_e2e.py --benchmark-skip --headless
     pass_filenames: false
 
 #  - id: pytest-cov

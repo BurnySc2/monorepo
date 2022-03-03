@@ -1,6 +1,6 @@
 import preprocess from "svelte-preprocess"
 import adapter from "@sveltejs/adapter-static"
-const dev = process.env.NODE_ENV === "development"
+const baseUrl = process.env.BASE_URL || ""
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -18,9 +18,14 @@ const config = {
             fallback: null,
         }),
         paths: {
-            base: dev ? "" : "/monorepo",
+            base: baseUrl,
         },
         appDir: "internal",
+        vite: {
+            define: {
+                "process.env": process.env,
+            },
+        },
     },
 }
 

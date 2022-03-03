@@ -11,13 +11,12 @@ from burny_common.integration_test_helper import (
     kill_processes,
     remove_leftover_files,
     start_fastapi_dev_server,
-    start_mongodb,
-    start_postgres,
     start_svelte_dev_server,
 )
 
 
 class MyTestClass(BaseCase):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.FRONTEND_ADDRESS = ''
@@ -27,26 +26,25 @@ class MyTestClass(BaseCase):
         # And which files to remove
         self.CREATED_FILES: Set[Path] = set()
 
-    def setup_method(self, _method):
+    def setup_method(self, _method=None):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         See https://docs.pytest.org/en/6.2.x/xunit_setup.html
         """
         free_frontend_port = find_next_free_port()
-        # TODO Figure out if I can send a port to svelte to have dynamic backend port
-        free_backend_port = 8000
+        free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
         self.FRONTEND_ADDRESS = get_website_address(free_frontend_port)
         self.BACKEND_ADDRESS = f'http://localhost:{free_backend_port}'
         start_fastapi_dev_server(free_backend_port, self.NEWLY_CREATED_PROCESSES, self.CREATED_FILES)
         start_svelte_dev_server(
             free_frontend_port,
             self.NEWLY_CREATED_PROCESSES,
-            _backend_proxy=f'localhost:{free_backend_port}',
+            backend_proxy=f'localhost:{free_backend_port}',
         )
-        start_mongodb()
-        start_postgres()
+        # start_mongodb()
+        # start_postgres()
 
-    def teardown_method(self, _method):
+    def teardown_method(self, _method=None):
         """ teardown any state that was previously setup with a setup_method
         call.
         """
@@ -173,6 +171,6 @@ class MyTestClass(BaseCase):
 if __name__ == '__main__':
     # This doesnt work anymore with classes, why?
     test = MyTestClass()
-    test.setup_method('')
+    test.setup_method()
     test.test_backend_server_available()
-    test.teardown_method('')
+    test.teardown_method()

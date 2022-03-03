@@ -6,6 +6,8 @@ on:
     paths:
     - burny_common/**
     - fastapi_server/**
+    - poetry.lock
+    - .github/workflows/test_fastapi_server.yml
   pull_request:
     branches:
     - master
@@ -15,11 +17,12 @@ jobs:
   test_backend:
     env:
       SUBDIRECTORY: fastapi_server
+      DATABASE_PATH: sqlite:///data/sqlmodel.db
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9', '3.10']
     runs-on: ${{ matrix.os }}
 
     steps:

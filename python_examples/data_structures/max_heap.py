@@ -9,6 +9,7 @@ from typing import List
 
 
 class MaxHeap:
+
     def __init__(self):
         self.tree: List[int] = [0]
 

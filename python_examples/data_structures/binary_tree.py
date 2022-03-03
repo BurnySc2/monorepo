@@ -3,6 +3,7 @@ from typing import Any, List, Optional
 
 
 class Node:
+
     def __init__(self, value: Any, left: 'Node' = None, right: 'Node' = None):
         self.value: Any = value
         self.left: Optional['Node'] = left
@@ -25,6 +26,7 @@ class Node:
 
 
 class Tree:
+
     def __init__(self):
         self.root: Node = None
         self.size: int = 0

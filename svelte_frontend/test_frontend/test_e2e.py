@@ -25,9 +25,10 @@ def setup_module():
     See https://docs.pytest.org/en/6.2.x/xunit_setup.html
     """
     global FRONTEND_ADDRESS
-    port = find_next_free_port()
-    FRONTEND_ADDRESS = get_website_address(port)
-    start_svelte_dev_server(port, NEWLY_CREATED_NODE_PROCESSES)
+    frontend_port = find_next_free_port()
+    backend_port = find_next_free_port(exclude_ports={frontend_port})
+    FRONTEND_ADDRESS = get_website_address(frontend_port)
+    start_svelte_dev_server(frontend_port, NEWLY_CREATED_NODE_PROCESSES, backend_proxy=f'localhost:{backend_port}')
 
 
 def teardown_module():
@@ -37,12 +38,13 @@ def teardown_module():
 
 
 class MyTestClass(BaseCase):
+
     def test_basic_site_display(self):
         """ Check if HOME site is visible """
         self.open(FRONTEND_ADDRESS)
         self.assert_text('BrowserStorage')
 
-    def test_shows_todos(self):
+    def test_show_todos(self):
         """ Check if the to-do site is visible """
         self.open(FRONTEND_ADDRESS)
         self.click('#todo')
@@ -52,38 +54,15 @@ class MyTestClass(BaseCase):
         """ Add a new to-do entry """
         self.open(FRONTEND_ADDRESS)
         self.click('#todo')
+        self.assert_text('Unable to connect to server')
         test_text = 'my amazing test todo text'
         self.write('#newTodoInput', test_text)
         self.click('#submit1')
         self.assert_text(test_text)
 
-    def test_example(self):
-        url = 'https://store.xkcd.com/collections/posters'
-        # Go to url
-        self.open(url)
-        # Type in input field "xkcd book"
-        self.type('input[name="q"]', 'xkcd book')
-        # Click the search icon to start searching
-        self.click('input[value="Search"]')
-        # Assert that there is a header with class "h3" which has text: "xkcd: volume 0"
-        self.assert_text('xkcd: volume 0', 'h3')
-        # Go to new url
-        self.open('https://xkcd.com/353/')
-        self.assert_title('xkcd: Python')
-        self.assert_element('img[alt="Python"]')
-        # Click on <a> element with rel="license"
-        self.click('a[rel="license"]')
-        # Assert that there is this text on the website visible
-        self.assert_text('free to copy and reuse')
-        # Click go_back
-        self.go_back()
-        # Click the "About" link
-        self.click_link('About')
-        # Assert that there is a header with class "h2" which has text: "xkcd.com"
-        self.assert_exact_text('xkcd.com', 'h2')
-
 
 class MyBenchClass(BaseCase):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.benchmark: Optional[BenchmarkFixture] = None

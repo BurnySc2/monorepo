@@ -7,8 +7,6 @@
 # Monorepo
 My monorepo for various tools and showcases
 
-[Preview](https://burnysc2.github.io/monorepo/)
-
 # Useful Poetry commands
 https://python-poetry.org/docs/cli/
 ### Create new project
@@ -53,6 +51,8 @@ Single file:
 `poetry run pytest test/test_functions.py`
 Single function:
 `poetry run pytest test/test_functions.py::test_fuction_name`
+Single function in class:
+`poetry run pytest test/test_functions.py::class_name::test_fuction_name`
 
 Test all files in project:
 `poetry run pytest`
@@ -76,5 +76,5 @@ poetry run pre-commit run --all-files
 
 This runs pylint, mypy, pytest tests, apply autoformatter yapf
 
-# Autoformat all files
+# Autoformat all python files
 `poetry run yapf ./**/*.py -i`

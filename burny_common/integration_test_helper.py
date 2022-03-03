@@ -8,6 +8,7 @@ from typing import Optional, Set
 
 import psutil
 import pymongo
+import requests  # type: ignore
 from loguru import logger
 from pymongo import MongoClient
 
@@ -22,6 +23,7 @@ class Timeout:
             ...
     except TimeoutError:
     """
+
     def __init__(self, seconds=1, error_message='Timeout'):
         self.seconds = seconds
         self.error_message = error_message
@@ -94,7 +96,7 @@ def get_website_address(port: int) -> str:
 def start_svelte_dev_server(
     port: int,
     NEWLY_CREATED_PROCESSES: Set[int],
-    _backend_proxy: str = 'localhost:8000',
+    backend_proxy: str = 'localhost:8000',
 ):
     env = os.environ.copy()
     currently_running_node_processes = get_pid('node')
@@ -102,53 +104,24 @@ def start_svelte_dev_server(
     frontend_folder = Path(__file__).parents[1] / 'svelte_frontend'
     assert is_port_free(port), f'Unable to start svelte dev server because port {port} is blocked'
     logger.info(f'Starting frontend on port {port}')
-    _ = subprocess.Popen(['npx', 'svelte-kit', 'dev', '--port', f'{port}'], cwd=frontend_folder, env=env)
-
+    _ = subprocess.Popen(
+        ['npx', 'cross-env', f'BACKEND_SERVER={backend_proxy}', 'svelte-kit', 'dev', '--port', f'{port}'],
+        cwd=frontend_folder,
+        env=env
+    )
     # Give it some time to create dev server and all (3?) node proccesses
-    time.sleep(5)
-    new_processes = get_pid('node') - currently_running_node_processes
-    logger.info(f'New node processes: {new_processes}')
-    NEWLY_CREATED_PROCESSES |= new_processes
+    with Timeout(10, 'Took more than 10 seconds'):
+        while is_port_free(port):
+            time.sleep(0.1)
+        while 1:
+            try:
+                result = requests.get(get_website_address(port))
+                if result.status_code == 200:
+                    break
+            except requests.exceptions.ConnectionError:
+                pass
+            time.sleep(0.1)
 
-
-def generate_react_tailwind_css_file():
-    frontend_folder = Path(__file__).parents[1] / 'react_frontend'
-    index_css_path = frontend_folder / 'src' / 'index.css'
-
-    # If it already exists, skip generation of file
-    # pylint: disable=R1732
-    if index_css_path.is_file():
-        return
-
-    # Start compilation of index.css
-    _tailwind_css_process = subprocess.Popen(['npm', 'run', 'tailwind:prod'], cwd=frontend_folder)
-
-    # Wait for tailwindcss to compile index.css file
-    wait_seconds = 0
-    while not index_css_path.is_file() and wait_seconds < 30:
-        wait_seconds += 1
-        time.sleep(1)
-
-
-def start_react_dev_server(
-    port: int,
-    NEWLY_CREATED_PROCESSES: Set[int],
-    _backend_proxy: str = 'localhost:3000',
-):
-    env = os.environ.copy()
-
-    currently_running_node_processes = get_pid('node')
-
-    # pylint: disable=R1732
-    # generate_react_tailwind_css_file()
-
-    frontend_folder = Path(__file__).parents[1] / 'react_frontend'
-    logger.info(f'Starting frontend on port {port}', )
-    # assert is_port_free(port), f'Unable to start react dev server because port {port} is blocked'
-    _ = subprocess.Popen(['npx', 'next', 'dev'], cwd=frontend_folder, env=env)
-
-    # Give it some time to create dev server and all (3?) node proccesses
-    time.sleep(5)
     new_processes = get_pid('node') - currently_running_node_processes
     logger.info(f'New node processes: {new_processes}')
     NEWLY_CREATED_PROCESSES |= new_processes
@@ -163,15 +136,12 @@ def start_fastapi_dev_server(
     backend_folder = root_folder / 'fastapi_server'
     currently_running_uvicorn_processes = get_pid('uvicorn')
     env = os.environ.copy()
-    env['USE_MONGO_DB'] = 'True'
-    env['USE_POSTGRES_DB'] = 'True'
-    env['USE_LOCAL_SQLITE_DB'] = 'True'
+    env['DATABASE_USE_MEMORY'] = 'TRUE'
 
     sqlite_test_file_name = 'todos_TEST.db'
     sqlite_test_file_path = backend_folder / 'data' / sqlite_test_file_name
     CREATED_FILES.add(sqlite_test_file_path)
     remove_leftover_files({sqlite_test_file_path})
-    env['SQLITE_FILENAME'] = sqlite_test_file_name
 
     # Why does this return errors even when fastapi server is not running
     # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
@@ -182,7 +152,18 @@ def start_fastapi_dev_server(
         env=env,
     )
     # Give it some time to create backend dev server
-    time.sleep(3)
+    with Timeout(10, 'Took more than 10 seconds'):
+        while is_port_free(port):
+            time.sleep(0.1)
+        while 1:
+            try:
+                result = requests.get(get_website_address(port))
+                if result.status_code == 200:
+                    break
+            except requests.exceptions.ConnectionError:
+                pass
+            time.sleep(0.1)
+
     new_processes = get_pid('uvicorn') - currently_running_uvicorn_processes
     logger.info(f'New uvicorn processes: {new_processes}')
     NEWLY_CREATED_PROCESSES |= new_processes
@@ -295,10 +276,9 @@ if __name__ == '__main__':
     logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
     # start_postgres()
     # start_mongodb()
-    # free_frontend_port = find_next_free_port()
-    # free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
-    # start_svelte_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
-    # start_react_dev_server(free_frontend_port, set(), _backend_proxy=f'http://localhost:{free_backend_port}')
-    # start_fastapi_dev_server(free_backend_port, set(), set())
-    # while 1:
-    #     time.sleep(1)
+    free_frontend_port = find_next_free_port()
+    free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
+    start_svelte_dev_server(free_frontend_port, set(), backend_proxy=f'localhost:{free_backend_port}')
+    start_fastapi_dev_server(free_backend_port, set(), set())
+    while 1:
+        time.sleep(1)
