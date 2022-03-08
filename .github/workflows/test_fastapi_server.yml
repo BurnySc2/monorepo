@@ -96,7 +96,7 @@ jobs:
         key: ${{ secrets.FASTAPISERVERKEY }}
         passphrase: ''
         script: |
-          cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}/fastapiserver"
+          cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}/fastapi_server"
           poetry install --no-dev
           cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/fastapi_server/systemd/${{ env.SERVICENAME }}.service" "/etc/systemd/system/${{ env.SERVICENAME }}.service"
           sudo /bin/systemctl daemon-reload
