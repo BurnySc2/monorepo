@@ -3,17 +3,11 @@
 
 from typing import List
 
-import deal
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from python_examples.examples.other.multiprocessing_example import cpu_bound_summing, do_math, do_math_async, find_sums
-
-
-@deal.cases(do_math)
-def test_do_math(case):
-    _result = case()
+from python_examples.examples.other.multiprocessing_example import cpu_bound_summing, do_math_async, find_sums
 
 
 @given(st.one_of(st.integers(), st.floats(min_value=-10**15, max_value=10**15)))
@@ -26,11 +20,6 @@ async def test_do_math_async(number: float):
 @given(number=st.integers(min_value=0, max_value=10_000))
 def test_fuzz_cpu_bound_summing(number):
     cpu_bound_summing(number=number)
-
-
-@deal.cases(cpu_bound_summing)
-def test_cpu_bound_summing(case):
-    _result = case()
 
 
 @settings(max_examples=10, deadline=1_000)

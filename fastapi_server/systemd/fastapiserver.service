@@ -1,0 +1,11 @@
+[Service]
+ExecStart=/usr/local/bin/poetry poetry run uvicorn fastapi_server.main:app --host localhost --port 8000
+Restart=always
+RestartSec=20
+SyslogIdentifier=fastapiserver
+User=fastapiserver
+Group=fastapiserver
+WorkingDirectory=/home/fastapiserver/fastapiserver/
+
+[Install]
+WantedBy=multi-user.target

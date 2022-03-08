@@ -2,26 +2,15 @@ import os
 from multiprocessing import Pool
 from typing import List, Union
 
-import deal
 
-
-@deal.pre(lambda number: isinstance(number, int) or isinstance(number, float) and -10**15 < number < 10**15)
-@deal.post(lambda result: isinstance(result, (int, float)))
-@deal.ensure(lambda number, result: number != result)
 def do_math(number: Union[int, float]) -> Union[int, float]:
     return number + 3
 
 
-@deal.pre(lambda number: isinstance(number, int) or isinstance(number, float) and -10**15 < number < 10**15)
-@deal.post(lambda result: isinstance(result, (int, float)))
-@deal.ensure(lambda number, result: number != result)
 async def do_math_async(number: Union[int, float]) -> Union[int, float]:
     return number + 3
 
 
-@deal.pre(lambda number: 0 <= number < 10**6)
-@deal.post(lambda result: isinstance(result, int))
-@deal.ensure(lambda number, result: number <= result)
 def cpu_bound_summing(number: int) -> int:
     return sum(i * i for i in range(number + 1))
 
@@ -31,7 +20,6 @@ def cpu_bound_summing_custom(number: int):
     return sum(i * i for i in range(number + 1))
 
 
-@deal.pre(lambda numbers: 1 <= len(numbers) <= 10_000)
 def find_sums(numbers: List[int]) -> List[int]:
     # Run on a minimum of 4 processes / CPU cores
     # If set to None or ommited, it will be automatically calculated based on the hardware

@@ -107,11 +107,18 @@ repos:
 
 - repo: local
   hooks:
-  - id: format_svelte
-    name: format_svelte
+  - id: format_svelte_frontend
+    name: format_svelte_frontend
     stages: [commit]
     language: system
     entry: bash -c "cd svelte_frontend && npm run format"
+    pass_filenames: false
+
+  - id: supabase_stream_scripts
+    name: supabase_stream_scripts
+    stages: [commit]
+    language: system
+    entry: bash -c "cd supabase_stream_scripts && npm run format"
     pass_filenames: false
 
   - id: pylint

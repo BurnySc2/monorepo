@@ -9,6 +9,7 @@
         getSceneChange,
         nephestUrl,
         resetInfo,
+        sc2AccountsDb,
         sc2GameUrl,
         sc2UiUrl,
         supabase,
@@ -35,7 +36,7 @@
         // TODO instead of twitch user get twitch-id
         twitchUser: $page.url.searchParams.get("twitchUser"),
         server: $page.url.searchParams.get("server") as ISc2Server,
-        sc2PollFrequency: parseFloat($page.url.searchParams.get("sc2PollFrequency")),
+        sc2PollFrequency: parseInt($page.url.searchParams.get("sc2PollFrequency")),
         maxOpponentMmrDifference: parseInt($page.url.searchParams.get("maxOpponentMmrDifference")),
     }
     let info: IMatchInfo = resetInfo()
@@ -54,7 +55,7 @@
     })
     let getMyAccounts = async () => {
         const { data, error } = await supabase
-            .from("sc2accounts")
+            .from(sc2AccountsDb)
             .select()
             .match({ twitchname: params.twitchUser, enabled: true, server: params.server })
             .order("id")
@@ -86,7 +87,7 @@
 
         setTimeout(() => {
             pollSc2Api()
-        }, 1000 * params.sc2PollFrequency)
+        }, params.sc2PollFrequency)
 
         // /game
         let gameDataResponse = await fetch(sc2GameUrl)
@@ -224,7 +225,7 @@
     }
     let getOpponentStream = async () => {
         const { data } = await supabase
-            .from("sc2accounts")
+            .from(sc2AccountsDb)
             .select()
             .match({ name: info.opponentName, race: info.opponentRace, server: params.server })
             .limit(1)
@@ -245,7 +246,7 @@
     }
 </script>
 
-{#if runningData.scene === "game"}
+{#if runningData.scene === "game" || dev}
     <div class="rounded-lg bg-blue-800 text-white px-4 py-2 flex flex-col truncate">
         <div class="border-b pb-1 text-xl font-bold">SC2 Info</div>
         <div class="grid grid-cols-1 pt-1">

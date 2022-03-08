@@ -1,7 +1,8 @@
 <script lang="ts">
+    import { onMount } from "svelte"
+
     export let defaultText = "this text"
     let someText = defaultText
-    import { onMount } from "svelte"
 
     onMount(async () => {
         let response = await fetch("https://www.nephest.com/sc2/api/characters?name=BuRny")

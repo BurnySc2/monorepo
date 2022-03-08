@@ -6,7 +6,6 @@ on:
     paths:
     - burny_common/**
     - fastapi_server/**
-    - poetry.lock
     - .github/workflows/test_fastapi_server.yml
   pull_request:
     branches:
@@ -17,7 +16,6 @@ jobs:
   test_backend:
     env:
       SUBDIRECTORY: fastapi_server
-      DATABASE_PATH: sqlite:///data/sqlmodel.db
     strategy:
       fail-fast: false
       matrix:
@@ -41,12 +39,14 @@ jobs:
 
     - name: Install Python dependencies
       run: |
+        cd ${{ env.SUBDIRECTORY }}
         python -m pip install poetry
         poetry install
 
     - name: Run Python tests
       run: |
-        poetry run pytest ${{ env.SUBDIRECTORY }}
+        cd ${{ env.SUBDIRECTORY }}
+        poetry run pytest
 
   deploy_backend:
     strategy:
@@ -54,12 +54,50 @@ jobs:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     needs: [test_backend]
+    env:
+      USERNAME: fastapiserver
+    if: github.ref == 'refs/heads/develop'
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Deploy backend
-      if: github.ref == 'refs/heads/master'
       run: |
-        rm -rf data
-    # TODO Stop/disable service, upload to server, update poetry packages, start/enable service
+        rm -rf fastapi_server/data
+
+    - name: Stop services
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERKEY }}
+        passphrase: ''
+        script: |
+          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+
+    - name: Update server files
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERKEY }}
+        passphrase: ''
+        source: .
+        target: /home/${{ env.USERNAME }}/${{ env.USERNAME }}
+
+    - name: Update dependencies and .service file then re-enable service
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERKEY }}
+        passphrase: ''
+        script: |
+          cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}/fastapiserver"
+          poetry install --no-dev
+          cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/fastapi_server/systemd/${{ env.SERVICENAME }}.service" "/etc/systemd/system/${{ env.SERVICENAME }}.service"
+          sudo /bin/systemctl daemon-reload
+          sudo /bin/systemctl enable --now ${{ env.SERVICENAME }}
