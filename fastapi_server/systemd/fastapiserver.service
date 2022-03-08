@@ -1,5 +1,5 @@
 [Service]
-ExecStart=/usr/local/bin/poetry poetry run uvicorn fastapi_server.main:app --host localhost --port 8000
+ExecStart=/usr/local/bin/poetry run uvicorn fastapi_server.main:app --host localhost --port 8000
 Restart=always
 RestartSec=20
 SyslogIdentifier=fastapiserver
