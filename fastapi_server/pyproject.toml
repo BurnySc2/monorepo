@@ -2,7 +2,7 @@
 name = "fastapi_server"
 version = "0.1.0"
 description = ""
-authors = ["BurnySc2 <gamingburny@gmail.com>"]
+authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.8 <3.11"
@@ -10,16 +10,25 @@ python = ">=3.8 <3.11"
 dataclasses-json = "^0.5"
 # Fastapi server
 fastapi = "^0.70"
+starlette = "^0.16.0"
 uvicorn = "^0.16"
-# Simple logger
-loguru = "^0.5"
 # Somehow required
 colorama = "^0.4.4"
+# Simple logger
+loguru = "^0.5"
+# Network interaction
+requests = "^2.27.1"
+# Local .env file
+python-dotenv = "^0.19.2"
 
 [tool.poetry.dev-dependencies]
 # Test library
-pytest = "^6.2"
+pytest = "^7.0.1"
 pytest-asyncio = "^0.16"
+hypothesis = "^6.39.3"
+# Autoformatter
+yapf = "^0.32"
+toml = "^0.10.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
