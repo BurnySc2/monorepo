@@ -98,6 +98,6 @@ jobs:
         script: |
           cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}/fastapi_server"
           poetry install --no-dev
-          cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/fastapi_server/systemd/${{ env.SERVICENAME }}.service" "/etc/systemd/system/${{ env.SERVICENAME }}.service"
+          cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/fastapi_server/systemd/${{ env.USERNAME }}.service" "/etc/systemd/system/${{ env.USERNAME }}.service"
           sudo /bin/systemctl daemon-reload
-          sudo /bin/systemctl enable --now ${{ env.SERVICENAME }}
+          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
