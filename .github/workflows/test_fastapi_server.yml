@@ -56,6 +56,7 @@ jobs:
     needs: [test_backend]
     env:
       USERNAME: fastapiserver
+      SUBDIRECTORY: fastapi_server
     if: github.ref == 'refs/heads/develop'
 
     steps:
@@ -96,7 +97,9 @@ jobs:
         key: ${{ secrets.FASTAPISERVERKEY }}
         passphrase: ''
         script: |
-          cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}/fastapi_server"
+          cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}"
+          cp ${{ env.SUBDIRECTORY }}/poetry.lock poetry.lock
+          cp ${{ env.SUBDIRECTORY }}/pyproject.toml pyproject.toml
           poetry install --no-dev
           cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/fastapi_server/systemd/${{ env.USERNAME }}.service" "/etc/systemd/system/${{ env.USERNAME }}.service"
           sudo /bin/systemctl daemon-reload
