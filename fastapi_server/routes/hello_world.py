@@ -8,7 +8,7 @@ hello_world_router = APIRouter()
 
 @hello_world_router.get('/')
 def hello_world():
-    return {'Hello': 'World'}
+    return {'Hello': 'World2'}
 
 
 async def background_task_function(my_text: str, other_text: str = ' something!'):
