@@ -42,8 +42,9 @@ lorem-text = "^2.1"
 sqlmodel = "^0.0.6"
 # Geometry manipulation
 Shapely = "^1.8"
-# Python JSON Web Token implementation
-PyJWT = "^2.3"
+# Fastapi server
+fastapi = "^0.70"
+uvicorn = "^0.16"
 # End to end tests - TODO Find alternative because the dependency tree is huge
 seleniumbase = "^2.3"
 # Info about the system

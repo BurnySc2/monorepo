@@ -100,6 +100,7 @@ jobs:
           cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}"
           cp ${{ env.SUBDIRECTORY }}/poetry.lock poetry.lock
           cp ${{ env.SUBDIRECTORY }}/pyproject.toml pyproject.toml
+          echo -e "STAGE=prod\n" > .env
           poetry install --no-dev
           cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/fastapi_server/systemd/${{ env.USERNAME }}.service" "/etc/systemd/system/${{ env.USERNAME }}.service"
           sudo /bin/systemctl daemon-reload

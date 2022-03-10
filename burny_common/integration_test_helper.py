@@ -130,18 +130,10 @@ def start_svelte_dev_server(
 def start_fastapi_dev_server(
     port: int,
     NEWLY_CREATED_PROCESSES: Set[int],
-    CREATED_FILES: Set[Path],
 ):
     root_folder = Path(__file__).parents[1]
-    backend_folder = root_folder / 'fastapi_server'
     currently_running_uvicorn_processes = get_pid('uvicorn')
     env = os.environ.copy()
-    env['DATABASE_USE_MEMORY'] = 'TRUE'
-
-    sqlite_test_file_name = 'todos_TEST.db'
-    sqlite_test_file_path = backend_folder / 'data' / sqlite_test_file_name
-    CREATED_FILES.add(sqlite_test_file_path)
-    remove_leftover_files({sqlite_test_file_path})
 
     # Why does this return errors even when fastapi server is not running
     # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
@@ -279,6 +271,6 @@ if __name__ == '__main__':
     free_frontend_port = find_next_free_port()
     free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
     start_svelte_dev_server(free_frontend_port, set(), backend_proxy=f'localhost:{free_backend_port}')
-    start_fastapi_dev_server(free_backend_port, set(), set())
+    start_fastapi_dev_server(free_backend_port, set())
     while 1:
         time.sleep(1)

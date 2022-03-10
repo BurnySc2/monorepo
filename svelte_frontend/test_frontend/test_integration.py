@@ -35,7 +35,7 @@ class MyTestClass(BaseCase):
         free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
         self.FRONTEND_ADDRESS = get_website_address(free_frontend_port)
         self.BACKEND_ADDRESS = f'http://localhost:{free_backend_port}'
-        start_fastapi_dev_server(free_backend_port, self.NEWLY_CREATED_PROCESSES, self.CREATED_FILES)
+        start_fastapi_dev_server(free_backend_port, self.NEWLY_CREATED_PROCESSES)
         start_svelte_dev_server(
             free_frontend_port,
             self.NEWLY_CREATED_PROCESSES,

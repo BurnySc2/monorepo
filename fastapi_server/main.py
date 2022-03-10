@@ -10,11 +10,6 @@ from fastapi_server.routes.chat import chat_router
 from fastapi_server.routes.hello_world import hello_world_router
 from fastapi_server.routes.todolist import todo_list_router
 
-app = FastAPI()
-app.include_router(hello_world_router)
-app.include_router(chat_router)
-app.include_router(todo_list_router)
-
 env_path = Path(__file__).parent / '.env'
 if not env_path.is_file():
     logger.info(
@@ -22,11 +17,17 @@ if not env_path.is_file():
 STAGE=dev"""
     )
 
-config: dict = dotenv_values('.env')
+config: dict = dotenv_values(env_path)
+
+app = FastAPI()
+app.include_router(hello_world_router)
 
 origins = ['https://burnysc2.github.io']
-if config.get('STAGE', '') == 'dev':
+if config.get('STAGE', '') != 'prod':
+    logger.info("Starting in 'STAGE == dev' mode")
     origins += [f'http://localhost:{i}' for i in range(1, 2**16)]
+    app.include_router(todo_list_router)
+    app.include_router(chat_router)
 
 app.add_middleware(
     CORSMiddleware,
