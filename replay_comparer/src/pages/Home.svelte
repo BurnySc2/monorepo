@@ -5,8 +5,8 @@
     import ReplayComparison from "../components/ReplayComparison.svelte"
     import { replay1, replay2 } from "../functions/fake_replay_data"
 
-    let real_replay_data = replay1
-    let ideal_replay_data = replay2
+    let real_replay_data = null
+    let ideal_replay_data = null
     let real_replay_selected_player_id = 1
     let ideal_replay_selected_player_id = 1
     let swapped = false

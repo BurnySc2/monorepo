@@ -1,9 +1,7 @@
 # fastapi-svelte-typescript-template
 
 # Live versions
-[Master branch](https://burnysc2-monorepo.netlify.app/)
-
-[Develop branch](https://burnysc2-monorepo-dev.netlify.app/)
+[Develop branch](https://replaycomparer.netlify.app)
 
 # Requirement
 
@@ -36,57 +34,7 @@ Create the front end and host it somewhere (e.g. github pages)
 npm run build
 ```
 
-# Functionality
-
-## Requests
-
-[x] Communicate between front and backend
-
-[x] Accept file download (sent via backend)
-
-[ ] Accept file upload
-
-[ ] User register
-
-[ ] User login
-
-[ ] Use cookies to store login? https://sanic.readthedocs.io/en/latest/sanic/cookies.html
-
-# Tests
-
-Run python backend tests via
-
-```
-poetry run pytest test_backend --benchmark-skip
-```
-
-and Javascript unit tests via
-
-```
-npm run test
-```
-
-[x] How to test a webserver?
-Run frontend tests via
-
-```
-poetry run pytest test_frontend --benchmark-skip --headless
-```
-
-You can benchmark tests with
-
-```
-poetry run pytest test_frontend --benchmark-only
-```
-
-# Upgrade packages to latest major version
-
-```
-npx npm-check-updates -u
-```
-
-Or run
-
+# Update packages
 ```
 npm run update
 ```
