@@ -8,6 +8,7 @@ from loguru import logger
 
 from fastapi_server.routes.chat import chat_router
 from fastapi_server.routes.hello_world import hello_world_router
+from fastapi_server.routes.replay_parser import replay_parser_router
 from fastapi_server.routes.todolist import todo_list_router
 
 env_path = Path(__file__).parent / '.env'
@@ -21,6 +22,7 @@ config: dict = dotenv_values(env_path)
 
 app = FastAPI()
 app.include_router(hello_world_router)
+app.include_router(replay_parser_router)
 
 origins = ['https://burnysc2.github.io']
 if config.get('STAGE', '') != 'prod':

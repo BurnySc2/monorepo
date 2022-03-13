@@ -114,11 +114,18 @@ repos:
     entry: bash -c "cd svelte_frontend && npm run format"
     pass_filenames: false
 
-  - id: supabase_stream_scripts
-    name: supabase_stream_scripts
+  - id: format_supabase_stream_scripts
+    name: format_supabase_stream_scripts
     stages: [commit]
     language: system
     entry: bash -c "cd supabase_stream_scripts && npm run format"
+    pass_filenames: false
+
+  - id: format_replay_comparer
+    name: format_replay_comparer
+    stages: [commit]
+    language: system
+    entry: bash -c "cd replay_comparer && npm run format"
     pass_filenames: false
 
   - id: pylint
