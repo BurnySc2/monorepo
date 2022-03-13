@@ -28,7 +28,11 @@
         formData.append("replay_tick", `${second * 10}`)
         formData.append("replay_file", replay_file)
 
-        let response = await fetch(`http://${ip}/${replay_parse_endpoint}`, { method: "POST", body: formData })
+        let response = await fetch(`http://${ip}/${replay_parse_endpoint}`, {
+            credentials: "omit",
+            method: "POST",
+            body: formData,
+        })
         if (response.ok) {
             let data = await response.json()
             console.log(data)
