@@ -3,6 +3,7 @@
     "version": "0.0.1",
     "scripts": {
         "dev": "cross-env BACKEND_SERVER='localhost:8000' svelte-kit dev",
+        "devs": "cross-env BACKEND_SERVER='localhost:8000' svelte-kit dev --https",
         "build": "svelte-kit build",
         "preview": "svelte-kit preview",
         "check": "svelte-check --tsconfig ./tsconfig.json",

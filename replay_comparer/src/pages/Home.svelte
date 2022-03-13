@@ -12,7 +12,7 @@
     let swapped = false
     let loading = false
 
-    const ip = process.env.BACKEND_SERVER || "localhost:8000"
+    const ip = process.env.BACKEND_SERVER || "http://localhost:8000"
     const replay_parse_endpoint = "parse_replay"
 
     if (dev) {
@@ -28,7 +28,7 @@
         formData.append("replay_tick", `${second * 10}`)
         formData.append("replay_file", replay_file)
 
-        let response = await fetch(`http://${ip}/${replay_parse_endpoint}`, {
+        let response = await fetch(`${ip}/${replay_parse_endpoint}`, {
             credentials: "omit",
             method: "POST",
             body: formData,
