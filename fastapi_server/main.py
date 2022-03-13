@@ -24,7 +24,7 @@ app = FastAPI()
 app.include_router(hello_world_router)
 app.include_router(replay_parser_router)
 
-origins = ['https://burnysc2.github.io']
+origins = ['https://burnysc2.github.io', 'https://replaycomparer.netlify.app']
 if config.get('STAGE', '') != 'prod':
     logger.info("Starting in 'STAGE == dev' mode")
     origins += [f'http://localhost:{i}' for i in range(1, 2**16)]
