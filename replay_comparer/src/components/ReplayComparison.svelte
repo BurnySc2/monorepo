@@ -1,6 +1,6 @@
 <script lang="ts">
     import Highcharts from "highcharts"
-    import highchartsMore from "highcharts/highcharts-more"
+    import highchartsMore from "highcharts/highcharts-more.js"
     import { onMount } from "svelte"
 
     // Init "arearange" plot
