@@ -3,12 +3,14 @@
     import Dropzone from "svelte-file-dropzone"
 
     import ReplayComparison from "../components/ReplayComparison.svelte"
+    import { timelineOptions } from "../functions/constants"
     import { replay1, replay2 } from "../functions/fake_replay_data"
 
     let real_replay_data = null
     let ideal_replay_data = null
     let real_replay_selected_player_id = 1
     let ideal_replay_selected_player_id = 1
+    let timelineSelected = timelineOptions[0]
     let swapped = false
     let loading = false
 
@@ -29,7 +31,6 @@
         formData.append("replay_file", replay_file)
 
         let response = await fetch(`${ip}/${replay_parse_endpoint}`, {
-            credentials: "omit",
             method: "POST",
             body: formData,
         })
@@ -77,6 +78,7 @@
                 {ideal_replay_data}
                 bind:real_replay_selected_player_id
                 bind:ideal_replay_selected_player_id
+                bind:timelineSelected
             />
         {:else}
             <ReplayComparison
@@ -84,6 +86,7 @@
                 real_replay_data={ideal_replay_data}
                 bind:real_replay_selected_player_id={ideal_replay_selected_player_id}
                 bind:ideal_replay_selected_player_id={real_replay_selected_player_id}
+                bind:timelineSelected
             />
         {/if}
     {:else if loading}

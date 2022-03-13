@@ -10,24 +10,9 @@
     export let ideal_replay_data
     export let real_replay_selected_player_id
     export let ideal_replay_selected_player_id
+    export let timelineSelected
+
     let mergedTimelines = []
-
-    const timelineOptions = [
-        "workers_active",
-        "workers_produced",
-        "workers_lost",
-        "supply",
-        "supply_cap",
-        "supply_block",
-        "spm",
-        "total_army_value",
-        "total_resources_lost",
-        "total_resources_collected",
-        "workers_killed",
-        "resource_collection_rate_all",
-    ]
-    let timelineSelected = timelineOptions[0]
-
     const second = 22.4
 
     onMount(() => {
@@ -75,7 +60,7 @@
     }
 
     const gameloopToTimeString = (gameloop: number) => {
-        let seconds = gameloop / 22.4
+        let seconds = gameloop / second
         let minutes = Math.floor(seconds / 60)
         seconds = Math.floor(seconds % 60)
         seconds = seconds.toString().padStart(2, "0")
