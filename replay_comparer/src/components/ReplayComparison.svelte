@@ -3,6 +3,8 @@
     import highchartsMore from "highcharts/highcharts-more.js"
     import { onMount } from "svelte"
 
+    import { timelineOptions } from "../functions/constants.ts"
+
     // Init "arearange" plot
     highchartsMore(Highcharts)
 
