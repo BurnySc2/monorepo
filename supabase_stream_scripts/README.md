@@ -1,22 +1,17 @@
 # fastapi-svelte-typescript-template
 
 # Live versions
-[Master branch](https://burnysc2-monorepo.netlify.app/)
-
-[Develop branch](https://burnysc2-monorepo-dev.netlify.app/)
+[Develop branch](https://streammanager.netlify.app/)
 
 # Requirement
 
--   Python 3.7 or newer
 -   Node.js 12+
 
 # Installation
 
-Install node and python 3.7+
+Install node
 
 ```
-pip install poetry --user
-poetry install
 npm install
 ```
 
@@ -28,70 +23,18 @@ npm run dev
 
 Then to go http://localhost:3000 to preview the page
 
-# Deploy
+# Testing in Browser
 
-Create the front end and host it somewhere (e.g. github pages)
+Install a browser extension that bypasses CORS like https://add0n.com/access-control.html
 
-```
-npm run build
-```
+# Testing in OBS
 
-# Functionality
+Launch OBS with `--disable-web-security`
 
-## Requests
+# MatchInfo
 
-[x] Communicate between front and backend
+When adding it to OBS overlay, add it as browser scene with width=320 and height=300
 
-[x] Accept file download (sent via backend)
-
-[ ] Accept file upload
-
-[ ] User register
-
-[ ] User login
-
-[ ] Use cookies to store login? https://sanic.readthedocs.io/en/latest/sanic/cookies.html
-
-# Tests
-
-Run python backend tests via
-
-```
-poetry run pytest test_backend --benchmark-skip
-```
-
-and Javascript unit tests via
-
-```
-npm run test
-```
-
-[x] How to test a webserver?
-Run frontend tests via
-
-```
-poetry run pytest test_frontend --benchmark-skip --headless
-```
-
-You can benchmark tests with
-
-```
-poetry run pytest test_frontend --benchmark-only
-```
-
-# Upgrade packages to latest major version
-
-```
-npx npm-check-updates -u
-```
-
-Or run
-
-```
-npm run update
-```
-
-to update versions, reinstall node_modules from scratch
 
 # Autoformatting
 

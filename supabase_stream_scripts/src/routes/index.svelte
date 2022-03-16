@@ -2,13 +2,9 @@
     import { dev } from "$app/env"
     import { onMount } from "svelte"
 
-    import About from "../pages/About.svelte"
-    import BrowserStorage from "../pages/BrowserStorage.svelte"
     import Home from "../pages/Home.svelte"
     import MatchInfo from "../pages/MatchInfo.svelte"
-    import NormalChat from "../pages/NormalChat.svelte"
     import StreamManager from "../pages/StreamManager.svelte"
-    import TodoPage from "../pages/TodoPage.svelte"
 
     // Router url handling
     let hash: string
@@ -54,12 +50,6 @@
                 <button class="m-1 p-1 border-2" id="streammanager" on:click={() => setUrl("/streammanager")}
                     >Stream Manager</button
                 >
-                <button class="m-1 p-1 border-2" id="about" on:click={() => setUrl("/about")}>About</button>
-                <button class="m-1 p-1 border-2" id="chat" on:click={() => setUrl("/chat")}>Chat</button>
-                <button class="m-1 p-1 border-2" id="todo" on:click={() => setUrl("/todo")}>Todo</button>
-                <button class="m-1 p-1 border-2" id="browserstorage" on:click={() => setUrl("/browserstorage")}
-                    >BrowserStorage</button
-                >
             </div>
         {/if}
 
@@ -69,14 +59,6 @@
             <StreamManager defaultText="My other text" />
         {:else if url.startsWith("/matchinfo")}
             <MatchInfo />
-        {:else if url === "/about"}
-            <About defaultText="My other text" />
-        {:else if url === "/chat"}
-            <NormalChat />
-        {:else if url === "/todo"}
-            <TodoPage />
-        {:else if url === "/browserstorage"}
-            <BrowserStorage />
         {:else if url === ""}
             <div>Loading...</div>
         {:else}

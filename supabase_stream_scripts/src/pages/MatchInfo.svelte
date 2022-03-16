@@ -163,7 +163,7 @@
         }
         // Get my mmr
         await nephestQuery(info.myName, info.myRace, params.server)
-        if ((validGame === "1v1" || (dev && validGame === "vsComputer")) && info.myMmr !== -1) {
+        if ((validGame === "1v1" || validGame === "vsComputer") && info.myMmr !== -1) {
             // Get opponent mmr
             await nephestQuery(info.opponentName, info.opponentRace, params.server, info.myMmr)
             await getOpponentStream()
