@@ -160,6 +160,14 @@ repos:
     entry: poetry run pytest fastapi_server
     pass_filenames: false
 
+  # Run supabase stream scripts tests
+  - id: test_supabase_stream_scripts
+    name: test_supabase_stream_scripts
+    stages: [commit]
+    language: system
+    entry: bash -c "cd supabase_stream_scripts && npm run test"
+    pass_filenames: false
+
   # Run svelte e2e tests
   - id: svelte_e2e_tests
     name: svelte_e2e_tests
