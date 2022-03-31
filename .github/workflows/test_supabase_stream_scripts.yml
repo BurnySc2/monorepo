@@ -1,4 +1,4 @@
-name: test_svelte_frontend
+name: test_supabase_stream_scripts
 
 
 on:
@@ -12,7 +12,7 @@ on:
     - develop
 
 jobs:
-  test_frontend:
+  test_supabase_stream_scripts:
     env:
       SUBDIRECTORY: supabase_stream_scripts
     strategy:
@@ -43,4 +43,5 @@ jobs:
 
     - name: Run tests
       run: |
+        cd ${{ env.SUBDIRECTORY }}
         npm run test
