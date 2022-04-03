@@ -1,8 +1,20 @@
 <script lang="ts">
     import { dev } from "$app/env"
+    import { toast } from "@zerodevx/svelte-toast"
     import { onMount } from "svelte"
 
-    import { races, sc2AccountsDb, servers, supabase } from "../functions/constants"
+    import {
+        errorTheme,
+        formatTime,
+        races,
+        sc2AccountsDb,
+        sc2BuildOrdersDb,
+        servers,
+        successTheme,
+        supabase,
+        textToBuildOrder,
+    } from "../functions/constants"
+    import { IBuildOrderItem } from "../functions/interfaces"
 
     // CONSTANTS
     let matchups = []
@@ -15,12 +27,22 @@
 
     // DUMMY VALUES
     let activeAccounts = [
-        { enabled: true, name: "Pinopino", race: "Turtle terran", server: "Europe" },
-        { enabled: false, name: "saixy", race: "Zerg", server: "Europe" },
+        { id: 1, enabled: true, name: "Pinopino", race: "Turtle terran", server: "Europe" },
+        { id: 2, enabled: false, name: "saixy", race: "Zerg", server: "Europe" },
     ]
     let buildOrders = [
-        { enabled: true, matchup: "TvZ", title: "Standard bio", text: "blabla1" },
-        { enabled: false, matchup: "TvP", title: "Uthermal tank push", text: "blabla2" },
+        {
+            id: 1,
+            enabled: true,
+            priority: 1,
+            matchup: "TvZ",
+            title: "Standard bio",
+            buildOrder: [
+                { time: 14, text: "Supply depot" },
+                { time: 41, text: "Barracks" },
+            ],
+        },
+        { id: 2, enabled: false, priority: 1, matchup: "TvP", title: "Uthermal tank push", buildOrder: [] },
     ]
     // END OF DUMMY VALUES
 
@@ -29,6 +51,7 @@
     let activeServerSelected = servers[0]
 
     $: matchInfoOverlayLink = `${location.origin}?twitchUser=${twitchUser}&server=${activeServerSelected}&sc2PollFrequency=1000&maxOpponentMmrDifference=1000#/matchinfo`
+    $: buildOrderOverlayLink = `${location.origin}?twitchUser=${twitchUser}&server=${activeServerSelected}&sc2PollFrequency=1000#/buildorder`
 
     let buildOrderAnnounceInChatAfterVoting = "Yes"
     let buildOrderVotingTimeDuration = 30
@@ -42,7 +65,8 @@
     let addAccountServer = "Europe"
 
     let addBuildOrderEnabled = true
-    let addBuildOrderName = "Standard bio"
+    let addBuildOrderPriority = 1
+    let addBuildOrderTitle = "Standard bio"
     let addBuildOrderText = "0:17 Depot\n0:40 Barracks\n0:47 Gas"
     let addBuildOrderMatchup = matchups[0]
 
@@ -59,16 +83,12 @@
     }
 
     onMount(async () => {
-        loadTwitchUserFromSession()
-        loadSc2Accounts()
         if (dev) {
             twitchUser = "LOCALDEV"
-            let response = await fetch("https://www.nephest.com/sc2/api/characters?name=BuRny")
-            if (response.ok) {
-                console.log(response)
-                console.log(await response.json())
-            }
         }
+        loadTwitchUserFromSession()
+        loadSc2Accounts()
+        loadBuildOrders()
     })
 
     let loadTwitchUserFromSession = async () => {
@@ -79,8 +99,8 @@
                 if (session.user.user_metadata.nickname) {
                     twitchUser = session.user.user_metadata.nickname // case sensitive
                     // twichEmail = session.user.email
-                    // twichEmail = session.user.id
-                    // twichEmail = session.access_token
+                    // twichId = session.user.id
+                    // twichAccessToken = session.access_token
                 }
                 break
             }
@@ -127,7 +147,7 @@
     }
 
     let addSc2Account = async () => {
-        await supabase.from(sc2AccountsDb).insert(
+        const { data, error } = await supabase.from(sc2AccountsDb).insert(
             {
                 twitchname: twitchUser,
                 enabled: addAccountEnabled,
@@ -137,17 +157,91 @@
             },
             { returning: "minimal" }
         )
+        if (error !== null) {
+            console.log(error)
+            toast.push(`Error adding SC2 Account:<br>${addAccountUsername}`, errorTheme)
+            return
+        }
+        console.log(data)
+        toast.push(`Added SC2 Account successfully:<br>${addAccountUsername}`, successTheme)
         addAccountUsername = ""
         await loadSc2Accounts()
     }
 
-    let deleteSc2Account = async (id) => {
+    let deleteSc2Account = async (id, accountName) => {
         await supabase.from(sc2AccountsDb).delete().match({ id: id })
+        toast.push(`Deleted SC2 Account successfully:<br>${accountName}`, successTheme)
         await loadSc2Accounts()
     }
 
     let enableDisableSc2Account = async (id: number, enable: boolean) => {
         await supabase.from(sc2AccountsDb).update({ enabled: enable }).match({ id: id })
+    }
+
+    let addBuildOrder = async () => {
+        const { data, error } = await supabase.from(sc2BuildOrdersDb).insert(
+            {
+                twitchname: twitchUser,
+                enabled: addBuildOrderEnabled,
+                priority: addBuildOrderPriority,
+                title: addBuildOrderTitle,
+                matchup: addBuildOrderMatchup,
+                buildOrder: textToBuildOrder(addBuildOrderText),
+            },
+            { returning: "minimal" }
+        )
+        if (error !== null) {
+            console.log(error)
+            toast.push(`Error adding build order:<br>${addBuildOrderTitle}`, errorTheme)
+            return
+        }
+        console.log(data)
+        toast.push(`Added build order successfully:<br>${addBuildOrderTitle}`, successTheme)
+        addBuildOrderTitle = ""
+        addBuildOrderText = ""
+        // Toast notification: added build order "title"
+        await loadBuildOrders()
+    }
+    let loadBuildOrders = async () => {
+        const { data, error } = await supabase
+            .from(sc2BuildOrdersDb)
+            .select()
+            .match({ twitchname: twitchUser })
+            .order("priority", { ascending: false })
+            .order("id")
+        if (error !== null) {
+            console.log(error)
+            return
+        }
+        console.log(data)
+        buildOrders = []
+        data.forEach((row) => {
+            buildOrders.push({
+                id: row.id,
+                enabled: row.enabled,
+                priority: row.priority,
+                matchup: row.matchup,
+                title: row.title,
+                buildOrder: row.buildOrder,
+            })
+        })
+    }
+    let deleteBuildOrder = async (id, buildOrderTitle) => {
+        await supabase.from(sc2BuildOrdersDb).delete().match({ id: id })
+        toast.push(`Deleted Build order successfully:<br>${buildOrderTitle}`, successTheme)
+        await loadBuildOrders()
+    }
+
+    let enableDisableBuildOrder = async (id: number, enable: boolean) => {
+        await supabase.from(sc2BuildOrdersDb).update({ enabled: enable }).match({ id: id })
+    }
+
+    let buildOrderFromJsonToTextArea = (buildOrder: IBuildOrderItem[]): string => {
+        // Converts a JSON of build order items to a readable string which can be put into a TextArea
+        let mappedItems = buildOrder.map((buildOrderItem) => {
+            return `${formatTime(buildOrderItem.time)} ${buildOrderItem.text}`
+        })
+        return mappedItems.join("\n")
     }
 </script>
 
@@ -170,6 +264,10 @@
                 <div>
                     <div>Your match info overlay link</div>
                     <textarea bind:value={matchInfoOverlayLink} readonly />
+                </div>
+                <div>
+                    <div>Your build order overlay link</div>
+                    <textarea bind:value={buildOrderOverlayLink} readonly />
                 </div>
             </div>
 
@@ -255,7 +353,7 @@
                         <button
                             class="border-2 border-black p-1 m-1 hover:bg-red-500"
                             on:click={() => {
-                                deleteSc2Account(account.id)
+                                deleteSc2Account(account.id, account.name)
                             }}>Delete</button
                         >
                     {/each}
@@ -264,8 +362,9 @@
 
             <div class={categoryClass}>
                 <div>SC2 Build orders</div>
-                <div class="grid grid-cols-7">
+                <div class="grid grid-cols-8">
                     <div>Enabled</div>
+                    <div>Priority</div>
                     <div>Matchup</div>
                     <div>Title</div>
                     <div>Build Order</div>
@@ -273,6 +372,7 @@
                     <div />
                     <div />
                     <input type="checkbox" bind:checked={addBuildOrderEnabled} />
+                    <input type="number" bind:value={addBuildOrderPriority} />
                     <select bind:value={addBuildOrderMatchup}>
                         {#each matchups as matchup}
                             <option value={matchup}>
@@ -280,15 +380,31 @@
                             </option>
                         {/each}
                     </select>
-                    <input bind:value={addBuildOrderName} />
+                    <input bind:value={addBuildOrderTitle} />
                     <textarea class="border-2 border-black w-full col-span-3" bind:value={addBuildOrderText} />
-                    <button class="border-2 border-black p-1 m-1 hover:bg-green-500">Add</button>
+                    <!-- Add new build order button -->
+                    <button class="border-2 border-black p-1 m-1 hover:bg-green-500" on:click={addBuildOrder}
+                        >Add</button
+                    >
                     {#each buildOrders as buildOrder}
-                        <input type="checkbox" bind:checked={buildOrder.enabled} />
+                        <input
+                            type="checkbox"
+                            bind:checked={buildOrder.enabled}
+                            on:click={() => {
+                                enableDisableBuildOrder(buildOrder.id, !buildOrder.enabled)
+                            }}
+                        />
+                        <div>{buildOrder.priority}</div>
                         <div>{buildOrder.matchup}</div>
                         <div>{buildOrder.title}</div>
-                        <textarea class="col-span-3">{buildOrder.text}</textarea>
-                        <button class="border-2 border-black p-1 m-1 hover:bg-red-500">Delete</button>
+                        <textarea class="col-span-3">{buildOrderFromJsonToTextArea(buildOrder.buildOrder)}</textarea>
+                        <!-- Delete build order button -->
+                        <button
+                            class="border-2 border-black p-1 m-1 hover:bg-red-500"
+                            on:click={() => {
+                                deleteBuildOrder(buildOrder.id, buildOrder.title)
+                            }}>Delete</button
+                        >
                     {/each}
                 </div>
             </div>

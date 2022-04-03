@@ -94,3 +94,17 @@ export type INephestResponse = {
         }
     }
 }
+
+export type IBuildOrderItem = {
+    time: number
+    text: string
+}
+
+export type IBuildOrderDbRow = {
+    id: number
+    enabled: boolean
+    priority: number
+    matchup: string
+    title: string
+    buildOrder: IBuildOrderItem[]
+}

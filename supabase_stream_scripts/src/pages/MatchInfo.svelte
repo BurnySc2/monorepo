@@ -15,6 +15,7 @@
         supabase,
         toNephestRace,
         toNephestServer,
+        validateGameFromGameData,
     } from "../functions/constants"
     import {
         IGameData,
@@ -72,13 +73,6 @@
         })
         console.log("Found sc2 accounts belonging to streamer:", sc2Accounts)
     }
-    let validateGameFromGameData = (gameData: IGameData): IValidGame => {
-        if (gameData.players.length !== 2) {
-            return "other"
-        }
-        // Return true if this is a valid 1v1 game
-        return "1v1"
-    }
     let pollSc2Api = async () => {
         if (!running) {
             // Component was unmounted
@@ -101,13 +95,14 @@
             // Not a valid 1v1 game (either vs human or computer)
             return
         }
+        // /ui
         let uiDataResponse = await fetch(sc2UiUrl)
         if (!uiDataResponse.ok) {
             // Ui url didnt respond
             return
         }
         let uiData: IUiData = await uiDataResponse.json()
-        let currenctScene: ISceneNames = getCurrentScene(gameData, uiData)
+        let currentScene: ISceneNames = getCurrentScene(gameData, uiData)
 
         // Find player account
         let myIndex = -1
@@ -120,24 +115,22 @@
                 break
             }
         }
-
-        let sceneChange: ISceneChange = getSceneChange(runningData.scene, currenctScene, myIndex !== -1)
-        if (currenctScene === "loading") {
+        if (myIndex === -1) {
+            // Account not found in list of accounts
+            return
+        }
+        let sceneChange: ISceneChange = getSceneChange(runningData.scene, currentScene, myIndex !== -1)
+        if (currentScene === "loading") {
             // Do nothing when loading
             return
         }
-        runningData.scene = currenctScene
+        runningData.scene = currentScene
         if (sceneChange !== "toNewGameFromMenu") {
             // No new game has been started, don't change anything
             return
         }
         if (sceneChange === "toMenu") {
             // TODO Hide overlay?
-            return
-        }
-
-        if (myIndex === -1) {
-            // Account not found in list of accounts
             return
         }
         let opponentIndex = 1 - myIndex

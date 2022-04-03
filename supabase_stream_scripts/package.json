@@ -2,7 +2,7 @@
     "name": "my-app",
     "version": "0.0.1",
     "scripts": {
-        "dev": "cross-env BACKEND_SERVER='localhost:8000' SC2ACCOUNTSDB='sc2accounts_dev' svelte-kit dev",
+        "dev": "cross-env BACKEND_SERVER='localhost:8000' SC2ACCOUNTSDB='sc2accounts_dev' SC2BUILDORDERSDB='sc2buildorders_dev' svelte-kit dev",
         "build": "svelte-kit build",
         "preview": "svelte-kit preview",
         "check": "svelte-check --tsconfig ./tsconfig.json",
@@ -43,5 +43,6 @@
         "svelte-check": "^2.4.5",
         "svelte-preprocess": "^4.10.3",
         "typescript": "^4.5.5"
-    }
+    },
+    "type": "module"
 }

@@ -1,7 +1,9 @@
 <script lang="ts">
     import { dev } from "$app/env"
+    import { SvelteToast } from "@zerodevx/svelte-toast"
     import { onMount } from "svelte"
 
+    import BuildOrder from "../pages/BuildOrder.svelte"
     import Home from "../pages/Home.svelte"
     import MatchInfo from "../pages/MatchInfo.svelte"
     import StreamManager from "../pages/StreamManager.svelte"
@@ -14,7 +16,7 @@
     // Required for tests: disallow interaction before GUI is ready
     let mounted = false
 
-    let _dontShowHeadersOnUrl = ["/matchinfo"]
+    let _dontShowHeadersOnUrl = ["/matchinfo", "/buildorder"]
     let showHeaders = true
 
     onMount(() => {
@@ -56,9 +58,11 @@
         {#if url === "/"}
             <Home />
         {:else if url.startsWith("/streammanager")}
-            <StreamManager defaultText="My other text" />
+            <StreamManager />
         {:else if url.startsWith("/matchinfo")}
             <MatchInfo />
+        {:else if url.startsWith("/buildorder")}
+            <BuildOrder />
         {:else if url === ""}
             <div>Loading...</div>
         {:else}
@@ -66,3 +70,4 @@
         {/if}
     </div>
 {/if}
+<SvelteToast options={{}} />
