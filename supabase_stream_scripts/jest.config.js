@@ -1,5 +1,9 @@
 export default {
+  testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.ts?$': 'ts-jest',
+    '\\.js$': 'babel-jest',
+    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.svelte$': ['svelte-jester', { preprocess: true }]
   },
+  moduleFileExtensions: ['js', 'ts', 'svelte'],
 };

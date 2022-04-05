@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { dev } from "$app/env"
     import { page } from "$app/stores"
     import { onDestroy, onMount } from "svelte"
 
@@ -29,6 +28,8 @@
         ISceneNames,
         IUiData,
     } from "../functions/interfaces"
+
+    const dev = (process.env.DEV && process.env.DEV === "true") || false
 
     let buildOrderTitle = "Current Build Order Title"
     let currentItem: IBuildOrderItem = { time: 85, text: "Supply Depot" }

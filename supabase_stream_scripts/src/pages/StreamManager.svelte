@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { dev } from "$app/env"
     import { toast } from "@zerodevx/svelte-toast"
     import { onMount } from "svelte"
 
@@ -17,6 +16,7 @@
     import { IBuildOrderItem } from "../functions/interfaces"
 
     // CONSTANTS
+    const dev = (process.env.DEV && process.env.DEV === "true") || false
     let matchups = []
     races.forEach((race1) => {
         races.forEach((race2) => {
@@ -84,7 +84,7 @@
 
     onMount(async () => {
         if (dev) {
-            twitchUser = "LOCALDEV"
+            twitchUser = process.env.LOCALUSER || "LOCALDEV"
         }
         loadTwitchUserFromSession()
         loadSc2Accounts()
@@ -321,7 +321,7 @@
                     <div>Server</div>
                     <div />
                     <input type="checkbox" bind:checked={addAccountEnabled} />
-                    <input bind:value={addAccountUsername} placeholder="Username" />
+                    <input data-testid="addAccountUsername" bind:value={addAccountUsername} placeholder="Username" />
                     <select bind:value={addAccountRace}>
                         {#each races as race}
                             <option value={race}>
@@ -336,8 +336,10 @@
                             </option>
                         {/each}
                     </select>
-                    <button class="border-2 border-black p-1 m-1 hover:bg-green-500" on:click={addSc2Account}
-                        >Add</button
+                    <button
+                        data-testid="addSc2Account"
+                        class="border-2 border-black p-1 m-1 hover:bg-green-500"
+                        on:click={addSc2Account}>Add</button
                     >
                     {#each activeAccounts as account}
                         <input

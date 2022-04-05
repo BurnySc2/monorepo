@@ -20,6 +20,7 @@ const config = {
             base: baseUrl,
         },
         appDir: "internal",
+        // Make env variables available and accessable in frontend
         vite: {
             define: {
                 "process.env": process.env,

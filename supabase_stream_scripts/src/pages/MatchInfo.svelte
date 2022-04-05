@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { dev } from "$app/env"
     import { page } from "$app/stores"
     import { onDestroy, onMount } from "svelte"
 
@@ -31,6 +30,7 @@
         IValidGame,
     } from "../functions/interfaces"
 
+    const dev = (process.env.DEV && process.env.DEV === "true") || false
     let sc2Accounts: ISC2Account[] = []
     let params = {
         // http://localhost:3000?twitchUser=BurnySc2&server=Europe&sc2PollFrequency=1&maxOpponentMmrDifference=1000#/matchinfo
