@@ -1,7 +1,7 @@
 [![publish_example_package](https://github.com/BurnySc2/monorepo/actions/workflows/publish_example_package.yml/badge.svg?branch=master)](https://github.com/BurnySc2/monorepo/actions/workflows/publish_example_package.yml)
 [![python_examples](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml)
 [![test_fastapi_server](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml)
-[![test_react_frontend](https://github.com/BurnySc2/monorepo/actions/workflows/test_react_frontend.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_react_frontend.yml)
+[![test_supabase_stream_scripts](https://github.com/BurnySc2/monorepo/actions/workflows/test_supabase_stream_scripts.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_supabase_stream_scripts.yml)
 [![test_svelte_frontend](https://github.com/BurnySc2/monorepo/actions/workflows/test_svelte_frontend.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_svelte_frontend.yml)
 
 # Monorepo
