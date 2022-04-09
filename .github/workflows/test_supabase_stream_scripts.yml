@@ -41,12 +41,8 @@ jobs:
         cd ${{ env.SUBDIRECTORY }}
         npm install
 
-    - name: Create .svelte-kit subdirectory
-      run: |
-        cd ${{ env.SUBDIRECTORY }}
-        npm run build
-
     - name: Run tests
       run: |
         cd ${{ env.SUBDIRECTORY }}
+        rm tsconfig.json
         npm run test
