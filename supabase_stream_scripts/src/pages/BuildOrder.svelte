@@ -89,11 +89,12 @@
         })
     }
     let getMyAccounts = async () => {
-        const { data, error } = await supabase
+        const { data } = await supabase
             .from(sc2AccountsDb)
             .select()
             .match({ twitchname: params.twitchUser, enabled: true, server: params.server })
             .order("id")
+        // TODO check for error?
         sc2Accounts = []
         data.forEach((row: ISC2Account) => {
             sc2Accounts.push({

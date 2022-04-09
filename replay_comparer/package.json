@@ -8,7 +8,7 @@
         "preview": "svelte-kit preview",
         "check": "svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
-        "lint": "npm run format && eslint src",
+        "lint": "eslint src/**/*.{ts,svelte} --max-warnings 0",
         "update": "npx npm-check-updates -u && npm run prune",
         "prune": "rm node_modules -rf && rm package-lock.json -f && npm i",
         "format": "prettier --write './**/*.{svelte,ts}'"

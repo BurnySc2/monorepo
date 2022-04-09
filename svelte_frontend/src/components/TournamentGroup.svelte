@@ -2,7 +2,7 @@
     import TournamentProfileCard from "./TournamentProfileCard.svelte"
 
     // Group id might be needed for fetching group score
-    export let groupId = 1337
+    export const groupId = 1337
     export let groupName = "Enter group name here"
     type Participant = {
         rank: number

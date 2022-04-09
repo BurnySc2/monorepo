@@ -2,7 +2,7 @@ import { expect, test } from "@jest/globals"
 import fc from "fast-check"
 
 import { getCurrentScene, getSceneChange } from "./constants"
-import { ISceneChange, ISceneNames } from "./interfaces"
+import type { ISceneNames } from "./interfaces"
 
 test("get current scene - game", () => {
     const gameData = { isReplay: false, displayTime: 5, players: [] }

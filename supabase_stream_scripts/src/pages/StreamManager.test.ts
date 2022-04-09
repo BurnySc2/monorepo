@@ -1,13 +1,9 @@
 import { beforeAll, describe, expect, jest, test } from "@jest/globals"
-import { fireEvent, getByTestId, queryByAttribute, render, screen, waitFor } from "@testing-library/svelte"
-import { onMount, tick } from "svelte"
-import { SvelteComponentDev } from "svelte/internal"
+import { render, screen } from "@testing-library/svelte"
 
 import StreamManager from "./StreamManager.svelte"
 
 describe("Render stream manager", () => {
-    const log = console.log
-
     beforeAll(() => {
         // Supress log output
         console.log = jest.fn()
@@ -19,7 +15,7 @@ describe("Render stream manager", () => {
     })
 
     test("Visible elements on page load", async () => {
-        render(StreamManager as unknown as typeof SvelteComponentDev)
+        render(StreamManager)
         const instantAvailableTexts = ["You are not logged in", "Log in with twitch"]
         instantAvailableTexts.forEach((text) => {
             const node = screen.getByText(text)
@@ -30,8 +26,6 @@ describe("Render stream manager", () => {
 })
 
 describe("Render stream manager login as LOCALTEST", () => {
-    const log = console.log
-
     beforeAll(() => {
         // Supress log output
         console.log = jest.fn()
@@ -45,7 +39,7 @@ describe("Render stream manager login as LOCALTEST", () => {
             SC2ACCOUNTSDB: "sc2accounts_dev",
             SC2BUILDORDERSDB: "sc2buildorders_dev",
         }
-        const { getByText } = render(StreamManager as unknown as typeof SvelteComponentDev)
+        render(StreamManager)
         const instantAvailableTexts = ["You are logged in as LOCALTEST", "Log out of twitch"]
         instantAvailableTexts.forEach((text) => {
             const node = screen.getByText(text)

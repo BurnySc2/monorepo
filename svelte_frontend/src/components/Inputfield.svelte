@@ -2,16 +2,24 @@
     export let descriptionText = "Description text"
     export let bindVariable = "Example text"
     export let inputType = "text"
-    export let onChangeFunction = async () => {}
+    export let onChangeFunction = () => {
+        console.log("On change called")
+    }
 </script>
 
-<label class="flex gap-2">
+<div class="flex gap-2">
     {descriptionText}
     {#if inputType === "text"}
-        <input type="text" bind:value={bindVariable} on:change={onChangeFunction()} />
+        <label>
+            <input type="text" bind:value={bindVariable} on:change={onChangeFunction} />
+        </label>
     {:else if inputType === "email"}
-        <input type="email" bind:value={bindVariable} on:change={onChangeFunction()} />
+        <label>
+            <input type="email" bind:value={bindVariable} on:change={onChangeFunction} />
+        </label>
     {:else if inputType === "password"}
-        <input type="password" bind:value={bindVariable} on:change={onChangeFunction()} />
+        <label>
+            <input type="password" bind:value={bindVariable} on:change={onChangeFunction} />
+        </label>
     {/if}
-</label>
+</div>

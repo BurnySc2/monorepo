@@ -1,5 +1,7 @@
 <script lang="ts">
-    export let setUrl = () => {}
+    export let setUrl = (url: string) => {
+        console.log(`Set url with url ${url} called`)
+    }
 </script>
 
 <div class="my-2 flex justify-center">

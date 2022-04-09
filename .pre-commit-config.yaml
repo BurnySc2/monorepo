@@ -128,6 +128,27 @@ repos:
     entry: bash -c "cd replay_comparer && npm run format"
     pass_filenames: false
 
+  - id: lint_svelte_frontend
+    name: lint_svelte_frontend
+    stages: [commit]
+    language: system
+    entry: bash -c "cd svelte_frontend && npm run lint"
+    pass_filenames: false
+
+  - id: lint_supabase_stream_scripts
+    name: lint_supabase_stream_scripts
+    stages: [commit]
+    language: system
+    entry: bash -c "cd supabase_stream_scripts && npm run lint"
+    pass_filenames: false
+
+  - id: lint_replay_comparer
+    name: lint_replay_comparer
+    stages: [commit]
+    language: system
+    entry: bash -c "cd replay_comparer && npm run lint"
+    pass_filenames: false
+
   - id: pylint
     name: pylint
     stages: [commit]
@@ -160,12 +181,12 @@ repos:
     entry: poetry run pytest fastapi_server
     pass_filenames: false
 
-  # Run supabase stream scripts tests
+  # Run supabase stream scripts tests (run build before test to create .svelte-kit folder with tsconfig.json)
   - id: test_supabase_stream_scripts
     name: test_supabase_stream_scripts
     stages: [commit]
     language: system
-    entry: bash -c "cd supabase_stream_scripts && npm run test"
+    entry: bash -c "cd supabase_stream_scripts && npm run build && npm run test"
     pass_filenames: false
 
   # Run svelte e2e tests

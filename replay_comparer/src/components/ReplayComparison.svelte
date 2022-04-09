@@ -103,7 +103,7 @@
                             return [gameloop, item[1][timelineSelected], item[2][timelineSelected]]
                         }),
                         zoneAxis: "x",
-                        zones: mergedTimelines.map((item, index) => {
+                        zones: mergedTimelines.map((item) => {
                             let gameloop = Math.max(item[1].gameloop, item[2].gameloop)
                             let betterThanIdeal = item[1][timelineSelected] > item[2][timelineSelected]
                             let fillColor = betterThanIdeal ? "#C0D890" : "#ED4337"

@@ -43,7 +43,7 @@
         <button
             class="m-1"
             on:click={() => {
-                localStorageStore.update((_) => "0")
+                localStorageStore.update(() => "0")
             }}>Reset</button
         >
     </div>
@@ -65,7 +65,7 @@
         <button
             class="m-1"
             on:click={() => {
-                sessionStorageStore.update((_) => "0")
+                sessionStorageStore.update(() => "0")
             }}>Reset</button
         >
     </div>
