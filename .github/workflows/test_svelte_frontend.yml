@@ -15,7 +15,7 @@ on:
     - develop
 
 jobs:
-  test_frontend:
+  test_svelte_frontend:
     env:
       SUBDIRECTORY: svelte_frontend
     strategy:

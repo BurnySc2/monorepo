@@ -15,7 +15,7 @@ on:
     - develop
 
 jobs:
-  test_frontend:
+  test_replay_comparer:
     env:
       SUBDIRECTORY: replay_comparer
     strategy:
