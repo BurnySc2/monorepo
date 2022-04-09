@@ -41,6 +41,12 @@ jobs:
         cd ${{ env.SUBDIRECTORY }}
         npm install
 
+    - name: Create .svelte-kit subdirectory
+      run: |
+        cd ${{ env.SUBDIRECTORY }}
+        npm run build
+      if: contains(["14", "16", "18"], ${{ matrix.node }})
+
     - name: Run tests
       run: |
         cd ${{ env.SUBDIRECTORY }}
