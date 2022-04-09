@@ -45,7 +45,7 @@ jobs:
       run: |
         cd ${{ env.SUBDIRECTORY }}
         npm run build
-      if: contains(["14", "16", "18"], ${{ matrix.node }})
+      if: ${{ matrix.node }} != "12"
 
     - name: Run tests
       run: |
