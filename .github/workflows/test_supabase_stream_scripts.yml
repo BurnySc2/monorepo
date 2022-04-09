@@ -41,11 +41,11 @@ jobs:
         cd ${{ env.SUBDIRECTORY }}
         npm install
 
-    - name: Create .svelte-kit subdirectory
+    - name: Run build command
       run: |
         cd ${{ env.SUBDIRECTORY }}
         npm run build
-      if: ${{ matrix.node }} != "12"
+      if: ${{ matrix.node != '12' }}
 
     - name: Run tests
       run: |
