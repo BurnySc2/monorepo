@@ -1,9 +1,9 @@
 <script lang="ts">
+    import { onMount } from "svelte"
     import Dropzone from "svelte-file-dropzone"
 
     import ReplayComparison from "../components/ReplayComparison.svelte"
     import { timelineOptions } from "../functions/constants"
-    import { replay1, replay2 } from "../functions/fake_replay_data"
 
     const dev = (process.env.DEV && process.env.DEV === "true") || false
 
@@ -17,13 +17,6 @@
 
     const ip = process.env.BACKEND_SERVER || "http://localhost:8000"
     const replay_parse_endpoint = "parse_replay"
-
-    if (dev) {
-        real_replay_data = replay1
-        ideal_replay_data = replay2
-        console.log(real_replay_data)
-        console.log(ideal_replay_data)
-    }
 
     const parseReplay = async (replay_file) => {
         let second = 22.4
@@ -55,13 +48,23 @@
         }
         loading = false
     }
+
+    onMount(async () => {
+        if (dev) {
+            const replays = await import("../functions/fake_replay_data")
+            real_replay_data = replays.replay1
+            ideal_replay_data = replays.replay2
+            console.log(real_replay_data)
+            console.log(ideal_replay_data)
+        }
+    })
 </script>
 
 <div class="flex flex-col justify-center m-8 max-w-4xl">
     <div class="grid grid-cols-3 text-center">
-        <Dropzone on:drop={(e) => handleFilesSelect(e, "1")}>Drop your real replay here</Dropzone>
+        <Dropzone on:drop={(e) => handleFilesSelect(e, 1)}>Drop your real replay here</Dropzone>
         <div />
-        <Dropzone on:drop={(e) => handleFilesSelect(e, "2")}>Drop your ideal replay here</Dropzone>
+        <Dropzone on:drop={(e) => handleFilesSelect(e, 2)}>Drop your ideal replay here</Dropzone>
     </div>
     <div class="grid grid-cols-3 text-center">
         <div>Real replay</div>

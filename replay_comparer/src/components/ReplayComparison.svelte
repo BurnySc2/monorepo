@@ -3,7 +3,7 @@
     import highchartsMore from "highcharts/highcharts-more.js"
     import { onMount } from "svelte"
 
-    import { timelineOptions } from "../functions/constants.ts"
+    import { timelineOptions } from "../functions/constants"
 
     // Init "arearange" plot
     highchartsMore(Highcharts)
@@ -65,8 +65,8 @@
         let seconds = gameloop / second
         let minutes = Math.floor(seconds / 60)
         seconds = Math.floor(seconds % 60)
-        seconds = seconds.toString().padStart(2, "0")
-        return `${minutes}:${seconds}`
+        let secondsString = seconds.toString().padStart(2, "0")
+        return `${minutes}:${secondsString}`
     }
 
     const plotData = () => {
