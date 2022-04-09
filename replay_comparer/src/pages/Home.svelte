@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { dev } from "$app/env"
     import Dropzone from "svelte-file-dropzone"
 
     import ReplayComparison from "../components/ReplayComparison.svelte"
     import { timelineOptions } from "../functions/constants"
     import { replay1, replay2 } from "../functions/fake_replay_data"
+
+    const dev = (process.env.DEV && process.env.DEV === "true") || false
 
     let real_replay_data = null
     let ideal_replay_data = null

@@ -15,7 +15,7 @@
         supabase,
         validateGameFromGameData,
     } from "../functions/constants"
-    import {
+    import type {
         IBuildOrderDbRow,
         IBuildOrderItem,
         IGameData,

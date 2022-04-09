@@ -16,7 +16,7 @@
         toNephestServer,
         validateGameFromGameData,
     } from "../functions/constants"
-    import {
+    import type {
         IGameData,
         IMatchInfo,
         INephestResponse,

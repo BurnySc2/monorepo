@@ -10,7 +10,6 @@ REPLAY_FOLDER = Path(__file__).parent / 'replays'
 REPLAYS_PATH_LIST = list(replay for replay in REPLAY_FOLDER.iterdir() if replay.suffix == '.SC2Replay')
 
 
-
 class TestReplayParser(BaseTest):
 
     def test_replays(self):

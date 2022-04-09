@@ -1,6 +1,14 @@
 import { createClient } from "@supabase/supabase-js"
 
-import { IBuildOrderItem, IGameData, IMatchInfo, ISceneChange, ISceneNames, IUiData, IValidGame } from "./interfaces"
+import type {
+    IBuildOrderItem,
+    IGameData,
+    IMatchInfo,
+    ISceneChange,
+    ISceneNames,
+    IUiData,
+    IValidGame,
+} from "./interfaces"
 
 export const sc2GameUrl = "http://localhost:6119/game"
 export const sc2UiUrl = "http://localhost:6119/ui"

@@ -2,4 +2,5 @@
     "compilerOptions": {
         "esModuleInterop": true
     },
+    "extends": "./.svelte-kit/tsconfig.json"
 }

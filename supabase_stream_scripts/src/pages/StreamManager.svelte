@@ -13,7 +13,7 @@
         supabase,
         textToBuildOrder,
     } from "../functions/constants"
-    import { IBuildOrderItem } from "../functions/interfaces"
+    import type { IBuildOrderItem } from "../functions/interfaces"
 
     // CONSTANTS
     const dev = (process.env.DEV && process.env.DEV === "true") || false
@@ -78,7 +78,7 @@
     let categoryClass = "border-2 border-black p-1 m-1 w-full"
     let inputClass = "border-2 border-black px-1 my-1"
 
-    let sleep = async (milliseconds) => {
+    let sleep = async (milliseconds: number) => {
         return new Promise((resolve) => setTimeout(resolve, milliseconds))
     }
 
@@ -168,7 +168,7 @@
         await loadSc2Accounts()
     }
 
-    let deleteSc2Account = async (id, accountName) => {
+    let deleteSc2Account = async (id: number, accountName: string) => {
         await supabase.from(sc2AccountsDb).delete().match({ id: id })
         toast.push(`Deleted SC2 Account successfully:<br>${accountName}`, successTheme)
         await loadSc2Accounts()
@@ -226,7 +226,7 @@
             })
         })
     }
-    let deleteBuildOrder = async (id, buildOrderTitle) => {
+    let deleteBuildOrder = async (id: number, buildOrderTitle: string) => {
         await supabase.from(sc2BuildOrdersDb).delete().match({ id: id })
         toast.push(`Deleted Build order successfully:<br>${buildOrderTitle}`, successTheme)
         await loadBuildOrders()

@@ -2,8 +2,8 @@
     "name": "my-app",
     "version": "0.0.1",
     "scripts": {
-        "dev": "cross-env BACKEND_SERVER='localhost:8000' svelte-kit dev",
-        "devs": "cross-env BACKEND_SERVER='localhost:8000' svelte-kit dev --https",
+        "dev": "cross-env DEV=true BACKEND_SERVER='localhost:8000' svelte-kit dev",
+        "devs": "cross-env DEV=true BACKEND_SERVER='localhost:8000' svelte-kit dev --https",
         "build": "svelte-kit build",
         "preview": "svelte-kit preview",
         "check": "svelte-check --tsconfig ./tsconfig.json",
@@ -23,17 +23,12 @@
         "eslint-plugin-svelte3": "^3.4.0",
         "npm-check-updates": "^12.3.1",
         "prettier": "^2.5.1",
-        "prettier-plugin-svelte": "^2.6.0",
-        "tslib": "^2.3.1",
-        "webpack-cli": "^4.9.2",
-        "webpack-dev-server": "^4.7.4"
+        "prettier-plugin-svelte": "^2.6.0"
     },
     "dependencies": {
         "@sveltejs/adapter-static": "^1.0.0-next.29",
         "@sveltejs/kit": "^1.0.0-next.309",
-        "@zerodevx/svelte-toast": "^0.7.0",
         "highcharts": "^9.3.3",
-        "socket.io-client": "^4.4.1",
         "svelte": "^3.46.4",
         "svelte-check": "^2.4.5",
         "svelte-file-dropzone": "^1.0.0-dev.1",
