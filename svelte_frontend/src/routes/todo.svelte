@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte"
 
+    import Headers from "../components/Headers.svelte"
     import TodoCard from "../components/TodoCard.svelte"
 
     let newTodoText = ""
@@ -122,7 +123,8 @@
     }
 </script>
 
-<main class="flex flex-col items-center">
+<Headers />
+<div class="flex flex-col items-center">
     <div class="flex">
         <input
             id="newTodoInput"
@@ -145,4 +147,4 @@
     <!-- {#each cards as card, i}
         <TodoCard cardText={card.todo_text} index={card.id} {removeTodo} />
     {/each} -->
-</main>
+</div>

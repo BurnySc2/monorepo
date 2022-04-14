@@ -14,7 +14,7 @@ repos:
 
 # Check github action workflow files
 - repo: https://github.com/sirosen/check-jsonschema
-  rev: 0.3.2
+  rev: 0.14.3
   hooks:
   - id: check-github-workflows
 
@@ -45,7 +45,7 @@ repos:
 
 # Remove unused imports
 - repo: https://github.com/hadialqattan/pycln
-  rev: v1.0.3
+  rev: v1.2.5
   hooks:
   - id: pycln
     args: [--config=pyproject.toml]

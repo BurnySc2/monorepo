@@ -2,6 +2,8 @@
     import moment from "moment"
     import { onDestroy, onMount } from "svelte"
 
+    import Headers from "../components/Headers.svelte"
+
     let componentMounted = false
 
     // Accepted username by server
@@ -149,6 +151,7 @@
     }
 </script>
 
+<Headers />
 {#if userName === ""}
     <!-- Before connection -->
     <div class="flex flex-col m-2 border-2 items-center">
