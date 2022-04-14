@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from "svelte"
     import { writable } from "svelte/store"
 
     import Headers from "../components/Headers.svelte"
@@ -7,22 +8,29 @@
     const localStorageKey = "localValue"
     const sessionStorageKey = "sessionValue"
 
-    // Get value from localStorage
-    let localStorageStore = writable(localStorage.getItem(localStorageKey) || "0")
-    let localStorageValue = parseInt(localStorage.getItem(localStorageKey)) || 0
+    let localStorageStore
+    let localStorageValue
+    let sessionStorageStore
+    let sessionStorageValue
 
-    let sessionStorageStore = writable(sessionStorage.getItem(sessionStorageKey) || "0")
-    let sessionStorageValue = parseInt(sessionStorage.getItem(sessionStorageKey)) || 0
+    onMount(() => {
+        // Get value from localStorage
+        localStorageStore = writable(localStorage.getItem(localStorageKey) || "0")
+        localStorageValue = parseInt(localStorage.getItem(localStorageKey)) || 0
 
-    // Event based notification when a value in a store changes
-    localStorageStore.subscribe((newValue) => {
-        // Write to localStorage and set local value
-        localStorage.setItem(localStorageKey, newValue.toString())
-        localStorageValue = parseInt(newValue)
-    })
-    sessionStorageStore.subscribe((newValue) => {
-        sessionStorage.setItem(sessionStorageKey, newValue.toString())
-        sessionStorageValue = parseInt(newValue)
+        sessionStorageStore = writable(sessionStorage.getItem(sessionStorageKey) || "0")
+        sessionStorageValue = parseInt(sessionStorage.getItem(sessionStorageKey)) || 0
+
+        // Event based notification when a value in a store changes
+        localStorageStore.subscribe((newValue) => {
+            // Write to localStorage and set local value
+            localStorage.setItem(localStorageKey, newValue.toString())
+            localStorageValue = parseInt(newValue)
+        })
+        sessionStorageStore.subscribe((newValue) => {
+            sessionStorage.setItem(sessionStorageKey, newValue.toString())
+            sessionStorageValue = parseInt(newValue)
+        })
     })
 </script>
 
