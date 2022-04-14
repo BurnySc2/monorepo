@@ -8,7 +8,7 @@
 
     page.subscribe(({ params }) => {
         value1 = params.somevalue1
-        value1 = params.someothervalue2
+        value2 = params.someothervalue2
     })
 </script>
 
