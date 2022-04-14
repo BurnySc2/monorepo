@@ -1,6 +1,8 @@
 <script lang="ts">
     import { page } from "$app/stores"
 
+    import Headers from "../../components/Headers.svelte"
+
     let value1 = "-1"
     let value2 = "-1"
 
@@ -10,6 +12,7 @@
     })
 </script>
 
+<Headers />
 <div>
     Hi! You are on page "/todo/{value1}-{value2}"
 </div>
