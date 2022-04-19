@@ -58,11 +58,21 @@
         <div class="flex flex-col p-1">
             <div class="underline">Lobby Filters</div>
             <div>
-                <input id="hidepassword" type="checkbox" bind:checked={filters.hidePassword} />
+                <input
+                    id="hidepassword"
+                    type="checkbox"
+                    bind:checked={filters.hidePassword}
+                    on:click={() => (selectedLobbyIndex = -1)}
+                />
                 <label for="hidepassword">Hide Password</label>
             </div>
             <div>
-                <input id="hidefull" type="checkbox" bind:checked={filters.hideFull} />
+                <input
+                    id="hidefull"
+                    type="checkbox"
+                    bind:checked={filters.hideFull}
+                    on:click={() => (selectedLobbyIndex = -1)}
+                />
                 <label for="hidefull">Hide Full</label>
             </div>
         </div>
