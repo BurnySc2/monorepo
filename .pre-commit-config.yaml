@@ -128,11 +128,11 @@ repos:
     entry: bash -c "cd replay_comparer && npm run format"
     pass_filenames: false
 
-  - id: format_bored_games
-    name: format_bored_games
+  - id: format_bored_gems
+    name: format_bored_gems
     stages: [commit]
     language: system
-    entry: bash -c "cd bored_games && npm run format"
+    entry: bash -c "cd bored_gems && npm run format"
     pass_filenames: false
 
   - id: lint_svelte_frontend
@@ -156,11 +156,11 @@ repos:
     entry: bash -c "cd replay_comparer && npm run lint"
     pass_filenames: false
 
-  - id: lint_bored_games
-    name: lint_bored_games
+  - id: lint_bored_gems
+    name: lint_bored_gems
     stages: [commit]
     language: system
-    entry: bash -c "cd bored_games && npm run lint"
+    entry: bash -c "cd bored_gems && npm run lint"
     pass_filenames: false
 
   - id: pylint
@@ -203,11 +203,11 @@ repos:
     entry: bash -c "cd supabase_stream_scripts && npm run build && npm run test"
     pass_filenames: false
 
-  - id: test_bored_games
-    name: test_bored_games
+  - id: test_bored_gems
+    name: test_bored_gems
     stages: [commit]
     language: system
-    entry: bash -c "cd bored_games && npm run test"
+    entry: bash -c "cd bored_gems && npm run test"
     pass_filenames: false
 
   # Run svelte e2e tests

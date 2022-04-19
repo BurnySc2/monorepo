@@ -1,11 +1,11 @@
-name: test_bored_games
+name: test_bored_gems
 
 
 on:
   push:
     paths:
-    - bored_games/**
-    - .github/workflows/test_bored_games.yml
+    - bored_gems/**
+    - .github/workflows/test_bored_gems.yml
   pull_request:
     branches:
     - master
@@ -14,7 +14,7 @@ on:
 jobs:
   test_supabase_stream_scripts:
     env:
-      SUBDIRECTORY: bored_games
+      SUBDIRECTORY: bored_gems
     strategy:
       fail-fast: false
       matrix:
