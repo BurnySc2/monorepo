@@ -37,20 +37,23 @@
 <Headers />
 <div class="flex">
     <div class="m-1">Local Storage</div>
-    <div class="m-1">{localStorageValue}</div>
+    <div id="localStorageValue" class="m-1">{localStorageValue}</div>
     <button
+        id="increaseLocalStorage"
         class="m-1"
         on:click={() => {
             localStorageStore.update((n) => (parseInt(n) + 1).toString())
         }}>Increase</button
     >
     <button
+        id="decreaseLocalStorage"
         class="m-1"
         on:click={() => {
             localStorageStore.update((n) => (parseInt(n) - 1).toString())
         }}>Decrease</button
     >
     <button
+        id="resetLocalStorage"
         class="m-1"
         on:click={() => {
             localStorageStore.update(() => "0")
@@ -59,20 +62,23 @@
 </div>
 <div class="flex">
     <div class="m-1">Session Storage</div>
-    <div class="m-1">{sessionStorageValue}</div>
+    <div id="sessionStorageValue" class="m-1">{sessionStorageValue}</div>
     <button
+        id="increaseSessionStorage"
         class="m-1"
         on:click={() => {
             sessionStorageStore.update((n) => (parseInt(n) + 1).toString())
         }}>Increase</button
     >
     <button
+        id="decreaseSessionStorage"
         class="m-1"
         on:click={() => {
             sessionStorageStore.update((n) => (parseInt(n) - 1).toString())
         }}>Decrease</button
     >
     <button
+        id="resetSessionStorage"
         class="m-1"
         on:click={() => {
             sessionStorageStore.update(() => "0")
