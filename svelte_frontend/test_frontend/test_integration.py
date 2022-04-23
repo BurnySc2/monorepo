@@ -1,9 +1,7 @@
 from pathlib import Path
 from typing import Set
 
-# see https://github.com/seleniumbase/SeleniumBase
-# https://seleniumbase.io/
-from seleniumbase import BaseCase
+from playwright.sync_api import BrowserContext, Page
 
 from burny_common.integration_test_helper import (
     find_next_free_port,
@@ -15,16 +13,13 @@ from burny_common.integration_test_helper import (
 )
 
 
-class MyTestClass(BaseCase):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.FRONTEND_ADDRESS = ''
-        self.BACKEND_ADDRESS = ''
-        # Remember which node processes to close
-        self.NEWLY_CREATED_PROCESSES: Set[int] = set()
-        # And which files to remove
-        self.CREATED_FILES: Set[Path] = set()
+class TestClass:
+    FRONTEND_ADDRESS = ''
+    BACKEND_ADDRESS = ''
+    # Remember which node processes to close
+    NEWLY_CREATED_PROCESSES: Set[int] = set()
+    # And which files to remove
+    CREATED_FILES: Set[Path] = set()
 
     def setup_method(self, _method=None):
         """ setup any state tied to the execution of the given method in a
@@ -41,8 +36,6 @@ class MyTestClass(BaseCase):
             self.NEWLY_CREATED_PROCESSES,
             backend_proxy=f'localhost:{free_backend_port}',
         )
-        # start_mongodb()
-        # start_postgres()
 
     def teardown_method(self, _method=None):
         """ teardown any state that was previously setup with a setup_method
@@ -56,121 +49,123 @@ class MyTestClass(BaseCase):
         remove_leftover_files(self.CREATED_FILES)
         self.CREATED_FILES.clear()
 
-    def test_backend_server_available(self):
-        self.open(self.BACKEND_ADDRESS)
-        self.assert_text('{"Hello":"World"}')
+    def test_backend_server_available(self, page: Page):
+        page.goto(self.BACKEND_ADDRESS)
+        assert '{"Hello":"World"}' in page.content()
 
-    def test_frontend_server_available(self):
-        self.open(self.FRONTEND_ADDRESS)
-        self.assert_text('Home')
-        self.assert_text('About')
-        self.assert_text('Chat')
-        self.assert_text('Todo')
-        self.assert_text('BrowserStorage')
+    def test_frontend_server_available(self, page: Page):
+        page.goto(self.FRONTEND_ADDRESS)
+        assert 'Home' in page.content()
+        assert 'About' in page.content()
+        assert 'Chat' in page.content()
+        assert 'Todo' in page.content()
+        assert 'Slugs' in page.content()
+        assert 'BrowserStorage' in page.content()
 
-    def test_add_todo_submit1(self):
+    def test_add_todo_submit1(self, page: Page):
         """ Add a new to-do entry """
-        self.open(self.FRONTEND_ADDRESS)
-        self.assert_text('Hello world!')
-        self.click('#todo')
-        self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
+        page.goto(self.FRONTEND_ADDRESS)
+        assert 'Hello world!' in page.content()
+        page.click('#todo')
+        page.wait_for_url('/todo')
+        assert 'Unable to connect to server - running local mode' not in page.content()
         test_text = 'my amazing test todo text1'
-        self.assert_text_not_visible(test_text)
-        self.write('#newTodoInput', test_text)
-        self.click('#submit1')
-        self.assert_text(test_text)
-        self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
+        assert test_text not in page.content()
+        page.fill('#newTodoInput', test_text)
+        page.click('#submit1')
+        page.wait_for_timeout(100)
+        assert test_text in page.content()
+        assert 'Unable to connect to server - running local mode' not in page.content()
 
-    def test_add_todo_submit2(self):
-        """ Add a new to-do entry, same as above """
-        self.open(self.FRONTEND_ADDRESS)
-        self.assert_text('Hello world!')
-        self.click('#todo')
-        self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
-        test_text = 'my amazing test todo text2'
-        self.assert_text_not_visible(test_text)
-        self.write('#newTodoInput', test_text)
-        self.click('#submit2')
-        self.assert_text(test_text)
-        self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
+    def test_add_todo_submit2(self, page: Page):
+        """ Add a new to-do entry """
+        page.goto(self.FRONTEND_ADDRESS)
+        assert 'Hello world!' in page.content()
+        page.click('#todo')
+        page.wait_for_url('/todo')
+        assert 'Unable to connect to server - running local mode' not in page.content()
+        test_text = 'my amazing test todo text1'
+        assert test_text not in page.content()
+        page.fill('#newTodoInput', test_text)
+        page.click('#submit2')
+        page.wait_for_timeout(100)
+        assert test_text in page.content()
+        assert 'Unable to connect to server - running local mode' not in page.content()
 
-    def test_add_todo_submit3(self):
-        """ Add a new to-do entry, same as above """
-        self.open(self.FRONTEND_ADDRESS)
-        self.assert_text('Hello world!')
-        self.click('#todo')
-        self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
-        test_text = 'my amazing test todo text3'
-        self.assert_text_not_visible(test_text)
-        self.write('#newTodoInput', test_text)
-        self.click('#submit3')
-        self.assert_text(test_text)
-        self.assert_text_not_visible('Unable to connect to server - running local mode', timeout=1)
+    def test_add_todo_submit3(self, page: Page):
+        """ Add a new to-do entry """
+        page.goto(self.FRONTEND_ADDRESS)
+        assert 'Hello world!' in page.content()
+        page.click('#todo')
+        page.wait_for_url('/todo')
+        assert 'Unable to connect to server - running local mode' not in page.content()
+        test_text = 'my amazing test todo text1'
+        assert test_text not in page.content()
+        page.fill('#newTodoInput', test_text)
+        page.click('#submit3')
+        page.wait_for_timeout(100)
+        assert test_text in page.content()
+        assert 'Unable to connect to server - running local mode' not in page.content()
 
-    def test_chat_single(self):
+    def test_chat_single(self, page: Page):
         """ Chat with yourself """
-        self.open(self.FRONTEND_ADDRESS)
-        self.assert_text('Hello world!')
-        self.click('#chat')
+        page.goto(self.FRONTEND_ADDRESS)
+        assert 'Hello world!' in page.content()
+        page.click('#chat')
+        page.wait_for_url('/normalchat')
         my_username = 'beep_boop'
 
-        self.assert_text_not_visible(my_username)
-        self.write('#username', my_username)
-        self.click('#connect')
+        assert my_username not in page.content()
+        page.fill('#username', my_username)
+        page.click('#connect')
 
         # Send a message by pressing send button
         some_text = 'bla blubb'
-        self.write('#chatinput', some_text)
-        self.assert_text_not_visible('You')
-        self.click('#sendmessage')
-        self.assert_text('You')
-        self.assert_text(some_text)
+        page.fill('#chatinput', some_text)
+        assert 'You' not in page.content()
+        page.click('#sendmessage')
+        assert 'You' in page.content()
+        assert some_text in page.content()
         # Send a message by pressing enter
         some_other_text = 'some other text'
-        self.write('#chatinput', f'{some_other_text}\n')
-        self.assert_text(some_other_text)
+        page.type('#chatinput', f'{some_other_text}\n')
+        assert some_other_text in page.content()
 
-    def test_chat_two_people(self):
+    def test_chat_two_people(self, context: BrowserContext):
         """ Make sure chat between 2 people work """
         # Connect with robot1
-        self.open(self.FRONTEND_ADDRESS)
-        self.click('#chat')
+        page1 = context.new_page()
+        page1.goto(self.FRONTEND_ADDRESS)
+        page1.click('#chat')
+        page1.wait_for_url('/normalchat')
         my_username1 = 'robot1'
-        self.write('#username', my_username1)
-        self.click('#connect')
+        page1.fill('#username', my_username1)
+        page1.click('#connect')
         # Send message from robot1
         some_text1 = 'sometext1'
-        self.write('#chatinput', some_text1)
-        self.click('#sendmessage')
-        self.assert_text('You')
-        self.assert_text(some_text1)
+        page1.fill('#chatinput', some_text1)
+        page1.click('#sendmessage')
+        assert 'You' in page1.content()
+        assert some_text1 in page1.content()
 
         # Connect with robot2
-        self.open_new_window(True)
-        self.open(self.FRONTEND_ADDRESS)
-        self.click('#chat')
+        page2 = context.new_page()
+        page2.goto(self.FRONTEND_ADDRESS)
+        page2.click('#chat')
+        page2.wait_for_url('/normalchat')
         my_username2 = 'robot2'
-        self.write('#username', my_username2)
-        self.click('#connect')
+        page2.fill('#username', my_username2)
+        page2.click('#connect')
         # Make sure robot1's messages are visible from robot2
-        self.assert_text(my_username1)
-        self.assert_text(some_text1)
+        assert my_username1 in page2.content()
+        assert some_text1 in page2.content()
         # Send message from robot2
         some_text2 = 'sometext2'
-        self.write('#chatinput', some_text2)
-        self.click('#sendmessage')
-        self.assert_text('You')
-        self.assert_text(some_text2)
+        page2.fill('#chatinput', some_text2)
+        page2.click('#sendmessage')
+        assert 'You' in page2.content()
+        assert some_text2 in page2.content()
 
         # Make sure robot2's messages are visible from robot1
-        self.switch_to_window(0)
-        self.assert_text(my_username2)
-        self.assert_text(some_text2)
-
-
-if __name__ == '__main__':
-    # This doesnt work anymore with classes, why?
-    test = MyTestClass()
-    test.setup_method()
-    test.test_backend_server_available()
-    test.teardown_method()
+        assert my_username2 in page1.content()
+        assert some_text2 in page1.content()

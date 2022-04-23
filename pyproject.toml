@@ -45,8 +45,9 @@ Shapely = "^1.8"
 # Fastapi server
 fastapi = "^0.70"
 uvicorn = "^0.16"
-# End to end tests - TODO Find alternative because the dependency tree is huge
-seleniumbase = "^2.3"
+# End to end tests
+playwright = "^1.21.0"
+pytest-playwright = "^0.3.0"
 # Info about the system
 psutil = "^5.8"
 # Execute command on server via SSH, or push files via SFTP
