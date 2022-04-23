@@ -48,11 +48,19 @@ jobs:
       run: |
         cd ${{ env.SUBDIRECTORY }}
         npm run build
-      if: ${{ matrix.node != '12' }}
 
-      # - name: Run tests
-      #   run: |
-      #       npm run test
+    - name: Install playwright browsers
+      run: |
+        cd ${{ env.SUBDIRECTORY }}
+        npx playwright install
+      if: ${{ matrix.node != '14' }}
+
+    - name: Run tests
+      run: |
+        cd ${{ env.SUBDIRECTORY }}
+        npm run test
+      if: ${{ matrix.node != '14' }}
+
 
   test_e2e:
     env:
@@ -99,6 +107,11 @@ jobs:
       run: |
         cd ${{ env.SUBDIRECTORY }}
         npm install
+
+    - name: Install playwright browsers
+      run: |
+        cd ${{ env.SUBDIRECTORY }}
+        poetry run playwright install
 
     - name: Run e2e tests
       run: |
@@ -150,6 +163,11 @@ jobs:
       run: |
         cd ${{ env.SUBDIRECTORY }}
         npm install
+
+    - name: Install playwright browsers
+      run: |
+        cd ${{ env.SUBDIRECTORY }}
+        poetry run playwright install
 
     - name: Run integration tests
       run: |
