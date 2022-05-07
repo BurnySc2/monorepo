@@ -102,6 +102,7 @@ async def create_new_todo3(item: Item):
 @todo_list_router.delete('/api/{todo_id}')
 async def remove_todo(todo_id: int) -> bool:
     """ Example of using /api/itemid with DELETE request """
+    # pylint: disable=W0603
     global TODOS
     logger.info(f'Attempting to remove todo id: {todo_id}')
     count_before = len(TODOS)

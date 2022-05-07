@@ -1,13 +1,15 @@
+from __future__ import annotations
+
 import itertools
-from typing import Any, List, Optional
+from typing import Any
 
 
 class Node:
 
-    def __init__(self, value: Any, left: 'Node' = None, right: 'Node' = None):
+    def __init__(self, value: Any, left: Node = None, right: Node = None):
         self.value: Any = value
-        self.left: Optional['Node'] = left
-        self.right: Optional['Node'] = right
+        self.left: Node | None = left
+        self.right: Node | None = right
 
     def __repr__(self):
         return f'Node(value: {self.value}, left: {self.left}, right: {self.right})'
@@ -50,7 +52,7 @@ class Tree:
         """ Finds the maximum value and returns it """
 
     def load(self, string: str):
-        height: List[str] = string.strip().split('\n')
+        height: list[str] = string.strip().split('\n')
         for i, row in enumerate(height, start=0):
             if i == 0:
                 assert len(row) == 1
@@ -58,7 +60,7 @@ class Tree:
                 continue
             for value, j in zip(row, itertools.product('01', repeat=i)):
                 # ["00", "01", "10", "11"]
-                cur: Optional[Node] = self.root
+                cur: Node | None = self.root
                 for k in j[:-1]:  # "0", then "1" etc
                     if cur:
                         if k == '0':

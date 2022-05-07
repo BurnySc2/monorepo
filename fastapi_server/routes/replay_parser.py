@@ -44,18 +44,16 @@ class ParserPlayer:
             ],
             queues=[
                 {
-                    'gameloop':
-                    queue['gameloop'],
-                    'supply_blocked':
-                    queue['supply_blocked'],
+                    'gameloop': queue['gameloop'],
+                    'supply_blocked': queue['supply_blocked'],
                     'queues': [
                         {
-                            'structure_name':
-                            structure.name,
-                            'structure_queue':
-                            [{
-                                'name': structure_queue_item.name,
-                            } for structure_queue_item in structure_queue]
+                            'structure_name': structure.name,
+                            'structure_queue': [
+                                {
+                                    'name': structure_queue_item.name,
+                                } for structure_queue_item in structure_queue
+                            ]
                         } for structure, structure_queue in queue['queues'].items()
                     ]
                 } for queue in player_object.queues

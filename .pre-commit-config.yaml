@@ -1,29 +1,3 @@
-repos:
-# Check yaml files like this one and github actions if they are valid
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
-  hooks:
-  - id: check-yaml
-
-# Autoformat yaml files
-- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.1.0
-  hooks:
-  - id: pretty-format-yaml
-    args: [--autofix, --indent, '2']
-
-# Check github action workflow files
-- repo: https://github.com/sirosen/check-jsonschema
-  rev: 0.14.3
-  hooks:
-  - id: check-github-workflows
-
-# Check toml files like pyproject.toml if it is valid
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
-  hooks:
-  - id: check-toml
-
 # This removes comments
 #- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
 #  rev: v2.1.0
@@ -31,28 +5,23 @@ repos:
 #  - id: pretty-format-toml
 #    args: [--autofix]
 
-# As the name says
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
-  hooks:
-  - id: double-quote-string-fixer
-
+repos:
 # Convert simple things like set([]) to set()
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.26.0
+  rev: v2.32.1
   hooks:
   - id: pyupgrade
 
 # Remove unused imports
 - repo: https://github.com/hadialqattan/pycln
-  rev: v1.2.5
+  rev: v1.3.1
   hooks:
   - id: pycln
     args: [--config=pyproject.toml]
 
 # Convert relative to absolute imports
 - repo: https://github.com/MarcoGorelli/absolufy-imports
-  rev: v0.3.0
+  rev: v0.3.1
   hooks:
   - id: absolufy-imports
 
@@ -70,21 +39,16 @@ repos:
 #  hooks:
 #  - id: upgrade-type-hints
 
-# Autoformat code
-- repo: local
-  hooks:
-  - id: yapf
-    name: yapf
-    stages: [commit]
-    language: system
-    entry: poetry run yapf -i
-    types: [python]
-    exclude: setup.py
-
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.2.0
   hooks:
-  # Check if python files are vlaid
+  # As the name says
+  - id: double-quote-string-fixer
+  # Check yaml files like this one and github actions if they are valid
+  - id: check-yaml
+  # Check toml files like pyproject.toml if it is valid
+  - id: check-toml
+  # Check if python files are valid
   - id: check-ast
   - id: check-builtin-literals
   - id: check-docstring-first
@@ -99,6 +63,19 @@ repos:
   # Enforce type annotation instead of comment annotation
   - id: python-use-type-annotations
 
+# Autoformat yaml files
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.1.0
+  hooks:
+  - id: pretty-format-yaml
+    args: [--autofix, --indent, '2']
+
+# Check github action workflow files
+- repo: https://github.com/sirosen/check-jsonschema
+  rev: 0.14.3
+  hooks:
+  - id: check-github-workflows
+
 # Detect functions and variables that are never used
 #- repo: https://github.com/asottile/dead
 #  rev: v1.4.0
@@ -107,61 +84,15 @@ repos:
 
 - repo: local
   hooks:
-  - id: format_svelte_frontend
-    name: format_svelte_frontend
+  # Autoformat python code
+  - id: yapf
+    name: format all python code
     stages: [commit]
     language: system
-    entry: bash -c "cd svelte_frontend && npm run format"
-    pass_filenames: false
-
-  - id: format_supabase_stream_scripts
-    name: format_supabase_stream_scripts
-    stages: [commit]
-    language: system
-    entry: bash -c "cd supabase_stream_scripts && npm run format"
-    pass_filenames: false
-
-  - id: format_replay_comparer
-    name: format_replay_comparer
-    stages: [commit]
-    language: system
-    entry: bash -c "cd replay_comparer && npm run format"
-    pass_filenames: false
-
-  - id: format_bored_gems
-    name: format_bored_gems
-    stages: [commit]
-    language: system
-    entry: bash -c "cd bored_gems && npm run format"
-    pass_filenames: false
-
-  - id: lint_svelte_frontend
-    name: lint_svelte_frontend
-    stages: [commit]
-    language: system
-    entry: bash -c "cd svelte_frontend && npm run lint"
-    pass_filenames: false
-
-  - id: lint_supabase_stream_scripts
-    name: lint_supabase_stream_scripts
-    stages: [commit]
-    language: system
-    entry: bash -c "cd supabase_stream_scripts && npm run lint"
-    pass_filenames: false
-
-  - id: lint_replay_comparer
-    name: lint_replay_comparer
-    stages: [commit]
-    language: system
-    entry: bash -c "cd replay_comparer && npm run lint"
-    pass_filenames: false
-
-  - id: lint_bored_gems
-    name: lint_bored_gems
-    stages: [commit]
-    language: system
-    entry: bash -c "cd bored_gems && npm run lint"
-    pass_filenames: false
+    entry: poetry run yapf --in-place
+    files: ^.*\.py$
+    pass_filenames: true
+    require_serial: true
 
   - id: pylint
     name: pylint
@@ -169,15 +100,90 @@ repos:
     language: system
     entry: poetry run pylint
     types: [python]
+    pass_filenames: true
+    require_serial: true
 
   # Run mypy type checks
   - id: mypy
     name: mypy
     stages: [commit]
     language: system
-    entry: poetry run mypy .
+    entry: poetry run mypy
     types: [python]
+    pass_filenames: true
+    require_serial: true
+
+  - id: format_svelte_frontend
+    name: format_svelte_frontend
+    stages: [commit]
+    language: system
+    entry: bash -c "cd svelte_frontend && npm run format"
+    files: ^svelte_frontend/.*\.(svelte|ts|js)$
     pass_filenames: false
+    require_serial: true
+
+  - id: lint_svelte_frontend
+    name: lint_svelte_frontend
+    stages: [commit]
+    language: system
+    entry: bash -c "cd svelte_frontend && npm run lint"
+    files: ^svelte_frontend/.*\.(svelte|ts|js)$
+    pass_filenames: false
+    require_serial: true
+
+  - id: format_supabase_stream_scripts
+    name: format_supabase_stream_scripts
+    stages: [commit]
+    language: system
+    entry: bash -c "cd supabase_stream_scripts && npm run format"
+    files: ^supabase_stream_scripts/.*\.(svelte|ts|js)$
+    pass_filenames: false
+    require_serial: true
+
+  - id: lint_supabase_stream_scripts
+    name: lint_supabase_stream_scripts
+    stages: [commit]
+    language: system
+    entry: bash -c "cd supabase_stream_scripts && npm run lint"
+    files: ^supabase_stream_scripts/.*\.(svelte|ts|js)$
+    pass_filenames: false
+    require_serial: true
+
+  - id: format_replay_comparer
+    name: format_replay_comparer
+    stages: [commit]
+    language: system
+    entry: bash -c "cd replay_comparer && npm run format"
+    files: ^replay_comparer/.*\.(svelte|ts|js)$
+    pass_filenames: false
+    require_serial: true
+
+  - id: lint_replay_comparer
+    name: lint_replay_comparer
+    stages: [commit]
+    language: system
+    entry: bash -c "cd replay_comparer && npm run lint"
+    files: ^replay_comparer/.*\.(svelte|ts|js)$
+    pass_filenames: false
+    require_serial: true
+
+  - id: format_bored_gems
+    name: format_bored_gems
+    stages: [commit]
+    language: system
+    entry: bash -c "cd bored_gems && npm run format"
+    files: ^bored_gems/.*\.(svelte|ts|js)$
+    pass_filenames: false
+    require_serial: true
+
+  - id: lint_bored_gems
+    name: lint_bored_gems
+    stages: [commit]
+    language: system
+    entry: bash -c "cd bored_gems && npm run lint"
+    files: ^bored_gems/.*\.(svelte|ts|js)$
+    pass_filenames: false
+    require_serial: true
 
   # Run python examples tests
   - id: pytest_python_examples
@@ -186,6 +192,7 @@ repos:
     language: system
     entry: poetry run pytest python_examples
     pass_filenames: false
+    require_serial: true
 
   # Run fastapi server tests
   - id: pytest_fastapi_server
@@ -194,6 +201,7 @@ repos:
     language: system
     entry: poetry run pytest fastapi_server
     pass_filenames: false
+    require_serial: true
 
   # Run supabase stream scripts tests (run build before test to create .svelte-kit folder with tsconfig.json)
   - id: test_supabase_stream_scripts
@@ -202,6 +210,7 @@ repos:
     language: system
     entry: bash -c "cd supabase_stream_scripts && npm run build && npm run test"
     pass_filenames: false
+    require_serial: true
 
   - id: test_bored_gems
     name: test_bored_gems
@@ -209,6 +218,7 @@ repos:
     language: system
     entry: bash -c "cd bored_gems && npm run test"
     pass_filenames: false
+    require_serial: true
 
   # Run svelte e2e tests
   - id: svelte_e2e_tests
@@ -217,6 +227,7 @@ repos:
     language: system
     entry: poetry run pytest svelte_frontend/test_frontend/test_e2e.py --benchmark-skip
     pass_filenames: false
+    require_serial: true
 
 #  - id: pytest-cov
 #    name: pytest

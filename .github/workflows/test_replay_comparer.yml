@@ -42,7 +42,7 @@ jobs:
     - name: Install npm dependencies
       run: |
         cd ${{ env.SUBDIRECTORY }}
-        npm install
+        npm install --production
 
     - name: Run build command
       run: |

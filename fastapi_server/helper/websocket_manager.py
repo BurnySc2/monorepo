@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import json
 from dataclasses import dataclass, field
-from typing import List
 
 from loguru import logger
 from starlette.websockets import WebSocket
@@ -8,13 +9,13 @@ from starlette.websockets import WebSocket
 
 class Handler:
 
-    async def handle_data(self, websocket_manager: 'WebsocketManager', websocket: WebSocket, data_json: dict):
+    async def handle_data(self, websocket_manager: WebsocketManager, websocket: WebSocket, data_json: dict):
         raise NotImplementedError()
 
 
 @dataclass
 class WebsocketManager:
-    active_connections: List[WebSocket] = field(default_factory=list)
+    active_connections: list[WebSocket] = field(default_factory=list)
     handler: Handler = field(default_factory=Handler)
 
     async def connect(self, websocket: WebSocket):
