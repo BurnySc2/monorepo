@@ -86,7 +86,7 @@ repos:
   hooks:
   # Autoformat python code
   - id: yapf
-    name: format all python code
+    name: format python code
     stages: [commit]
     language: system
     entry: poetry run yapf --in-place

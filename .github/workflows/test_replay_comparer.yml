@@ -37,7 +37,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ~/.npm
-        key: ${{ runner.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
+        key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
       run: |
