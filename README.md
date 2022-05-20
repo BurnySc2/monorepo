@@ -69,10 +69,10 @@ then use `coverage gutters` extension in VScode
 
 or open the generated html file in folder `htmlcov`
 
-# Install and run all pre-commit hook scripts
+# Install and run pre-commit hook on all staged files
 ```py
 poetry run pre-commit install
-poetry run pre-commit run --all-files
+poetry run pre-commit run --verbose
 ```
 
 This runs pylint, mypy, pytest tests, apply autoformatter yapf

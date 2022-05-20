@@ -14,11 +14,16 @@ def modify_dictionary():
     merge(my_dict, to_merge)
 
     # Get a value, if it doesn't exist: return default
-    value = get(my_dict, ['this', 'is', 'my', 'path'])
+    value = my_dict['this']['is']['my']['path']
     assert value == 5
+
+    value_again = get(my_dict, ['this', 'is', 'my', 'path'])
+    assert value_again == 5
+
     value = get(my_dict, ['this', 'path', 'doesnt', 'exist'], default=4)
     assert value == 4
-    value = get(my_dict, ['this', 'is', 'another', 'dict'], default=6)
+
+    value = get(my_dict, ['this', 'is', 'another', 'dict'], default=7)
     assert value == 6
 
     logger.info(my_dict)

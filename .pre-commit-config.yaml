@@ -92,16 +92,14 @@ repos:
     entry: poetry run yapf --in-place
     files: ^.*\.py$
     pass_filenames: true
-    require_serial: true
 
   - id: pylint
     name: pylint
     stages: [commit]
     language: system
     entry: poetry run pylint
-    types: [python]
+    files: ^.*\.py$
     pass_filenames: true
-    require_serial: true
 
   # Run mypy type checks
   - id: mypy
@@ -109,10 +107,10 @@ repos:
     stages: [commit]
     language: system
     entry: poetry run mypy
-    types: [python]
+    files: ^.*\.py$
     pass_filenames: true
-    require_serial: true
 
+  # TODO Figure out how to only format changed frontend files - have to pass in file names to the bash command?
   - id: format_svelte_frontend
     name: format_svelte_frontend
     stages: [commit]
@@ -120,7 +118,6 @@ repos:
     entry: bash -c "cd svelte_frontend && npm run format"
     files: ^svelte_frontend/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   - id: lint_svelte_frontend
     name: lint_svelte_frontend
@@ -129,7 +126,6 @@ repos:
     entry: bash -c "cd svelte_frontend && npm run lint"
     files: ^svelte_frontend/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   - id: format_supabase_stream_scripts
     name: format_supabase_stream_scripts
@@ -138,7 +134,6 @@ repos:
     entry: bash -c "cd supabase_stream_scripts && npm run format"
     files: ^supabase_stream_scripts/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   - id: lint_supabase_stream_scripts
     name: lint_supabase_stream_scripts
@@ -147,7 +142,6 @@ repos:
     entry: bash -c "cd supabase_stream_scripts && npm run lint"
     files: ^supabase_stream_scripts/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   - id: format_replay_comparer
     name: format_replay_comparer
@@ -156,7 +150,6 @@ repos:
     entry: bash -c "cd replay_comparer && npm run format"
     files: ^replay_comparer/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   - id: lint_replay_comparer
     name: lint_replay_comparer
@@ -165,7 +158,6 @@ repos:
     entry: bash -c "cd replay_comparer && npm run lint"
     files: ^replay_comparer/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   - id: format_bored_gems
     name: format_bored_gems
@@ -174,7 +166,6 @@ repos:
     entry: bash -c "cd bored_gems && npm run format"
     files: ^bored_gems/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   - id: lint_bored_gems
     name: lint_bored_gems
@@ -183,51 +174,48 @@ repos:
     entry: bash -c "cd bored_gems && npm run lint"
     files: ^bored_gems/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   # Run python examples tests
   - id: pytest_python_examples
     name: pytest_python_examples
-    stages: [commit]
+    stages: [post-commit]
     language: system
     entry: poetry run pytest python_examples
     pass_filenames: false
-    require_serial: true
 
   # Run fastapi server tests
   - id: pytest_fastapi_server
     name: pytest_fastapi_server
-    stages: [commit]
+    stages: [post-commit]
     language: system
     entry: poetry run pytest fastapi_server
     pass_filenames: false
-    require_serial: true
 
   # Run supabase stream scripts tests (run build before test to create .svelte-kit folder with tsconfig.json)
   - id: test_supabase_stream_scripts
     name: test_supabase_stream_scripts
-    stages: [commit]
+    stages: [post-commit]
     language: system
     entry: bash -c "cd supabase_stream_scripts && npm run build && npm run test"
+    files: ^supabase_stream_scripts/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   - id: test_bored_gems
     name: test_bored_gems
-    stages: [commit]
+    stages: [post-commit]
     language: system
     entry: bash -c "cd bored_gems && npm run test"
+    files: ^bored_gems/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
   # Run svelte e2e tests
   - id: svelte_e2e_tests
     name: svelte_e2e_tests
-    stages: [commit]
+    stages: [post-commit]
     language: system
     entry: poetry run pytest svelte_frontend/test_frontend/test_e2e.py --benchmark-skip
+    files: ^svelte_frontend/.*\.(svelte|ts|js)$
     pass_filenames: false
-    require_serial: true
 
 #  - id: pytest-cov
 #    name: pytest
