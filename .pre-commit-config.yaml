@@ -178,7 +178,7 @@ repos:
   # Run python examples tests
   - id: pytest_python_examples
     name: pytest_python_examples
-    stages: [post-commit]
+    stages: [commit]
     language: system
     entry: poetry run pytest python_examples
     pass_filenames: false
@@ -186,7 +186,7 @@ repos:
   # Run fastapi server tests
   - id: pytest_fastapi_server
     name: pytest_fastapi_server
-    stages: [post-commit]
+    stages: [commit]
     language: system
     entry: poetry run pytest fastapi_server
     pass_filenames: false
@@ -194,7 +194,7 @@ repos:
   # Run supabase stream scripts tests (run build before test to create .svelte-kit folder with tsconfig.json)
   - id: test_supabase_stream_scripts
     name: test_supabase_stream_scripts
-    stages: [post-commit]
+    stages: [commit]
     language: system
     entry: bash -c "cd supabase_stream_scripts && npm run build && npm run test"
     files: ^supabase_stream_scripts/.*\.(svelte|ts|js)$
@@ -202,7 +202,7 @@ repos:
 
   - id: test_bored_gems
     name: test_bored_gems
-    stages: [post-commit]
+    stages: [commit]
     language: system
     entry: bash -c "cd bored_gems && npm run test"
     files: ^bored_gems/.*\.(svelte|ts|js)$
@@ -211,7 +211,7 @@ repos:
   # Run svelte e2e tests
   - id: svelte_e2e_tests
     name: svelte_e2e_tests
-    stages: [post-commit]
+    stages: [commit]
     language: system
     entry: poetry run pytest svelte_frontend/test_frontend/test_e2e.py --benchmark-skip
     files: ^svelte_frontend/.*\.(svelte|ts|js)$
