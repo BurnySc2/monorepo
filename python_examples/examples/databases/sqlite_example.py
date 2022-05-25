@@ -12,7 +12,7 @@ def test_database():
         # Creates a new table "people" with 3 columns: text, real, integer
         # Fields marked with PRIMARY KEY are columns with unique values (?)
         db.execute(
-            'CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, age INTEGER, height REAL)',
+            'CREATE TABLE IF NOT EXISTS people (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(30) UNIQUE, age INTEGER, height REAL)',
         )
 
         # Insert via string
@@ -89,6 +89,14 @@ def test_database():
 
         # TODO: How to add or remove a column in existing database?
         # TODO: How to join two databases?
+
+        tables = db.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        for table in tables:
+            table_name = table['name']
+            logger.info(f'Table: {table_name}')
+            table_info = db.execute(f'pragma table_info({table_name})')
+            for column_info in table_info:
+                logger.info(dict(column_info))
 
 
 if __name__ == '__main__':

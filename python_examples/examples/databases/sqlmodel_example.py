@@ -7,7 +7,7 @@ from sqlmodel import Field, Session, SQLModel, create_engine, or_, select
 class Hero(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    secret_name: str
+    secret_name: str = Field(max_length=30)
     age: Optional[int] = None
 
 
@@ -16,6 +16,7 @@ def test_database_with_sqlmodel():
     hero_2 = Hero(name='Spider-Boy', secret_name='Pedro Parqueador')
     hero_3 = Hero(name='Rusty-Man', secret_name='Tommy Sharp', age=48)
 
+    # engine = create_engine('sqlite:///temp.db')
     engine = create_engine('sqlite:///:memory:')
 
     SQLModel.metadata.create_all(engine)
