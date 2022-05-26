@@ -37,17 +37,11 @@ jobs:
     - name: Make poetry use local .venv folder
       run: poetry config virtualenvs.in-project true
 
-    - name: Cache poetry
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ matrix.os }}-${{ matrix.python-version }}-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
-
     - name: Set up cache
       uses: actions/cache@v3
       with:
         path: .venv
-        key: ${{ matrix.os }}-${{ matrix.python-version }}-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
+        key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install dependencies
       run: |

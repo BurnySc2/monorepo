@@ -44,7 +44,7 @@ jobs:
     - name: Make poetry use local .venv folder
       run: poetry config virtualenvs.in-project true
 
-    - name: Cache poetry
+    - name: Set up cache
       uses: actions/cache@v3
       with:
         path: .venv
