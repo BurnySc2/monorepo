@@ -5,7 +5,7 @@ description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8 <3.11"
+python = ">=3.8, <3.11"
 # Numeric python
 numpy = "^1.21"
 # Write and read classes to/from json
