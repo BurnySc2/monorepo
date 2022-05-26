@@ -14,16 +14,20 @@ on:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: svelte_frontend
+
 jobs:
   test_svelte_frontend:
-    env:
-      SUBDIRECTORY: svelte_frontend
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
         node: ['14', '16', '18']
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ${{ env.SUBDIRECTORY }}
 
     steps:
     - uses: actions/checkout@v2
@@ -41,30 +45,24 @@ jobs:
 
     - name: Install npm dependencies
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm install
 
     - name: Run build command
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm run build
 
     - name: Install playwright browsers
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npx playwright install
       if: ${{ matrix.node != '14' }}
 
     - name: Run tests
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm run test
       if: ${{ matrix.node != '14' }}
 
 
   test_e2e:
-    env:
-      SUBDIRECTORY: svelte_frontend
     strategy:
       fail-fast: false
       matrix:
@@ -110,13 +108,13 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm install
 
     - name: Install playwright browsers
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         poetry run playwright install
 
     - name: Run e2e tests
@@ -125,8 +123,6 @@ jobs:
 
 
   test_integration:
-    env:
-      SUBDIRECTORY: svelte_frontend
     strategy:
       fail-fast: false
       matrix:
@@ -172,13 +168,13 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm install
 
     - name: Install playwright browsers
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         poetry run playwright install
 
     - name: Run integration tests
