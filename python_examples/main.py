@@ -36,6 +36,10 @@ from python_examples.examples.other.geometry_example import test_geometry_shapel
 from python_examples.examples.other.image_manipulation import mass_convert_images
 from python_examples.examples.other.multiprocessing_example import do_math, do_multiprocessing
 from python_examples.examples.other.regex_example import regex_match_test, test_all_roman_numbers
+from python_examples.examples.plot_data.bokeh_plot import main as bokeh_plot_main
+from python_examples.examples.plot_data.matplotlib_plot import main as matplotlib_plot_main
+from python_examples.examples.plot_data.pandas_plot import main as pandas_plot_main
+from python_examples.examples.plot_data.seaborn_plot import main as seaborn_plot_main
 
 logger.remove()  # Remove previous default handlers
 # Log to console
@@ -119,14 +123,11 @@ def mass_replace():
     logger.info(f'Mass replaced\n{text}\nto\n{new_text}')
 
 
-def plot_lists():
-    # TODO
-    pass
-
-
-def plot_numpy_array():
-    # TODO
-    pass
+def plot_data():
+    matplotlib_plot_main()
+    bokeh_plot_main()
+    pandas_plot_main()
+    seaborn_plot_main()
 
 
 if __name__ == '__main__':

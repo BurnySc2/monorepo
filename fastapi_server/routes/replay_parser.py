@@ -67,7 +67,7 @@ async def parse_replay_endpoint(replay_tick: float = Form(112), replay_file: Upl
     replay_tick = max(20, int(round(replay_tick)))
     # https://fastapi.tiangolo.com/tutorial/request-files/#uploadfile
     players, timeline, _engagements, summary, metadata = parse_replay(
-        replay_file.file, local=True, tick=replay_tick, network=True
+        replay_file.file, local=True, tick=replay_tick, network=False
     )
 
     player1 = ParserPlayer.from_replay_object(players[1])

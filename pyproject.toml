@@ -52,7 +52,6 @@ pytest-playwright = "^0.3.0"
 psutil = "^5.8"
 # Execute command on server via SSH, or push files via SFTP
 paramiko = "^2.8"
-#types-paramiko = "^2.8"
 # Simpler argparse
 click = "^8.1"
 # SQL ORM
@@ -65,10 +64,21 @@ beanie = "^1.11"
 alembic = "^1.7"
 # Load environment variables from .env file
 python-dotenv = "^0.20"
-# Send emails via https://sendgrid.com/
-sendgrid = "^6.9"
+# SC2 Replay parser
 zephyrus-sc2-parser = "^0.3.7"
+# Fastapi multipart upload?
 python-multipart = "^0.0.5"
+# Data science and plotting
+pandas = "^1.4.2"
+# Plotting
+seaborn = "^0.11.2"
+# Plotting
+matplotlib = "^3.5.2"
+# Plotting
+bokeh = "^2.4.3"
+# Animation
+manim = "^0.15.2"
+
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
