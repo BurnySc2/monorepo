@@ -21,7 +21,6 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: ['3.7', '3.8', '3.9', '3.10']
-        mongodb-version: [5.0.0]
         include:
           - os: windows-latest
             python-version: '3.10'
@@ -53,12 +52,12 @@ jobs:
 
     - uses: ankane/setup-mongodb@v1
       with:
-        mongodb-version: ${{ matrix.mongodb-version }}
+        mongodb-version: 5.0.0
 
 #    - name: Start MongoDB in docker
 #      if: ${{ matrix.os != 'macos-latest'}}
 #      run: |
-#        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
+#        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0
 
     - name: Start Postgres in docker
       if: ${{ matrix.os != 'macos-latest'}}
