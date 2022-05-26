@@ -29,7 +29,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Set up Node ${{ matrix.node }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node }}
 
@@ -99,7 +99,7 @@ jobs:
         poetry install
 
     - name: Set up Node ${{ matrix.node }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node }}
 
@@ -161,7 +161,7 @@ jobs:
         poetry install
 
     - name: Set up Node ${{ matrix.node }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node }}
 
