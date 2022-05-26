@@ -6,6 +6,7 @@ on:
     paths:
     - python_examples/**
     - poetry.lock
+    - .github/workflows/python_examples.yml
   pull_request:
     branches:
     - master

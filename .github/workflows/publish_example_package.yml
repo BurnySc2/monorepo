@@ -5,6 +5,7 @@ on:
   push:
     paths:
     - example_package/**
+    - .github/workflows/publish_example_package.yml
   pull_request:
     branches:
     - master
