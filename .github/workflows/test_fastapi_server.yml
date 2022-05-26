@@ -12,10 +12,11 @@ on:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: fastapi_server
+
 jobs:
   test_backend:
-    env:
-      SUBDIRECTORY: fastapi_server
     strategy:
       fail-fast: false
       matrix:
@@ -45,13 +46,13 @@ jobs:
         key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install Python dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         poetry install
 
     - name: Run Python tests
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         poetry run pytest
 
   deploy_backend:
@@ -62,7 +63,6 @@ jobs:
     needs: [test_backend]
     env:
       USERNAME: fastapiserver
-      SUBDIRECTORY: fastapi_server
     if: github.ref == 'refs/heads/develop'
 
     steps:
@@ -70,7 +70,7 @@ jobs:
 
     - name: Deploy backend
       run: |
-        rm -rf fastapi_server/data
+        rm -rf ${{ env.SUBDIRECTORY }}/data
 
     - name: Stop services
       uses: appleboy/ssh-action@master
@@ -108,6 +108,6 @@ jobs:
           cp ${{ env.SUBDIRECTORY }}/pyproject.toml pyproject.toml
           echo -e "STAGE=prod\n" > .env
           poetry install --no-dev
-          cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/fastapi_server/systemd/${{ env.USERNAME }}.service" "/etc/systemd/system/${{ env.USERNAME }}.service"
+          cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/${{ env.SUBDIRECTORY }}/systemd/${{ env.USERNAME }}.service" "/etc/systemd/system/${{ env.USERNAME }}.service"
           sudo /bin/systemctl daemon-reload
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}

@@ -11,10 +11,11 @@ on:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: supabase_stream_scripts
+
 jobs:
   test_supabase_stream_scripts:
-    env:
-      SUBDIRECTORY: supabase_stream_scripts
     strategy:
       fail-fast: false
       matrix:
@@ -37,18 +38,19 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm install
 
     - name: Run build command
+      if: ${{ matrix.node != '12' }}
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         cd ${{ env.SUBDIRECTORY }}
         npm run build
-      if: ${{ matrix.node != '12' }}
 
     - name: Run tests
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         rm tsconfig.json
         npm run test

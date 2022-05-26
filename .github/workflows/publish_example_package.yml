@@ -1,6 +1,5 @@
 name: publish_example_package
 
-
 on:
   push:
     paths:
@@ -11,10 +10,11 @@ on:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: example_package
+
 jobs:
   build_and_publish:
-    env:
-      SUBDIRECTORY: example_package
     strategy:
       fail-fast: false
       matrix:
@@ -44,19 +44,19 @@ jobs:
         key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         pip install poetry
-        cd ${{ env.SUBDIRECTORY }}
         poetry install --no-dev
 
     - name: Build
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         poetry build
 
       # Publish package on pypi
     - name: Publish
+      working-directory: ${{ env.SUBDIRECTORY }}
       continue-on-error: true
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}

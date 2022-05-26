@@ -14,10 +14,11 @@ on:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: replay_comparer
+
 jobs:
   test_replay_comparer:
-    env:
-      SUBDIRECTORY: replay_comparer
     strategy:
       fail-fast: false
       matrix:
@@ -40,15 +41,15 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm install --production
 
     - name: Run build command
-      run: |
-        cd ${{ env.SUBDIRECTORY }}
-        npm run build
       if: ${{ matrix.node != '12' }}
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: |
+        npm run build
 
       # - name: Run tests
       #   run: |

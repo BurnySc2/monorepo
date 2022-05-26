@@ -25,9 +25,6 @@ jobs:
         os: [ubuntu-latest]
         node: ['14', '16', '18']
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: ${{ env.SUBDIRECTORY }}
 
     steps:
     - uses: actions/checkout@v2
@@ -44,22 +41,26 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         npm install
 
     - name: Run build command
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         npm run build
 
     - name: Install playwright browsers
+      if: ${{ matrix.node != '14' }}
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         npx playwright install
-      if: ${{ matrix.node != '14' }}
 
     - name: Run tests
+      if: ${{ matrix.node != '14' }}
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         npm run test
-      if: ${{ matrix.node != '14' }}
 
 
   test_e2e:
@@ -141,7 +142,7 @@ jobs:
 
     - name: Install Poetry
       run: |
-        python -m pip install poetry
+        pip install poetry
 
     - name: Make poetry use local .venv folder
       run: poetry config virtualenvs.in-project true

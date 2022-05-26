@@ -11,10 +11,11 @@ on:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: bored_gems
+
 jobs:
   test_supabase_stream_scripts:
-    env:
-      SUBDIRECTORY: bored_gems
     strategy:
       fail-fast: false
       matrix:
@@ -37,23 +38,23 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
     - name: Install npm dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm install
 
     - name: Run build command
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        cd ${{ env.SUBDIRECTORY }}
         npm run build
 
     - name: Install playwright browsers
-      run: |
-        cd ${{ env.SUBDIRECTORY }}
-        npx playwright install
       if: ${{ matrix.node != '14' }}
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: |
+        npx playwright install
 
     - name: Run tests
-      run: |
-        cd ${{ env.SUBDIRECTORY }}
-        npm run test
       if: ${{ matrix.node != '14' }}
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: |
+        npm run test

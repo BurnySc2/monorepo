@@ -12,10 +12,11 @@ on:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: python_examples
+
 jobs:
   run_python_examples:
-    env:
-      SUBDIRECTORY: python_examples
     strategy:
       fail-fast: false
       matrix:
