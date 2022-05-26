@@ -51,7 +51,7 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.python-version }}-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Start MongoDB
-    - uses: ankane/setup-mongodb@v1
+      uses: ankane/setup-mongodb@v1
       with:
         mongodb-version: 5.0.0
 
