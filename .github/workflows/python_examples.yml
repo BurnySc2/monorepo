@@ -46,10 +46,12 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.python-version }}-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Start MongoDB in docker
+      if: ${{ matrix.os != 'macos-latest'}}
       run: |
         docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
 
     - name: Start Postgres in docker
+      if: ${{ matrix.os != 'macos-latest'}}
       run: |
         docker run --rm -d --name postgresql-container -p 5432:5432 \
           -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
