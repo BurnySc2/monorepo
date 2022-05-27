@@ -10,7 +10,6 @@ except IndexError:
 # Other
 # Coroutines and multiprocessing
 import asyncio
-import re
 import time
 
 # Type annotation / hints
@@ -34,9 +33,11 @@ from python_examples.examples.dataclasses_and_dicts.modify_dictionary import mod
 from python_examples.examples.other.file_interaction import create_file
 from python_examples.examples.other.geometry_example import test_geometry_shapely
 from python_examples.examples.other.image_manipulation import mass_convert_images
+from python_examples.examples.other.mass_replace import main as mass_replace_main
 from python_examples.examples.other.multiprocessing_example import do_math, do_multiprocessing
 from python_examples.examples.other.regex_example import regex_match_test, test_all_roman_numbers
 from python_examples.examples.plot_data.bokeh_plot import main as bokeh_plot_main
+from python_examples.examples.plot_data.clean_up import main as clean_up_main
 from python_examples.examples.plot_data.matplotlib_plot import main as matplotlib_plot_main
 from python_examples.examples.plot_data.pandas_plot import main as pandas_plot_main
 from python_examples.examples.plot_data.seaborn_plot import main as seaborn_plot_main
@@ -84,7 +85,7 @@ async def main():
     end_time = time.perf_counter()
     logger.info(f'Time for multiprocessing taken: {end_time - start_time}')
 
-    mass_replace()
+    mass_replace_main()
 
     logger.info('Creating hello world file...')
     create_file()
@@ -111,16 +112,8 @@ async def main():
     test_database_with_sqlmodel()
     await test_database_with_mongodb()
 
-
-def mass_replace():
-    # Source: https://stackoverflow.com/a/6117124
-    text = 'my text cond\nition1 condition2'
-    replace_dict = {'cond\nition1': 'loves', 'condition2': 'fun'}
-    # In case there is escape characters in k, it will not work without "re.escape"
-    replace_dict = {re.escape(k): v for k, v in replace_dict.items()}
-    pattern = re.compile('|'.join(replace_dict.keys()))
-    new_text = pattern.sub(lambda m: replace_dict[re.escape(m.group(0))], text)
-    logger.info(f'Mass replaced\n{text}\nto\n{new_text}')
+    logger.info('Test plotting data')
+    plot_data()
 
 
 def plot_data():
@@ -128,6 +121,7 @@ def plot_data():
     bokeh_plot_main()
     pandas_plot_main()
     seaborn_plot_main()
+    clean_up_main()
 
 
 if __name__ == '__main__':

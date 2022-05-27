@@ -81,8 +81,7 @@ async def main():
 if __name__ == '__main__':
     try:
         with BotRunner() as runner:
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(main())
+            asyncio.run(main())
     # pylint: disable=W0703
     except Exception as e:
         logger.trace(e)
