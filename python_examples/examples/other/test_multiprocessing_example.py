@@ -22,7 +22,7 @@ def test_fuzz_cpu_bound_summing(number):
     cpu_bound_summing(number=number)
 
 
-@settings(max_examples=10, deadline=1_000)
+@settings(max_examples=10, deadline=3_000)
 @given(numbers=st.lists(st.integers(min_value=0, max_value=1_000), min_size=1, max_size=100))
 def test_find_sums(numbers: List[int]):
     _result = find_sums(numbers)
