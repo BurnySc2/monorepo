@@ -1,5 +1,9 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+CURRENT_DIRECTORY = Path(__file__).parent
 
 
 def plot_01():
@@ -7,12 +11,12 @@ def plot_01():
     plt.ylabel('some numbers')
     # Display plot in Pycharm or terminal
     # plt.show()
-    plt.savefig('matplotlib_plot_01.png')
+    plt.savefig(CURRENT_DIRECTORY / 'matplotlib_plot_01.png')
 
 
 def plot_02():
     plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
-    plt.savefig('matplotlib_plot_02.png')
+    plt.savefig(CURRENT_DIRECTORY / 'matplotlib_plot_02.png')
 
 
 def plot_03():
@@ -21,7 +25,7 @@ def plot_03():
 
     # red dashes, blue squares and green triangles
     plt.plot(t, t, 'r--', t, t**2, 'bs', t, t**3, 'g^')
-    plt.savefig('matplotlib_plot_03.png')
+    plt.savefig(CURRENT_DIRECTORY / 'matplotlib_plot_03.png')
 
 
 def plot_04():
@@ -36,7 +40,7 @@ def plot_04():
     plt.scatter('a', 'b', c='c', s='d', data=data)
     plt.xlabel('entry a')
     plt.ylabel('entry b')
-    plt.savefig('matplotlib_plot_04.png')
+    plt.savefig(CURRENT_DIRECTORY / 'matplotlib_plot_04.png')
 
 
 def plot_05():
@@ -52,7 +56,7 @@ def plot_05():
     plt.text(60, .025, r'$\mu=100,\ \sigma=15$')
     plt.axis([40, 160, 0, 0.03])
     plt.grid(True)
-    plt.savefig('matplotlib_plot_05.png')
+    plt.savefig(CURRENT_DIRECTORY / 'matplotlib_plot_05.png')
 
 
 def plot_06():
@@ -70,7 +74,7 @@ def plot_06():
     )
 
     plt.ylim(-2, 2)
-    plt.savefig('matplotlib_plot_06.png')
+    plt.savefig(CURRENT_DIRECTORY / 'matplotlib_plot_06.png')
 
 
 def plot_07():
@@ -123,7 +127,7 @@ def plot_07():
         hspace=0.25,
         wspace=0.35,
     )
-    plt.savefig('matplotlib_plot_07.png')
+    plt.savefig(CURRENT_DIRECTORY / 'matplotlib_plot_07.png')
 
 
 def plot_08():
@@ -136,7 +140,7 @@ def plot_08():
     ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%', shadow=True, startangle=90)
     ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
-    plt.savefig('matplotlib_plot_08.png')
+    plt.savefig(CURRENT_DIRECTORY / 'matplotlib_plot_08.png')
 
 
 def main():

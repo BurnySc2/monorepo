@@ -1,4 +1,5 @@
 from math import pi
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -7,6 +8,8 @@ from bokeh.palettes import Category20c
 from bokeh.plotting import figure
 from bokeh.transform import cumsum, linear_cmap
 from bokeh.util.hex import axial_to_cartesian, hexbin
+
+CURRENT_DIRECTORY = Path(__file__).parent
 
 
 def plot_01():
@@ -18,7 +21,7 @@ def plot_01():
         top=[1.2, 2.5, 3.7],
         color='firebrick',
     )
-    output_file('bokeh_vbar.html')
+    output_file(CURRENT_DIRECTORY / 'bokeh_vbar.html')
     save(p)
     # Open in browser
     # show(p)
@@ -37,7 +40,7 @@ def plot_02():
     x, y = axial_to_cartesian(q, r, 1, 'pointytop')
 
     p.text(x, y, text=[f'({q}, {r})' for (q, r) in zip(q, r)], text_baseline='middle', text_align='center')
-    output_file('bokeh_hex_coords.html')
+    output_file(CURRENT_DIRECTORY / 'bokeh_hex_coords.html')
     save(p)
 
 
@@ -60,7 +63,7 @@ def plot_03():
         fill_color=linear_cmap('counts', 'Viridis256', 0, max(bins.counts))
     )
 
-    output_file('bokeh_hex_tile.html')
+    output_file(CURRENT_DIRECTORY / 'bokeh_hex_tile.html')
 
     save(p)
 
@@ -79,7 +82,7 @@ def plot_04():
         color=['blue', 'red']
     )
 
-    output_file('bokeh_multipolygons.html')
+    output_file(CURRENT_DIRECTORY / 'bokeh_multipolygons.html')
     save(p)
 
 
@@ -95,7 +98,7 @@ def plot_05():
     p.image(image=[d], x=0, y=0, dw=10, dh=10, palette='Spectral11', level='image')
     p.grid.grid_line_width = 0.5
 
-    output_file('bokeh_image.html', title='image.py example')
+    output_file(CURRENT_DIRECTORY / 'bokeh_image.html', title='image.py example')
     save(p)
 
 
@@ -144,7 +147,7 @@ def plot_06():
     p.axis.visible = False
     p.grid.grid_line_color = None
 
-    output_file('bokeh_piechart.html')
+    output_file(CURRENT_DIRECTORY / 'bokeh_piechart.html')
     save(p)
 
 

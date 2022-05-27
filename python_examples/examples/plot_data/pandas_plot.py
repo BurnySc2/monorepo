@@ -1,8 +1,12 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 # plt.close("all")
+
+CURRENT_DIRECTORY = Path(__file__).parent
 
 
 def plot_01():
@@ -13,7 +17,7 @@ def plot_01():
     ts.plot()
     # Display plot in Pycharm or terminal
     # plt.show()
-    plt.savefig('pandas_plot_01.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_01.png')
 
 
 def plot_02():
@@ -23,7 +27,7 @@ def plot_02():
     df = df.cumsum()
 
     df.plot()
-    plt.savefig('pandas_plot_02.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_02.png')
 
 
 def plot_03():
@@ -36,7 +40,7 @@ def plot_03():
 
     df3.plot(x='A', y='B')
 
-    plt.savefig('pandas_plot_03.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_03.png')
 
 
 def plot_04():
@@ -45,7 +49,7 @@ def plot_04():
 
     df.iloc[5].plot(kind='bar')
 
-    plt.savefig('pandas_plot_04.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_04.png')
 
 
 def plot_05():
@@ -55,28 +59,28 @@ def plot_05():
     plt.axhline(0, color='k')
     df.iloc[5].plot.bar()
 
-    plt.savefig('pandas_plot_05.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_05.png')
 
 
 def plot_06():
     df2 = pd.DataFrame(np.random.rand(10, 4), columns=['a', 'b', 'c', 'd'])
 
     df2.plot.bar()
-    plt.savefig('pandas_plot_06.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_06.png')
 
 
 def plot_07():
     df2 = pd.DataFrame(np.random.rand(10, 4), columns=['a', 'b', 'c', 'd'])
     df2.plot.bar(stacked=True)
 
-    plt.savefig('pandas_plot_07.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_07.png')
 
 
 def plot_08():
 
     df2 = pd.DataFrame(np.random.rand(10, 4), columns=['a', 'b', 'c', 'd'])
     df2.plot.barh(stacked=True)
-    plt.savefig('pandas_plot_08.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_08.png')
 
 
 def plot_09():
@@ -91,7 +95,7 @@ def plot_09():
     )
 
     df4.plot.hist(alpha=0.5)
-    plt.savefig('pandas_plot_09.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_09.png')
 
 
 def plot_10():
@@ -105,28 +109,28 @@ def plot_10():
     )
 
     df4.plot.hist(stacked=True, bins=20)
-    plt.savefig('pandas_plot_10.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_10.png')
 
 
 def plot_11():
     df = pd.DataFrame(np.random.rand(10, 4), columns=['a', 'b', 'c', 'd'])
 
     df.plot.area()
-    plt.savefig('pandas_plot_11.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_11.png')
 
 
 def plot_12():
     series = pd.Series(3 * np.random.rand(4), index=['a', 'b', 'c', 'd'], name='series')
 
     series.plot.pie(figsize=(6, 6))
-    plt.savefig('pandas_plot_12.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_12.png')
 
 
 def plot_13():
     df = pd.DataFrame(3 * np.random.rand(4, 2), index=['a', 'b', 'c', 'd'], columns=['x', 'y'])
 
     df.plot.pie(subplots=True, figsize=(8, 4))
-    plt.savefig('pandas_plot_13.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_13.png')
 
 
 def plot_14():
@@ -139,14 +143,14 @@ def plot_14():
         figsize=(6, 6),
     )
 
-    plt.savefig('pandas_plot_14.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_14.png')
 
 
 def plot_15():
     series = pd.Series([0.1] * 4, index=['a', 'b', 'c', 'd'], name='series2')
 
     series.plot.pie(figsize=(6, 6))
-    plt.savefig('pandas_plot_15.png')
+    plt.savefig(CURRENT_DIRECTORY / 'pandas_plot_15.png')
 
 
 def main():

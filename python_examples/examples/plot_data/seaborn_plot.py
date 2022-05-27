@@ -1,15 +1,17 @@
-# Import seaborn
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Apply the default theme
 sns.set_theme()
 
-# Load an example dataset
-tips = sns.load_dataset('tips')
+CURRENT_DIRECTORY = Path(__file__).parent
 
 
 def plot_01():
+    # Load an example dataset
+    tips = sns.load_dataset('tips')
     # Create a visualization
     sns.relplot(
         data=tips,
@@ -22,7 +24,7 @@ def plot_01():
     )
 
     # Save as image via
-    plt.savefig('seaborn_plot_01.png')
+    plt.savefig(CURRENT_DIRECTORY / 'seaborn_plot_01.png')
 
     # Plotting in pycharm / terminal doesn't seem to work
     # plt.show()
@@ -42,7 +44,7 @@ def plot_02():
         facet_kws=dict(sharex=False),
     )
 
-    plt.savefig('seaborn_plot_02.png')
+    plt.savefig(CURRENT_DIRECTORY / 'seaborn_plot_02.png')
 
 
 def plot_03():
@@ -57,13 +59,13 @@ def plot_03():
         style='event',
     )
 
-    plt.savefig('seaborn_plot_03.png')
+    plt.savefig(CURRENT_DIRECTORY / 'seaborn_plot_03.png')
 
 
 def plot_04():
     penguins = sns.load_dataset('penguins')
     sns.jointplot(data=penguins, x='flipper_length_mm', y='bill_length_mm', hue='species')
-    plt.savefig('seaborn_plot_04.png')
+    plt.savefig(CURRENT_DIRECTORY / 'seaborn_plot_04.png')
 
 
 def plot_05():
@@ -75,7 +77,7 @@ def plot_05():
     g.add_legend(frameon=True)
     g.legend.set_bbox_to_anchor((.61, .6))
 
-    plt.savefig('seaborn_plot_05.png')
+    plt.savefig(CURRENT_DIRECTORY / 'seaborn_plot_05.png')
 
 
 def main():
