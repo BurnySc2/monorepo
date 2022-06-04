@@ -96,13 +96,9 @@ jobs:
     if: github.ref == 'refs/heads/develop'
 
     steps:
-    - uses: actions/checkout@v2
+#    - uses: actions/checkout@v2
 
-    - name: Deploy backend
-      run: |
-        rm -rf ${{ env.SUBDIRECTORY }}/data
-
-    - name: Stop services
+    - name: Update docker image on server and restart server
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
@@ -112,32 +108,17 @@ jobs:
         passphrase: ''
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-
-    - name: Update server files
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        port: 22
-        username: ${{ env.USERNAME }}
-        key: ${{ secrets.FASTAPISERVERKEY }}
-        passphrase: ''
-        source: .
-        target: /home/${{ env.USERNAME }}/${{ env.USERNAME }}
-
-    - name: Update dependencies and .service file then re-enable service
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        port: 22
-        username: ${{ env.USERNAME }}
-        key: ${{ secrets.FASTAPISERVERKEY }}
-        passphrase: ''
-        script: |
-          cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}"
-          cp ${{ env.SUBDIRECTORY }}/poetry.lock poetry.lock
-          cp ${{ env.SUBDIRECTORY }}/pyproject.toml pyproject.toml
-          echo -e "STAGE=prod\n" > .env
-          poetry install --no-dev
-          cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/${{ env.SUBDIRECTORY }}/systemd/${{ env.USERNAME }}.service" "/etc/systemd/system/${{ env.USERNAME }}.service"
-          sudo /bin/systemctl daemon-reload
+          sudo systemctl daemon-reload
+          docker pull burnysc2/fastapi_server:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
+
+#    - name: Update server files
+#      uses: appleboy/scp-action@master
+#      with:
+#        host: ${{ secrets.HOST }}
+#        port: 22
+#        username: ${{ env.USERNAME }}
+#        key: ${{ secrets.FASTAPISERVERKEY }}
+#        passphrase: ''
+#        source: .
+#        target: /home/${{ env.USERNAME }}/${{ env.USERNAME }}

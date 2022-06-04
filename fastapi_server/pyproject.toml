@@ -18,8 +18,6 @@ colorama = "^0.4.4"
 loguru = "^0.5"
 # Network interaction
 requests = "^2.27.1"
-# Local .env file
-python-dotenv = "^0.19.2"
 zephyrus-sc2-parser = "^0.3.7"
 python-multipart = "^0.0.5"
 
