@@ -1,11 +1,12 @@
+# /etc/systemd/system/fastapiserver.service
 [Service]
-ExecStart=/usr/local/bin/poetry run uvicorn fastapi_server.main:app --host localhost --port 8000
+ExecStart=/usr/bin/docker run --rm --name fastapi_server -p 8000:8000 --mount type=bind,source="/home/fastapiserver/data",destination=/root/fastapi_server/data burnysc2/fastapi_server:latest
 Restart=always
 RestartSec=20
 SyslogIdentifier=fastapiserver
 User=fastapiserver
 Group=fastapiserver
-WorkingDirectory=/home/fastapiserver/fastapiserver/
+WorkingDirectory=/home/fastapiserver/
 
 [Install]
 WantedBy=multi-user.target
