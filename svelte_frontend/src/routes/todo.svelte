@@ -101,7 +101,7 @@
                     todo_description: newTodoText,
                 }),
             }
-            await fetch(`${API_ENDPOINT}/api_model`, requestOptions)
+            await fetch(API_MODEL_ENDPOINT, requestOptions)
         } catch {
             localSubmit()
         }
