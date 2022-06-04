@@ -57,6 +57,7 @@ jobs:
         poetry run pytest
 
   build_and_deploy_docker_image:
+    needs: [test_backend]
     strategy:
       fail-fast: false
       matrix:
@@ -84,59 +85,59 @@ jobs:
         docker push burnysc2/fastapi_server:latest
         docker push burnysc2/fastapi_server:${{ env.VERSION_NUMBER}}
 
-#  deploy_backend:
-#    strategy:
-#      matrix:
-#        os: [ubuntu-latest]
-#    runs-on: ${{ matrix.os }}
-#    needs: [test_backend]
-#    env:
-#      USERNAME: fastapiserver
-#    if: github.ref == 'refs/heads/develop'
-#
-#    steps:
-#    - uses: actions/checkout@v2
-#
-#    - name: Deploy backend
-#      run: |
-#        rm -rf ${{ env.SUBDIRECTORY }}/data
-#
-#    - name: Stop services
-#      uses: appleboy/ssh-action@master
-#      with:
-#        host: ${{ secrets.HOST }}
-#        port: 22
-#        username: ${{ env.USERNAME }}
-#        key: ${{ secrets.FASTAPISERVERKEY }}
-#        passphrase: ''
-#        script: |
-#          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-#
-#    - name: Update server files
-#      uses: appleboy/scp-action@master
-#      with:
-#        host: ${{ secrets.HOST }}
-#        port: 22
-#        username: ${{ env.USERNAME }}
-#        key: ${{ secrets.FASTAPISERVERKEY }}
-#        passphrase: ''
-#        source: .
-#        target: /home/${{ env.USERNAME }}/${{ env.USERNAME }}
-#
-#    - name: Update dependencies and .service file then re-enable service
-#      uses: appleboy/ssh-action@master
-#      with:
-#        host: ${{ secrets.HOST }}
-#        port: 22
-#        username: ${{ env.USERNAME }}
-#        key: ${{ secrets.FASTAPISERVERKEY }}
-#        passphrase: ''
-#        script: |
-#          cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}"
-#          cp ${{ env.SUBDIRECTORY }}/poetry.lock poetry.lock
-#          cp ${{ env.SUBDIRECTORY }}/pyproject.toml pyproject.toml
-#          echo -e "STAGE=prod\n" > .env
-#          poetry install --no-dev
-#          cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/${{ env.SUBDIRECTORY }}/systemd/${{ env.USERNAME }}.service" "/etc/systemd/system/${{ env.USERNAME }}.service"
-#          sudo /bin/systemctl daemon-reload
-#          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
+  deploy_backend:
+    needs: [build_and_deploy_docker_image]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      USERNAME: fastapiserver
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Deploy backend
+      run: |
+        rm -rf ${{ env.SUBDIRECTORY }}/data
+
+    - name: Stop services
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERKEY }}
+        passphrase: ''
+        script: |
+          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+
+    - name: Update server files
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERKEY }}
+        passphrase: ''
+        source: .
+        target: /home/${{ env.USERNAME }}/${{ env.USERNAME }}
+
+    - name: Update dependencies and .service file then re-enable service
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERKEY }}
+        passphrase: ''
+        script: |
+          cd "/home/${{ env.USERNAME}}/${{ env.USERNAME }}"
+          cp ${{ env.SUBDIRECTORY }}/poetry.lock poetry.lock
+          cp ${{ env.SUBDIRECTORY }}/pyproject.toml pyproject.toml
+          echo -e "STAGE=prod\n" > .env
+          poetry install --no-dev
+          cp "/home/${{ env.USERNAME }}/${{ env.USERNAME }}/${{ env.SUBDIRECTORY }}/systemd/${{ env.USERNAME }}.service" "/etc/systemd/system/${{ env.USERNAME }}.service"
+          sudo /bin/systemctl daemon-reload
+          sudo /bin/systemctl enable --now ${{ env.USERNAME }}

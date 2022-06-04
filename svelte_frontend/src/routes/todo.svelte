@@ -3,15 +3,13 @@
 
     import Headers from "../components/Headers.svelte"
     import TodoCard from "../components/TodoCard.svelte"
+    import { API_BODY_ENDPOINT, API_ENDPOINT, API_MODEL_ENDPOINT } from "../functions/constants"
 
     let newTodoText = ""
     let cards: { id: number; todo_text: string; created_timestamp: number; done_timestamp: number; done: boolean }[] = [
         { id: 0, todo_text: "some todo text", created_timestamp: 123, done_timestamp: -1, done: false },
     ]
     let APIserverIsResponding = true
-
-    const ip = process.env.BACKEND_SERVER || "localhost:8000"
-    const api_server_ip = `http://${ip}`
 
     onMount(async () => {
         // console.log("Loading todos")
@@ -44,7 +42,7 @@
     const getTodos = async () => {
         APIserverIsResponding = true
         try {
-            let response = await fetch(`${api_server_ip}/api`)
+            let response = await fetch(API_ENDPOINT)
             if (response.ok) {
                 cards = await response.json()
                 // console.log(`Response is: ${JSON.stringify(cards)}`);
@@ -64,7 +62,7 @@
         fetch(`/api/${newTodo}?` + params.toString(), requestOptions)
          */
         try {
-            await fetch(`${api_server_ip}/api/${newTodoText}`, {
+            await fetch(`${API_ENDPOINT}/${newTodoText}`, {
                 method: "POST",
             })
         } catch {
@@ -83,7 +81,7 @@
                     new_todo: newTodoText,
                 }),
             }
-            await fetch(`${api_server_ip}/api_body`, requestOptions)
+            await fetch(API_BODY_ENDPOINT, requestOptions)
         } catch {
             localSubmit()
         }
@@ -103,7 +101,7 @@
                     todo_description: newTodoText,
                 }),
             }
-            await fetch(`${api_server_ip}/api_model`, requestOptions)
+            await fetch(`${API_ENDPOINT}/api_model`, requestOptions)
         } catch {
             localSubmit()
         }
@@ -113,7 +111,7 @@
 
     const removeTodo = async (id: number) => {
         try {
-            await fetch(`${api_server_ip}/api/${id}`, {
+            await fetch(API_MODEL_ENDPOINT, {
                 method: "DELETE",
             })
         } catch {
