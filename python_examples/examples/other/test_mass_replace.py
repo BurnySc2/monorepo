@@ -13,8 +13,8 @@ def test_example_text():
 
 
 @given(
-    st.text(),
-    st.text(),
+    st.text(min_size=1),
+    st.text(min_size=1),
     st.text(),
     st.text(),
 )
@@ -29,13 +29,13 @@ def test_many_texts(
         # or one key is contained in the other
         return
 
-    text = f'{w1} {w2} {w1} {w2} {w2}'
+    text = f'{w1}{w2}{w1}{w2}{w2}'
     replace_dict = {
         w1: w3,
         w2: w4,
     }
     new_text = mass_replacer(text, replace_dict)
-    expected_text = f'{w3} {w4} {w3} {w4} {w4}'
+    expected_text = f'{w3}{w4}{w3}{w4}{w4}'
     assert new_text == expected_text
 
     # The following may fail
