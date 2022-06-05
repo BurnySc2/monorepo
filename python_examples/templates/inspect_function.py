@@ -34,11 +34,11 @@ def main():
     assert required_arg_count(func_without_arg) == 0
     assert optional_arg_count(func_without_arg) == 0
 
-    assert total_arg_count(func_with_1_arg) == 0
+    assert total_arg_count(func_with_1_arg) == 2
     assert required_arg_count(func_with_1_arg) == 1
     assert optional_arg_count(func_with_1_arg) == 1
 
-    assert total_arg_count(func_with_2_args) == 0
+    assert total_arg_count(func_with_2_args) == 4
     assert required_arg_count(func_with_2_args) == 2
     assert optional_arg_count(func_with_2_args) == 2
 

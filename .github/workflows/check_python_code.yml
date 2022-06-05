@@ -57,5 +57,5 @@ jobs:
         poetry run pylint $(git ls-files '*.py')
 
     - name: Run mypy
-      run: |-
+      run: |
         poetry run mypy $(git ls-files '*.py')

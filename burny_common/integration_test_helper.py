@@ -22,6 +22,7 @@ class Timeout:
         with Timeout(seconds=2):
             ...
     except TimeoutError:
+        ...
     """
 
     def __init__(self, seconds=1, error_message='Timeout'):

@@ -1,6 +1,7 @@
 import signal
 import time
 from contextlib import contextmanager
+from platform import platform
 
 
 class Timeout:
@@ -10,6 +11,7 @@ class Timeout:
         with Timeout(seconds=2):
             ...
     except TimeoutError:
+        ...
     """
 
     def __init__(self, seconds: int = 1, error_message='Timeout'):
@@ -51,6 +53,10 @@ def timeout(seconds: int = 1, error_message='Timeout'):
 
 
 def main():
+    # SIGALRM doesn't work on windows
+    if platform().startswith('win32'):
+        return
+
     # Test Timeout class
     try:
         with Timeout(seconds=1, error_message='Fancy error message'):

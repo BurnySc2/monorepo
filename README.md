@@ -4,6 +4,7 @@
 [![test_fastapi_server](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml)
 [![test_supabase_stream_scripts](https://github.com/BurnySc2/monorepo/actions/workflows/test_supabase_stream_scripts.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_supabase_stream_scripts.yml)
 [![test_bored_gems](https://github.com/BurnySc2/monorepo/actions/workflows/test_bored_gems.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_bored_gems.yml)
+[![check_python_code](https://github.com/BurnySc2/monorepo/actions/workflows/check_python_code.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/check_python_code.yml)
 
 # Monorepo
 My monorepo for various tools and showcases
@@ -70,9 +71,11 @@ then use `coverage gutters` extension in VScode
 or open the generated html file in folder `htmlcov`
 
 # Install and run pre-commit hook on all staged files
-```py
+```sh
 poetry run pre-commit install
 poetry run pre-commit run --verbose
+poetry run pre-commit run --all-files
+poetry run pre-commit run --all-files --verbose
 ```
 
 This runs pylint, mypy, pytest tests, apply autoformatter yapf
