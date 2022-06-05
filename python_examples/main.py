@@ -49,7 +49,7 @@ from python_examples.templates.error_suppression import main as error_suppressio
 from python_examples.templates.inspect_function import main as inspect_main
 
 # SIGALRM doesn't work on windows
-if not platform().startswith('win32'):
+if not platform().lower().startswith('win'):
     from python_examples.templates.timeout_function import main as timeout_main
 
 logger.remove()  # Remove previous default handlers
@@ -128,8 +128,7 @@ async def main():
     error_suppression_main()
     inspect_main()
     # SIGALRM doesn't work on windows
-    logger.info(f"Platform is: {platform()}")
-    if not platform().startswith('win32'):
+    if not platform().lower().startswith('win'):
         timeout_main()
 
     logger.info('Test plotting data')
