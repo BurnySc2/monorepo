@@ -128,6 +128,7 @@ async def main():
     error_suppression_main()
     inspect_main()
     # SIGALRM doesn't work on windows
+    logger.info(f"Platform is: {platform()}")
     if not platform().startswith('win32'):
         timeout_main()
 
