@@ -13,8 +13,7 @@ def permutation(my_list: List[Any]) -> List[Any]:
     if len(my_list) == 1:
         return [my_list]
     result = []
-    for i, _ in enumerate(my_list):
-        middle = my_list[i]
+    for i, middle in enumerate(my_list):
         remaining_list = my_list[:i] + my_list[i + 1:]
         for p in permutation(remaining_list):
             result.append([middle] + p)

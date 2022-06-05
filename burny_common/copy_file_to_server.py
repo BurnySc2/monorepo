@@ -30,7 +30,7 @@ def copy_file_to_server_helper(
 ):
     if create_target_folder:
         create_target_dir(client, target_path.parent)
-    return sftp.put(source_path.absolute().__str__(), target_path.absolute().__str__())
+    return sftp.put(str(source_path.absolute()), str(target_path.absolute()))
 
 
 @click.command()
@@ -68,7 +68,7 @@ def copy_file_to_server(
 
         with client.open_sftp() as sftp:
             assert path_source.is_file()
-            print(f'Copying {path_source.absolute().__str__()} to {path_target.absolute().__str__()}')
+            print(f'Copying {path_source.absolute()} to {path_target.absolute()}')
             copy_file_to_server_helper(
                 client,
                 sftp,

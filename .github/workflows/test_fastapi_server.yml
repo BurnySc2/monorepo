@@ -85,7 +85,33 @@ jobs:
         docker push burnysc2/fastapi_server:latest
         docker push burnysc2/fastapi_server:${{ env.VERSION_NUMBER}}
 
-  deploy_backend:
+  deploy_backend_dev:
+    if: github.ref == 'refs/heads/develop'
+    needs: [build_and_deploy_docker_image]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      USERNAME: fastapiserverdev
+
+    steps:
+    - name: Update docker image on server and restart server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERDEVKEY }}
+        passphrase: ''
+        script: |
+          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+          sudo systemctl daemon-reload
+          docker pull burnysc2/fastapi_server:latest
+          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
+
+  deploy_backend_prod:
+    if: github.ref == 'refs/heads/master'
     needs: [build_and_deploy_docker_image]
     strategy:
       matrix:
@@ -93,11 +119,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       USERNAME: fastapiserver
-    if: github.ref == 'refs/heads/develop'
 
     steps:
-#    - uses: actions/checkout@v2
-
     - name: Update docker image on server and restart server
       uses: appleboy/ssh-action@master
       with:
@@ -109,7 +132,7 @@ jobs:
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
           sudo systemctl daemon-reload
-          docker pull burnysc2/fastapi_server:latest
+          docker pull burnysc2/fastapi_server:${{ env.VERSION_NUMBER }}
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
 #    - name: Update server files

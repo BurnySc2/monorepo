@@ -80,6 +80,14 @@ jobs:
       run: |
         poetry install
 
+    - name: Format python code
+      run: |
+        poetry run yapf --in-place $(git ls-files '*.py' | grep -E '${{ env.SUBDIRECTORY }}/.*')
+
+    - name: Run pylint
+      run: |
+        poetry run pylint $(git ls-files '*.py' | grep -E '${{ env.SUBDIRECTORY }}/.*')
+
     - name: Test with pytest
       run: |
         poetry run pytest ${{ env.SUBDIRECTORY }}

@@ -5,6 +5,7 @@ ADD poetry.lock pyproject.toml /root/fastapi_server/
 WORKDIR /root/fastapi_server
 
 RUN pip install poetry --no-cache-dir \
+    && poetry config virtualenvs.create false \
     && poetry install --no-dev
 
 ADD . /root/fastapi_server/fastapi_server

@@ -1,0 +1,61 @@
+name: test_fastapi_server
+
+
+on:
+  push:
+    paths:
+    - ./**/*.py
+    - .github/workflows/check_python_code.yaml
+  pull_request:
+    branches:
+    - master
+    - develop
+
+env:
+  SUBDIRECTORY: check-python-code
+
+jobs:
+  test_backend:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.10']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      run: |
+        pip install poetry
+
+    - name: Make poetry use local .venv folder
+      run: poetry config virtualenvs.in-project true
+
+    - name: Set up cache
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
+
+    - name: Install Python dependencies
+      run: |
+        poetry install
+
+    - name: Format python code
+      run: |
+        poetry run yapf --in-place $(git ls-files '*.py')
+
+    - name: Run pylint
+      run: |
+        poetry run pylint $(git ls-files '*.py')
+
+    - name: Run mypy
+      run: |-
+        poetry run mypy $(git ls-files '*.py')

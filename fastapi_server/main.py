@@ -11,7 +11,8 @@ from fastapi_server.routes.hello_world import hello_world_router
 from fastapi_server.routes.replay_parser import replay_parser_router
 from fastapi_server.routes.todolist import todo_list_router
 
-STAGE: Literal['DEV', 'PROD'] = os.getenv('STAGE', 'DEV')
+assert os.getenv('STAGE', 'DEV') in {'DEV', 'PROD'}, os.getenv('STAGE')
+STAGE: Literal['DEV', 'PROD'] = os.getenv('STAGE', 'DEV')  # type: ignore
 
 app = FastAPI()
 app.include_router(hello_world_router)

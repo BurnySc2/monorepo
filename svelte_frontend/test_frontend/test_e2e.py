@@ -35,14 +35,12 @@ def teardown_module():
 
 class TestClass:
 
-    # pylint: disable=R0201
     def test_basic_site_display(self, page: Page):
         """ Check if HOME site is visible """
         page.goto(FRONTEND_ADDRESS)
         assert 'BrowserStorage' in page.content()
         assert page.inner_text('#browserstorage') == 'BrowserStorage'
 
-    # pylint: disable=R0201
     def test_show_todos(self, page: Page):
         """ Check if the to-do site is visible """
         page.goto(FRONTEND_ADDRESS)
@@ -51,7 +49,6 @@ class TestClass:
         page.wait_for_timeout(100)
         assert 'Unable to connect to server' in page.content()
 
-    # pylint: disable=R0201
     def test_add_todo(self, page: Page):
         """ Add a new to-do entry """
         page.goto(FRONTEND_ADDRESS)

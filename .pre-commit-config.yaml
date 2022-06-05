@@ -89,26 +89,31 @@ repos:
     name: format python code
     stages: [commit]
     language: system
-    entry: poetry run yapf --in-place
-    files: ^.*\.py$
-    pass_filenames: true
+    entry: /bin/bash -c "poetry run yapf --in-place $(git ls-files '*.py')"
+    pass_filenames: false
 
+  # If you want to run manually:
+  # poetry run pylint $(git ls-files '*.py')
+  # poetry run pylint python_examples/templates
+  # poetry run pylint python_examples/templates/inspect_function.py
   - id: pylint
     name: pylint
     stages: [commit]
     language: system
-    entry: poetry run pylint
-    files: ^.*\.py$
-    pass_filenames: true
+    entry: /bin/bash -c "poetry run pylint $(git ls-files '*.py')"
+    pass_filenames: false
 
+  # poetry run mypy ./
+  # poetry run mypy $(git ls-files '*.py')
+  # poetry run mypy python_examples/templates
+  # poetry run mypy python_examples/templates/inspect_function.py
   # Run mypy type checks
   - id: mypy
     name: mypy
     stages: [commit]
     language: system
-    entry: poetry run mypy
-    files: ^.*\.py$
-    pass_filenames: true
+    entry: /bin/bash -c "poetry run mypy $(git ls-files '*.py')"
+    pass_filenames: false
 
   # TODO Figure out how to only format changed frontend files - have to pass in file names to the bash command?
   - id: format_svelte_frontend
