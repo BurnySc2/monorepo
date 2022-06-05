@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 
 # Be able to launch from root folder
+from platform import platform
+
 try:
     sys.path.append(str(Path(__file__).parents[1]))
 except IndexError:
@@ -45,7 +47,10 @@ from python_examples.templates.async_timeout_function import main as async_timeo
 from python_examples.templates.deprecate_a_function import main as deprecate_a_function_main
 from python_examples.templates.error_suppression import main as error_suppression_main
 from python_examples.templates.inspect_function import main as inspect_main
-from python_examples.templates.timeout_function import main as timeout_main
+
+# SIGALRM doesn't work on windows
+if not platform().startswith('win32'):
+    from python_examples.templates.timeout_function import main as timeout_main
 
 logger.remove()  # Remove previous default handlers
 # Log to console
@@ -122,7 +127,9 @@ async def main():
     deprecate_a_function_main()
     error_suppression_main()
     inspect_main()
-    timeout_main()
+    # SIGALRM doesn't work on windows
+    if not platform().startswith('win32'):
+        timeout_main()
 
     logger.info('Test plotting data')
     matplotlib_plot_main()

@@ -24,9 +24,6 @@ class Timeout:
         raise TimeoutError(self.error_message)
 
     def __enter__(self):
-        # SIGALRM doesn't work on windows
-        if platform().startswith('win32'):
-            return
         signal.signal(signal.SIGALRM, self.handle_timeout)
         signal.alarm(self.seconds)
 
