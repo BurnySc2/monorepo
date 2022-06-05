@@ -43,6 +43,11 @@ def timeout(seconds: int = 1, error_message='Timeout'):
     assert isinstance(seconds, int), type(seconds)
     assert seconds > 0
 
+    # SIGALRM doesn't work on windows
+    if platform().startswith('win32'):
+        yield
+        return
+
     def timeout_handler(_signum, _frame):
         raise TimeoutError(error_message)
 
