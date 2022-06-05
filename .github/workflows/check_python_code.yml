@@ -1,4 +1,4 @@
-name: test_fastapi_server
+name: check_python_code
 
 
 on:
@@ -15,7 +15,7 @@ env:
   SUBDIRECTORY: check-python-code
 
 jobs:
-  test_backend:
+  check_python_code:
     strategy:
       fail-fast: false
       matrix:
