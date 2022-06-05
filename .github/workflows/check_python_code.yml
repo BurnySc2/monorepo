@@ -5,7 +5,7 @@ on:
   push:
     paths:
     - ./**/*.py
-    - .github/workflows/check_python_code.yaml
+    - .github/workflows/check_python_code.yml
   pull_request:
     branches:
     - master
