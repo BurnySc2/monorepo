@@ -1,0 +1,12 @@
+# /etc/systemd/system/fastapiserver.service
+[Service]
+ExecStart=/usr/bin/docker run --rm --name fastapi_server --publish 8000:8000 --env STAGE=DEV --mount type=bind,source="/home/fastapiserver/data",destination=/root/fastapi_server/data burnysc2/fastapi_server:latest
+Restart=always
+RestartSec=20
+SyslogIdentifier=fastapiserver
+User=fastapiserverdev
+Group=fastapiserverdev
+WorkingDirectory=/home/fastapiserverdev/
+
+[Install]
+WantedBy=multi-user.target

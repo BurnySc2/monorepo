@@ -26,7 +26,7 @@ origins = [
 ]
 
 logger.info(f"Starting in 'STAGE == {STAGE}' mode")
-if STAGE != 'prod':
+if STAGE != 'PROD':
     origins += [f'http://localhost:{i}' for i in range(1, 2**16)]
     app.include_router(chat_router)
 

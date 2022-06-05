@@ -41,6 +41,11 @@ from python_examples.examples.plot_data.clean_up import main as clean_up_main
 from python_examples.examples.plot_data.matplotlib_plot import main as matplotlib_plot_main
 from python_examples.examples.plot_data.pandas_plot import main as pandas_plot_main
 from python_examples.examples.plot_data.seaborn_plot import main as seaborn_plot_main
+from python_examples.templates.async_timeout_function import main as async_timeout_main
+from python_examples.templates.deprecate_a_function import main as deprecate_a_function_main
+from python_examples.templates.error_suppression import main as error_suppression_main
+from python_examples.templates.inspect_function import main as inspect_main
+from python_examples.templates.timeout_function import main as timeout_main
 
 logger.remove()  # Remove previous default handlers
 # Log to console
@@ -112,11 +117,14 @@ async def main():
     test_database_with_sqlmodel()
     await test_database_with_mongodb()
 
+    logger.info('Running template files')
+    await async_timeout_main()
+    deprecate_a_function_main()
+    error_suppression_main()
+    inspect_main()
+    timeout_main()
+
     logger.info('Test plotting data')
-    plot_data()
-
-
-def plot_data():
     matplotlib_plot_main()
     bokeh_plot_main()
     pandas_plot_main()
