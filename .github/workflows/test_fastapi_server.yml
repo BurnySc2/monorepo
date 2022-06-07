@@ -71,6 +71,7 @@ jobs:
       working-directory: fastapi_server
       run: |
         docker build -t burnysc2/fastapi_server:latest .
+        docker build -t burnysc2/fastapi_server:latest_dev .
         docker build -t burnysc2/fastapi_server:${{ env.VERSION_NUMBER}} .
 
     - name: Login to DockerHub
@@ -82,8 +83,13 @@ jobs:
     - name: Upload docker image
       if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       run: |
-        docker push burnysc2/fastapi_server:latest
+        docker push burnysc2/fastapi_server:latest_dev
         docker push burnysc2/fastapi_server:${{ env.VERSION_NUMBER}}
+
+    - name: Upload docker image
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      run: |
+        docker push burnysc2/fastapi_server:latest
 
   deploy_backend_dev:
     if: github.ref == 'refs/heads/develop'
@@ -107,7 +113,7 @@ jobs:
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
           sudo systemctl daemon-reload
-          docker pull burnysc2/fastapi_server:latest
+          docker pull burnysc2/fastapi_server:latest_dev
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
   deploy_backend_prod:
@@ -132,7 +138,7 @@ jobs:
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
           sudo systemctl daemon-reload
-          docker pull burnysc2/fastapi_server:${{ env.VERSION_NUMBER }}
+          docker pull burnysc2/fastapi_server:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
 #    - name: Update server files

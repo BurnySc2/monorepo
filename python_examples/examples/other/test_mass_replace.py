@@ -13,8 +13,8 @@ def test_example_text():
 
 
 @given(
-    st.text(min_size=1),
-    st.text(min_size=1),
+    st.text(),
+    st.text(),
     st.text(),
     st.text(),
 )
