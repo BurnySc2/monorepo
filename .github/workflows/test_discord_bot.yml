@@ -79,16 +79,11 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Upload docker image (develop)
+    - name: Upload docker image
       if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       run: |
-        docker push burnysc2/${{ env.IMAGENAME }}:latest_dev
-        docker push burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}}
-
-    - name: Upload docker image (master)
-      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      run: |
         docker push burnysc2/${{ env.IMAGENAME }}:latest
+        docker push burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}}
 
   deploy_backend_prod:
     if: github.ref == 'refs/heads/develop'
