@@ -37,14 +37,12 @@ async def reminder(event: GuildMessageCreateEvent, message: str):
         return
     response = await my_reminder.public_remind_in(event, message)
     if isinstance(response, Embed):
-        sent_message = await channel.send(f'@{author.display_name}', embed=response)
+        # Error with embed
+        sent_message = await channel.send(f'{author.mention}', embed=response)
     else:
-        sent_message = await channel.send(f'@{author.display_name} {response}')
+        sent_message = await channel.send(f'{author.mention} {response}')
     # https://www.fileformat.info/info/unicode/char/274c/index.htm
     await sent_message.add_reaction('\u274C')
-
-
-logger.add(DATA_FOLDER / 'bot.log')
 
 
 async def remindat(event: GuildMessageCreateEvent, message: str):
@@ -54,6 +52,7 @@ async def remindat(event: GuildMessageCreateEvent, message: str):
         return
     response = await my_reminder.public_remind_at(event, message)
     if isinstance(response, Embed):
+        # Error with embed
         sent_message = await channel.send(f'{author.mention}', embed=response)
     else:
         sent_message = await channel.send(f'{author.mention} {response}')
@@ -68,12 +67,12 @@ async def reminders(event: GuildMessageCreateEvent):
         return
     response = await my_reminder.public_list_reminders(event)
     if isinstance(response, Embed):
-        message = await channel.send(f'{author.mention}', embed=response)
-        # https://www.fileformat.info/info/unicode/char/274c/index.htm
-        await message.add_reaction('\u274C')
-    elif response:
+        sent_message = await channel.send(f'{author.mention}', embed=response)
+    else:
         # No reminders
-        await channel.send(f'{author.mention} {response}')
+        sent_message = await channel.send(f'{author.mention} {response}')
+    # https://www.fileformat.info/info/unicode/char/274c/index.htm
+    await sent_message.add_reaction('\u274C')
 
 
 async def delreminder(event: GuildMessageCreateEvent, message: str):
@@ -84,11 +83,11 @@ async def delreminder(event: GuildMessageCreateEvent, message: str):
     response = await my_reminder.public_del_remind(event, message)
     if isinstance(response, Embed):
         sent_message = await channel.send(f'{author.mention}', embed=response)
-        # https://www.fileformat.info/info/unicode/char/274c/index.htm
-        await sent_message.add_reaction('\u274C')
-    elif response:
+    else:
         # Error message
-        await channel.send(f'{author.mention} {response}')
+        sent_message = await channel.send(f'{author.mention} {response}')
+    # https://www.fileformat.info/info/unicode/char/274c/index.htm
+    await sent_message.add_reaction('\u274C')
 
 
 async def loop_function():
