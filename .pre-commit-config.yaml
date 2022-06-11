@@ -185,7 +185,7 @@ repos:
     name: pytest_python_examples
     stages: [commit]
     language: system
-    entry: poetry run pytest python_examples
+    entry: bash -c "cd python_examples && poetry run pytest"
     pass_filenames: false
 
   # Run fastapi server tests
@@ -193,7 +193,15 @@ repos:
     name: pytest_fastapi_server
     stages: [commit]
     language: system
-    entry: poetry run pytest fastapi_server
+    entry: bash -c "cd fastapi_server && poetry run pytest"
+    pass_filenames: false
+
+  # Run discord bot tests
+  - id: pytest_discord_bot
+    name: pytest_discord_bot
+    stages: [commit]
+    language: system
+    entry: bash -c "cd discord_bot && poetry run pytest"
     pass_filenames: false
 
   # Run supabase stream scripts tests (run build before test to create .svelte-kit folder with tsconfig.json)

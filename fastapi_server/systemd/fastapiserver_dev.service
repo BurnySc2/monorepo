@@ -1,6 +1,6 @@
 # /etc/systemd/system/fastapiserverdev.service
 [Service]
-ExecStart=/usr/bin/docker run --rm --name fastapi_server_dev --publish 8000:8001 --env STAGE=DEV --mount type=bind,source="/home/fastapiserverdev/data",destination=/root/fastapi_server/data burnysc2/fastapi_server:latest_dev
+ExecStart=/usr/bin/docker run --rm --name fastapi_server_dev --publish 8001:8000 --env STAGE=DEV --mount type=bind,source="/home/fastapiserverdev/data",destination=/root/fastapi_server/data burnysc2/fastapi_server:latest_dev
 Restart=always
 RestartSec=20
 SyslogIdentifier=fastapiserverdev

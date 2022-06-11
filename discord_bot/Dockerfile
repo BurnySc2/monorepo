@@ -1,0 +1,15 @@
+FROM python:3.10-slim
+
+WORKDIR /root/discord_bot
+
+ADD poetry.lock pyproject.toml ./
+
+RUN pip install poetry --no-cache-dir \
+    && poetry config virtualenvs.create false \
+    && poetry install --no-dev
+
+ADD . /root/discord_bot
+
+CMD ["poetry", "run", "python", "main.py"]
+
+# See run.sh

@@ -10,8 +10,6 @@ RUN pip install poetry --no-cache-dir \
 
 ADD . /root/fastapi_server/fastapi_server
 
-WORKDIR /root/fastapi_server
-
 CMD ["poetry", "run", "uvicorn", "fastapi_server.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # docker build -t burnysc2/fastapi_server:latest .

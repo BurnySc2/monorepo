@@ -131,3 +131,7 @@ todos.db
 
 # Fastapi files
 fastapi_server/data
+
+# Discord bot files
+/discord_bot/DISCORDKEY
+/discord_bot/data/
