@@ -12,7 +12,9 @@ from loguru import logger
 DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
 assert DISCORDKEY_PATH.is_file(), f"File '{DISCORDKEY_PATH}' not found"
 with DISCORDKEY_PATH.open() as f:
-    os.environ['DISCORDKEY'] = f.read()
+    token = f.read()
+    os.environ['DISCORDKEY'] = token.strip()
+    del token
 bot = hikari.GatewayBot(token=os.getenv('DISCORDKEY'))  # type: ignore
 PREFIX = '!'
 
