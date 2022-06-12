@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import AsyncIterable, Awaitable, Callable
 
+from commands.public_mmr import public_mmr
 from commands.public_remind import Remind
 from hikari import (
     Embed,
@@ -14,8 +15,6 @@ from hikari import (
     StartedEvent,
 )
 from loguru import logger
-
-from discord_bot.commands.public_mmr import public_mmr
 
 # Load key and start bot
 DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
