@@ -1,4 +1,3 @@
-# https://discordpy.readthedocs.io/en/latest/api.html
 import asyncio
 import json
 import re
@@ -8,8 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 import arrow
-import hikari
-from hikari import Embed, GuildMessageCreateEvent, Message, PartialChannel, User
+from hikari import Embed, GatewayBot, GuildMessageCreateEvent, Message, NotFoundError, PartialChannel, User
 from loguru import logger
 
 
@@ -68,9 +66,9 @@ Example usage:
         """
     )
 
-    def __init__(self, client: hikari.GatewayBot):
+    def __init__(self, client: GatewayBot):
         super().__init__()
-        self.client: hikari.GatewayBot = client
+        self.client: GatewayBot = client
         self.reminders: List[Tuple[float, Reminder]] = []
         self.reminder_file_path: Path = Path(__file__).parent.parent / 'data' / 'reminders.json'
         # Limit of reminders per person
@@ -114,7 +112,7 @@ Example usage:
                     # The original !reminder message may have been deleted
                     message: Message = await self._get_message_by_id(reminder.channel_id, reminder.message_id)
                     link: str = message.make_link(message.guild_id) + '\n'
-                except hikari.NotFoundError:
+                except NotFoundError:
                     link = ''
                 await person.send(f'{link}You wanted to be reminded of: {reminder.message}')
 
@@ -152,8 +150,6 @@ Example usage:
         time_now: arrow.Arrow = arrow.utcnow()
 
         # Old pattern which was working:
-        # date_pattern = "(?:([0-9]{4})?-?([0-9]{1,2})-([0-9]{1,2}))?"
-        # time_pattern = r"(?:(\d{1,2}):(\d{1,2}):?(\d{1,2})?)?"
         date_pattern = r'(?:(?:(\d{4})-)?(\d{1,2})-(\d{1,2}))?'
         time_pattern = r'(?:(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?'
         text_pattern = '((?:.|\n)+)'
@@ -250,12 +246,9 @@ Example usage:
         reminder_message: str,
     ):
         """ Reminds the user in a couple days, hours or minutes with a certain message. """
-        author = event.get_member()
-        if not author:
-            return
-        threshold_reached: bool = await self._user_reached_max_reminder_threshold(author.id)
+        threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
-            user_reminders = await self._get_all_reminders_by_user_id(author.id)
+            user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
             return f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, which is higher than the limit.'
 
         result = await self._parse_time_shift_from_message(reminder_message)
@@ -270,8 +263,8 @@ Example usage:
             return
         reminder: Reminder = Reminder(
             reminder_utc_timestamp=future_reminder_time.timestamp(),
-            user_id=author.id,
-            user_name=author.display_name,
+            user_id=event.author_id,
+            user_name=event.author.username,
             guild_id=guild.id,
             channel_id=channel.id,
             message=reminder_message,
@@ -288,12 +281,9 @@ Example usage:
         reminder_message: str,
     ):
         """ Add a reminder which reminds you at a certain time or date. """
-        author = event.get_member()
-        if not author:
-            return
-        threshold_reached: bool = await self._user_reached_max_reminder_threshold(author.id)
+        threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
-            user_reminders = await self._get_all_reminders_by_user_id(author.id)
+            user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
             return f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, which is higher than the limit.'
 
         time_now: arrow.Arrow = arrow.utcnow()
@@ -323,8 +313,8 @@ Example usage:
         if time_now < future_reminder_time:
             reminder: Reminder = Reminder(
                 reminder_utc_timestamp=future_reminder_time.timestamp(),
-                user_id=author.id,
-                user_name=author.display_name,
+                user_id=event.author_id,
+                user_name=event.author.username,
                 guild_id=guild.id,
                 channel_id=channel.id,
                 message=reminder_message,
@@ -341,17 +331,13 @@ Example usage:
             title='Usage of remindat command', description=f'Your reminder is in the past!\n{error_description}'
         )
 
-    async def public_list_reminders(self, event: GuildMessageCreateEvent):
+    async def public_list_reminders(self, event: GuildMessageCreateEvent, _message: str):
         """ List all of the user's reminders """
-        author = event.get_member()
-        if not author:
-            return
-
         # id, time formatted by iso standard format, in 5 minutes, text
         user_reminders: List[Tuple[int, str, str, str]] = []
 
         # Sorted reminders by date and time ascending
-        user_reminders2: List[Reminder] = await self._get_all_reminders_by_user_id(author.id)
+        user_reminders2: List[Reminder] = await self._get_all_reminders_by_user_id(event.author_id)
         reminder_id = 1
         while user_reminders2:
             r: Reminder = user_reminders2.pop(0)
@@ -366,7 +352,7 @@ Example usage:
             f'{reminder_id}) {time} {humanize}: {message}' for reminder_id, time, humanize, message in user_reminders
         ]
         description: str = '\n'.join(reminders)
-        embed: Embed = Embed(title=f"{author.display_name}'s reminders", description=description)
+        embed: Embed = Embed(title=f"{event.author.username}'s reminders", description=description)
         return embed
 
     async def public_del_remind(self, event: GuildMessageCreateEvent, message: str):
@@ -381,10 +367,7 @@ Example usage:
             embed = Embed(title=error_title, description=embed_description)
             return embed
 
-        author = event.get_member()
-        if not author:
-            return
-        user_reminders = await self._get_all_reminders_by_user_id(author.id)
+        user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
         if 0 <= reminder_id_to_delete <= len(user_reminders) - 1:
             reminder_to_delete: Reminder = user_reminders[reminder_id_to_delete]
             # Find the reminder in the reminder list, then remove it
@@ -395,7 +378,7 @@ Example usage:
             await self.save_reminders()
             # Say that the reminder was successfully removed?
             embed = Embed(
-                title=f"Removed {author.display_name}'s reminder", description=f'{reminder_to_delete.message}'
+                title=f"Removed {event.author.username}'s reminder", description=f'{reminder_to_delete.message}'
             )
             return embed
 

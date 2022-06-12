@@ -1,12 +1,21 @@
 import asyncio
 import os
 from pathlib import Path
-from typing import AsyncIterable
+from typing import AsyncIterable, Awaitable, Callable
 
-import hikari
 from commands.public_remind import Remind
-from hikari import Embed, GatewayGuild, GuildMessageCreateEvent
+from hikari import (
+    Embed,
+    GatewayBot,
+    GatewayGuild,
+    GuildMessageCreateEvent,
+    GuildReactionAddEvent,
+    PartialChannel,
+    StartedEvent,
+)
 from loguru import logger
+
+from discord_bot.commands.public_mmr import public_mmr
 
 # Load key and start bot
 DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
@@ -15,7 +24,7 @@ with DISCORDKEY_PATH.open() as f:
     token = f.read()
     os.environ['DISCORDKEY'] = token.strip()
     del token
-bot = hikari.GatewayBot(token=os.getenv('DISCORDKEY'))  # type: ignore
+bot = GatewayBot(token=os.getenv('DISCORDKEY'))  # type: ignore
 PREFIX = '!'
 
 # Start reminder plugin
@@ -30,67 +39,28 @@ DATA_FOLDER = Path(__file__).parent / 'data'
 logger.add(DATA_FOLDER / 'bot.log')
 
 
-async def reminder(event: GuildMessageCreateEvent, message: str):
-    author = event.get_member()
+async def generic_command_caller(
+    event: GuildMessageCreateEvent,
+    function_to_call: Callable[[GuildMessageCreateEvent, str], Awaitable],
+    message: str,
+    add_remove_emoji: bool = False,
+) -> None:
     channel = event.get_channel()
-    if not author or not channel:
+    if not channel:
         return
-    response = await my_reminder.public_remind_in(event, message)
+    # Call the given function with the event and message
+    response = await function_to_call(event, message)
     if isinstance(response, Embed):
-        # Error with embed
-        sent_message = await channel.send(f'{author.mention}', embed=response)
-    else:
-        sent_message = await channel.send(f'{author.mention} {response}')
-    # https://www.fileformat.info/info/unicode/char/274c/index.htm
-    await sent_message.add_reaction('\u274C')
-
-
-async def remindat(event: GuildMessageCreateEvent, message: str):
-    author = event.get_member()
-    channel = event.get_channel()
-    if not author or not channel:
-        return
-    response = await my_reminder.public_remind_at(event, message)
-    if isinstance(response, Embed):
-        # Error with embed
-        sent_message = await channel.send(f'{author.mention}', embed=response)
-    else:
-        sent_message = await channel.send(f'{author.mention} {response}')
-    # https://www.fileformat.info/info/unicode/char/274c/index.htm
-    await sent_message.add_reaction('\u274C')
-
-
-async def reminders(event: GuildMessageCreateEvent):
-    author = event.get_member()
-    channel = event.get_channel()
-    if not author or not channel:
-        return
-    response = await my_reminder.public_list_reminders(event)
-    if isinstance(response, Embed):
-        sent_message = await channel.send(f'{author.mention}', embed=response)
-    else:
-        # No reminders
-        sent_message = await channel.send(f'{author.mention} {response}')
-    # https://www.fileformat.info/info/unicode/char/274c/index.htm
-    await sent_message.add_reaction('\u274C')
-
-
-async def delreminder(event: GuildMessageCreateEvent, message: str):
-    author = event.get_member()
-    channel = event.get_channel()
-    if not author or not channel:
-        return
-    response = await my_reminder.public_del_remind(event, message)
-    if isinstance(response, Embed):
-        sent_message = await channel.send(f'{author.mention}', embed=response)
+        sent_message = await channel.send(f'{event.author.mention}', embed=response)
     else:
         # Error message
-        sent_message = await channel.send(f'{author.mention} {response}')
-    # https://www.fileformat.info/info/unicode/char/274c/index.htm
-    await sent_message.add_reaction('\u274C')
+        sent_message = await channel.send(f'{event.author.mention} {response}')
+    if add_remove_emoji:
+        # https://www.fileformat.info/info/unicode/char/274c/index.htm
+        await sent_message.add_reaction('\u274C')
 
 
-async def loop_function():
+async def loop_function() -> None:
     """ A function that is called every X seconds based on the asyncio.sleep(time) below. """
     while 1:
         await asyncio.sleep(1)
@@ -117,7 +87,7 @@ async def get_all_servers() -> AsyncIterable[GatewayGuild]:
 
 
 @bot.listen()
-async def on_start(_event: hikari.StartedEvent) -> None:
+async def on_start(_event: StartedEvent) -> None:
     logger.info('Server started')
     await my_reminder.load_reminders()
     # Call another async function that runs forever
@@ -128,7 +98,7 @@ async def on_start(_event: hikari.StartedEvent) -> None:
 
 # pylint: disable=R0911
 @bot.listen()
-async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
+async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if event.member.is_bot:
         return
 
@@ -136,7 +106,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
     if not event.is_for_emoji('\u274C'):
         return
 
-    channel: hikari.PartialChannel = await bot.rest.fetch_channel(event.channel_id)
+    channel: PartialChannel = await bot.rest.fetch_channel(event.channel_id)
     # Use channel 'bot_tests' only for development
     if STAGE == 'DEV' and channel.name != 'bot_tests':
         return
@@ -156,7 +126,7 @@ async def handle_reaction_add(event: hikari.GuildReactionAddEvent) -> None:
 
 
 @bot.listen()
-async def handle_new_message(event: hikari.GuildMessageCreateEvent) -> None:
+async def handle_new_message(event: GuildMessageCreateEvent) -> None:
     """Listen for messages being created."""
     channel = event.get_channel()
     if not channel:
@@ -185,15 +155,22 @@ async def handle_new_message(event: hikari.GuildMessageCreateEvent) -> None:
         await handle_commands(command, message, event)
 
 
-async def handle_commands(command: str, message: str, event: hikari.GuildMessageCreateEvent) -> None:
-    if command == 'reminder':
-        await reminder(event, message)
-    if command == 'remindat':
-        await remindat(event, message)
-    if command == 'reminders':
-        await reminders(event)
-    if command == 'delreminder':
-        await delreminder(event, message)
+async def handle_commands(command: str, message: str, event: GuildMessageCreateEvent) -> None:
+    function_mapping = {
+        'reminder': my_reminder.public_remind_in,
+        'remindat': my_reminder.public_remind_at,
+        'reminders': my_reminder.public_list_reminders,
+        'delreminder': my_reminder.public_del_remind,
+        'mmr': public_mmr,
+    }
+    if command in function_mapping:
+        function = function_mapping[command]
+        await generic_command_caller(
+            event,
+            function,
+            message,
+            add_remove_emoji=True,
+        )
 
     if command == 'ping':
         guild = event.get_guild()
