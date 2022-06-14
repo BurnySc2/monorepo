@@ -1,3 +1,12 @@
+import sys
+from pathlib import Path
+
+# Be able to launch from root folder
+try:
+    sys.path.append(str(Path(__file__).parents[1]))
+except IndexError:
+    pass
+
 import os
 from typing import Literal
 

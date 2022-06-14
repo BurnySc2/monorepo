@@ -1,15 +1,11 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import random
 
 import arrow
 import hypothesis.strategies as st
 import pytest
-from commands.public_remind import Remind
 from hypothesis import example, given, settings
+
+from discord_bot.commands.public_remind import Remind
 
 
 def create_time_shift_string(_day, _hour, _minute, _second):

@@ -1,10 +1,12 @@
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parents[1]))
+
 import asyncio
 import os
-from pathlib import Path
 from typing import AsyncIterable, Awaitable, Callable
 
-from commands.public_mmr import public_mmr
-from commands.public_remind import Remind
 from hikari import (
     Embed,
     GatewayBot,
@@ -15,6 +17,9 @@ from hikari import (
     StartedEvent,
 )
 from loguru import logger
+
+from discord_bot.commands.public_mmr import public_mmr
+from discord_bot.commands.public_remind import Remind
 
 # Load key and start bot
 DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'

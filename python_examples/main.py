@@ -2,8 +2,6 @@ import sys
 from pathlib import Path
 
 # Be able to launch from root folder
-from platform import platform
-
 try:
     sys.path.append(str(Path(__file__).parents[1]))
 except IndexError:
@@ -13,6 +11,7 @@ except IndexError:
 # Coroutines and multiprocessing
 import asyncio
 import time
+from platform import platform
 
 # Type annotation / hints
 from typing import List

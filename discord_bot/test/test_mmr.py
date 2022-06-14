@@ -1,10 +1,6 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import pytest
-from commands.public_mmr import Sc2LadderResult
+
+from discord_bot.commands.public_mmr import Sc2LadderResult
 
 
 @pytest.mark.asyncio

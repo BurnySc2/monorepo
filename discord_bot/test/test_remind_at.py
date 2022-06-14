@@ -1,15 +1,11 @@
-import os
-import sys
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 import asyncio
 
 import arrow
 import hypothesis.strategies as st
 import pytest
-from commands.public_remind import Remind
 from hypothesis import example, given, settings
+
+from discord_bot.commands.public_remind import Remind
 
 
 def create_date_time_string(_year: int, _month: int, _day: int, _hour: int, _minute: int, _second: int) -> str:

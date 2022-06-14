@@ -185,7 +185,7 @@ repos:
     name: pytest_python_examples
     stages: [commit]
     language: system
-    entry: bash -c "cd python_examples && poetry run pytest"
+    entry: poetry run python -m pytest python_examples
     pass_filenames: false
 
   # Run fastapi server tests
@@ -193,7 +193,7 @@ repos:
     name: pytest_fastapi_server
     stages: [commit]
     language: system
-    entry: bash -c "cd fastapi_server && poetry run pytest"
+    entry: poetry run python -m pytest fastapi_server
     pass_filenames: false
 
   # Run discord bot tests
@@ -201,7 +201,23 @@ repos:
     name: pytest_discord_bot
     stages: [commit]
     language: system
-    entry: bash -c "cd discord_bot && poetry run pytest"
+    entry: poetry run python -m pytest discord_bot
+    pass_filenames: false
+
+  # Build fastapi server docker image
+  - id: build_docker_image_fastapi_server
+    name: build_docker_image_fastapi_server
+    stages: [commit]
+    language: system
+    entry: bash -c "cd fastapi_server && docker build -t fastapi_server_image_precommit . && docker rmi fastapi_server_image_precommit"
+    pass_filenames: false
+
+  # Build discord bot docker image
+  - id: build_docker_image_discord_bot
+    name: build_docker_image_discord_bot
+    stages: [commit]
+    language: system
+    entry: bash -c "cd discord_bot && docker build -t discord_bot_image_precommit . && docker rmi discord_bot_image_precommit"
     pass_filenames: false
 
   # Run supabase stream scripts tests (run build before test to create .svelte-kit folder with tsconfig.json)
