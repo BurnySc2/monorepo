@@ -209,7 +209,7 @@ repos:
     name: build_docker_image_fastapi_server
     stages: [commit]
     language: system
-    entry: bash -c "cd fastapi_server && docker build -t fastapi_server_image_precommit . && docker rmi fastapi_server_image_precommit"
+    entry: bash -c "cd fastapi_server && docker build --quiet --tag fastapi_server_image_precommit . && docker rmi fastapi_server_image_precommit"
     pass_filenames: false
 
   # Build discord bot docker image
@@ -217,7 +217,7 @@ repos:
     name: build_docker_image_discord_bot
     stages: [commit]
     language: system
-    entry: bash -c "cd discord_bot && docker build -t discord_bot_image_precommit . && docker rmi discord_bot_image_precommit"
+    entry: bash -c "cd discord_bot && docker build --quiet --tag discord_bot_image_precommit . && docker rmi discord_bot_image_precommit"
     pass_filenames: false
 
   # Run supabase stream scripts tests (run build before test to create .svelte-kit folder with tsconfig.json)
