@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+try:
+    sys.path.append(str(Path(__file__).parents[2]))
+except IndexError:
+    pass
+
 import pytest
 
 from discord_bot.commands.public_mmr import Sc2LadderResult

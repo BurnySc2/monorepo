@@ -6,12 +6,17 @@ authors = ["burny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.11"
+# Datetime library
 arrow = "^1.2.2"
+# Discord bot
 hikari = "^2.0.0-alpha.108"
+# Simple logger
 loguru = "^0.6.0"
+# Table plotting
 ptable = "^0.9.2"
 
 [tool.poetry.dev-dependencies]
+# Test library
 hypothesis = "^6.8.5"
 pytest = "^6.2.3"
 pytest-asyncio = "^0.15.1"
