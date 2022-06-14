@@ -16,9 +16,9 @@ uvicorn = "^0.16"
 colorama = "^0.4.4"
 # Simple logger
 loguru = "^0.5"
-# Network interaction
-requests = "^2.27.1"
+# Replay parser
 zephyrus-sc2-parser = "^0.3.7"
+# Multipart replay upload
 python-multipart = "^0.0.5"
 
 [tool.poetry.dev-dependencies]
