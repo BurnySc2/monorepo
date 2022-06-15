@@ -1,6 +1,7 @@
 # fastapi-svelte-typescript-template
 
 # Live versions
+
 [Develop branch](https://streammanager.netlify.app/)
 
 # Requirement
@@ -34,7 +35,6 @@ Launch OBS with `--disable-web-security`
 # MatchInfo
 
 When adding it to OBS overlay, add it as browser scene with width=320 and height=300
-
 
 # Autoformatting
 

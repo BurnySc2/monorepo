@@ -1,7 +1,9 @@
 # SC2 Replay Comparer
+
 It uses [Zephyrus sc2 replay plarser](https://github.com/ZephyrBlu/zephyrus-sc2-parser) to get the data from replays, then displays them in [highcharts](https://www.highcharts.com/).
 
 # Live version
+
 [Develop branch](https://replaycomparer.netlify.app)
 
 # Requirement
@@ -36,6 +38,7 @@ npm run build
 ```
 
 # Update packages
+
 ```
 npm run update
 ```

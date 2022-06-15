@@ -1,12 +1,10 @@
-import sys
-from pathlib import Path
-
-sys.path.append(str(Path(__file__).parents[1]))
-
 import asyncio
 import os
-from typing import AsyncIterable, Awaitable, Callable
+from pathlib import Path
+from typing import AsyncIterable, Awaitable, Callable, Union
 
+from commands.public_mmr import public_mmr
+from commands.public_remind import Remind
 from hikari import (
     Embed,
     GatewayBot,
@@ -17,9 +15,6 @@ from hikari import (
     StartedEvent,
 )
 from loguru import logger
-
-from discord_bot.commands.public_mmr import public_mmr
-from discord_bot.commands.public_remind import Remind
 
 # Load key and start bot
 DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
@@ -45,15 +40,21 @@ logger.add(DATA_FOLDER / 'bot.log')
 
 async def generic_command_caller(
     event: GuildMessageCreateEvent,
-    function_to_call: Callable[[GuildMessageCreateEvent, str], Awaitable],
+    function_to_call: Callable[[GuildMessageCreateEvent, str], Awaitable[Union[Embed, str]]],
     message: str,
     add_remove_emoji: bool = False,
 ) -> None:
+    """
+    @param function_to_call: A function to be called with the given message, expects function to return an Embed or string
+    @param message: Parsed messaged by the user, without the command
+    @param add_remove_emoji: If true, bot will react to its own message with a 'X' emoji
+    so that the mentioned user can remove the bot message at will.
+    """
     channel = event.get_channel()
     if not channel:
         return
     # Call the given function with the event and message
-    response = await function_to_call(event, message)
+    response: Union[Embed, str] = await function_to_call(event, message)
     if isinstance(response, Embed):
         sent_message = await channel.send(f'{event.author.mention}', embed=response)
     else:
@@ -69,11 +70,6 @@ async def loop_function() -> None:
     while 1:
         await asyncio.sleep(1)
         await my_reminder.tick()
-
-
-def is_command(cmd_name: str, content: str) -> bool:
-    """Check if the message sent is a valid command."""
-    return content == f'{PREFIX}{cmd_name}'
 
 
 async def get_all_servers() -> AsyncIterable[GatewayGuild]:
@@ -156,10 +152,10 @@ async def handle_new_message(event: GuildMessageCreateEvent) -> None:
         command, *message_list = event.content.split()
         command = command[len(PREFIX):]
         message = ' '.join(message_list)
-        await handle_commands(command, message, event)
+        await handle_commands(event, command, message)
 
 
-async def handle_commands(command: str, message: str, event: GuildMessageCreateEvent) -> None:
+async def handle_commands(event: GuildMessageCreateEvent, command: str, message: str) -> None:
     function_mapping = {
         'reminder': my_reminder.public_remind_in,
         'remindat': my_reminder.public_remind_at,

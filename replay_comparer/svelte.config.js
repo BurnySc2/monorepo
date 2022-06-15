@@ -1,5 +1,6 @@
-import preprocess from "svelte-preprocess"
 import adapter from "@sveltejs/adapter-static"
+import preprocess from "svelte-preprocess"
+
 const baseUrl = process.env.BASE_URL || ""
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -17,7 +18,7 @@ const config = {
             fallback: null,
         }),
         prerender: {
-            default: true
+            default: true,
         },
         paths: {
             base: baseUrl,

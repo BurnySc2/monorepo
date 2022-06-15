@@ -5,13 +5,15 @@
         "dev": "cross-env DEV=true BACKEND_SERVER='localhost:8000' svelte-kit dev",
         "devs": "cross-env DEV=true BACKEND_SERVER='localhost:8000' svelte-kit dev --https",
         "build": "svelte-kit build",
+        "build-precommit": "svelte-kit build | grep ERR",
         "preview": "svelte-kit preview",
+        "test": "sleep 0",
         "check": "svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
         "lint": "eslint src/**/*.{ts,svelte} --max-warnings 0",
         "update": "npx npm-check-updates -u && npm run prune",
         "prune": "rm node_modules -rf && rm package-lock.json -f && npm i",
-        "format": "prettier --write './**/*.{svelte,ts}'"
+        "format": "prettier --write --loglevel error ."
     },
     "devDependencies": {
         "@trivago/prettier-plugin-sort-imports": "^3.2.0",

@@ -4,13 +4,14 @@
     "scripts": {
         "dev": "cross-env DEV=true LOCALUSER=LOCALTEST SC2ACCOUNTSDB='sc2accounts_dev' SC2BUILDORDERSDB='sc2buildorders_dev' svelte-kit dev",
         "build": "svelte-kit build",
+        "build-precommit": "svelte-kit build | grep ERR",
         "preview": "svelte-kit preview",
         "check": "svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
         "lint": "eslint src/**/*.{ts,svelte} --max-warnings 0",
         "update": "npx npm-check-updates -u && npm run prune",
         "prune": "rm node_modules -rf && rm package-lock.json -f && npm i",
-        "format": "prettier --ignore-path .gitignore --write './**/*.{svelte,ts}'",
+        "format": "prettier --write --loglevel error .",
         "test": "jest"
     },
     "devDependencies": {
