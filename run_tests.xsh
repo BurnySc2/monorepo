@@ -40,8 +40,8 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
         print_color(f"{time_required:.3f} {{GREEN}}SUCCESS{{RESET}} - {print_command}")
     else:
         remove_last_message(message)
-        print_color(f"{time_required:.3f} {{RED}}ERROR{{RESET}} - {print_command} - Exited with exit code {ret.returncode}")
-        print_color(f"{{RED}}ERROR{{RESET}} Command executed in {location}:\n{command_as_line}")
+        print_color(f"{time_required:.3f} {{RED}}FAILURE{{RESET}} - {print_command} - Exited with exit code {ret.returncode}")
+        print_color(f"{{RED}}FAILURE{{RESET}} Command executed in {location}:\n{command_as_line}")
         if verbose:
             print(f"STDOUT:\n{ret.out}\n")
             print(f"STDERR:\n{ret.err}\n")
@@ -69,9 +69,9 @@ def run(
 
     # burny_common
     if run_only_changed_files:
-        files_related_to_project = [file_name for file_name in changed_files if "burny_common" in file_name]
+        files_related_to_project = [file_name for file_name in changed_files if "burny_common" in file_name and file_name.endswith(".py")]
     else:
-        files_related_to_project = [file_name for file_name in python_files if "burny_common" in file_name]
+        files_related_to_project = [file_name for file_name in python_files if "burny_common" in file_name and file_name.endswith(".py")]
     if files_related_to_project:
         if run_python_lint:
             run_command("poetry run yapf --in-place".split() + files_related_to_project, verbose=verbose, display_name="Run yapf on burny_common")
@@ -79,9 +79,9 @@ def run(
 
     # discord_bot
     if run_only_changed_files:
-        files_related_to_project = [file_name for file_name in changed_files if "discord_bot" in file_name]
+        files_related_to_project = [file_name for file_name in changed_files if "discord_bot" in file_name and file_name.endswith(".py")]
     else:
-        files_related_to_project = [file_name for file_name in python_files if "discord_bot" in file_name]
+        files_related_to_project = [file_name for file_name in python_files if "discord_bot" in file_name and file_name.endswith(".py")]
     if files_related_to_project:
         if run_python_lint:
             run_command("poetry run yapf --in-place".split() + files_related_to_project, verbose=verbose, display_name="Run yapf on discord_bot")
@@ -94,9 +94,9 @@ def run(
 
     # fastapi_server
     if run_only_changed_files:
-        files_related_to_project = [file_name for file_name in changed_files if "fastapi_server" in file_name]
+        files_related_to_project = [file_name for file_name in changed_files if "fastapi_server" in file_name and file_name.endswith(".py")]
     else:
-        files_related_to_project = [file_name for file_name in python_files if "fastapi_server" in file_name]
+        files_related_to_project = [file_name for file_name in python_files if "fastapi_server" in file_name and file_name.endswith(".py")]
     if files_related_to_project:
         if run_python_lint:
             run_command("poetry run yapf --in-place".split() + files_related_to_project, verbose=verbose, display_name="Run yapf on fastapi_server")
@@ -109,9 +109,9 @@ def run(
 
     # python_examples
     if run_only_changed_files:
-        files_related_to_project = [file_name for file_name in changed_files if "python_examples" in file_name]
+        files_related_to_project = [file_name for file_name in changed_files if "python_examples" in file_name and file_name.endswith(".py")]
     else:
-        files_related_to_project = [file_name for file_name in python_files if "python_examples" in file_name]
+        files_related_to_project = [file_name for file_name in python_files if "python_examples" in file_name and file_name.endswith(".py")]
     if files_related_to_project:
         if run_python_lint:
             run_command("poetry run yapf --in-place".split() + files_related_to_project, verbose=verbose, display_name="Run yapf on python_examples")

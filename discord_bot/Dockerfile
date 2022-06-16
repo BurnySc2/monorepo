@@ -10,6 +10,9 @@ RUN pip install poetry --no-cache-dir \
 
 ADD . /root/discord_bot
 
+# Allow imports like 'from discord_bot.commands.public_remind import Remind'
+ENV PYTHONPATH "${PYTHONPATH}:/root"
+
 CMD ["poetry", "run", "python", "main.py"]
 
 # See run.sh

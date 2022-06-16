@@ -1,11 +1,3 @@
-import sys
-from pathlib import Path
-
-try:
-    sys.path.append(str(Path(__file__).parents[2]))
-except IndexError:
-    pass
-
 import random
 
 import arrow

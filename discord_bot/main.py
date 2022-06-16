@@ -3,8 +3,8 @@ import os
 from pathlib import Path
 from typing import AsyncIterable, Awaitable, Callable, Union
 
-from commands.public_mmr import public_mmr
-from commands.public_remind import Remind
+from discord_bot.commands.public_mmr import public_mmr
+from discord_bot.commands.public_remind import Remind
 from hikari import (
     Embed,
     GatewayBot,
