@@ -6,20 +6,22 @@
 # For dev (slower):
 # poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
 from typing import List
-
 from xonsh.procs.pipelines import CommandPipeline
 from xonsh.tools import print_color
 import xonsh.cli_utils as xcli
 import time
+import sys
 
 changed_files: List[str] = $(git diff HEAD --name-only).splitlines()
 python_files: List[str] = $(git ls-files '*.py').splitlines()
 files_in_project = lambda project_name: $(git ls-files @(project_name)).splitlines()
+ANY_COMMAND_HAS_ERROR = False
 
 def remove_last_message(message: str) -> None:
     print(" " * len(message), end="\r")
 
-def run_command(command: List[str], ignore_exit_status=False, verbose=False, display_name=''):
+def run_command(command: List[str], ignore_exit_status=False, verbose=False, display_name='') -> int:
+    global ANY_COMMAND_HAS_ERROR
     start_time = time.perf_counter()
     location = $(pwd).strip()
     command_as_line = " ".join(command)
@@ -30,7 +32,7 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
         ret: CommandPipeline = !(@(command))
     else:
         ret: CommandPipeline = !(@(command) 1>/dev/null 2>/dev/null)
-    while $(jobs):
+    while $(jobs): # Without this, time.perf_counter() doesnt seem to work properly
         time.sleep(0.1)
     time_required: float = time.perf_counter() - start_time
     if ignore_exit_status or ret.returncode == 0:
@@ -46,6 +48,11 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
         else:
             # Run command again in verbose mode
             @(command)
+    if ignore_exit_status:
+        return 0
+    if ret.returncode != 0:
+        ANY_COMMAND_HAS_ERROR = True
+    return ret.returncode
 
 def run(
         run_python_lint: xcli.Arg('--pylint', '-pl', action="store_true") = False,
@@ -121,6 +128,7 @@ def run(
         cd bored_gems
         npm install 1>/dev/null 2>/dev/null
         npx playwright install 1>/dev/null 2>/dev/null
+        playwright install 1>/dev/null 2>/dev/null
         if run_npm_lint:
             run_command("npm run format".split(), verbose=verbose)
             run_command("npm run lint".split(), verbose=verbose)
@@ -170,6 +178,7 @@ def run(
         cd svelte_frontend
         npm install 1>/dev/null 2>/dev/null
         npx playwright install 1>/dev/null 2>/dev/null
+        playwright install 1>/dev/null 2>/dev/null
         if run_npm_lint:
             run_command("npm run format".split(), verbose=verbose)
             run_command("npm run lint".split(), verbose=verbose)
@@ -184,3 +193,6 @@ if __name__ == '__main__':
     parser = xcli.make_parser("test commands")
     parser.add_command(run)
     xcli.dispatch(parser)
+    if ANY_COMMAND_HAS_ERROR:
+        sys.exit(1)
+

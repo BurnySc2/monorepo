@@ -6,6 +6,7 @@ on:
     paths:
     - ./**/*.py
     - .github/workflows/check_python_code.yml
+    - run_tests.xsh
   pull_request:
     branches:
     - master
