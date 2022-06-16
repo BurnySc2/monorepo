@@ -3,8 +3,6 @@ import os
 from pathlib import Path
 from typing import AsyncIterable, Awaitable, Callable, Union
 
-from discord_bot.commands.public_mmr import public_mmr
-from discord_bot.commands.public_remind import Remind
 from hikari import (
     Embed,
     GatewayBot,
@@ -16,13 +14,17 @@ from hikari import (
 )
 from loguru import logger
 
-# Load key and start bot
-DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
-assert DISCORDKEY_PATH.is_file(), f"File '{DISCORDKEY_PATH}' not found"
-with DISCORDKEY_PATH.open() as f:
-    token = f.read()
-    os.environ['DISCORDKEY'] = token.strip()
-    del token
+from discord_bot.commands.public_mmr import public_mmr
+from discord_bot.commands.public_remind import Remind
+
+# Load key from file if it does not exist in env
+if os.getenv('DISCORDKEY') is None:
+    DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
+    assert DISCORDKEY_PATH.is_file(), f"File '{DISCORDKEY_PATH}' not found"
+    with DISCORDKEY_PATH.open() as f:
+        token = f.read()
+        os.environ['DISCORDKEY'] = token.strip()
+        del token
 bot = GatewayBot(token=os.getenv('DISCORDKEY'))  # type: ignore
 PREFIX = '!'
 

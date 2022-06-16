@@ -1,27 +1,13 @@
-import sys
-from pathlib import Path
-
-# Be able to launch from root folder
-try:
-    sys.path.append(str(Path(__file__).parents[1]))
-except IndexError:
-    pass
-
-# Other
-# Coroutines and multiprocessing
 import asyncio
+import sys
 import time
+from pathlib import Path
 from platform import platform
-
-# Type annotation / hints
 from typing import List
 
 import aiohttp
-
-# Simple logging https://github.com/Delgan/loguru
 from loguru import logger
 
-# Local examples
 from python_examples.examples.async_await.asyncio_download_upload import download_all_sites, download_file
 from python_examples.examples.async_await.rate_limited_example import api_rate_limited_example
 from python_examples.examples.databases.mongodb_example import test_database_with_mongodb
@@ -54,8 +40,8 @@ if not platform().lower().startswith('win'):
 logger.remove()  # Remove previous default handlers
 # Log to console
 logger.add(sys.stdout, level='INFO')
-# Log to file, max size 1 mb, max log file age 7 days before a new one gets created
-logger.add('main.log', rotation='1 MB', retention='7 days', level='INFO')
+# Log to file
+logger.add('main.log', level='INFO')
 
 
 def main_sync():

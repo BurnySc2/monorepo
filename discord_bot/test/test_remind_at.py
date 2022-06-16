@@ -86,6 +86,7 @@ async def test_parsing_date_and_time_from_message_success(_year, _month, _day, _
     st.text(min_size=1),
 )
 @example(2021, 4, 20, 4, 20, 00, 'remind me of this')
+@example(0, 1, 1, 24, 0, 0, 'remind me of this')
 def test_parsing_date_and_time_from_message_failure(_year, _month, _day, _hour, _minute, _second, _message):
     if not _message.strip():
         return
@@ -129,7 +130,7 @@ def test_parsing_date_and_time_from_message_failure(_year, _month, _day, _hour, 
         assert result is None
 
     # Invalid hour
-    if not 0 <= _hour < 24:
+    if not 0 <= _hour <= 24:
         assert result is None
     # Invalid minute
     if not 0 <= _minute < 60:

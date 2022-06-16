@@ -48,8 +48,6 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
         else:
             # Run command again in verbose mode
             @(command)
-    if ignore_exit_status:
-        return 0
     if ret.returncode != 0:
         ANY_COMMAND_HAS_ERROR = True
     return ret.returncode
@@ -62,6 +60,7 @@ def run(
         run_only_changed_files: xcli.Arg('--all', '-a', action="store_false") = True,
         verbose: xcli.Arg('--verbose', '-v', action="store_true") = False,
     ):
+    global ANY_COMMAND_HAS_ERROR
     if run_python_lint:
         # Run mypy on all python files because types could have changed which can affect other files
         command = "poetry run mypy".split() + python_files
@@ -104,7 +103,12 @@ def run(
         if run_python_test:
             run_command("poetry run python -m pytest fastapi_server".split(), verbose=verbose, display_name="Run pytest on fastapi_server")
             cd fastapi_server
-            run_command("docker build --tag precommit_image_fastapi_server .".split(), verbose=verbose, display_name="Build docker image in fastapi_server")
+            run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose, display_name="Build docker image in fastapi_server")
+            # Check if the server can start at all
+            docker build --tag burnysc2/fastapi_server:latest . 1>/dev/null 2>/dev/null
+            returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, display_name="Run fastapi_server for 5 seconds")
+            if returncode == 124:
+                ANY_COMMAND_HAS_ERROR = True
             cd ..
 
     # python_examples
