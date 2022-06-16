@@ -50,4 +50,4 @@ jobs:
 
     - name: Format, lint and test
       run: |
-        poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest --all
+        poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest --all --verbose
