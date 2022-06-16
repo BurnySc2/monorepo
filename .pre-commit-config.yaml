@@ -89,7 +89,7 @@ repos:
     name: Run xonsh script
     stages: [commit]
     language: system
-    entry: xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
+    entry: poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
     pass_filenames: false
 
 #  - id: pytest-cov

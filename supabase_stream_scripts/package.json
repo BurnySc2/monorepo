@@ -11,7 +11,7 @@
         "lint": "eslint src/**/*.{ts,svelte} --max-warnings 0",
         "update": "npx npm-check-updates -u && npm run prune",
         "prune": "rm node_modules -rf && rm package-lock.json -f && npm i",
-        "format": "prettier --write --loglevel error .",
+        "format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. .",
         "test": "jest"
     },
     "devDependencies": {
