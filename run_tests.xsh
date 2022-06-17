@@ -199,4 +199,4 @@ if __name__ == '__main__':
     xcli.dispatch(parser)
     if ANY_COMMAND_HAS_ERROR:
         sys.exit(1)
-
+    sys.exit(0)

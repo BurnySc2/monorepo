@@ -135,4 +135,6 @@ fastapi_server/data
 
 # Discord bot files
 /discord_bot/DISCORDKEY
+/discord_bot/SUPABASEURL
+/discord_bot/SUPABASEKEY
 /discord_bot/data/
