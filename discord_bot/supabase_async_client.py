@@ -1,6 +1,7 @@
 from typing import Any, Coroutine, Dict
 
-from postgrest import AsyncFilterRequestBuilder, AsyncPostgrestClient, AsyncRequestBuilder
+from postgrest._async.client import AsyncPostgrestClient
+from postgrest._async.request_builder import AsyncFilterRequestBuilder, AsyncRequestBuilder
 from supabase.lib.auth_client import SupabaseAuthClient
 from supabase.lib.client_options import ClientOptions
 from supabase.lib.storage_client import SupabaseStorageClient

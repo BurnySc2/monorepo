@@ -1,10 +1,7 @@
-import os
 from unittest.mock import AsyncMock, patch
 
 from hikari import GatewayBot
 
-# Set key before bot import
-os.environ['DISCORDKEY'] = 'test_key'
 from discord_bot.main import bot
 
 

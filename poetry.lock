@@ -1228,11 +1228,14 @@ email = ["email-validator (>=1.0.3)"]
 
 [[package]]
 name = "pyee"
-version = "8.1.0"
+version = "9.0.4"
 description = "A port of node.js's EventEmitter to python."
 category = "main"
 optional = false
 python-versions = "*"
+
+[package.dependencies]
+typing-extensions = "*"
 
 [[package]]
 name = "pygments"
@@ -1244,7 +1247,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "pylint"
-version = "2.14.2"
+version = "2.14.3"
 description = "python code static checker"
 category = "dev"
 optional = false
@@ -1252,7 +1255,7 @@ python-versions = ">=3.7.2"
 
 [package.dependencies]
 astroid = ">=2.11.6,<=2.12.0-dev0"
-colorama = {version = "*", markers = "sys_platform == \"win32\""}
+colorama = {version = ">=0.4.5", markers = "sys_platform == \"win32\""}
 dill = ">=0.2"
 isort = ">=4.2.5,<6"
 mccabe = ">=0.6,<0.8"
@@ -1720,6 +1723,18 @@ test = ["pytest", "pytest-cov"]
 vectorized = ["numpy"]
 
 [[package]]
+name = "simple-parsing"
+version = "0.0.20"
+description = "A small utility for simplifying and cleaning up argument parsing scripts."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+typing-extensions = "*"
+typing-inspect = {version = "*", markers = "python_version < \"3.9\""}
+
+[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -2107,7 +2122,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <3.11"
-content-hash = "308fe0ec394959e6c85ea9893c2c14ddc70f96ac0c08800279a1b7e2e86f0dc0"
+content-hash = "a562da874da26e208b359ca6b2fe5e07b8f984d4bf5bf9710b162c140041345d"
 
 [metadata.files]
 aiocontextvars = [
@@ -3233,16 +3248,16 @@ pydantic = [
     {file = "pydantic-1.9.1.tar.gz", hash = "sha256:1ed987c3ff29fff7fd8c3ea3a3ea877ad310aae2ef9889a119e22d3f2db0691a"},
 ]
 pyee = [
-    {file = "pyee-8.1.0-py2.py3-none-any.whl", hash = "sha256:383973b63ad7ed5e3c0311f8b179c52981f9e7b3eaea0e9a830d13ec34dde65f"},
-    {file = "pyee-8.1.0.tar.gz", hash = "sha256:92dacc5bd2bdb8f95aa8dd2585d47ca1c4840e2adb95ccf90034d64f725bfd31"},
+    {file = "pyee-9.0.4-py2.py3-none-any.whl", hash = "sha256:9f066570130c554e9cc12de5a9d86f57c7ee47fece163bbdaa3e9c933cfbdfa5"},
+    {file = "pyee-9.0.4.tar.gz", hash = "sha256:2770c4928abc721f46b705e6a72b0c59480c4a69c9a83ca0b00bb994f1ea4b32"},
 ]
 pygments = [
     {file = "Pygments-2.12.0-py3-none-any.whl", hash = "sha256:dc9c10fb40944260f6ed4c688ece0cd2048414940f1cea51b8b226318411c519"},
     {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
 ]
 pylint = [
-    {file = "pylint-2.14.2-py3-none-any.whl", hash = "sha256:592d0a4d2ffa8e33020209d255827c5a310499cdc023d156187bc677d86bd495"},
-    {file = "pylint-2.14.2.tar.gz", hash = "sha256:482f1329d4b6b9e52599754a2e502c0ed91ebdfd0992a2299b7fa136a6c12349"},
+    {file = "pylint-2.14.3-py3-none-any.whl", hash = "sha256:6757a027e15816be23625b079ebc45464e4c9d9dde0c826d18beee53fe22a2e7"},
+    {file = "pylint-2.14.3.tar.gz", hash = "sha256:4e1378f815c63e7e44590d0d339ed6435f5281d0a0cc357d29a86ea0365ef868"},
 ]
 pymongo = [
     {file = "pymongo-3.12.3-cp27-cp27m-macosx_10_14_intel.whl", hash = "sha256:c164eda0be9048f83c24b9b2656900041e069ddf72de81c17d874d0c32f6079f"},
@@ -3586,6 +3601,10 @@ shapely = [
     {file = "Shapely-1.8.2-cp39-cp39-win32.whl", hash = "sha256:2e02da2e988e74d61f15c720f9f613fab51942aae2dfeacdcb78eadece00e1f3"},
     {file = "Shapely-1.8.2-cp39-cp39-win_amd64.whl", hash = "sha256:3423299254deec075e79fb7dc7909d702104e4167149de7f45510c3a6342eeea"},
     {file = "Shapely-1.8.2.tar.gz", hash = "sha256:572af9d5006fd5e3213e37ee548912b0341fb26724d6dc8a4e3950c10197ebb6"},
+]
+simple-parsing = [
+    {file = "simple_parsing-0.0.20-py3-none-any.whl", hash = "sha256:a65d60d0f400defc9ab7867b549fa0d6ca77f9da7c5dfdb3dd3b494262f92b21"},
+    {file = "simple_parsing-0.0.20.tar.gz", hash = "sha256:c99e0a03f9b5eb599bb70ca04cf23a3e511298b1f221502c29c6a7e6c3dabe9f"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},

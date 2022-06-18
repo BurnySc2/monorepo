@@ -242,6 +242,7 @@ Example usage:
 
     async def public_remind_in(
         self,
+        _bot: GatewayBot,
         event: GuildMessageCreateEvent,
         reminder_message: str,
     ):
@@ -277,6 +278,7 @@ Example usage:
 
     async def public_remind_at(
         self,
+        _bot: GatewayBot,
         event: GuildMessageCreateEvent,
         reminder_message: str,
     ):
@@ -331,7 +333,12 @@ Example usage:
             title='Usage of remindat command', description=f'Your reminder is in the past!\n{error_description}'
         )
 
-    async def public_list_reminders(self, event: GuildMessageCreateEvent, _message: str):
+    async def public_list_reminders(
+        self,
+        _bot: GatewayBot,
+        event: GuildMessageCreateEvent,
+        _message: str,
+    ):
         """ List all of the user's reminders """
         # id, time formatted by iso standard format, in 5 minutes, text
         user_reminders: List[Tuple[int, str, str, str]] = []
@@ -355,7 +362,12 @@ Example usage:
         embed: Embed = Embed(title=f"{event.author.username}'s reminders", description=description)
         return embed
 
-    async def public_del_remind(self, event: GuildMessageCreateEvent, message: str):
+    async def public_del_remind(
+        self,
+        _bot: GatewayBot,
+        event: GuildMessageCreateEvent,
+        message: str,
+    ):
         """ Removes reminders from the user """
         try:
             reminder_id_to_delete = int(message) - 1

@@ -34,7 +34,6 @@ def create_date_time_string(_year: int, _month: int, _day: int, _hour: int, _min
     return date_time
 
 
-@pytest.mark.asyncio
 @settings(max_examples=100)
 @given(
     # Year
@@ -52,6 +51,7 @@ def create_date_time_string(_year: int, _month: int, _day: int, _hour: int, _min
     # Message
     st.text(min_size=1),
 )
+@pytest.mark.asyncio
 async def test_parsing_date_and_time_from_message_success(_year, _month, _day, _hour, _minute, _second, _message):
     # Dont care about empty strings, or just space or just new line characters
     if not _message.strip():

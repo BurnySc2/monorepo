@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 import aiohttp
-from hikari import GuildMessageCreateEvent
+from hikari import GatewayBot, GuildMessageCreateEvent
 
 # http://zetcode.com/python/prettytable/
 from prettytable import PrettyTable  # pip install PTable
@@ -85,12 +85,14 @@ class Sc2LadderResult:
         ]
 
 
-async def public_mmr(_event: GuildMessageCreateEvent, query_name: str):
+async def public_mmr(
+    _bot: GatewayBot,
+    _event: GuildMessageCreateEvent,
+    query_name: str,
+):
     """The public command '!mmr name', will look up an account name, clan name or stream name and list several results as a markdown table using PrettyTable
     Usage:
-    !mmr twitch.tv/rotterdam08
-    !mmr rotterdam
-    !mmr [zelos]"""
+    !mmr burny"""
     # Correct usage
     assert query_name
     async with aiohttp.ClientSession() as session:

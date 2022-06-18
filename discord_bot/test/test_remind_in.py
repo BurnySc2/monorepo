@@ -30,7 +30,6 @@ def create_time_shift_string(_day, _hour, _minute, _second):
     return shift.strip()
 
 
-@pytest.mark.asyncio
 @settings(max_examples=100)
 @example(_day=1_000_000, _hour=0, _minute=0, _second=0, _message='a')
 @example(_day=0, _hour=1_000_000, _minute=0, _second=0, _message='a')
@@ -48,6 +47,7 @@ def create_time_shift_string(_day, _hour, _minute, _second):
     # Message
     st.text(min_size=1),
 )
+@pytest.mark.asyncio
 async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, _second, _message):
     # Dont care about empty strings, or just space or just new line characters
     if not _message.strip():
@@ -67,7 +67,6 @@ async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, 
     assert result[1] == _message.strip()
 
 
-@pytest.mark.asyncio
 @settings(max_examples=100)
 @example(_day=10_000_000, _hour=0, _minute=0, _second=0, _message='a')
 @example(_day=0, _hour=10_000_000, _minute=0, _second=0, _message='a')
@@ -85,6 +84,7 @@ async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, 
     # Message
     st.text(min_size=1),
 )
+@pytest.mark.asyncio
 async def test_parsing_date_and_time_from_message_failure(_day, _hour, _minute, _second, _message):
     r = Remind(client=None)
 

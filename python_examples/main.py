@@ -1,7 +1,10 @@
-import asyncio
 import sys
-import time
 from pathlib import Path
+
+sys.path.append(str(Path(__file__).parents[1]))
+
+import asyncio
+import time
 from platform import platform
 from typing import List
 

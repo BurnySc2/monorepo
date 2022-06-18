@@ -1,7 +1,7 @@
 import asyncio
 import os
 from pathlib import Path
-from typing import AsyncIterable, Awaitable, Callable, Union
+from typing import AsyncIterable, Awaitable, Callable, Set, Union
 
 from hikari import (
     Embed,
@@ -9,23 +9,28 @@ from hikari import (
     GatewayGuild,
     GuildMessageCreateEvent,
     GuildReactionAddEvent,
+    GuildTextChannel,
     PartialChannel,
     StartedEvent,
 )
 from loguru import logger
 
+from discord_bot.commands.public_emotes import public_count_emotes
 from discord_bot.commands.public_mmr import public_mmr
 from discord_bot.commands.public_remind import Remind
+from discord_bot.db import flatten_result, supabase
 
-# Load key from file if it does not exist in env
-if os.getenv('DISCORDKEY') is None:
+# Load key from env or from file
+token = os.getenv('DISCORDKEY')
+if token is None:
     DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
-    assert DISCORDKEY_PATH.is_file(), f"File '{DISCORDKEY_PATH}' not found"
+    assert DISCORDKEY_PATH.is_file(
+    ), f"File '{DISCORDKEY_PATH}' not found, you can get it from https://discord.com/developers/applications/<bot_id>/bot"
     with DISCORDKEY_PATH.open() as f:
         token = f.read()
-        os.environ['DISCORDKEY'] = token.strip()
-        del token
-bot = GatewayBot(token=os.getenv('DISCORDKEY'))  # type: ignore
+bot = GatewayBot(token=token)  # type: ignore
+del token
+
 PREFIX = '!'
 
 # Start reminder plugin
@@ -42,11 +47,12 @@ logger.add(DATA_FOLDER / 'bot.log')
 
 async def generic_command_caller(
     event: GuildMessageCreateEvent,
-    function_to_call: Callable[[GuildMessageCreateEvent, str], Awaitable[Union[Embed, str]]],
+    function_to_call: Callable[[GatewayBot, GuildMessageCreateEvent, str], Awaitable[Union[Embed, str]]],
     message: str,
     add_remove_emoji: bool = False,
 ) -> None:
     """
+    @param event
     @param function_to_call: A function to be called with the given message, expects function to return an Embed or string
     @param message: Parsed messaged by the user, without the command
     @param add_remove_emoji: If true, bot will react to its own message with a 'X' emoji
@@ -56,7 +62,7 @@ async def generic_command_caller(
     if not channel:
         return
     # Call the given function with the event and message
-    response: Union[Embed, str] = await function_to_call(event, message)
+    response: Union[Embed, str] = await function_to_call(bot, event, message)
     if isinstance(response, Embed):
         sent_message = await channel.send(f'{event.author.mention}', embed=response)
     else:
@@ -75,10 +81,35 @@ async def loop_function() -> None:
 
 
 async def get_all_servers() -> AsyncIterable[GatewayGuild]:
-    server: GatewayGuild
     all_connected_servers = bot.cache.get_available_guilds_view()
+    server: GatewayGuild
+
+    added_messages = await supabase.table('discord_messages').select('message_id').execute()
+    message_ids_already_exist: Set[int] = set(flatten_result(added_messages, 'message_id'))
+
     for server in all_connected_servers.values():
         yield server
+        # Add all messages from channel "chat" to DB
+        if server.id == 384968030423351298:
+            for channel in server.get_channels().values():
+                if channel.name == 'chat' and isinstance(channel, GuildTextChannel):
+                    async for message in channel.fetch_history():
+                        if message.id in message_ids_already_exist:
+                            continue
+                        # TODO Use bulk insert via List[dict]
+                        await (
+                            supabase.table('discord_messages').insert(
+                                {
+                                    'message_id': message.id,
+                                    'guild_id': server.id,
+                                    'channel_id': channel.id,
+                                    'author_id': message.author.id,
+                                    'who': str(message.author),
+                                    'when': str(message.created_at),
+                                    'what': message.content,
+                                }
+                            ).execute()
+                        )
 
     # all_connected_servers = bot.cache.get_guilds_view()
     # for server in all_connected_servers.values():
@@ -143,6 +174,8 @@ async def handle_new_message(event: GuildMessageCreateEvent) -> None:
     if not event.is_human or not event.content:
         return
 
+    # TODO On new message, add to DB
+
     # guild = event.get_guild()
     # member = event.get_member()
     #
@@ -164,6 +197,7 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
         'reminders': my_reminder.public_list_reminders,
         'delreminder': my_reminder.public_del_remind,
         'mmr': public_mmr,
+        'emotes': public_count_emotes,
     }
     if command in function_mapping:
         function = function_mapping[command]
@@ -178,6 +212,7 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
         guild = event.get_guild()
         if guild:
             b = await guild.fetch_emojis()
+
             animated = next(i for i in b if i.is_animated)
             await event.message.respond(f'Pong! {bot.heartbeat_latency * 1_000:.0f}ms {b[0]} {animated}')
 

@@ -3,6 +3,8 @@
 ExecStart=/usr/bin/docker run --rm --name discord_bot --env STAGE=PROD \
     --mount type=bind,source="/home/discordbot/data",destination=/root/discord_bot/data \
     --mount type=bind,source="/home/discordbot/DISCORDKEY",destination=/root/discord_bot/DISCORDKEY,readonly \
+    --mount type=bind,source="/home/discordbot/SUPABASEURL",destination=/root/discord_bot/SUPABASEURL,readonly \
+    --mount type=bind,source="/home/discordbot/SUPABASEKEY",destination=/root/discord_bot/SUPABASEKEY,readonly \
     burnysc2/discord_bot:latest
 Restart=always
 RestartSec=20
