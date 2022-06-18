@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Set
 
-from playwright.sync_api import BrowserContext, Page
+from playwright.sync_api import Page
 
 from burny_common.integration_test_helper import (
     find_next_free_port,
@@ -107,65 +107,66 @@ class TestClass:
         assert test_text in page.content()
         assert 'Unable to connect to server - running local mode' not in page.content()
 
-    def test_chat_single(self, page: Page):
-        """ Chat with yourself """
-        page.goto(self.FRONTEND_ADDRESS)
-        assert 'Hello world!' in page.content()
-        page.click('#chat')
-        page.wait_for_url('/normalchat')
-        my_username = 'beep_boop'
-
-        assert my_username not in page.content()
-        page.fill('#username', my_username)
-        page.click('#connect')
-
-        # Send a message by pressing send button
-        some_text = 'bla blubb'
-        page.fill('#chatinput', some_text)
-        assert 'You' not in page.content()
-        page.click('#sendmessage')
-        assert 'You' in page.content()
-        assert some_text in page.content()
-        # Send a message by pressing enter
-        some_other_text = 'some other text'
-        page.type('#chatinput', f'{some_other_text}\n')
-        assert some_other_text in page.content()
-
-    def test_chat_two_people(self, context: BrowserContext):
-        """ Make sure chat between 2 people work """
-        # Connect with robot1
-        page1 = context.new_page()
-        page1.goto(self.FRONTEND_ADDRESS)
-        page1.click('#chat')
-        page1.wait_for_url('/normalchat')
-        my_username1 = 'robot1'
-        page1.fill('#username', my_username1)
-        page1.click('#connect')
-        # Send message from robot1
-        some_text1 = 'sometext1'
-        page1.fill('#chatinput', some_text1)
-        page1.click('#sendmessage')
-        assert 'You' in page1.content()
-        assert some_text1 in page1.content()
-
-        # Connect with robot2
-        page2 = context.new_page()
-        page2.goto(self.FRONTEND_ADDRESS)
-        page2.click('#chat')
-        page2.wait_for_url('/normalchat')
-        my_username2 = 'robot2'
-        page2.fill('#username', my_username2)
-        page2.click('#connect')
-        # Make sure robot1's messages are visible from robot2
-        assert my_username1 in page2.content()
-        assert some_text1 in page2.content()
-        # Send message from robot2
-        some_text2 = 'sometext2'
-        page2.fill('#chatinput', some_text2)
-        page2.click('#sendmessage')
-        assert 'You' in page2.content()
-        assert some_text2 in page2.content()
-
-        # Make sure robot2's messages are visible from robot1
-        assert my_username2 in page1.content()
-        assert some_text2 in page1.content()
+    # Re-enable when unicorn[standard] with websockets can be installed (blocked by supabase)
+    # def test_chat_single(self, page: Page):
+    #     """ Chat with yourself """
+    #     page.goto(self.FRONTEND_ADDRESS)
+    #     assert 'Hello world!' in page.content()
+    #     page.click('#chat')
+    #     page.wait_for_url('/normalchat')
+    #     my_username = 'beep_boop'
+    #
+    #     assert my_username not in page.content()
+    #     page.fill('#username', my_username)
+    #     page.click('#connect')
+    #
+    #     # Send a message by pressing send button
+    #     some_text = 'bla blubb'
+    #     page.fill('#chatinput', some_text)
+    #     assert 'You' not in page.content()
+    #     page.click('#sendmessage')
+    #     assert 'You' in page.content()
+    #     assert some_text in page.content()
+    #     # Send a message by pressing enter
+    #     some_other_text = 'some other text'
+    #     page.type('#chatinput', f'{some_other_text}\n')
+    #     assert some_other_text in page.content()
+    #
+    # def test_chat_two_people(self, context: BrowserContext):
+    #     """ Make sure chat between 2 people work """
+    #     # Connect with robot1
+    #     page1 = context.new_page()
+    #     page1.goto(self.FRONTEND_ADDRESS)
+    #     page1.click('#chat')
+    #     page1.wait_for_url('/normalchat')
+    #     my_username1 = 'robot1'
+    #     page1.fill('#username', my_username1)
+    #     page1.click('#connect')
+    #     # Send message from robot1
+    #     some_text1 = 'sometext1'
+    #     page1.fill('#chatinput', some_text1)
+    #     page1.click('#sendmessage')
+    #     assert 'You' in page1.content()
+    #     assert some_text1 in page1.content()
+    #
+    #     # Connect with robot2
+    #     page2 = context.new_page()
+    #     page2.goto(self.FRONTEND_ADDRESS)
+    #     page2.click('#chat')
+    #     page2.wait_for_url('/normalchat')
+    #     my_username2 = 'robot2'
+    #     page2.fill('#username', my_username2)
+    #     page2.click('#connect')
+    #     # Make sure robot1's messages are visible from robot2
+    #     assert my_username1 in page2.content()
+    #     assert some_text1 in page2.content()
+    #     # Send message from robot2
+    #     some_text2 = 'sometext2'
+    #     page2.fill('#chatinput', some_text2)
+    #     page2.click('#sendmessage')
+    #     assert 'You' in page2.content()
+    #     assert some_text2 in page2.content()
+    #
+    #     # Make sure robot2's messages are visible from robot1
+    #     assert my_username2 in page1.content()
+    #     assert some_text2 in page1.content()

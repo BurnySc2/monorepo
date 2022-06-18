@@ -157,7 +157,7 @@ def start_fastapi_dev_server(
                 pass
             time.sleep(0.1)
 
-    new_processes = get_pid('uvicorn') - currently_running_uvicorn_processes
+    new_processes: Set[int] = get_pid('uvicorn') - currently_running_uvicorn_processes
     logger.info(f'New uvicorn processes: {new_processes}')
     NEWLY_CREATED_PROCESSES |= new_processes
 

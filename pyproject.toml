@@ -43,8 +43,8 @@ sqlmodel = "^0.0.6"
 # Geometry manipulation
 Shapely = "^1.8"
 # Fastapi server
-fastapi = "^0.76"
-uvicorn = "^0.17"
+fastapi = "^0.78.0"
+uvicorn = "^0.17.6"
 # End to end tests
 playwright = "^1"
 pytest-playwright = "^0.3.0"
