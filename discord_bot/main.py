@@ -27,7 +27,7 @@ if token is None:
     assert DISCORDKEY_PATH.is_file(
     ), f"File '{DISCORDKEY_PATH}' not found, you can get it from https://discord.com/developers/applications/<bot_id>/bot"
     with DISCORDKEY_PATH.open() as f:
-        token = f.read()
+        token = f.read().strip()
 bot = GatewayBot(token=token)  # type: ignore
 del token
 
