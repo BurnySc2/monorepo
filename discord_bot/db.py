@@ -1,13 +1,17 @@
 import asyncio
 import os
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Generator
 
+import arrow
+from arrow import Arrow
 from postgrest.base_request_builder import APIResponse
 
 from discord_bot.supabase_async_client import Client, create_client
 
 # Load url and key from env or from file
+
 url: str = os.getenv('SUPABASEURL')  # type: ignore
 if url is None:
     SUPABASEURL_PATH = Path(__file__).parent / 'SUPABASEURL'
@@ -28,14 +32,32 @@ del url
 del key
 
 
-def flatten_result(result: APIResponse, column_name: str) -> Generator:
-    # If 'select' only queried one column, flatten result to an iterator
-    for row in result.data:
-        yield row[column_name]
+@dataclass
+class DiscordMessage:
+    message_id: int = None  # type: ignore
+    guild_id: int = None  # type: ignore
+    channel_id: int = None  # type: ignore
+    author_id: int = None  # type: ignore
+    who: str = None  # type: ignore
+    when: str = None  # type: ignore
+    what: str = None  # type: ignore
+
+    @property
+    def when_arrow(self) -> Arrow:
+        return arrow.get(self.when)
+
+    @staticmethod
+    def table_name() -> str:
+        return 'discord_messages'
+
+    @staticmethod
+    def from_select(response: APIResponse) -> Generator['DiscordMessage', None, None]:
+        for row in response.data:
+            yield DiscordMessage(**row)
 
 
 async def main():
-    response: APIResponse = await supabase.table('sc2accounts').select('*').execute()
+    response: APIResponse = await supabase.table(DiscordMessage.table_name()).select('message_id').execute()
 
     for row in response.data:
         print(row)

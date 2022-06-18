@@ -1,24 +1,28 @@
 import asyncio
 import os
 from pathlib import Path
-from typing import AsyncIterable, Awaitable, Callable, Set, Union
+from typing import AsyncGenerator, Awaitable, Callable, Generator, Set, Union
 
 from hikari import (
     Embed,
     GatewayBot,
     GatewayGuild,
+    GuildCategory,
     GuildMessageCreateEvent,
     GuildReactionAddEvent,
     GuildTextChannel,
+    GuildVoiceChannel,
+    Message,
     PartialChannel,
     StartedEvent,
 )
 from loguru import logger
+from postgrest import APIResponse, AsyncSelectRequestBuilder
 
 from discord_bot.commands.public_emotes import public_count_emotes
 from discord_bot.commands.public_mmr import public_mmr
 from discord_bot.commands.public_remind import Remind
-from discord_bot.db import flatten_result, supabase
+from discord_bot.db import DiscordMessage, supabase
 
 # Load key from env or from file
 token = os.getenv('DISCORDKEY')
@@ -80,25 +84,58 @@ async def loop_function() -> None:
         await my_reminder.tick()
 
 
-async def get_all_servers() -> AsyncIterable[GatewayGuild]:
-    all_connected_servers = bot.cache.get_available_guilds_view()
+def get_channels_of_server(
     server: GatewayGuild
+) -> Generator[Union[GuildCategory,
+                     GuildTextChannel,
+                     GuildVoiceChannel,
+                     ], None, None]:
+    yield from server.get_channels().values()  # type: ignore
 
-    added_messages = await supabase.table('discord_messages').select('message_id').execute()
-    message_ids_already_exist: Set[int] = set(flatten_result(added_messages, 'message_id'))
 
+async def fetch_messages_of_channel(channel: GuildTextChannel) -> AsyncGenerator[Message, None]:
+    query: AsyncSelectRequestBuilder = supabase.table(DiscordMessage.table_name()).select('message_id').eq(
+        'channel_id',
+        channel.id,
+    ).limit(1)
+
+    # Fetch oldest message id
+    response: APIResponse = await query.order('when').execute()
+    # If no messages in db, fetch whole history of channel
+    before = response.data[0]['message_id'] if response.data else None
+    async for message in channel.fetch_history(before=before):
+        yield message
+
+    # Fetch new messages in case the bot was offline for a while
+    response = await query.order('when', desc=True).execute()
+    # If no message in db, must mean there are no messages in the channel: skip
+    if not response.data:
+        return
+    async for message in channel.fetch_history(after=response.data[0]['message_id']):
+        yield message
+
+
+async def get_all_servers() -> AsyncGenerator[GatewayGuild, None]:
+    all_connected_servers = bot.cache.get_available_guilds_view()
+
+    added_messages: APIResponse = await supabase.table(DiscordMessage.table_name()).select('message_id').execute()
+
+    message_ids_already_exist: Set[int] = {row['message_id'] for row in added_messages.data}
+
+    server: GatewayGuild
     for server in all_connected_servers.values():
         yield server
         # Add all messages from channel "chat" to DB
         if server.id == 384968030423351298:
-            for channel in server.get_channels().values():
-                if channel.name == 'chat' and isinstance(channel, GuildTextChannel):
-                    async for message in channel.fetch_history():
+            for channel in get_channels_of_server(server):
+                if isinstance(channel, GuildTextChannel):
+                    async for message in fetch_messages_of_channel(channel):
+                        # async for message in channel.fetch_history():
                         if message.id in message_ids_already_exist:
                             continue
                         # TODO Use bulk insert via List[dict]
                         await (
-                            supabase.table('discord_messages').insert(
+                            supabase.table(DiscordMessage.table_name()).insert(
                                 {
                                     'message_id': message.id,
                                     'guild_id': server.id,
@@ -121,7 +158,7 @@ async def get_all_servers() -> AsyncIterable[GatewayGuild]:
 
 @bot.listen()
 async def on_start(_event: StartedEvent) -> None:
-    logger.info('Server started')
+    logger.info('Bot started')
     await my_reminder.load_reminders()
     # Call another async function that runs forever
     asyncio.create_task(loop_function())

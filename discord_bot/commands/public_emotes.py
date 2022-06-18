@@ -9,7 +9,7 @@ from hikari import Embed, GatewayBot, GuildMessageCreateEvent, KnownCustomEmoji
 from postgrest import APIResponse, AsyncSelectRequestBuilder
 from simple_parsing import ArgumentParser
 
-from discord_bot.db import supabase
+from discord_bot.db import DiscordMessage, supabase
 
 # How many emojis to list when counting
 TOP_EMOTE_LIMIT = 10
@@ -44,7 +44,7 @@ async def public_count_emotes(
     params: CountEmotesParserOptions = parsed.params
 
     query: AsyncSelectRequestBuilder = (
-        supabase.table('discord_messages').select(
+        supabase.table(DiscordMessage.table_name()).select(
             'what',
         )
         # Get messages written in that guild
@@ -81,9 +81,8 @@ async def public_count_emotes(
         emote_pattern = r'<a?:([\d\w_]+):(\d+)>'
 
     emote_counter: CounterType[str] = Counter()
-    for row in result_emotes.data:  # + animated_emotes.data:
-        text = row['what']
-        for match in re.finditer(emote_pattern, text):
+    for message_row in DiscordMessage.from_select(result_emotes):
+        for match in re.finditer(emote_pattern, message_row.what):
             # Validate/load emoji from cache
             _emote_name, emote_snowflake = match.groups()
             find_emote: Optional[KnownCustomEmoji] = bot.cache.get_emoji(int(emote_snowflake))
