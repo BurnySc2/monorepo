@@ -100,7 +100,7 @@ jobs:
         poetry install
 
     - name: Install playwright browsers
-      working-directory: ${{ env.SUBDIRECTORY }}
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: |
         poetry run playwright install
 
@@ -162,7 +162,7 @@ jobs:
         poetry install
 
     - name: Install playwright browsers
-      working-directory: ${{ env.SUBDIRECTORY }}
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: |
         poetry run playwright install
 
