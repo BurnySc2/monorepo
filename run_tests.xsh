@@ -17,7 +17,6 @@ import sys
 changed_files: List[str] = $(git diff HEAD --name-only).splitlines()
 python_files: List[str] = $(git ls-files '*.py').splitlines()
 files_in_project = lambda project_name: $(git ls-files @(project_name)).splitlines()
-ANY_COMMAND_HAS_ERROR = False
 SCRIPTS_WITH_ERRORS = []
 
 def project_has_changed_files(project_name: str, changed_only=True, file_ending: str="") -> List[str]:
@@ -32,7 +31,6 @@ def replace_last_message(old_message: str, new_message: str) -> None:
     print_color(new_message + " " * length_difference)
 
 def run_command(command: List[str], ignore_exit_status=False, verbose=False, display_name='') -> int:
-    global ANY_COMMAND_HAS_ERROR
     start_time = time.perf_counter()
     location = $(pwd).strip()
     command_as_line = " ".join(command)
@@ -57,8 +55,7 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
         else:
             # Run command again in verbose mode
             @(command)
-    if ret.returncode != 0:
-        ANY_COMMAND_HAS_ERROR = True
+    if not ignore_exit_status and ret.returncode != 0:
         SCRIPTS_WITH_ERRORS.append((location, command_as_line))
     return ret.returncode
 
@@ -70,7 +67,6 @@ def run(
         run_only_changed_files: xcli.Arg('--all', '-a', action="store_false") = True,
         verbose: xcli.Arg('--verbose', '-v', action="store_true") = False,
     ):
-    global ANY_COMMAND_HAS_ERROR
     if run_python_lint:
         # Run mypy on all python files because types could have changed which can affect other files
         command = "poetry run mypy".split() + python_files
@@ -114,7 +110,7 @@ def run(
             # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
             returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=verbose)
             if returncode != 124:
-                ANY_COMMAND_HAS_ERROR = True
+                SCRIPTS_WITH_ERRORS.append(("fastapi_server", "timeout 5 sh sh.run"))
             cd ..
 
     # python_examples
@@ -195,8 +191,8 @@ if __name__ == '__main__':
     parser = xcli.make_parser("test commands")
     parser.add_command(run)
     xcli.dispatch(parser)
-    if ANY_COMMAND_HAS_ERROR:
-        print(f"Certain commands yielded errors:")
+    if SCRIPTS_WITH_ERRORS:
+        print(f"The following commands threw errors:")
         print('\n'.join(SCRIPTS_WITH_ERRORS))
         sys.exit(1)
     sys.exit(0)
