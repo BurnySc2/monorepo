@@ -7,7 +7,7 @@ env:
   SUBDIRECTORY: check-python-code
 
 jobs:
-  check_python_code:
+  run_xonsh_script:
     strategy:
       fail-fast: false
       matrix:

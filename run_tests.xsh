@@ -132,9 +132,8 @@ def run(
     files_related_to_project = project_has_changed_files("bored_gems", changed_only=run_only_changed_files)
     if files_related_to_project:
         cd bored_gems
-        npm install 1>/dev/null 2>/dev/null
-        npx playwright install 1>/dev/null 2>/dev/null
-        playwright install 1>/dev/null 2>/dev/null
+        run_command("npm install".split(), verbose=verbose)
+        run_command("npx playwright install".split(), verbose=verbose)
         if run_npm_lint:
             run_command("npm run format".split(), verbose=verbose)
             run_command("npm run lint".split(), verbose=verbose)
@@ -147,7 +146,7 @@ def run(
     files_related_to_project = project_has_changed_files("replay_comparer", changed_only=run_only_changed_files)
     if files_related_to_project:
         cd replay_comparer
-        npm install 1>/dev/null 2>/dev/null
+        run_command("npm install".split(), verbose=verbose)
         if run_npm_lint:
             run_command("npm run format".split(), verbose=verbose)
             run_command("npm run lint".split(), verbose=verbose)
@@ -160,7 +159,7 @@ def run(
     files_related_to_project = project_has_changed_files("supabase_stream_scripts", changed_only=run_only_changed_files)
     if files_related_to_project:
         cd supabase_stream_scripts
-        npm install 1>/dev/null 2>/dev/null
+        run_command("npm install".split(), verbose=verbose)
         if run_npm_lint:
             run_command("npm run format".split(), verbose=verbose)
             run_command("npm run lint".split(), verbose=verbose)
@@ -173,9 +172,7 @@ def run(
     files_related_to_project = project_has_changed_files("svelte_frontend", changed_only=run_only_changed_files)
     if files_related_to_project:
         cd svelte_frontend
-        npm install 1>/dev/null 2>/dev/null
-        npx playwright install 1>/dev/null 2>/dev/null
-        playwright install 1>/dev/null 2>/dev/null
+        run_command("npm install".split(), verbose=verbose)
         if run_npm_lint:
             run_command("npm run format".split(), verbose=verbose)
             run_command("npm run lint".split(), verbose=verbose)
@@ -186,7 +183,9 @@ def run(
         if run_npm_test:
             cd fastapi_server
             poetry install 1>/dev/null 2>/dev/null
+            poetry run playwright install
             run_command("poetry run python -m pytest ../svelte_frontend/test_frontend/test_e2e.py --benchmark-skip".split(), verbose=verbose)
+            run_command("poetry run python -m pytest ../svelte_frontend/test_frontend/test_integration.py --benchmark-skip".split(), verbose=verbose)
             cd ..
 
 
