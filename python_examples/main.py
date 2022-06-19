@@ -1,7 +1,9 @@
 import sys
+from contextlib import suppress
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parents[1]))
+with suppress(IndexError):
+    sys.path.append(str(Path(__file__).parents[1]))
 
 import asyncio
 import time
