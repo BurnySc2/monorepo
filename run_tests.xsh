@@ -1,10 +1,12 @@
 #!/usr/bin/env xonsh
 # In CI:
-# poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest --all --verbose
+# xonsh run_tests.xsh run --pylint --npmlint --all --verbose
 # For dev (only changed files):
-# poetry run xonsh run_tests.xsh run --pylint --npmlint
+# xonsh run_tests.xsh run --pylint --npmlint
 # For dev (slower):
-# poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
+# xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
+# For dev (slowest, run all tests):
+# xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest --all --verbose
 from typing import List
 from xonsh.procs.pipelines import CommandPipeline
 from xonsh.tools import print_color
@@ -133,11 +135,11 @@ def run(
     if files_related_to_project:
         cd bored_gems
         run_command("npm install".split(), verbose=verbose)
-        run_command("npx playwright install".split(), verbose=verbose)
         if run_npm_lint:
             run_command("npm run format".split(), verbose=verbose)
             run_command("npm run lint".split(), verbose=verbose)
         if run_npm_test:
+            run_command("npx playwright install".split(), verbose=verbose)
             run_command("npm run build".split(), verbose=verbose)
             run_command("npm run test".split(), verbose=verbose)
         cd ..
