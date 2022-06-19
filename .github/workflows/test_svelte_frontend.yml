@@ -95,6 +95,7 @@ jobs:
         key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install Python dependencies
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: |
         poetry install
 
@@ -117,11 +118,12 @@ jobs:
     - name: Install playwright browsers
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        poetry run playwright install
+        playwright install
 
     - name: Run e2e tests
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: |
-        poetry run pytest ${{ env.SUBDIRECTORY }}/test_frontend/test_e2e.py
+        poetry run pytest ../${{ env.SUBDIRECTORY }}/test_frontend/test_e2e.py
 
 
   test_integration:
@@ -178,7 +180,7 @@ jobs:
     - name: Install playwright browsers
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        poetry run playwright install
+        playwright install
 
     - name: Run integration tests
       working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
