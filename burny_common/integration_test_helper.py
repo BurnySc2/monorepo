@@ -7,10 +7,8 @@ from pathlib import Path
 from typing import Optional, Set
 
 import psutil
-import pymongo
 import requests  # type: ignore
 from loguru import logger
-from pymongo import MongoClient
 
 WEBSITE_IP = 'http://localhost'
 
@@ -162,41 +160,41 @@ def start_fastapi_dev_server(
     NEWLY_CREATED_PROCESSES |= new_processes
 
 
-def check_if_mongodb_is_running(mongo_db_port: int = 27017) -> bool:
-    mongo_db_address = f'mongodb://localhost:{mongo_db_port}'
-    try:
-        with Timeout(seconds=2):
-            _my_client: MongoClient
-            with pymongo.MongoClient(mongo_db_address) as _my_client:
-                pass
-    except TimeoutError:
-        return False
-    return True
-
-
-# pylint: disable=R1732
-def start_mongodb(mongo_db_port: int = 27017) -> int:
-    # Start mongodb via docker
-    if check_if_mongodb_is_running(mongo_db_port):
-        logger.info(f'MongoDB is already running on port {mongo_db_port}')
-        return mongo_db_port
-    command = [
-        # TODO add volume to save db
-        'docker',
-        'run',
-        '--rm',
-        '-d',
-        '--name',
-        'mongodb_test',
-        '-p',
-        # TODO use mongo_db_port
-        '27017-27019:27017-27019',
-        'mongo:5.0.0',
-    ]
-    logger.info(f"Starting mongoDB with command: {' '.join(command)}")
-    process = subprocess.Popen(command)
-    process.wait()
-    return mongo_db_port
+# def check_if_mongodb_is_running(mongo_db_port: int = 27017) -> bool:
+#     mongo_db_address = f'mongodb://localhost:{mongo_db_port}'
+#     try:
+#         with Timeout(seconds=2):
+#             _my_client: MongoClient
+#             with pymongo.MongoClient(mongo_db_address) as _my_client:
+#                 pass
+#     except TimeoutError:
+#         return False
+#     return True
+#
+#
+# # pylint: disable=R1732
+# def start_mongodb(mongo_db_port: int = 27017) -> int:
+#     # Start mongodb via docker
+#     if check_if_mongodb_is_running(mongo_db_port):
+#         logger.info(f'MongoDB is already running on port {mongo_db_port}')
+#         return mongo_db_port
+#     command = [
+#         # TODO add volume to save db
+#         'docker',
+#         'run',
+#         '--rm',
+#         '-d',
+#         '--name',
+#         'mongodb_test',
+#         '-p',
+#         # TODO use mongo_db_port
+#         '27017-27019:27017-27019',
+#         'mongo:5.0.0',
+#     ]
+#     logger.info(f"Starting mongoDB with command: {' '.join(command)}")
+#     process = subprocess.Popen(command)
+#     process.wait()
+#     return mongo_db_port
 
 
 def check_if_postgres_is_running(port: int = 5432) -> bool:
@@ -266,7 +264,7 @@ def kill_processes(processes: Set[int]):
 if __name__ == '__main__':
     logger.info(f'Docker running: {check_if_docker_is_running()}')
     logger.info(f'Postgres running: {check_if_postgres_is_running()}')
-    logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
+    # logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
     # start_postgres()
     # start_mongodb()
     free_frontend_port = find_next_free_port()

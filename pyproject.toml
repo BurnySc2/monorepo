@@ -45,9 +45,6 @@ Shapely = "^1.8"
 # Fastapi server
 fastapi = "^0.78.0"
 uvicorn = "^0.17.6"
-# End to end tests
-playwright = "^1"
-pytest-playwright = "^0.3.0"
 # Info about the system
 psutil = "^5.8"
 # Execute command on server via SSH, or push files via SFTP
@@ -99,9 +96,12 @@ pytest = "^7.1"
 pytest-asyncio = "^0.18"
 pytest-cov = "^3.0"
 pytest-benchmark = "^3.4"
+# End to end tests
+playwright = "^1"
+pytest-playwright = "^0.3.0"
 # Type checking
 mypy = "^0.950"
-# Statistical testing
+# Property based testing
 hypothesis = "^6.34"
 # Cyclomatic complexity checker
 radon = "^5.0"

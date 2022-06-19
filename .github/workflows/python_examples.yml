@@ -77,19 +77,17 @@ jobs:
       run: |
         printenv
 
-    - name: Install python dependencies
+    - name: Install Python dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         poetry install
 
-    - name: Test with pytest
+    - name: Run Python tests
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        poetry run pytest ${{ env.SUBDIRECTORY }}
+        poetry run python -m pytest
 
     - name: Run main.py
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        poetry run python ${{ env.SUBDIRECTORY }}/main.py
-
-    - name: Run radon (cyclomatic complexity report)
-      # './' denotes the current directory
-      run: |
-        poetry run radon cc ./ -a -nb
+        poetry run python main.py

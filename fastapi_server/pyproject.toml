@@ -25,7 +25,14 @@ python-multipart = "^0.0.5"
 # Test library
 pytest = "^7.0.1"
 pytest-asyncio = "^0.16"
+pytest-benchmark = "^3.4.1"
+# Property based testing
 hypothesis = "^6.39.3"
+# Info about the system
+psutil = "^5.9.1"
+# End to end tests
+playwright = "^1.22.0"
+pytest-playwright = "^0.3.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
