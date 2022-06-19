@@ -138,7 +138,7 @@ def start_fastapi_dev_server(
     # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
     logger.info(f'Starting backend on port {port}')
     _ = subprocess.Popen(
-        ['poetry', 'run', 'uvicorn', 'fastapi_server.main:app', '--host', 'localhost', '--port', f'{port}'],
+        ['uvicorn', 'fastapi_server.main:app', '--host', 'localhost', '--port', f'{port}'],
         cwd=root_folder,
         env=env,
     )

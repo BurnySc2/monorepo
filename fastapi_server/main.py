@@ -1,3 +1,10 @@
+import sys
+from contextlib import suppress
+from pathlib import Path
+
+with suppress(IndexError):
+    sys.path.append(str(Path(__file__).parents[1]))
+
 import os
 from typing import Literal
 

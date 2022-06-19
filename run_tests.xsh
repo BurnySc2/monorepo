@@ -27,7 +27,7 @@ def project_has_changed_files(project_name: str, changed_only=True, file_ending:
     ]
 
 def replace_last_message(old_message: str, new_message: str) -> None:
-    length_difference = max(0, len(new_message) - len(old_message))
+    length_difference = max(0, len(old_message) - len(new_message))
     print_color(new_message + " " * length_difference)
 
 def run_command(command: List[str], ignore_exit_status=False, verbose=False, display_name='') -> int:
@@ -193,6 +193,6 @@ if __name__ == '__main__':
     parser = xcli.make_parser("test commands")
     parser.add_command(run)
     xcli.dispatch(parser)
-    if ANY_COMMAND_HAS_ERROR:
-        sys.exit(1)
-    sys.exit(0)
+    # if ANY_COMMAND_HAS_ERROR:
+    #     exit 1
+    # exit 0
