@@ -92,7 +92,7 @@ def run(
             run_command("poetry run pylint".split() + files_related_to_project_py, verbose=verbose, display_name="Run pylint on discord_bot")
         if run_python_test:
             cd discord_bot
-            poetry install 1>/dev/null 2>/dev/null
+            run_command("poetry install".split(), verbose=verbose)
             run_command("poetry run python -m pytest".split(), verbose=verbose)
             run_command("docker build --tag precommit_image_discord_bot .".split(), verbose=verbose)
             cd ..
@@ -106,13 +106,13 @@ def run(
             run_command("poetry run pylint".split() + files_related_to_project_py, verbose=verbose, display_name="Run pylint on fastapi_server")
         if run_python_test:
             cd fastapi_server
-            poetry install 1>/dev/null 2>/dev/null
+            run_command("poetry install".split(), verbose=verbose)
             run_command("poetry run python -m pytest".split(), verbose=verbose)
             run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
             # Check if the server can start at all
-            docker build --tag burnysc2/fastapi_server:latest . 1>/dev/null 2>/dev/null
+            run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), ignore_exit_status=True, verbose=verbose)
             # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
-            returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True)
+            returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=verbose)
             if returncode == 124:
                 ANY_COMMAND_HAS_ERROR = True
             cd ..
@@ -126,7 +126,7 @@ def run(
             run_command("poetry run pylint".split() + files_related_to_project_py, verbose=verbose, display_name="Run pylint on python_examples")
         if run_python_test:
             cd python_examples
-            poetry install 1>/dev/null 2>/dev/null
+            run_command("poetry install".split(), verbose=verbose)
             run_command("poetry run python -m pytest".split(), verbose=verbose)
             cd ..
 
@@ -184,8 +184,8 @@ def run(
         cd ..
         if run_npm_test:
             cd fastapi_server
-            poetry install 1>/dev/null 2>/dev/null
-            poetry run playwright install
+            run_command("poetry install".split(), verbose=verbose)
+            run_command("poetry run playwright install".split(), verbose=verbose)
             run_command("poetry run python -m pytest ../svelte_frontend/test_frontend/test_e2e.py --benchmark-skip".split(), verbose=verbose)
             run_command("poetry run python -m pytest ../svelte_frontend/test_frontend/test_integration.py --benchmark-skip".split(), verbose=verbose)
             cd ..

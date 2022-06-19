@@ -54,4 +54,4 @@ jobs:
 
     - name: Format, lint and test
       run: |
-        xonsh run_tests.xsh run --pylint --npmlint --all
+        xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest --all
