@@ -16,6 +16,7 @@ on:
 
 env:
   SUBDIRECTORY: svelte_frontend
+  BACKEND_SUBDIRECTORY: fastapi_server
 
 jobs:
   test_svelte_frontend:
@@ -154,6 +155,7 @@ jobs:
         key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install Python dependencies
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: |
         poetry install
 
@@ -179,5 +181,6 @@ jobs:
         poetry run playwright install
 
     - name: Run integration tests
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: |
-        poetry run pytest ${{ env.SUBDIRECTORY }}/test_frontend/test_integration.py
+        poetry run pytest ../${{ env.SUBDIRECTORY }}/test_frontend/test_integration.py
