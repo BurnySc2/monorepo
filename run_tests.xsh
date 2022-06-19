@@ -193,6 +193,6 @@ if __name__ == '__main__':
     xcli.dispatch(parser)
     if SCRIPTS_WITH_ERRORS:
         print(f"The following commands threw errors:")
-        print('\n'.join(SCRIPTS_WITH_ERRORS))
+        print('\n'.join(str(SCRIPTS_WITH_ERRORS)))
         sys.exit(1)
     sys.exit(0)
