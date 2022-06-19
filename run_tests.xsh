@@ -18,6 +18,7 @@ changed_files: List[str] = $(git diff HEAD --name-only).splitlines()
 python_files: List[str] = $(git ls-files '*.py').splitlines()
 files_in_project = lambda project_name: $(git ls-files @(project_name)).splitlines()
 ANY_COMMAND_HAS_ERROR = False
+SCRIPTS_WITH_ERRORS = []
 
 def project_has_changed_files(project_name: str, changed_only=True, file_ending: str="") -> List[str]:
     iterable_files = changed_files if changed_only else files_in_project(project_name)
@@ -58,6 +59,7 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
             @(command)
     if ret.returncode != 0:
         ANY_COMMAND_HAS_ERROR = True
+        SCRIPTS_WITH_ERRORS.append((location, command_as_line))
     return ret.returncode
 
 def run(
@@ -111,7 +113,7 @@ def run(
             run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
             # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
             returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=verbose)
-            if returncode == 124:
+            if returncode != 124:
                 ANY_COMMAND_HAS_ERROR = True
             cd ..
 
@@ -193,6 +195,8 @@ if __name__ == '__main__':
     parser = xcli.make_parser("test commands")
     parser.add_command(run)
     xcli.dispatch(parser)
-    # if ANY_COMMAND_HAS_ERROR:
-    #     exit 1
-    # exit 0
+    if ANY_COMMAND_HAS_ERROR:
+        print(f"Certain commands yielded errors:")
+        print('\n'.join(SCRIPTS_WITH_ERRORS))
+        sys.exit(1)
+    sys.exit(0)
