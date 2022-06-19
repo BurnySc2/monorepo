@@ -26,8 +26,9 @@ def project_has_changed_files(project_name: str, changed_only=True, file_ending:
         if file_name.endswith(file_ending)
     ]
 
-def remove_last_message(message: str) -> None:
-    print(" " * len(message), end="\r")
+def replace_last_message(old_message: str, new_message: str) -> None:
+    length_difference = max(0, len(new_message) - len(old_message))
+    print_color(new_message + " " * length_difference)
 
 def run_command(command: List[str], ignore_exit_status=False, verbose=False, display_name='') -> int:
     global ANY_COMMAND_HAS_ERROR
@@ -35,8 +36,8 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
     location = $(pwd).strip()
     command_as_line = " ".join(command)
     print_command = display_name if display_name else f"{location} - {command_as_line}"
-    message = f"\r{{YELLOW}}RUNNING{{RESET}} - {print_command}"
-    print_color(message, end='\r')
+    last_message = f"\r{{YELLOW}}RUNNING{{RESET}} - {print_command}"
+    print_color(last_message, end='\r')
     if verbose:
         ret: CommandPipeline = !(@(command))
     else:
@@ -45,11 +46,9 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
         time.sleep(0.01)
     time_required: float = time.perf_counter() - start_time
     if ignore_exit_status or ret.returncode == 0:
-        remove_last_message(message)
-        print_color(f"{time_required:.3f} {{GREEN}}SUCCESS{{RESET}} - {print_command}")
+        replace_last_message(last_message, f"{time_required:.3f} {{GREEN}}SUCCESS{{RESET}} - {print_command}")
     else:
-        remove_last_message(message)
-        print_color(f"{time_required:.3f} {{RED}}FAILURE{{RESET}} - {print_command} - Exited with exit code {ret.returncode}")
+        replace_last_message(last_message, f"{time_required:.3f} {{RED}}FAILURE{{RESET}} - {print_command} - Exited with exit code {ret.returncode}")
         print_color(f"{{RED}}FAILURE{{RESET}} Command executed in {location}:\n{command_as_line}")
         if verbose:
             print(f"STDOUT:\n{ret.out}\n")
@@ -108,9 +107,8 @@ def run(
             cd fastapi_server
             run_command("poetry install".split(), verbose=verbose)
             run_command("poetry run python -m pytest".split(), verbose=verbose)
-            run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
             # Check if the server can start at all
-            run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), ignore_exit_status=True, verbose=verbose)
+            run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
             # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
             returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=verbose)
             if returncode == 124:
