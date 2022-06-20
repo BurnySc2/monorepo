@@ -110,10 +110,9 @@ def run(
             # Check if the server can start at all
             run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
             # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
-            mkdir data
-            returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=verbose)
+            mkdir -p data
+            returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=True)
             if returncode != 124:
-                timeout 5 sh run.sh
                 SCRIPTS_WITH_ERRORS.append(("fastapi_server", "timeout 5 sh sh.run"))
             cd ..
 
