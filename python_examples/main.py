@@ -14,6 +14,7 @@ import aiohttp
 from loguru import logger
 
 from python_examples.examples.async_await.asyncio_download_upload import download_all_sites, download_file
+from python_examples.examples.async_await.local_file_access import main as local_file_access_main
 from python_examples.examples.async_await.rate_limited_example import api_rate_limited_example
 from python_examples.examples.databases.mongodb_example import test_database_with_mongodb
 from python_examples.examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
@@ -117,6 +118,8 @@ async def main():
     deprecate_a_function_main()
     error_suppression_main()
     inspect_main()
+    await local_file_access_main()
+
     # SIGALRM doesn't work on windows
     if not platform().lower().startswith('win'):
         timeout_main()

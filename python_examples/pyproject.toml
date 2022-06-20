@@ -68,6 +68,7 @@ matplotlib = "^3.5.2"
 bokeh = "^2.4.3"
 # Animation
 #manim = "^0.15.2"
+aiofiles = "^0.8.0"
 
 
 [tool.poetry.dev-dependencies]

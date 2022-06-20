@@ -85,6 +85,7 @@ ptable = "^0.9.2"
 supabase = "^0.5.7"
 # Argparse with dataclass
 simple-parsing = "^0.0.20"
+aiofiles = "^0.8.0"
 
 [tool.poetry.dev-dependencies]
 # Autoformatter
