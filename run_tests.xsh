@@ -7,7 +7,7 @@
 # xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
 # For dev (slowest, run all tests):
 # xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest --all --verbose
-from typing import List
+from typing import List, Tuple
 from xonsh.procs.pipelines import CommandPipeline
 from xonsh.tools import print_color
 import xonsh.cli_utils as xcli
@@ -17,7 +17,7 @@ import sys
 changed_files: List[str] = $(git diff HEAD --name-only).splitlines()
 python_files: List[str] = $(git ls-files '*.py').splitlines()
 files_in_project = lambda project_name: $(git ls-files @(project_name)).splitlines()
-SCRIPTS_WITH_ERRORS = []
+SCRIPTS_WITH_ERRORS: Tuple[str, str] = []
 
 def project_has_changed_files(project_name: str, changed_only=True, file_ending: str="") -> List[str]:
     iterable_files = changed_files if changed_only else files_in_project(project_name)
@@ -44,7 +44,9 @@ def run_command(command: List[str], ignore_exit_status=False, verbose=False, dis
     while $(jobs): # Without this, time.perf_counter() doesnt seem to work properly
         time.sleep(0.01)
     time_required: float = time.perf_counter() - start_time
-    if ignore_exit_status or ret.returncode == 0:
+    if ignore_exit_status:
+        replace_last_message(last_message, f"{time_required:.3f} {{YELLOW}}COMPLETED{{RESET}} - {print_command}")
+    elif ret.returncode == 0:
         replace_last_message(last_message, f"{time_required:.3f} {{GREEN}}SUCCESS{{RESET}} - {print_command}")
     else:
         replace_last_message(last_message, f"{time_required:.3f} {{RED}}FAILURE{{RESET}} - {print_command} - Exited with exit code {ret.returncode}")
@@ -110,6 +112,7 @@ def run(
             # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
             returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=verbose)
             if returncode != 124:
+                timeout 5 sh run.sh
                 SCRIPTS_WITH_ERRORS.append(("fastapi_server", "timeout 5 sh sh.run"))
             cd ..
 
@@ -193,6 +196,6 @@ if __name__ == '__main__':
     xcli.dispatch(parser)
     if SCRIPTS_WITH_ERRORS:
         print(f"The following commands threw errors:")
-        print('\n'.join(str(SCRIPTS_WITH_ERRORS)))
+        print('\n'.join(map(str, SCRIPTS_WITH_ERRORS)))
         sys.exit(1)
     sys.exit(0)
