@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional, Set
 
 import psutil
-import requests  # type: ignore
+import requests
 from loguru import logger
 
 WEBSITE_IP = 'http://localhost'
@@ -94,7 +94,7 @@ def get_website_address(port: int) -> str:
 
 def start_svelte_dev_server(
     port: int,
-    NEWLY_CREATED_PROCESSES: Set[int],
+    newly_created_processes: Set[int],
     backend_proxy: str = 'localhost:8000',
 ):
     env = os.environ.copy()
@@ -123,14 +123,15 @@ def start_svelte_dev_server(
 
     new_processes = get_pid('node') - currently_running_node_processes
     logger.info(f'New node processes: {new_processes}')
-    NEWLY_CREATED_PROCESSES |= new_processes
+    newly_created_processes |= new_processes
 
 
 def start_fastapi_dev_server(
     port: int,
-    NEWLY_CREATED_PROCESSES: Set[int],
+    newly_created_processes: Set[int],
+    fastapi_folder_path: Path,
 ):
-    root_folder = Path(__file__).parents[1]
+    print(str(fastapi_folder_path.absolute()))
     currently_running_uvicorn_processes = get_pid('uvicorn')
     env = os.environ.copy()
 
@@ -138,8 +139,8 @@ def start_fastapi_dev_server(
     # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
     logger.info(f'Starting backend on port {port}')
     _ = subprocess.Popen(
-        ['uvicorn', 'fastapi_server.main:app', '--host', 'localhost', '--port', f'{port}'],
-        cwd=root_folder,
+        ['poetry', 'run', 'uvicorn', 'main:app', '--host', 'localhost', '--port', f'{port}'],
+        cwd=fastapi_folder_path,
         env=env,
     )
     # Give it some time to create backend dev server
@@ -157,7 +158,7 @@ def start_fastapi_dev_server(
 
     new_processes: Set[int] = get_pid('uvicorn') - currently_running_uvicorn_processes
     logger.info(f'New uvicorn processes: {new_processes}')
-    NEWLY_CREATED_PROCESSES |= new_processes
+    newly_created_processes |= new_processes
 
 
 # def check_if_mongodb_is_running(mongo_db_port: int = 27017) -> bool:
@@ -262,6 +263,7 @@ def kill_processes(processes: Set[int]):
 
 
 if __name__ == '__main__':
+    start_fastapi_dev_server(8001, set(), Path(__file__).parents[2] / "fastapi_server")
     logger.info(f'Docker running: {check_if_docker_is_running()}')
     logger.info(f'Postgres running: {check_if_postgres_is_running()}')
     # logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
