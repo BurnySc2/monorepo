@@ -1,17 +1,17 @@
-name: publish_example_package
+name: publish_burny_common
 
 on:
   push:
     paths:
-    - example_package/**
-    - .github/workflows/publish_example_package.yml
+    - burny_common/**
+    - .github/workflows/publish_burny_common.yml
   pull_request:
     branches:
     - master
     - develop
 
 env:
-  SUBDIRECTORY: example_package
+  SUBDIRECTORY: burny_common
 
 jobs:
   build_and_publish:
