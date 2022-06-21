@@ -95,17 +95,17 @@ def get_website_address(port: int) -> str:
 def start_svelte_dev_server(
     port: int,
     newly_created_processes: Set[int],
+    frontend_folder_path: Path,
     backend_proxy: str = 'localhost:8000',
 ):
     env = os.environ.copy()
     currently_running_node_processes = get_pid('node')
 
-    frontend_folder = Path(__file__).parents[1] / 'svelte_frontend'
     assert is_port_free(port), f'Unable to start svelte dev server because port {port} is blocked'
     logger.info(f'Starting frontend on port {port}')
     _ = subprocess.Popen(
         ['npx', 'cross-env', f'BACKEND_SERVER={backend_proxy}', 'svelte-kit', 'dev', '--port', f'{port}'],
-        cwd=frontend_folder,
+        cwd=frontend_folder_path,
         env=env
     )
     # Give it some time to create dev server and all (3?) node proccesses
@@ -263,15 +263,14 @@ def kill_processes(processes: Set[int]):
 
 
 if __name__ == '__main__':
-    start_fastapi_dev_server(8001, set(), Path(__file__).parents[2] / "fastapi_server")
+    free_frontend_port = find_next_free_port()
+    free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
+    start_fastapi_dev_server(free_backend_port, set(), Path(__file__).parents[2] / "fastapi_server")
+    start_svelte_dev_server(free_frontend_port, set(), Path(__file__).parents[2] / "svelte_frontend", backend_proxy=f'localhost:{free_backend_port}')
     logger.info(f'Docker running: {check_if_docker_is_running()}')
     logger.info(f'Postgres running: {check_if_postgres_is_running()}')
     # logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
     # start_postgres()
     # start_mongodb()
-    free_frontend_port = find_next_free_port()
-    free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
-    start_svelte_dev_server(free_frontend_port, set(), backend_proxy=f'localhost:{free_backend_port}')
-    start_fastapi_dev_server(free_backend_port, set())
     while 1:
         time.sleep(1)
