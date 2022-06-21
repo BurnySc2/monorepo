@@ -1,7 +1,7 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
-from python_examples.examples.other.mass_replace import mass_replacer
+from examples.other.mass_replace import mass_replacer
 
 
 def test_example_text():

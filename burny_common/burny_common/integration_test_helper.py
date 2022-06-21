@@ -266,7 +266,12 @@ if __name__ == '__main__':
     free_frontend_port = find_next_free_port()
     free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
     start_fastapi_dev_server(free_backend_port, set(), Path(__file__).parents[2] / "fastapi_server")
-    start_svelte_dev_server(free_frontend_port, set(), Path(__file__).parents[2] / "svelte_frontend", backend_proxy=f'localhost:{free_backend_port}')
+    start_svelte_dev_server(
+        free_frontend_port,
+        set(),
+        Path(__file__).parents[2] / "svelte_frontend",
+        backend_proxy=f'localhost:{free_backend_port}'
+    )
     logger.info(f'Docker running: {check_if_docker_is_running()}')
     logger.info(f'Postgres running: {check_if_postgres_is_running()}')
     # logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')

@@ -1,16 +1,11 @@
 from pathlib import Path
 from typing import Set
 
-from playwright.sync_api import BrowserContext, Page
-
 from burny_common.integration_test_helper import (
-    find_next_free_port,
-    get_website_address,
-    kill_processes,
-    remove_leftover_files,
-    start_fastapi_dev_server,
-    start_svelte_dev_server,
+    find_next_free_port, get_website_address, kill_processes, remove_leftover_files, start_fastapi_dev_server,
+    start_svelte_dev_server
 )
+from playwright.sync_api import BrowserContext, Page
 
 
 class TestClass:
@@ -30,10 +25,15 @@ class TestClass:
         free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
         self.FRONTEND_ADDRESS = get_website_address(free_frontend_port)
         self.BACKEND_ADDRESS = f'http://localhost:{free_backend_port}'
-        start_fastapi_dev_server(free_backend_port, self.NEWLY_CREATED_PROCESSES)
+        start_fastapi_dev_server(
+            free_backend_port,
+            self.NEWLY_CREATED_PROCESSES,
+            Path(__file__).parents[2] / "fastapi_server",
+        )
         start_svelte_dev_server(
             free_frontend_port,
             self.NEWLY_CREATED_PROCESSES,
+            Path(__file__).parents[1],
             backend_proxy=f'localhost:{free_backend_port}',
         )
 

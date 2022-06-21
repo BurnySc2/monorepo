@@ -4,7 +4,7 @@ from loguru import logger
 from sqlmodel import Field, Session, SQLModel, create_engine, or_, select
 
 
-class Hero(SQLModel, table=True):
+class Hero(SQLModel, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     secret_name: str = Field(max_length=30)

@@ -1,6 +1,6 @@
 import pytest
 
-from discord_bot.commands.public_mmr import Sc2LadderResult
+from commands.public_mmr import Sc2LadderResult
 
 
 @pytest.mark.asyncio

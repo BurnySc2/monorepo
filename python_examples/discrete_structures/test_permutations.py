@@ -1,4 +1,4 @@
-from python_examples.discrete_structures.permutation import _test_permutations
+from discrete_structures.permutation import _test_permutations
 
 
 def test_permutations():

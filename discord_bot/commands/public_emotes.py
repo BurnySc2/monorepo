@@ -6,10 +6,10 @@ from typing import List, Optional, Union
 
 from arrow import Arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, KnownCustomEmoji
-from postgrest import APIResponse, AsyncSelectRequestBuilder
+from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-ignore[0]
 from simple_parsing import ArgumentParser
 
-from discord_bot.db import DiscordMessage, supabase
+from db import DiscordMessage, supabase
 
 # How many emojis to list when counting
 TOP_EMOTE_LIMIT = 10

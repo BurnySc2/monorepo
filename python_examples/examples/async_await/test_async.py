@@ -5,11 +5,7 @@ from pathlib import Path
 import aiohttp
 import pytest
 
-from python_examples.examples.async_await.asyncio_download_upload import (
-    download_all_sites,
-    download_file,
-    download_site,
-)
+from examples.async_await.asyncio_download_upload import download_all_sites, download_file, download_site
 
 
 @pytest.mark.asyncio

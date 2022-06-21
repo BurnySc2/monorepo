@@ -13,35 +13,35 @@ from typing import List
 import aiohttp
 from loguru import logger
 
-from python_examples.examples.async_await.asyncio_download_upload import download_all_sites, download_file
-from python_examples.examples.async_await.local_file_access import main as local_file_access_main
-from python_examples.examples.async_await.rate_limited_example import api_rate_limited_example
-from python_examples.examples.databases.mongodb_example import test_database_with_mongodb
-from python_examples.examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
-from python_examples.examples.databases.sqlite_example import test_database
-from python_examples.examples.databases.sqlmodel_example import test_database_with_sqlmodel
-from python_examples.examples.databases.tinydb_example import test_database_with_tinydb
-from python_examples.examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
-from python_examples.examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
-from python_examples.examples.other.file_interaction import create_file
-from python_examples.examples.other.geometry_example import test_geometry_shapely
-from python_examples.examples.other.image_manipulation import mass_convert_images
-from python_examples.examples.other.mass_replace import main as mass_replace_main
-from python_examples.examples.other.multiprocessing_example import do_math, do_multiprocessing
-from python_examples.examples.other.regex_example import regex_match_test, test_all_roman_numbers
-from python_examples.examples.plot_data.bokeh_plot import main as bokeh_plot_main
-from python_examples.examples.plot_data.clean_up import main as clean_up_main
-from python_examples.examples.plot_data.matplotlib_plot import main as matplotlib_plot_main
-from python_examples.examples.plot_data.pandas_plot import main as pandas_plot_main
-from python_examples.examples.plot_data.seaborn_plot import main as seaborn_plot_main
-from python_examples.templates.async_timeout_function import main as async_timeout_main
-from python_examples.templates.deprecate_a_function import main as deprecate_a_function_main
-from python_examples.templates.error_suppression import main as error_suppression_main
-from python_examples.templates.inspect_function import main as inspect_main
+from examples.async_await.asyncio_download_upload import download_all_sites, download_file
+from examples.async_await.local_file_access import main as local_file_access_main
+from examples.async_await.rate_limited_example import api_rate_limited_example
+from examples.databases.mongodb_example import test_database_with_mongodb
+from examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
+from examples.databases.sqlite_example import test_database
+from examples.databases.sqlmodel_example import test_database_with_sqlmodel
+from examples.databases.tinydb_example import test_database_with_tinydb
+from examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
+from examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
+from examples.other.file_interaction import create_file
+from examples.other.geometry_example import test_geometry_shapely
+from examples.other.image_manipulation import mass_convert_images
+from examples.other.mass_replace import main as mass_replace_main
+from examples.other.multiprocessing_example import do_math, do_multiprocessing
+from examples.other.regex_example import regex_match_test, test_all_roman_numbers
+from examples.plot_data.bokeh_plot import main as bokeh_plot_main
+from examples.plot_data.clean_up import main as clean_up_main
+from examples.plot_data.matplotlib_plot import main as matplotlib_plot_main
+from examples.plot_data.pandas_plot import main as pandas_plot_main
+from examples.plot_data.seaborn_plot import main as seaborn_plot_main
+from templates.async_timeout_function import main as async_timeout_main
+from templates.deprecate_a_function import main as deprecate_a_function_main
+from templates.error_suppression import main as error_suppression_main
+from templates.inspect_function import main as inspect_main
 
 # SIGALRM doesn't work on windows
 if not platform().lower().startswith('win'):
-    from python_examples.templates.timeout_function import main as timeout_main
+    from templates.timeout_function import main as timeout_main
 
 logger.remove()  # Remove previous default handlers
 # Log to console

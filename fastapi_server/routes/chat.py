@@ -8,7 +8,7 @@ from fastapi.routing import APIRouter
 from loguru import logger
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from fastapi_server.helper.websocket_manager import Handler, WebsocketManager
+from helper.websocket_manager import Handler, WebsocketManager
 
 chat_router = APIRouter()
 

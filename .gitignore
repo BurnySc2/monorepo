@@ -112,6 +112,10 @@ venv.bak/
 # Header files
 *.h
 
+# Pants workspace files
+.pants.*
+.pids
+
 # Frontend
 build
 .svelte-kit

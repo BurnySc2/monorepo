@@ -4,9 +4,9 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
-import python_examples.discrete_structures.product
+import discrete_structures.product
 
 
 @given(repeat=st.integers())
 def test_fuzz_product_generator(repeat):
-    python_examples.discrete_structures.product.product_generator(repeat=repeat)
+    discrete_structures.product.product_generator(repeat=repeat)

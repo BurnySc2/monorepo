@@ -13,10 +13,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from fastapi_server.routes.chat import chat_router
-from fastapi_server.routes.hello_world import hello_world_router
-from fastapi_server.routes.replay_parser import replay_parser_router
-from fastapi_server.routes.todolist import todo_list_router
+from routes.chat import chat_router
+from routes.hello_world import hello_world_router
+from routes.replay_parser import replay_parser_router
+from routes.todolist import todo_list_router
 
 assert os.getenv('STAGE', 'DEV') in {'DEV', 'PROD'}, os.getenv('STAGE')
 STAGE: Literal['DEV', 'PROD'] = os.getenv('STAGE', 'DEV')  # type: ignore

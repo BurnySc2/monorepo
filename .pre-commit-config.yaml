@@ -6,39 +6,6 @@
 #    args: [--autofix]
 
 repos:
-# Convert simple things like set([]) to set()
-- repo: https://github.com/asottile/pyupgrade
-  rev: v2.32.1
-  hooks:
-  - id: pyupgrade
-
-# Remove unused imports
-- repo: https://github.com/hadialqattan/pycln
-  rev: v1.3.1
-  hooks:
-  - id: pycln
-    args: [--config=pyproject.toml]
-
-# Convert relative to absolute imports
-- repo: https://github.com/MarcoGorelli/absolufy-imports
-  rev: v0.3.1
-  hooks:
-  - id: absolufy-imports
-
-# Sort imports
-- repo: https://github.com/pycqa/isort
-  rev: 5.5.4
-  hooks:
-  - id: isort
-    files: \.(py)$
-    args: [--settings-path=pyproject.toml]
-
-# If project is written in Python 3.9+, it will autofix List[str] to list[str] etc
-#- repo: https://github.com/sondrelg/pep585-upgrade
-#  rev: ''  # Use the sha / tag you want to point at
-#  hooks:
-#  - id: upgrade-type-hints
-
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.2.0
   hooks:

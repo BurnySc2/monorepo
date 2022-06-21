@@ -1,12 +1,11 @@
 import json
 import random
+from test.base_test import BaseTest
 from typing import List
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.strategies import DataObject
-
-from fastapi_server.test.base_test import BaseTest
 
 TODO_ITEM_REGEX = '[a-zA-Z0-9]{1,200}'
 

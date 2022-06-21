@@ -10,9 +10,18 @@ packages = [
 
 
 [tool.poetry.dependencies]
-python = ">=3.7, <3.11"
+python = ">=3.8, <3.11"
+loguru = "^0.6.0"
+lorem-text = "^2.1"
 
 [tool.poetry.dev-dependencies]
+# Autoformat
+yapf = "^0.32.0"
+toml = "^0.10.2"
+# Linter
+pylint = "^2.14.3"
+# Type checker
+mypy = "^0.961"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

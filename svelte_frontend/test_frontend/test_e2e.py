@@ -1,13 +1,10 @@
+from pathlib import Path
 from typing import Set
 
-from playwright.sync_api import Page
-
 from burny_common.integration_test_helper import (
-    find_next_free_port,
-    get_website_address,
-    kill_processes,
-    start_svelte_dev_server,
+    find_next_free_port, get_website_address, kill_processes, start_svelte_dev_server
 )
+from playwright.sync_api import Page
 
 # Set in setup_module()
 FRONTEND_ADDRESS = ''
@@ -24,7 +21,12 @@ def setup_module():
     frontend_port = find_next_free_port()
     backend_port = find_next_free_port(exclude_ports={frontend_port})
     FRONTEND_ADDRESS = get_website_address(frontend_port)
-    start_svelte_dev_server(frontend_port, NEWLY_CREATED_NODE_PROCESSES, backend_proxy=f'localhost:{backend_port}')
+    start_svelte_dev_server(
+        frontend_port,
+        NEWLY_CREATED_NODE_PROCESSES,
+        Path(__file__).parents[1],
+        backend_proxy=f'localhost:{backend_port}',
+    )
 
 
 def teardown_module():

@@ -5,7 +5,7 @@ import hypothesis.strategies as st
 import pytest
 from hypothesis import example, given, settings
 
-from discord_bot.commands.public_remind import Remind
+from commands.public_remind import Remind
 
 
 def create_date_time_string(_year: int, _month: int, _day: int, _hour: int, _minute: int, _second: int) -> str:

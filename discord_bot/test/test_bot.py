@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 from hikari import GatewayBot
 
-from discord_bot.main import bot
+from main import bot
 
 
 def test_start_bot():

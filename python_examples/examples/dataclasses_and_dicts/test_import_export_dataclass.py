@@ -4,15 +4,13 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
-import python_examples.examples.dataclasses_and_dicts.import_export_dataclass
-from python_examples.examples.dataclasses_and_dicts.import_export_dataclass import MyDataClass
+import examples.dataclasses_and_dicts.import_export_dataclass
+from examples.dataclasses_and_dicts.import_export_dataclass import MyDataClass
 
 
 @given(name=st.text(), value=st.integers(), other=st.sets(st.integers()))
 def test_fuzz_MyDataClass(name, value, other):
-    python_examples.examples.dataclasses_and_dicts.import_export_dataclass.MyDataClass(
-        name=name, value=value, other=other
-    )
+    examples.dataclasses_and_dicts.import_export_dataclass.MyDataClass(name=name, value=value, other=other)
 
 
 @given(
@@ -20,6 +18,6 @@ def test_fuzz_MyDataClass(name, value, other):
     other_dataclasses=st.lists(st.builds(MyDataClass)),
 )
 def test_fuzz_MyDataClassList(some_dataclasses, other_dataclasses):
-    python_examples.examples.dataclasses_and_dicts.import_export_dataclass.MyDataClassList(
+    examples.dataclasses_and_dicts.import_export_dataclass.MyDataClassList(
         some_dataclasses=some_dataclasses, other_dataclasses=other_dataclasses
     )

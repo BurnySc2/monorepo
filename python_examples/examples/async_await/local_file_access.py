@@ -6,7 +6,6 @@ from string import printable
 from typing import List
 
 import aiofiles  # type: ignore
-
 from burny_common.measure_time import time_this
 
 FILES_AMOUNT = 100

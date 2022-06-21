@@ -1,26 +1,55 @@
 #!/usr/bin/env xonsh
-# In CI:
-# xonsh run_tests.xsh run --pylint --npmlint --all --verbose
-# For dev (only changed files):
-# xonsh run_tests.xsh run --pylint --npmlint
-# For dev (slower):
-# xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
-# For dev (slowest, run all tests):
-# xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest --all --verbose
-from typing import List, Tuple
+"""
+In CI:
+xonsh run_tests.xsh run --pylint --npmlint --all --verbose
+For dev (only changed files):
+xonsh run_tests.xsh run --pylint --npmlint
+For dev (slower):
+xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
+For dev (slowest, run all tests):
+xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest --all --verbose
+
+'yapf' will be executed in the subfolder, but will use the style from the parent folder pyproject.toml
+'pylint' will need explicitly be told to use config from parent folder via '--rcfile ../pyproject.toml'
+'mypy' will need explicitly be told to use config from parent folder via '--config-file absolute_path/pyproject.toml'
+"""
+from typing import List, Tuple, Dict
 from xonsh.procs.pipelines import CommandPipeline
 from xonsh.tools import print_color
 import xonsh.cli_utils as xcli
+from pathlib import Path
 import time
 import sys
 
-changed_files: List[str] = $(git diff HEAD --name-only).splitlines()
-python_files: List[str] = $(git ls-files '*.py').splitlines()
-files_in_project = lambda project_name: $(git ls-files @(project_name)).splitlines()
-SCRIPTS_WITH_ERRORS: Tuple[str, str] = []
+def convert_git_relative_path_to_absolute_path(git_response: str) -> List[str]:
+    # E.g. input of "$(git ls-files '*.py')" or "$(git diff HEAD --name-only)"
+    return list(map(
+        lambda file: str(Path(file).absolute()),
+        git_response.splitlines()
+    ))
+
+PYTHON_PROJECTS = ["fastapi_server", "discord_bot", "burny_common", "python_examples", "svelte_frontend"]
+FRONTEND_PROJECTS = ["bored_gems", "replay_comparer", "supabase_stream_scripts", "svelte_frontend"]
+CHANGED_FILES: List[str] = convert_git_relative_path_to_absolute_path($(git diff HEAD --name-only))
+PYTHON_FILES: List[str] = convert_git_relative_path_to_absolute_path($(git ls-files '*.py'))
+FILES_IN_PROJECT: Dict[str, List[str]] = {
+        project_name: convert_git_relative_path_to_absolute_path($(git ls-files @(project_name)))
+        for project_name in PYTHON_PROJECTS + FRONTEND_PROJECTS
+    }
+SCRIPTS_WITH_ERRORS: List[Tuple[str, str]] = []
+
+MAIN_CONFIG_FILE: Path = (Path(__file__).parent / "pyproject.toml").absolute()
+assert " " not in str(MAIN_CONFIG_FILE), "No spaces allowed in path to pyproject.toml"
+PYCLN_CHECK_COMMAND = f"poetry run pycln -c --config {str(MAIN_CONFIG_FILE)}".split()
+PYCLN_COMMAND = f"poetry run pycln --config {str(MAIN_CONFIG_FILE)}".split()
+ISORT_CHECK_COMMAND = f"poetry run isort --check-only --cr {str(MAIN_CONFIG_FILE.parent)} --resolve-all-configs".split()
+ISORT_COMMAND = f"poetry run isort --cr {str(MAIN_CONFIG_FILE.parent)} --resolve-all-configs".split()
+YAPF_COMMAND = "poetry run yapf --in-place".split()
+PYLINT_COMMAND = f"poetry run pylint --rcfile {str(MAIN_CONFIG_FILE)}".split()
+MYPY_COMMAND = f"poetry run mypy --config-file {str(MAIN_CONFIG_FILE)}".split()
 
 def project_has_changed_files(project_name: str, changed_only=True, file_ending: str="") -> List[str]:
-    iterable_files = changed_files if changed_only else files_in_project(project_name)
+    iterable_files = CHANGED_FILES if changed_only else FILES_IN_PROJECT[project_name]
     return [
         file_name for file_name in iterable_files
         if file_name.endswith(file_ending)
@@ -69,69 +98,68 @@ def run(
         run_only_changed_files: xcli.Arg('--all', '-a', action="store_false") = True,
         verbose: xcli.Arg('--verbose', '-v', action="store_true") = False,
     ):
-    if run_python_lint:
-        # Run mypy on all python files because types could have changed which can affect other files
-        command = "poetry run mypy".split() + python_files
-        run_command(command, verbose=verbose, display_name="Run mypy")
+    # Run cleanup, autoformat, pylint, mypy on all python projects
+    for python_project in PYTHON_PROJECTS:
+        cd @(python_project)
+        # run_command("poetry update".split(), verbose=verbose)
+        run_command("poetry install".split(), verbose=verbose)
+        if run_python_lint:
+            project_py_files = project_has_changed_files(python_project, changed_only=False, file_ending=".py")
+            if project_py_files:
+                # Run mypy on all python files because types could have changed which can affect other files
+                run_command(MYPY_COMMAND + project_py_files, verbose=verbose, display_name=f"Run mypy on {python_project}")
+
+            project_changed_py_files = project_has_changed_files(python_project, changed_only=run_only_changed_files, file_ending=".py")
+            if project_changed_py_files:
+                run_command(PYCLN_CHECK_COMMAND + project_changed_py_files, verbose=verbose, display_name=f"Run pycln check on {python_project}")
+                run_command(PYCLN_COMMAND + project_changed_py_files, verbose=verbose, display_name=f"Run pycln on {python_project}")
+                run_command(ISORT_CHECK_COMMAND + project_changed_py_files, verbose=verbose, display_name=f"Run isort check on {python_project}")
+                run_command(ISORT_COMMAND + project_changed_py_files, verbose=verbose, display_name=f"Run isort on {python_project}")
+                run_command(YAPF_COMMAND + project_changed_py_files, verbose=verbose, display_name=f"Run yapf on {python_project}")
+                run_command(PYLINT_COMMAND + project_changed_py_files, verbose=verbose, display_name=f"Run pylint on {python_project}")
+        cd ..
 
     # burny_common
-    files_related_to_project = project_has_changed_files("burny_common", changed_only=run_only_changed_files)
-    if files_related_to_project:
-        if run_python_lint:
-            files_related_to_project_py = project_has_changed_files("burny_common", changed_only=run_only_changed_files, file_ending=".py")
-            run_command("poetry run yapf --in-place".split() + files_related_to_project_py, verbose=verbose, display_name="Run yapf on burny_common")
-            run_command("poetry run pylint".split() + files_related_to_project_py, verbose=verbose, display_name="Run pylint on burny_common")
+    # TODO Write tests
+    # files_related_to_project = project_has_changed_files("burny_common", changed_only=run_only_changed_files)
+    # if files_related_to_project and run_python_test:
+    #     cd burny_common
+    #     run_command("poetry run python -m pytest".split(), verbose=verbose)
+    #     cd ..
 
     # discord_bot
     files_related_to_project = project_has_changed_files("python_examples", changed_only=run_only_changed_files)
-    if files_related_to_project:
-        if run_python_lint:
-            files_related_to_project_py = project_has_changed_files("python_examples", changed_only=run_only_changed_files, file_ending=".py")
-            run_command("poetry run yapf --in-place".split() + files_related_to_project_py, verbose=verbose, display_name="Run yapf on discord_bot")
-            run_command("poetry run pylint".split() + files_related_to_project_py, verbose=verbose, display_name="Run pylint on discord_bot")
-        if run_python_test:
-            cd discord_bot
-            run_command("poetry install".split(), verbose=verbose)
-            run_command("poetry run python -m pytest".split(), verbose=verbose)
-            run_command("docker build --tag precommit_image_discord_bot .".split(), verbose=verbose)
-            cd ..
+    if files_related_to_project and run_python_test:
+        cd discord_bot
+        run_command("poetry run python -m pytest".split(), verbose=verbose)
+        run_command("docker build --tag precommit_image_discord_bot .".split(), verbose=verbose)
+        cd ..
 
     # fastapi_server
     files_related_to_project = project_has_changed_files("fastapi_server", changed_only=run_only_changed_files)
-    if files_related_to_project:
-        if run_python_lint:
-            files_related_to_project_py = project_has_changed_files("fastapi_server", changed_only=run_only_changed_files, file_ending=".py")
-            run_command("poetry run yapf --in-place".split() + files_related_to_project_py, verbose=verbose, display_name="Run yapf on fastapi_server")
-            run_command("poetry run pylint".split() + files_related_to_project_py, verbose=verbose, display_name="Run pylint on fastapi_server")
-        if run_python_test:
-            cd fastapi_server
-            run_command("poetry install".split(), verbose=verbose)
-            run_command("poetry run python -m pytest".split(), verbose=verbose)
-            # Check if the server can start at all
-            run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
-            # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
-            mkdir -p data
-            returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=True)
-            if returncode != 124:
-                SCRIPTS_WITH_ERRORS.append(("fastapi_server", "timeout 5 sh sh.run"))
-            cd ..
+    if files_related_to_project and run_python_test:
+        cd fastapi_server
+        run_command("poetry run python -m pytest".split(), verbose=verbose)
+        # Check if the server can start at all
+        run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
+        # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
+        mkdir -p data
+        returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=False)
+        if returncode != 124:
+            timeout 5 sh run.sh
+            SCRIPTS_WITH_ERRORS.append(("fastapi_server", "timeout 5 sh sh.run"))
+        cd ..
 
     # python_examples
     files_related_to_project = project_has_changed_files("python_examples", changed_only=run_only_changed_files)
-    if files_related_to_project:
-        if run_python_lint:
-            files_related_to_project_py = project_has_changed_files("python_examples", changed_only=run_only_changed_files, file_ending=".py")
-            run_command("poetry run yapf --in-place".split() + files_related_to_project_py, verbose=verbose, display_name="Run yapf on python_examples")
-            run_command("poetry run pylint".split() + files_related_to_project_py, verbose=verbose, display_name="Run pylint on python_examples")
-        if run_python_test:
-            cd python_examples
-            run_command("poetry install".split(), verbose=verbose)
-            run_command("poetry run python -m pytest".split(), verbose=verbose)
-            cd ..
+    if files_related_to_project and run_python_test:
+        cd python_examples
+        run_command("poetry run python -m pytest".split(), verbose=verbose)
+        cd ..
 
     # bored_gems
     files_related_to_project = project_has_changed_files("bored_gems", changed_only=run_only_changed_files)
-    if files_related_to_project:
+    if files_related_to_project and (run_npm_lint or run_npm_test):
         cd bored_gems
         run_command("npm install".split(), verbose=verbose)
         if run_npm_lint:
@@ -145,7 +173,7 @@ def run(
 
     # replay_comparer
     files_related_to_project = project_has_changed_files("replay_comparer", changed_only=run_only_changed_files)
-    if files_related_to_project:
+    if files_related_to_project and (run_npm_lint or run_npm_test):
         cd replay_comparer
         run_command("npm install".split(), verbose=verbose)
         if run_npm_lint:
@@ -158,7 +186,7 @@ def run(
 
     # supabase_stream_scripts
     files_related_to_project = project_has_changed_files("supabase_stream_scripts", changed_only=run_only_changed_files)
-    if files_related_to_project:
+    if files_related_to_project and (run_npm_lint or run_npm_test):
         cd supabase_stream_scripts
         run_command("npm install".split(), verbose=verbose)
         if run_npm_lint:
@@ -171,7 +199,7 @@ def run(
 
     # svelte_frontend
     files_related_to_project = project_has_changed_files("svelte_frontend", changed_only=run_only_changed_files)
-    if files_related_to_project:
+    if files_related_to_project and (run_npm_lint or run_npm_test):
         cd svelte_frontend
         run_command("npm install".split(), verbose=verbose)
         if run_npm_lint:
@@ -182,11 +210,16 @@ def run(
             run_command("npm run test".split(), verbose=verbose)
         cd ..
         if run_npm_test:
+            # Install fastapi backend
             cd fastapi_server
             run_command("poetry install".split(), verbose=verbose)
+            cd ..
+            cd svelte_frontend
+            # Install e2e and integration tests for frontend
+            run_command("poetry install".split(), verbose=verbose)
             run_command("poetry run playwright install".split(), verbose=verbose)
-            run_command("poetry run python -m pytest ../svelte_frontend/test_frontend/test_e2e.py --benchmark-skip".split(), verbose=verbose)
-            run_command("poetry run python -m pytest ../svelte_frontend/test_frontend/test_integration.py --benchmark-skip".split(), verbose=verbose)
+            run_command("poetry run pytest test_frontend/test_e2e.py --benchmark-skip".split(), verbose=verbose)
+            run_command("poetry run pytest test_frontend/test_integration.py --benchmark-skip".split(), verbose=verbose)
             cd ..
 
 

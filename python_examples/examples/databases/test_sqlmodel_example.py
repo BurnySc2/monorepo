@@ -4,7 +4,7 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
-from python_examples.examples.databases.sqlmodel_example import Hero
+from examples.databases.sqlmodel_example import Hero
 
 
 @given(

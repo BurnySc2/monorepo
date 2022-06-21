@@ -7,19 +7,19 @@ from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, dele
 from sqlmodel.sql.expression import SelectOfScalar
 
 
-class Author(SQLModel, table=True):
+class Author(SQLModel, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     birth_year: int
 
 
-class Publisher(SQLModel, table=True):
+class Publisher(SQLModel, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     founded_year: int
 
 
-class Book(SQLModel, table=True):
+class Book(SQLModel, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field()
     release_year: int
@@ -29,7 +29,7 @@ class Book(SQLModel, table=True):
     publisher: Publisher = Relationship()
 
 
-class Library(SQLModel, table=True):
+class Library(SQLModel, table=True):  # type: ignore
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     address: str
@@ -37,7 +37,7 @@ class Library(SQLModel, table=True):
     books: List['BookInventory'] = Relationship(back_populates='library')
 
 
-class BookInventory(SQLModel, table=True):
+class BookInventory(SQLModel, table=True):  # type: ignore
     book_id: int = Field(default=None, primary_key=True, foreign_key='book.id')
     book: Book = Relationship()
     library_id: int = Field(default=None, primary_key=True, foreign_key='library.id')

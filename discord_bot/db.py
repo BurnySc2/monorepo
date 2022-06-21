@@ -8,7 +8,7 @@ import arrow
 from arrow import Arrow
 from postgrest.base_request_builder import APIResponse
 
-from discord_bot.supabase_async_client import Client, create_client
+from supabase_async_client import Client, create_client
 
 # Load url and key from env or from file
 

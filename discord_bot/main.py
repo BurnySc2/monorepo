@@ -19,10 +19,10 @@ from hikari import (
 from loguru import logger
 from postgrest import APIResponse, AsyncSelectRequestBuilder
 
-from discord_bot.commands.public_emotes import public_count_emotes
-from discord_bot.commands.public_mmr import public_mmr
-from discord_bot.commands.public_remind import Remind
-from discord_bot.db import DiscordMessage, supabase
+from commands.public_emotes import public_count_emotes
+from commands.public_mmr import public_mmr
+from commands.public_remind import Remind
+from db import DiscordMessage, supabase
 
 # Load key from env or from file
 token = os.getenv('DISCORDKEY')
@@ -86,10 +86,7 @@ async def loop_function() -> None:
 
 def get_channels_of_server(
     server: GatewayGuild
-) -> Generator[Union[GuildCategory,
-                     GuildTextChannel,
-                     GuildVoiceChannel,
-                     ], None, None]:
+) -> Generator[Union[GuildCategory, GuildTextChannel, GuildVoiceChannel], None, None]:
     yield from server.get_channels().values()  # type: ignore
 
 

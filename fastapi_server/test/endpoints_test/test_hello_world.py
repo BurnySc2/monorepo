@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from fastapi_server.routes.hello_world import hello_world_router
+from routes.hello_world import hello_world_router
 
 client = TestClient(hello_world_router)
 
