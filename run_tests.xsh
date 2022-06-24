@@ -53,6 +53,8 @@ def project_has_changed_files(project_name: str, changed_only=True, file_ending:
     return [
         file_name for file_name in iterable_files
         if file_name.endswith(file_ending)
+        # In CHANGED_FILES all changed files are located, but we want only the ones related to 'project_name'
+        and file_name.startswith(f"{$(pwd).strip()}/{project_name}")
     ]
 
 def replace_last_message(old_message: str, new_message: str) -> None:

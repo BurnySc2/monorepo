@@ -3,6 +3,7 @@ import signal
 import socket
 import subprocess
 import time
+from contextlib import suppress
 from pathlib import Path
 from typing import Optional, Set
 
@@ -148,12 +149,10 @@ def start_fastapi_dev_server(
         while is_port_free(port):
             time.sleep(0.1)
         while 1:
-            try:
+            with suppress(requests.exceptions.ConnectionError):
                 result = requests.get(get_website_address(port))
                 if result.status_code == 200:
                     break
-            except requests.exceptions.ConnectionError:
-                pass
             time.sleep(0.1)
 
     new_processes: Set[int] = get_pid('uvicorn') - currently_running_uvicorn_processes
@@ -247,19 +246,15 @@ def kill_processes(processes: Set[int]):
     # Soft kill
     for pid in processes:
         logger.info(f'Killing {pid}')
-        try:
+        with suppress(ProcessLookupError):
             os.kill(pid, signal.SIGTERM)
-        except ProcessLookupError:
-            pass
     time.sleep(.1)
 
     # Force kill
     for pid in processes:
         logger.info(f'Force killing {pid}')
-        try:
+        with suppress(ProcessLookupError):
             os.kill(pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
 
 
 if __name__ == '__main__':
