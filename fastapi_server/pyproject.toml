@@ -10,7 +10,7 @@ python = ">=3.8 <3.11"
 dataclasses-json = "^0.5"
 # Fastapi server
 fastapi = "^0.78.0"
-uvicorn = {extras = ["standard"], version = "^0.17.6"}
+uvicorn = "^0.18.1"
 starlette = "0.19.1"
 # Somehow required
 colorama = "^0.4.4"
