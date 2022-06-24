@@ -88,10 +88,10 @@ jobs:
     - name: Make poetry use local .venv folder
       run: poetry config virtualenvs.in-project true
 
-    - name: Set up cache
+    - name: Set up cache (frontend)
       uses: actions/cache@v3
       with:
-        path: .venv
+        path: ${{ env.SUBDIRECTORY }}/.venv
         key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install Python dependencies
@@ -150,10 +150,16 @@ jobs:
     - name: Make poetry use local .venv folder
       run: poetry config virtualenvs.in-project true
 
-    - name: Set up cache
+    - name: Set up cache (backend)
       uses: actions/cache@v3
       with:
-        path: .venv
+        path: ${{ env.BACKEND_SUBDIRECTORY }}/.venv
+        key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.BACKEND_SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
+
+    - name: Set up cache (frontend)
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.SUBDIRECTORY }}/.venv
         key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install Python dependencies (backend)
@@ -166,10 +172,20 @@ jobs:
       run: |
         poetry show -v
 
+    - name: Start fastapi server temporarily
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: |
+        timeout 10 poetry run uvicorn main:app --host localhost --port 8000
+
     - name: Install Python dependencies (frontend)
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         poetry install
+
+    - name: Show installed frontend packages
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: |
+        poetry show -v
 
     - name: Install playwright browsers
       working-directory: ${{ env.SUBDIRECTORY }}
