@@ -178,7 +178,7 @@ jobs:
         poetry install
 
     - name: Show installed frontend packages
-      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         poetry show -v
 
