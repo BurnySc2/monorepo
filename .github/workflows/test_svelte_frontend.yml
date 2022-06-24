@@ -161,6 +161,11 @@ jobs:
       run: |
         poetry install
 
+    - name: Show installed backend packages
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: |
+        poetry show -v
+
     - name: Install Python dependencies (frontend)
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
