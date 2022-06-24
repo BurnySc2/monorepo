@@ -2,7 +2,10 @@ from pathlib import Path
 from typing import Set
 
 from burny_common.integration_test_helper import (
-    find_next_free_port, get_website_address, kill_processes, start_svelte_dev_server
+    find_next_free_port,
+    get_website_address,
+    kill_processes,
+    start_svelte_dev_server,
 )
 from playwright.sync_api import Page
 
