@@ -166,21 +166,12 @@ jobs:
       working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: |
         poetry install
-
-    - name: Show installed backend packages
-      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
-      run: |
-        poetry show -v
+        poetry add uvicorn[standard]
 
     - name: Install Python dependencies (frontend)
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         poetry install
-
-    - name: Show installed frontend packages
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry show -v
 
     - name: Install playwright browsers
       working-directory: ${{ env.SUBDIRECTORY }}

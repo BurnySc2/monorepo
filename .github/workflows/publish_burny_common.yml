@@ -40,7 +40,7 @@ jobs:
     - name: Set up cache
       uses: actions/cache@v3
       with:
-        path: .venv
+        path: ${{ env.SUBDIRECTORY }}.venv
         key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install dependencies
