@@ -162,7 +162,7 @@ jobs:
         poetry install
 
     - name: Install Python dependencies (frontend)
-      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         poetry install
 
