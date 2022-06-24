@@ -172,11 +172,6 @@ jobs:
       run: |
         poetry show -v
 
-    - name: Start fastapi server temporarily
-      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
-      run: |
-        timeout 10 poetry run uvicorn main:app --host localhost --port 8000
-
     - name: Install Python dependencies (frontend)
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
