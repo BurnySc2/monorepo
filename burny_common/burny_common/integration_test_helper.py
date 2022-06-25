@@ -136,6 +136,13 @@ def start_fastapi_dev_server(
 
     # Why does this return errors even when fastapi server is not running
     # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
+    logger.info(f'Listing poetry packages')
+    command_temp = ['poetry', 'show', '-v']
+    _ = subprocess.Popen(
+        command_temp,
+        cwd=fastapi_folder_path,
+        env=os.environ.copy(),
+    )
     logger.info(f'Starting backend on port {port}')
     command = ['poetry', 'run', 'uvicorn', 'main:app', '--host', 'localhost', '--port', f'{port}']
     logger.info(f'In work directory "{fastapi_folder_path}" running command: {command}')
