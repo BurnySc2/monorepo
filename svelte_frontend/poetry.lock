@@ -50,7 +50,7 @@ typecheck = ["mypy"]
 
 [[package]]
 name = "burny-common"
-version = "0.0.5"
+version = "0.0.6"
 description = ""
 category = "dev"
 optional = false
@@ -735,7 +735,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <3.11"
-content-hash = "f990c085bf74e8fc1072aa4cfb37b32596a24b29d8da90c9135b0e661660d454"
+content-hash = "fa7bcbb30009af633bf7f9a80a405cf9e3c55035b98778a4c05bc415fb332aa7"
 
 [metadata.files]
 astroid = [
@@ -764,8 +764,8 @@ bcrypt = [
     {file = "bcrypt-3.2.2.tar.gz", hash = "sha256:433c410c2177057705da2a9f2cd01dd157493b2a7ac14c8593a16b3dab6b6bfb"},
 ]
 burny-common = [
-    {file = "burny_common-0.0.5-py3-none-any.whl", hash = "sha256:6fff4b4f1b39a0d017af268f8819634c909f838e30be56b5f24fd065b232ca61"},
-    {file = "burny_common-0.0.5.tar.gz", hash = "sha256:4c55edf0c8dcaa686e7414a098f8c3573b34c4291002fb26b86a5e2b8ec71f76"},
+    {file = "burny_common-0.0.6-py3-none-any.whl", hash = "sha256:889154fb202dde7ad915c96a9e351a67b72ffb4c86fcad0364e5c250488d8818"},
+    {file = "burny_common-0.0.6.tar.gz", hash = "sha256:49f978104098cf66fe8228537e9b9d280fe9134048157dbbe673a72785d9ce4f"},
 ]
 certifi = [
     {file = "certifi-2022.6.15-py3-none-any.whl", hash = "sha256:fe86415d55e84719d75f8b69414f6438ac3547d2078ab91b67e779ef69378412"},
