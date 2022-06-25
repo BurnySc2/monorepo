@@ -27,7 +27,7 @@ pytest-benchmark = "^3.4"
 # Frontend tests
 playwright = "^1.22.0"
 pytest-playwright = "^0.3.0"
-burny-common = "^0.0.4"
+burny-common = "^0.0.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

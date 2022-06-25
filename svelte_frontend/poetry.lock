@@ -50,7 +50,7 @@ typecheck = ["mypy"]
 
 [[package]]
 name = "burny-common"
-version = "0.0.4"
+version = "0.0.5"
 description = ""
 category = "dev"
 optional = false
@@ -62,6 +62,7 @@ loguru = ">=0.6.0,<0.7.0"
 paramiko = ">=2.11.0,<3.0.0"
 psutil = ">=5.9.1,<6.0.0"
 requests = ">=2.28.0,<3.0.0"
+types-requests = ">=2.27.31,<3.0.0"
 
 [[package]]
 name = "certifi"
@@ -645,6 +646,25 @@ doc = ["mkdocs (>=1.1.2,<2.0.0)", "mkdocs-material (>=8.1.4,<9.0.0)", "mdx-inclu
 test = ["shellingham (>=1.3.0,<2.0.0)", "pytest (>=4.4.0,<5.4.0)", "pytest-cov (>=2.10.0,<3.0.0)", "coverage (>=5.2,<6.0)", "pytest-xdist (>=1.32.0,<2.0.0)", "pytest-sugar (>=0.9.4,<0.10.0)", "mypy (==0.910)", "black (>=22.3.0,<23.0.0)", "isort (>=5.0.6,<6.0.0)"]
 
 [[package]]
+name = "types-requests"
+version = "2.27.31"
+description = "Typing stubs for requests"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+types-urllib3 = "<1.27"
+
+[[package]]
+name = "types-urllib3"
+version = "1.26.15"
+description = "Typing stubs for urllib3"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.2.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -715,7 +735,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <3.11"
-content-hash = "f5d8951865b1750bcb124dc7db8ba06df7765c1823cf6db5e0f8c487e4188f08"
+content-hash = "f990c085bf74e8fc1072aa4cfb37b32596a24b29d8da90c9135b0e661660d454"
 
 [metadata.files]
 astroid = [
@@ -744,8 +764,8 @@ bcrypt = [
     {file = "bcrypt-3.2.2.tar.gz", hash = "sha256:433c410c2177057705da2a9f2cd01dd157493b2a7ac14c8593a16b3dab6b6bfb"},
 ]
 burny-common = [
-    {file = "burny_common-0.0.4-py3-none-any.whl", hash = "sha256:c93bf940f8afdd3e075d613654c0dfbfe75e5c5c9ec3528eaec7cf7779df1dbe"},
-    {file = "burny_common-0.0.4.tar.gz", hash = "sha256:f538708be45a39bcb7cb6924cbdfc3bdb9aeda21740b76718fbdc97bfc4bff64"},
+    {file = "burny_common-0.0.5-py3-none-any.whl", hash = "sha256:6fff4b4f1b39a0d017af268f8819634c909f838e30be56b5f24fd065b232ca61"},
+    {file = "burny_common-0.0.5.tar.gz", hash = "sha256:4c55edf0c8dcaa686e7414a098f8c3573b34c4291002fb26b86a5e2b8ec71f76"},
 ]
 certifi = [
     {file = "certifi-2022.6.15-py3-none-any.whl", hash = "sha256:fe86415d55e84719d75f8b69414f6438ac3547d2078ab91b67e779ef69378412"},
@@ -1250,6 +1270,14 @@ tomlkit = [
 typer = [
     {file = "typer-0.4.1-py3-none-any.whl", hash = "sha256:e8467f0ebac0c81366c2168d6ad9f888efdfb6d4e1d3d5b4a004f46fa444b5c3"},
     {file = "typer-0.4.1.tar.gz", hash = "sha256:5646aef0d936b2c761a10393f0384ee6b5c7fe0bb3e5cd710b17134ca1d99cff"},
+]
+types-requests = [
+    {file = "types-requests-2.27.31.tar.gz", hash = "sha256:6fab97b99fea52b9c7b466a4dd93e06bb325bc7e7420475e87831026a8dd35cc"},
+    {file = "types_requests-2.27.31-py3-none-any.whl", hash = "sha256:1b6cf6a2bf57fd8018c1b636b69762900466fafddfb62e1330e092f3d4b0966a"},
+]
+types-urllib3 = [
+    {file = "types-urllib3-1.26.15.tar.gz", hash = "sha256:c89283541ef92e344b7f59f83ea9b5a295b16366ceee3f25ecfc5593c79f794e"},
+    {file = "types_urllib3-1.26.15-py3-none-any.whl", hash = "sha256:6011befa13f901fc934f59bb1fd6973be6f3acf4ebfce427593a27e7f492918f"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.2.0-py3-none-any.whl", hash = "sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708"},
