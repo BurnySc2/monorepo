@@ -99,7 +99,6 @@ def start_svelte_dev_server(
     frontend_folder_path: Path,
     backend_proxy: str = 'localhost:8000',
 ):
-    env = os.environ.copy()
     currently_running_node_processes = get_pid('node')
 
     assert is_port_free(port), f'Unable to start svelte dev server because port {port} is blocked'
@@ -107,7 +106,7 @@ def start_svelte_dev_server(
     _ = subprocess.Popen(
         ['npx', 'cross-env', f'BACKEND_SERVER={backend_proxy}', 'svelte-kit', 'dev', '--port', f'{port}'],
         cwd=frontend_folder_path,
-        env=env
+        env=os.environ.copy()
     )
     # Give it some time to create dev server and all (3?) node proccesses
     with Timeout(10, 'Took more than 10 seconds'):
@@ -134,15 +133,16 @@ def start_fastapi_dev_server(
 ):
     print(str(fastapi_folder_path.absolute()))
     currently_running_uvicorn_processes = get_pid('uvicorn')
-    env = os.environ.copy()
 
     # Why does this return errors even when fastapi server is not running
     # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
     logger.info(f'Starting backend on port {port}')
+    command = ['poetry', 'run', 'uvicorn', 'main:app', '--host', 'localhost', '--port', f'{port}']
+    logger.info(f'In work directory "{fastapi_folder_path}" running command: {command}')
     _ = subprocess.Popen(
-        ['poetry', 'run', 'uvicorn', 'main:app', '--host', 'localhost', '--port', f'{port}'],
+        command,
         cwd=fastapi_folder_path,
-        env=env,
+        env=os.environ.copy(),
     )
     # Give it some time to create backend dev server
     with Timeout(10, 'Took more than 10 seconds'):

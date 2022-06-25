@@ -166,7 +166,6 @@ jobs:
       working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: |
         poetry install
-        pip install uvicorn[standard]
 
     - name: Install Python dependencies (frontend)
       working-directory: ${{ env.SUBDIRECTORY }}
