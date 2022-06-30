@@ -148,13 +148,21 @@ def start_fastapi_dev_server(
         return_code = process.wait(timeout=1)
         logger.info(return_code)
 
-        # logger.info(f'Listing poetry packages')
-        # command_show_packages = ['poetry', 'show', '-v']
-        # _show_process_result = subprocess.Popen(
-        #     command_show_packages,
-        #     cwd=fastapi_folder_path,
-        #     # env=os.environ.copy(),
-        # ).communicate()
+        logger.info('Show envs')
+        command_show_packages = ['poetry', 'env', 'list']
+        _show_process_result = subprocess.Popen(
+            command_show_packages,
+            cwd=fastapi_folder_path,
+            # env=os.environ.copy(),
+        ).communicate()
+
+        logger.info('List poetry packages')
+        command_show_packages = ['poetry', 'show', '-v']
+        _show_process_result = subprocess.Popen(
+            command_show_packages,
+            cwd=fastapi_folder_path,
+            # env=os.environ.copy(),
+        ).communicate()
 
         if return_code == 1:
             sys.exit(1)
