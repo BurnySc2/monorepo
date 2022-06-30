@@ -241,6 +241,17 @@ docs = ["furo (>=2021.7.5b38)", "proselint (>=0.10.2)", "sphinx-autodoc-typehint
 test = ["appdirs (==1.4.4)", "pytest-cov (>=2.7)", "pytest-mock (>=3.6)", "pytest (>=6)"]
 
 [[package]]
+name = "portpicker"
+version = "1.5.2"
+description = "A library to choose unique available network ports."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+psutil = "*"
+
+[[package]]
 name = "psutil"
 version = "5.9.1"
 description = "Cross-platform lib for process and system monitoring in Python."
@@ -469,7 +480,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <3.11"
-content-hash = "fc88c9d63ddc30625c3594eb54558e135d14b1a534aace648289c21fdbeb7cab"
+content-hash = "132d67e536b90750ca04c9ac39ce5bb48422d772c9f5276cd74b7f5dff575b11"
 
 [metadata.files]
 astroid = [
@@ -706,6 +717,10 @@ pathspec = [
 platformdirs = [
     {file = "platformdirs-2.5.2-py3-none-any.whl", hash = "sha256:027d8e83a2d7de06bbac4e5ef7e023c02b863d7ea5d079477e722bb41ab25788"},
     {file = "platformdirs-2.5.2.tar.gz", hash = "sha256:58c8abb07dcb441e6ee4b11d8df0ac856038f944ab98b7be6b27b2a3c7feef19"},
+]
+portpicker = [
+    {file = "portpicker-1.5.2-py3-none-any.whl", hash = "sha256:01113f51c3cc63290a44dd7ae6e3eb9f8fe1b8a1f9d7988a897944230c39cd52"},
+    {file = "portpicker-1.5.2.tar.gz", hash = "sha256:c55683ad725f5c00a41bc7db0225223e8be024b1fa564d039ed3390e4fd48fb3"},
 ]
 psutil = [
     {file = "psutil-5.9.1-cp27-cp27m-manylinux2010_i686.whl", hash = "sha256:799759d809c31aab5fe4579e50addf84565e71c1dc9f1c31258f159ff70d3f87"},

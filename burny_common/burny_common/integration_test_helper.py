@@ -1,12 +1,13 @@
 import os
 import signal
-import socket
 import subprocess
+import sys
 import time
 from contextlib import suppress
 from pathlib import Path
 from typing import Optional, Set
 
+import portpicker
 import psutil
 import requests
 from loguru import logger
@@ -55,22 +56,12 @@ def remove_leftover_files(files: Set[Path]):
             os.remove(file)
 
 
-def is_port_free(port: int) -> bool:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        sock.bind(('', port))
-        sock.close()
-        return True
-    except OSError:
-        return False
-
-
 def find_next_free_port(port: int = 10_000, max_port: int = 65_535, exclude_ports: Optional[Set[int]] = None) -> int:
     if exclude_ports is None:
         exclude_ports = set()
 
     while port <= max_port:
-        if port not in exclude_ports and is_port_free(port):
+        if port not in exclude_ports and portpicker.is_port_free(port):
             return port
         port += 1
     raise IOError('No free ports')
@@ -101,7 +92,7 @@ def start_svelte_dev_server(
 ):
     currently_running_node_processes = get_pid('node')
 
-    assert is_port_free(port), f'Unable to start svelte dev server because port {port} is blocked'
+    assert portpicker.is_port_free(port), f'Unable to start svelte dev server because port {port} is blocked'
     logger.info(f'Starting frontend on port {port}')
     _ = subprocess.Popen(
         ['npx', 'cross-env', f'BACKEND_SERVER={backend_proxy}', 'svelte-kit', 'dev', '--port', f'{port}'],
@@ -110,15 +101,13 @@ def start_svelte_dev_server(
     )
     # Give it some time to create dev server and all (3?) node proccesses
     with Timeout(10, 'Took more than 10 seconds'):
-        while is_port_free(port):
+        while portpicker.is_port_free(port):
             time.sleep(0.1)
         while 1:
-            try:
+            with suppress(requests.exceptions.ConnectionError):
                 result = requests.get(get_website_address(port))
                 if result.status_code == 200:
                     break
-            except requests.exceptions.ConnectionError:
-                pass
             time.sleep(0.1)
 
     new_processes = get_pid('node') - currently_running_node_processes
@@ -136,24 +125,43 @@ def start_fastapi_dev_server(
 
     # Why does this return errors even when fastapi server is not running
     # assert is_port_free(port), f"Unable to start fastapi server because port {port} is blocked"
-    logger.info(f'Listing poetry packages')
-    command_temp = ['poetry', 'show', '-v']
-    _ = subprocess.Popen(
-        command_temp,
+
+    # Switch environment
+    switch_environment_command = ['poetry', 'env', 'use', 'python']
+    _show_process_result = subprocess.Popen(
+        switch_environment_command,
         cwd=fastapi_folder_path,
-        env=os.environ.copy(),
-    )
+        # env=os.environ.copy(),
+    ).communicate()
+
     logger.info(f'Starting backend on port {port}')
     command = ['poetry', 'run', 'uvicorn', 'main:app', '--host', 'localhost', '--port', f'{port}']
     logger.info(f'In work directory "{fastapi_folder_path}" running command: {command}')
-    _ = subprocess.Popen(
+    process = subprocess.Popen(
         command,
         cwd=fastapi_folder_path,
-        env=os.environ.copy(),
+        # env=os.environ.copy(),
     )
+
+    # Check if process has ended - that means there was an error
+    with suppress(subprocess.TimeoutExpired):
+        return_code = process.wait(timeout=1)
+        logger.info(return_code)
+
+        # logger.info(f'Listing poetry packages')
+        # command_show_packages = ['poetry', 'show', '-v']
+        # _show_process_result = subprocess.Popen(
+        #     command_show_packages,
+        #     cwd=fastapi_folder_path,
+        #     # env=os.environ.copy(),
+        # ).communicate()
+
+        if return_code == 1:
+            sys.exit(1)
+
     # Give it some time to create backend dev server
     with Timeout(10, 'Took more than 10 seconds'):
-        while is_port_free(port):
+        while portpicker.is_port_free(port):
             time.sleep(0.1)
         while 1:
             with suppress(requests.exceptions.ConnectionError):
@@ -207,7 +215,7 @@ def start_fastapi_dev_server(
 def check_if_postgres_is_running(port: int = 5432) -> bool:
     # If we can connect to port 5432, postgres is already running
     # TODO find better way to figure out if postgress is running
-    return not is_port_free(port)
+    return not portpicker.is_port_free(port)
 
 
 # pylint: disable=R1732
@@ -268,14 +276,15 @@ if __name__ == '__main__':
     free_frontend_port = find_next_free_port()
     free_backend_port = find_next_free_port(exclude_ports={free_frontend_port})
     start_fastapi_dev_server(free_backend_port, set(), Path(__file__).parents[2] / "fastapi_server")
-    start_svelte_dev_server(
-        free_frontend_port,
-        set(),
-        Path(__file__).parents[2] / "svelte_frontend",
-        backend_proxy=f'localhost:{free_backend_port}'
-    )
-    logger.info(f'Docker running: {check_if_docker_is_running()}')
-    logger.info(f'Postgres running: {check_if_postgres_is_running()}')
+    # start_svelte_dev_server(
+    #     free_frontend_port,
+    #     set(),
+    #     Path(__file__).parents[2] / "svelte_frontend",
+    #     backend_proxy=f'localhost:{free_backend_port}'
+    # )
+    # logger.info(f'Docker running: {check_if_docker_is_running()}')
+    # logger.info(f'Postgres running: {check_if_postgres_is_running()}')
+
     # logger.info(f'MongoDB running: {check_if_mongodb_is_running()}')
     # start_postgres()
     # start_mongodb()

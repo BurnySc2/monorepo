@@ -8,6 +8,13 @@
 # Monorepo
 My monorepo for various tools and showcases
 
+# Development
+## Pycharm
+Open the project in root folder, then add each project subfolder as `file -> Attach project...`. This enables different python virtual environments in each project folder.
+
+## VS code
+TODO
+
 # Useful Poetry commands
 https://python-poetry.org/docs/cli/
 ### Create new project
