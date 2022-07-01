@@ -145,12 +145,12 @@ def run(
         # Check if the server can start at all
         run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
         # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
-        mkdir -p data
-        returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=False)
-        if returncode != 124:
-            timeout 5 sh run.sh
-            SCRIPTS_WITH_ERRORS.append(("fastapi_server", "timeout 5 sh sh.run"))
-        cd ..
+        # mkdir -p data
+        # returncode = run_command("timeout 5 sh run.sh".split(), ignore_exit_status=True, verbose=False)
+        # if returncode != 124:
+        #     timeout 5 sh run.sh
+        #     SCRIPTS_WITH_ERRORS.append(("fastapi_server", "timeout 5 sh run.sh"))
+        # cd ..
 
     # python_examples
     files_related_to_project = project_has_changed_files("python_examples", changed_only=run_only_changed_files)
@@ -207,9 +207,6 @@ def run(
         if run_npm_lint:
             run_command("npm run format".split(), verbose=verbose)
             run_command("npm run lint".split(), verbose=verbose)
-        if run_npm_test:
-            run_command("npm run build".split(), verbose=verbose)
-            run_command("npm run test".split(), verbose=verbose)
         cd ..
         if run_npm_test:
             # Install fastapi backend
@@ -217,8 +214,11 @@ def run(
             run_command("poetry install".split(), verbose=verbose)
             run_command("poetry run playwright install".split(), verbose=verbose)
             cd ../svelte_frontend
+            run_command("npm run build".split(), verbose=verbose)
+            # Run e2e tests
             run_command("npm run test".split(), verbose=verbose)
             cd ../fastapi_server
+            # Run integration tests
             run_command("poetry run pytest test_integration/test_integration.py --benchmark-skip".split(), verbose=verbose)
             cd ..
 
