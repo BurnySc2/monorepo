@@ -42,14 +42,12 @@ jobs:
 
     - name: Install npm dependencies
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        npm install --production
+      run: npm install --production
 
     - name: Run build command
       if: ${{ matrix.node != '12' }}
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        npm run build
+      run: npm run build
 
       # - name: Run tests
       #   run: |

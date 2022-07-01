@@ -24,85 +24,47 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        node: ['14', '16', '18']
-    runs-on: ${{ matrix.os }}
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Node ${{ matrix.node }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node }}
-
-    - name: Cache npm
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
-
-    - name: Install npm dependencies
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        npm install
-
-    - name: Run build command
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        npm run build
-
-    - name: Install playwright browsers
-      if: ${{ matrix.node != '14' }}
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        npx playwright install
-
-    - name: Run tests
-      if: ${{ matrix.node != '14' }}
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        npm run test
-
-
-  test_e2e:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ['3.10']
         node: ['16', '18']
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+    - name: Set up Node ${{ matrix.node }}
+      uses: actions/setup-node@v3
       with:
-        python-version: ${{ matrix.python-version }}
+        node-version: ${{ matrix.node }}
 
-    - name: Install Poetry
-      run: |
-        pip install poetry
-
-    - name: Make poetry use local .venv folder
-      run: poetry config virtualenvs.in-project true
-
-    - name: Set up cache (frontend)
+    - name: Cache npm
       uses: actions/cache@v3
       with:
-        path: ${{ env.SUBDIRECTORY }}/.venv
-        key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
+        path: ~/.npm
+        key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
 
-    - name: Install Python dependencies
+    - name: Install npm dependencies
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry install
+      run: npm install
 
     - name: Install playwright browsers
+      if: ${{ matrix.node != '14' }}
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry run playwright install
+      run: npx playwright install
+
+    - name: Run tests
+      if: ${{ matrix.node != '14' }}
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: npm run test
+
+  build_svelte_frontend:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: ['16', '18']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
 
     - name: Set up Node ${{ matrix.node }}
       uses: actions/setup-node@v3
@@ -117,14 +79,11 @@ jobs:
 
     - name: Install npm dependencies
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        npm install
+      run: npm install --production
 
-    - name: Run e2e tests
+    - name: Run build command
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry run pytest test_frontend/test_e2e.py
-
+      run: npm run build
 
   test_integration:
     strategy:
@@ -144,8 +103,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Poetry
-      run: |
-        pip install poetry
+      run: pip install poetry
 
     - name: Make poetry use local .venv folder
       run: poetry config virtualenvs.in-project true
@@ -156,26 +114,13 @@ jobs:
         path: ${{ env.BACKEND_SUBDIRECTORY }}/.venv
         key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.BACKEND_SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
-    - name: Set up cache (frontend)
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.SUBDIRECTORY }}/.venv
-        key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
-
-    - name: Install Python dependencies (backend)
+    - name: Install Python dependencies
       working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
-      run: |
-        poetry install
-
-    - name: Install Python dependencies (frontend)
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry install
+      run: poetry install
 
     - name: Install playwright browsers
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry run playwright install
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: poetry run playwright install
 
     - name: Set up Node ${{ matrix.node }}
       uses: actions/setup-node@v3
@@ -190,10 +135,8 @@ jobs:
 
     - name: Install npm dependencies
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        npm install
+      run: npm install
 
     - name: Run integration tests
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry run pytest test_frontend/test_integration.py
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: poetry run pytest test_integration/test_integration.py

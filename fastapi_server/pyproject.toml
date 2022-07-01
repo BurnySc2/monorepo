@@ -20,6 +20,7 @@ loguru = "^0.5"
 zephyrus-sc2-parser = "^0.3.7"
 # Multipart replay upload
 python-multipart = "^0.0.5"
+portpicker = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
 # Test library

@@ -131,3 +131,5 @@ for (const { increase, decrease } of browserstorageTries) {
         expect(await page.innerText("#sessionStorageValue")).toBe("0")
     })
 }
+
+// TODO Write benchmarks to see how long the site needs to load

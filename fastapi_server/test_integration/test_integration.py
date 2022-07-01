@@ -1,24 +1,23 @@
 from pathlib import Path
 from typing import Set
 
-from burny_common.integration_test_helper import (
+from test_integration.integration_test_helper import (
     find_next_free_port,
-    get_website_address,
     kill_processes,
-    remove_leftover_files,
     start_fastapi_dev_server,
     start_svelte_dev_server,
 )
 from playwright.sync_api import BrowserContext, Page
 
+WEBSITE_IP = 'http://localhost'
+def get_website_address(port: int) -> str:
+    return f'{WEBSITE_IP}:{port}'
 
 class TestClass:
     FRONTEND_ADDRESS = ''
     BACKEND_ADDRESS = ''
     # Remember which node processes to close
     NEWLY_CREATED_PROCESSES: Set[int] = set()
-    # And which files to remove
-    CREATED_FILES: Set[Path] = set()
 
     def setup_method(self, _method=None):
         """ setup any state tied to the execution of the given method in a
@@ -32,12 +31,12 @@ class TestClass:
         start_fastapi_dev_server(
             free_backend_port,
             self.NEWLY_CREATED_PROCESSES,
-            Path(__file__).parents[2] / "fastapi_server",
+            Path(__file__).parents[2] / 'fastapi_server',
         )
         start_svelte_dev_server(
             free_frontend_port,
             self.NEWLY_CREATED_PROCESSES,
-            Path(__file__).parents[1],
+            Path(__file__).parents[2] / 'svelte_frontend',
             backend_proxy=f'localhost:{free_backend_port}',
         )
 
@@ -49,9 +48,6 @@ class TestClass:
         kill_processes(self.NEWLY_CREATED_PROCESSES)
         self.NEWLY_CREATED_PROCESSES.clear()
 
-        # Remove files created by test
-        remove_leftover_files(self.CREATED_FILES)
-        self.CREATED_FILES.clear()
 
     def test_backend_server_available(self, page: Page):
         page.goto(self.BACKEND_ADDRESS)

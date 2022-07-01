@@ -141,7 +141,7 @@ def run(
     files_related_to_project = project_has_changed_files("fastapi_server", changed_only=run_only_changed_files)
     if files_related_to_project and run_python_test:
         cd fastapi_server
-        run_command("poetry run python -m pytest".split(), verbose=verbose)
+        run_command("poetry run python -m pytest test".split(), verbose=verbose)
         # Check if the server can start at all
         run_command("docker build --tag burnysc2/fastapi_server:latest .".split(), verbose=verbose)
         # Run fastapi server for 5 seconds, expect exitcode 124 if timeout was reached and didn't crash before
@@ -215,13 +215,11 @@ def run(
             # Install fastapi backend
             cd fastapi_server
             run_command("poetry install".split(), verbose=verbose)
-            cd ..
-            cd svelte_frontend
-            # Install e2e and integration tests for frontend
-            run_command("poetry install".split(), verbose=verbose)
             run_command("poetry run playwright install".split(), verbose=verbose)
-            run_command("poetry run pytest test_frontend/test_e2e.py --benchmark-skip".split(), verbose=verbose)
-            run_command("poetry run pytest test_frontend/test_integration.py --benchmark-skip".split(), verbose=verbose)
+            cd ../svelte_frontend
+            run_command("npm run test".split(), verbose=verbose)
+            cd ../fastapi_server
+            run_command("poetry run pytest test_integration/test_integration.py --benchmark-skip".split(), verbose=verbose)
             cd ..
 
 
