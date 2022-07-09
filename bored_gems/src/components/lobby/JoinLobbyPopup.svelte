@@ -14,5 +14,5 @@
     >
         custom username lobby password Cancel Join
     </div>
-    <button on:click={joinLobby}>Join</button>
+    <button on:click={joinLobby}>HELLOOOOOOOOOOOOOOOOOO</button>
 </div>

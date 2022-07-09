@@ -40,6 +40,7 @@
                 <td>
                     {lobbyData.players} / {lobbyData.playersMax}
                 </td>
+                <!-- TODO: add column which says if lobby has a password enable -->
             </tr>
         {/each}
     </tbody>

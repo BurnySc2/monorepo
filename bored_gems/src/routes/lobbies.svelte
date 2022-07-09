@@ -1,7 +1,7 @@
 <script lang="ts">
     import LobbiesRow from "../components/lobby/LobbiesRow.svelte"
     import CreateLobby from "../components/lobby/CreateLobby.svelte"
-    import JoinLobbyModal from "../components/lobby/JoinLobbyModal.svelte"
+    import JoinLobbyPopup from "../components/lobby/JoinLobbyPopup.svelte"
 
     // BEGIN FAKE DATA
     let lobbies = [
@@ -40,7 +40,7 @@
 </script>
 
 {#if joinLobbyShown}
-    <JoinLobbyModal bind:joinLobbyShown />
+    <JoinLobbyPopup bind:joinLobbyShown />
 {/if}
 {#if createLobbyShown}
     <CreateLobby bind:createLobbyShown />
@@ -49,7 +49,9 @@
         <div class="flex">
             <div class="flex flex-col">
                 <div class="flex flex-col min-w-[50vw] min-h-[50vh] border-2 border-black">
-                    <div class="border-b-2 border-black text-center text-2xl">{lobbiesShown.length} Lobbies</div>
+                    <div class="border-b-2 border-black text-center text-2xl">
+                        {lobbiesShown.length} Lobbies available
+                    </div>
                     {#if !lobbiesShown.length}
                         <div class="m-2 text-center">No lobby available. Create one!</div>
                     {:else}
