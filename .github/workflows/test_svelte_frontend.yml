@@ -50,11 +50,6 @@ jobs:
       working-directory: ${{ env.SUBDIRECTORY }}
       run: npx playwright install
 
-    - name: Run tests
-      if: ${{ matrix.node != '14' }}
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: npm run test:all
-
   build_svelte_frontend:
     strategy:
       fail-fast: false
