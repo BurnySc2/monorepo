@@ -82,6 +82,7 @@ jobs:
       run: npm install --production
 
     - name: Run build command
+      if: ${{ matrix.node != '14' }}
       working-directory: ${{ env.SUBDIRECTORY }}
       run: npm run build
 
@@ -138,5 +139,6 @@ jobs:
       run: npm install
 
     - name: Run integration tests
+      if: ${{ matrix.node != '14' }}
       working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
       run: poetry run pytest test_integration/test_integration.py
