@@ -7,11 +7,18 @@ from test_integration.integration_test_helper import (
     start_fastapi_dev_server,
     start_svelte_dev_server,
 )
-from playwright.sync_api import BrowserContext, Page
+from playwright.sync_api import BrowserContext, Page, expect
+
+# Uncomment if you want to render frontend debugger
+# import os
+# os.environ["PWDEBUG"] = "1"
 
 WEBSITE_IP = 'http://localhost'
+
+
 def get_website_address(port: int) -> str:
     return f'{WEBSITE_IP}:{port}'
+
 
 class TestClass:
     FRONTEND_ADDRESS = ''
@@ -48,13 +55,12 @@ class TestClass:
         kill_processes(self.NEWLY_CREATED_PROCESSES)
         self.NEWLY_CREATED_PROCESSES.clear()
 
-
     def test_backend_server_available(self, page: Page):
-        page.goto(self.BACKEND_ADDRESS)
+        page.goto(self.BACKEND_ADDRESS, wait_until='networkidle')
         assert '{"Hello":"World"}' in page.content()
 
     def test_frontend_server_available(self, page: Page):
-        page.goto(self.FRONTEND_ADDRESS)
+        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
         assert 'Home' in page.content()
         assert 'About' in page.content()
         assert 'Chat' in page.content()
@@ -64,13 +70,14 @@ class TestClass:
 
     def test_add_todo_submit1(self, page: Page):
         """ Add a new to-do entry """
-        page.goto(self.FRONTEND_ADDRESS)
+        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
         assert 'Hello world!' in page.content()
         page.click('#todo')
-        page.wait_for_url('/todo')
+        page.wait_for_url('/todo', timeout=1_000)
         assert 'Unable to connect to server - running local mode' not in page.content()
         test_text = 'my amazing test todo text1'
         assert test_text not in page.content()
+        page.wait_for_selector('#newTodoInput', timeout=1_000)
         page.fill('#newTodoInput', test_text)
         page.click('#submit1')
         page.wait_for_timeout(100)
@@ -79,10 +86,10 @@ class TestClass:
 
     def test_add_todo_submit2(self, page: Page):
         """ Add a new to-do entry """
-        page.goto(self.FRONTEND_ADDRESS)
+        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
         assert 'Hello world!' in page.content()
         page.click('#todo')
-        page.wait_for_url('/todo')
+        page.wait_for_url('/todo', timeout=1_000)
         assert 'Unable to connect to server - running local mode' not in page.content()
         test_text = 'my amazing test todo text1'
         assert test_text not in page.content()
@@ -94,10 +101,10 @@ class TestClass:
 
     def test_add_todo_submit3(self, page: Page):
         """ Add a new to-do entry """
-        page.goto(self.FRONTEND_ADDRESS)
+        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
         assert 'Hello world!' in page.content()
         page.click('#todo')
-        page.wait_for_url('/todo')
+        page.wait_for_url('/todo', timeout=1_000)
         assert 'Unable to connect to server - running local mode' not in page.content()
         test_text = 'my amazing test todo text1'
         assert test_text not in page.content()
@@ -109,10 +116,10 @@ class TestClass:
 
     def test_chat_single(self, page: Page):
         """ Chat with yourself """
-        page.goto(self.FRONTEND_ADDRESS)
+        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
         assert 'Hello world!' in page.content()
         page.click('#chat')
-        page.wait_for_url('/normalchat')
+        page.wait_for_url('/normalchat', timeout=1_000)
         my_username = 'beep_boop'
 
         assert my_username not in page.content()
@@ -136,8 +143,11 @@ class TestClass:
         # Connect with robot1
         page1 = context.new_page()
         page1.goto(self.FRONTEND_ADDRESS)
+        page2 = context.new_page()
+        page2.goto(self.FRONTEND_ADDRESS)
+
         page1.click('#chat')
-        page1.wait_for_url('/normalchat')
+        page1.wait_for_url('/normalchat', timeout=1_000)
         my_username1 = 'robot1'
         page1.fill('#username', my_username1)
         page1.click('#connect')
@@ -149,8 +159,6 @@ class TestClass:
         assert some_text1 in page1.content()
 
         # Connect with robot2
-        page2 = context.new_page()
-        page2.goto(self.FRONTEND_ADDRESS)
         page2.click('#chat')
         page2.wait_for_url('/normalchat')
         my_username2 = 'robot2'

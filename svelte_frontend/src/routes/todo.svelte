@@ -111,7 +111,7 @@
 
     const removeTodo = async (id: number) => {
         try {
-            await fetch(API_MODEL_ENDPOINT, {
+            await fetch(`${API_ENDPOINT}/${id}`, {
                 method: "DELETE",
             })
         } catch {

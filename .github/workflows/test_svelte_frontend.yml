@@ -53,11 +53,6 @@ jobs:
     - name: Run tests
       if: ${{ matrix.node != '14' }}
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: npm run test
-
-    - name: Run tests
-      if: ${{ matrix.node != '14' }}
-      working-directory: ${{ env.SUBDIRECTORY }}
       run: npm run test:all
 
   build_svelte_frontend:

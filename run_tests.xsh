@@ -219,7 +219,7 @@ def run(
             run_command("npm run test".split(), verbose=verbose)
             cd ../fastapi_server
             # Run integration tests
-            run_command("poetry run pytest test_integration/test_integration.py --benchmark-skip".split(), verbose=verbose)
+            run_command("poetry run pytest -x test_integration/test_integration.py --benchmark-skip".split(), verbose=verbose)
             cd ..
 
 

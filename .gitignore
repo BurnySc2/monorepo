@@ -113,9 +113,9 @@ venv.bak/
 .pids
 
 # Frontend
+.netlify
 build
 .svelte-kit
-bored_gems/.netlify
 node_modules
 svelte_frontend/test_frontend/latest_logs
 svelte_frontend/latest_logs

@@ -95,7 +95,7 @@ def start_svelte_dev_server(
     assert portpicker.is_port_free(port), f'Unable to start svelte dev server because port {port} is blocked'
     logger.info(f'Starting frontend on port {port}')
     _ = subprocess.Popen(
-        ['npx', 'cross-env', f'BACKEND_SERVER={backend_proxy}', 'svelte-kit', 'dev', '--port', f'{port}'],
+        ['npx', 'cross-env', f'BACKEND_SERVER={backend_proxy}', 'vite', 'dev', '--port', f'{port}'],
         cwd=frontend_folder_path,
         env=os.environ.copy()
     )
