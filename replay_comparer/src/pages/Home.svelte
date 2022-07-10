@@ -51,9 +51,13 @@
 
     onMount(async () => {
         if (dev) {
-            const replays = await import("../functions/fake_replay_data")
-            real_replay_data = replays.replay1
-            ideal_replay_data = replays.replay2
+            // @ts-ignore
+            const replay1 = await import("../functions/replay1.json")
+            // @ts-ignore
+            const replay2 = await import("../functions/replay2.json")
+
+            real_replay_data = replay1
+            ideal_replay_data = replay2
             console.log(real_replay_data)
             console.log(ideal_replay_data)
         }
