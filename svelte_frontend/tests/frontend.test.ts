@@ -18,6 +18,7 @@ test("from index page i get to all other pages", async ({ page }) => {
     expect(await page.innerText("body")).toContain("Connect to chat")
     await page.click("#todo")
     await page.waitForURL("/todo")
+    await page.waitForLoadState("networkidle")
     expect(await page.innerText("body")).toContain("Unable to connect to server - running local mode")
     await page.click("#browserstorage")
     await page.waitForURL("/browserstorage")
@@ -53,6 +54,7 @@ test("todo page works", async ({ page }) => {
     // Example todo
     expect(await page.innerText("body")).toContain("some todo text")
     // Warning that backend server is not reachable
+    await page.waitForLoadState("networkidle")
     expect(await page.innerText("body")).toContain("Unable to connect to server - running local mode")
 
     // Submit button
