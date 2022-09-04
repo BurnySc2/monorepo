@@ -99,6 +99,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Set up Python ${{ matrix.python-version }}
+      id: setup-python
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
@@ -113,7 +114,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ env.BACKEND_SUBDIRECTORY }}/.venv
-        key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.BACKEND_SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
+        key: ${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ env.BACKEND_SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
     - name: Install Python dependencies
       working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
