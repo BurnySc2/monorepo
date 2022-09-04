@@ -9,7 +9,7 @@ python = ">=3.8, <3.11"
 # Datetime library
 arrow = "^1.2.2"
 # Discord bot
-hikari = "^2.0.0-alpha.108"
+hikari = "^2.0.0-alpha.110"
 # Simple logger
 loguru = "^0.6.0"
 # Table plotting

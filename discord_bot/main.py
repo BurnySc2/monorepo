@@ -15,6 +15,7 @@ from hikari import (
     Message,
     PartialChannel,
     StartedEvent,
+    Intents,
 )
 from loguru import logger
 from postgrest import APIResponse, AsyncSelectRequestBuilder
@@ -32,7 +33,7 @@ if token is None:
     ), f"File '{DISCORDKEY_PATH}' not found, you can get it from https://discord.com/developers/applications/<bot_id>/bot"
     with DISCORDKEY_PATH.open() as f:
         token = f.read().strip()
-bot = GatewayBot(token=token)  # type: ignore
+bot = GatewayBot(token=token, intents=Intents.ALL)  # type: ignore
 del token
 
 PREFIX = '!'
@@ -40,7 +41,7 @@ PREFIX = '!'
 # Start reminder plugin
 my_reminder: Remind = Remind(bot)
 
-# Load stage
+# Load stage via env variable
 assert os.getenv('STAGE', 'DEV') in {'DEV', 'PROD'}, os.getenv('STAGE', 'DEV')
 STAGE = os.getenv('STAGE', 'DEV')
 
