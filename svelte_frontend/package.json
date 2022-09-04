@@ -2,7 +2,7 @@
     "name": "my-app",
     "version": "0.0.1",
     "scripts": {
-        "dev": "cross-env BACKEND_SERVER='localhost:8000' vite dev",
+        "dev": "cross-env BACKEND_SERVER='localhost:8000' vite dev --port 3000",
         "build": "vite build",
         "build-precommit": "vite build | grep ERR",
         "preview": "vite preview",
@@ -17,25 +17,24 @@
         "update": "npx npm-check-updates -u && npm run prune"
     },
     "devDependencies": {
-        "@playwright/test": "^1.21.1",
-        "@typescript-eslint/eslint-plugin": "^5.10.1",
-        "@typescript-eslint/parser": "^5.10.1",
+        "@playwright/test": "^1.25.1",
+        "@typescript-eslint/eslint-plugin": "^5.36.1",
+        "@typescript-eslint/parser": "^5.36.1",
         "cross-env": "^7.0.3",
-        "eslint": "^7.32.0",
-        "eslint-config-prettier": "^8.3.0",
-        "eslint-plugin-svelte3": "^3.2.1",
-        "prettier": "^2.5.1",
-        "prettier-plugin-svelte": "^2.5.0"
+        "eslint": "^8.23.0",
+        "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-svelte3": "^4.0.0",
+        "prettier": "^2.7.1",
+        "prettier-plugin-svelte": "^2.7.0"
     },
     "dependencies": {
-        "@sveltejs/adapter-auto": "next",
-        "@sveltejs/adapter-static": "next",
-        "@sveltejs/kit": "next",
-        "moment": "^2.29.2",
-        "svelte": "^3.44.0",
-        "svelte-check": "^2.2.6",
-        "svelte-preprocess": "^4.10.1",
-        "typescript": "^4.6.3"
+        "@sveltejs/adapter-auto": "1.0.0-next.71",
+        "@sveltejs/kit": "1.0.0-next.377",
+        "moment": "^2.29.4",
+        "svelte": "^3.50.0",
+        "svelte-check": "^2.9.0",
+        "svelte-preprocess": "^4.10.7",
+        "typescript": "^4.8.2"
     },
     "type": "module"
 }
