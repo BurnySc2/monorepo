@@ -5,7 +5,7 @@ from loguru import logger
 
 # pylint: disable=R0914
 # pylint: disable=R0915
-def test_database_with_sqlite_readme_example():
+def run_database_with_sqlite_readme_example():
     # with sqlite3.connect("example.db") as db:
     with sqlite3.connect(':memory:') as db:
         # Instead of returning tuples, return dicts https://stackoverflow.com/a/55986968
@@ -150,4 +150,4 @@ def test_database_with_sqlite_readme_example():
 
 
 if __name__ == '__main__':
-    test_database_with_sqlite_readme_example()
+    run_database_with_sqlite_readme_example()

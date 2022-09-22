@@ -54,7 +54,7 @@ class BookInventory(Model):
 
 # pylint: disable=R0914
 # pylint: disable=R0915
-def test_database_with_peewee_readme_example():
+def run_database_with_peewee_readme_example():
     # 1) Create tables
     db.drop_tables([Book, Author, Publisher, Library, BookInventory])
     db.create_tables([Book, Author, Publisher, Library, BookInventory])
@@ -142,4 +142,4 @@ def test_database_with_peewee_readme_example():
 
 
 if __name__ == '__main__':
-    test_database_with_peewee_readme_example()
+    run_database_with_peewee_readme_example()

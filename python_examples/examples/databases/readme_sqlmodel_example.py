@@ -4,6 +4,7 @@ from loguru import logger
 from sqlalchemy import func
 from sqlalchemy.sql import Delete
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, delete, select
+from sqlmodel.engine.result import ScalarResult
 from sqlmodel.sql.expression import SelectOfScalar
 
 
@@ -47,7 +48,7 @@ class BookInventory(SQLModel, table=True):  # type: ignore
 
 # pylint: disable=R0914
 # pylint: disable=R0915
-def test_database_with_sqlmodel_readme_example():
+def run_database_with_sqlmodel_readme_example():
     author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
     author_2 = Author(name='Harper Lee', birth_year=1926)
     author_3 = Author(name='George Orwell', birth_year=1903)
@@ -111,7 +112,7 @@ def test_database_with_sqlmodel_readme_example():
         assert amount == 2, amount
 
         statement: SelectOfScalar = select(Book).where(Book.release_year < 1960)
-        books = session.exec(statement)
+        books: ScalarResult[Book] = session.exec(statement)
         for book in books:
             logger.info(f'Changing release year on book: {book}')
             book.release_year = 1970
@@ -122,8 +123,11 @@ def test_database_with_sqlmodel_readme_example():
 
     # 5) Delete books
     with Session(engine) as session:
-        count_statement: SelectOfScalar = select(func.count()
-                                                 ).select_from(Book).where(Book.name == 'This book was not written')
+        count_statement: SelectOfScalar = select(
+            func.count(),
+        ).select_from(Book).where(
+            Book.name == 'This book was not written',
+        )
         amount = session.exec(count_statement).first()
         assert amount == 1, amount
 
@@ -132,7 +136,7 @@ def test_database_with_sqlmodel_readme_example():
         assert first_book_result is not None, first_book_result
 
         statement: Delete = delete(Book).where(Book.name == 'This book was not written')
-        session.exec(statement)
+        session.exec(statement)  # type: ignore
 
         amount = session.exec(count_statement).first()
         assert amount == 0, amount
@@ -160,7 +164,7 @@ def test_database_with_sqlmodel_readme_example():
         for library in libaries:
             logger.info(f'Library ({library}) has books:')
             for book_inventory in library.books:
-                logger.info(f'    Book inventory ({book_inventory}) of book ({book_inventory.book})')
+                logger.info(f'\tBook inventory ({book_inventory}) of book ({book_inventory.book})')
 
     # 7) Join two tables and apply filter
     # Find all books that are listed in libraries at least 25 times and where author was born before 1910
@@ -179,10 +183,10 @@ def test_database_with_sqlmodel_readme_example():
 
     # 9) Clear table
     with Session(engine) as session:
-        statement = delete(BookInventory)
+        statement = delete(BookInventory)  # type: ignore
         session.exec(statement)
         session.commit()
 
 
 if __name__ == '__main__':
-    test_database_with_sqlmodel_readme_example()
+    run_database_with_sqlmodel_readme_example()

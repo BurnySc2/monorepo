@@ -45,7 +45,7 @@ class BookInventory(Document):
 
 # pylint: disable=R0914
 # pylint: disable=R0915
-def test_database_with_mongoengine():
+def run_database_with_mongoengine():
     # Embedded pure-python dict based dictionary
 
     # 1) Create tables
@@ -58,7 +58,7 @@ def test_database_with_mongoengine():
                 j.delete()
     except ServerSelectionTimeoutError:
         logger.error(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:6.0.1'",
         )
         sys.exit(1)
 
@@ -132,4 +132,4 @@ def test_database_with_mongoengine():
 
 
 if __name__ == '__main__':
-    test_database_with_mongoengine()
+    run_database_with_mongoengine()

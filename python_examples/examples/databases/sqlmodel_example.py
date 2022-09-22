@@ -22,6 +22,7 @@ def test_database_with_sqlmodel():
     SQLModel.metadata.create_all(engine)
 
     with Session(engine) as session:
+        # session.add_all([hero_1, hero_2, hero_3])
         for hero in [hero_1, hero_2, hero_3]:
             session.add(hero)
         session.commit()

@@ -99,5 +99,5 @@ async def test_database_with_mongodb():
     except ServerSelectionTimeoutError:
         logger.warning(f"Could not find a running mongoDB instance on port '{my_port}' - aborting")
         logger.warning(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:6.0.1'",
         )

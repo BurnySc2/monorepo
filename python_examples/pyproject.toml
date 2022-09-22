@@ -10,6 +10,8 @@ python = ">=3.8, <3.11"
 numpy = "^1.21"
 # Write and read classes to/from json
 dataclasses-json = "^0.5"
+# Write and read classes to/from json with validator
+pydantic = {extras = ["email"], version = "^1.10.2"}
 # Network access
 aiohttp = "^3.7"
 requests = "^2.26"
@@ -39,7 +41,7 @@ pymongo = "^3.12"
 # Generate text
 lorem-text = "^2.1"
 # https://github.com/tiangolo/sqlmodel
-sqlmodel = "^0.0.6"
+sqlmodel = "^0.0.8"
 # Geometry manipulation
 Shapely = "^1.8"
 # Info about the system

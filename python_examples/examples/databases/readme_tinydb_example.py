@@ -32,7 +32,6 @@ class Library(DataClassJsonMixin):
     name: str
     address: str
 
-
 @dataclass
 class BookInventory(DataClassJsonMixin):
     amount: int
@@ -46,7 +45,7 @@ def list_of_items_to_dict(items: Iterable[DataClassJsonMixin]) -> Iterable[dict]
 
 # pylint: disable=R0914
 # pylint: disable=R0915
-def test_database_with_tinydb():
+def run_database_with_tinydb():
     # Embedded pure-python dict based dictionary
 
     # Write to file:
@@ -170,4 +169,4 @@ def test_database_with_tinydb():
 
 
 if __name__ == '__main__':
-    test_database_with_tinydb()
+    run_database_with_tinydb()

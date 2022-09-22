@@ -54,7 +54,7 @@ Library.update_forward_refs()
 
 # pylint: disable=R0914
 # pylint: disable=R0915
-async def test_database_with_beanie():
+async def run_database_with_beanie():
     # Embedded pure-python dict based dictionary
 
     client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://localhost:27017')
@@ -64,7 +64,7 @@ async def test_database_with_beanie():
         await init_beanie(database=client.db_name, document_models=[Author, Publisher, Book, Library, BookInventory])
     except ServerSelectionTimeoutError:
         logger.error(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:6.0.1'",
         )
         sys.exit(1)
 
@@ -211,4 +211,4 @@ async def test_database_with_beanie():
 
 
 if __name__ == '__main__':
-    asyncio.run(test_database_with_beanie())
+    asyncio.run(run_database_with_beanie())

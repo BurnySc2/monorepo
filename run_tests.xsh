@@ -28,7 +28,7 @@ def convert_git_relative_path_to_absolute_path(git_response: str) -> List[str]:
         git_response.splitlines()
     ))
 
-PYTHON_PROJECTS = ["fastapi_server", "discord_bot", "burny_common", "python_examples", "svelte_frontend"]
+PYTHON_PROJECTS = ["fastapi_server", "discord_bot", "burny_common", "python_examples"]
 FRONTEND_PROJECTS = ["bored_gems", "replay_comparer", "supabase_stream_scripts", "svelte_frontend"]
 CHANGED_FILES: List[str] = convert_git_relative_path_to_absolute_path($(git diff HEAD --name-only))
 PYTHON_FILES: List[str] = convert_git_relative_path_to_absolute_path($(git ls-files '*.py'))
@@ -49,7 +49,7 @@ PYLINT_COMMAND = f"poetry run pylint --rcfile {str(MAIN_CONFIG_FILE)}".split()
 MYPY_COMMAND = f"poetry run mypy --config-file {str(MAIN_CONFIG_FILE)}".split()
 
 def project_has_changed_files(project_name: str, changed_only=True, file_ending: str="") -> List[str]:
-    iterable_files = CHANGED_FILES if changed_only else FILES_IN_PROJECT[project_name]
+    iterable_files = CHANGED_FILES if changed_only else FILES_IN_PROJECT.get(project_name, [])
     return [
         file_name for file_name in iterable_files
         if file_name.endswith(file_ending)
@@ -102,16 +102,17 @@ def run(
     ):
     # Run cleanup, autoformat, pylint, mypy on all python projects
     for python_project in PYTHON_PROJECTS:
+        project_py_files = project_has_changed_files(python_project, changed_only=False, file_ending=".py")
+        project_changed_py_files = project_has_changed_files(python_project, changed_only=run_only_changed_files, file_ending=".py")
+
         cd @(python_project)
         # run_command("poetry update".split(), verbose=verbose)
         run_command("poetry install".split(), verbose=verbose)
         if run_python_lint:
-            project_py_files = project_has_changed_files(python_project, changed_only=False, file_ending=".py")
             if project_py_files:
                 # Run mypy on all python files because types could have changed which can affect other files
                 run_command(MYPY_COMMAND + project_py_files, verbose=verbose, display_name=f"Run mypy on {python_project}")
 
-            project_changed_py_files = project_has_changed_files(python_project, changed_only=run_only_changed_files, file_ending=".py")
             if project_changed_py_files:
                 # run_command(PYCLN_CHECK_COMMAND + project_changed_py_files, verbose=verbose, display_name=f"Run pycln check on {python_project}")
                 run_command(PYCLN_COMMAND + project_changed_py_files, verbose=verbose, display_name=f"Run pycln on {python_project}")

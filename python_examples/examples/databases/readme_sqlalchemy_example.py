@@ -28,7 +28,6 @@ class Publisher(Base, MyBase):  # type: ignore
     name = Column(String)
     founded_year = Column(Integer)
 
-
 class Book(Base, MyBase):  # type: ignore
     __tablename__ = 'book'
     id = Column(Integer, primary_key=True)
@@ -61,7 +60,7 @@ class BookInventory(Base, MyBase):  # type: ignore
 
 # pylint: disable=R0914
 # pylint: disable=R0915
-def test_database_with_sqlalchemy_readme_example():
+def run_database_with_sqlalchemy_readme_example():
     author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
     author_2 = Author(name='Harper Lee', birth_year=1926)
     author_3 = Author(name='George Orwell', birth_year=1903)
@@ -175,4 +174,4 @@ def test_database_with_sqlalchemy_readme_example():
 
 
 if __name__ == '__main__':
-    test_database_with_sqlalchemy_readme_example()
+    run_database_with_sqlalchemy_readme_example()
