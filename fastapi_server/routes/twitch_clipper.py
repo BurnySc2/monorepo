@@ -4,10 +4,9 @@ import datetime
 import os
 import re
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
 
 from fastapi import HTTPException
 from fastapi.routing import APIRouter
@@ -27,7 +26,8 @@ class ClipInfo:
     minutes: str
     seconds: str
 
-    limit_in_kb: Optional[int] = None  # limit in kilobytes
+    crf: int = None  # type: ignore
+    duration: datetime.timedelta = field(default_factory=lambda: datetime.timedelta(minutes=1))
 
     def __post_init__(self):
         self.hours = self.hours.zfill(2) if self.hours else '00'
@@ -53,10 +53,6 @@ class ClipInfo:
         return f'{self.hours}:{self.minutes}:{self.seconds}'
 
     @property
-    def duration(self) -> datetime.timedelta:
-        return datetime.timedelta(minutes=1)
-
-    @property
     def download_path(self) -> Path:
         return DATA_FOLDER / f'{self.upload_name}_downloaded.mp4'
 
@@ -73,7 +69,7 @@ def find_groups(url: str) -> ClipInfo:
     match = re.fullmatch(r'(\d+)\?t=(\d+)?h?(\d+)?m?(\d+)?s?', url)
     if not match:
         raise HTTPException(
-            status_code=404, detail='Url does not match expected pattern. Expected pattern: dl_clip/vod_id?t=5h4m3s'
+            status_code=406, detail='Url does not match expected pattern. Expected pattern: dl_clip/vod_id?t=5h4m3s'
         )
     return ClipInfo.from_match(match)
 
@@ -107,7 +103,7 @@ def download_part_of_vod(clip_info: ClipInfo) -> None:
 
 
 def convert_video_with_ffmpeg(clip_info: ClipInfo) -> None:
-    if clip_info.limit_in_kb is None:
+    if clip_info.crf is None:
         process = subprocess.Popen(
             [
                 'ffmpeg',
@@ -126,14 +122,15 @@ def convert_video_with_ffmpeg(clip_info: ClipInfo) -> None:
             stdout=subprocess.PIPE,
         )
     else:
-        target_kilobitrate: int = int(0.9 * 8 * clip_info.limit_in_kb // clip_info.duration.total_seconds())
         process = subprocess.Popen(
             [
                 'ffmpeg',
                 '-i',
                 str(clip_info.download_path.absolute()),
-                "-b",
-                f"{target_kilobitrate}k",
+                '-vcodec',
+                'libx264',
+                '-crf',
+                f'{clip_info.crf}',
                 '-y',
                 str(clip_info.converted_path.absolute()),
             ],
@@ -174,11 +171,19 @@ async def download_clip_from_vod(url: str, t: str):
     )
 
 
-@clip_router.get('/dl_clip_limit/{url}')
-async def download_clip_from_vod_with_10mb_limit(url: str, t: str):
+@clip_router.get('/dl_clip_limit/{crf}/{duration}/{url}')
+async def download_clip_from_vod(crf: int, duration: int, url: str, t: str):
+    if crf < 20:
+        raise HTTPException(status_code=406, detail='CRF parameter is below the limit of 20.')
+    if crf > 50:
+        raise HTTPException(status_code=406, detail='CRF parameter exceeds limit of 50.')
+    if duration > 600:
+        raise HTTPException(status_code=406, detail='Duration exceeds limit of 600 seconds.')
+
     total_url = f'{url}?t={t}'
     clip_info: ClipInfo = find_groups(total_url)
-    clip_info.limit_in_kb = 8 * 2**10  # Limit clip to 10 mb
+    clip_info.duration = datetime.timedelta(seconds=int(duration))
+    clip_info.crf = crf
     data = download_clip_from_clip_info(clip_info)
 
     return StreamingResponse(

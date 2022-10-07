@@ -106,7 +106,7 @@ jobs:
         key: ${{ secrets.DISCORDBOTKEY }}
         passphrase: ''
         script: |
+          docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
           sudo systemctl daemon-reload
-          docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}

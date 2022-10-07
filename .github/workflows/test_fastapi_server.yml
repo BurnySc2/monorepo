@@ -109,9 +109,9 @@ jobs:
         key: ${{ secrets.FASTAPISERVERDEVKEY }}
         passphrase: ''
         script: |
+          docker pull burnysc2/${{ env.IMAGENAME }}:latest_dev
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
           sudo systemctl daemon-reload
-          docker pull burnysc2/${{ env.IMAGENAME }}:latest_dev
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
   deploy_backend_prod:
@@ -134,9 +134,9 @@ jobs:
         key: ${{ secrets.FASTAPISERVERKEY }}
         passphrase: ''
         script: |
+          docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
           sudo systemctl daemon-reload
-          docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
 #    - name: Update server files
