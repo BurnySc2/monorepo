@@ -26,7 +26,6 @@ class ClipInfo:
     minutes: str
     seconds: str
 
-    crf: int = None  # type: ignore
     duration: datetime.timedelta = field(default_factory=lambda: datetime.timedelta(minutes=1))
 
     def __post_init__(self):
@@ -104,44 +103,25 @@ async def download_part_of_vod(clip_info: ClipInfo) -> None:
 
 
 async def convert_video_with_ffmpeg(clip_info: ClipInfo) -> None:
-    if clip_info.crf is None:
-        process = await asyncio.create_subprocess_shell(
-            ' '.join(
-                [
-                    'ffmpeg',
-                    '-err_detect',
-                    'ignore_err',
-                    '-i',
-                    f'{clip_info.download_path.absolute()}',
-                    '-c',
-                    'copy',
-                    '-y',
-                    '-loglevel',
-                    'error',
-                    f'{clip_info.converted_path.absolute()}',
-                ]
-            ),
-            stderr=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-        )
-    else:
-        process = await asyncio.create_subprocess_shell(
-            ' '.join(
-                [
-                    'ffmpeg',
-                    '-i',
-                    f'{clip_info.download_path.absolute()}',
-                    '-vcodec',
-                    'libx264',
-                    '-crf',
-                    f'{clip_info.crf}',
-                    '-y',
-                    f'{clip_info.converted_path.absolute()}',
-                ]
-            ),
-            stderr=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-        )
+    process = await asyncio.create_subprocess_shell(
+        ' '.join(
+            [
+                'ffmpeg',
+                '-err_detect',
+                'ignore_err',
+                '-i',
+                f'{clip_info.download_path.absolute()}',
+                '-c',
+                'copy',
+                '-y',
+                '-loglevel',
+                'error',
+                f'{clip_info.converted_path.absolute()}',
+            ]
+        ),
+        stderr=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+    )
     _stdout, _stderr = await process.communicate()
     _debug = None
 
@@ -162,32 +142,14 @@ async def download_clip_from_clip_info(clip_info: ClipInfo) -> BytesIO:
     return data_rewinded
 
 
-@clip_router.get('/dl_clip/{url}')
-async def download_clip_from_vod(url: str, t: str):
-    total_url = f'{url}?t={t}'
-    clip_info: ClipInfo = find_groups(total_url)
-    data = await download_clip_from_clip_info(clip_info)
-
-    return StreamingResponse(
-        content=data, headers={
-            'Content-Disposition': f'attachment;filename={clip_info.upload_name}.mp4',
-        }
-    )
-
-
-@clip_router.get('/dl_clip_limit/{crf}/{duration}/{url}')
-async def download_clip_from_vod(crf: int, duration: int, url: str, t: str):
-    if crf < 20:
-        raise HTTPException(status_code=406, detail='CRF parameter is below the limit of 20.')
-    if crf > 50:
-        raise HTTPException(status_code=406, detail='CRF parameter exceeds limit of 50.')
+@clip_router.get('/dl_clip/{duration}/{url}')
+async def download_clip_from_vod(duration: int, url: str, t: str):
     if duration > 600:
         raise HTTPException(status_code=406, detail='Duration exceeds limit of 600 seconds.')
 
     total_url = f'{url}?t={t}'
     clip_info: ClipInfo = find_groups(total_url)
-    clip_info.duration = datetime.timedelta(seconds=int(duration))
-    clip_info.crf = crf
+    clip_info.duration = datetime.timedelta(seconds=duration)
     data = await download_clip_from_clip_info(clip_info)
 
     return StreamingResponse(
