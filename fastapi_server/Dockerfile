@@ -1,5 +1,7 @@
 FROM python:3.10-slim
 
+RUN apt install ffmpeg -y
+
 ADD poetry.lock pyproject.toml /root/fastapi_server/
 
 WORKDIR /root/fastapi_server
