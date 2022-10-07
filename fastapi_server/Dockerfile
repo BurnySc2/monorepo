@@ -1,6 +1,8 @@
 FROM python:3.10-slim
 
-RUN apt install ffmpeg -y
+# Install ffmpeg
+RUN apt -y update && \
+    apt install -y --no-install-recommends ffmpeg
 
 ADD poetry.lock pyproject.toml /root/fastapi_server/
 
