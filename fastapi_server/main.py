@@ -17,6 +17,7 @@ from routes.chat import chat_router
 from routes.hello_world import hello_world_router
 from routes.replay_parser import replay_parser_router
 from routes.todolist import todo_list_router
+from routes.twitch_clipper import clip_router
 
 assert os.getenv('STAGE', 'DEV') in {'DEV', 'PROD'}, os.getenv('STAGE')
 STAGE: Literal['DEV', 'PROD'] = os.getenv('STAGE', 'DEV')  # type: ignore
@@ -25,6 +26,7 @@ app = FastAPI()
 app.include_router(hello_world_router)
 app.include_router(replay_parser_router)
 app.include_router(todo_list_router)
+app.include_router(clip_router)
 
 origins = [
     'https://burnysc2.github.io',

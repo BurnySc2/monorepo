@@ -30,12 +30,12 @@ class PersonModel(BaseModel):
         assert '@' in v, 'Must contain a @ symbol'
         return v
 
-    @validator("password1")
+    @validator('password1')
     def password_longer_than_6(cls, v: str):
-        assert len(v) > 6, "Password is too short"
+        assert len(v) > 6, 'Password is too short'
         return v
 
-    @validator("password2")
+    @validator('password2')
     def passwords_match(cls, v: str, values: dict):
         # if 'password1' in values and v == values['password1']:
         #     raise ValueError('Passwords do not match')
@@ -45,14 +45,14 @@ class PersonModel(BaseModel):
 
 def test_pydantic():
     person = PersonModel(
-        name="This works",
-        email=EmailStr("some@email.com"),
+        name='This works',
+        email=EmailStr('some@email.com'),
         # Also works:
         # credit_card={"card_number": 123456},
         credit_card=CreditCardMOdel(card_number=123456),
         birthday=datetime(1234, 1, 1),
-        password1="hunter2",
-        password2="hunter2",
+        password1='hunter2',
+        password2='hunter2',
     )
 
     my_json = person.json()

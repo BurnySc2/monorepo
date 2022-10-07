@@ -38,9 +38,9 @@ class DiscordMessage:
     guild_id: int = 0
     channel_id: int = 0
     author_id: int = 0
-    who: str = ""  # e.g. "BuRny#123456"
-    when: str = ""  # e.g. "2021-06-10T11:13:36.522"
-    what: str = ""
+    who: str = ''  # e.g. "BuRny#123456"
+    when: str = ''  # e.g. "2021-06-10T11:13:36.522"
+    what: str = ''
 
     @property
     def when_arrow(self) -> Arrow:
@@ -68,6 +68,7 @@ async def main():
 
     # End session
     await supabase.postgrest.aclose()
+
 
 if __name__ == '__main__':
     asyncio.run(main())
