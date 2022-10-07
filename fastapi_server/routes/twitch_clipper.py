@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import datetime
 import os
 import re
-import subprocess
 from dataclasses import dataclass, field
 from io import BytesIO
 from pathlib import Path
@@ -74,77 +74,81 @@ def find_groups(url: str) -> ClipInfo:
     return ClipInfo.from_match(match)
 
 
-def download_part_of_vod(clip_info: ClipInfo) -> None:
+async def download_part_of_vod(clip_info: ClipInfo) -> None:
     quality = 'best'
-    process = subprocess.Popen(
-        [
-            'streamlink',
-            # "--hls-live-edge",
-            # "6",
-            # "--hls-segment-attempts",
-            # "10",
-            # "--hls-segment-threads",
-            # "8",
-            '--hls-start-offset',
-            f'{clip_info.start_timestamp}',
-            '--hls-duration',
-            f'{clip_info.duration}',
-            clip_info.url,
-            quality,
-            '-o',
-            clip_info.download_path.absolute(),
-        ],
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
+    process = await asyncio.create_subprocess_shell(
+        ' '.join(
+            [
+                'streamlink',
+                # "--hls-live-edge",
+                # "6",
+                # "--hls-segment-attempts",
+                # "10",
+                # "--hls-segment-threads",
+                # "8",
+                '--hls-start-offset',
+                f'{clip_info.start_timestamp}',
+                '--hls-duration',
+                f'{clip_info.duration}',
+                clip_info.url,
+                quality,
+                '-o',
+                f'{clip_info.download_path.absolute()}',
+            ]
+        ),
+        stderr=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
     )
-    process.wait()
-    _debug = process.communicate()
+    _stdout, _stderr = await process.communicate()
     _debug = None
 
 
-def convert_video_with_ffmpeg(clip_info: ClipInfo) -> None:
+async def convert_video_with_ffmpeg(clip_info: ClipInfo) -> None:
     if clip_info.crf is None:
-        process = subprocess.Popen(
-            [
-                'ffmpeg',
-                '-err_detect',
-                'ignore_err',
-                '-i',
-                str(clip_info.download_path.absolute()),
-                '-c',
-                'copy',
-                '-y',
-                '-loglevel',
-                'error',
-                str(clip_info.converted_path.absolute()),
-            ],
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+        process = await asyncio.create_subprocess_shell(
+            ' '.join(
+                [
+                    'ffmpeg',
+                    '-err_detect',
+                    'ignore_err',
+                    '-i',
+                    f'{clip_info.download_path.absolute()}',
+                    '-c',
+                    'copy',
+                    '-y',
+                    '-loglevel',
+                    'error',
+                    f'{clip_info.converted_path.absolute()}',
+                ]
+            ),
+            stderr=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
         )
     else:
-        process = subprocess.Popen(
-            [
-                'ffmpeg',
-                '-i',
-                str(clip_info.download_path.absolute()),
-                '-vcodec',
-                'libx264',
-                '-crf',
-                f'{clip_info.crf}',
-                '-y',
-                str(clip_info.converted_path.absolute()),
-            ],
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+        process = await asyncio.create_subprocess_shell(
+            ' '.join(
+                [
+                    'ffmpeg',
+                    '-i',
+                    f'{clip_info.download_path.absolute()}',
+                    '-vcodec',
+                    'libx264',
+                    '-crf',
+                    f'{clip_info.crf}',
+                    '-y',
+                    f'{clip_info.converted_path.absolute()}',
+                ]
+            ),
+            stderr=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
         )
-    process.wait()
-    _debug = process.communicate()
+    _stdout, _stderr = await process.communicate()
     _debug = None
 
 
-def download_clip_from_clip_info(clip_info: ClipInfo) -> BytesIO:
-    download_part_of_vod(clip_info)
-    convert_video_with_ffmpeg(clip_info)
+async def download_clip_from_clip_info(clip_info: ClipInfo) -> BytesIO:
+    await download_part_of_vod(clip_info)
+    await convert_video_with_ffmpeg(clip_info)
 
     with clip_info.converted_path.open('rb') as f:
         data = f.read()
@@ -162,7 +166,7 @@ def download_clip_from_clip_info(clip_info: ClipInfo) -> BytesIO:
 async def download_clip_from_vod(url: str, t: str):
     total_url = f'{url}?t={t}'
     clip_info: ClipInfo = find_groups(total_url)
-    data = download_clip_from_clip_info(clip_info)
+    data = await download_clip_from_clip_info(clip_info)
 
     return StreamingResponse(
         content=data, headers={
@@ -184,7 +188,7 @@ async def download_clip_from_vod(crf: int, duration: int, url: str, t: str):
     clip_info: ClipInfo = find_groups(total_url)
     clip_info.duration = datetime.timedelta(seconds=int(duration))
     clip_info.crf = crf
-    data = download_clip_from_clip_info(clip_info)
+    data = await download_clip_from_clip_info(clip_info)
 
     return StreamingResponse(
         content=data, headers={
