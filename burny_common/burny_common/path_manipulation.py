@@ -27,5 +27,4 @@ def recurse_path(path: Path, depth: int = 0) -> Iterable[Path]:
         yield path
     elif path.is_dir() and depth > 0:
         for subfile_path in sorted(path.iterdir()):
-            for new_file in recurse_path(subfile_path, depth=depth - 1):
-                yield new_file
+            yield from recurse_path(subfile_path, depth=depth - 1)

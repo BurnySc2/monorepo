@@ -1,3 +1,5 @@
+# To update hooks run: poetry run pre-commit autoupdate
+
 # This removes comments
 #- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
 #  rev: v2.1.0
@@ -32,16 +34,22 @@ repos:
 
 # Autoformat yaml files
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.1.0
+  rev: v2.4.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
 
 # Check github action workflow files
 - repo: https://github.com/sirosen/check-jsonschema
-  rev: 0.14.3
+  rev: 0.18.4
   hooks:
   - id: check-github-workflows
+
+- repo: https://github.com/asottile/pyupgrade
+  rev: v3.2.0
+  hooks:
+  - id: pyupgrade
+    args: [--py37-plus]
 
 # Detect functions and variables that are never used
 #- repo: https://github.com/asottile/dead
@@ -49,15 +57,15 @@ repos:
 #  hooks:
 #  - id: dead
 
-- repo: local
-  hooks:
-  # Autoformat, lint, test
-  - id: xonsh
-    name: Run xonsh script
-    stages: [commit]
-    language: system
-    entry: poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
-    pass_filenames: false
+#- repo: local
+#  hooks:
+#  # Autoformat, lint, test
+#  - id: xonsh
+#    name: Run xonsh script
+#    stages: [commit]
+#    language: system
+#    entry: poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
+#    pass_filenames: false
 
 #  - id: pytest-cov
 #    name: pytest

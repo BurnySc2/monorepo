@@ -1,4 +1,6 @@
+from dataclasses import field
 from datetime import datetime
+from typing import List, Union
 
 from hypothesis import given
 from hypothesis import strategies as st
@@ -7,18 +9,43 @@ from hypothesis import strategies as st
 from pydantic import BaseModel, EmailStr, validator
 
 
-class CreditCardMOdel(BaseModel):
+class CreditCardModel(BaseModel):
     card_number: int
+
+
+class PetModel(BaseModel):
+    name: str
+    type: str
+
+
+class CatModel(PetModel):
+    type: str = 'cat'
+
+    @validator('type')
+    def type_must_be_cat(cls, v: str):
+        assert v == 'cat', 'Must be cat'
+        return v
+
+
+class DogModel(PetModel):
+    type: str = 'dog'
+
+    @validator('type')
+    def type_must_be_dog(cls, v: str):
+        assert v == 'dog', 'Must be dog'
+        return v
 
 
 # pylint: disable=E0213
 class PersonModel(BaseModel):
     name: str
     email: EmailStr
-    credit_card: CreditCardMOdel
+    credit_card: CreditCardModel
     birthday: datetime
     password1: str
     password2: str
+    # pets: List[PetModel]
+    pets: List[Union[CatModel, DogModel, PetModel]]
 
     @validator('name')
     def name_must_contain_space(cls, v: str):
@@ -49,17 +76,23 @@ def test_pydantic():
         email=EmailStr('some@email.com'),
         # Also works:
         # credit_card={"card_number": 123456},
-        credit_card=CreditCardMOdel(card_number=123456),
+        credit_card=CreditCardModel(card_number=123456),
         birthday=datetime(1234, 1, 1),
         password1='hunter2',
         password2='hunter2',
+        pets=[
+            PetModel(name='Parrot', type='parrot'),
+            CatModel(name='Kitty'),
+            DogModel(name='Peter'),
+        ],
     )
 
     my_json = person.json()
     person2 = PersonModel.parse_raw(my_json)
+    # Order matters in "List[Union[CatModel, DogModel, PetModel]]" so it tries to match cat and dog model first
     assert person == person2
 
 
-@given(st.builds(CreditCardMOdel))
+@given(st.builds(CreditCardModel))
 def test_property(_instance):
     pass

@@ -181,7 +181,7 @@ Example usage:
         day = day if day else str(time_now.day)
 
         # Fill empty strings with 1 zero
-        hour, minute, second = [v.zfill(2) for v in [hour, minute, second]]
+        hour, minute, second = (v.zfill(2) for v in [hour, minute, second])
 
         try:
             future_reminder_time = arrow.get(
@@ -225,7 +225,7 @@ Example usage:
             return None
 
         # Fill empty strings with 1 zero
-        days_, hours_, minutes_, seconds_ = [v.zfill(1) for v in [day, hour, minute, second]]
+        days_, hours_, minutes_, seconds_ = (v.zfill(1) for v in [day, hour, minute, second])
         # Convert strings to int
         days, hours, minutes, seconds = map(int, [days_, hours_, minutes_, seconds_])
 

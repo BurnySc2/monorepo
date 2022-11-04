@@ -8,8 +8,7 @@ def product_generator(*args: Iterable[Any], repeat: int = 1) -> Generator[Any, N
     result: List[List[Any]] = [[]]
     for pool in pools:
         result = [x + [y] for x in result for y in pool]
-    for prod in result:
-        yield prod
+    yield from result
 
 
 if __name__ == '__main__':

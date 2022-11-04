@@ -64,7 +64,7 @@ def find_next_free_port(port: int = 10_000, max_port: int = 65_535, exclude_port
         if port not in exclude_ports and portpicker.is_port_free(port):
             return port
         port += 1
-    raise IOError('No free ports')
+    raise OSError('No free ports')
 
 
 # pylint: disable=R1732
