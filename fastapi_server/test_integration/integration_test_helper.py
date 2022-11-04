@@ -1,7 +1,6 @@
 import os
 import signal
 import subprocess
-import sys
 import time
 from contextlib import suppress
 from pathlib import Path
@@ -105,7 +104,7 @@ def start_svelte_dev_server(
             time.sleep(0.1)
         while 1:
             with suppress(requests.exceptions.ConnectionError):
-                result = requests.get(get_website_address(port))
+                result = requests.get(get_website_address(port), timeout=10)
                 if result.status_code == 200:
                     break
             time.sleep(0.1)
@@ -165,7 +164,7 @@ def start_fastapi_dev_server(
             time.sleep(0.1)
         while 1:
             with suppress(requests.exceptions.ConnectionError):
-                result = requests.get(get_website_address(port))
+                result = requests.get(get_website_address(port), timeout=10)
                 if result.status_code == 200:
                     break
             time.sleep(0.1)
@@ -173,7 +172,6 @@ def start_fastapi_dev_server(
     new_processes: Set[int] = get_pid('uvicorn') - currently_running_uvicorn_processes
     logger.info(f'New uvicorn processes: {new_processes}')
     newly_created_processes |= new_processes
-
 
 
 def kill_processes(processes: Set[int]):

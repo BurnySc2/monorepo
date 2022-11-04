@@ -1,4 +1,3 @@
-from dataclasses import field
 from datetime import datetime
 from typing import List, Union
 
@@ -21,6 +20,7 @@ class PetModel(BaseModel):
 class CatModel(PetModel):
     type: str = 'cat'
 
+    # pylint: disable=E0213
     @validator('type')
     def type_must_be_cat(cls, v: str):
         assert v == 'cat', 'Must be cat'
@@ -30,6 +30,7 @@ class CatModel(PetModel):
 class DogModel(PetModel):
     type: str = 'dog'
 
+    # pylint: disable=E0213
     @validator('type')
     def type_must_be_dog(cls, v: str):
         assert v == 'dog', 'Must be dog'

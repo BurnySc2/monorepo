@@ -28,6 +28,7 @@ class Publisher(Base, MyBase):  # type: ignore
     name = Column(String)
     founded_year = Column(Integer)
 
+
 class Book(Base, MyBase):  # type: ignore
     __tablename__ = 'book'
     id = Column(Integer, primary_key=True)

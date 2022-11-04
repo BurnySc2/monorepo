@@ -1,13 +1,14 @@
 from pathlib import Path
 from typing import Set
 
+from playwright.sync_api import BrowserContext, Page
+
 from test_integration.integration_test_helper import (
     find_next_free_port,
     kill_processes,
     start_fastapi_dev_server,
     start_svelte_dev_server,
 )
-from playwright.sync_api import BrowserContext, Page, expect
 
 # Uncomment if you want to render frontend debugger
 # import os

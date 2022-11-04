@@ -12,10 +12,10 @@ from hikari import (
     GuildReactionAddEvent,
     GuildTextChannel,
     GuildVoiceChannel,
+    Intents,
     Message,
     PartialChannel,
     StartedEvent,
-    Intents,
 )
 from loguru import logger
 from postgrest import APIResponse, AsyncSelectRequestBuilder

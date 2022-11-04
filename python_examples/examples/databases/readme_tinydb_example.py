@@ -32,6 +32,7 @@ class Library(DataClassJsonMixin):
     name: str
     address: str
 
+
 @dataclass
 class BookInventory(DataClassJsonMixin):
     amount: int

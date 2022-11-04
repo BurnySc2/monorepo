@@ -2,8 +2,8 @@ from typing import Any, Coroutine, Dict
 
 from postgrest._async.client import AsyncPostgrestClient
 from postgrest._async.request_builder import AsyncFilterRequestBuilder, AsyncRequestBuilder
-from supabase.lib.client_options import ClientOptions
 from supabase import Client as SyncClient
+from supabase.lib.client_options import ClientOptions
 
 
 class Client(SyncClient):
