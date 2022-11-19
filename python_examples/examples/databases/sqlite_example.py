@@ -1,6 +1,15 @@
 import sqlite3
 
 from loguru import logger
+"""
+SQLite help:
+https://www.sqlitetutorial.net
+https://www.tutorialspoint.com/sqlite/index.htm
+https://docs.python.org/3/library/sqlite3.html
+
+SQL tutorials:
+https://sqlzoo.net/wiki/SQL_Tutorial
+"""
 
 
 def test_database():
@@ -89,6 +98,7 @@ def test_database():
 
         # TODO: How to add or remove a column in existing database?
         # TODO: How to join two databases?
+        # TODO: More examples of "GROUP BY" and "HAVING"
 
         tables = db.execute("SELECT name FROM sqlite_master WHERE type='table'")
         for table in tables:

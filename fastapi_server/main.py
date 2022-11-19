@@ -2,9 +2,6 @@ import sys
 from contextlib import suppress
 from pathlib import Path
 
-with suppress(IndexError):
-    sys.path.append(str(Path(__file__).parents[1]))
-
 import os
 from typing import Literal
 
@@ -12,6 +9,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+
+with suppress(IndexError):
+    sys.path.append(str(Path(__file__).parents[1]))
 
 from routes.chat import chat_router
 from routes.hello_world import hello_world_router
