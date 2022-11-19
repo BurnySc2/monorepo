@@ -26,9 +26,9 @@ streamlink = "^5.0.1"
 
 [tool.poetry.dev-dependencies]
 # Test library
-pytest = "^7.0.1"
+pytest = "^7.1"
 pytest-asyncio = "^0.16"
-pytest-benchmark = "^3.4.1"
+pytest-benchmark = "^4.0"
 # Property based testing
 hypothesis = "^6.39.3"
 # Info about the system
