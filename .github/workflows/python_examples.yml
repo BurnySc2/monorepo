@@ -55,12 +55,12 @@ jobs:
     - name: Start MongoDB
       uses: ankane/setup-mongodb@v1
       with:
-        mongodb-version: 5.0.0
+        mongodb-version: 5.0
 
 #    - name: Start MongoDB in docker
 #      if: ${{ matrix.os != 'macos-latest'}}
 #      run: |
-#        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0
+#        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0
 
     - name: Start Postgres
       uses: ankane/setup-postgres@v1
