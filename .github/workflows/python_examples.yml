@@ -54,8 +54,8 @@ jobs:
 
     - name: Start MongoDB
       uses: ankane/setup-mongodb@v1
-      with:
-        mongodb-version: 5.0
+#      with:
+#        mongodb-version: 5.0
 
 #    - name: Start MongoDB in docker
 #      if: ${{ matrix.os != 'macos-latest'}}
