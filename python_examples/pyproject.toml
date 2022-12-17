@@ -52,6 +52,8 @@ paramiko = "^2.8"
 click = "^8.1"
 # SQL ORM
 peewee = "^3.14"
+# SQL ORM
+pony = "^0.7.16"
 # Sync mongoDB ODM
 mongoengine = "^0.24"
 # Async mongoDB ODM

@@ -1,9 +1,6 @@
 import math
 from dataclasses import dataclass
 
-import hypothesis.strategies as st
-from hypothesis import given
-
 
 @dataclass()
 class Float:
@@ -61,6 +58,7 @@ def test_ieee754():
     print(str(my_float2))
     assert -20.59375 == float(my_float2)
     assert N == str(my_float).replace(' ', '')
+
 
 # TODO Fix me
 # @given(st.floats())

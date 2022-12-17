@@ -1,8 +1,7 @@
+import os
 import sys
 from contextlib import suppress
 from pathlib import Path
-
-import os
 from typing import Literal
 
 import uvicorn
