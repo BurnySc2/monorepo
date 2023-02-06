@@ -1,0 +1,19 @@
+import time
+
+for i in range(10):
+    # Create command
+    command = ["sleep", f"{i}"]
+    # Run command
+    # @(command)
+    # Run command in background
+    @(command) &
+
+print("Waiting for jobs to finish")
+while $(jobs):
+    jobs_string = $(jobs)
+    jobs_list = jobs_string.strip().split("\n")
+    jobs_amount = len(jobs_list)
+    print(f"{jobs_amount} jobs still active...")
+    time.sleep(1)
+
+print("Parallel running jobs completed!")
