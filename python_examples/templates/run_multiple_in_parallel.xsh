@@ -20,10 +20,11 @@ for i in range(10):
     # @(command1)
     # Run command in background
     # @(command1) &
-    # Run multiple commands in background
-    # (@(command1) && @(command2)) &
+    # Run multiple commands sequentially in the background
+    $i = i
+    (sleep $i && echo $i) &
     # Run multiple commands in background suppressing output
-    # (@(command1) && @(command2)) all>/dev/null &
+    # (sleep $i && echo $i) all>/dev/null &
 
 print("Waiting for jobs to finish")
 while count_jobs() > 0:
