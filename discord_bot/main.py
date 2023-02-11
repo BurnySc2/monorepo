@@ -1,24 +1,25 @@
 import asyncio
 import os
 from pathlib import Path
-from typing import AsyncGenerator, Awaitable, Callable, Generator, Set, Union
+from typing import AsyncGenerator, Awaitable, Callable, Set, Union
 
+import hikari.errors
+import httpx
 from hikari import (
     Embed,
     GatewayBot,
     GatewayGuild,
-    GuildCategory,
     GuildMessageCreateEvent,
     GuildReactionAddEvent,
     GuildTextChannel,
-    GuildVoiceChannel,
     Intents,
-    Message,
+    OwnGuild,
     PartialChannel,
     StartedEvent,
 )
+from hikari.channels import ChannelType
 from loguru import logger
-from postgrest import APIResponse, AsyncSelectRequestBuilder
+from postgrest import APIResponse
 
 from commands.public_emotes import public_count_emotes
 from commands.public_mmr import public_mmr
@@ -85,73 +86,78 @@ async def loop_function() -> None:
         await my_reminder.tick()
 
 
-def get_channels_of_server(
-    server: GatewayGuild
-) -> Generator[Union[GuildCategory, GuildTextChannel, GuildVoiceChannel], None, None]:
-    yield from server.get_channels().values()  # type: ignore
+async def get_text_channels_of_server(server: OwnGuild) -> AsyncGenerator[GuildTextChannel, None]:
+    assert isinstance(server, OwnGuild), type(server)
+    for channel in await bot.rest.fetch_guild_channels(server):  # type: ignore
+        if channel.type not in {ChannelType.GUILD_TEXT}:
+            continue
+        assert isinstance(channel, GuildTextChannel), type(channel)
+        yield channel
 
 
-async def fetch_messages_of_channel(channel: GuildTextChannel) -> AsyncGenerator[Message, None]:
-    query: AsyncSelectRequestBuilder = supabase.table(DiscordMessage.table_name()).select('message_id').eq(
-        'channel_id',
-        channel.id,
-    ).limit(1)
-
-    # Fetch oldest message id
-    response: APIResponse = await query.order('when').execute()
-    # If no messages in db, fetch whole history of channel
-    before = response.data[0]['message_id'] if response.data else None
-    async for message in channel.fetch_history(before=before):
-        yield message
-
-    # Fetch new messages in case the bot was offline for a while
-    response = await query.order('when', desc=True).execute()
-    # If no message in db, must mean there are no messages in the channel: skip
-    if not response.data:
+async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextChannel) -> None:
+    # Check if bot has access to channel
+    if channel.last_message_id is None:
         return
-    async for message in channel.fetch_history(after=response.data[0]['message_id']):
-        yield message
+    try:
+        _temp_message = await channel.fetch_message(channel.last_message_id)
+    except hikari.errors.ForbiddenError:
+        logger.error(f"No access to channel '{channel}' in server '{server}'")
+        return
+    except hikari.errors.NotFoundError:
+        logger.error(f"Last message in channel '{channel}' in server '{server}' could not be fetched")
+        return
+
+    all_message_ids_response: APIResponse = await supabase.table(DiscordMessage.table_name()).select('message_id').eq(
+        "channel_id",
+        channel.id,
+    ).execute()
+    message_ids_already_exist_in_db: Set[int] = {row['message_id'] for row in all_message_ids_response.data}
+
+    messages_inserted_count = 0
+    async for message in channel.fetch_history():
+        # Don't process duplicates
+        if message.id in message_ids_already_exist_in_db:
+            continue
+        # Ignore bot and webook messages
+        if message.author.is_bot:
+            continue
+        # TODO Use bulk insert via List[dict] once API allows it
+        # logger.info(f"Inserting message from {message.created_at}")
+        await (
+            supabase.table(DiscordMessage.table_name()).insert(
+                {
+                    'message_id': message.id,
+                    'guild_id': server.id,
+                    'channel_id': channel.id,
+                    'author_id': message.author.id,
+                    'who': str(message.author),
+                    'when': str(message.created_at),
+                    'what': message.content,
+                }
+            ).execute()
+        )
+        messages_inserted_count += 1
+    if messages_inserted_count > 0:
+        logger.info(f"Inserted {messages_inserted_count} messages of channel '{channel}' in server '{server}'")
 
 
 async def get_all_servers() -> AsyncGenerator[GatewayGuild, None]:
-    all_connected_servers = bot.cache.get_available_guilds_view()
+    try:
+        _check_if_supabase_is_up: APIResponse = await supabase.table(DiscordMessage.table_name()).select(
+            'message_id',
+        ).limit(1).execute()
+    except httpx.ConnectError as e:
+        logger.trace(f'Error trying to access supabase: {e}')
+        return
 
-    added_messages: APIResponse = await supabase.table(DiscordMessage.table_name()).select('message_id').execute()
-
-    message_ids_already_exist: Set[int] = {row['message_id'] for row in added_messages.data}
-
-    server: GatewayGuild
-    for server in all_connected_servers.values():
+    server: OwnGuild
+    async for server in bot.rest.fetch_my_guilds():
         yield server
-        # Add all messages from channel "chat" to DB
-        if server.id == 384968030423351298:
-            for channel in get_channels_of_server(server):
-                if isinstance(channel, GuildTextChannel):
-                    async for message in fetch_messages_of_channel(channel):
-                        # async for message in channel.fetch_history():
-                        if message.id in message_ids_already_exist:
-                            continue
-                        # TODO Use bulk insert via List[dict]
-                        await (
-                            supabase.table(DiscordMessage.table_name()).insert(
-                                {
-                                    'message_id': message.id,
-                                    'guild_id': server.id,
-                                    'channel_id': channel.id,
-                                    'author_id': message.author.id,
-                                    'who': str(message.author),
-                                    'when': str(message.created_at),
-                                    'what': message.content,
-                                }
-                            ).execute()
-                        )
-
-    # all_connected_servers = bot.cache.get_guilds_view()
-    # for server in all_connected_servers.values():
-    #     yield server
-
-    # async for server in bot.rest.fetch_my_guilds():
-    #     yield server
+        # Add all messages to DB
+        async for channel in get_text_channels_of_server(server):
+            # Create a coroutine that works in background to add messages of specific server and channel to database
+            asyncio.create_task(insert_messages_of_channel_to_db(server, channel))
 
 
 @bot.listen()
@@ -184,7 +190,7 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     message = await bot.rest.fetch_message(event.channel_id, event.message_id)
     if not message:
         return
-    # Message is not by this bot
+    # Reaction is not by a bot
     if not message.author.is_bot:
         return
     # Reaction is not by one of the mentioned users
@@ -245,11 +251,12 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
 
     if command == 'ping':
         guild = event.get_guild()
-        if guild:
-            b = await guild.fetch_emojis()
+        if not guild:
+            return
+        b = await guild.fetch_emojis()
 
-            animated = next(i for i in b if i.is_animated)
-            await event.message.respond(f'Pong! {bot.heartbeat_latency * 1_000:.0f}ms {b[0]} {animated}')
+        animated = next(i for i in b if i.is_animated)
+        await event.message.respond(f'Pong! {bot.heartbeat_latency * 1_000:.0f}ms {b[0]} {animated}')
 
 
 if __name__ == '__main__':

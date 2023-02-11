@@ -1,7 +1,3 @@
-import math
-import sqlite3
-
-from loguru import logger
 """
 SQLite help:
 https://www.sqlitetutorial.net
@@ -17,6 +13,10 @@ https://pgexercises.com
 https://www.sql-practice.com
 https://mystery.knightlab.com
 """
+import math
+import sqlite3
+
+from loguru import logger
 
 
 def calc_distance(x0: float, y0: float, x1: float, y1: float) -> float:
@@ -31,7 +31,7 @@ def test_database():
 
         # Add a custom function
         # https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.create_function
-        db.create_function("dist", 4, calc_distance, deterministic=True)
+        db.create_function('dist', 4, calc_distance, deterministic=True)
 
         # Creates a new table "people" with 3 columns: text, real, integer
         # Fields marked with PRIMARY KEY are columns with unique values (?)
@@ -109,7 +109,7 @@ def test_database():
             row_as_dict = dict(row)
             logger.info(f'Row: {row_as_dict}')
 
-        person = "Someone"
+        person = 'Someone'
         max_distance = 50
         logger.info(f'Get all people in distance of {max_distance} of \'{person}\'')
         results: sqlite3.Cursor = db.execute(

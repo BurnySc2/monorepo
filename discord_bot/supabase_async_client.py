@@ -36,7 +36,11 @@ class Client(SyncClient):
 
     @staticmethod
     def _init_postgrest_client(
-        rest_url: str, supabase_key: str, headers: Dict[str, str], schema: str
+        rest_url: str,
+        supabase_key: str,
+        headers: Dict[str, str],
+        schema: str,
+        timeout: float = 5
     ) -> AsyncPostgrestClient:
         """Private helper for creating an instance of the Postgrest client."""
         client = AsyncPostgrestClient(rest_url, headers=headers, schema=schema)

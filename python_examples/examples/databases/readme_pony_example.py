@@ -127,7 +127,7 @@ def run_database_with_pony_readme_example():
 
     with orm.db_session():
         # Assert before, is None if not found
-        book = Book.get(name="This book was not written")
+        book = Book.get(name='This book was not written')
         assert book is not None
 
         # 5) Delete books
@@ -135,7 +135,7 @@ def run_database_with_pony_readme_example():
         # orm.delete(b for b in Book if b.name == "This book was not written")
 
         # Assert after
-        book = Book.get(name="This book was not written")
+        book = Book.get(name='This book was not written')
         assert book is None
 
     # 6) Get data from other tables

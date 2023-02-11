@@ -414,7 +414,6 @@ def main():
     result = asyncio.run(r._parse_date_and_time_from_message(message))
     print(result, bool(result[1]))
     assert result[1] == 'some message'
-    sys.exit()
 
     class CustomAuthor:
 
