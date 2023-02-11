@@ -1,7 +1,6 @@
 import asyncio
 import json
 import re
-import sys
 from heapq import heapify, heappop, heappush
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
