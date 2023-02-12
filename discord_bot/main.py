@@ -5,6 +5,7 @@ from typing import AsyncGenerator, Awaitable, Callable, Set, Union
 
 import hikari.errors
 import httpx
+import postgrest
 from hikari import (
     Embed,
     GatewayBot,
@@ -98,20 +99,23 @@ async def get_text_channels_of_server(server: OwnGuild) -> AsyncGenerator[GuildT
 
 
 async def add_message_to_db(server_id: int, channel_id: int, message: Message) -> None:
-    """Insert message into database"""
-    await (
-        supabase.table(DiscordMessage.table_name()).insert(
-            {
-                'message_id': message.id,
-                'guild_id': server_id,
-                'channel_id': channel_id,
-                'author_id': message.author.id,
-                'who': str(message.author),
-                'when': str(message.created_at),
-                'what': message.content,
-            }
-        ).execute()
-    )
+    """Insert message into database. Ignore if it's a duplicate"""
+    try:
+        await (
+            supabase.table(DiscordMessage.table_name()).insert(
+                {
+                    'message_id': message.id,
+                    'guild_id': server_id,
+                    'channel_id': channel_id,
+                    'author_id': message.author.id,
+                    'who': str(message.author),
+                    'when': str(message.created_at),
+                    'what': message.content,
+                }
+            ).execute()
+        )
+    except postgrest.exceptions.APIError:
+        logger.error(f"Mesage already exists or could not insert message: {message.id}")
 
 
 async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextChannel) -> None:
@@ -209,22 +213,28 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if not message.author.is_bot and event.emoji_name in allowed_emoji_names:
         for reaction in message.reactions:
             if reaction.emoji.name in allowed_emoji_names and reaction.count >= target_emoji_count:
-                # Add quote to db
-                await (
-                    supabase.table(DiscordQuotes.table_name()).insert(
-                        {
-                            'message_id': message.id,
-                            'guild_id': event.guild_id,
-                            'channel_id': event.channel_id,
-                            'author_id': message.author.id,
-                            'who': str(message.author),
-                            'when': str(message.created_at),
-                            'what': message.content,
-                            'emoji_name': reaction.emoji.name,
-                        }
-                    ).execute()
-                )
-                # TODO Write message to channel that a quote has been added and how many there are now total
+                try:
+                    # Add quote to db
+                    await (
+                        supabase.table(DiscordQuotes.table_name()).insert(
+                            {
+                                'message_id': message.id,
+                                'guild_id': event.guild_id,
+                                'channel_id': event.channel_id,
+                                'author_id': message.author.id,
+                                'who': str(message.author),
+                                'when': str(message.created_at),
+                                'what': message.content,
+                                'emoji_name': reaction.emoji.name,
+                            }
+                        ).execute()
+                    )
+                    logger.info(f"Added quote: {message.content}")
+                    # TODO Write message to channel that a quote has been added and how many there are now in total
+                except postgrest.exceptions.APIError as e:
+                    if e.message != f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"':
+                        raise
+                    logger.error(f"Quote already exists: {message.id}")
                 return
         return
 

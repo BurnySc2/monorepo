@@ -1,6 +1,6 @@
 import os
 from multiprocessing import Pool
-from typing import List, Union
+from typing import List
 
 
 def do_math(number: float) -> float:
