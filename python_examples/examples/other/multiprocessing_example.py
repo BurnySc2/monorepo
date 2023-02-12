@@ -3,11 +3,11 @@ from multiprocessing import Pool
 from typing import List, Union
 
 
-def do_math(number: Union[int, float]) -> Union[int, float]:
+def do_math(number: float) -> float:
     return number + 3
 
 
-async def do_math_async(number: Union[int, float]) -> Union[int, float]:
+async def do_math_async(number: float) -> float:
     return number + 3
 
 

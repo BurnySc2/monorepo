@@ -13,6 +13,7 @@ from hikari import (
     GuildReactionAddEvent,
     GuildTextChannel,
     Intents,
+    Message,
     OwnGuild,
     PartialChannel,
     StartedEvent,
@@ -96,6 +97,23 @@ async def get_text_channels_of_server(server: OwnGuild) -> AsyncGenerator[GuildT
         yield channel
 
 
+async def add_message_to_db(server_id: int, channel_id: int, message: Message) -> None:
+    """Insert message into database"""
+    await (
+        supabase.table(DiscordMessage.table_name()).insert(
+            {
+                'message_id': message.id,
+                'guild_id': server_id,
+                'channel_id': channel_id,
+                'author_id': message.author.id,
+                'who': str(message.author),
+                'when': str(message.created_at),
+                'what': message.content,
+            }
+        ).execute()
+    )
+
+
 async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextChannel) -> None:
     # Check if bot has access to channel
     if channel.last_message_id is None:
@@ -125,19 +143,7 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
             continue
         # TODO Use bulk insert via List[dict] once API allows it
         # logger.info(f"Inserting message from {message.created_at}")
-        await (
-            supabase.table(DiscordMessage.table_name()).insert(
-                {
-                    'message_id': message.id,
-                    'guild_id': server.id,
-                    'channel_id': channel.id,
-                    'author_id': message.author.id,
-                    'who': str(message.author),
-                    'when': str(message.created_at),
-                    'what': message.content,
-                }
-            ).execute()
-        )
+        await add_message_to_db(server.id, channel.id, message)
         messages_inserted_count += 1
     if messages_inserted_count > 0:
         logger.info(f"Inserted {messages_inserted_count} messages of channel '{channel}' in server '{server}'")
@@ -185,7 +191,7 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if STAGE == 'PROD' and channel.name == 'bot_tests':
         return
 
-    message: hikari.messages.Message = await bot.rest.fetch_message(event.channel_id, event.message_id)
+    message: Message = await bot.rest.fetch_message(event.channel_id, event.message_id)
     if not message:
         return
 
@@ -198,11 +204,11 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
         return
 
     # If "twss" reacted and reaction count >=3: add quote to db
-    allowed_emoji_name = {"twss"}
+    allowed_emoji_names = {"twss"}
     target_emoji_count = 4
-    if not message.author.is_bot and event.emoji_name in allowed_emoji_name:
+    if not message.author.is_bot and event.emoji_name in allowed_emoji_names:
         for reaction in message.reactions:
-            if reaction.emoji.name in allowed_emoji_name and reaction.count >= target_emoji_count:
+            if reaction.emoji.name in allowed_emoji_names and reaction.count >= target_emoji_count:
                 # Add quote to db
                 await (
                     supabase.table(DiscordQuotes.table_name()).insert(
@@ -239,7 +245,8 @@ async def handle_new_message(event: GuildMessageCreateEvent) -> None:
     if not event.is_human or not event.content:
         return
 
-    # TODO On new message, add to DB
+    # On new message, add message to DB
+    await add_message_to_db(event.guild_id, event.channel_id, event.message)
 
     # guild = event.get_guild()
     # member = event.get_member()
