@@ -37,11 +37,11 @@ def test_database():
         # Fields marked with PRIMARY KEY are columns with unique values (?)
         db.execute(
             '''
-            CREATE TABLE IF NOT EXISTS people 
+            CREATE TABLE IF NOT EXISTS people
             (
-                id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                name TEXT UNIQUE NOT NULL CHECK(length(name) >= 3), 
-                age INTEGER NOT NULL CHECK(age >= 0), 
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL CHECK(length(name) >= 3),
+                age INTEGER NOT NULL CHECK(age >= 0),
                 height REAL NOT NULL CHECK(height >= 0),
                 x REAL NOT NULL,
                 y REAL NOT NULL

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -31,7 +33,7 @@ class Sc2LadderResult:
     clan_tag: Optional[str]
 
     @staticmethod
-    def from_api_result(data: dict) -> 'Sc2LadderResult':
+    def from_api_result(data: dict) -> Sc2LadderResult:
 
         members = data['members']
         character = members['character']
@@ -89,7 +91,7 @@ async def public_mmr(
     _bot: GatewayBot,
     _event: GuildMessageCreateEvent,
     query_name: str,
-):
+) -> str:
     """The public command '!mmr name', will look up an account name, clan name or stream name and list several results as a markdown table using PrettyTable
     Usage:
     !mmr burny"""

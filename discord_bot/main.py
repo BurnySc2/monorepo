@@ -24,7 +24,8 @@ from postgrest import APIResponse
 from commands.public_emotes import public_count_emotes
 from commands.public_mmr import public_mmr
 from commands.public_remind import Remind
-from db import DiscordMessage, supabase
+from commands.public_twss import public_twss
+from db import DiscordMessage, DiscordQuotes, supabase
 
 # Load key from env or from file
 token = os.getenv('DISCORDKEY')
@@ -67,12 +68,12 @@ async def generic_command_caller(
     channel = event.get_channel()
     if not channel:
         return
-    # Call the given function with the event and message
+    # Call the given function with the bot, event and message
     response: Union[Embed, str] = await function_to_call(bot, event, message)
     if isinstance(response, Embed):
         sent_message = await channel.send(f'{event.author.mention}', embed=response)
     else:
-        # Error message
+        # Error message or raw string response
         sent_message = await channel.send(f'{event.author.mention} {response}')
     if add_remove_emoji:
         # https://www.fileformat.info/info/unicode/char/274c/index.htm
@@ -119,7 +120,7 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         # Don't process duplicates
         if message.id in message_ids_already_exist_in_db:
             continue
-        # Ignore bot and webook messages
+        # Ignore bot and webhook messages
         if message.author.is_bot:
             continue
         # TODO Use bulk insert via List[dict] once API allows it
@@ -154,10 +155,11 @@ async def get_all_servers() -> AsyncGenerator[GatewayGuild, None]:
     server: OwnGuild
     async for server in bot.rest.fetch_my_guilds():
         yield server
-        # Add all messages to DB
-        async for channel in get_text_channels_of_server(server):
-            # Create a coroutine that works in background to add messages of specific server and channel to database
-            asyncio.create_task(insert_messages_of_channel_to_db(server, channel))
+        if STAGE == 'PROD':
+            # Add all messages to DB
+            async for channel in get_text_channels_of_server(server):
+                # Create a coroutine that works in background to add messages of specific server and channel to database
+                asyncio.create_task(insert_messages_of_channel_to_db(server, channel))
 
 
 @bot.listen()
@@ -176,10 +178,6 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if event.member.is_bot:
         return
 
-    # Remove message if :x: was reacted to it
-    if not event.is_for_emoji('\u274C'):
-        return
-
     channel: PartialChannel = await bot.rest.fetch_channel(event.channel_id)
     # Use channel 'bot_tests' only for development
     if STAGE == 'DEV' and channel.name != 'bot_tests':
@@ -187,16 +185,42 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if STAGE == 'PROD' and channel.name == 'bot_tests':
         return
 
-    message = await bot.rest.fetch_message(event.channel_id, event.message_id)
+    message: hikari.messages.Message = await bot.rest.fetch_message(event.channel_id, event.message_id)
     if not message:
         return
-    # Reaction is not by a bot
-    if not message.author.is_bot:
+
+    # Message is by bot
+    # Message has mention
+    # Mention is same user who reacted
+    # Remove message if :x: was reacted to it
+    if message.author.is_bot and f'<@{event.user_id}>' not in message.content and event.is_for_emoji('\u274C'):
+        await message.delete()
         return
-    # Reaction is not by one of the mentioned users
-    if not message.content or f'<@{event.user_id}>' not in message.content:
+
+    # If "twss" reacted and reaction count >=3: add quote to db
+    allowed_emoji_name = {"twss"}
+    target_emoji_count = 4
+    if not message.author.is_bot and event.emoji_name in allowed_emoji_name:
+        for reaction in message.reactions:
+            if reaction.emoji.name in allowed_emoji_name and reaction.count >= target_emoji_count:
+                # Add quote to db
+                await (
+                    supabase.table(DiscordQuotes.table_name()).insert(
+                        {
+                            'message_id': message.id,
+                            'guild_id': event.guild_id,
+                            'channel_id': event.channel_id,
+                            'author_id': message.author.id,
+                            'who': str(message.author),
+                            'when': str(message.created_at),
+                            'what': message.content,
+                            'emoji_name': reaction.emoji.name,
+                        }
+                    ).execute()
+                )
+                # TODO Write message to channel that a quote has been added and how many there are now total
+                return
         return
-    await message.delete()
 
 
 @bot.listen()
@@ -239,6 +263,7 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
         'delreminder': my_reminder.public_del_remind,
         'mmr': public_mmr,
         'emotes': public_count_emotes,
+        'twss': public_twss,
     }
     if command in function_mapping:
         function = function_mapping[command]

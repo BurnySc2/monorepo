@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import os
 from dataclasses import dataclass
@@ -51,9 +53,38 @@ class DiscordMessage:
         return 'discord_messages'
 
     @staticmethod
-    def from_select(response: APIResponse) -> Generator['DiscordMessage', None, None]:
+    def from_select(response: APIResponse) -> Generator[DiscordMessage, None, None]:
         for row in response.data:
             yield DiscordMessage(**row)
+
+
+@dataclass
+class DiscordQuotes:
+    message_id: int = 0
+    guild_id: int = 0
+    channel_id: int = 0
+    author_id: int = 0
+    who: str = ''  # e.g. "BuRny#123456"
+    when: str = ''  # e.g. "2021-06-10T11:13:36.522"
+    what: str = ''
+    emoji_name: str = ''  # The name of the emoji, e.g. "twss"
+
+    @property
+    def when_arrow(self) -> Arrow:
+        return arrow.get(self.when)
+
+    @staticmethod
+    def table_name() -> str:
+        return 'discord_quotes'
+
+    @staticmethod
+    def table_name_random_order_view() -> str:
+        return 'discord_quotes_random_order_view'
+
+    @staticmethod
+    def from_select(response: APIResponse) -> Generator[DiscordQuotes, None, None]:
+        for row in response.data:
+            yield DiscordQuotes(**row)
 
 
 async def main():
