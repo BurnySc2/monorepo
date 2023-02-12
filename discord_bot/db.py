@@ -53,6 +53,18 @@ class DiscordMessage:
         return 'discord_messages'
 
     @staticmethod
+    def table_name_leaderboard_all() -> str:
+        return 'discord_leaderboard_all'
+
+    @staticmethod
+    def table_name_leaderboard_month() -> str:
+        return 'discord_leaderboard_month'
+
+    @staticmethod
+    def table_name_leaderboard_week() -> str:
+        return 'discord_leaderboard_week'
+
+    @staticmethod
     def from_select(response: APIResponse) -> Generator[DiscordMessage, None, None]:
         for row in response.data:
             yield DiscordMessage(**row)

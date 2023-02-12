@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 
 from arrow import Arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, KnownCustomEmoji
-from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-ignore[0]
+from postgrest import APIResponse, AsyncSelectRequestBuilder
 from simple_parsing import ArgumentParser
 
 from db import DiscordMessage, supabase

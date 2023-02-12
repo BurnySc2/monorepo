@@ -1,7 +1,7 @@
 import asyncio
 import os
 from pathlib import Path
-from typing import AsyncGenerator, Awaitable, Callable, Set, Union
+from typing import AsyncGenerator, Awaitable, Callable, Optional, Set, Union
 
 import hikari.errors
 import httpx
@@ -24,6 +24,7 @@ from loguru import logger
 from postgrest import APIResponse
 
 from commands.public_emotes import public_count_emotes
+from commands.public_leaderboard import public_leaderboard
 from commands.public_mmr import public_mmr
 from commands.public_remind import Remind
 from commands.public_twss import public_twss
@@ -70,8 +71,12 @@ async def generic_command_caller(
     channel = event.get_channel()
     if not channel:
         return
+
     # Call the given function with the bot, event and message
-    response: Union[Embed, str] = await function_to_call(bot, event, message)
+    response: Optional[Union[Embed, str]] = await function_to_call(bot, event, message)
+    if response is None:
+        return
+
     if isinstance(response, Embed):
         sent_message = await channel.send(f'{event.author.mention}', embed=response)
     else:
@@ -281,6 +286,7 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
         'mmr': public_mmr,
         'emotes': public_count_emotes,
         'twss': public_twss,
+        'leaderboard': public_leaderboard,
     }
     if command in function_mapping:
         function = function_mapping[command]
