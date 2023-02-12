@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { GameStatus, type LobbyInfo } from "../../constants"
+    import { GameStatus } from "../../constants"
+    import type { LobbyInfo } from "../../constants"
 
     // svelte-ignore unused-export-let
     export let lobbyInfo: LobbyInfo = {

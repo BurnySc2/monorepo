@@ -1,7 +1,8 @@
 <script lang="ts">
-    import { GameStatus } from "../../constants"
+    import { goto } from "$app/navigation"
 
-    import { getSupabaseUserFromSession, supabase, supabaseLobbyTable, supabasePlayerTable } from "../../supabase"
+    import { GameStatus } from "../../constants"
+    import { createLobby, getSupabaseUserFromSession } from "../../supabase"
 
     export let createLobbyShown = true
 
@@ -20,34 +21,23 @@
             // TODO: redirect to login page?
             return
         }
-        // Add new lobby to database for people to be able to join
-        let { data, error } = await supabaseLobbyTable
-            .insert({
-                lobby_host: userFromSession.id,
-                game_type: newLobby.gameType,
-                game_status: GameStatus.CREATED,
-                player_limit: newLobby.maxPlayers,
-                lobby_name: newLobby.lobbyName, // TODO: if lobby name not given, it will not be shown on the gamelobbies page
-                lobby_password: newLobby.password,
-                // TODO: allow spectators? bool
-            })
-            .single()
-        if (error) {
-            // TODO: error in lobby creation
+
+        let data = await createLobby(
+            userFromSession,
+            newLobby.gameType,
+            newLobby.maxPlayers,
+            newLobby.lobbyName, // TODO: if lobby name not given, it will not be shown on the gamelobbies page
+            newLobby.password
+            // TODO: allow spectators? bool
+        )
+        if (!data) {
             return
         }
-        console.log(data) // TODO: REMOVE ME
-
-        // Add creator as player
-        await supabasePlayerTable.insert({
-            lobby: data.id,
-            user: userFromSession.id,
-        })
         // What does this do? do i need it
         createLobbyShown = false
 
         // Use lobby id to redirect to game lobby
-        window.location.href = `/games?lobbyid=${data.id}`
+        goto(`/games?lobbyid=${data.id}`)
     }
 </script>
 

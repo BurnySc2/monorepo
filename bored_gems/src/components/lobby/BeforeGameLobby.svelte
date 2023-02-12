@@ -1,8 +1,10 @@
 <script lang="ts">
-    import { supabaseLobbyTable, supabasePlayerTable } from "../../supabase"
-    import { GameStatus, type LobbyInfo, type PlayerInfo } from "../../constants"
-    import BeforeGameSettings from "./BeforeGameSettings.svelte"
     import type { User } from "@supabase/supabase-js"
+
+    import { GameStatus } from "../../constants"
+    import type { LobbyInfo, PlayerInfo } from "../../constants"
+    import { closeLobby, exitLobby, startGame, supabaseLobbyTable, supabasePlayerTable } from "../../supabase"
+    import BeforeGameSettings from "./BeforeGameSettings.svelte"
 
     export let userIsHost = true
     export let lobbyInfo: LobbyInfo = {
@@ -22,24 +24,18 @@
     const handleGameStart = async () => {
         // TODO Button to start game
         // TODO Sanity check: tictactoe can only be started with 2 players!
-        await supabaseLobbyTable.update({ game_status: GameStatus.RUNNING }).eq("id", lobbyInfo.id)
+        await startGame(lobbyInfo.id)
     }
 
     const handleCloseLobby = async () => {
         // TODO Button to close lobby
         // TODO Delete moves for the lobby?
-        await supabasePlayerTable.delete().match({ lobby: lobbyInfo.id })
-        await supabaseLobbyTable.delete().match({ id: lobbyInfo.id })
-        window.location.href = "/lobbies"
+        await closeLobby(lobbyInfo.id, "/lobbies")
     }
 
     const handleExitLobby = async () => {
         // TODO Button to exit lobby
-        if (!user) {
-            return
-        }
-        await supabasePlayerTable.delete().match({ lobby: lobbyInfo.id, user: user.id })
-        window.location.href = "/lobbies"
+        await exitLobby(user!, lobbyInfo.id, "/lobbies")
     }
 </script>
 

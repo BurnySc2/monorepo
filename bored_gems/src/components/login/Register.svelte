@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { supabase, supabaseUsernameTable } from "../../supabase"
+    import { registerUser, supabase, supabaseUsernameTable } from "../../supabase"
 
     let email = ""
     let username = ""
@@ -8,31 +8,8 @@
     const registerHandler = async () => {
         // VERIFY INPUT DATA
         // SANITISE INPUT DATA
-        console.log(email) // TODO REMOVE ME
-        console.log(username) // TODO REMOVE ME
-        console.log(password) // TODO REMOVE ME
-
-        const { error } = await supabase.auth.signUp({
-            email: email,
-            password: password,
-        })
-        if (error !== null) {
-            // TODO error handling, couldnt sign up, dont redirect
-            console.log(error)
-            return
-        }
-        // No error
-
-        // Connect username with user account (foreignkey = email)
-        await supabaseUsernameTable.insert([
-            {
-                username: username,
-                email: email,
-            },
-        ])
-
-        // Redirect to root page
-        window.location.href = "/"
+        console.log("Registering...")
+        await registerUser(email, username, password, "/")
     }
 </script>
 

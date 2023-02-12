@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { supabase, supabaseUsernameTable, getSupabaseUserFromSession, getUsernameOfUser } from "../supabase"
-
-    import { onMount } from "svelte"
     import type { AuthSession, User } from "@supabase/supabase-js"
+    import { onMount } from "svelte"
+
+    import { getSupabaseUserFromSession, getUsernameOfUser, supabase, supabaseUsernameTable } from "../supabase"
 
     let user: User | null = null
     let email = ""

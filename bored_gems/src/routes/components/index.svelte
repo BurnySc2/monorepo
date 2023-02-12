@@ -14,6 +14,10 @@
             name: "Create lobby",
             link: "components/createlobby",
         },
+        {
+            name: "Playground",
+            link: "components/supabaseplayground",
+        },
     ]
 </script>
 

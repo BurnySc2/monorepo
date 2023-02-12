@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { supabase } from "../../supabase"
+    import { loginUser, supabase } from "../../supabase"
 
     let email = ""
     let password = ""
@@ -7,22 +7,8 @@
     const loginHandler = async () => {
         // VERIFY INPUT DATA
         // SANITISE INPUT DATA
-        console.log(email) // TODO REMOVE ME
-        console.log(password) // TODO REMOVE ME
-
-        const { user, session, error } = await supabase.auth.signIn({
-            email: email,
-            password: password,
-        })
-        console.log(user) // TODO REMOVE ME
-        console.log(session) // TODO REMOVE ME
-        if (error !== null) {
-            // TODO error handling, couldnt sign up, dont redirect
-            console.log(error)
-            return
-        }
-        // No error, redirect to root page
-        window.location.href = "/"
+        console.log("Logging in...")
+        await loginUser(email, password, "/")
     }
 </script>
 

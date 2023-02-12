@@ -1,10 +1,11 @@
 <script lang="ts">
-    import { GameStatus, getSearchParamFromUrl, type LobbyInfo } from "../constants"
-
-    import { onMount } from "svelte"
-    import { getSupabaseUserFromSession, supabase, supabaseLobbyTable, supabasePlayerTable } from "../supabase"
     import type { User } from "@supabase/supabase-js"
+    import { onMount } from "svelte"
+
     import BeforeGameLobby from "../components/lobby/BeforeGameLobby.svelte"
+    import { GameStatus, getSearchParamFromUrl } from "../constants"
+    import type { LobbyInfo } from "../constants"
+    import { getSupabaseUserFromSession, supabase, supabaseLobbyTable, supabasePlayerTable } from "../supabase"
 
     // player (participant of a game lobby) vs observer
     // user (logged-in user) vs guest (logged-out user)
