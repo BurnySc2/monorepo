@@ -39,6 +39,7 @@ if token is None:
     with DISCORDKEY_PATH.open() as f:
         token = f.read().strip()
 bot = GatewayBot(token=token, intents=Intents.ALL)  # type: ignore
+BOT_USER_ID: int = -1
 del token
 
 PREFIX = '!'
@@ -179,7 +180,9 @@ async def get_all_servers() -> AsyncGenerator[GatewayGuild, None]:
 
 @bot.listen()
 async def on_start(_event: StartedEvent) -> None:
+    global BOT_USER_ID
     logger.info('Bot started')
+    BOT_USER_ID = (await bot.rest.fetch_my_user()).id
     await my_reminder.load_reminders()
     # Call another async function that runs forever
     asyncio.create_task(loop_function())
@@ -208,7 +211,7 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     # Message has mention
     # Mention is same user who reacted
     # Remove message if :x: was reacted to it
-    if message.author.is_bot and f'<@{event.user_id}>' not in message.content and event.is_for_emoji('\u274C'):
+    if message.author.id == BOT_USER_ID and f'<@{event.user_id}>' in message.content and event.is_for_emoji('\u274C'):
         await message.delete()
         return
 
