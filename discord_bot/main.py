@@ -217,32 +217,46 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
 
     # If "twss" reacted and reaction count >=3: add quote to db
     allowed_emoji_names = {"twss"}
-    target_emoji_count = 4
+    target_emoji_count = 3
+    if STAGE == 'DEV' and channel.name == 'bot_tests':
+        allowed_emoji_names = {"burnysStalker"}
+        target_emoji_count = 1
     if not message.author.is_bot and event.emoji_name in allowed_emoji_names:
         for reaction in message.reactions:
             if reaction.emoji.name in allowed_emoji_names and reaction.count >= target_emoji_count:
-                try:
-                    # Add quote to db
-                    await (
-                        supabase.table(DiscordQuotes.table_name()).insert(
-                            {
-                                'message_id': message.id,
-                                'guild_id': event.guild_id,
-                                'channel_id': event.channel_id,
-                                'author_id': message.author.id,
-                                'who': str(message.author),
-                                'when': str(message.created_at),
-                                'what': message.content,
-                                'emoji_name': reaction.emoji.name,
-                            }
-                        ).execute()
-                    )
-                    logger.info(f"Added quote: {message.content}")
-                    # TODO Write message to channel that a quote has been added and how many there are now in total
-                except postgrest.exceptions.APIError as e:
-                    if e.message != f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"':
-                        raise
-                    logger.error(f"Quote already exists: {message.id}")
+                # Add quote to db
+                if STAGE == 'PROD':
+                    try:
+                        await (
+                            supabase.table(DiscordQuotes.table_name()).insert(
+                                {
+                                    'message_id': message.id,
+                                    'guild_id': event.guild_id,
+                                    'channel_id': event.channel_id,
+                                    'author_id': message.author.id,
+                                    'who': str(message.author),
+                                    'when': str(message.created_at),
+                                    'what': message.content,
+                                    'emoji_name': reaction.emoji.name,
+                                }
+                            ).execute()
+                        )
+                    except postgrest.exceptions.APIError as e:
+                        if e.message != f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"':
+                            raise
+                        logger.error(f"Quote already exists: {message.id}")
+                        return
+                logger.info(f"Added quote: {message.content}")
+
+                # Notify people in channel that a quote has been added
+                # TODO and how many there are now in total
+                quote = DiscordQuotes(
+                    when=str(message.created_at),
+                    who=message.author.username,
+                    what=message.content,
+                )
+                response_message = f'''Added {reaction.emoji.name} quote:\n{quote.when_arrow.strftime("%Y-%m-%d")} {quote.who}: {quote.what}'''
+                await channel.send(response_message)
                 return
         return
 
