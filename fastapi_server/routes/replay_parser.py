@@ -15,7 +15,6 @@ class RequestBody:
     replay_tick: int = 112
 
 
-# pylint: disable=R0902
 @dataclass
 class ParserPlayer:
     name: str

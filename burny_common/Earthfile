@@ -1,0 +1,63 @@
+VERSION 0.6
+FROM python:3.10-slim
+WORKDIR /root/burny_common
+
+install-dev:
+    COPY poetry.lock pyproject.toml ./
+    RUN mkdir -p burny_common
+    RUN touch burny_common/__init__.py
+    RUN pip install poetry --no-cache-dir \
+        && poetry install
+    COPY . /root/burny_common
+
+format:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Requirements:
+    # pip install poetry
+    # poetry install
+
+    # Remove unused imports
+    RUN poetry run pycln -q .
+    # Sort imports
+    RUN poetry run isort .
+    # Format code
+    RUN poetry run yapf -ir .
+
+# Check if imports are unused
+remove-unused-imports-check:
+    FROM +install-dev
+    RUN poetry run pycln -c .
+
+# Check if imports require reordering
+sort-imports-check:
+    FROM +install-dev
+    RUN poetry run isort --check-only .
+
+# Check if files are correctly formatted
+format-check:
+    FROM +install-dev
+    RUN poetry run yapf -dr .
+
+# Ignore errors via "# Ignore F841"
+lint:
+    FROM +install-dev
+    RUN poetry run ruff check .
+
+# Ignore errors via "# pyre-fixme[11]"
+pyre:
+    FROM +install-dev
+    RUN poetry run pyre
+
+# TODO Add tests
+pytest:
+    FROM +install-dev
+    RUN poetry run pytest
+
+all:
+    BUILD +remove-unused-imports-check
+    BUILD +sort-imports-check
+    BUILD +format-check
+    BUILD +lint
+    BUILD +pyre
+    #BUILD +pytest

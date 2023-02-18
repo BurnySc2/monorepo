@@ -71,7 +71,6 @@ def copy_folder_to_server(
         path_target_root_folder = generate_path(client, targetpath)
 
         allowed_files: Optional[Set] = None
-        # pylint: disable=R1732
         if respectgitignore:
             proc = subprocess.Popen(
                 ['git', 'ls-files'],
