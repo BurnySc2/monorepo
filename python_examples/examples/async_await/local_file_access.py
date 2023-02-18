@@ -6,7 +6,7 @@ from string import printable
 from typing import List
 
 import aiofiles  # type: ignore
-from burny_common.measure_time import time_this
+from burny_common.measure_time import time_this  # pyre-fixme[21]
 
 FILES_AMOUNT = 100
 FILE_SIZE_IN_KB = 50

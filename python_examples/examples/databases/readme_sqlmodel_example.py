@@ -176,7 +176,8 @@ def run_database_with_sqlmodel_readme_example():
         book_inventories = session.exec(statement)
         for book_inventory in book_inventories:
             logger.info(
-                f'Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times and the author is ({book_inventory.book.author})'
+                f'Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times '
+                f'and the author is ({book_inventory.book.author})'
             )
 
     # 8) TODO: Run migration (verify and change table schema if necessary)

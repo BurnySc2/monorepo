@@ -91,7 +91,8 @@ def test_database():
         #     "INSERT INTO people VALUES ('Someone Else', 35, 1.95) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
         # )
         # db.execute(
-        #     "INSERT INTO people VALUES ('Someone Else5', 32, 2.00) ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
+        #     "INSERT INTO people VALUES ('Someone Else5', 32, 2.00)
+        #     ON CONFLICT(name) DO UPDATE SET height=1.95, age=35"
         # )
 
         # Save database to hard drive, don't have to save when it is just in memory
@@ -102,7 +103,8 @@ def test_database():
         # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
         logger.info('Example query')
         results: sqlite3.Cursor = db.execute(
-            "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' ORDER BY age ASC, height ASC",
+            "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' "
+            "ORDER BY age ASC, height ASC",
         )
         for row in results:
             # Can also access values via row[0]

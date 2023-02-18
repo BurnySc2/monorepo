@@ -16,7 +16,8 @@ def run_database_with_sqlite_readme_example():
             'CREATE TABLE IF NOT EXISTS author (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, birth_year INTEGER)',
         )
         db.execute(
-            'CREATE TABLE IF NOT EXISTS publisher (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, founded_year INTEGER)',
+            'CREATE TABLE IF NOT EXISTS publisher '
+            '(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, founded_year INTEGER)',
         )
         db.execute(
             '''CREATE TABLE IF NOT EXISTS book (

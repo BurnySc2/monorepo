@@ -122,9 +122,10 @@ if __name__ == '__main__':
     for i in build_list:
         assert not p.is_empty(), 'Min heap should be not empty, but is returned to be empty'
         value = p.get_min()
-        assert (
-            value == i
-        ), f"get_min or delete_min function not working as expected, received value '{value}' but should have been '{i}', heap:\n{p}"
+        assert (value == i), (
+            f"get_min or delete_min function not working as expected, "
+            f"received value '{value}' but should have been '{i}', heap:\n{p}"
+        )
         p.delete_min()
 
     assert p.is_empty(), "Min heap should be empty, but isn't"

@@ -162,7 +162,8 @@ def run_database_with_sqlalchemy_readme_example():
         )
         for book_inventory in statement:
             logger.info(
-                f'{book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} times and the author is ({book_inventory.book.author})'
+                f'{book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} times '
+                f'and the author is ({book_inventory.book.author})'
             )
 
     # 8) TODO: Run migration (verify and change table schema if necessary)

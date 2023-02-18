@@ -46,7 +46,8 @@ def load_objects_from_json(path: Path) -> MyDataClassList:
 
 def test_data_class_to_and_from_json():
     """ Creates a dataclass, saves to json, re-loads it from json file and compares them. """
-    # Note: interestingly the class holds a set but the written json file contains a list - reloading the list automatically converts it to a set again
+    # Note: interestingly the class holds a set but the written json file contains a list
+    # Reloading the list automatically converts it to a set again
 
     # Write and reload from file
     test_path = Path(__file__).parent.parent.parent / 'data' / 'dataclass_test.json'

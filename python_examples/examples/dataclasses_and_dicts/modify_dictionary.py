@@ -1,5 +1,5 @@
 # Simpler dict manipulation https://pypi.org/project/dpath/
-from dpath.util import get, merge, new
+from dpath import get, merge, new  # pyre-fixme[21]
 from loguru import logger
 
 

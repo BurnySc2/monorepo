@@ -5,10 +5,11 @@ MongoDB GUI Interface: Robo 3T
 import sys
 
 from loguru import logger
-from mongoengine import Document, IntField, ListField, ReferenceField, StringField, connect
-from pymongo.errors import ServerSelectionTimeoutError
+from mongoengine import Document, IntField, ListField, ReferenceField, StringField, connect  # pyre-fixme[21]
+from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
 
 
+# pyre-fixme[11]
 class Author(Document):
     name = StringField(required=True)
     birth_year = IntField()
@@ -58,7 +59,8 @@ def run_database_with_mongoengine():
                 j.delete()
     except ServerSelectionTimeoutError:
         logger.error(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:6.0.1'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 "
+            "--name mongodb mongo:6.0.1'",
         )
         sys.exit(1)
 
@@ -122,7 +124,8 @@ def run_database_with_mongoengine():
     for book_inventory in BookInventory.objects(amount__gte=25):
         if book_inventory.book.author.birth_year < 1910:
             logger.info(
-                f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} times and the author is {book_inventory.book.author}'
+                f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} times '
+                f'and the author is {book_inventory.book.author}'
             )
 
     # 8) TODO: Migration

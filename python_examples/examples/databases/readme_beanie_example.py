@@ -7,25 +7,28 @@ import asyncio
 import sys
 from typing import ForwardRef, List
 
-import motor
+import motor  # pyre-fixme[21]
 from beanie import Document, init_beanie
 from beanie.odm.operators.update.general import Set
 from loguru import logger
 from pydantic import Field
-from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
 
 
 # Queries can be cached https://roman-right.github.io/beanie/tutorial/cache/
+# pyre-fixme[13]
 class Author(Document):
     name: str
     birth_year: int
 
 
+# pyre-fixme[13]
 class Publisher(Document):
     name: str
     founded_year: int
 
 
+# pyre-fixme[13]
 class Book(Document):
     name: str
     release_year: int
@@ -37,18 +40,21 @@ class Book(Document):
 ForwardRefBookInventory = ForwardRef('BookInventory')
 
 
+# pyre-fixme[13]
 class Library(Document):
     name: str
     address: str
     books: List[ForwardRefBookInventory] = Field(default_factory=list)  # type: ignore
 
 
+# pyre-fixme[13]
 class BookInventory(Document):
     amount: int
     book: Book
     library: Library
 
 
+# pyre-fixme[16]
 Library.update_forward_refs()
 
 
@@ -64,7 +70,8 @@ async def run_database_with_beanie():
         await init_beanie(database=client.db_name, document_models=[Author, Publisher, Book, Library, BookInventory])
     except ServerSelectionTimeoutError:
         logger.error(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:6.0.1'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 "
+            "--name mongodb mongo:6.0.1'",
         )
         sys.exit(1)
 
@@ -201,7 +208,8 @@ async def run_database_with_beanie():
         BookInventory.book.author.birth_year < 1910,
     ):
         logger.info(
-            f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} times and the author is {book_inventory.book.author}'
+            f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} '
+            f'times and the author is {book_inventory.book.author}'
         )
 
     # 8) TODO: Migration

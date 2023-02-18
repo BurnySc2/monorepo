@@ -1,14 +1,14 @@
 import re
 from typing import Dict, List, Union
 
-import pymongo
-from bson import ObjectId
+import pymongo  # pyre-fixme[21]
+from bson import ObjectId  # pyre-fixme[21]
 from loguru import logger
 from pymongo import MongoClient
-from pymongo.collection import Collection
-from pymongo.database import Database
-from pymongo.errors import ServerSelectionTimeoutError
-from pymongo.results import InsertManyResult, InsertOneResult
+from pymongo.collection import Collection  # pyre-fixme[21]
+from pymongo.database import Database  # pyre-fixme[21]
+from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
+from pymongo.results import InsertManyResult, InsertOneResult  # pyre-fixme[21]
 
 
 async def test_database_with_mongodb():
@@ -99,5 +99,6 @@ async def test_database_with_mongodb():
     except ServerSelectionTimeoutError:
         logger.warning(f"Could not find a running mongoDB instance on port '{my_port}' - aborting")
         logger.warning(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:6.0.1'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 "
+            "--name mongodb mongo:6.0.1'",
         )

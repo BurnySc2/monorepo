@@ -17,7 +17,8 @@ async def download_file(
     chunk_size: int = 4096,
 ) -> bool:
     """
-    Downloads an image (or a file even) from "url" and saves it to "temp_file_path". When the download is complete, it renames the file at "temp_file_path" to "file_path".
+    Downloads an image (or a file even) from "url" and saves it to "temp_file_path". When the download is complete,
+    it renames the file at "temp_file_path" to "file_path".
     It respects "download_speed" in bytes per second. If no parameter was given, it will ignore the download limit.
 
     Returns boolean if download was successful.

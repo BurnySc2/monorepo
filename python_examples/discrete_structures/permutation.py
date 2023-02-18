@@ -5,7 +5,7 @@ from math import factorial
 from string import ascii_uppercase
 from typing import Any, Generator, List
 
-from burny_common.measure_time import time_this
+from burny_common.measure_time import time_this  # pyre-fixme[21]
 
 
 def permutation(my_list: List[Any]) -> List[Any]:

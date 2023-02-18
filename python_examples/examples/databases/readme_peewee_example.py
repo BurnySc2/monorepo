@@ -1,9 +1,10 @@
 from loguru import logger
-from peewee import CharField, ForeignKeyField, IntegerField, Model, ModelSelect, SqliteDatabase
+from peewee import CharField, ForeignKeyField, IntegerField, Model, ModelSelect, SqliteDatabase  # pyre-fixme[21]
 
 db = SqliteDatabase('test.db')
 
 
+# pyre-fixme[11]
 class Author(Model):
     name = CharField()
     birth_year = IntegerField()
@@ -130,7 +131,8 @@ def run_database_with_peewee_readme_example():
     query = query.where((BookInventory.amount >= 25) & (Author.birth_year < 1910))
     for book_inventory in query:
         logger.info(
-            f'Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times and the author is ({book_inventory.book.author})'
+            f'Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times '
+            f'and the author is ({book_inventory.book.author})'
         )
 
     # 8) TODO: Run migration (verify and change table schema if necessary)
