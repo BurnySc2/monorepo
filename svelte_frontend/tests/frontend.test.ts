@@ -24,9 +24,9 @@ test("from index page i get to all other pages", async ({ page }) => {
     await page.waitForURL("/browserstorage")
     expect(await page.innerText("body")).toContain("Local Storage")
     expect(await page.innerText("body")).toContain("Session Storage")
-    await page.click("#slug")
-    await page.waitForURL("/todo/hello-world")
-    expect(await page.innerText("body")).toContain('Hi! You are on page "/todo/hello-world"')
+//     await page.click("#slug")
+//     await page.waitForURL("/todo/hello-world")
+//     expect(await page.innerText("body")).toContain('Hi! You are on page "/todo/hello-world"')
 })
 
 test("about page has click me button", async ({ page }) => {

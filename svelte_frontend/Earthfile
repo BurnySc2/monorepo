@@ -1,0 +1,60 @@
+VERSION 0.6
+# earthly +all --NODEVERSION=18
+ARG NODEVERSION=18 # 14, 16, or 18
+FROM node:${NODEVERSION}-slim
+WORKDIR /root/svelte_frontend
+
+install-dev:
+    COPY package.json package-lock.json ./
+    RUN npm install
+    COPY src /root/svelte_frontend/src
+    COPY static /root/svelte_frontend/static
+
+install-prod:
+    COPY package.json package-lock.json ./
+    RUN npm install --production
+    COPY src /root/svelte_frontend/src
+    COPY static /root/svelte_frontend/static
+
+format:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Requirements:
+    # npm i
+
+    # Format code
+    RUN npm run format
+
+format-check:
+    FROM +install-dev
+    COPY .prettierrc ./
+    RUN npm run format:check
+
+lint:
+    FROM +install-dev
+    COPY .eslintrc.cjs ./
+    RUN npm run lint
+
+test:
+    COPY package.json package-lock.json ./
+    RUN npm install
+    RUN npx playwright install --with-deps chromium
+    COPY src /root/svelte_frontend/src
+    COPY static /root/svelte_frontend/static
+    COPY tests /root/svelte_frontend/tests
+    # Why is tsconfig.json not needed here?
+    COPY playwright.config.ts svelte.config.js vite.config.js ./
+    RUN --no-cache npm run test
+
+build:
+    FROM +install-prod
+    # Why is tsconfig.json not needed here?
+    COPY svelte.config.js vite.config.js ./
+    RUN npm run build
+    SAVE ARTIFACT build AS LOCAL ./
+
+all:
+    BUILD +format-check
+    BUILD +lint
+    BUILD +test
+    BUILD +build
