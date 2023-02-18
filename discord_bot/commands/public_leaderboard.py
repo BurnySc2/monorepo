@@ -98,7 +98,7 @@ async def public_leaderboard(
 
     # Map message author_id's to nicknames
     map_author_id_to_server_nickname: Dict[int, str] = {}
-    server_members: List[Member] = await bot.rest.fetch_members(event.guild_id)  # type: ignore
+    server_members: List[Member] = await bot.rest.fetch_members(event.guild_id)  # pyre-fixme[9]
     for member in server_members:
         map_author_id_to_server_nickname[member.id] = member.display_name
 

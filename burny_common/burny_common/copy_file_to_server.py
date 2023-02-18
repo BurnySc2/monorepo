@@ -3,10 +3,10 @@ from io import StringIO
 from pathlib import Path
 
 import click
-import paramiko  # type: ignore
+import paramiko
 from click.testing import CliRunner
 from paramiko import SSHClient
-from paramiko.sftp_client import SFTPClient  # type: ignore
+from paramiko.sftp_client import SFTPClient
 
 
 def generate_path(client: SSHClient, target_path: str) -> Path:

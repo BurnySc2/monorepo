@@ -8,19 +8,19 @@ from sqlmodel.engine.result import ScalarResult
 from sqlmodel.sql.expression import SelectOfScalar
 
 
-class Author(SQLModel, table=True):  # type: ignore
+class Author(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     birth_year: int
 
 
-class Publisher(SQLModel, table=True):  # type: ignore
+class Publisher(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     founded_year: int
 
 
-class Book(SQLModel, table=True):  # type: ignore
+class Book(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field()
     release_year: int
@@ -30,7 +30,7 @@ class Book(SQLModel, table=True):  # type: ignore
     publisher: Publisher = Relationship()
 
 
-class Library(SQLModel, table=True):  # type: ignore
+class Library(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     address: str
@@ -38,7 +38,7 @@ class Library(SQLModel, table=True):  # type: ignore
     books: List['BookInventory'] = Relationship(back_populates='library')
 
 
-class BookInventory(SQLModel, table=True):  # type: ignore
+class BookInventory(SQLModel, table=True):
     book_id: int = Field(default=None, primary_key=True, foreign_key='book.id')
     book: Book = Relationship()
     library_id: int = Field(default=None, primary_key=True, foreign_key='library.id')
@@ -134,7 +134,7 @@ def run_database_with_sqlmodel_readme_example():
         assert first_book_result is not None, first_book_result
 
         statement: Delete = delete(Book).where(Book.name == 'This book was not written')
-        session.exec(statement)  # type: ignore
+        session.exec(statement)
 
         amount = session.exec(count_statement).first()
         assert amount == 0, amount
@@ -182,7 +182,7 @@ def run_database_with_sqlmodel_readme_example():
 
     # 9) Clear table
     with Session(engine) as session:
-        statement = delete(BookInventory)  # type: ignore
+        statement = delete(BookInventory)
         session.exec(statement)
         session.commit()
 

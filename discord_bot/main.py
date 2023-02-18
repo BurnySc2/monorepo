@@ -39,7 +39,7 @@ if token is None:
     )
     with DISCORDKEY_PATH.open() as f:
         token = f.read().strip()
-bot = GatewayBot(token=token, intents=Intents.ALL)  # type: ignore
+bot = GatewayBot(token=token, intents=Intents.ALL)
 BOT_USER_ID: int = -1
 del token
 
@@ -99,7 +99,7 @@ async def loop_function() -> None:
 
 async def get_text_channels_of_server(server: OwnGuild) -> AsyncGenerator[GuildTextChannel, None]:
     assert isinstance(server, OwnGuild), type(server)
-    for channel in await bot.rest.fetch_guild_channels(server):  # type: ignore
+    for channel in await bot.rest.fetch_guild_channels(server):
         if channel.type not in {ChannelType.GUILD_TEXT}:
             continue
         assert isinstance(channel, GuildTextChannel), type(channel)

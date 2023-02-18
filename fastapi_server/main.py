@@ -19,7 +19,7 @@ from routes.todolist import todo_list_router
 from routes.twitch_clipper import clip_router
 
 assert os.getenv('STAGE', 'DEV') in {'DEV', 'PROD'}, os.getenv('STAGE')
-STAGE: Literal['DEV', 'PROD'] = os.getenv('STAGE', 'DEV')  # type: ignore
+STAGE: Literal['DEV', 'PROD'] = os.getenv('STAGE', 'DEV')  # pyre-fixme[9]
 
 app = FastAPI()
 app.include_router(hello_world_router)

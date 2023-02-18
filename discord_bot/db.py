@@ -14,7 +14,7 @@ from supabase_async_client import Client, create_client
 
 # Load url and key from env or from file
 
-url: str = os.getenv('SUPABASEURL')  # type: ignore
+url: str = os.getenv('SUPABASEURL')  # pyre-fixme[9]
 if url is None:
     SUPABASEURL_PATH = Path(__file__).parent / 'SUPABASEURL'
     assert SUPABASEURL_PATH.is_file(), (
@@ -23,7 +23,7 @@ if url is None:
     )
     with SUPABASEURL_PATH.open('r') as f:
         url = f.read().strip()
-key: str = os.getenv('SUPABASEKEY')  # type: ignore
+key: str = os.getenv('SUPABASEKEY')  # pyre-fixme[9]
 if key is None:
     SUPABASEKEY_PATH = Path(__file__).parent / 'SUPABASEKEY'
     assert SUPABASEKEY_PATH.is_file(), (

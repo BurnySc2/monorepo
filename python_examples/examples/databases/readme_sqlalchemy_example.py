@@ -15,47 +15,47 @@ class MyBase:
         return f'{self.__class__.__name__}({items})'
 
 
-class Author(Base, MyBase):  # type: ignore
+class Author(Base, MyBase):
     __tablename__ = 'author'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     birth_year = Column(Integer)
 
 
-class Publisher(Base, MyBase):  # type: ignore
+class Publisher(Base, MyBase):
     __tablename__ = 'publisher'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     founded_year = Column(Integer)
 
 
-class Book(Base, MyBase):  # type: ignore
+class Book(Base, MyBase):
     __tablename__ = 'book'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     release_year = Column(Integer)
     author_id = Column(ForeignKey('author.id'))
-    author: Author = relationship('Author')  # type: ignore
+    author: Author = relationship('Author')
     publisher_id = Column(ForeignKey('publisher.id'))
-    publisher: Publisher = relationship('Publisher')  # type: ignore
+    publisher: Publisher = relationship('Publisher')
 
 
-class Library(Base, MyBase):  # type: ignore
+class Library(Base, MyBase):
     __tablename__ = 'library'
     id = Column(Integer, primary_key=True)
     name = Column(String)
     address = Column(String)
     # Each library owns certain books with a certain amount
-    books: List['BookInventory'] = relationship('BookInventory', back_populates='library')  # type: ignore
+    books: List['BookInventory'] = relationship('BookInventory', back_populates='library')
 
 
-class BookInventory(Base, MyBase):  # type: ignore
+class BookInventory(Base, MyBase):
     __tablename__ = 'book_inventory'
     id = Column(Integer, primary_key=True)
     book_id = Column(Integer, ForeignKey('book.id'))
-    book: Book = relationship('Book')  # type: ignore
+    book: Book = relationship('Book')
     library_id = Column(Integer, ForeignKey('library.id'))
-    library: Library = relationship('Library')  # type: ignore
+    library: Library = relationship('Library')
     amount = Column(Integer)
 
 

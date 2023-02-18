@@ -48,7 +48,7 @@ def fake_get_emoji(value: int) -> KnownCustomEmoji:
         id=Snowflake(value),
         name='some_emote',
         is_animated=False,
-        app=None, # type: ignore
+        app=None,
         guild_id=Snowflake(123),
         role_ids=[],
         user=None,

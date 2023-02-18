@@ -5,7 +5,7 @@ from pathlib import Path
 from string import printable
 from typing import List
 
-import aiofiles  # type: ignore
+import aiofiles
 from burny_common.measure_time import time_this  # pyre-fixme[21]
 
 FILES_AMOUNT = 100
