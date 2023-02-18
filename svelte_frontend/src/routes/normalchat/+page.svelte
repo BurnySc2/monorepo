@@ -2,7 +2,7 @@
     import moment from "moment"
     import { onDestroy, onMount } from "svelte"
 
-    import Headers from "../components/Headers.svelte"
+    import Headers from "../../components/Headers.svelte"
 
     let componentMounted = false
 

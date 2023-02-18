@@ -2,7 +2,7 @@
     import { onMount } from "svelte"
     import { writable } from "svelte/store"
 
-    import Headers from "../components/Headers.svelte"
+    import Headers from "../../components/Headers.svelte"
 
     // Key names in local and session storage
     const localStorageKey = "localValue"

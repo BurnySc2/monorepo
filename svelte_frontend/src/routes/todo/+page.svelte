@@ -1,9 +1,9 @@
 <script lang="ts">
     import { onMount } from "svelte"
 
-    import Headers from "../components/Headers.svelte"
-    import TodoCard from "../components/TodoCard.svelte"
-    import { API_BODY_ENDPOINT, API_ENDPOINT, API_MODEL_ENDPOINT } from "../functions/constants"
+    import Headers from "../../components/Headers.svelte"
+    import TodoCard from "../../components/TodoCard.svelte"
+    import { API_BODY_ENDPOINT, API_ENDPOINT, API_MODEL_ENDPOINT } from "../../functions/constants"
 
     let newTodoText = ""
     let cards: { id: number; todo_text: string; created_timestamp: number; done_timestamp: number; done: boolean }[] = [
