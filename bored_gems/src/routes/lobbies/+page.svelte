@@ -1,7 +1,7 @@
 <script lang="ts">
-    import LobbiesRow from "../components/lobby/LobbiesRow.svelte"
-    import CreateLobby from "../components/lobby/CreateLobby.svelte"
-    import JoinLobbyPopup from "../components/lobby/JoinLobbyPopup.svelte"
+    import LobbiesRow from "../../components/lobby/LobbiesRow.svelte"
+    import CreateLobby from "../../components/lobby/CreateLobby.svelte"
+    import JoinLobbyPopup from "../../components/lobby/JoinLobbyPopup.svelte"
 
     // BEGIN FAKE DATA
     let lobbies = [

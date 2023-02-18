@@ -35,12 +35,6 @@ jobs:
       run: |
         sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
 
-#    - name: Cache npm
-#      uses: actions/cache@v3
-#      with:
-#        path: ~/.npm
-#        key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
-
     - name: Run code checks and lint
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |

@@ -30,6 +30,7 @@
     },
     "dependencies": {
         "@sveltejs/adapter-netlify": "^2.0.5",
+        "@sveltejs/adapter-static": "^2.0.1",
         "@sveltejs/kit": "1.7.2",
         "moment": "^2.29.4",
         "svelte": "^3.55.1",
