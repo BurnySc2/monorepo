@@ -5,7 +5,7 @@ import pytest
 from hikari import Embed, KnownCustomEmoji, Snowflake
 from hypothesis import given
 from hypothesis import strategies as st
-from postgrest import APIResponse, AsyncSelectRequestBuilder#pyre-fixme[21]
+from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 
 from commands.public_emotes import TOP_EMOTE_LIMIT, public_count_emotes, public_count_emotes_parser
 

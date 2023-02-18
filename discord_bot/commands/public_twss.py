@@ -5,7 +5,7 @@ from typing import Optional, Set
 import arrow
 from hikari import GatewayBot, GuildMessageCreateEvent
 from loguru import logger
-from postgrest import APIResponse, AsyncSelectRequestBuilder#pyre-fixme[21]
+from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 
 from db import DiscordQuotes, supabase
 
@@ -36,7 +36,7 @@ async def get_random_twss_quote(server_id: int) -> Optional[str]:
             server_id,
         ).limit(1)
     )
-    query_response: APIResponse = await query.execute()#pyre-fixme[11]
+    query_response: APIResponse = await query.execute()  #pyre-fixme[11]
     if not query_response.data:
         return
 

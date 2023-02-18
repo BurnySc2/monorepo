@@ -256,8 +256,10 @@ Example usage:
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
             user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
-            return (f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, '
-                    f'which is higher than the limit.')
+            return (
+                f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, '
+                f'which is higher than the limit.'
+            )
 
         result = await self._parse_time_shift_from_message(reminder_message)
         if result is None:
@@ -293,8 +295,10 @@ Example usage:
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
             user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
-            return (f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, '
-                    f'which is higher than the limit.')
+            return (
+                f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, '
+                f'which is higher than the limit.'
+            )
 
         time_now: arrow.Arrow = arrow.utcnow()
 
@@ -407,8 +411,10 @@ Example usage:
             return 'Invalid reminder id, you have no reminders.'
         if len(user_reminders) == 1:
             return "Invalid reminder id, you only have one reminders. Only '!delreminder 1' works for you."
-        return (f'Invalid reminder id, you only have {len(user_reminders)} reminders. '
-                f'Pick a number between 1 and {len(user_reminders)}.')
+        return (
+            f'Invalid reminder id, you only have {len(user_reminders)} reminders. '
+            f'Pick a number between 1 and {len(user_reminders)}.'
+        )
 
 
 def main():

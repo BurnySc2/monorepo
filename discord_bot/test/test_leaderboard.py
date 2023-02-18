@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from postgrest import APIResponse, AsyncSelectRequestBuilder#pyre-fixme[21]
+from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 
 from commands.public_leaderboard import public_leaderboard
 

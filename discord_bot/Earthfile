@@ -1,6 +1,13 @@
 VERSION 0.6
-FROM python:3.10-slim
+FROM python:3.11-slim
 WORKDIR /root/discord_bot
+
+# Start bot locally for development
+start-dev:
+    FROM DOCKERFILE .
+    COPY DISCORDKEY SUPABASEURL SUPABASEKEY ./
+    ENV STAGE "DEV"
+    RUN poetry run python main.py
 
 install-dev:
     COPY poetry.lock pyproject.toml ./
@@ -8,21 +15,7 @@ install-dev:
         && poetry install
     COPY . /root/discord_bot
     # Allow imports like 'from discord_bot.commands.public_remind import Remind'
-    ENV PYTHONPATH "${PYTHONPATH}:/root"
-
-# TODO Add RUN command that builds/starts bot?
-
-# TODO Format code
-#format:
-#    FROM +install-dev
-#    RUN poetry run pycln *.py
-#    RUN poetry run isort *.py
-#    RUN poetry run yapf -ir *.py
-
-# Check if files are correctly formatted
-format-check:
-    FROM +install-dev
-    RUN poetry run yapf -dr *.py
+    # ENV PYTHONPATH "${PYTHONPATH}:/root"
 
 # Check if imports are unused
 remove-unused-imports-check:
@@ -32,12 +25,17 @@ remove-unused-imports-check:
 # Check if imports require reordering
 sort-imports-check:
     FROM +install-dev
-    RUN poetry run isort --check-only *.py
+    RUN poetry run isort --check-only **/*.py
+
+# Check if files are correctly formatted
+format-check:
+    FROM +install-dev
+    RUN poetry run yapf -dr *.py
 
 # Ignore errors via "# Ignore F841"
 lint:
     FROM +install-dev
-    RUN poetry run ruff check .
+    RUN poetry run ruff check **/*.py
 
 # Ignore errors via "# pyre-fixme[11]"
 pyre:
@@ -49,10 +47,9 @@ pytest:
     RUN poetry run pytest
 
 all:
-    #BUILD +install-dev
-    BUILD +format-check
     BUILD +remove-unused-imports-check
     BUILD +sort-imports-check
+    BUILD +format-check
     BUILD +lint
     BUILD +pyre
     BUILD +pytest
