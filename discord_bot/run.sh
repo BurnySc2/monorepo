@@ -1,3 +1,4 @@
+set -e
 docker build -t discord_bot_image .
 docker run --rm --name discord_bot --env STAGE=DEV \
   --mount type=bind,source="$(pwd)/data",destination=/root/discord_bot/data \

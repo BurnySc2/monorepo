@@ -7,10 +7,7 @@ from hikari import GatewayBot, GuildMessageCreateEvent, Member
 from loguru import logger
 from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 from simple_parsing import ArgumentParser, field
-from table2ascii import (  # pyre-fixme[21] aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    Alignment,
-    PresetStyle,
-)
+from table2ascii import Alignment, PresetStyle  # pyre-fixme[21]
 from table2ascii import table2ascii as t2a
 
 from db import DiscordMessage, supabase

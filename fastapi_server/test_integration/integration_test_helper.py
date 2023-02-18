@@ -6,7 +6,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Optional, Set
 
-import portpicker
+import portpicker  # pyre-fixme[21]
 import psutil
 import requests
 from loguru import logger

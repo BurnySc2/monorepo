@@ -4,7 +4,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Literal
 
-import uvicorn
+import uvicorn  # pyre-fixme[21]
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger

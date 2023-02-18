@@ -1,20 +1,23 @@
 VERSION 0.6
 FROM python:3.11-slim
-WORKDIR /root/discord_bot
+WORKDIR /root/fastapi_server
 
-# Start bot locally for development
+# Start server locally for development
 start-dev:
     # Run on host system instead of inside a container
     LOCALLY
     RUN sh run.sh
 
 install-dev:
+    # Required for video conversion
+    RUN apt -y update && \
+        apt install -y --no-install-recommends ffmpeg
     COPY poetry.lock pyproject.toml ./
     RUN pip install poetry --no-cache-dir \
         && poetry install
-    COPY . /root/discord_bot
-    # Allow imports like 'from discord_bot.commands.public_remind import Remind'
-    # ENV PYTHONPATH "${PYTHONPATH}:/root"
+    # Required for integration tests
+    RUN poetry run playwright install --with-deps chromium
+    COPY . /root/fastapi_server
 
 format:
     # Run on host system instead of inside a container
@@ -48,7 +51,7 @@ format-check:
 # Ignore errors via "# Ignore F841"
 lint:
     FROM +install-dev
-    RUN poetry run ruff check **/*.py
+    RUN poetry run ruff check .
 
 # Ignore errors via "# pyre-fixme[11]"
 pyre:
@@ -57,7 +60,13 @@ pyre:
 
 pytest:
     FROM +install-dev
-    RUN poetry run pytest
+    RUN poetry run pytest test
+
+# TODO Fix integration test in combination with svelte_frontend
+integration-test:
+    FROM +install-dev
+    # COPY ../svelte_frontend+svelte_frontend /root/svelte_frontend
+    RUN poetry run pytest test_integration
 
 all:
     BUILD +remove-unused-imports-check

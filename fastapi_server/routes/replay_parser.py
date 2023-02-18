@@ -3,9 +3,9 @@ from typing import Dict, List, Union
 
 from fastapi import File, Form, UploadFile
 from fastapi.routing import APIRouter
-from zephyrus_sc2_parser import parse_replay
-from zephyrus_sc2_parser.dataclasses import Resource
-from zephyrus_sc2_parser.game import Player
+from zephyrus_sc2_parser import parse_replay  # pyre-fixme[21]
+from zephyrus_sc2_parser.dataclasses import Resource  # pyre-fixme[21]
+from zephyrus_sc2_parser.game import Player  # pyre-fixme[21]
 
 replay_parser_router = APIRouter()
 
@@ -21,14 +21,15 @@ class ParserPlayer:
     name: str
     race: str
     supply_block: int
-    army_value: Dict[Resource, List[int]]
+    army_value: Dict[Resource, List[int]]  # pyre-fixme[11]
     collection_rate: Dict[Resource, List[int]]
     unspent_resources: Dict[Resource, List[int]]
     upgrades: List[Dict[str, Union[str, int]]]
     queues: List[dict]
 
     @staticmethod
-    def from_replay_object(player_object: Player):
+    def from_replay_object(player_object: Player):  # pyre-fixme[11]
+        # pyre-fixme[28]
         return ParserPlayer(
             name=player_object.name,
             race=player_object.race,
