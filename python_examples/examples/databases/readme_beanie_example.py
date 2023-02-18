@@ -44,6 +44,7 @@ ForwardRefBookInventory = ForwardRef('BookInventory')
 class Library(Document):
     name: str
     address: str
+    # pyre-fixme[11]
     books: List[ForwardRefBookInventory] = Field(default_factory=list)
 
 

@@ -15,6 +15,7 @@ class MyBase:
         return f'{self.__class__.__name__}({items})'
 
 
+# pyre-fixme[11]
 class Author(Base, MyBase):
     __tablename__ = 'author'
     id = Column(Integer, primary_key=True)
