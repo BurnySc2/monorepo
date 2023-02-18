@@ -59,8 +59,6 @@ class BookInventory(Base, MyBase):  # type: ignore
     amount = Column(Integer)
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_sqlalchemy_readme_example():
     author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
     author_2 = Author(name='Harper Lee', birth_year=1926)

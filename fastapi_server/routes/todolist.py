@@ -24,14 +24,12 @@ TODOS: List[TodoItem] = []
 
 @todo_list_router.get('/api')
 async def show_all_todos() -> List[TodoItem]:
-    # pylint: disable=W0602
     return TODOS
 
 
 @todo_list_router.post('/api/{todo_description}')
 async def create_new_todo(todo_description: str):
     # https://fastapi.tiangolo.com/advanced/using-request-directly/
-    # pylint: disable=W0602
     global TODOS, TODO_COUNTER
     TODO_COUNTER += 1
     TODOS.append(
@@ -53,7 +51,6 @@ async def create_new_todo2(request: Request):
     Send a request with body {"new_todo": "<todo task description>"}
     """
     # https://fastapi.tiangolo.com/advanced/using-request-directly/
-    # pylint: disable=W0602
     global TODOS, TODO_COUNTER
     request_body = await request.json()
     todo_item = request_body.get('new_todo', None)
@@ -83,7 +80,6 @@ async def create_new_todo3(item: Item):
     Send a request with body {"todo_description": "<todo task description>"}
     """
     # https://fastapi.tiangolo.com/tutorial/body/#import-pydantics-basemodel
-    # pylint: disable=W0602
     global TODOS, TODO_COUNTER
     logger.info(f'Received item: {item}')
     if item and item.todo_description:
@@ -102,7 +98,6 @@ async def create_new_todo3(item: Item):
 @todo_list_router.delete('/api/{todo_id}')
 async def remove_todo(todo_id: int) -> bool:
     """ Example of using /api/itemid with DELETE request """
-    # pylint: disable=W0603
     global TODOS
     logger.info(f'Attempting to remove todo id: {todo_id}')
     count_before = len(TODOS)

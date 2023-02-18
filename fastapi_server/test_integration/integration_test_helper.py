@@ -66,7 +66,6 @@ def find_next_free_port(port: int = 10_000, max_port: int = 65_535, exclude_port
     raise OSError('No free ports')
 
 
-# pylint: disable=R1732
 def check_if_docker_is_running() -> bool:
     p = subprocess.Popen(['docker', 'ps'], stdout=subprocess.PIPE)
     _return_code = p.wait()

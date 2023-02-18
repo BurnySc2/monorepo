@@ -44,8 +44,6 @@ class BookInventory(Document):
     library = ReferenceField(Library)
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_mongoengine():
     # Embedded pure-python dict based dictionary
 

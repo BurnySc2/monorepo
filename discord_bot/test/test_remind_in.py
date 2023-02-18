@@ -60,7 +60,6 @@ async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, 
 
     time_shift = create_time_shift_string(_day, _hour, _minute, _second)
     my_message = f'{time_shift} {_message}'
-    # pylint: disable=W0212
     result = await r._parse_time_shift_from_message(my_message)
 
     assert isinstance(result[0], arrow.Arrow)
@@ -91,7 +90,6 @@ async def test_parsing_date_and_time_from_message_failure(_day, _hour, _minute, 
     time_shift = create_time_shift_string(_day, _hour, _minute, _second)
     my_message = f'{time_shift} {_message}'
 
-    # pylint: disable=W0212
     result = await r._parse_time_shift_from_message(my_message)
 
     # Dont care about empty strings, or just space or just new line characters

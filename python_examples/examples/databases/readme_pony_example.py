@@ -54,8 +54,6 @@ class Publisher(db.Entity):
     books = orm.Set(Book)
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_pony_readme_example():
     # Enable debug mode to see the queries sent
     orm.set_sql_debug(True)

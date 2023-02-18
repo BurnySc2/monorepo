@@ -3,8 +3,6 @@ from typing import List, Union
 
 from hypothesis import given
 from hypothesis import strategies as st
-
-# pylint: disable=E0611
 from pydantic import BaseModel, EmailStr, validator
 
 
@@ -22,7 +20,6 @@ class PetModel(BaseModel):
 class CatModel(PetModel):
     type: str = 'cat'
 
-    # pylint: disable=E0213
     @validator('type')
     def type_must_be_cat(cls, v: str):
         assert v == 'cat', 'Must be cat'
@@ -32,7 +29,6 @@ class CatModel(PetModel):
 class DogModel(PetModel):
     type: str = 'dog'
 
-    # pylint: disable=E0213
     @validator('type')
     def type_must_be_dog(cls, v: str):
         assert v == 'dog', 'Must be dog'

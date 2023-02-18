@@ -53,8 +53,6 @@ class BookInventory(Model):
         database = db
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_peewee_readme_example():
     # 1) Create tables
     db.drop_tables([Book, Author, Publisher, Library, BookInventory])
@@ -77,36 +75,36 @@ def run_database_with_peewee_readme_example():
     library_1 = Library(name='New York Public Library', address='224 East 125th Street')
     library_inventory_2 = BookInventory(book=book_2, library=library_1, amount=15)
     library_inventory_1 = BookInventory(book=book_3, library=library_1, amount=40)
-    library_1.books = [library_inventory_1, library_inventory_2]  # pylint: disable=W0201
+    library_1.books = [library_inventory_1, library_inventory_2]
 
     library_2 = Library(name='California State Library', address='900 N Street')
     library_inventory_3 = BookInventory(book=book_1, library=library_2, amount=25)
     library_inventory_4 = BookInventory(book=book_2, library=library_2, amount=30)
-    library_2.books = [library_inventory_3, library_inventory_4]  # pylint: disable=W0201
+    library_2.books = [library_inventory_3, library_inventory_4]
 
-    assert Book.select().count() == 0, Book.select().count()  # pylint: disable=E1120
-    assert Author.select().count() == 0, Author.select().count()  # pylint: disable=E1120
-    assert Publisher.select().count() == 0, Publisher.select().count()  # pylint: disable=E1120
-    assert Library.select().count() == 0, Library.select().count()  # pylint: disable=E1120
-    assert BookInventory.select().count() == 0, BookInventory.select().count()  # pylint: disable=E1120
+    assert Book.select().count() == 0, Book.select().count()
+    assert Author.select().count() == 0, Author.select().count()
+    assert Publisher.select().count() == 0, Publisher.select().count()
+    assert Library.select().count() == 0, Library.select().count()
+    assert BookInventory.select().count() == 0, BookInventory.select().count()
     for item in [
         author_1, author_2, author_3, publisher_1, publisher_2, publisher_3, book_1, book_2, book_3, book_4, library_1,
         library_2, library_inventory_1, library_inventory_2, library_inventory_3, library_inventory_4
     ]:
         item.save()
-    assert Book.select().count() == 4, Book.select().count()  # pylint: disable=E1120
-    assert Author.select().count() == 3, Author.select().count()  # pylint: disable=E1120
-    assert Publisher.select().count() == 3, Publisher.select().count()  # pylint: disable=E1120
-    assert Library.select().count() == 2, Library.select().count()  # pylint: disable=E1120
-    assert BookInventory.select().count() == 4, BookInventory.select().count()  # pylint: disable=E1120
+    assert Book.select().count() == 4, Book.select().count()
+    assert Author.select().count() == 3, Author.select().count()
+    assert Publisher.select().count() == 3, Publisher.select().count()
+    assert Library.select().count() == 2, Library.select().count()
+    assert BookInventory.select().count() == 4, BookInventory.select().count()
 
     # 3) Select books
-    for book in Book.select().where(Book.release_year < 1960):  # pylint: disable=E1133
+    for book in Book.select().where(Book.release_year < 1960):
         logger.info(f'Found books released before 1960: {book}')
 
     # 4) Update books
     assert Book.select().where(Book.release_year < 1960).count() == 2
-    for book in Book.select().where(Book.release_year < 1960):  # pylint: disable=E1133
+    for book in Book.select().where(Book.release_year < 1960):
         book.release_year = 1970
         book.save()
     assert Book.select().where(Book.release_year < 1960).count() == 0
@@ -138,9 +136,9 @@ def run_database_with_peewee_readme_example():
     # 8) TODO: Run migration (verify and change table schema if necessary)
 
     # 9) Clear table
-    assert BookInventory.select().count() > 0  # pylint: disable=E1120
-    BookInventory.delete().execute()  # pylint: disable=E1120
-    assert BookInventory.select().count() == 0  # pylint: disable=E1120
+    assert BookInventory.select().count() > 0
+    BookInventory.delete().execute()
+    assert BookInventory.select().count() == 0
 
 
 if __name__ == '__main__':

@@ -194,7 +194,6 @@ async def on_start(_event: StartedEvent) -> None:
         logger.info(f'Connected to server: {server_name}')
 
 
-# pylint: disable=R0911
 @bot.listen()
 async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if event.member.is_bot:

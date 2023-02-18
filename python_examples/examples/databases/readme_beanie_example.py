@@ -58,8 +58,6 @@ class BookInventory(Document):
 Library.update_forward_refs()
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 async def run_database_with_beanie():
     # Embedded pure-python dict based dictionary
 
@@ -174,7 +172,7 @@ async def run_database_with_beanie():
 
     # 3) Select books
     # https://docs.mongoengine.org/guide/querying.html#query-operators
-    async for book in Book.find(Book.release_year < 1960):  # pylint: disable=E1133
+    async for book in Book.find(Book.release_year < 1960):
         logger.info(f'Found books released before 1960: {book}')
     # Alternatively with mongodb syntax
     # async for book in Book.find({"release_year": {"$lt": 1960}}):
@@ -193,17 +191,17 @@ async def run_database_with_beanie():
     assert await Book.find(Book.name == 'This book was not written').count() == 0
 
     # 6) Get data from other tables
-    async for book in Book.find_all():  # pylint: disable=E1133
+    async for book in Book.find_all():
         logger.info(f'Book ({book}) has author ({book.author}) and publisher ({book.publisher})')
 
-    async for book_inventory in BookInventory.find_all():  # pylint: disable=E1133
+    async for book_inventory in BookInventory.find_all():
         logger.info(
             f'Library {book_inventory.library} has book inventory ({book_inventory}) of book ({book_inventory.book})'
         )
 
     # 7) Join two tables and apply filter
     # Find all books that are listed in libraries at least 25 times and where author was born before 1910
-    async for book_inventory in BookInventory.find( # pylint: disable=E1133
+    async for book_inventory in BookInventory.find(
         BookInventory.amount <= 25,
         BookInventory.book.author.birth_year < 1910,
     ):

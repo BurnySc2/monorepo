@@ -28,7 +28,6 @@ public_count_emotes_parser = ArgumentParser()
 public_count_emotes_parser.add_arguments(CountEmotesParserOptions, dest='params')
 
 
-# pylint: disable=R0912
 async def public_count_emotes(
     bot: GatewayBot,
     event: GuildMessageCreateEvent,

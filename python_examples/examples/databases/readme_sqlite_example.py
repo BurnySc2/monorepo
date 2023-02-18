@@ -3,8 +3,6 @@ import sqlite3
 from loguru import logger
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_sqlite_readme_example():
     # with sqlite3.connect("example.db") as db:
     with sqlite3.connect(':memory:') as db:

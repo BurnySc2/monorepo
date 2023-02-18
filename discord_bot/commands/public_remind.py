@@ -196,7 +196,6 @@ Example usage:
             return None
         return future_reminder_time, reminder_message.strip()
 
-    # pylint: disable=R0914
     async def _parse_time_shift_from_message(self, message: str) -> Optional[Tuple[arrow.Arrow, str]]:
         time_now: arrow.Arrow = arrow.utcnow()
 
@@ -425,7 +424,6 @@ def main():
     # message = "16:20"
     # message = ""
     r = Remind(None)
-    # pylint: disable=W0212
     result = asyncio.run(r._parse_date_and_time_from_message(message))
     print(result, bool(result[1]))
     assert result[1] == 'some message'

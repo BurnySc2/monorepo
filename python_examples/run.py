@@ -36,7 +36,6 @@ class BotRunner:
         # Command is 'python file.py' because we are already in a poetry environment
         command_list = command_line + [str(bot_file_path.absolute())]
         logger.info('Starting bot ...')
-        # pylint: disable=R1732
         self.bot_process = subprocess.Popen(command_list)
         logger.info(f'Started bot on pid {self.bot_process.pid}')
 
@@ -83,6 +82,5 @@ if __name__ == '__main__':
     try:
         with BotRunner() as runner:
             asyncio.run(main())
-    # pylint: disable=W0703
     except Exception as e:
         logger.trace(e)

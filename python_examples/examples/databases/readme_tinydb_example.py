@@ -44,8 +44,6 @@ def list_of_items_to_dict(items: Iterable[DataClassJsonMixin]) -> Iterable[dict]
     return (i.to_dict() for i in items)
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_tinydb():
     # Embedded pure-python dict based dictionary
 
