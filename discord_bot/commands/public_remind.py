@@ -51,7 +51,10 @@ class Reminder:
         }
 
     def __repr__(self) -> str:
-        return f'Reminder({self.reminder_utc_timestamp} {self.guild_id} {self.channel_id} {self.user_id} {self.user_name} {self.message})'
+        return (
+            f'Reminder({self.reminder_utc_timestamp} {self.guild_id} {self.channel_id} {self.user_id} '
+            f'{self.user_name} {self.message})'
+        )
 
 
 class Remind:
@@ -184,7 +187,8 @@ Example usage:
 
         try:
             future_reminder_time = arrow.get(
-                f'{str(year).zfill(2)}-{str(month).zfill(2)}-{str(day).zfill(2)} {str(hour).zfill(2)}:{str(minute).zfill(2)}:{str(second).zfill(2)}',
+                f'{str(year).zfill(2)}-{str(month).zfill(2)}-{str(day).zfill(2)} '
+                f'{str(hour).zfill(2)}:{str(minute).zfill(2)}:{str(second).zfill(2)}',
                 ['YYYY-MM-DD HH:mm:ss'],
             )
         except (ValueError, arrow.parser.ParserError):
@@ -202,7 +206,10 @@ Example usage:
         seconds_pattern = '(?:([0-9]+) ?(?:s|sec|secs|second|seconds))?'
         text_pattern = '((?:.|\n)+)'
         space_pattern = ' ?'
-        regex_pattern = f'{days_pattern}{space_pattern}{hours_pattern}{space_pattern}{minutes_pattern}{space_pattern}{seconds_pattern} {text_pattern}'
+        regex_pattern = (
+            f'{days_pattern}{space_pattern}{hours_pattern}{space_pattern}{minutes_pattern}{space_pattern}'
+            f'{seconds_pattern} {text_pattern}'
+        )
 
         result = re.fullmatch(regex_pattern, message)
 
@@ -249,7 +256,8 @@ Example usage:
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
             user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
-            return f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, which is higher than the limit.'
+            return (f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, '
+                    f'which is higher than the limit.')
 
         result = await self._parse_time_shift_from_message(reminder_message)
         if result is None:
@@ -285,7 +293,8 @@ Example usage:
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
             user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
-            return f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, which is higher than the limit.'
+            return (f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, '
+                    f'which is higher than the limit.')
 
         time_now: arrow.Arrow = arrow.utcnow()
 
@@ -398,7 +407,8 @@ Example usage:
             return 'Invalid reminder id, you have no reminders.'
         if len(user_reminders) == 1:
             return "Invalid reminder id, you only have one reminders. Only '!delreminder 1' works for you."
-        return f'Invalid reminder id, you only have {len(user_reminders)} reminders. Pick a number between 1 and {len(user_reminders)}.'
+        return (f'Invalid reminder id, you only have {len(user_reminders)} reminders. '
+                f'Pick a number between 1 and {len(user_reminders)}.')
 
 
 def main():

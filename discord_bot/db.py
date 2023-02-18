@@ -8,7 +8,7 @@ from typing import Generator
 
 import arrow
 from arrow import Arrow
-from postgrest.base_request_builder import APIResponse
+from postgrest.base_request_builder import APIResponse  # pyre-fixme[21]
 
 from supabase_async_client import Client, create_client
 
@@ -17,15 +17,19 @@ from supabase_async_client import Client, create_client
 url: str = os.getenv('SUPABASEURL')  # type: ignore
 if url is None:
     SUPABASEURL_PATH = Path(__file__).parent / 'SUPABASEURL'
-    assert SUPABASEURL_PATH.is_file(
-    ), f'Missing file with supabase url: {SUPABASEURL_PATH}, you can get it from https://app.supabase.com/project/<project_id>/settings/api'
+    assert SUPABASEURL_PATH.is_file(), (
+        f'Missing file with supabase url: {SUPABASEURL_PATH}, '
+        f'you can get it from https://app.supabase.com/project/<project_id>/settings/api'
+    )
     with SUPABASEURL_PATH.open('r') as f:
         url = f.read().strip()
 key: str = os.getenv('SUPABASEKEY')  # type: ignore
 if key is None:
     SUPABASEKEY_PATH = Path(__file__).parent / 'SUPABASEKEY'
-    assert SUPABASEKEY_PATH.is_file(
-    ), f'Missing file with supabase key: {SUPABASEKEY_PATH}, you can get it from https://app.supabase.com/project/<project_id>/settings/api'
+    assert SUPABASEKEY_PATH.is_file(), (
+        f'Missing file with supabase key: {SUPABASEKEY_PATH}, '
+        f'you can get it from https://app.supabase.com/project/<project_id>/settings/api'
+    )
     with SUPABASEKEY_PATH.open('r') as f:
         key = f.read().strip()
 
@@ -65,7 +69,7 @@ class DiscordMessage:
         return 'discord_leaderboard_week'
 
     @staticmethod
-    def from_select(response: APIResponse) -> Generator[DiscordMessage, None, None]:
+    def from_select(response: APIResponse) -> Generator[DiscordMessage, None, None]:  #pyre-fixme[11]
         for row in response.data:
             yield DiscordMessage(**row)
 

@@ -1,15 +1,14 @@
 import asyncio
 import os
 from pathlib import Path
-from typing import AsyncGenerator, Awaitable, Callable, Optional, Set, Union
+from typing import Any, AsyncGenerator, Awaitable, Callable, Optional, Set, Union
 
 import hikari.errors
 import httpx
-import postgrest
+import postgrest  # pyre-fixme[21]
 from hikari import (
     Embed,
     GatewayBot,
-    GatewayGuild,
     GuildMessageCreateEvent,
     GuildReactionAddEvent,
     GuildTextChannel,
@@ -34,8 +33,10 @@ from db import DiscordMessage, DiscordQuotes, supabase
 token = os.getenv('DISCORDKEY')
 if token is None:
     DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
-    assert DISCORDKEY_PATH.is_file(
-    ), f"File '{DISCORDKEY_PATH}' not found, you can get it from https://discord.com/developers/applications/<bot_id>/bot"
+    assert DISCORDKEY_PATH.is_file(), (
+        f"File '{DISCORDKEY_PATH}' not found, "
+        f"you can get it from https://discord.com/developers/applications/<bot_id>/bot"
+    )
     with DISCORDKEY_PATH.open() as f:
         token = f.read().strip()
 bot = GatewayBot(token=token, intents=Intents.ALL)  # type: ignore
@@ -64,7 +65,8 @@ async def generic_command_caller(
 ) -> None:
     """
     @param event
-    @param function_to_call: A function to be called with the given message, expects function to return an Embed or string
+    @param function_to_call: A function to be called with the given message,
+    expects function to return an Embed or string
     @param message: Parsed messaged by the user, without the command
     @param add_remove_emoji: If true, bot will react to its own message with a 'X' emoji
     so that the mentioned user can remove the bot message at will.
@@ -137,6 +139,8 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         logger.error(f"Last message in channel '{channel}' in server '{server}' could not be fetched")
         return
 
+    # Ignore E501
+    # pyre-fixme[11]
     all_message_ids_response: APIResponse = await supabase.table(DiscordMessage.table_name()).select('message_id').eq(
         "channel_id",
         channel.id,
@@ -159,7 +163,7 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         logger.info(f"Inserted {messages_inserted_count} messages of channel '{channel}' in server '{server}'")
 
 
-async def get_all_servers() -> AsyncGenerator[GatewayGuild, None]:
+async def get_all_servers() -> AsyncGenerator[OwnGuild, Any]:
     try:
         _check_if_supabase_is_up: APIResponse = await supabase.table(DiscordMessage.table_name()).select(
             'message_id',
@@ -211,7 +215,10 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     # Message has mention
     # Mention is same user who reacted
     # Remove message if :x: was reacted to it
-    if message.author.id == BOT_USER_ID and f'<@{event.user_id}>' in message.content and event.is_for_emoji('\u274C'):
+    if (
+        message.author.id == BOT_USER_ID and message.content and f'<@{event.user_id}>' in message.content
+        and event.is_for_emoji('\u274C')
+    ):
         await message.delete()
         return
 
@@ -242,7 +249,10 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                             ).execute()
                         )
                     except postgrest.exceptions.APIError as e:
-                        if e.message != f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"':
+                        if (
+                            e.message !=
+                            f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"'
+                        ):
                             raise
                         logger.error(f"Quote already exists: {message.id}")
                         return
@@ -253,10 +263,13 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                 quote = DiscordQuotes(
                     when=str(message.created_at),
                     who=message.author.username,
-                    what=message.content,
+                    what=message.content or "",
                 )
-                response_message = f'''Added {reaction.emoji.name} quote:\n{quote.when_arrow.strftime("%Y-%m-%d")} {quote.who}: {quote.what}'''
-                await channel.send(response_message)
+                response_message = (
+                    f'Added {reaction.emoji.name} quote:\n{quote.when_arrow.strftime("%Y-%m-%d")} '
+                    f'{quote.who}: {quote.what}'
+                )
+                await channel.send(response_message)  #pyre-fixme[16]
                 return
         return
 
@@ -287,7 +300,7 @@ async def handle_new_message(event: GuildMessageCreateEvent) -> None:
     # b = await guild.fetch_emojis()
     # animated = next(i for i in b if i.is_animated)
 
-    if event.content.startswith(PREFIX):
+    if event.content is not None and event.content.startswith(PREFIX):
         command, *message_list = event.content.split()
         command = command[len(PREFIX):]
         message = ' '.join(message_list)

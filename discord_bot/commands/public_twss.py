@@ -5,7 +5,7 @@ from typing import Optional, Set
 import arrow
 from hikari import GatewayBot, GuildMessageCreateEvent
 from loguru import logger
-from postgrest import APIResponse, AsyncSelectRequestBuilder
+from postgrest import APIResponse, AsyncSelectRequestBuilder#pyre-fixme[21]
 
 from db import DiscordQuotes, supabase
 
@@ -25,7 +25,7 @@ async def public_twss(
 
 async def get_random_twss_quote(server_id: int) -> Optional[str]:
     # <YYYY-MM-DD> <Name>: <Message>
-    query: AsyncSelectRequestBuilder = (
+    query: AsyncSelectRequestBuilder = (#pyre-fixme[11]
         supabase.table(DiscordQuotes.table_name_random_order_view()).select(
             'when, who, what, emoji_name',
         ).eq(
@@ -36,7 +36,7 @@ async def get_random_twss_quote(server_id: int) -> Optional[str]:
             server_id,
         ).limit(1)
     )
-    query_response: APIResponse = await query.execute()
+    query_response: APIResponse = await query.execute()#pyre-fixme[11]
     if not query_response.data:
         return
 
@@ -61,8 +61,6 @@ async def load_csv_to_supabase() -> None:
 
     # Don't add duplicates
     query_response: APIResponse = await query.execute()
-    # if query_response.data:
-    #     continue
     added_messages: Set[int] = {item['message_id'] for item in query_response.data}
 
     for row in data:

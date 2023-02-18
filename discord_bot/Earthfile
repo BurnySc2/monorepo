@@ -1,0 +1,58 @@
+VERSION 0.6
+FROM python:3.10-slim
+WORKDIR /root/discord_bot
+
+install-dev:
+    COPY poetry.lock pyproject.toml ./
+    RUN pip install poetry --no-cache-dir \
+        && poetry install
+    COPY . /root/discord_bot
+    # Allow imports like 'from discord_bot.commands.public_remind import Remind'
+    ENV PYTHONPATH "${PYTHONPATH}:/root"
+
+# TODO Add RUN command that builds/starts bot?
+
+# TODO Format code
+#format:
+#    FROM +install-dev
+#    RUN poetry run pycln *.py
+#    RUN poetry run isort *.py
+#    RUN poetry run yapf -ir *.py
+
+# Check if files are correctly formatted
+format-check:
+    FROM +install-dev
+    RUN poetry run yapf -dr *.py
+
+# Check if imports are unused
+remove-unused-imports-check:
+    FROM +install-dev
+    RUN poetry run pycln -c *.py
+
+# Check if imports require reordering
+sort-imports-check:
+    FROM +install-dev
+    RUN poetry run isort --check-only *.py
+
+# Ignore errors via "# Ignore F841"
+lint:
+    FROM +install-dev
+    RUN poetry run ruff check .
+
+# Ignore errors via "# pyre-fixme[11]"
+pyre:
+    FROM +install-dev
+    RUN poetry run pyre
+
+pytest:
+    FROM +install-dev
+    RUN poetry run pytest
+
+all:
+    #BUILD +install-dev
+    BUILD +format-check
+    BUILD +remove-unused-imports-check
+    BUILD +sort-imports-check
+    BUILD +lint
+    BUILD +pyre
+    BUILD +pytest

@@ -5,9 +5,9 @@ from typing import Dict, List, Tuple
 import hikari
 from hikari import GatewayBot, GuildMessageCreateEvent, Member
 from loguru import logger
-from postgrest import APIResponse, AsyncSelectRequestBuilder
+from postgrest import APIResponse, AsyncSelectRequestBuilder #pyre-fixme[21]
 from simple_parsing import ArgumentParser, field
-from table2ascii import Alignment, PresetStyle
+from table2ascii import Alignment, PresetStyle #pyre-fixme[21]
 from table2ascii import table2ascii as t2a
 
 from db import DiscordMessage, supabase
@@ -134,7 +134,7 @@ async def public_leaderboard(
 
 
 async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> List[dict]:
-    query: AsyncSelectRequestBuilder = (
+    query: AsyncSelectRequestBuilder = ( #pyre-fixme[11]
         supabase.table(DiscordMessage.table_name_leaderboard_all()).select(
             'guild_id, author_id, count',
         ).eq(
@@ -145,7 +145,7 @@ async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) ->
             end_rank,
         )
     )
-    query_response: APIResponse = await query.execute()
+    query_response: APIResponse = await query.execute() #pyre-fixme[11]
     return query_response.data
 
 

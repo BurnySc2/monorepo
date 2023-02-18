@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 
 from arrow import Arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, KnownCustomEmoji
-from postgrest import APIResponse, AsyncSelectRequestBuilder
+from postgrest import APIResponse, AsyncSelectRequestBuilder #pyre-fixme[21]
 from simple_parsing import ArgumentParser
 
 from db import DiscordMessage, supabase
@@ -43,7 +43,7 @@ async def public_count_emotes(
         return f"Unknown params: {' '.join(unknown_args)}\n{public_count_emotes_parser.format_help()}"
     params: CountEmotesParserOptions = parsed.params
 
-    query: AsyncSelectRequestBuilder = (
+    query: AsyncSelectRequestBuilder = ( #pyre-fixme[11]
         supabase.table(DiscordMessage.table_name()).select(
             'what',
         )
@@ -65,10 +65,10 @@ async def public_count_emotes(
             event.author_id,
         )
     if params.days is not None:
-        after: Arrow = Arrow.utcnow().shift(days=-params.days)
+        after: Arrow = Arrow.utcnow().shift(days=-params.days) #pyre-fixme[16]
         query = query.gt('when', str(after))
 
-    result_emotes: APIResponse = await query.execute()
+    result_emotes: APIResponse = await query.execute() #pyre-fixme[11]
 
     # What emotes to include in response
     if params.nostatic and params.noanimated:
