@@ -37,7 +37,7 @@ jobs:
     - name: Run code checks and tests
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        earthly +all --verbose true
+        earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
   build_and_deploy_docker_image:
     needs: [test_backend]

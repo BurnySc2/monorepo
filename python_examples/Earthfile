@@ -1,5 +1,7 @@
 VERSION 0.6
-FROM python:3.10-slim
+# earthly +all --PYTHONVERSION=3.10
+ARG PYTHONVERSION=3.10
+FROM python:${PYTHONVERSION}-slim
 WORKDIR /root/python_examples
 
 # Run local example python file

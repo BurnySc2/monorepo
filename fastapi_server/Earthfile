@@ -1,5 +1,7 @@
 VERSION 0.6
-FROM python:3.11-slim
+# earthly +all --PYTHONVERSION=3.11
+ARG PYTHONVERSION=3.11
+FROM python:${PYTHONVERSION}-slim
 WORKDIR /root/fastapi_server
 
 # Start server locally for development
