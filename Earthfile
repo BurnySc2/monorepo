@@ -1,6 +1,6 @@
 VERSION 0.6
-ARG NODEVERSION=18 # 14, 16, 18, 19
-ARG PYTHONVERSION=3.8 # 3.8 to 3.11
+ARG NODEVERSION=19 # 14, 16, 18, 19
+ARG PYTHONVERSION=3.11 # 3.8 to 3.11
 FROM alpine:3.15 # Is only used for formatting, so image can be as small as possible
 
 # Run autoformatter on all projects
