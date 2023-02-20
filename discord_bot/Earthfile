@@ -67,4 +67,4 @@ all:
     BUILD +format-check
     BUILD +lint
     BUILD +pyre
-    BUILD +pytest --PYTHONVERSION=3.8 --PYTHONVERSION=3.9 --PYTHONVERSION=3.10 --PYTHONVERSION=3.11
+    BUILD +pytest

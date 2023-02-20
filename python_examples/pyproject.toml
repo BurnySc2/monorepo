@@ -5,7 +5,7 @@ description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.11"
+python = ">=3.8, <3.12"
 # Numeric python
 numpy = "^1.21"
 # Write and read classes to/from json
@@ -47,7 +47,7 @@ Shapely = "^1.8"
 # Info about the system
 psutil = "^5.8"
 # Execute command on server via SSH, or push files via SFTP
-paramiko = "^2.8"
+paramiko = "^2.11"
 # Simpler argparse
 click = "^8.1"
 # SQL ORM
@@ -69,11 +69,11 @@ seaborn = "^0.11.2"
 # Plotting
 matplotlib = "^3.5.2"
 # Plotting
-bokeh = "^2.4.3"
+bokeh = "^3.0"
 # Animation
 #manim = "^0.15.2"
-aiofiles = "^0.8.0"
-burny-common = "^0.0.4"
+aiofiles = "^23.0"
+burny-common = "^0.0.9"
 
 
 [tool.poetry.group.dev.dependencies]

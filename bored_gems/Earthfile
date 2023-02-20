@@ -10,6 +10,16 @@ install-dev:
     COPY src /root/bored_gems/src
     COPY static /root/bored_gems/static
 
+install-test:
+    COPY package.json package-lock.json ./
+    RUN npm install
+    RUN npx playwright install --with-deps chromium
+    COPY src /root/bored_gems/src
+    COPY static /root/bored_gems/static
+    COPY tests /root/bored_gems/tests
+    # Why is tsconfig.json not needed here?
+    COPY playwright.config.ts svelte.config.js vite.config.js ./
+
 install-prod:
     COPY package.json package-lock.json ./
     RUN npm install --omit=dev
@@ -36,14 +46,7 @@ lint:
     RUN npm run lint
 
 test:
-    COPY package.json package-lock.json ./
-    RUN npm install
-    RUN npx playwright install --with-deps chromium
-    COPY src /root/bored_gems/src
-    COPY static /root/bored_gems/static
-    COPY tests /root/bored_gems/tests
-    # Why is tsconfig.json not needed here?
-    COPY playwright.config.ts svelte.config.js vite.config.js ./
+    FROM +install-test
     RUN npm run test
 
 build:
@@ -53,9 +56,14 @@ build:
     RUN npm run build
     SAVE ARTIFACT build AS LOCAL ./
 
+install-all:
+    BUILD +install-dev
+    BUILD +install-test
+    BUILD +install-prod
+
 all:
     BUILD +format-check
     # TODO Fix me
     #BUILD +lint
-    BUILD +test --NODEVERSION=18 --NODEVERSION=19
+    BUILD +test
     BUILD +build
