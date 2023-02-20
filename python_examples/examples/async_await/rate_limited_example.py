@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import asyncio
 import time
-from typing import List, Tuple
 
 from aiohttp import ClientSession, TCPConnector
 from loguru import logger
@@ -45,7 +46,7 @@ async def do_stuff(session: ClientSession, url: str, retry: int, results: list) 
 async def worker(session: ClientSession, input_queue: asyncio.PriorityQueue, results: list):
     while not input_queue.empty():
         t0 = time.perf_counter()
-        item: Tuple[int, int, str, int] = await input_queue.get()
+        item: tuple[int, int, str, int] = await input_queue.get()
         _priority, _, url, retry = item
         # Get and store results
         success = await do_stuff(session, url, retry, results)
@@ -63,7 +64,7 @@ async def worker(session: ClientSession, input_queue: asyncio.PriorityQueue, res
 async def request_concurrently() -> float:
     t0 = time.perf_counter()
     queue: asyncio.PriorityQueue = asyncio.PriorityQueue()
-    results: List[dict] = []
+    results: list[dict] = []
     await create_tasks(queue)
     logger.info('Starting workers...')
     async with ClientSession(

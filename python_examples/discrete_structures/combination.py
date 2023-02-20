@@ -1,9 +1,11 @@
-from typing import Any, Generator, List
+from __future__ import annotations
+
+from typing import Any, Generator
 
 from discrete_structures.product import product_generator
 
 
-def combination_generator(my_list: List[Any], n: int) -> Generator[Any, None, None]:
+def combination_generator(my_list: list[Any], n: int) -> Generator[Any, None, None]:
     if n == 0:
         yield []
     for i, middle in enumerate(my_list):
@@ -12,14 +14,14 @@ def combination_generator(my_list: List[Any], n: int) -> Generator[Any, None, No
             yield [middle] + p
 
 
-def _is_sorted(my_list: List[Any]) -> bool:
+def _is_sorted(my_list: list[Any]) -> bool:
     for current, next_value in zip(my_list, my_list[1:]):
         if current > next_value:
             return False
     return True
 
 
-def combinations_with_replacement_generator(iterable: List[Any], replacement: int):
+def combinations_with_replacement_generator(iterable: list[Any], replacement: int):
     pool = tuple(iterable)
     n = len(pool)
     for indices in product_generator(range(n), repeat=replacement):

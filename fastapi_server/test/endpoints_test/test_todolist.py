@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import json
 import random
 from test.base_test import BaseTest
-from typing import List
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -111,7 +112,7 @@ class TestTodolist(BaseTest):
     @settings(max_examples=20, deadline=2_000)
     @given(data=st.data())
     def test_remove_todo_list_items(self, data: DataObject):
-        todo_items: List[str] = data.draw(
+        todo_items: list[str] = data.draw(
             st.lists(st.from_regex(TODO_ITEM_REGEX, fullmatch=True), min_size=1, max_size=100)
         )
         with self.method_client_context() as client:

@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import time
 from dataclasses import dataclass
-from typing import List
 
 from fastapi import Request
 from fastapi.routing import APIRouter
@@ -19,11 +20,11 @@ class TodoItem:
 
 
 TODO_COUNTER = 0
-TODOS: List[TodoItem] = []
+TODOS: list[TodoItem] = []
 
 
 @todo_list_router.get('/api')
-async def show_all_todos() -> List[TodoItem]:
+async def show_all_todos() -> list[TodoItem]:
     return TODOS
 
 

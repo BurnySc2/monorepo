@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import json
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 from dataclasses_json import DataClassJsonMixin
 from fastapi.routing import APIRouter
@@ -22,18 +23,18 @@ class ChatMessage(DataClassJsonMixin):
 
 @dataclass
 class ChatManager(Handler):
-    usernames: Dict[str, WebSocket] = field(default_factory=dict)
-    messages_history: List[ChatMessage] = field(default_factory=list)
+    usernames: dict[str, WebSocket] = field(default_factory=dict)
+    messages_history: list[ChatMessage] = field(default_factory=list)
 
     # General helper functions
     @staticmethod
-    async def send_json(message: Dict, websocket: WebSocket):
+    async def send_json(message: dict, websocket: WebSocket):
         await websocket.send_text(json.dumps(message))
 
     async def send_message_history(self, websocket: WebSocket):
         await self.send_json({'message_history': [m.to_dict() for m in self.messages_history]}, websocket)
 
-    async def disconnect_username(self, name: Optional[str] = None, websocket: Optional[WebSocket] = None) -> str:
+    async def disconnect_username(self, name: str | None = None, websocket: WebSocket | None = None) -> str:
         if name is not None:
             assert name in self.usernames
             self.usernames.pop(name)

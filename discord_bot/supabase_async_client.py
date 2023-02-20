@@ -1,4 +1,6 @@
-from typing import Any, Coroutine, Dict
+from __future__ import annotations
+
+from typing import Any, Coroutine
 
 from postgrest._async.client import AsyncPostgrestClient  # pyre-fixme[21]
 from postgrest._async.request_builder import AsyncFilterRequestBuilder, AsyncRequestBuilder  # pyre-fixme[21]
@@ -31,14 +33,14 @@ class Client(SyncClient):
         return self.postgrest.from_(table_name)
 
     # adapted to return AsyncFilterRequestBuilder instead of SyncFilterRequestBuilder
-    def rpc(self, fn: str, params: Dict[Any, Any]) -> Coroutine[None, None, AsyncFilterRequestBuilder]:  #pyre-fixme[11]
+    def rpc(self, fn: str, params: dict[Any, Any]) -> Coroutine[None, None, AsyncFilterRequestBuilder]:  #pyre-fixme[11]
         return self.postgrest.rpc(fn, params)
 
     @staticmethod
     def _init_postgrest_client(#pyre-fixme[14]
         rest_url: str,
         supabase_key: str,
-        headers: Dict[str, str],
+        headers: dict[str, str],
         schema: str,
         timeout: float = 5
     ) -> AsyncPostgrestClient:

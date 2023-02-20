@@ -1,4 +1,6 @@
-from typing import Iterable, List
+from __future__ import annotations
+
+from typing import Iterable
 
 from loguru import logger
 from sqlalchemy import Column, ForeignKey, Integer, String, create_engine, delete
@@ -47,7 +49,7 @@ class Library(Base, MyBase):
     name = Column(String)
     address = Column(String)
     # Each library owns certain books with a certain amount
-    books: List['BookInventory'] = relationship('BookInventory', back_populates='library')
+    books: list[BookInventory] = relationship('BookInventory', back_populates='library')
 
 
 class BookInventory(Base, MyBase):

@@ -1,8 +1,7 @@
 VERSION 0.6
-ARG NODEVERSION=18 # 14, 16, or 18
-ARG PYTHONVERSION=3.10
-FROM python:${PYTHONVERSION}-slim
-WORKDIR /root
+ARG NODEVERSION=18 # 14, 16, 18, 19
+ARG PYTHONVERSION=3.8 # 3.8 to 3.11
+FROM python:${PYTHONVERSION}-alpine # Is only used for formatting, so image can be as small as possible
 
 format:
     BUILD ./burny_common+format

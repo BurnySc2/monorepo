@@ -1,14 +1,16 @@
 """
 These are lexicographically ordered permutations.
 """
+from __future__ import annotations
+
 from math import factorial
 from string import ascii_uppercase
-from typing import Any, Generator, List
+from typing import Any, Generator
 
 from burny_common.measure_time import time_this  # pyre-fixme[21]
 
 
-def permutation(my_list: List[Any]) -> List[Any]:
+def permutation(my_list: list[Any]) -> list[Any]:
     assert len(my_list) > 0
     if len(my_list) == 1:
         return [my_list]
@@ -20,7 +22,7 @@ def permutation(my_list: List[Any]) -> List[Any]:
     return result
 
 
-def permutation_generator(my_list: List[Any]) -> Generator[Any, None, None]:
+def permutation_generator(my_list: list[Any]) -> Generator[Any, None, None]:
     assert len(my_list) > 0
     if len(my_list) == 1:
         yield my_list
@@ -31,7 +33,7 @@ def permutation_generator(my_list: List[Any]) -> Generator[Any, None, None]:
             yield [middle] + p
 
 
-def permutation_backwards_generator(my_list: List[Any]) -> Generator[Any, None, None]:
+def permutation_backwards_generator(my_list: list[Any]) -> Generator[Any, None, None]:
     assert len(my_list) > 0
     if len(my_list) == 1:
         yield my_list
@@ -43,7 +45,7 @@ def permutation_backwards_generator(my_list: List[Any]) -> Generator[Any, None, 
             yield [middle] + p
 
 
-def get_index_of_permutation(original: List[Any], perm: List[Any]) -> int:
+def get_index_of_permutation(original: list[Any], perm: list[Any]) -> int:
     """Returns the index of a lexicographically ordered permutation.
     assert get_index_of_permutation(list("ABC"), list("ABC")) == 0
     assert get_index_of_permutation(list("ABC"), list("CBA")) == 5
@@ -59,7 +61,7 @@ def get_index_of_permutation(original: List[Any], perm: List[Any]) -> int:
     return result
 
 
-def get_permutation_at_index(original: List[Any], index: int) -> List[Any]:
+def get_permutation_at_index(original: list[Any], index: int) -> list[Any]:
     """Returns lexicographically ordered permutation at index 'index'.
     assert get_permutation_at_index(list("ABC"), 0) == list("ABC")
     assert get_permutation_at_index(list("ABC"), 5) == list("CBA")
@@ -72,7 +74,7 @@ def get_permutation_at_index(original: List[Any], index: int) -> List[Any]:
     return [original[quotient]] + get_permutation_at_index(original[:quotient] + original[quotient + 1:], remainder)
 
 
-def get_next_permutation(perm: List[Any]):
+def get_next_permutation(perm: list[Any]):
     if len(perm) <= 1:
         return perm
     for i in reversed(range(len(perm) - 1)):
@@ -88,7 +90,7 @@ def get_next_permutation(perm: List[Any]):
     return perm
 
 
-def get_previous_permutation(perm: List[Any]):
+def get_previous_permutation(perm: list[Any]):
     if len(perm) <= 1:
         return perm
     for i in reversed(range(len(perm) - 1)):

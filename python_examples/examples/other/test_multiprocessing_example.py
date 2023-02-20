@@ -1,7 +1,6 @@
 # This test code was written by the `hypothesis.extra.ghostwriter` module
 # and is provided under the Creative Commons Zero public domain dedication.
-
-from typing import List
+from __future__ import annotations
 
 import pytest
 from hypothesis import given, settings
@@ -24,5 +23,5 @@ def test_fuzz_cpu_bound_summing(number):
 
 @settings(max_examples=10, deadline=3_000)
 @given(numbers=st.lists(st.integers(min_value=0, max_value=1_000), min_size=1, max_size=100))
-def test_find_sums(numbers: List[int]):
+def test_find_sums(numbers: list[int]):
     _result = find_sums(numbers)

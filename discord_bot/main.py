@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import asyncio
 import os
 from pathlib import Path
-from typing import Any, AsyncGenerator, Awaitable, Callable, Optional, Set, Union
+from typing import Any, AsyncGenerator, Awaitable, Callable
 
 import hikari.errors
 import httpx
@@ -59,7 +61,7 @@ logger.add(DATA_FOLDER / 'bot.log')
 
 async def generic_command_caller(
     event: GuildMessageCreateEvent,
-    function_to_call: Callable[[GatewayBot, GuildMessageCreateEvent, str], Awaitable[Union[Embed, str]]],
+    function_to_call: Callable[[GatewayBot, GuildMessageCreateEvent, str], Awaitable[Embed | str]],
     message: str,
     add_remove_emoji: bool = False,
 ) -> None:
@@ -76,7 +78,7 @@ async def generic_command_caller(
         return
 
     # Call the given function with the bot, event and message
-    response: Optional[Union[Embed, str]] = await function_to_call(bot, event, message)
+    response: Embed | str | None = await function_to_call(bot, event, message)
     if response is None:
         return
 
@@ -145,7 +147,7 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         'channel_id',
         channel.id,
     ).execute()
-    message_ids_already_exist_in_db: Set[int] = {row['message_id'] for row in all_message_ids_response.data}
+    message_ids_already_exist_in_db: set[int] = {row['message_id'] for row in all_message_ids_response.data}
 
     messages_inserted_count = 0
     async for message in channel.fetch_history():

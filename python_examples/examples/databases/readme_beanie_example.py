@@ -3,9 +3,11 @@ https://github.com/roman-right/beanie/
 https://roman-right.github.io/beanie/
 MongoDB GUI Interface: Robo 3T
 """
+from __future__ import annotations
+
 import asyncio
 import sys
-from typing import ForwardRef, List
+from typing import ForwardRef
 
 import motor  # pyre-fixme[21]
 from beanie import Document, init_beanie
@@ -45,7 +47,7 @@ class Library(Document):
     name: str
     address: str
     # pyre-fixme[11]
-    books: List[ForwardRefBookInventory] = Field(default_factory=list)
+    books: list[ForwardRefBookInventory] = Field(default_factory=list)
 
 
 # pyre-fixme[13]

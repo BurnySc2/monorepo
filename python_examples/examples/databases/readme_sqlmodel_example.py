@@ -1,4 +1,4 @@
-from typing import List, Optional
+from __future__ import annotations
 
 from loguru import logger
 from sqlalchemy import func
@@ -11,7 +11,7 @@ from sqlmodel.sql.expression import SelectOfScalar
 # pyre-fixme[13]
 # pyre-fixme[28]
 class Author(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     name: str
     birth_year: int
 
@@ -19,7 +19,7 @@ class Author(SQLModel, table=True):
 # pyre-fixme[13]
 # pyre-fixme[28]
 class Publisher(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     name: str
     founded_year: int
 
@@ -27,7 +27,7 @@ class Publisher(SQLModel, table=True):
 # pyre-fixme[13]
 # pyre-fixme[28]
 class Book(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     name: str = Field()
     release_year: int
     author_id: int = Field(default=None, foreign_key='author.id')
@@ -39,11 +39,11 @@ class Book(SQLModel, table=True):
 # pyre-fixme[13]
 # pyre-fixme[28]
 class Library(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
     name: str
     address: str
     # Each library owns certain books with a certain amount
-    books: List['BookInventory'] = Relationship(back_populates='library')
+    books: list[BookInventory] = Relationship(back_populates='library')
 
 
 # pyre-fixme[13]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from contextlib import suppress
 from pathlib import Path
@@ -8,7 +10,6 @@ with suppress(IndexError):
 import asyncio
 import time
 from platform import platform
-from typing import List
 
 import aiohttp
 from loguru import logger
@@ -59,7 +60,7 @@ async def main():
 
     regex_match_test()
 
-    sites: List[str] = ['http://www.jython.org', 'https://www.python.org/'] * 80
+    sites: list[str] = ['http://www.jython.org', 'https://www.python.org/'] * 80
     start_time = time.perf_counter()
     await download_all_sites(sites)
 
