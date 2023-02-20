@@ -28,6 +28,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Set up Python ${{ env.LATEST_PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.LATEST_PYTHON_VERSION }}
+
+    - name: Cache .venv
+      uses: actions/cache@v3
+      with:
+        path: .venv
+        key: ${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
     # https://earthly.dev/get-earthly
     - name: Install Earthly
       run: |
@@ -38,6 +49,7 @@ jobs:
       run: |
         earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
         earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+        earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
   build_and_deploy_docker_image:
     needs: [test_backend]
