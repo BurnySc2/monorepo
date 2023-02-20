@@ -1,6 +1,6 @@
 VERSION 0.6
 # earthly +all --NODEVERSION=18
-ARG NODEVERSION=18 # 14, 16, or 18
+ARG NODEVERSION=18 # 14, 16, 18, 19
 FROM node:${NODEVERSION}-slim
 WORKDIR /root/svelte_frontend
 
