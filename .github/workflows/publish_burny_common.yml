@@ -34,7 +34,7 @@ jobs:
     - name: Run code checks and tests
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        earthly +install-all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+        earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
         earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
   build_and_publish:
