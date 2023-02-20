@@ -91,6 +91,8 @@ test("todo page works", async ({ page }) => {
 
 test("browserstorage works as expected", async ({ page }) => {
     await page.goto("/browserstorage")
+    await page.waitForTimeout(100)
+    
     expect(await page.innerText("body")).toContain("Local Storage")
     expect(await page.innerText("body")).toContain("Session Storage")
     expect(await page.innerText("#localStorageValue")).toBe("0")
@@ -102,9 +104,14 @@ test(`browserstorage single`, async ({ page }) => {
     const amountDecrease = 7
 
     await page.goto("/browserstorage")
+    await page.waitForTimeout(100)
+
     await page.click("#increaseLocalStorage", { clickCount: amountIncrease })
+    await page.waitForTimeout(100)
     expect(await page.innerText("#localStorageValue")).toBe(amountIncrease.toString())
+
     await page.click("#decreaseLocalStorage", { clickCount: amountDecrease })
+    await page.waitForTimeout(100)
     expect(await page.innerText("#localStorageValue")).toBe((amountIncrease - amountDecrease).toString())
 })
 
@@ -119,7 +126,7 @@ const browserstorageTries = [
 for (const { increase, decrease } of browserstorageTries) {
     test(`browserstorage with increase=${increase} and decrease=${decrease}`, async ({ page }) => {
         await page.goto("/browserstorage")
-
+        await page.waitForTimeout(100)
         expect(await page.innerText("#localStorageValue")).toBe("0")
 
         await page.click("#increaseLocalStorage", { clickCount: increase })
