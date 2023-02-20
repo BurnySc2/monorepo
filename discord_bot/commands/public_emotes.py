@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 import re
 from collections import Counter
 from dataclasses import dataclass
 from typing import Counter as CounterType
-from typing import List, Optional, Union
 
 from arrow import Arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, KnownCustomEmoji
@@ -21,7 +22,7 @@ class CountEmotesParserOptions:
     all: bool = False
     nostatic: bool = False
     noanimated: bool = False
-    days: Optional[float] = None
+    days: float | None = None
 
 
 public_count_emotes_parser = ArgumentParser()
@@ -32,8 +33,8 @@ async def public_count_emotes(
     bot: GatewayBot,
     event: GuildMessageCreateEvent,
     message: str,
-) -> Union[str, Embed]:
-    unknown_args: List[str]
+) -> str | Embed:
+    unknown_args: list[str]
     try:
         parsed, unknown_args = public_count_emotes_parser.parse_known_args(args=message.split())
     except SystemExit:
@@ -84,7 +85,7 @@ async def public_count_emotes(
         for match in re.finditer(emote_pattern, message_row.what):
             # Validate/load emoji from cache
             _emote_name, emote_snowflake = match.groups()
-            find_emote: Optional[KnownCustomEmoji] = bot.cache.get_emoji(int(emote_snowflake))
+            find_emote: KnownCustomEmoji | None = bot.cache.get_emoji(int(emote_snowflake))
             if find_emote is None:
                 # Emote not found, must be from another server
                 # Or false positive to regex match
@@ -101,8 +102,8 @@ async def public_count_emotes(
                 # Emote can be rendered
                 emote_counter[find_emote.mention] += 1
 
-    emote_names_sorted_by_usage: List[str] = sorted(emote_counter, key=lambda i: emote_counter[i], reverse=True)
-    emote_count: List[str] = [
+    emote_names_sorted_by_usage: list[str] = sorted(emote_counter, key=lambda i: emote_counter[i], reverse=True)
+    emote_count: list[str] = [
         f'{emote_counter[name]} {name}' for index, name in enumerate(
             emote_names_sorted_by_usage,
             start=1,

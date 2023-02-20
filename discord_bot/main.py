@@ -35,7 +35,7 @@ if token is None:
     DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
     assert DISCORDKEY_PATH.is_file(), (
         f"File '{DISCORDKEY_PATH}' not found, "
-        f"you can get it from https://discord.com/developers/applications/<bot_id>/bot"
+        f'you can get it from https://discord.com/developers/applications/<bot_id>/bot'
     )
     with DISCORDKEY_PATH.open() as f:
         token = f.read().strip()
@@ -123,7 +123,7 @@ async def add_message_to_db(server_id: int, channel_id: int, message: Message) -
             ).execute()
         )
     except postgrest.exceptions.APIError:
-        logger.error(f"Mesage already exists or could not insert message: {message.id}")
+        logger.error(f'Mesage already exists or could not insert message: {message.id}')
 
 
 async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextChannel) -> None:
@@ -142,7 +142,7 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
     # Ignore E501
     # pyre-fixme[11]
     all_message_ids_response: APIResponse = await supabase.table(DiscordMessage.table_name()).select('message_id').eq(
-        "channel_id",
+        'channel_id',
         channel.id,
     ).execute()
     message_ids_already_exist_in_db: Set[int] = {row['message_id'] for row in all_message_ids_response.data}
@@ -222,10 +222,10 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
         return
 
     # If "twss" reacted and reaction count >=3: add quote to db
-    allowed_emoji_names = {"twss"}
+    allowed_emoji_names = {'twss'}
     target_emoji_count = 3
     if STAGE == 'DEV' and channel.name == 'bot_tests':
-        allowed_emoji_names = {"burnysStalker"}
+        allowed_emoji_names = {'burnysStalker'}
         target_emoji_count = 1
     if not message.author.is_bot and event.emoji_name in allowed_emoji_names:
         for reaction in message.reactions:
@@ -253,16 +253,16 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                             f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"'
                         ):
                             raise
-                        logger.error(f"Quote already exists: {message.id}")
+                        logger.error(f'Quote already exists: {message.id}')
                         return
-                logger.info(f"Added quote: {message.content}")
+                logger.info(f'Added quote: {message.content}')
 
                 # Notify people in channel that a quote has been added
                 # TODO and how many there are now in total
                 quote = DiscordQuotes(
                     when=str(message.created_at),
                     who=message.author.username,
-                    what=message.content or "",
+                    what=message.content or '',
                 )
                 response_message = (
                     f'Added {reaction.emoji.name} quote:\n{quote.when_arrow.strftime("%Y-%m-%d")} '

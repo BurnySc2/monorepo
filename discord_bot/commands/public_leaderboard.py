@@ -15,8 +15,8 @@ from db import DiscordMessage, supabase
 
 @dataclass
 class LeaderboardParserOptions:
-    month: bool = field(alias=["-m"], default=False, action="store_true")
-    week: bool = field(alias=["-w"], default=False, action="store_true")
+    month: bool = field(alias=['-m'], default=False, action='store_true')
+    week: bool = field(alias=['-w'], default=False, action='store_true')
     # rank_range: Optional[str] = field(alias=["-r"], default=None)
 
 
@@ -39,9 +39,9 @@ def parse_rank_range_argument(argument_list: List[str]) -> Tuple[int, int]:
         raise ValueError
     if len(argument_list) == 1:
         rank_range_arg = argument_list[0]
-        if "-" not in rank_range_arg:
+        if '-' not in rank_range_arg:
             raise LookupError
-        rank_range_list = rank_range_arg.split("-")
+        rank_range_list = rank_range_arg.split('-')
         try:
             start_rank = int(rank_range_list[0])
             end_rank = int(rank_range_list[1])
@@ -52,7 +52,7 @@ def parse_rank_range_argument(argument_list: List[str]) -> Tuple[int, int]:
             # Could not parse to int
             raise
         except Exception as e:
-            logger.trace(f"Unknown error: {e}")
+            logger.trace(f'Unknown error: {e}')
             raise
     return start_rank, end_rank
 
@@ -76,20 +76,20 @@ async def public_leaderboard(
     try:
         start_rank, end_rank = parse_rank_range_argument(unknown_args)
     except Exception as e:
-        logger.trace(f"Parsing rank range error: {e}")
+        logger.trace(f'Parsing rank range error: {e}')
         return
     if end_rank - start_rank >= 20:
-        return "Rank range limit is at 20"
+        return 'Rank range limit is at 20'
 
     # Get by month, by week, or overall
     if parsed.params.month:
-        title = "LEADERBOARD MONTH"
+        title = 'LEADERBOARD MONTH'
         leaderboard_result = await get_leaderboard_month(event.guild_id, start_rank=start_rank, end_rank=end_rank)
     elif parsed.params.week:
-        title = "LEADERBOARD WEEK"
+        title = 'LEADERBOARD WEEK'
         leaderboard_result = await get_leaderboard_week(event.guild_id, start_rank=start_rank, end_rank=end_rank)
     else:
-        title = "GLOBAL LEADERBOARD"
+        title = 'GLOBAL LEADERBOARD'
         leaderboard_result = await get_leaderboard_all(event.guild_id, start_rank=start_rank, end_rank=end_rank)
 
     # No result for this range, or no messages yet, don't send an answer
@@ -124,13 +124,13 @@ async def public_leaderboard(
 
     # Source: https://stackoverflow.com/a/69574344
     output = t2a(
-        header=["Rank", "Count", "Name"],
+        header=['Rank', 'Count', 'Name'],
         body=data,
         style=PresetStyle.thin_compact,
         alignments=[Alignment.RIGHT, Alignment.RIGHT, Alignment.LEFT],
         first_col_heading=True,
     )
-    return f"{title}```\n{output}\n```"
+    return f'{title}```\n{output}\n```'
 
 
 async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> List[dict]:
@@ -138,7 +138,7 @@ async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) ->
         supabase.table(DiscordMessage.table_name_leaderboard_all()).select(
             'guild_id, author_id, count',
         ).eq(
-            "guild_id",
+            'guild_id',
             server_id,
         ).range( # https://supabase.com/docs/reference/javascript/range
             start_rank - 1,
@@ -154,7 +154,7 @@ async def get_leaderboard_month(server_id: int, start_rank: int, end_rank: int) 
         supabase.table(DiscordMessage.table_name_leaderboard_month()).select(
             'guild_id, author_id, count',
         ).eq(
-            "guild_id",
+            'guild_id',
             server_id,
         ).range(
             start_rank - 1,
@@ -170,7 +170,7 @@ async def get_leaderboard_week(server_id: int, start_rank: int, end_rank: int) -
         supabase.table(DiscordMessage.table_name_leaderboard_week()).select(
             'guild_id, author_id, count',
         ).eq(
-            "guild_id",
+            'guild_id',
             server_id,
         ).range(
             start_rank - 1,
@@ -184,9 +184,9 @@ async def get_leaderboard_week(server_id: int, start_rank: int, end_rank: int) -
 async def main() -> None:
     quote = await get_leaderboard_all(384968030423351298, start_rank=1, end_rank=10)
     if quote is None:
-        logger.info("No quote could be loaded!")
+        logger.info('No quote could be loaded!')
         return
-    logger.info(f"Returned quote: {quote}")
+    logger.info(f'Returned quote: {quote}')
 
 
 if __name__ == '__main__':

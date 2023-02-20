@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import re
-from typing import Dict, List, Union
 
 import pymongo  # pyre-fixme[21]
 from bson import ObjectId  # pyre-fixme[21]
@@ -23,13 +24,13 @@ async def test_database_with_mongodb():
             # Connect to db
             my_db: Database = my_client[my_db_name]
             # Check if db exists
-            db_list: List[str] = my_client.list_database_names()
+            db_list: list[str] = my_client.list_database_names()
             if my_db_name in db_list:
                 logger.info(f'The database exists: {my_db_name}')
                 my_client.drop_database(my_db_name)
             # Check if collection exists
             collection_name = 'customers'
-            col_list: List[str] = my_db.list_collection_names()
+            col_list: list[str] = my_db.list_collection_names()
             if collection_name in col_list:
                 logger.info(f'The collection exists: {collection_name}')
 
@@ -65,7 +66,7 @@ async def test_database_with_mongodb():
             assert len(result.inserted_ids) == 3
 
             # Find one
-            _result: Dict[str, Union[ObjectId, str]] = my_col.find_one()
+            _result: dict[str, ObjectId | str] = my_col.find_one()
             # Find all
             assert len(list(my_col.find())) == 4
 

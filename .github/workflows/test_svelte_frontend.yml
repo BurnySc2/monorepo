@@ -42,7 +42,7 @@ jobs:
         earthly +lint --verbose true --NODEVERSION=${{ matrix.node }}
 
     - name: Run test
-      if: ${{ matrix.node == '18' }} || ${{ matrix.node == '19' }}
+      if: ${{ matrix.node == '18' || matrix.node == '19'}}
       working-directory: ${{ env.SUBDIRECTORY }}
       run: earthly +test --verbose true --NODEVERSION=${{ matrix.node }}
 

@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import re
 from heapq import heapify, heappop, heappush
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
 
 import arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, Message, NotFoundError, PartialChannel, User
@@ -30,16 +31,16 @@ class Reminder:
         self.message: str = message
         self.message_id: int = message_id
 
-    def __lt__(self, other: 'Reminder'):
+    def __lt__(self, other: Reminder):
         return self.reminder_utc_timestamp < other.reminder_utc_timestamp
 
     @staticmethod
-    def from_dict(dictionary) -> 'Reminder':
+    def from_dict(dictionary) -> Reminder:
         r: Reminder = Reminder()
         r.__dict__.update(dictionary)
         return r
 
-    def to_dict(self) -> Dict[str, Union[float, str]]:
+    def to_dict(self) -> dict[str, float | str]:
         return {
             'reminder_utc_timestamp': self.reminder_utc_timestamp,
             'guild_id': self.guild_id,
@@ -71,7 +72,7 @@ Example usage:
     def __init__(self, client: GatewayBot):
         super().__init__()
         self.client: GatewayBot = client
-        self.reminders: List[Tuple[float, Reminder]] = []
+        self.reminders: list[tuple[float, Reminder]] = []
         self.reminder_file_path: Path = Path(__file__).parent.parent / 'data' / 'reminders.json'
         # Limit of reminders per person
         self.reminder_limit = 10
@@ -135,8 +136,8 @@ Example usage:
     async def _get_message_by_id(self, channel_id: int, message_id: int) -> Message:
         return await self.client.rest.fetch_message(channel_id, message_id)
 
-    async def _get_all_reminders_by_user_id(self, user_id: int) -> List[Reminder]:
-        user_reminders: List[Reminder] = []
+    async def _get_all_reminders_by_user_id(self, user_id: int) -> list[Reminder]:
+        user_reminders: list[Reminder] = []
         reminders_copy = self.reminders.copy()
         while reminders_copy:
             r: Reminder = heappop(reminders_copy)[1]
@@ -148,7 +149,7 @@ Example usage:
         user_reminders = await self._get_all_reminders_by_user_id(user_id)
         return len(user_reminders) >= self.reminder_limit
 
-    async def _parse_date_and_time_from_message(self, message: str) -> Optional[Tuple[arrow.Arrow, str]]:
+    async def _parse_date_and_time_from_message(self, message: str) -> tuple[arrow.Arrow, str] | None:
         time_now: arrow.Arrow = arrow.utcnow()
 
         # Old pattern which was working:
@@ -196,7 +197,7 @@ Example usage:
             return None
         return future_reminder_time, reminder_message.strip()
 
-    async def _parse_time_shift_from_message(self, message: str) -> Optional[Tuple[arrow.Arrow, str]]:
+    async def _parse_time_shift_from_message(self, message: str) -> tuple[arrow.Arrow, str] | None:
         time_now: arrow.Arrow = arrow.utcnow()
 
         days_pattern = '(?:([0-9]+) ?(?:d|day|days))?'
@@ -352,10 +353,10 @@ Example usage:
     ):
         """ List all of the user's reminders """
         # id, time formatted by iso standard format, in 5 minutes, text
-        user_reminders: List[Tuple[int, str, str, str]] = []
+        user_reminders: list[tuple[int, str, str, str]] = []
 
         # Sorted reminders by date and time ascending
-        user_reminders2: List[Reminder] = await self._get_all_reminders_by_user_id(event.author_id)
+        user_reminders2: list[Reminder] = await self._get_all_reminders_by_user_id(event.author_id)
         reminder_id = 1
         while user_reminders2:
             r: Reminder = user_reminders2.pop(0)
@@ -366,7 +367,7 @@ Example usage:
         if not user_reminders:
             return "You don't have any reminders."
 
-        reminders: List[str] = [
+        reminders: list[str] = [
             f'{reminder_id}) {time} {humanize}: {message}' for reminder_id, time, humanize, message in user_reminders
         ]
         description: str = '\n'.join(reminders)

@@ -38,7 +38,7 @@ class Book(db.Entity):
     def __repr__(self):
         return (
             f"Book(id={self.id}, author_id={self.author.id}, name='{self.name}', release_year={self.release_year}, "
-            f"publisher_id={self.publisher.id})"
+            f'publisher_id={self.publisher.id})'
         )
 
 

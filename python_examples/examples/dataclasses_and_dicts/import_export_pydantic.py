@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import List, Union
 
 from hypothesis import given
 from hypothesis import strategies as st
@@ -44,7 +45,7 @@ class PersonModel(BaseModel):
     password1: str
     password2: str
     # pets: List[PetModel]
-    pets: List[Union[CatModel, DogModel, PetModel]]
+    pets: list[CatModel | DogModel | PetModel]
 
     @validator('name')
     def name_must_contain_space(cls, v: str):

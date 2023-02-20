@@ -104,7 +104,7 @@ def test_database():
         logger.info('Example query')
         results: sqlite3.Cursor = db.execute(
             "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' "
-            "ORDER BY age ASC, height ASC",
+            'ORDER BY age ASC, height ASC',
         )
         for row in results:
             # Can also access values via row[0]

@@ -19,7 +19,7 @@ async def public_twss(
     # TODO Allow to pick a quote of a specific user
     quote = await get_random_twss_quote(event.guild_id)
     if quote is None:
-        return "Could not find any twss quotes in the database."
+        return 'Could not find any twss quotes in the database.'
     return quote
 
 
@@ -29,10 +29,10 @@ async def get_random_twss_quote(server_id: int) -> Optional[str]:
         supabase.table(DiscordQuotes.table_name_random_order_view()).select(
             'when, who, what, emoji_name',
         ).eq(
-            "emoji_name",
-            "twss",
+            'emoji_name',
+            'twss',
         ).eq(
-            "guild_id",
+            'guild_id',
             server_id,
         ).limit(1)
     )
@@ -47,13 +47,13 @@ async def get_random_twss_quote(server_id: int) -> Optional[str]:
 async def main() -> None:
     quote = await get_random_twss_quote(384968030423351298)
     if quote is None:
-        logger.info("No quote could be loaded!")
+        logger.info('No quote could be loaded!')
         return
-    logger.info(f"Returned quote: {quote}")
+    logger.info(f'Returned quote: {quote}')
 
 
 async def load_csv_to_supabase() -> None:
-    path = Path("path_to_file.csv")
+    path = Path('path_to_file.csv')
     with path.open() as f:
         data = f.readlines()
 
@@ -66,14 +66,14 @@ async def load_csv_to_supabase() -> None:
     for row in data:
         if not row.strip():
             continue
-        user_id, messge_id, name, *rest = row.split(",")
+        user_id, messge_id, name, *rest = row.split(',')
         time = rest[-1]
-        content = ",".join(rest[:-1])
+        content = ','.join(rest[:-1])
         user_id = user_id.strip("\"")
         messge_id = messge_id.strip("\"")
         name = name.strip("\"")
         content = content.strip("\"")
-        time = time.strip("\n").strip("\"")
+        time = time.strip('\n').strip("\"")
         time_arrow = arrow.get(time)
         # Add quote to db
         if int(messge_id) in added_messages:
@@ -88,7 +88,7 @@ async def load_csv_to_supabase() -> None:
                     'who': name,
                     'when': str(time_arrow.datetime),
                     'what': content,
-                    'emoji_name': "twss",
+                    'emoji_name': 'twss',
                 }
             ).execute()
         )

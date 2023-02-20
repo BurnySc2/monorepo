@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import Dict, List, Union
 
 from fastapi import File, Form, UploadFile
 from fastapi.routing import APIRouter
@@ -20,11 +21,11 @@ class ParserPlayer:
     name: str
     race: str
     supply_block: int
-    army_value: Dict[Resource, List[int]]  # pyre-fixme[11]
-    collection_rate: Dict[Resource, List[int]]
-    unspent_resources: Dict[Resource, List[int]]
-    upgrades: List[Dict[str, Union[str, int]]]
-    queues: List[dict]
+    army_value: dict[Resource, list[int]]  # pyre-fixme[11]
+    collection_rate: dict[Resource, list[int]]
+    unspent_resources: dict[Resource, list[int]]
+    upgrades: list[dict[str, str | int]]
+    queues: list[dict]
 
     @staticmethod
     def from_replay_object(player_object: Player):  # pyre-fixme[11]

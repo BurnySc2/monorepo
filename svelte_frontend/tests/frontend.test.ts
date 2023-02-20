@@ -92,7 +92,7 @@ test("todo page works", async ({ page }) => {
 test("browserstorage works as expected", async ({ page }) => {
     await page.goto("/browserstorage")
     await page.waitForTimeout(100)
-    
+
     expect(await page.innerText("body")).toContain("Local Storage")
     expect(await page.innerText("body")).toContain("Session Storage")
     expect(await page.innerText("#localStorageValue")).toBe("0")
