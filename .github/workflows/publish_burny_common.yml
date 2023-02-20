@@ -72,8 +72,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Poetry
-      run: |
-        pip install poetry
+      run: pip install poetry
 
     - name: Make poetry use local .venv folder
       run: poetry config virtualenvs.in-project true
@@ -92,12 +91,10 @@ jobs:
 
     - name: Build
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry build
+      run: poetry build
 
       # Publish package on pypi
     - name: Publish
       working-directory: ${{ env.SUBDIRECTORY }}
       continue-on-error: true
-      run: |
-        poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}
+      run: poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}

@@ -32,6 +32,13 @@ check-frontend:
     BUILD ./bored_gems+all --NODEVERSION=${NODEVERSION}
     BUILD ./svelte_frontend+all --NODEVERSION=${NODEVERSION}
 
+# Export cache for github actions runner
+export-cache-backend:
+    BUILD ./burny_common+export-cache --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./discord_bot+export-cache --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./fastapi_server+export-cache --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./python_examples+export-cache --PYTHONVERSION=${PYTHONVERSION}
+
 # Install all requirements to be able to run format-checks, linter and tests
 install-all:
     BUILD +install-backend
