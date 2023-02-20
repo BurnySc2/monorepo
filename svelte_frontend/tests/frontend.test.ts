@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test"
 
 test("index page has hello world", async ({ page }) => {
     await page.goto("/")
+    await page.waitForTimeout(100)
     expect(await page.innerText("body")).toContain("Hello world!")
     expect(await page.innerText("body")).toContain("Visit the Svelte tutorial to learn how to build Svelte apps.")
 })
