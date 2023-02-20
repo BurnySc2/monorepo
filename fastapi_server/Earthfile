@@ -14,13 +14,9 @@ install-dev:
     # Required for video conversion
     RUN apt -y update && \
         apt install -y --no-install-recommends ffmpeg
-    COPY poetry.lock pyproject.toml ./
     RUN pip install poetry --no-cache-dir
-    RUN poetry config virtualenvs.in-project true
-    # Copy cache from host system to container
-    COPY --if-exists .venv ./.venv
+    COPY poetry.lock pyproject.toml ./
     RUN poetry install
-    SAVE ARTIFACT ./.venv
     # Required for integration tests
     RUN poetry run playwright install --with-deps chromium
     COPY . /root/fastapi_server
@@ -73,11 +69,6 @@ integration-test:
     FROM +install-dev
     # COPY ../svelte_frontend+svelte_frontend /root/svelte_frontend
     RUN poetry run pytest test_integration
-
-export-cache:
-    LOCALLY
-    # Export cache from container to host system for github actions cache
-    COPY +install-dev/.venv .venv
 
 all:
     BUILD +remove-unused-imports-check
