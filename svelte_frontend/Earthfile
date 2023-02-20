@@ -56,5 +56,5 @@ build:
 all:
     BUILD +format-check
     BUILD +lint
-    BUILD +test
+    BUILD +test --NODEVERSION=18 --NODEVERSION=19
     BUILD +build

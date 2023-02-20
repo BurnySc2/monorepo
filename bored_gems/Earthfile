@@ -57,5 +57,5 @@ all:
     BUILD +format-check
     # TODO Fix me
     #BUILD +lint
-    BUILD +test
+    BUILD +test --NODEVERSION=16 --NODEVERSION=18 --NODEVERSION=19
     BUILD +build
