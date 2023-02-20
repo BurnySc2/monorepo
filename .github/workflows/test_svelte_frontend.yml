@@ -32,14 +32,15 @@ jobs:
 
     # https://earthly.dev/get-earthly
     - name: Install Earthly
-      run: |
-        sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+
+    - name: Install
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +install-all --verbose true --NODEVERSION=${{ matrix.node }}
 
     - name: Run code checks and tests
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        earthly +install-all --verbose true --NODEVERSION=${{ matrix.node }}
-        earthly +all --verbose true --NODEVERSION=${{ matrix.node }}
+      run: earthly +all --verbose true --NODEVERSION=${{ matrix.node }}
 
 # TODO Fix integration test
 #  test_integration:

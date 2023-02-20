@@ -11,20 +11,11 @@ install-dev:
     COPY static /root/svelte_frontend/static
 
 install-test:
-    COPY package.json package-lock.json ./
-    RUN npm install
+    FROM +install-dev
     RUN npx playwright install --with-deps chromium
-    COPY src /root/svelte_frontend/src
-    COPY static /root/svelte_frontend/static
     COPY tests /root/svelte_frontend/tests
     # Why is tsconfig.json not needed here?
     COPY playwright.config.ts svelte.config.js vite.config.js ./
-
-install-prod:
-    COPY package.json package-lock.json ./
-    RUN npm install --omit=dev
-    COPY src /root/svelte_frontend/src
-    COPY static /root/svelte_frontend/static
 
 format:
     # Run on host system instead of inside a container
@@ -50,7 +41,7 @@ test:
     RUN npm run test
 
 build:
-    FROM +install-prod
+    FROM +install-dev
     # Why is tsconfig.json not needed here?
     COPY svelte.config.js vite.config.js ./
     RUN npm run build
@@ -59,7 +50,6 @@ build:
 install-all:
     BUILD +install-dev
     BUILD +install-test
-    BUILD +install-prod
 
 all:
     BUILD +format-check

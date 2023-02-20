@@ -42,15 +42,19 @@ jobs:
 
     # https://earthly.dev/get-earthly
     - name: Install Earthly
-      run: |
-        sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+
+    - name: Install
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
     - name: Run code checks and tests
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
-        earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
-        earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+      run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+    - name: Save cache
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
   build_and_deploy_docker_image:
     needs: [test_backend]
