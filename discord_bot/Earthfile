@@ -19,8 +19,6 @@ install-dev:
     RUN poetry install
     SAVE ARTIFACT ./.venv
     COPY . /root/discord_bot
-    # Allow imports like 'from discord_bot.commands.public_remind import Remind'
-    # ENV PYTHONPATH "${PYTHONPATH}:/root"
 
 format:
     # Run on host system instead of inside a container

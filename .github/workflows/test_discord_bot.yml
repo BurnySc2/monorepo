@@ -28,16 +28,16 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ env.LATEST_PYTHON_VERSION }}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ env.LATEST_PYTHON_VERSION }}
+        python-version: ${{ matrix.python-version }}
 
     - name: Cache .venv
       uses: actions/cache@v3
       with:
         path: .venv
-        key: ${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+        key: ${{ env.SUBDIRECTORY }}-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
 
     # https://earthly.dev/get-earthly
     - name: Install Earthly
