@@ -288,26 +288,24 @@ toml = "*"
 
 [[package]]
 name = "bokeh"
-version = "3.0.3"
+version = "2.4.3"
 description = "Interactive plots and applications in the browser from Python"
 category = "main"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.7"
 files = [
-    {file = "bokeh-3.0.3-py3-none-any.whl", hash = "sha256:d30e4f6220efc824c5da0dcb58138abed0e6a2d524c942409c8ca1098031e374"},
-    {file = "bokeh-3.0.3.tar.gz", hash = "sha256:1c28471ef5e6110ba5bed513137fd26054ebc4454bc768650eaeefc53b898a8a"},
+    {file = "bokeh-2.4.3-py3-none-any.whl", hash = "sha256:104d2f0a4ca7774ee4b11e545aa34ff76bf3e2ad6de0d33944361981b65da420"},
+    {file = "bokeh-2.4.3.tar.gz", hash = "sha256:ef33801161af379665ab7a34684f2209861e3aefd5c803a21fbbb99d94874b03"},
 ]
 
 [package.dependencies]
-contourpy = ">=1"
 Jinja2 = ">=2.9"
 numpy = ">=1.11.3"
 packaging = ">=16.8"
-pandas = ">=1.2"
 pillow = ">=7.1.0"
 PyYAML = ">=3.10"
 tornado = ">=5.1"
-xyzservices = ">=2021.09.1"
+typing-extensions = ">=3.10.0"
 
 [[package]]
 name = "burny-common"
@@ -3313,18 +3311,6 @@ files = [
 dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 
 [[package]]
-name = "xyzservices"
-version = "2023.2.0"
-description = "Source of XYZ tiles providers"
-category = "main"
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "xyzservices-2023.2.0-py3-none-any.whl", hash = "sha256:8d29c4d7c33b0ad63f54744ec90f68c5a65d7c0d7e498b624b7c076c1d926998"},
-    {file = "xyzservices-2023.2.0.tar.gz", hash = "sha256:3342bba410d7941290eed0e58a2e5aadb0f7b97863ec4283b283c406ee723a28"},
-]
-
-[[package]]
 name = "yapf"
 version = "0.32.0"
 description = "A formatter for Python code."
@@ -3443,4 +3429,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.12"
-content-hash = "06e614626fc06af2db3367200a767057986a70ba7422d15a95645df43e363165"
+content-hash = "58bacbb641be9ca85f81ffc20afd842052e4c24487ad613d7453d62e6bafd051"

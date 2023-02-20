@@ -69,7 +69,7 @@ seaborn = "^0.11.2"
 # Plotting
 matplotlib = "^3.5.2"
 # Plotting
-bokeh = "^3.0"
+bokeh = "^2.0"
 # Animation
 #manim = "^0.15.2"
 aiofiles = "^23.0"
