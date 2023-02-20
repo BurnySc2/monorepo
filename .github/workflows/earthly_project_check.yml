@@ -49,7 +49,7 @@ jobs:
       run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
 
     - name: Install
-      run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+      run: earthly +install-backend --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
     - name: Run code checks and tests
       run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
@@ -73,7 +73,7 @@ jobs:
       run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
 
     - name: Install
-      run: earthly +install-frontend --verbose true --NODEVERSION==${{ matrix.node }}
+      run: earthly +install-frontend --verbose true --NODEVERSION=${{ matrix.node }}
 
     - name: Run code checks and tests
-      run: earthly +check-frontend --verbose true --NODEVERSION==${{ matrix.node }}
+      run: earthly +check-frontend --verbose true --NODEVERSION=${{ matrix.node }}
