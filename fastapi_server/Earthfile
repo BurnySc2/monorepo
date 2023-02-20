@@ -14,6 +14,7 @@ install-dev:
     # Required for video conversion
     RUN apt -y update && \
         apt install -y --no-install-recommends ffmpeg
+    COPY poetry.lock pyproject.toml ./
     RUN pip install poetry --no-cache-dir
     RUN poetry config virtualenvs.in-project true
     # Copy cache from host system to container
