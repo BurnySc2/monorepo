@@ -2,7 +2,7 @@
     "name": "my-app",
     "version": "0.0.1",
     "scripts": {
-        "dev": "cross-env BACKEND_SERVER='localhost:8000' vite dev --port 3000",
+        "dev": "cross-env BACKEND_SERVER='localhost:8000' vite dev --port 3000 --host",
         "build": "vite build",
         "build-precommit": "vite build | grep ERR",
         "preview": "vite preview",

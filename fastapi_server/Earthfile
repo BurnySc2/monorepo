@@ -1,6 +1,7 @@
 VERSION 0.6
-# earthly +all --PYTHONVERSION=3.11
+# earthly +all --PYTHONVERSION=3.11 --NODEVERSION=19
 ARG PYTHONVERSION=3.11
+ARG NODEVERSION=19 # 14, 16, 18, 19
 FROM python:${PYTHONVERSION}-slim
 WORKDIR /root/fastapi_server
 
@@ -17,9 +18,26 @@ install-dev:
     RUN pip install poetry --no-cache-dir
     COPY poetry.lock pyproject.toml ./
     RUN poetry install
+    COPY . /root/fastapi_server
+
+install-integration:
+    FROM nikolaik/python-nodejs:python${PYTHONVERSION}-nodejs${NODEVERSION}-slim
+    WORKDIR /root/fastapi_server
+    # Required for video conversion
+    RUN apt -y update && \
+        apt install -y --no-install-recommends ffmpeg
+    # Allow "killall"
+    RUN apt install -y --no-install-recommends psmisc
+    COPY poetry.lock pyproject.toml ./
+    # Poetry already installed
+    RUN poetry install
     # Required for integration tests
     RUN poetry run playwright install --with-deps chromium
-    COPY . /root/fastapi_server
+    WORKDIR /root/svelte_frontend
+    # Re-use node modules folder
+    COPY ../svelte_frontend+install-dev/ ./
+    # This shouldn't install anything
+    RUN npm install
 
 format:
     # Run on host system instead of inside a container
@@ -64,11 +82,12 @@ pytest:
     FROM +install-dev
     RUN poetry run pytest test
 
-# TODO Fix integration test in combination with svelte_frontend
+# Integration test with svelte_frontend as frontend
 integration-test:
-    FROM +install-dev
-    # COPY ../svelte_frontend+svelte_frontend /root/svelte_frontend
-    RUN poetry run pytest test_integration
+    FROM +install-integration
+    WORKDIR /root/fastapi_server
+    COPY . /root/fastapi_server
+    RUN sh run_integration_test.sh
 
 all:
     BUILD +remove-unused-imports-check

@@ -64,6 +64,14 @@ repos:
 
 - repo: local
   hooks:
+  # Install earthly requirements
+  - id: earthly
+    name: Install earthly requirements
+    stages: [push]
+    language: system
+    entry: earthly +install-all --verbose true
+    pass_filenames: false
+
   # Check formatting, lint, test
   - id: earthly
     name: Run earthly
