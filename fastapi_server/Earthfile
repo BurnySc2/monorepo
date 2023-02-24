@@ -23,11 +23,9 @@ install-dev:
 install-integration:
     FROM nikolaik/python-nodejs:python${PYTHONVERSION}-nodejs${NODEVERSION}-slim
     WORKDIR /root/fastapi_server
-    # Required for video conversion
-    RUN apt -y update && \
-        apt install -y --no-install-recommends ffmpeg
     # Allow "killall"
-    RUN apt install -y --no-install-recommends psmisc
+    RUN apt -y update && \
+        apt install -y --no-install-recommends psmisc
     COPY poetry.lock pyproject.toml ./
     # Poetry already installed
     RUN poetry install

@@ -86,9 +86,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        pip install poetry
-        poetry install --no-dev
+      run: poetry install --no-dev
 
     - name: Build
       working-directory: ${{ env.SUBDIRECTORY }}
