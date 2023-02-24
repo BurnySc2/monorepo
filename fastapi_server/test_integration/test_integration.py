@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import BrowserContext, Page
 
 # Uncomment if you want to render frontend debugger
 #import os
