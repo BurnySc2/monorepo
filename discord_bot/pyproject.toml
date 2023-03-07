@@ -21,6 +21,7 @@ postgrest-py = "^0.10.2"
 simple-parsing = "^0.0.20"
 # Table as ascii art
 table2ascii = "^1.1.0"
+pydantic = "^1.10.5"
 
 [tool.poetry.group.dev.dependencies]
 # Test library

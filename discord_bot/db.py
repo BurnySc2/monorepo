@@ -58,14 +58,37 @@ class DiscordMessage:
 
     @staticmethod
     def table_name_leaderboard_all() -> str:
+        """
+        Create view SQL query:
+CREATE VIEW discord_leaderboard_all AS SELECT guild_id, author_id, count(message_id)
+FROM discord_messages AS d
+GROUP BY guild_id, author_id
+ORDER BY count(message_id) DESC;
+        """
         return 'discord_leaderboard_all'
 
     @staticmethod
     def table_name_leaderboard_month() -> str:
+        """
+        Create view SQL query:
+CREATE VIEW discord_leaderboard_month AS SELECT guild_id, author_id, count(message_id)
+FROM discord_messages AS d
+WHERE date_trunc('month', now()) < d.when
+GROUP BY guild_id, author_id
+ORDER BY count(message_id) DESC;
+        """
         return 'discord_leaderboard_month'
 
     @staticmethod
     def table_name_leaderboard_week() -> str:
+        """
+        Create view SQL query:
+CREATE VIEW discord_leaderboard_week AS SELECT guild_id, author_id, count(message_id)
+FROM discord_messages AS d
+WHERE date_trunc('week', now()) < d.when
+GROUP BY guild_id, author_id
+ORDER BY count(message_id) DESC;
+        """
         return 'discord_leaderboard_week'
 
     @staticmethod
@@ -76,6 +99,7 @@ class DiscordMessage:
 
 @dataclass
 class DiscordQuotes:
+    # TODO Describe Postgresql schema
     message_id: int = 0
     guild_id: int = 0
     channel_id: int = 0
@@ -95,6 +119,10 @@ class DiscordQuotes:
 
     @staticmethod
     def table_name_random_order_view() -> str:
+        """
+        Create view SQL query:
+CREATE VIEW discord_quotes_random_order_view AS SELECT * FROM discord_quotes ORDER BY random();
+        """
         return 'discord_quotes_random_order_view'
 
     @staticmethod
