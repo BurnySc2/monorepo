@@ -8,7 +8,7 @@ from main import app
 
 
 class BaseTest:
-    method_client: TestClient = None  # type: ignore
+    method_client: TestClient = None  # pyre-fixme[8]
 
     def setup_method(self, _method):
         BaseTest.method_client = TestClient(app)

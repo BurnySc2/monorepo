@@ -8,24 +8,28 @@ from typing import Generator
 
 import arrow
 from arrow import Arrow
-from postgrest.base_request_builder import APIResponse
+from postgrest.base_request_builder import APIResponse  # pyre-fixme[21]
 
 from supabase_async_client import Client, create_client
 
 # Load url and key from env or from file
 
-url: str = os.getenv('SUPABASEURL')  # type: ignore
+url: str = os.getenv('SUPABASEURL')  # pyre-fixme[9]
 if url is None:
     SUPABASEURL_PATH = Path(__file__).parent / 'SUPABASEURL'
-    assert SUPABASEURL_PATH.is_file(
-    ), f'Missing file with supabase url: {SUPABASEURL_PATH}, you can get it from https://app.supabase.com/project/<project_id>/settings/api'
+    assert SUPABASEURL_PATH.is_file(), (
+        f'Missing file with supabase url: {SUPABASEURL_PATH}, '
+        f'you can get it from https://app.supabase.com/project/<project_id>/settings/api'
+    )
     with SUPABASEURL_PATH.open('r') as f:
         url = f.read().strip()
-key: str = os.getenv('SUPABASEKEY')  # type: ignore
+key: str = os.getenv('SUPABASEKEY')  # pyre-fixme[9]
 if key is None:
     SUPABASEKEY_PATH = Path(__file__).parent / 'SUPABASEKEY'
-    assert SUPABASEKEY_PATH.is_file(
-    ), f'Missing file with supabase key: {SUPABASEKEY_PATH}, you can get it from https://app.supabase.com/project/<project_id>/settings/api'
+    assert SUPABASEKEY_PATH.is_file(), (
+        f'Missing file with supabase key: {SUPABASEKEY_PATH}, '
+        f'you can get it from https://app.supabase.com/project/<project_id>/settings/api'
+    )
     with SUPABASEKEY_PATH.open('r') as f:
         key = f.read().strip()
 
@@ -54,24 +58,48 @@ class DiscordMessage:
 
     @staticmethod
     def table_name_leaderboard_all() -> str:
+        """
+        Create view SQL query:
+CREATE VIEW discord_leaderboard_all AS SELECT guild_id, author_id, count(message_id)
+FROM discord_messages AS d
+GROUP BY guild_id, author_id
+ORDER BY count(message_id) DESC;
+        """
         return 'discord_leaderboard_all'
 
     @staticmethod
     def table_name_leaderboard_month() -> str:
+        """
+        Create view SQL query:
+CREATE VIEW discord_leaderboard_month AS SELECT guild_id, author_id, count(message_id)
+FROM discord_messages AS d
+WHERE date_trunc('month', now()) < d.when
+GROUP BY guild_id, author_id
+ORDER BY count(message_id) DESC;
+        """
         return 'discord_leaderboard_month'
 
     @staticmethod
     def table_name_leaderboard_week() -> str:
+        """
+        Create view SQL query:
+CREATE VIEW discord_leaderboard_week AS SELECT guild_id, author_id, count(message_id)
+FROM discord_messages AS d
+WHERE date_trunc('week', now()) < d.when
+GROUP BY guild_id, author_id
+ORDER BY count(message_id) DESC;
+        """
         return 'discord_leaderboard_week'
 
     @staticmethod
-    def from_select(response: APIResponse) -> Generator[DiscordMessage, None, None]:
+    def from_select(response: APIResponse) -> Generator[DiscordMessage, None, None]:  #pyre-fixme[11]
         for row in response.data:
             yield DiscordMessage(**row)
 
 
 @dataclass
 class DiscordQuotes:
+    # TODO Describe Postgresql schema
     message_id: int = 0
     guild_id: int = 0
     channel_id: int = 0
@@ -91,6 +119,10 @@ class DiscordQuotes:
 
     @staticmethod
     def table_name_random_order_view() -> str:
+        """
+        Create view SQL query:
+CREATE VIEW discord_quotes_random_order_view AS SELECT * FROM discord_quotes ORDER BY random();
+        """
         return 'discord_quotes_random_order_view'
 
     @staticmethod

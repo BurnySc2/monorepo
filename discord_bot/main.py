@@ -1,15 +1,16 @@
+from __future__ import annotations
+
 import asyncio
 import os
 from pathlib import Path
-from typing import AsyncGenerator, Awaitable, Callable, Optional, Set, Union
+from typing import Any, AsyncGenerator, Awaitable, Callable
 
 import hikari.errors
 import httpx
-import postgrest
+import postgrest  # pyre-fixme[21]
 from hikari import (
     Embed,
     GatewayBot,
-    GatewayGuild,
     GuildMessageCreateEvent,
     GuildReactionAddEvent,
     GuildTextChannel,
@@ -34,11 +35,13 @@ from db import DiscordMessage, DiscordQuotes, supabase
 token = os.getenv('DISCORDKEY')
 if token is None:
     DISCORDKEY_PATH = Path(__file__).parent / 'DISCORDKEY'
-    assert DISCORDKEY_PATH.is_file(
-    ), f"File '{DISCORDKEY_PATH}' not found, you can get it from https://discord.com/developers/applications/<bot_id>/bot"
+    assert DISCORDKEY_PATH.is_file(), (
+        f"File '{DISCORDKEY_PATH}' not found, "
+        f'you can get it from https://discord.com/developers/applications/<bot_id>/bot'
+    )
     with DISCORDKEY_PATH.open() as f:
         token = f.read().strip()
-bot = GatewayBot(token=token, intents=Intents.ALL)  # type: ignore
+bot = GatewayBot(token=token, intents=Intents.ALL)
 BOT_USER_ID: int = -1
 del token
 
@@ -58,13 +61,14 @@ logger.add(DATA_FOLDER / 'bot.log')
 
 async def generic_command_caller(
     event: GuildMessageCreateEvent,
-    function_to_call: Callable[[GatewayBot, GuildMessageCreateEvent, str], Awaitable[Union[Embed, str]]],
+    function_to_call: Callable[[GatewayBot, GuildMessageCreateEvent, str], Awaitable[Embed | str]],
     message: str,
     add_remove_emoji: bool = False,
 ) -> None:
     """
     @param event
-    @param function_to_call: A function to be called with the given message, expects function to return an Embed or string
+    @param function_to_call: A function to be called with the given message,
+    expects function to return an Embed or string
     @param message: Parsed messaged by the user, without the command
     @param add_remove_emoji: If true, bot will react to its own message with a 'X' emoji
     so that the mentioned user can remove the bot message at will.
@@ -74,7 +78,7 @@ async def generic_command_caller(
         return
 
     # Call the given function with the bot, event and message
-    response: Optional[Union[Embed, str]] = await function_to_call(bot, event, message)
+    response: Embed | str | None = await function_to_call(bot, event, message)
     if response is None:
         return
 
@@ -97,7 +101,7 @@ async def loop_function() -> None:
 
 async def get_text_channels_of_server(server: OwnGuild) -> AsyncGenerator[GuildTextChannel, None]:
     assert isinstance(server, OwnGuild), type(server)
-    for channel in await bot.rest.fetch_guild_channels(server):  # type: ignore
+    for channel in await bot.rest.fetch_guild_channels(server):
         if channel.type not in {ChannelType.GUILD_TEXT}:
             continue
         assert isinstance(channel, GuildTextChannel), type(channel)
@@ -121,7 +125,7 @@ async def add_message_to_db(server_id: int, channel_id: int, message: Message) -
             ).execute()
         )
     except postgrest.exceptions.APIError:
-        logger.error(f"Mesage already exists or could not insert message: {message.id}")
+        logger.error(f'Mesage already exists or could not insert message: {message.id}')
 
 
 async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextChannel) -> None:
@@ -137,11 +141,13 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         logger.error(f"Last message in channel '{channel}' in server '{server}' could not be fetched")
         return
 
+    # Ignore E501
+    # pyre-fixme[11]
     all_message_ids_response: APIResponse = await supabase.table(DiscordMessage.table_name()).select('message_id').eq(
-        "channel_id",
+        'channel_id',
         channel.id,
     ).execute()
-    message_ids_already_exist_in_db: Set[int] = {row['message_id'] for row in all_message_ids_response.data}
+    message_ids_already_exist_in_db: set[int] = {row['message_id'] for row in all_message_ids_response.data}
 
     messages_inserted_count = 0
     async for message in channel.fetch_history():
@@ -159,7 +165,7 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         logger.info(f"Inserted {messages_inserted_count} messages of channel '{channel}' in server '{server}'")
 
 
-async def get_all_servers() -> AsyncGenerator[GatewayGuild, None]:
+async def get_all_servers() -> AsyncGenerator[OwnGuild, Any]:
     try:
         _check_if_supabase_is_up: APIResponse = await supabase.table(DiscordMessage.table_name()).select(
             'message_id',
@@ -190,7 +196,6 @@ async def on_start(_event: StartedEvent) -> None:
         logger.info(f'Connected to server: {server_name}')
 
 
-# pylint: disable=R0911
 @bot.listen()
 async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if event.member.is_bot:
@@ -211,15 +216,18 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     # Message has mention
     # Mention is same user who reacted
     # Remove message if :x: was reacted to it
-    if message.author.id == BOT_USER_ID and f'<@{event.user_id}>' in message.content and event.is_for_emoji('\u274C'):
+    if (
+        message.author.id == BOT_USER_ID and message.content and f'<@{event.user_id}>' in message.content
+        and event.is_for_emoji('\u274C')
+    ):
         await message.delete()
         return
 
     # If "twss" reacted and reaction count >=3: add quote to db
-    allowed_emoji_names = {"twss"}
+    allowed_emoji_names = {'twss'}
     target_emoji_count = 3
     if STAGE == 'DEV' and channel.name == 'bot_tests':
-        allowed_emoji_names = {"burnysStalker"}
+        allowed_emoji_names = {'burnysStalker'}
         target_emoji_count = 1
     if not message.author.is_bot and event.emoji_name in allowed_emoji_names:
         for reaction in message.reactions:
@@ -242,21 +250,27 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                             ).execute()
                         )
                     except postgrest.exceptions.APIError as e:
-                        if e.message != f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"':
+                        if (
+                            e.message !=
+                            f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"'
+                        ):
                             raise
-                        logger.error(f"Quote already exists: {message.id}")
+                        logger.error(f'Quote already exists: {message.id}')
                         return
-                logger.info(f"Added quote: {message.content}")
+                logger.info(f'Added quote: {message.content}')
 
                 # Notify people in channel that a quote has been added
                 # TODO and how many there are now in total
                 quote = DiscordQuotes(
                     when=str(message.created_at),
                     who=message.author.username,
-                    what=message.content,
+                    what=message.content or '',
                 )
-                response_message = f'''Added {reaction.emoji.name} quote:\n{quote.when_arrow.strftime("%Y-%m-%d")} {quote.who}: {quote.what}'''
-                await channel.send(response_message)
+                response_message = (
+                    f'Added {reaction.emoji.name} quote:\n{quote.when_arrow.strftime("%Y-%m-%d")} '
+                    f'{quote.who}: {quote.what}'
+                )
+                await channel.send(response_message)  #pyre-fixme[16]
                 return
         return
 
@@ -287,7 +301,7 @@ async def handle_new_message(event: GuildMessageCreateEvent) -> None:
     # b = await guild.fetch_emojis()
     # animated = next(i for i in b if i.is_animated)
 
-    if event.content.startswith(PREFIX):
+    if event.content is not None and event.content.startswith(PREFIX):
         command, *message_list = event.content.split()
         command = command[len(PREFIX):]
         message = ' '.join(message_list)

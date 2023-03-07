@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 import asyncio
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
 
 import hikari
 from hikari import GatewayBot, GuildMessageCreateEvent, Member
 from loguru import logger
-from postgrest import APIResponse, AsyncSelectRequestBuilder
+from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 from simple_parsing import ArgumentParser, field
-from table2ascii import Alignment, PresetStyle
+from table2ascii import Alignment, PresetStyle  # pyre-fixme[21]
 from table2ascii import table2ascii as t2a
 
 from db import DiscordMessage, supabase
@@ -15,8 +16,8 @@ from db import DiscordMessage, supabase
 
 @dataclass
 class LeaderboardParserOptions:
-    month: bool = field(alias=["-m"], default=False, action="store_true")
-    week: bool = field(alias=["-w"], default=False, action="store_true")
+    month: bool = field(alias=['-m'], default=False, action='store_true')
+    week: bool = field(alias=['-w'], default=False, action='store_true')
     # rank_range: Optional[str] = field(alias=["-r"], default=None)
 
 
@@ -24,7 +25,7 @@ public_leaderboard_parser = ArgumentParser()
 public_leaderboard_parser.add_arguments(LeaderboardParserOptions, dest='params')
 
 
-def parse_rank_range_argument(argument_list: List[str]) -> Tuple[int, int]:
+def parse_rank_range_argument(argument_list: list[str]) -> tuple[int, int]:
     """
     Converts the string
     '5-15'
@@ -39,9 +40,9 @@ def parse_rank_range_argument(argument_list: List[str]) -> Tuple[int, int]:
         raise ValueError
     if len(argument_list) == 1:
         rank_range_arg = argument_list[0]
-        if "-" not in rank_range_arg:
+        if '-' not in rank_range_arg:
             raise LookupError
-        rank_range_list = rank_range_arg.split("-")
+        rank_range_list = rank_range_arg.split('-')
         try:
             start_rank = int(rank_range_list[0])
             end_rank = int(rank_range_list[1])
@@ -52,7 +53,7 @@ def parse_rank_range_argument(argument_list: List[str]) -> Tuple[int, int]:
             # Could not parse to int
             raise
         except Exception as e:
-            logger.trace(f"Unknown error: {e}")
+            logger.trace(f'Unknown error: {e}')
             raise
     return start_rank, end_rank
 
@@ -66,7 +67,7 @@ async def public_leaderboard(
     # TODO Allow to pick a quote of a specific user
     message = message.strip()
 
-    unknown_args: List[str]
+    unknown_args: list[str]
     try:
         parsed, unknown_args = public_leaderboard_parser.parse_known_args(args=message.split())
     except SystemExit:
@@ -76,20 +77,20 @@ async def public_leaderboard(
     try:
         start_rank, end_rank = parse_rank_range_argument(unknown_args)
     except Exception as e:
-        logger.trace(f"Parsing rank range error: {e}")
+        logger.trace(f'Parsing rank range error: {e}')
         return
     if end_rank - start_rank >= 20:
-        return "Rank range limit is at 20"
+        return 'Rank range limit is at 20'
 
     # Get by month, by week, or overall
     if parsed.params.month:
-        title = "LEADERBOARD MONTH"
+        title = 'LEADERBOARD MONTH'
         leaderboard_result = await get_leaderboard_month(event.guild_id, start_rank=start_rank, end_rank=end_rank)
     elif parsed.params.week:
-        title = "LEADERBOARD WEEK"
+        title = 'LEADERBOARD WEEK'
         leaderboard_result = await get_leaderboard_week(event.guild_id, start_rank=start_rank, end_rank=end_rank)
     else:
-        title = "GLOBAL LEADERBOARD"
+        title = 'GLOBAL LEADERBOARD'
         leaderboard_result = await get_leaderboard_all(event.guild_id, start_rank=start_rank, end_rank=end_rank)
 
     # No result for this range, or no messages yet, don't send an answer
@@ -97,8 +98,8 @@ async def public_leaderboard(
         return
 
     # Map message author_id's to nicknames
-    map_author_id_to_server_nickname: Dict[int, str] = {}
-    server_members: List[Member] = await bot.rest.fetch_members(event.guild_id)  # type: ignore
+    map_author_id_to_server_nickname: dict[int, str] = {}
+    server_members: list[Member] = await bot.rest.fetch_members(event.guild_id)  # pyre-fixme[9]
     for member in server_members:
         map_author_id_to_server_nickname[member.id] = member.display_name
 
@@ -124,37 +125,37 @@ async def public_leaderboard(
 
     # Source: https://stackoverflow.com/a/69574344
     output = t2a(
-        header=["Rank", "Count", "Name"],
+        header=['Rank', 'Count', 'Name'],
         body=data,
         style=PresetStyle.thin_compact,
         alignments=[Alignment.RIGHT, Alignment.RIGHT, Alignment.LEFT],
         first_col_heading=True,
     )
-    return f"{title}```\n{output}\n```"
+    return f'{title}```\n{output}\n```'
 
 
-async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> List[dict]:
-    query: AsyncSelectRequestBuilder = (
+async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
+    query: AsyncSelectRequestBuilder = ( #pyre-fixme[11]
         supabase.table(DiscordMessage.table_name_leaderboard_all()).select(
             'guild_id, author_id, count',
         ).eq(
-            "guild_id",
+            'guild_id',
             server_id,
         ).range( # https://supabase.com/docs/reference/javascript/range
             start_rank - 1,
             end_rank,
         )
     )
-    query_response: APIResponse = await query.execute()
+    query_response: APIResponse = await query.execute()  #pyre-fixme[11]
     return query_response.data
 
 
-async def get_leaderboard_month(server_id: int, start_rank: int, end_rank: int) -> List[dict]:
+async def get_leaderboard_month(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
     query: AsyncSelectRequestBuilder = (
         supabase.table(DiscordMessage.table_name_leaderboard_month()).select(
             'guild_id, author_id, count',
         ).eq(
-            "guild_id",
+            'guild_id',
             server_id,
         ).range(
             start_rank - 1,
@@ -165,12 +166,12 @@ async def get_leaderboard_month(server_id: int, start_rank: int, end_rank: int) 
     return query_response.data
 
 
-async def get_leaderboard_week(server_id: int, start_rank: int, end_rank: int) -> List[dict]:
+async def get_leaderboard_week(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
     query: AsyncSelectRequestBuilder = (
         supabase.table(DiscordMessage.table_name_leaderboard_week()).select(
             'guild_id, author_id, count',
         ).eq(
-            "guild_id",
+            'guild_id',
             server_id,
         ).range(
             start_rank - 1,
@@ -184,9 +185,9 @@ async def get_leaderboard_week(server_id: int, start_rank: int, end_rank: int) -
 async def main() -> None:
     quote = await get_leaderboard_all(384968030423351298, start_rank=1, end_rank=10)
     if quote is None:
-        logger.info("No quote could be loaded!")
+        logger.info('No quote could be loaded!')
         return
-    logger.info(f"Returned quote: {quote}")
+    logger.info(f'Returned quote: {quote}')
 
 
 if __name__ == '__main__':

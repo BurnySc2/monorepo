@@ -24,75 +24,57 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        node: ['14', '16', '18']
+        node: ['18', '19']
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Node ${{ matrix.node }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node }}
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
 
-    - name: Cache npm
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
-
-    - name: Install npm dependencies
+    - name: Install
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: npm install
+      run: earthly +install-all --verbose true --NODEVERSION=${{ matrix.node }}
 
-    - name: Install playwright browsers
-      if: ${{ matrix.node != '14' }}
+    - name: Run code checks and tests
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: npx playwright install
+      run: earthly +all --verbose true --NODEVERSION=${{ matrix.node }}
 
-    - name: Run tests
-      if: ${{ matrix.node != '14' }}
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: npm run test
-
-  build_svelte_frontend:
+  test_integration_via_earthly:
+    needs: [test_svelte_frontend]
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        node: ['14', '16', '18']
+        python-version: ['3.10', '3.11']
+        node: ['18', '19']
     runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Node ${{ matrix.node }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node }}
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
 
-    - name: Cache npm
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
+    - name: Install
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: earthly +install-integration --verbose true --PYTHONVERSION=${{ matrix.python-version }} --NODEVERSION=${{ matrix.node }}
 
-    - name: Install npm dependencies
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: npm install --production
-
-    - name: Run build command
-      if: ${{ matrix.node != '14' }}
-      working-directory: ${{ env.SUBDIRECTORY }}
-      run: npm run build
+    - name: Run integration-tests
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: earthly +integration-test --verbose true --PYTHONVERSION=${{ matrix.python-version }} --NODEVERSION=${{ matrix.node }}
 
   test_integration:
+    needs: [test_svelte_frontend]
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.10']
-        node: ['14', '16', '18']
+        python-version: ['3.10', '3.11']
+        node: ['18', '19']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -104,42 +86,26 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Poetry
-      run: pip install poetry
-
-    - name: Make poetry use local .venv folder
-      run: poetry config virtualenvs.in-project true
-
-    - name: Set up cache (backend)
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.BACKEND_SUBDIRECTORY }}/.venv
-        key: ${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ env.BACKEND_SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
-
-    - name: Install Python dependencies
-      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
-      run: poetry install
-
-    - name: Install playwright browsers
-      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
-      run: poetry run playwright install
-
     - name: Set up Node ${{ matrix.node }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node }}
 
-    - name: Cache npm
-      uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ matrix.os }}-${{ matrix.node }}-${{ env.SUBDIRECTORY }}-node-${{ hashFiles('**/package-lock.json') }}
+    - name: Install Poetry
+      run: pip install poetry
+
+    - name: Install python dependencies
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: poetry install
+
+    - name: Install playwright dependencies
+      working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
+      run: poetry run playwright install --with-deps chromium
 
     - name: Install npm dependencies
       working-directory: ${{ env.SUBDIRECTORY }}
       run: npm install
 
-    - name: Run integration tests
-      if: ${{ matrix.node != '14' }}
+    - name: Run integration test
       working-directory: ${{ env.BACKEND_SUBDIRECTORY }}
-      run: poetry run pytest test_integration/test_integration.py
+      run: sh run_integration_test.sh

@@ -28,12 +28,10 @@ class TestHypothesis(TestCase):
         cls.class_number_pytest -= 2
 
     @classmethod
-    # pylint: disable=W0221
     def setUp(cls):
         cls.method_number += 3
 
     @classmethod
-    # pylint: disable=W0221
     def tearDown(cls):
         cls.method_number -= 3
 

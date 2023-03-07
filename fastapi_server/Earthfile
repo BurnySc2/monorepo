@@ -1,0 +1,96 @@
+VERSION 0.6
+# earthly +all --PYTHONVERSION=3.11 --NODEVERSION=19
+ARG PYTHONVERSION=3.11
+ARG NODEVERSION=19 # 14, 16, 18, 19
+FROM python:${PYTHONVERSION}-slim
+WORKDIR /root/fastapi_server
+
+# Start server locally for development
+start-dev:
+    # Run on host system instead of inside a container
+    LOCALLY
+    RUN sh run.sh
+
+install-dev:
+    # Required for video conversion
+    RUN apt -y update && \
+        apt install -y --no-install-recommends ffmpeg
+    RUN pip install poetry --no-cache-dir
+    COPY poetry.lock pyproject.toml ./
+    RUN poetry install
+    COPY . /root/fastapi_server
+
+install-integration:
+    FROM nikolaik/python-nodejs:python${PYTHONVERSION}-nodejs${NODEVERSION}-slim
+    WORKDIR /root/fastapi_server
+    # Allow "killall"
+    RUN apt -y update && \
+        apt install -y --no-install-recommends psmisc
+    COPY poetry.lock pyproject.toml ./
+    # Poetry already installed
+    RUN poetry install
+    # Required for integration tests
+    RUN poetry run playwright install --with-deps chromium
+    WORKDIR /root/svelte_frontend
+    # Re-use node modules folder
+    COPY ../svelte_frontend+install-dev/ ./
+    # This shouldn't install anything
+    RUN npm install
+
+format:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Requirements:
+    # pip install poetry
+    # poetry install
+
+    # Remove unused imports
+    RUN poetry run pycln -q .
+    # Sort imports
+    RUN poetry run isort .
+    # Format code
+    RUN poetry run yapf -ir .
+
+# Check if imports are unused
+remove-unused-imports-check:
+    FROM +install-dev
+    RUN poetry run pycln -c .
+
+# Check if imports require reordering
+sort-imports-check:
+    FROM +install-dev
+    RUN poetry run isort --check-only .
+
+# Check if files are correctly formatted
+format-check:
+    FROM +install-dev
+    RUN poetry run yapf -dr .
+
+# Ignore errors via "# Ignore F841"
+lint:
+    FROM +install-dev
+    RUN poetry run ruff check .
+
+# Ignore errors via "# pyre-fixme[11]"
+pyre:
+    FROM +install-dev
+    RUN poetry run pyre
+
+pytest:
+    FROM +install-dev
+    RUN poetry run pytest test
+
+# Integration test with svelte_frontend as frontend
+integration-test:
+    FROM +install-integration
+    WORKDIR /root/fastapi_server
+    COPY . /root/fastapi_server
+    RUN sh run_integration_test.sh
+
+all:
+    BUILD +remove-unused-imports-check
+    BUILD +sort-imports-check
+    BUILD +format-check
+    BUILD +lint
+    BUILD +pyre
+    BUILD +pytest

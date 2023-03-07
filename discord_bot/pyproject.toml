@@ -2,7 +2,7 @@
 name = "discord_bot"
 version = "0.1.0"
 description = ""
-authors = ["burny <gamingburny@gmail.com>"]
+authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.12"
@@ -21,8 +21,9 @@ postgrest-py = "^0.10.2"
 simple-parsing = "^0.0.20"
 # Table as ascii art
 table2ascii = "^1.1.0"
+pydantic = "^1.10.5"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 # Test library
 hypothesis = "^6.8.5"
 pytest = "^7.0.0"
@@ -35,10 +36,33 @@ pycln = "^2.0.0"
 # Reorder imports
 isort = "^5.10.1"
 # Linter
-pylint = "^2.14.3"
+ruff = "^0.0.247"
 # Type checker
-mypy = "^1.0"
+pyre-check = "^0.9.18"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pycln]
+all = true
+
+[tool.isort]
+line_length = 120
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 120
+split_arguments_when_comma_terminated = true
+dedent_closing_brackets = true
+allow_split_before_dict_value = false
+
+[tool.ruff]
+line-length = 120
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"

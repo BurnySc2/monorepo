@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import json
 import re
 from heapq import heapify, heappop, heappush
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
 
 import arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, Message, NotFoundError, PartialChannel, User
@@ -30,16 +31,16 @@ class Reminder:
         self.message: str = message
         self.message_id: int = message_id
 
-    def __lt__(self, other: 'Reminder'):
+    def __lt__(self, other: Reminder):
         return self.reminder_utc_timestamp < other.reminder_utc_timestamp
 
     @staticmethod
-    def from_dict(dictionary) -> 'Reminder':
+    def from_dict(dictionary) -> Reminder:
         r: Reminder = Reminder()
         r.__dict__.update(dictionary)
         return r
 
-    def to_dict(self) -> Dict[str, Union[float, str]]:
+    def to_dict(self) -> dict[str, float | str]:
         return {
             'reminder_utc_timestamp': self.reminder_utc_timestamp,
             'guild_id': self.guild_id,
@@ -51,7 +52,10 @@ class Reminder:
         }
 
     def __repr__(self) -> str:
-        return f'Reminder({self.reminder_utc_timestamp} {self.guild_id} {self.channel_id} {self.user_id} {self.user_name} {self.message})'
+        return (
+            f'Reminder({self.reminder_utc_timestamp} {self.guild_id} {self.channel_id} {self.user_id} '
+            f'{self.user_name} {self.message})'
+        )
 
 
 class Remind:
@@ -68,7 +72,7 @@ Example usage:
     def __init__(self, client: GatewayBot):
         super().__init__()
         self.client: GatewayBot = client
-        self.reminders: List[Tuple[float, Reminder]] = []
+        self.reminders: list[tuple[float, Reminder]] = []
         self.reminder_file_path: Path = Path(__file__).parent.parent / 'data' / 'reminders.json'
         # Limit of reminders per person
         self.reminder_limit = 10
@@ -132,8 +136,8 @@ Example usage:
     async def _get_message_by_id(self, channel_id: int, message_id: int) -> Message:
         return await self.client.rest.fetch_message(channel_id, message_id)
 
-    async def _get_all_reminders_by_user_id(self, user_id: int) -> List[Reminder]:
-        user_reminders: List[Reminder] = []
+    async def _get_all_reminders_by_user_id(self, user_id: int) -> list[Reminder]:
+        user_reminders: list[Reminder] = []
         reminders_copy = self.reminders.copy()
         while reminders_copy:
             r: Reminder = heappop(reminders_copy)[1]
@@ -145,7 +149,7 @@ Example usage:
         user_reminders = await self._get_all_reminders_by_user_id(user_id)
         return len(user_reminders) >= self.reminder_limit
 
-    async def _parse_date_and_time_from_message(self, message: str) -> Optional[Tuple[arrow.Arrow, str]]:
+    async def _parse_date_and_time_from_message(self, message: str) -> tuple[arrow.Arrow, str] | None:
         time_now: arrow.Arrow = arrow.utcnow()
 
         # Old pattern which was working:
@@ -184,7 +188,8 @@ Example usage:
 
         try:
             future_reminder_time = arrow.get(
-                f'{str(year).zfill(2)}-{str(month).zfill(2)}-{str(day).zfill(2)} {str(hour).zfill(2)}:{str(minute).zfill(2)}:{str(second).zfill(2)}',
+                f'{str(year).zfill(2)}-{str(month).zfill(2)}-{str(day).zfill(2)} '
+                f'{str(hour).zfill(2)}:{str(minute).zfill(2)}:{str(second).zfill(2)}',
                 ['YYYY-MM-DD HH:mm:ss'],
             )
         except (ValueError, arrow.parser.ParserError):
@@ -192,8 +197,7 @@ Example usage:
             return None
         return future_reminder_time, reminder_message.strip()
 
-    # pylint: disable=R0914
-    async def _parse_time_shift_from_message(self, message: str) -> Optional[Tuple[arrow.Arrow, str]]:
+    async def _parse_time_shift_from_message(self, message: str) -> tuple[arrow.Arrow, str] | None:
         time_now: arrow.Arrow = arrow.utcnow()
 
         days_pattern = '(?:([0-9]+) ?(?:d|day|days))?'
@@ -202,7 +206,10 @@ Example usage:
         seconds_pattern = '(?:([0-9]+) ?(?:s|sec|secs|second|seconds))?'
         text_pattern = '((?:.|\n)+)'
         space_pattern = ' ?'
-        regex_pattern = f'{days_pattern}{space_pattern}{hours_pattern}{space_pattern}{minutes_pattern}{space_pattern}{seconds_pattern} {text_pattern}'
+        regex_pattern = (
+            f'{days_pattern}{space_pattern}{hours_pattern}{space_pattern}{minutes_pattern}{space_pattern}'
+            f'{seconds_pattern} {text_pattern}'
+        )
 
         result = re.fullmatch(regex_pattern, message)
 
@@ -249,7 +256,10 @@ Example usage:
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
             user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
-            return f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, which is higher than the limit.'
+            return (
+                f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, '
+                f'which is higher than the limit.'
+            )
 
         result = await self._parse_time_shift_from_message(reminder_message)
         if result is None:
@@ -285,7 +295,10 @@ Example usage:
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
             user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
-            return f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, which is higher than the limit.'
+            return (
+                f'You already have {len(user_reminders)} / {self.reminder_limit} reminders, '
+                f'which is higher than the limit.'
+            )
 
         time_now: arrow.Arrow = arrow.utcnow()
 
@@ -340,10 +353,10 @@ Example usage:
     ):
         """ List all of the user's reminders """
         # id, time formatted by iso standard format, in 5 minutes, text
-        user_reminders: List[Tuple[int, str, str, str]] = []
+        user_reminders: list[tuple[int, str, str, str]] = []
 
         # Sorted reminders by date and time ascending
-        user_reminders2: List[Reminder] = await self._get_all_reminders_by_user_id(event.author_id)
+        user_reminders2: list[Reminder] = await self._get_all_reminders_by_user_id(event.author_id)
         reminder_id = 1
         while user_reminders2:
             r: Reminder = user_reminders2.pop(0)
@@ -354,7 +367,7 @@ Example usage:
         if not user_reminders:
             return "You don't have any reminders."
 
-        reminders: List[str] = [
+        reminders: list[str] = [
             f'{reminder_id}) {time} {humanize}: {message}' for reminder_id, time, humanize, message in user_reminders
         ]
         description: str = '\n'.join(reminders)
@@ -398,7 +411,10 @@ Example usage:
             return 'Invalid reminder id, you have no reminders.'
         if len(user_reminders) == 1:
             return "Invalid reminder id, you only have one reminders. Only '!delreminder 1' works for you."
-        return f'Invalid reminder id, you only have {len(user_reminders)} reminders. Pick a number between 1 and {len(user_reminders)}.'
+        return (
+            f'Invalid reminder id, you only have {len(user_reminders)} reminders. '
+            f'Pick a number between 1 and {len(user_reminders)}.'
+        )
 
 
 def main():
@@ -409,7 +425,6 @@ def main():
     # message = "16:20"
     # message = ""
     r = Remind(None)
-    # pylint: disable=W0212
     result = asyncio.run(r._parse_date_and_time_from_message(message))
     print(result, bool(result[1]))
     assert result[1] == 'some message'

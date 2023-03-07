@@ -1,5 +1,5 @@
 from loguru import logger
-from pony import orm
+from pony import orm  # pyre-fixme[21]
 
 db = orm.Database()
 
@@ -13,6 +13,7 @@ db.bind(provider='sqlite', filename=':memory:')
 
 
 # Create models
+# pyre-fixme[11]
 class Library(db.Entity):
     # "id" is autoinserted
     name = orm.Required(str)
@@ -35,7 +36,10 @@ class Book(db.Entity):
     book_inventories = orm.Set(BookInventory)
 
     def __repr__(self):
-        return f"Book(id={self.id}, author_id={self.author.id}, name='{self.name}', release_year={self.release_year}, publisher_id={self.publisher.id})"
+        return (
+            f"Book(id={self.id}, author_id={self.author.id}, name='{self.name}', release_year={self.release_year}, "
+            f'publisher_id={self.publisher.id})'
+        )
 
 
 class Author(db.Entity):
@@ -50,8 +54,6 @@ class Publisher(db.Entity):
     books = orm.Set(Book)
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_pony_readme_example():
     # Enable debug mode to see the queries sent
     orm.set_sql_debug(True)

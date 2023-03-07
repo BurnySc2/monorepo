@@ -36,7 +36,6 @@ class BotRunner:
         # Command is 'python file.py' because we are already in a poetry environment
         command_list = command_line + [str(bot_file_path.absolute())]
         logger.info('Starting bot ...')
-        # pylint: disable=R1732
         self.bot_process = subprocess.Popen(command_list)
         logger.info(f'Started bot on pid {self.bot_process.pid}')
 
@@ -72,7 +71,8 @@ async def bot_restarter():
 async def main():
     """
     Main entry point.
-    Creates bot_restarter() and file_watcher() which run in a perma loop to restart the bot on file changes or when the bot has crashed
+    Creates bot_restarter() and file_watcher() which run in a perma loop to restart the bot on file changes
+    or when the bot has crashed
     """
     tasks = [asyncio.ensure_future(my_task) for my_task in [file_watcher(), bot_restarter()]]
     await asyncio.gather(*tasks, return_exceptions=True)
@@ -82,6 +82,5 @@ if __name__ == '__main__':
     try:
         with BotRunner() as runner:
             asyncio.run(main())
-    # pylint: disable=W0703
     except Exception as e:
         logger.trace(e)

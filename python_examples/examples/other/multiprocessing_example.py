@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 from multiprocessing import Pool
-from typing import List
 
 
 def do_math(number: float) -> float:
@@ -20,7 +21,7 @@ def cpu_bound_summing_custom(number: int):
     return sum(i * i for i in range(number + 1))
 
 
-def find_sums(numbers: List[int]) -> List[int]:
+def find_sums(numbers: list[int]) -> list[int]:
     # Run on a minimum of 4 processes / CPU cores
     # If set to None or ommited, it will be automatically calculated based on the hardware
     at_least_4_processes = os.cpu_count() or 4
@@ -32,6 +33,6 @@ def find_sums(numbers: List[int]) -> List[int]:
     return result
 
 
-def do_multiprocessing() -> List[int]:
-    numbers: List[int] = [50_000 + x for x in range(2_000)]
+def do_multiprocessing() -> list[int]:
+    numbers: list[int] = [50_000 + x for x in range(2_000)]
     return find_sums(numbers)

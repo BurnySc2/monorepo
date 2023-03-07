@@ -1,0 +1,80 @@
+name: run_earthly_checks
+
+
+on: [push, pull_request]
+
+jobs:
+  run_earthly_checks_backend:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+# In conflict with pyre-check
+#    - name: Set up Python ${{ matrix.python-version }}
+#      uses: actions/setup-python@v4
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#
+#    - name: Cache burny_common .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: burny_common/.venv
+#        key: burny_common-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+#
+#    - name: Cache discord_bot .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: discord_bot/.venv
+#        key: discord_bot-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+#
+#    - name: Cache fastapi_server .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: fastapi_server/.venv
+#        key: fastapi_server-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+#
+#    - name: Cache python_examples .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: python_examples/.venv
+#        key: python_examples-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+
+    - name: Install
+      run: earthly +install-backend --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+    - name: Run code checks and tests
+      run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+#    - name: Save cache
+#      run: earthly +export-cache-backend --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+  run_earthly_checks_frontend:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: ['18', '19']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+
+    - name: Install
+      run: earthly +install-frontend --verbose true --NODEVERSION=${{ matrix.node }}
+
+    - name: Run code checks and tests
+      run: earthly +check-frontend --verbose true --NODEVERSION=${{ matrix.node }}

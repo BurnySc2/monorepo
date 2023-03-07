@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import math
 from collections import Counter
 from typing import Counter as TypingCounter
-from typing import List
 
 
-def sieve_of_eratosthenes(limit: int) -> List[int]:
+def sieve_of_eratosthenes(limit: int) -> list[int]:
     if limit < 2:
         return []
     sieve = [True for _ in range(limit)]
@@ -21,7 +22,7 @@ def sieve_of_eratosthenes(limit: int) -> List[int]:
     return primes
 
 
-def prime_factors(n: int, primes: List[int] = None) -> Counter:
+def prime_factors(n: int, primes: list[int] | None = None) -> Counter:
     if primes is None:
         primes = sieve_of_eratosthenes(int(n**0.5 + 1))
     i = 0

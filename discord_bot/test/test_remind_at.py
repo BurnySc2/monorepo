@@ -60,14 +60,12 @@ async def test_parsing_date_and_time_from_message_success(_year, _month, _day, _
 
     date_time = create_date_time_string(_year, _month, _day, _hour, _minute, _second)
     my_message = f'{date_time} {_message}'
-    # pylint: disable=W0212
     result = await r._parse_date_and_time_from_message(my_message)
 
     assert isinstance(result[0], arrow.Arrow)
     assert result[1] == _message.strip()
 
 
-# pylint: disable=R0912
 @settings(max_examples=1000)
 @given(
     # Year
@@ -113,7 +111,6 @@ def test_parsing_date_and_time_from_message_failure(_year, _month, _day, _hour, 
     if time.count(':') == 1:
         arrow.get(time, 'HH:mm')
 
-    # pylint: disable=W0212
     result = asyncio.run(r._parse_date_and_time_from_message(my_message))
 
     if not date_time:

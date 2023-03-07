@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import math
-from typing import List
 
 # [
 #     1,
@@ -11,7 +12,7 @@ from typing import List
 class MaxHeap:
 
     def __init__(self):
-        self.tree: List[int] = [0]
+        self.tree: list[int] = [0]
 
     def __repr__(self):
         return_list = []
@@ -45,7 +46,7 @@ class MaxHeap:
         return index // 2
 
     @classmethod
-    def _get_children(cls, index: int) -> List[int]:
+    def _get_children(cls, index: int) -> list[int]:
         times_two = index * 2
         return [times_two, times_two + 1]
 

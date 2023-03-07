@@ -1,4 +1,4 @@
-from typing import List, Optional
+from __future__ import annotations
 
 from loguru import logger
 from sqlalchemy import func
@@ -8,20 +8,26 @@ from sqlmodel.engine.result import ScalarResult
 from sqlmodel.sql.expression import SelectOfScalar
 
 
-class Author(SQLModel, table=True):  # type: ignore
-    id: Optional[int] = Field(default=None, primary_key=True)
+# pyre-fixme[13]
+# pyre-fixme[28]
+class Author(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     name: str
     birth_year: int
 
 
-class Publisher(SQLModel, table=True):  # type: ignore
-    id: Optional[int] = Field(default=None, primary_key=True)
+# pyre-fixme[13]
+# pyre-fixme[28]
+class Publisher(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     name: str
     founded_year: int
 
 
-class Book(SQLModel, table=True):  # type: ignore
-    id: Optional[int] = Field(default=None, primary_key=True)
+# pyre-fixme[13]
+# pyre-fixme[28]
+class Book(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     name: str = Field()
     release_year: int
     author_id: int = Field(default=None, foreign_key='author.id')
@@ -30,15 +36,19 @@ class Book(SQLModel, table=True):  # type: ignore
     publisher: Publisher = Relationship()
 
 
-class Library(SQLModel, table=True):  # type: ignore
-    id: Optional[int] = Field(default=None, primary_key=True)
+# pyre-fixme[13]
+# pyre-fixme[28]
+class Library(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
     name: str
     address: str
     # Each library owns certain books with a certain amount
-    books: List['BookInventory'] = Relationship(back_populates='library')
+    books: list[BookInventory] = Relationship(back_populates='library')
 
 
-class BookInventory(SQLModel, table=True):  # type: ignore
+# pyre-fixme[13]
+# pyre-fixme[28]
+class BookInventory(SQLModel, table=True):
     book_id: int = Field(default=None, primary_key=True, foreign_key='book.id')
     book: Book = Relationship()
     library_id: int = Field(default=None, primary_key=True, foreign_key='library.id')
@@ -46,8 +56,6 @@ class BookInventory(SQLModel, table=True):  # type: ignore
     amount: int
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_sqlmodel_readme_example():
     author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
     author_2 = Author(name='Harper Lee', birth_year=1926)
@@ -136,7 +144,7 @@ def run_database_with_sqlmodel_readme_example():
         assert first_book_result is not None, first_book_result
 
         statement: Delete = delete(Book).where(Book.name == 'This book was not written')
-        session.exec(statement)  # type: ignore
+        session.exec(statement)
 
         amount = session.exec(count_statement).first()
         assert amount == 0, amount
@@ -176,14 +184,15 @@ def run_database_with_sqlmodel_readme_example():
         book_inventories = session.exec(statement)
         for book_inventory in book_inventories:
             logger.info(
-                f'Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times and the author is ({book_inventory.book.author})'
+                f'Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times '
+                f'and the author is ({book_inventory.book.author})'
             )
 
     # 8) TODO: Run migration (verify and change table schema if necessary)
 
     # 9) Clear table
     with Session(engine) as session:
-        statement = delete(BookInventory)  # type: ignore
+        statement = delete(BookInventory)
         session.exec(statement)
         session.commit()
 

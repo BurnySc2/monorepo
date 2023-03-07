@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 import math
-from typing import List, Optional
 
 
 class Minheap:
 
     def __init__(self):
         """ Implementation of binary heap as min-heap """
-        self.heap: List[int] = [-1]
+        self.heap: list[int] = [-1]
 
     def __repr__(self):
         return_list = []
@@ -33,13 +34,13 @@ class Minheap:
     def get_right_child_index(cls, index: int) -> int:
         return index * 2 + 1
 
-    def get_left_child(self, index: int) -> Optional[int]:
+    def get_left_child(self, index: int) -> int | None:
         try:
             return self.heap[index * 2]
         except IndexError:
             return None
 
-    def get_right_child(self, index: int) -> Optional[int]:
+    def get_right_child(self, index: int) -> int | None:
         try:
             return self.heap[index * 2 + 1]
         except IndexError:
@@ -122,9 +123,10 @@ if __name__ == '__main__':
     for i in build_list:
         assert not p.is_empty(), 'Min heap should be not empty, but is returned to be empty'
         value = p.get_min()
-        assert (
-            value == i
-        ), f"get_min or delete_min function not working as expected, received value '{value}' but should have been '{i}', heap:\n{p}"
+        assert (value == i), (
+            f"get_min or delete_min function not working as expected, received value '{value}' "
+            f"but should have been '{i}', heap:\n{p}"
+        )
         p.delete_min()
 
     assert p.is_empty(), "Min heap should be empty, but isn't"

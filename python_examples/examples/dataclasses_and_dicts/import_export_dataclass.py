@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Set
 
 # https://pypi.org/project/dataclasses-json/#description
 from dataclasses_json import DataClassJsonMixin
@@ -11,22 +12,22 @@ from dataclasses_json import DataClassJsonMixin
 class MyDataClass(DataClassJsonMixin):
     name: str
     value: int
-    other: Set[int]
+    other: set[int]
 
 
 @dataclass()
 class MyDataClassList(DataClassJsonMixin):
-    some_dataclasses: List[MyDataClass]
-    other_dataclasses: List[MyDataClass]
+    some_dataclasses: list[MyDataClass]
+    other_dataclasses: list[MyDataClass]
 
 
-def save_object_to_json(path: Path, my_dataclass_list: List[MyDataClass]):
+def save_object_to_json(path: Path, my_dataclass_list: list[MyDataClass]):
     """ Save the given list of objects to json file. """
     with path.open('w') as f:
         f.write(MyDataClass.schema().dumps(my_dataclass_list, many=True, indent=4))
 
 
-def load_object_from_json(path: Path) -> List[MyDataClass]:
+def load_object_from_json(path: Path) -> list[MyDataClass]:
     """ Load a json file and re-create a list of data class objects from it. """
     with path.open() as f:
         return MyDataClass.schema().loads(f.read(), many=True)
@@ -46,7 +47,8 @@ def load_objects_from_json(path: Path) -> MyDataClassList:
 
 def test_data_class_to_and_from_json():
     """ Creates a dataclass, saves to json, re-loads it from json file and compares them. """
-    # Note: interestingly the class holds a set but the written json file contains a list - reloading the list automatically converts it to a set again
+    # Note: interestingly the class holds a set but the written json file contains a list
+    # Reloading the list automatically converts it to a set again
 
     # Write and reload from file
     test_path = Path(__file__).parent.parent.parent / 'data' / 'dataclass_test.json'

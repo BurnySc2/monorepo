@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 import asyncio
 import os
 import random
 from pathlib import Path
 from string import printable
-from typing import List
 
-import aiofiles  # type: ignore
-from burny_common.measure_time import time_this
+import aiofiles
+from burny_common.measure_time import time_this  # pyre-fixme[21]
 
 FILES_AMOUNT = 100
 FILE_SIZE_IN_KB = 50
@@ -14,7 +15,7 @@ FILE_SIZE_IN_KB = 50
 CURRENT_FOLDER_PATH = Path(__file__).parent
 
 
-def write_files() -> List[Path]:
+def write_files() -> list[Path]:
     created_files = []
     for index in range(FILES_AMOUNT):
         new_path = CURRENT_FOLDER_PATH / f'FILE_ACCESS_TEST_{index}'
@@ -25,7 +26,7 @@ def write_files() -> List[Path]:
     return created_files
 
 
-def read_sync(files: List[Path]) -> List[str]:
+def read_sync(files: list[Path]) -> list[str]:
     read_data = []
     for file in files:
         with file.open() as f:
@@ -38,7 +39,7 @@ async def read_async_single_file(file: Path) -> str:
         return await f.read()
 
 
-async def read_async(files: List[Path]) -> List[str]:
+async def read_async(files: list[Path]) -> list[str]:
     tasks = []
     for file in files:
         tasks.append(asyncio.create_task(read_async_single_file(file)))
@@ -53,7 +54,7 @@ async def read_async(files: List[Path]) -> List[str]:
     return read_data
 
 
-def delete_files(files: List[Path]):
+def delete_files(files: list[Path]):
     for file in files:
         os.remove(file)
 

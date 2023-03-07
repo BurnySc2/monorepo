@@ -6,7 +6,7 @@ from typing import Any
 
 class Node:
 
-    def __init__(self, value: Any, left: Node = None, right: Node = None):
+    def __init__(self, value: Any, left: Node | None = None, right: Node | None = None):
         self.value: Any = value
         self.left: Node | None = left
         self.right: Node | None = right

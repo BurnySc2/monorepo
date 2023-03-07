@@ -3,8 +3,6 @@ import sqlite3
 from loguru import logger
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 def run_database_with_sqlite_readme_example():
     # with sqlite3.connect("example.db") as db:
     with sqlite3.connect(':memory:') as db:
@@ -16,7 +14,8 @@ def run_database_with_sqlite_readme_example():
             'CREATE TABLE IF NOT EXISTS author (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, birth_year INTEGER)',
         )
         db.execute(
-            'CREATE TABLE IF NOT EXISTS publisher (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, founded_year INTEGER)',
+            'CREATE TABLE IF NOT EXISTS publisher '
+            '(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, founded_year INTEGER)',
         )
         db.execute(
             '''CREATE TABLE IF NOT EXISTS book (

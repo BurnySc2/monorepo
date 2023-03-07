@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List
 
 from loguru import logger
 
@@ -14,7 +15,7 @@ class NodeOutcome(Enum):
 
 @dataclass
 class ActionNode:
-    child_actions: List['ActionNode'] = field(default_factory=list)
+    child_actions: list[ActionNode] = field(default_factory=list)
     continue_on_success: bool = True
     continue_on_fail: bool = False
 

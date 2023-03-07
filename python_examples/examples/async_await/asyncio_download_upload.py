@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import os
 import time
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable
 
 import aiohttp
 from loguru import logger
@@ -17,7 +19,8 @@ async def download_file(
     chunk_size: int = 4096,
 ) -> bool:
     """
-    Downloads an image (or a file even) from "url" and saves it to "temp_file_path". When the download is complete, it renames the file at "temp_file_path" to "file_path".
+    Downloads an image (or a file even) from "url" and saves it to "temp_file_path". When the download is complete,
+    it renames the file at "temp_file_path" to "file_path".
     It respects "download_speed" in bytes per second. If no parameter was given, it will ignore the download limit.
 
     Returns boolean if download was successful.
@@ -73,7 +76,7 @@ async def download_site(session: aiohttp.ClientSession, url: str) -> aiohttp.Cli
         return response
 
 
-async def download_all_sites(sites: Iterable[str]) -> List[aiohttp.ClientResponse]:
+async def download_all_sites(sites: Iterable[str]) -> list[aiohttp.ClientResponse]:
     async with aiohttp.ClientSession() as session:
         tasks = []
         for url in sites:

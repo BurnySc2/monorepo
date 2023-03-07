@@ -1,14 +1,15 @@
-import re
-from typing import Dict, List, Union
+from __future__ import annotations
 
-import pymongo
-from bson import ObjectId
+import re
+
+import pymongo  # pyre-fixme[21]
+from bson import ObjectId  # pyre-fixme[21]
 from loguru import logger
 from pymongo import MongoClient
-from pymongo.collection import Collection
-from pymongo.database import Database
-from pymongo.errors import ServerSelectionTimeoutError
-from pymongo.results import InsertManyResult, InsertOneResult
+from pymongo.collection import Collection  # pyre-fixme[21]
+from pymongo.database import Database  # pyre-fixme[21]
+from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
+from pymongo.results import InsertManyResult, InsertOneResult  # pyre-fixme[21]
 
 
 async def test_database_with_mongodb():
@@ -23,13 +24,13 @@ async def test_database_with_mongodb():
             # Connect to db
             my_db: Database = my_client[my_db_name]
             # Check if db exists
-            db_list: List[str] = my_client.list_database_names()
+            db_list: list[str] = my_client.list_database_names()
             if my_db_name in db_list:
                 logger.info(f'The database exists: {my_db_name}')
                 my_client.drop_database(my_db_name)
             # Check if collection exists
             collection_name = 'customers'
-            col_list: List[str] = my_db.list_collection_names()
+            col_list: list[str] = my_db.list_collection_names()
             if collection_name in col_list:
                 logger.info(f'The collection exists: {collection_name}')
 
@@ -65,7 +66,7 @@ async def test_database_with_mongodb():
             assert len(result.inserted_ids) == 3
 
             # Find one
-            _result: Dict[str, Union[ObjectId, str]] = my_col.find_one()
+            _result: dict[str, ObjectId | str] = my_col.find_one()
             # Find all
             assert len(list(my_col.find())) == 4
 
@@ -99,5 +100,6 @@ async def test_database_with_mongodb():
     except ServerSelectionTimeoutError:
         logger.warning(f"Could not find a running mongoDB instance on port '{my_port}' - aborting")
         logger.warning(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:6.0.1'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 "
+            "--name mongodb mongo:6.0.1'",
         )

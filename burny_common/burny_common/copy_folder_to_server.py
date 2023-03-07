@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import Optional, Set
 
 import click
-import paramiko  # type: ignore
+import paramiko
 from click.testing import CliRunner
 from paramiko import SSHClient
-from paramiko.sftp_client import SFTPClient  # type: ignore
+from paramiko.sftp_client import SFTPClient
 
 from burny_common.copy_file_to_server import copy_file_to_server_helper, generate_path
 
@@ -71,7 +71,6 @@ def copy_folder_to_server(
         path_target_root_folder = generate_path(client, targetpath)
 
         allowed_files: Optional[Set] = None
-        # pylint: disable=R1732
         if respectgitignore:
             proc = subprocess.Popen(
                 ['git', 'ls-files'],

@@ -2,10 +2,10 @@
 name = "python_examples"
 version = "0.1.0"
 description = ""
-authors = ["burny <gamingburny@gmail.com>"]
+authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.11"
+python = ">=3.8, <3.12"
 # Numeric python
 numpy = "^1.21"
 # Write and read classes to/from json
@@ -47,7 +47,7 @@ Shapely = "^1.8"
 # Info about the system
 psutil = "^5.8"
 # Execute command on server via SSH, or push files via SFTP
-paramiko = "^2.8"
+paramiko = "^2.11"
 # Simpler argparse
 click = "^8.1"
 # SQL ORM
@@ -69,14 +69,14 @@ seaborn = "^0.11.2"
 # Plotting
 matplotlib = "^3.5.2"
 # Plotting
-bokeh = "^2.4.3"
+bokeh = "^2.0"
 # Animation
 #manim = "^0.15.2"
-aiofiles = "^0.8.0"
-burny-common = "^0.0.4"
+aiofiles = "^23.0"
+burny-common = "^0.0.9"
 
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 # Test library
 pytest = "^7.1"
 pytest-asyncio = "^0.18"
@@ -94,8 +94,6 @@ scalene = "^1.3.16"
 # line_profiler = "^3.0"
 # Required by line_profiler
 # ipython = "^7.16"
-# Enable pre commit hooks
-pre-commit = "^2.15"
 # Autoformat
 yapf = "^0.32.0"
 toml = "^0.10.2"
@@ -104,13 +102,33 @@ pycln = "^2.1.1"
 # Reorder imports
 isort = "^5.10.1"
 # Linter
-pylint = "^2.14.3"
+ruff = "^0.0.247"
 # Type checker
-mypy = "^0.961"
+pyre-check = "^0.9.18"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.pytest.ini_options]
-python_files = "*.py"
+[tool.pycln]
+all = true
+
+[tool.isort]
+line_length = 120
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 120
+split_arguments_when_comma_terminated = true
+dedent_closing_brackets = true
+allow_split_before_dict_value = false
+
+[tool.ruff]
+line-length = 120
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"

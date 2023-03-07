@@ -1,7 +1,7 @@
 <script lang="ts">
     import { page } from "$app/stores"
 
-    import Headers from "../../components/Headers.svelte"
+    import Headers from "../../../components/Headers.svelte"
 
     let value1 = "-1"
     let value2 = "-1"

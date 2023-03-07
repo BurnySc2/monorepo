@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Headers from "../components/Headers.svelte"
+    import Headers from "../../components/Headers.svelte"
 
     export let defaultText = "this text"
     let someText = defaultText

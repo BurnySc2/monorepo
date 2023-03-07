@@ -1,0 +1,58 @@
+VERSION 0.6
+# earthly +all --NODEVERSION=19
+ARG NODEVERSION=19 # 14, 16, 18, 19
+FROM node:${NODEVERSION}-slim
+WORKDIR /root/svelte_frontend
+
+install-dev:
+    COPY package.json package-lock.json ./
+    RUN npm install
+    COPY src /root/svelte_frontend/src
+    COPY static /root/svelte_frontend/static
+    # Why is tsconfig.json not needed here?
+    COPY svelte.config.js vite.config.js ./
+    SAVE ARTIFACT ./*
+
+install-test:
+    FROM +install-dev
+    RUN npx playwright install --with-deps chromium
+    COPY tests /root/svelte_frontend/tests
+    COPY playwright.config.ts ./
+
+format:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Requirements:
+    # npm i
+
+    # Format code
+    RUN npm run format
+
+format-check:
+    FROM +install-dev
+    COPY .prettierrc ./
+    RUN npm run format:check
+
+lint:
+    FROM +install-dev
+    COPY .eslintrc.cjs ./
+    RUN npm run lint
+
+test:
+    FROM +install-test
+    RUN npm run test
+
+build:
+    FROM +install-dev
+    RUN npm run build
+    SAVE ARTIFACT build AS LOCAL ./
+
+install-all:
+    BUILD +install-dev
+    BUILD +install-test
+
+all:
+    BUILD +format-check
+    BUILD +lint
+    BUILD +test
+    BUILD +build

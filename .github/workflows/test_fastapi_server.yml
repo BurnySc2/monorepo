@@ -29,31 +29,33 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
-      id: setup-python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
+# In conflict with pyre-check
+#    - name: Set up Python ${{ matrix.python-version }}
+#      uses: actions/setup-python@v4
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#
+#    - name: Cache .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: .venv
+#        key: ${{ env.SUBDIRECTORY }}-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
 
-    - name: Install Poetry
-      run: pip install poetry
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
 
-    - name: Make poetry use local .venv folder
-      run: poetry config virtualenvs.in-project true
-
-    - name: Set up cache
-      uses: actions/cache@v3
-      with:
-        path: ${{ env.SUBDIRECTORY }}/.venv
-        key: ${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
-
-    - name: Install Python dependencies
+    - name: Install
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: poetry install
+      run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
-    - name: Run Python tests
+    - name: Run code checks and tests
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: poetry run python -m pytest test
+      run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+#    - name: Save cache
+#      working-directory: ${{ env.SUBDIRECTORY }}
+#      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
   build_and_deploy_docker_image:
     needs: [test_backend]
@@ -138,14 +140,3 @@ jobs:
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
           sudo systemctl daemon-reload
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
-
-#    - name: Update server files
-#      uses: appleboy/scp-action@master
-#      with:
-#        host: ${{ secrets.HOST }}
-#        port: 22
-#        username: ${{ env.USERNAME }}
-#        key: ${{ secrets.FASTAPISERVERKEY }}
-#        passphrase: ''
-#        source: .
-#        target: /home/${{ env.USERNAME }}/${{ env.USERNAME }}

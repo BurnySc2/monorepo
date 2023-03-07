@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
 
 import aiohttp
 from hikari import GatewayBot, GuildMessageCreateEvent
@@ -30,11 +29,10 @@ class Sc2LadderResult:
     # Current season games played
     games_played: int
     # Clantag or None if not given
-    clan_tag: Optional[str]
+    clan_tag: str | None
 
     @staticmethod
     def from_api_result(data: dict) -> Sc2LadderResult:
-
         members = data['members']
         character = members['character']
         previous_stats = data['previousStats']
@@ -78,7 +76,7 @@ class Sc2LadderResult:
             return f'[{self.clan_tag}] '
         return ''
 
-    def format_result(self) -> List[str]:
+    def format_result(self) -> list[str]:
         return [
             f'{self.region} {self.short_race}',
             f'{self.mmr}',
@@ -92,7 +90,8 @@ async def public_mmr(
     _event: GuildMessageCreateEvent,
     query_name: str,
 ) -> str:
-    """The public command '!mmr name', will look up an account name, clan name or stream name and list several results as a markdown table using PrettyTable
+    """The public command '!mmr name', will look up an account name, clan name or stream name and list several results
+    as a markdown table using PrettyTable
     Usage:
     !mmr burny"""
     # Correct usage
@@ -114,7 +113,7 @@ async def public_mmr(
                 return f'No player found with name `{query_name}`'
             # Server, Race, League, MMR, Win/Loss, Name, Last Played, Last Streamed
             fields = ['S-R', 'MMR', 'Games', 'Name']
-            parsed_results: List[Sc2LadderResult] = []
+            parsed_results: list[Sc2LadderResult] = []
             for api_result in results:
                 result_object: Sc2LadderResult = Sc2LadderResult.from_api_result(api_result)
                 parsed_results.append(result_object)

@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from postgrest import APIResponse, AsyncSelectRequestBuilder
+from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 
 from commands.public_twss import public_twss
 
@@ -21,4 +21,4 @@ async def test_public_twss():
         result = await public_twss(fake_bot, fake_event, message)
 
     assert isinstance(result, str)
-    assert result == "2022-01-02 burny: some_quote"
+    assert result == '2022-01-02 burny: some_quote'

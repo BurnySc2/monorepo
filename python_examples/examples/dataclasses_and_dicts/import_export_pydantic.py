@@ -1,17 +1,18 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import List, Union
 
 from hypothesis import given
 from hypothesis import strategies as st
-
-# pylint: disable=E0611
 from pydantic import BaseModel, EmailStr, validator
 
 
+# pyre-fixme[13]
 class CreditCardModel(BaseModel):
     card_number: int
 
 
+# pyre-fixme[13]
 class PetModel(BaseModel):
     name: str
     type: str
@@ -20,7 +21,6 @@ class PetModel(BaseModel):
 class CatModel(PetModel):
     type: str = 'cat'
 
-    # pylint: disable=E0213
     @validator('type')
     def type_must_be_cat(cls, v: str):
         assert v == 'cat', 'Must be cat'
@@ -30,14 +30,13 @@ class CatModel(PetModel):
 class DogModel(PetModel):
     type: str = 'dog'
 
-    # pylint: disable=E0213
     @validator('type')
     def type_must_be_dog(cls, v: str):
         assert v == 'dog', 'Must be dog'
         return v
 
 
-# pylint: disable=E0213
+# pyre-fixme[13]
 class PersonModel(BaseModel):
     name: str
     email: EmailStr
@@ -46,7 +45,7 @@ class PersonModel(BaseModel):
     password1: str
     password2: str
     # pets: List[PetModel]
-    pets: List[Union[CatModel, DogModel, PetModel]]
+    pets: list[CatModel | DogModel | PetModel]
 
     @validator('name')
     def name_must_contain_space(cls, v: str):

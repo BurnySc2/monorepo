@@ -3,29 +3,34 @@ https://github.com/roman-right/beanie/
 https://roman-right.github.io/beanie/
 MongoDB GUI Interface: Robo 3T
 """
+from __future__ import annotations
+
 import asyncio
 import sys
-from typing import ForwardRef, List
+from typing import ForwardRef
 
-import motor
+import motor  # pyre-fixme[21]
 from beanie import Document, init_beanie
 from beanie.odm.operators.update.general import Set
 from loguru import logger
 from pydantic import Field
-from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
 
 
 # Queries can be cached https://roman-right.github.io/beanie/tutorial/cache/
+# pyre-fixme[13]
 class Author(Document):
     name: str
     birth_year: int
 
 
+# pyre-fixme[13]
 class Publisher(Document):
     name: str
     founded_year: int
 
 
+# pyre-fixme[13]
 class Book(Document):
     name: str
     release_year: int
@@ -37,23 +42,25 @@ class Book(Document):
 ForwardRefBookInventory = ForwardRef('BookInventory')
 
 
+# pyre-fixme[13]
 class Library(Document):
     name: str
     address: str
-    books: List[ForwardRefBookInventory] = Field(default_factory=list)  # type: ignore
+    # pyre-fixme[11]
+    books: list[ForwardRefBookInventory] = Field(default_factory=list)
 
 
+# pyre-fixme[13]
 class BookInventory(Document):
     amount: int
     book: Book
     library: Library
 
 
+# pyre-fixme[16]
 Library.update_forward_refs()
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
 async def run_database_with_beanie():
     # Embedded pure-python dict based dictionary
 
@@ -64,7 +71,8 @@ async def run_database_with_beanie():
         await init_beanie(database=client.db_name, document_models=[Author, Publisher, Book, Library, BookInventory])
     except ServerSelectionTimeoutError:
         logger.error(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:6.0.1'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 "
+            "--name mongodb mongo:6.0.1'",
         )
         sys.exit(1)
 
@@ -167,7 +175,7 @@ async def run_database_with_beanie():
 
     # 3) Select books
     # https://docs.mongoengine.org/guide/querying.html#query-operators
-    async for book in Book.find(Book.release_year < 1960):  # pylint: disable=E1133
+    async for book in Book.find(Book.release_year < 1960):
         logger.info(f'Found books released before 1960: {book}')
     # Alternatively with mongodb syntax
     # async for book in Book.find({"release_year": {"$lt": 1960}}):
@@ -186,22 +194,23 @@ async def run_database_with_beanie():
     assert await Book.find(Book.name == 'This book was not written').count() == 0
 
     # 6) Get data from other tables
-    async for book in Book.find_all():  # pylint: disable=E1133
+    async for book in Book.find_all():
         logger.info(f'Book ({book}) has author ({book.author}) and publisher ({book.publisher})')
 
-    async for book_inventory in BookInventory.find_all():  # pylint: disable=E1133
+    async for book_inventory in BookInventory.find_all():
         logger.info(
             f'Library {book_inventory.library} has book inventory ({book_inventory}) of book ({book_inventory.book})'
         )
 
     # 7) Join two tables and apply filter
     # Find all books that are listed in libraries at least 25 times and where author was born before 1910
-    async for book_inventory in BookInventory.find( # pylint: disable=E1133
+    async for book_inventory in BookInventory.find(
         BookInventory.amount <= 25,
         BookInventory.book.author.birth_year < 1910,
     ):
         logger.info(
-            f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} times and the author is {book_inventory.book.author}'
+            f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} '
+            f'times and the author is {book_inventory.book.author}'
         )
 
     # 8) TODO: Migration

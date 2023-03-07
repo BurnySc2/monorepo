@@ -1,6 +1,11 @@
-# To update hooks run: poetry run pre-commit autoupdate
+# To install hooks:
+# poetry run pre-commit install
+# To update hooks:
+# poetry run pre-commit autoupdate
+# To run hooks:
+# poetry run pre-commit run --all-files --hook-stage push
 
-# This removes comments
+# This removes comments which is unwanted
 #- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
 #  rev: v2.1.0
 #  hooks:
@@ -59,12 +64,20 @@ repos:
 
 #- repo: local
 #  hooks:
-#  # Autoformat, lint, test
-#  - id: xonsh
-#    name: Run xonsh script
-#    stages: [commit]
+#  # Install earthly requirements
+#  - id: earthly
+#    name: Install earthly requirements
+#    stages: [push]
 #    language: system
-#    entry: poetry run xonsh run_tests.xsh run --pylint --pytest --npmlint --npmtest
+#    entry: earthly +install-all --verbose true
+#    pass_filenames: false
+
+  # Check formatting, lint, test
+#  - id: earthly
+#    name: Run earthly
+#    stages: [push]
+#    language: system
+#    entry: earthly +all --verbose true
 #    pass_filenames: false
 
 #  - id: pytest-cov

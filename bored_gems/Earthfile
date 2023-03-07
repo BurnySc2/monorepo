@@ -1,0 +1,59 @@
+VERSION 0.6
+# earthly +all --NODEVERSION=18
+ARG NODEVERSION=19 # 14, 16, 18, 19
+FROM node:${NODEVERSION}-slim
+WORKDIR /root/bored_gems
+
+install-dev:
+    COPY package.json package-lock.json ./
+    RUN npm install
+    COPY src /root/bored_gems/src
+    COPY static /root/bored_gems/static
+
+install-test:
+    FROM +install-dev
+    RUN npx playwright install --with-deps chromium
+    COPY tests /root/bored_gems/tests
+    # Why is tsconfig.json not needed here?
+    COPY playwright.config.ts svelte.config.js vite.config.js ./
+
+format:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Requirements:
+    # npm i
+
+    # Format code
+    RUN npm run format
+
+format-check:
+    FROM +install-dev
+    COPY .prettierrc ./
+    RUN npm run format:check
+
+lint:
+    FROM +install-dev
+    COPY .eslintrc.cjs ./
+    RUN npm run lint
+
+test:
+    FROM +install-test
+    RUN npm run test
+
+build:
+    FROM +install-dev
+    # Why is tsconfig.json not needed here?
+    COPY svelte.config.js vite.config.js ./
+    RUN npm run build
+    SAVE ARTIFACT build AS LOCAL ./
+
+install-all:
+    BUILD +install-dev
+    BUILD +install-test
+
+all:
+    BUILD +format-check
+    # TODO Fix me
+    #BUILD +lint
+    BUILD +test
+    BUILD +build

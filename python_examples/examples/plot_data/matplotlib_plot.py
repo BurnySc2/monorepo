@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # pyre-fixme[21]
 import numpy as np
 
 CURRENT_DIRECTORY = Path(__file__).parent

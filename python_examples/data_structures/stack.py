@@ -18,7 +18,8 @@ class Stack:
         """
         Pushes an item on top of the stack.
         If the stack was previously empty, self.top will point towards the first item.
-        If the stack was not empty, self.top will point towards the newly pushed item and that item will point towards the previously first item.
+        If the stack was not empty, self.top will point towards the newly pushed item and that item will point
+        towards the previously first item.
         """
         if not self.top:
             self.top = Item(value)
@@ -63,19 +64,22 @@ if __name__ == '__main__':
 
     s.push(5)
     top = s.top and s.top.value
-    assert (
-        top == 5
-    ), f'Push function does not work as intended, value on top of the stack should be 5 but is actually ({top}) (top value exists: {bool(s.top)})'
+    assert (top == 5), (
+        f'Push function does not work as intended, value on top of the stack should be 5 but is actually ({top}) '
+        f'(top value exists: {bool(s.top)})'
+    )
 
     s.push(8)
     first_element = s.top and s.top.value
     second_element = s.top and s.top.next and s.top.next.value
-    assert (
-        first_element == 8
-    ), f'Push function does not work as intended, value on top of the stack should now be 8 (we just put 8 on the stack) but is ({first_element})'
-    assert (
-        second_element == 5
-    ), f'Push function does not work as intended, value on top of the stack should be 8 and second element should now be 5, but second element is ({second_element})'
+    assert (first_element == 8), (
+        f'Push function does not work as intended, value on top of the stack should now be 8 (we just put 8 on the '
+        f'stack) but is ({first_element})'
+    )
+    assert (second_element == 5), (
+        f'Push function does not work as intended, value on top of the stack should be 8 and second element should '
+        f'now be 5, but second element is ({second_element})'
+    )
 
     my_value = s.pop()
     assert my_value == 8, f'Pop function does not work as intended, expected value = 8, received value = ({my_value})'

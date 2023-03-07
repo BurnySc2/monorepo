@@ -1,25 +1,25 @@
 <script lang="ts">
     import { onMount } from "svelte"
-    import { writable } from "svelte/store"
+    import { writable, type Writable } from "svelte/store"
 
-    import Headers from "../components/Headers.svelte"
+    import Headers from "../../components/Headers.svelte"
 
     // Key names in local and session storage
     const localStorageKey = "localValue"
     const sessionStorageKey = "sessionValue"
 
-    let localStorageStore
-    let localStorageValue
-    let sessionStorageStore
-    let sessionStorageValue
+    let localStorageStore: Writable<string>
+    let localStorageValue: number
+    let sessionStorageStore: Writable<string>
+    let sessionStorageValue: number
 
     onMount(() => {
         // Get value from localStorage
         localStorageStore = writable(localStorage.getItem(localStorageKey) || "0")
-        localStorageValue = parseInt(localStorage.getItem(localStorageKey)) || 0
+        localStorageValue = parseInt(localStorage.getItem(localStorageKey) || "0")
 
         sessionStorageStore = writable(sessionStorage.getItem(sessionStorageKey) || "0")
-        sessionStorageValue = parseInt(sessionStorage.getItem(sessionStorageKey)) || 0
+        sessionStorageValue = parseInt(sessionStorage.getItem(sessionStorageKey) || "0")
 
         // Event based notification when a value in a store changes
         localStorageStore.subscribe((newValue) => {

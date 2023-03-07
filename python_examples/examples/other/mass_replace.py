@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import re
-from typing import Dict
 
 from loguru import logger
 
 
-def mass_replacer(text: str, replace_dict: Dict[str, str]) -> str:
+def mass_replacer(text: str, replace_dict: dict[str, str]) -> str:
     # Source: https://stackoverflow.com/a/6117124
     # In case there is escape characters in k, it will not work without "re.escape"
     replace_dict = {re.escape(k): v for k, v in replace_dict.items()}
