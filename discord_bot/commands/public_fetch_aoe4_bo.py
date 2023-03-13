@@ -55,6 +55,7 @@ class Action(enum.Enum):
         raise ValueError(f"Doesn't exist: {action}")
 
 
+# pyre-fixme[13]
 class Condition(BaseModel):
     action: Action
     target_count: int
@@ -86,6 +87,9 @@ class Condition(BaseModel):
         matcher_regex = f'{optional_count_regex}{action_regex}{operator_regex}{time_regex}{time_suffix_regex}'
         compiled = re.compile(matcher_regex)
         regex_match = compiled.fullmatch(condition)
+
+        if regex_match is None:
+            raise ValueError("Unable to parse condition.")
 
         count = default_count if regex_match.group(1) is None else int(regex_match.group(1))
         action_string = regex_match.group(2)
@@ -176,7 +180,8 @@ async def public_search_aoe4_players(
         players.sort(key=lambda player: player.last_game_at_arrow, reverse=True)
         players_string = '\n'.join(
             [
-                f'Last game was {player.last_game_at_arrow.humanize()}, {player.name} <https://aoe4world.com/players/{player.profile_id}>'
+                f'Last game was {player.last_game_at_arrow.humanize()}, {player.name} '
+                f'<https://aoe4world.com/players/{player.profile_id}>'
                 # Only list the first 10 players
                 for player in players[:10]
             ]
@@ -199,7 +204,10 @@ async def public_analyse_aoe4_game(
     game_url_compiled = re.compile(game_url_pattern)
     match = game_url_compiled.fullmatch(message)
     if match is None:
-        return f'Unable to process request. Please submit a link to a match, e.g. <https://aoe4world.com/players/7344587/games/65673113>'
+        return (
+            'Unable to process request. Please submit a link to a match, e.g. '
+            '<https://aoe4world.com/players/7344587/games/65673113>'
+        )
 
     player_profile_id = int(match.group(1))
     game_id = int(match.group(2))
@@ -333,6 +341,7 @@ async def public_fetch_aoe4_bo(
 {collected_games_string}"""
 
 
+# pyre-fixme[13]
 class Social(BaseModel):
     twitch: str | None
     twitter: str | None
@@ -340,6 +349,7 @@ class Social(BaseModel):
     liquipedia: str | None
 
 
+# pyre-fixme[13]
 class Leaderboard(BaseModel):
     rating: int
     max_rating: int | None
@@ -367,6 +377,7 @@ class Leaderboards(BaseModel):
     rm_4v4_elo: Leaderboard | None = None
 
 
+# pyre-fixme[13]
 class PlayerSearchResult(BaseModel):
     name: str
     profile_id: int
@@ -383,6 +394,7 @@ class PlayerSearchResult(BaseModel):
         return arrow.get(self.last_game_at)
 
 
+# pyre-fixme[13]
 class PlayerOfTeam(BaseModel):
     profile_id: int | None
     name: str | None
@@ -393,10 +405,12 @@ class PlayerOfTeam(BaseModel):
     rating_diff: int | None
 
 
+# pyre-fixme[13]
 class PlayerOfTeamEntry(BaseModel):
     player: PlayerOfTeam
 
 
+# pyre-fixme[13]
 class GameResult(BaseModel):
     game_id: int
     started_at: str
@@ -422,6 +436,7 @@ class FinishedActions(BaseModel):
     # TODO More upgrades
 
 
+# pyre-fixme[13]
 class BuildOrderItem(BaseModel):
     id: str | int | None
     icon: str
@@ -464,6 +479,7 @@ def format_time(timestamps: list[int]) -> str:
     return ', '.join(times_formatted)
 
 
+# pyre-fixme[13]
 class GamePlayerData(BaseModel):
     profile_id: int | None
     name: str | None
@@ -486,21 +502,23 @@ class GamePlayerData(BaseModel):
         # VILLAGER CONDITION
         if condition.action == Action.VILLAGER:
             if condition.time_in_seconds is None:
-                raise ValueError(f"Time for villager count must not be 'None'.")
+                raise ValueError("Time for villager count must not be 'None'.")
             finished_list = self.finished_list_of_icon('icons/races/common/units/villager')
             if condition.time_in_seconds is None:
                 bo_count = len(finished_list)
             else:
+                # pyre-fixme[58]
                 bo_count = sum(1 for i in finished_list if i <= condition.time_in_seconds)
             return bo_count >= condition.target_count
         # TOWNCENTER CONDITION
         if condition.action == Action.TOWNCENTER:
             if condition.time_in_seconds is None:
-                raise ValueError(f"Time for villager count must not be 'None'.")
+                raise ValueError("Time for villager count must not be 'None'.")
             finished_list = self.finished_list_of_icon('icons/races/common/buildings/town_center')
             if condition.time_in_seconds is None:
                 bo_count = len(finished_list)
             else:
+                # pyre-fixme[58]
                 bo_count = sum(1 for i in finished_list if i <= condition.time_in_seconds)
             return bo_count >= condition.target_count
         # FEUDAL CONDITION
@@ -510,6 +528,7 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 return True
             if len(self.actions.feudal_age) > 0:
+                # pyre-fixme[58]
                 return self.actions.feudal_age[0] <= condition.time_in_seconds
             return False
         # CASTLE CONDITION
@@ -519,6 +538,7 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 return True
             if len(self.actions.castle_age) > 0:
+                # pyre-fixme[58]
                 return self.actions.castle_age[0] <= condition.time_in_seconds
             return False
         # IMPERIAL CONDITION
@@ -528,6 +548,7 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 return True
             if len(self.actions.imperial_age) > 0:
+                # pyre-fixme[58]
                 return self.actions.imperial_age[0] <= condition.time_in_seconds
             return False
         # WHEELBARROW CONDITION
@@ -537,8 +558,10 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 return True
             if len(self.actions.upgrade_unit_town_center_wheelbarrow_1) > 0:
+                # pyre-fixme[58]
                 return self.actions.upgrade_unit_town_center_wheelbarrow_1[0] <= condition.time_in_seconds
             return False
+        # pyre-fixme[7]
         NotImplementedError(f'Not implemented for action: {condition.action}')
 
     def matches_all_conditions(self, conditions: list[Condition]) -> bool:
@@ -606,6 +629,7 @@ class GamePlayerData(BaseModel):
         return info_string
 
 
+# pyre-fixme[13]
 class CollectedBuildOrder(BaseModel):
     game_result: GameResult
     game_player_data: GamePlayerData
@@ -628,8 +652,8 @@ async def search(
     """A helper function to search for profiles via a player name query."""
     url = f'https://aoe4world.com/api/v0/players/search?query={player_name}'
     collected_players: list[PlayerSearchResult] = []
+    response: aiohttp.ClientResponse
     async with session.get(url) as response:
-        response: aiohttp.ClientResponse
         if not response.ok:
             raise aiohttp.ClientConnectionError
         data = await response.json()
@@ -732,9 +756,6 @@ async def main():
     player_search_query = 'burny'
     data = await public_search_aoe4_players(None, None, player_search_query)
     print(data)
-
-    # If profile_id is given, min_rating and max_rating will be ignored
-    # message = "--profile_id 6672615 --race english --condition 2towncenter<600s,wheelbarrow<300s,feudal<360s,castle<720s"
 
     # Analyze game: give information about feudal, tc, wheelbarrow, villagers timestamps
     message = '<https://aoe4world.com/players/585764/games/66434421>'
