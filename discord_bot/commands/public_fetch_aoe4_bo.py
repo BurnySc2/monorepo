@@ -10,7 +10,9 @@ from typing import AsyncGenerator
 
 import aiohttp
 import arrow
+from aiohttp import ClientSession
 from hikari import GatewayBot, GuildMessageCreateEvent
+from loguru import logger
 from pydantic import BaseModel, validator, Field
 from simple_parsing import ArgumentParser, field
 """ START OF ARGPARSER """
@@ -110,8 +112,6 @@ class Condition(BaseModel):
 
 @dataclass
 class BuildOrderParserOptions:
-    min_rating: int | None = field(alias=['-m'], default=None)
-    max_rating: int | None = field(default=None)
     profile_id: int | None = field(alias=['-p', '-id'], default=None)
     race: str = field(alias=["-r"], default="en")
     # constant_villager_production: bool = field(alias=['-cvp'], default=False, action='store_true')
@@ -150,6 +150,17 @@ async def public_search_aoe4_players(
     # TODO Collect players from this print string, then return
 
 
+async def public_analyse_aoe4_game(
+    bot: GatewayBot,
+    event: GuildMessageCreateEvent,
+    message: str,
+):
+    """Needs to be able to parse
+    message = "https://aoe4world.com/players/7344587/games/65673113"
+    message = "--profile_id 7344587 --game_id 65673113"
+    """
+
+
 async def public_fetch_aoe4_bo(
     bot: GatewayBot,
     event: GuildMessageCreateEvent,
@@ -160,66 +171,48 @@ async def public_fetch_aoe4_bo(
     unknown_args: list[str]
     try:
         parsed, unknown_args = public_fetch_aoe4_bo_parser.parse_known_args(args=message.split())
-        # a = parsed.params.conditions_parsed
     except SystemExit:
         return
 
-    # Sanity checks
-    if parsed.params.min_rating is not None and parsed.params.max_rating is not None:
-        assert parsed.params.min_rating <= parsed.params.max_rating
-
-    parsed_games_count = 0
     collected_games: list[str] = []
+    parsed_games_count = 0
+    # profile_id: int = parsed.params.profile_id
     async with aiohttp.ClientSession() as session:
-        # Fetch games by player profile_id and race
-        if parsed.params.profile_id is not None:
-            profile_id: int = parsed.params.profile_id
-            async for game in get_games_by_player_id(session, profile_id, allowed_race=parsed.params.race):
-                print(game)
-                await get_build_order_of_game(session, game.game_id, profile_id)
-            # TODO Fetch games where filter works
-            return
-        # Fetch all games by rating and race
-        else:
+        async for profile in fetch_top_profiles(session):
             game_result: GameResult
             game_player_data: GamePlayerData
-            async for (game_result, game_player_data) in get_all_games(
+            async for (game_result, game_player_data) in get_games_by_player_id(
                 session,
-                min_rating=parsed.params.min_rating,
-                max_rating=parsed.params.max_rating,
+                profile.profile_id,
                 allowed_race=parsed.params.race,
             ):
-                # Dont browse further than X days
-                time_ago: arrow.Arrow = arrow.utcnow().shift(days=-14)
-                game_started_time: arrow.Arrow = arrow.get(game_result.started_at)
-                if game_started_time < time_ago:
-                    break
                 parsed_games_count += 1
+                logger.info(parsed_games_count)
 
-                conditions_met = True
-                condition: Condition
-                for condition in parsed.params.conditions_parsed:
-                    if not game_player_data.check_condition(condition):
-                        conditions_met = False
-                        break
-                if not conditions_met:
+                if not game_player_data.matches_all_conditions(parsed.params.conditions_parsed):
                     continue
                 # Build order survived condition filters
                 url = f"https://aoe4world.com/players/{game_player_data.profile_id}/games/{game_result.game_id}"
                 collected_games.append(f"{game_player_data.civilization[:2]} {game_player_data.name} <{url}>")
-            if len(collected_games) == 0:
-                return f"Parsed {parsed_games_count} games. No games match this request"
-            collected_games_string = '\n'.join(collected_games)
-            return f"""Games that match this request
+    if len(collected_games) == 0:
+        return f"Parsed {parsed_games_count} games. No games match this request"
+    collected_games_string = '\n'.join(collected_games)
+    return f"""Games that match this request
 {collected_games_string}"""
 
 
 class Social(BaseModel):
-    twitch: str | None = None
+    twitch: str | None
+    twitter: str | None
+    instagram: str | None
+    liquipedia: str | None
 
 
 class Leaderboard(BaseModel):
     rating: int
+    max_rating: int
+    max_rating_7d: int
+    max_rating_1m: int
     rank: int
     rank_level: str | None = None
     streak: int
@@ -249,7 +242,7 @@ class PlayerSearchResult(BaseModel):
     country: str | None = None
     social: Social
     last_game_at: str
-    leaderboards: Leaderboards
+    leaderboards: Leaderboards | None
 
     @property
     def last_game_at_arrow(self) -> arrow.Arrow:
@@ -396,6 +389,12 @@ class GamePlayerData(BaseModel):
             return False
         NotImplementedError(f"Not implemented for action: {condition.action}")
 
+    def matches_all_conditions(self, conditions: list[Condition]) -> bool:
+        for condition in conditions:
+            if not self.check_condition(condition):
+                return False
+        return True
+
     def to_discord_message_towncenters(self) -> str:
         for item in self.build_order:
             if item.icon == 'icons/races/common/buildings/town_center':
@@ -463,31 +462,65 @@ async def search(
             yield player
 
 
-async def get_games_by_player_id(session: aiohttp.ClientSession, player_profile_id: int,
-                                 allowed_race: str | None) -> AsyncGenerator[GameResult, None]:
-    """A helper function that finds the latest games from match history by this player."""
-    page = 1
-    while 1:
-        url = f"https://aoe4world.com/api/v0/games?page={page}&profile_ids={player_profile_id}"
-        response = await session.get(url)
+async def fetch_top_profiles(session: ClientSession, max_pages: int = 1) -> AsyncGenerator[PlayerSearchResult, None]:
+    """From the first n pages, grab the profiles and return them as generator."""
+    tasks = [
+        asyncio.create_task(session.get(f"https://aoe4world.com/api/v0/leaderboards/rm_solo?page={page}"))
+        for page in range(1, max_pages + 1)
+    ]
+    # Iterate them in any order
+    for future in asyncio.as_completed(tasks):
+        response: aiohttp.ClientResponse = await future
         if not response.ok:
-            return
+            continue
+        data = await response.json()
+        for player_profle in data["players"]:
+            profile = PlayerSearchResult.parse_obj(player_profle)
+            yield profile
+
+
+async def get_games_by_player_id(
+    session: aiohttp.ClientSession,
+    player_profile_id: int,
+    allowed_race: str | None,
+    max_pages: int = 1,
+) -> AsyncGenerator[tuple[GameResult, GamePlayerData], None]:
+    """A helper function that finds the latest games from match history by this player.
+    Optional filter: race.
+    """
+    tasks = [
+        asyncio.create_task(
+            session.get(f"https://aoe4world.com/api/v0/games?page={page}&profile_ids={player_profile_id}")
+        ) for page in range(1, max_pages + 1)
+    ]
+    # Iterate them in any order
+    for future in asyncio.as_completed(tasks):
+        response: aiohttp.ClientResponse = await future
+        if not response.ok:
+            continue
         data = await response.json()
         if not data["games"]:
-            # End of list reached
-            return
+            logger.debug("Exiting because there are no games in this request.")
+            continue
         for game_data in data["games"]:
             game_result = GameResult.parse_obj(game_data)
-            matches_filter = True
+            # If any player matches the allowed race, filter matches on this game
             for team in game_result.teams:
                 for player_of_team_entry in team:
                     player = player_of_team_entry.player
-                    if allowed_race is not None:
-                        if player.civilization[:2] != allowed_race[:2]:
-                            matches_filter = False
-            if matches_filter:
-                yield game_result
-        page += 1
+                    if allowed_race is not None and player.civilization[:2] != allowed_race[:2]:
+                        continue
+                    if player.profile_id != player_profile_id:
+                        continue
+                    build_order_to_yield = await get_build_order_of_game(
+                        session,
+                        game_result.game_id,
+                        player.profile_id,
+                    )
+                    if build_order_to_yield is not None:
+                        yield game_result, build_order_to_yield
+    # TODO: iterate over games, collect the ones matching filter
+    # then request build orders and yield matching game result
 
 
 async def get_build_order_of_game(
@@ -510,61 +543,6 @@ async def get_build_order_of_game(
         return parsed
 
 
-async def get_all_games(
-    session: aiohttp.ClientSession,
-    min_rating: int | None = None,
-    max_rating: int | None = None,
-    allowed_race: str | None = None,
-) -> AsyncGenerator[tuple[GameResult, GamePlayerData], None]:
-    page = 1
-    if min_rating is None:
-        min_rating = 0
-    if max_rating is None:
-        max_rating = 10_000
-    while 1:
-        url = f"https://aoe4world.com/api/v0/games?page={page}"
-        response = await session.get(url)
-        if not response.ok:
-            return
-        data = await response.json()
-
-        if not data["games"]:
-            # No more games
-            return
-
-        for game_raw in data["games"]:
-            game_result = GameResult.parse_obj(game_raw)
-            # Skip ongoing games
-            if game_result.ongoing:
-                continue
-            # Skip short games
-            if game_result.duration is None or game_result.duration < 600:
-                continue
-            for team in game_result.teams:
-                for player_of_team_entry in team:
-                    if not isinstance(player_of_team_entry, PlayerOfTeamEntry):
-                        # Why is this sometimes a list or dict?
-                        continue
-                    player = player_of_team_entry.player
-                    matches_filter = True
-                    # Filter race
-                    if allowed_race is not None:
-                        if player.civilization[:2] != allowed_race[:2]:
-                            matches_filter = False
-                    # Filter rating
-                    if player.rating is not None:
-                        if not (min_rating < player.rating < max_rating):
-                            matches_filter = False
-                    # Yield build order if matches filters, could be multiple per game
-                    if matches_filter:
-                        build_order_to_yield = await get_build_order_of_game(
-                            session, game_result.game_id, player.profile_id
-                        )
-                        if build_order_to_yield is not None:
-                            yield game_result, build_order_to_yield
-        page += 1
-
-
 async def main():
     # Test argument parser
 
@@ -575,13 +553,13 @@ async def main():
     # If profile_id is given, min_rating and max_rating will be ignored
     # message = "--profile_id 6672615 --race english --condition 2towncenter<600s,wheelbarrow<300s,feudal<360s,castle<720s"
 
-    message = "--race english --condition 2towncenter<900s,wheelbarrow<600s,feudal<600s,castle<900s"
+    message = "--race english --condition 2towncenter<900s,wheelbarrow<600s,feudal<600s,castle<1200s"
     # message = "--race english --condition 2towncenter<600s,wheelbarrow<300s,feudal<360s,castle<720s"
     data = await public_fetch_aoe4_bo(None, None, message)
     print(data)
 
     # TODO Analyze game: give information about feudal, tc, wheelbarrow, villagers timestamps
-    # message = "--game_id 23457 --profile_id 6672615"
+    # message = "--game_id 66470872 --profile_id 9397357"
     # data =await public_analyse_aoe4_game(None, None, message)
 
 

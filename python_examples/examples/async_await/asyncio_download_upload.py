@@ -80,8 +80,7 @@ async def download_all_sites(sites: Iterable[str]) -> list[aiohttp.ClientRespons
     async with aiohttp.ClientSession() as session:
         tasks = []
         for url in sites:
-            # In python 3.7: asyncio.create_task instead of asyncio.ensure_future
-            task = asyncio.ensure_future(download_site(session, url))
+            task = asyncio.create_task(download_site(session, url))
             tasks.append(task)
 
         # Run all tasks in "parallel" and wait until all of them are completed
