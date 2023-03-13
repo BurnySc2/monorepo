@@ -25,6 +25,7 @@ from loguru import logger
 from postgrest import APIResponse
 
 from commands.public_emotes import public_count_emotes
+from commands.public_fetch_aoe4_bo import public_analyse_aoe4_game, public_fetch_aoe4_bo, public_search_aoe4_players
 from commands.public_leaderboard import public_leaderboard
 from commands.public_mmr import public_mmr
 from commands.public_remind import Remind
@@ -80,13 +81,16 @@ async def generic_command_caller(
     # Call the given function with the bot, event and message
     response: Embed | str | None = await function_to_call(bot, event, message)
     if response is None:
+        # Function errored or no results
         return
 
     if isinstance(response, Embed):
-        sent_message = await channel.send(f'{event.author.mention}', embed=response)
+        sent_message = await event.message.respond(f'{event.author.mention}', embed=response, reply=True)
     else:
         # Error message or raw string response
-        sent_message = await channel.send(f'{event.author.mention} {response}')
+        sent_message = await event.message.respond(f'{event.author.mention} {response}', reply=True)
+        # Alternatively:
+        # sent_message = await channel.send(f'{event.author.mention} {response}')
     if add_remove_emoji:
         # https://www.fileformat.info/info/unicode/char/274c/index.htm
         await sent_message.add_reaction('\u274C')
@@ -318,6 +322,11 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
         'emotes': public_count_emotes,
         'twss': public_twss,
         'leaderboard': public_leaderboard,
+        'aoe4find': public_search_aoe4_players,
+        'aoe4search': public_search_aoe4_players,
+        'aoe4bo': public_fetch_aoe4_bo,
+        'aoe4analyse': public_analyse_aoe4_game,
+        'aoe4analyze': public_analyse_aoe4_game,
     }
     if command in function_mapping:
         function = function_mapping[command]
