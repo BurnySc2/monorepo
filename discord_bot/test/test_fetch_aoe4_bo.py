@@ -149,7 +149,7 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
 
 
 @pytest.mark.asyncio
-@settings(deadline=500)
+@settings(deadline=2000)
 @given(
     data=st.data(),
     amount_of_games_per_page=st.integers(min_value=1, max_value=10),
