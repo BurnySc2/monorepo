@@ -39,7 +39,7 @@ or inside docker via
 !remindat 4-20 this will remind me on 20th of april at midnight utc
 !remindat 4-20 16:20 this will remind me on 20th of april at 16:20 utc
 
-# List all pending reminders of the user
+# List all your pending reminders
 !reminders
 
 # Remove a reminder from !reminders
@@ -58,4 +58,15 @@ or inside docker via
 
 # Display a random TWSS quote
 !twss
+
+# Find specific aoe4 player profiles with a given name
+!aoe4find burny
+!aoe4search burny
+
+# Analyse build order of a specific game from a specific player perspective
+!aoe4analyse https://aoe4world.com/players/585764/games/66434421
+!aoe4analyse <https://aoe4world.com/players/585764/games/66434421>
+        
+# Find games that match the specific criteria
+!aoe4bo --race english --condition 2towncenter<400s,wheelbarrow<900s,feudal<360s,castle<660s
 ```

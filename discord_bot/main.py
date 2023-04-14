@@ -25,7 +25,7 @@ from loguru import logger
 from postgrest import APIResponse
 
 from commands.public_emotes import public_count_emotes
-from commands.public_fetch_aoe4_bo import public_analyse_aoe4_game, public_fetch_aoe4_bo, public_search_aoe4_players
+from commands.public_fetch_aoe4 import public_analyse_aoe4_game, public_fetch_aoe4_bo, public_search_aoe4_players
 from commands.public_leaderboard import public_leaderboard
 from commands.public_mmr import public_mmr
 from commands.public_remind import Remind

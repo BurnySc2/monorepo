@@ -89,7 +89,7 @@ class Condition(BaseModel):
         regex_match = compiled.fullmatch(condition)
 
         if regex_match is None:
-            raise ValueError("Unable to parse condition.")
+            raise ValueError('Unable to parse condition.')
 
         count = default_count if regex_match.group(1) is None else int(regex_match.group(1))
         action_string = regex_match.group(2)
@@ -97,9 +97,9 @@ class Condition(BaseModel):
         if operator_parsed is not None and operator_parsed == '<':
             operator = Operator.BEFORE
 
-        duration = int(regex_match.group(4))
+        duration = None if regex_match.group(4) is None else int(regex_match.group(4))
         time_suffix = regex_match.group(5)
-        if time_suffix is not None and time_suffix == 'm':
+        if duration is not None and time_suffix is not None and time_suffix == 'm':
             duration *= 60
 
         return Condition(
@@ -108,6 +108,12 @@ class Condition(BaseModel):
             operator=operator,
             time_in_seconds=duration,
         )
+
+    @property
+    def to_string(self) -> str:
+        seconds = self.time_in_seconds or ''
+        operator = '<' if seconds else ''
+        return f'{self.target_count}{self.action.name.lower()}{operator}{seconds}'
 
 
 @dataclass
@@ -129,8 +135,19 @@ class BuildOrderParserOptions:
     def __post_init__(self):
         assert 1 <= self.profiles_limit <= 100
         assert 1 <= self.games_per_profile <= 100
-        assert self.race[:2] in ALLOWED_RACES
+        assert self.race.lower()[:2] in ALLOWED_RACES
         # TODO Check if conditions are valid? e.g. no imperial before castle
+
+    @property
+    def to_string(self) -> str:
+        args = (
+            [f'--profiles_limit {self.profiles_limit} --games_per_profile {self.games_per_profile} --race {self.race}']
+            # Optional profile_id
+            + (['--profile_id', str(self.profile_id)] if self.profile_id is not None else [])
+            # Optional condition
+            + (['--condition', self.condition] if self.condition is not None else [])
+        )
+        return ' '.join(args)
 
     @property
     def race_parsed(self) -> str:
@@ -148,13 +165,16 @@ class BuildOrderParserOptions:
 
 public_fetch_aoe4_bo_parser = ArgumentParser()
 public_fetch_aoe4_bo_parser.add_arguments(BuildOrderParserOptions, dest='params')
-temp = public_fetch_aoe4_bo_parser.parse_known_args([])
-temp_help_string = public_fetch_aoe4_bo_parser.format_help()
-index_string = "BuildOrderParserOptions ['params']:"
-help_string = temp_help_string[temp_help_string.find(index_string) + len(index_string):].strip()
-del temp
-del temp_help_string
-del index_string
+
+
+def get_help_string() -> str:
+    _temp = public_fetch_aoe4_bo_parser.parse_known_args([])
+    temp_help_string = public_fetch_aoe4_bo_parser.format_help()
+    index_string = "BuildOrderParserOptions ['params']:"
+    return temp_help_string[temp_help_string.find(index_string) + len(index_string):].strip()
+
+
+help_string = get_help_string()
 
 
 # END OF ARGPARSER
@@ -174,7 +194,7 @@ async def public_search_aoe4_players(
         ),
     ) as session:
         logger.info(f"Searching for player name '{message}'")
-        players = await search(session, message)
+        players: list[PlayerSearchResult] = await search(session, message)
         if len(players) == 0:
             return 'Could not find any player with this name.'
         players.sort(key=lambda player: player.last_game_at_arrow, reverse=True)
@@ -200,7 +220,7 @@ async def public_analyse_aoe4_game(
     then analyzes the games and gives information about the macro of the player.
     """
     message = message.strip('<').strip('>')
-    game_url_pattern = r'https://aoe4world.com/players/(\d+).*/games/(\d+).*'
+    game_url_pattern = r'https://aoe4world\.com/players/(\d+).*/games/(\d+).*'
     game_url_compiled = re.compile(game_url_pattern)
     match = game_url_compiled.fullmatch(message)
     if match is None:
@@ -220,7 +240,11 @@ async def public_analyse_aoe4_game(
             limit_per_host=TCP_CONNECTOR_LIMIT,
         ),
     ) as session:
-        data = await get_build_order_of_game(session, game_id, player_profile_id)
+        data: tuple[GamePlayerData, int, int] | None = await get_build_order_of_game(
+            session,
+            game_id,
+            player_profile_id,
+        )
         if data is None:
             return 'Game was not found. Is the link valid?'
         game_player_data: GamePlayerData = data[0]
@@ -281,7 +305,7 @@ async def public_fetch_aoe4_bo(
                 asyncio.create_task(
                     get_games_by_player_id(
                         session,
-                        profile.profile_id,
+                        player_profile_id=profile.profile_id,
                         allowed_race=parsed_params.race,
                         max_pages=pages_to_browse,
                     )
@@ -297,11 +321,13 @@ async def public_fetch_aoe4_bo(
                 game_result: GameResult
                 map_game_id_to_game_result[game_result.game_id] = game_result
                 get_build_order_tasks.append(
-                    asyncio.create_task(get_build_order_of_game(
-                        session,
-                        game_result.game_id,
-                        player_profile_id,
-                    ))
+                    asyncio.create_task(
+                        get_build_order_of_game(
+                            session,
+                            game_id=game_result.game_id,
+                            player_profile_id=player_profile_id,
+                        )
+                    )
                 )
                 parsed_games_count += 1
         logger.debug(f'{parsed_games_count=}')
@@ -653,13 +679,13 @@ async def search(
     url = f'https://aoe4world.com/api/v0/players/search?query={player_name}'
     collected_players: list[PlayerSearchResult] = []
     response: aiohttp.ClientResponse
-    async with session.get(url) as response:
-        if not response.ok:
-            raise aiohttp.ClientConnectionError
-        data = await response.json()
-        for player_data in data['players']:
-            player: PlayerSearchResult = PlayerSearchResult.parse_obj(player_data)
-            collected_players.append(player)
+    response = await session.get(url)
+    if not response.ok:
+        raise aiohttp.ClientConnectionError
+    data = await response.json()
+    for player_data in data['players']:
+        player: PlayerSearchResult = PlayerSearchResult.parse_obj(player_data)
+        collected_players.append(player)
     return collected_players
 
 
