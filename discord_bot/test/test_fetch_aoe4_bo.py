@@ -77,7 +77,7 @@ def test_condition_enum(optional_count: str, action: str, operator: str, duratio
 @pytest.mark.asyncio
 @given(
     message_text=st.from_regex(r"\w+", fullmatch=True),
-    player_search_results=st.lists(st.builds(PlayerSearchResult)),
+    player_search_results=st.lists(st.builds(PlayerSearchResult), max_size=100),
 )
 async def test_public_search_aoe4_players(message_text: str, player_search_results: list[PlayerSearchResult]):
     with patch.object(
@@ -124,7 +124,8 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
                 profile_id=st.sampled_from([0, player_profile_id]),
                 actions=st.builds(FinishedActions),
                 build_order=st.lists(st.from_type(BuildOrderItem), max_size=0)
-            )
+            ),
+            max_size=100,
         )
     )
     message_text = f"https://aoe4world.com/players/{player_profile_id}/games/{game_id}"
