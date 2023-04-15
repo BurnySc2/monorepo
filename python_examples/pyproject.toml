@@ -84,7 +84,7 @@ pytest-benchmark = "^4.0"
 # Statistical testing
 hypothesis = "^6.34"
 # Cyclomatic complexity checker
-radon = "^5.0"
+#radon = "^5.0"
 # Function profiler, checks how often functions get called
 snakeviz = "^2.1"
 # Line profiler

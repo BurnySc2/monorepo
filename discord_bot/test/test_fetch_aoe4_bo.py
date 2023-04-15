@@ -61,6 +61,8 @@ def test_action_enum_failure(test_input: str):
 @example("", "wheelbarrow", "", "", "")
 @example("60", "villagers", "<", "600", "s")
 def test_condition_enum(optional_count: str, action: str, operator: str, duration: str, duration_suffix: str):
+    if duration == "":
+        duration_suffix = ""
     input_string = f"{optional_count}{action}{operator}{duration}{duration_suffix}"
     if action not in ALLOWED_ACTION_ENUM_VALUES:
         with pytest.raises(ValueError):
