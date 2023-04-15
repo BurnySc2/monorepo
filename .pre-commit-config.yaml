@@ -16,17 +16,10 @@ repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.2.0
   hooks:
-  # As the name says
-  - id: double-quote-string-fixer
   # Check yaml files like this one and github actions if they are valid
   - id: check-yaml
   # Check toml files like pyproject.toml if it is valid
   - id: check-toml
-  # Check if python files are valid
-  - id: check-ast
-  - id: check-builtin-literals
-  - id: check-docstring-first
-  - id: debug-statements
 
 - repo: https://github.com/pre-commit/pygrep-hooks
   rev: v1.9.0

@@ -26,7 +26,7 @@ class CountEmotesParserOptions:
 
 
 public_count_emotes_parser = ArgumentParser()
-public_count_emotes_parser.add_arguments(CountEmotesParserOptions, dest='params')
+public_count_emotes_parser.add_arguments(CountEmotesParserOptions, dest="params")
 
 
 async def public_count_emotes(
@@ -38,47 +38,47 @@ async def public_count_emotes(
     try:
         parsed, unknown_args = public_count_emotes_parser.parse_known_args(args=message.split())
     except SystemExit:
-        return 'Unable to parse input'
+        return "Unable to parse input"
     if unknown_args:
         return f"Unknown params: {' '.join(unknown_args)}\n{public_count_emotes_parser.format_help()}"
     params: CountEmotesParserOptions = parsed.params
 
     query: AsyncSelectRequestBuilder = ( #pyre-fixme[11]
         supabase.table(DiscordMessage.table_name()).select(
-            'what',
+            "what",
         )
         # Get messages written in that guild
         .eq(
-            'guild_id',
+            "guild_id",
             event.guild_id,
         )
         # Get messages with content similar to those of emojis
         .like(
-            'what',
-            '<%:%>',
+            "what",
+            "<%:%>",
         )
     )
     if not params.all:
         # Get messages by author_id
         query = query.eq(
-            'author_id',
+            "author_id",
             event.author_id,
         )
     if params.days is not None:
         after: Arrow = Arrow.utcnow().shift(days=-params.days)  #pyre-fixme[16]
-        query = query.gt('when', str(after))
+        query = query.gt("when", str(after))
 
     result_emotes: APIResponse = await query.execute()  #pyre-fixme[11]
 
     # What emotes to include in response
     if params.nostatic and params.noanimated:
-        return '\'--nostatic\' and \'--noanimated\' does not work together'
+        return "'--nostatic' and '--noanimated' does not work together"
     if params.noanimated:
-        emote_pattern = r'<:([\d\w_]+):(\d+)>'
+        emote_pattern = r"<:([\d\w_]+):(\d+)>"
     elif params.nostatic:
-        emote_pattern = r'<a:([\d\w_]+):(\d+)>'
+        emote_pattern = r"<a:([\d\w_]+):(\d+)>"
     else:
-        emote_pattern = r'<a?:([\d\w_]+):(\d+)>'
+        emote_pattern = r"<a?:([\d\w_]+):(\d+)>"
 
     emote_counter: CounterType[str] = Counter()
     for message_row in DiscordMessage.from_select(result_emotes):
@@ -104,15 +104,15 @@ async def public_count_emotes(
 
     emote_names_sorted_by_usage: list[str] = sorted(emote_counter, key=lambda i: emote_counter[i], reverse=True)
     emote_count: list[str] = [
-        f'{emote_counter[name]} {name}' for index, name in enumerate(
+        f"{emote_counter[name]} {name}" for index, name in enumerate(
             emote_names_sorted_by_usage,
             start=1,
         )
     ]
     emote_count = emote_count[:TOP_EMOTE_LIMIT]  # Only show top 10
     # TODO: Plot as chart, so that external emojis are included?
-    description_text: str = f'Total emotes: {sum(emote_counter.values())}\n'
-    description_text += '\n'.join(emote_count)
-    title_name = 'Server' if params.all else f"{event.author.username}'s"
-    embed = Embed(title=f'{title_name} top {TOP_EMOTE_LIMIT} used emotes', description=description_text)
+    description_text: str = f"Total emotes: {sum(emote_counter.values())}\n"
+    description_text += "\n".join(emote_count)
+    title_name = "Server" if params.all else f"{event.author.username}'s"
+    embed = Embed(title=f"{title_name} top {TOP_EMOTE_LIMIT} used emotes", description=description_text)
     return embed

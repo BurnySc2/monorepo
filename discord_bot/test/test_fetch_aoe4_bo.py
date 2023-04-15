@@ -29,8 +29,8 @@ from commands.public_fetch_aoe4 import (
 logger.remove()
 
 ALLOWED_ACTION_ENUM_VALUES: set[str] = {
-    'v', 'villager', 'villagers', 'tc', 'tcs', 'towncenter', 'towncenters', 'age2', 'feudal', 'age3', 'castle', 'age4',
-    'imp', 'imperial', 'wb', 'wheel', 'wheelbarrow'
+    "v", "villager", "villagers", "tc", "tcs", "towncenter", "towncenters", "age2", "feudal", "age3", "castle", "age4",
+    "imp", "imperial", "wb", "wheel", "wheelbarrow"
 }
 
 
@@ -48,20 +48,20 @@ def test_action_enum_failure(test_input: str):
 
 
 @given(
-    optional_count=st.from_regex(r'(\d+)?', fullmatch=True),
-    action=st.from_regex(r'(\w+)', fullmatch=True),
-    operator=st.from_regex('(<)?', fullmatch=True),
-    duration=st.from_regex(r'(\d+)?', fullmatch=True),
-    duration_suffix=st.from_regex('(s|m)?', fullmatch=True),
+    optional_count=st.from_regex(r"(\d+)?", fullmatch=True),
+    action=st.from_regex(r"(\w+)", fullmatch=True),
+    operator=st.from_regex("(<)?", fullmatch=True),
+    duration=st.from_regex(r"(\d+)?", fullmatch=True),
+    duration_suffix=st.from_regex("(s|m)?", fullmatch=True),
 )
-@example('4', 'towncenters', '<', '600', '')
-@example('4', 'towncenters', '<', '600', 's')
-@example('4', 'towncenters', '<', '10', 'm')
-@example('1', 'wheelbarrow', '', '', '')
-@example('', 'wheelbarrow', '', '', '')
-@example('60', 'villagers', '<', '600', 's')
+@example("4", "towncenters", "<", "600", "")
+@example("4", "towncenters", "<", "600", "s")
+@example("4", "towncenters", "<", "10", "m")
+@example("1", "wheelbarrow", "", "", "")
+@example("", "wheelbarrow", "", "", "")
+@example("60", "villagers", "<", "600", "s")
 def test_condition_enum(optional_count: str, action: str, operator: str, duration: str, duration_suffix: str):
-    input_string = f'{optional_count}{action}{operator}{duration}{duration_suffix}'
+    input_string = f"{optional_count}{action}{operator}{duration}{duration_suffix}"
     if action not in ALLOWED_ACTION_ENUM_VALUES:
         with pytest.raises(ValueError):
             _parsed = Condition.from_string(input_string)
@@ -72,18 +72,18 @@ def test_condition_enum(optional_count: str, action: str, operator: str, duratio
 
 @pytest.mark.asyncio
 @given(
-    message_text=st.from_regex(r'\w+', fullmatch=True),
+    message_text=st.from_regex(r"\w+", fullmatch=True),
     player_search_results=st.lists(st.builds(PlayerSearchResult)),
 )
 async def test_public_search_aoe4_players(message_text: str, player_search_results: list[PlayerSearchResult]):
     with patch.object(
-        ClientSession, 'get',
+        ClientSession, "get",
         AsyncMock(
             return_value=AsyncMock(
                 ok=True,
                 json=AsyncMock(
                     return_value={
-                        'players': [player_search_result.dict() for player_search_result in player_search_results]
+                        "players": [player_search_result.dict() for player_search_result in player_search_results]
                     }
                 ),
             )
@@ -92,13 +92,13 @@ async def test_public_search_aoe4_players(message_text: str, player_search_resul
         # pyre-fixme[6]
         result = await public_search_aoe4_players(None, None, message_text)
         if len(player_search_results) == 0:
-            assert result == 'Could not find any player with this name.'
+            assert result == "Could not find any player with this name."
             return
         player_search_results.sort(key=lambda player: player.last_game_at_arrow, reverse=True)
-        result_string = '\n'.join(
+        result_string = "\n".join(
             [
-                f'Last game was {player.last_game_at_arrow.humanize()}, {player.name} '
-                f'<https://aoe4world.com/players/{player.profile_id}>'
+                f"Last game was {player.last_game_at_arrow.humanize()}, {player.name} "
+                f"<https://aoe4world.com/players/{player.profile_id}>"
                 # Only list the first 10 players
                 for player in player_search_results[:10]
             ]
@@ -123,15 +123,15 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
             )
         )
     )
-    message_text = f'https://aoe4world.com/players/{player_profile_id}/games/{game_id}'
+    message_text = f"https://aoe4world.com/players/{player_profile_id}/games/{game_id}"
 
     with patch.object(
-        ClientSession, 'get',
+        ClientSession, "get",
         AsyncMock(
             return_value=AsyncMock(
                 ok=True,
                 json=AsyncMock(
-                    return_value={'players': [game_player_data.dict() for game_player_data in game_players_data]}
+                    return_value={"players": [game_player_data.dict() for game_player_data in game_players_data]}
                 )
             )
         )
@@ -142,9 +142,9 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
             (i for i in game_players_data if i.profile_id == player_profile_id), None
         )
         if found_game_player_data is None:
-            assert result == 'Game was not found. Is the link valid?'
+            assert result == "Game was not found. Is the link valid?"
             return
-        result_string = f'Analysis of game <{message_text}>\n{found_game_player_data.to_discord_message()}'
+        result_string = f"Analysis of game <{message_text}>\n{found_game_player_data.to_discord_message()}"
         assert result == result_string
 
 
@@ -168,14 +168,14 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
     villagers_built: int,
     villagers_required: int,
 ):
-    AMOUNT_OF_PAGES = 20
-    AMOUNT_OF_TEAMS = 2
-    TOTAL_BUILD_ORDERS = AMOUNT_OF_PAGES * amount_of_games_per_page * AMOUNT_OF_TEAMS * amount_of_players_per_team
+    amount_of_pages = 20
+    amount_of_teams = 2
+    total_build_orders = amount_of_pages * amount_of_games_per_page * amount_of_teams * amount_of_players_per_team
 
     build_order_item = data.draw(
         st.builds(
             BuildOrderItem,
-            icon=st.just('icons/races/common/units/villager'),
+            icon=st.just("icons/races/common/units/villager"),
             finished=st.just([0] * villagers_built),
             constructed=st.just([]),
         )
@@ -184,7 +184,7 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
         st.builds(
             BuildOrderParserOptions,
             # Condition matching the build order above
-            condition=st.just(f'{villagers_required}villagers<1s'),
+            condition=st.just(f"{villagers_required}villagers<1s"),
             profile_id=st.just(player_profile_id),
             race=st.just(player_race),
         )
@@ -193,7 +193,7 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
 
     with patch.object(
         ClientSession,
-        'get',
+        "get",
         AsyncMock(
             side_effect=[
                 # Fetch profile
@@ -209,13 +209,13 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
                         ).dict()
                     ),
                 ),
-            ] + AMOUNT_OF_PAGES * [
+            ] + amount_of_pages * [
                 # Fetch games matching the profile, will be called 20 times (20 pages) because profile id was submitted
                 AsyncMock(
                     ok=True,
                     json=AsyncMock(
                         return_value={
-                            'games': data.draw(
+                            "games": data.draw(
                                 st.lists(
                                     st.builds(
                                         GameResult,
@@ -226,7 +226,7 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
                                         # Will filter out games shorter than 10 mins
                                         duration=st.just(601),
                                         # Required for sorting
-                                        started_at=st.just('2000-01-01'),
+                                        started_at=st.just("2000-01-01"),
                                         teams=st.lists(
                                             st.lists(
                                                 st.builds(
@@ -240,8 +240,8 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
                                                 min_size=amount_of_players_per_team,
                                                 max_size=amount_of_players_per_team,
                                             ),
-                                            min_size=AMOUNT_OF_TEAMS,
-                                            max_size=AMOUNT_OF_TEAMS
+                                            min_size=amount_of_teams,
+                                            max_size=amount_of_teams
                                         )
                                     ),
                                     min_size=amount_of_games_per_page,
@@ -251,13 +251,13 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
                         }
                     )
                 )
-            ] + TOTAL_BUILD_ORDERS * [
+            ] + total_build_orders * [
                 # Fetch build orders of each player from the game
                 AsyncMock(
                     ok=True,
                     json=AsyncMock(
                         return_value={
-                            'players': data.draw(
+                            "players": data.draw(
                                 st.lists(
                                     st.builds(
                                         GamePlayerData,
@@ -277,11 +277,11 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
     ) as get_mock:
         # pyre-fixme[6]
         result = await public_fetch_aoe4_bo(None, None, message_text)
-        assert get_mock.call_count == TOTAL_BUILD_ORDERS + AMOUNT_OF_PAGES + 1
+        assert get_mock.call_count == total_build_orders + amount_of_pages + 1
         if villagers_built >= villagers_required:
-            assert result.startswith(f'Found {TOTAL_BUILD_ORDERS} games that match this request\n')
+            assert result.startswith(f"Found {total_build_orders} games that match this request\n")
         else:
-            assert result == f'Parsed {TOTAL_BUILD_ORDERS} games. No games match this request'
+            assert result == f"Parsed {total_build_orders} games. No games match this request"
 
 
 # TODO Test condition with feudal, castle, imperial, wheelbarrow

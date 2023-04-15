@@ -19,14 +19,14 @@ from commands.public_emotes import TOP_EMOTE_LIMIT, public_count_emotes, public_
 def test_count_emotes_parser(all_: bool, nostatic: bool, noanimated: bool, days: Optional[int]):
     params = []
     if all_:
-        params.append('--all')
+        params.append("--all")
     if nostatic:
-        params.append('--nostatic')
+        params.append("--nostatic")
     if noanimated:
-        params.append('--noanimated')
+        params.append("--noanimated")
     if days is not None:
-        params.append('--days')
-        params.append(f'{days}')
+        params.append("--days")
+        params.append(f"{days}")
 
     try:
         parsed, unknown_args = public_count_emotes_parser.parse_known_args(args=params)
@@ -46,7 +46,7 @@ def test_count_emotes_parser(all_: bool, nostatic: bool, noanimated: bool, days:
 def fake_get_emoji(value: int) -> KnownCustomEmoji:
     return KnownCustomEmoji(#pyre-fixme[28]
         id=Snowflake(value),
-        name='some_emote',
+        name="some_emote",
         is_animated=False,
         app=None,
         guild_id=Snowflake(123),
@@ -65,17 +65,17 @@ async def test_public_count_emotes():
     fake_event = Mock()
     fake_event.guild_id = 123
     fake_event.author_id = 456
-    fake_event.author.username = 'some_username'
-    message = '--days 5'
-    data = [{'what': '<:some_emote:123456789>'}, {'what': '<:some_emote:123456789>'}]
+    fake_event.author.username = "some_username"
+    message = "--days 5"
+    data = [{"what": "<:some_emote:123456789>"}, {"what": "<:some_emote:123456789>"}]
 
-    with patch.object(AsyncSelectRequestBuilder, 'execute', AsyncMock()) as execute:
+    with patch.object(AsyncSelectRequestBuilder, "execute", AsyncMock()) as execute:
         execute.return_value = APIResponse(data=data)
         result = await public_count_emotes(fake_bot, fake_event, message)
 
     assert isinstance(result, Embed)
     assert result.title == f"{fake_event.author.username}'s top {TOP_EMOTE_LIMIT} used emotes"
-    assert result.description == f'Total emotes: {len(data)}\n{len(data)} <:some_emote:123456789>'
+    assert result.description == f"Total emotes: {len(data)}\n{len(data)} <:some_emote:123456789>"
 
 
 # TODO Test various guild, user and emote variations

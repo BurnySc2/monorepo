@@ -9,11 +9,11 @@ from commands.public_remind import Remind
 
 
 def create_time_shift_string(_day, _hour, _minute, _second):
-    days = 'd day days'.split(' ')
-    hours = 'h hour hours'.split(' ')
-    minutes = 'm min mins minute minutes'.split(' ')
-    seconds = 's sec secs second seconds'.split(' ')
-    space = ['', ' ']
+    days = "d day days".split(" ")
+    hours = "h hour hours".split(" ")
+    minutes = "m min mins minute minutes".split(" ")
+    seconds = "s sec secs second seconds".split(" ")
+    space = ["", " "]
 
     shift_list = []
     for time, time_strings in zip([_day, _hour, _minute, _second], [days, hours, minutes, seconds]):
@@ -21,20 +21,20 @@ def create_time_shift_string(_day, _hour, _minute, _second):
             # Random use of "6 days" or "6days"
             space_characer = random.choice(space)
             time_string = random.choice(time_strings)
-            shift_list.append(f'{time}{space_characer}{time_string}')
+            shift_list.append(f"{time}{space_characer}{time_string}")
             # Sometimes insert a space character after "6days"
             if random.choice(space):
-                shift_list.append(' ')
+                shift_list.append(" ")
 
-    shift = ''.join(shift_list)
+    shift = "".join(shift_list)
     return shift.strip()
 
 
 @settings(max_examples=100)
-@example(_day=1_000_000, _hour=0, _minute=0, _second=0, _message='a')
-@example(_day=0, _hour=1_000_000, _minute=0, _second=0, _message='a')
-@example(_day=0, _hour=0, _minute=1_000_000, _second=0, _message='a')
-@example(_day=0, _hour=0, _minute=0, _second=1_000_000, _message='a')
+@example(_day=1_000_000, _hour=0, _minute=0, _second=0, _message="a")
+@example(_day=0, _hour=1_000_000, _minute=0, _second=0, _message="a")
+@example(_day=0, _hour=0, _minute=1_000_000, _second=0, _message="a")
+@example(_day=0, _hour=0, _minute=0, _second=1_000_000, _message="a")
 @given(
     # Day
     st.integers(min_value=0, max_value=1_000_000),
@@ -59,7 +59,7 @@ async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, 
     r = Remind(client=None)
 
     time_shift = create_time_shift_string(_day, _hour, _minute, _second)
-    my_message = f'{time_shift} {_message}'
+    my_message = f"{time_shift} {_message}"
     result = await r._parse_time_shift_from_message(my_message)
 
     assert isinstance(result[0], arrow.Arrow)
@@ -67,10 +67,10 @@ async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, 
 
 
 @settings(max_examples=100)
-@example(_day=10_000_000, _hour=0, _minute=0, _second=0, _message='a')
-@example(_day=0, _hour=10_000_000, _minute=0, _second=0, _message='a')
-@example(_day=0, _hour=0, _minute=10_000_000, _second=0, _message='a')
-@example(_day=0, _hour=0, _minute=0, _second=10_000_000, _message='a')
+@example(_day=10_000_000, _hour=0, _minute=0, _second=0, _message="a")
+@example(_day=0, _hour=10_000_000, _minute=0, _second=0, _message="a")
+@example(_day=0, _hour=0, _minute=10_000_000, _second=0, _message="a")
+@example(_day=0, _hour=0, _minute=0, _second=10_000_000, _message="a")
 @given(
     # Day
     st.integers(min_value=0),
@@ -88,7 +88,7 @@ async def test_parsing_date_and_time_from_message_failure(_day, _hour, _minute, 
     r = Remind(client=None)
 
     time_shift = create_time_shift_string(_day, _hour, _minute, _second)
-    my_message = f'{time_shift} {_message}'
+    my_message = f"{time_shift} {_message}"
 
     result = await r._parse_time_shift_from_message(my_message)
 

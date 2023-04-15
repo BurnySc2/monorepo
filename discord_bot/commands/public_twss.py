@@ -19,7 +19,7 @@ async def public_twss(
     # TODO Allow to pick a quote of a specific user
     quote = await get_random_twss_quote(event.guild_id)
     if quote is None:
-        return 'Could not find any twss quotes in the database.'
+        return "Could not find any twss quotes in the database."
     return quote
 
 
@@ -27,12 +27,12 @@ async def get_random_twss_quote(server_id: int) -> Optional[str]:
     # <YYYY-MM-DD> <Name>: <Message>
     query: AsyncSelectRequestBuilder = (#pyre-fixme[11]
         supabase.table(DiscordQuotes.table_name_random_order_view()).select(
-            'when, who, what, emoji_name',
+            "when, who, what, emoji_name",
         ).eq(
-            'emoji_name',
-            'twss',
+            "emoji_name",
+            "twss",
         ).eq(
-            'guild_id',
+            "guild_id",
             server_id,
         ).limit(1)
     )
@@ -47,33 +47,33 @@ async def get_random_twss_quote(server_id: int) -> Optional[str]:
 async def main() -> None:
     quote = await get_random_twss_quote(384968030423351298)
     if quote is None:
-        logger.info('No quote could be loaded!')
+        logger.info("No quote could be loaded!")
         return
-    logger.info(f'Returned quote: {quote}')
+    logger.info(f"Returned quote: {quote}")
 
 
 async def load_csv_to_supabase() -> None:
-    path = Path('path_to_file.csv')
+    path = Path("path_to_file.csv")
     with path.open() as f:
         data = f.readlines()
 
-    query: AsyncSelectRequestBuilder = (supabase.table(DiscordQuotes.table_name()).select('message_id', ))
+    query: AsyncSelectRequestBuilder = (supabase.table(DiscordQuotes.table_name()).select("message_id", ))
 
     # Don't add duplicates
     query_response: APIResponse = await query.execute()
-    added_messages: Set[int] = {item['message_id'] for item in query_response.data}
+    added_messages: Set[int] = {item["message_id"] for item in query_response.data}
 
     for row in data:
         if not row.strip():
             continue
-        user_id, messge_id, name, *rest = row.split(',')
+        user_id, messge_id, name, *rest = row.split(",")
         time = rest[-1]
-        content = ','.join(rest[:-1])
-        user_id = user_id.strip("\"")
-        messge_id = messge_id.strip("\"")
-        name = name.strip("\"")
-        content = content.strip("\"")
-        time = time.strip('\n').strip("\"")
+        content = ",".join(rest[:-1])
+        user_id = user_id.strip('\"')
+        messge_id = messge_id.strip('\"')
+        name = name.strip('\"')
+        content = content.strip('\"')
+        time = time.strip("\n").strip('\"')
         time_arrow = arrow.get(time)
         # Add quote to db
         if int(messge_id) in added_messages:
@@ -81,19 +81,19 @@ async def load_csv_to_supabase() -> None:
         await (
             supabase.table(DiscordQuotes.table_name()).insert(
                 {
-                    'message_id': messge_id,
-                    'guild_id': 447056980960346113,
-                    'channel_id': 1037477281200877608,
-                    'author_id': user_id,
-                    'who': name,
-                    'when': str(time_arrow.datetime),
-                    'what': content,
-                    'emoji_name': 'twss',
+                    "message_id": messge_id,
+                    "guild_id": 447056980960346113,
+                    "channel_id": 1037477281200877608,
+                    "author_id": user_id,
+                    "who": name,
+                    "when": str(time_arrow.datetime),
+                    "what": content,
+                    "emoji_name": "twss",
                 }
             ).execute()
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())
     # asyncio.run(load_csv_to_supabase())

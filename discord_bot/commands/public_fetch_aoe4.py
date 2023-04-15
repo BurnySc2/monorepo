@@ -20,7 +20,7 @@ from simple_parsing import ArgumentParser, field
 TCP_CONNECTOR_LIMIT = 10
 
 # START OF ARGPARSER
-ALLOWED_RACES = {'ab', 'ch', 'de', 'en', 'fr', 'ho', 'ma', 'mo', 'ot', 'ru'}
+ALLOWED_RACES = {"ab", "ch", "de", "en", "fr", "ho", "ma", "mo", "ot", "ru"}
 
 
 class Operator(enum.Enum):
@@ -41,17 +41,17 @@ class Action(enum.Enum):
     @staticmethod
     def parse_action(action: str) -> Action:
         action = action.lower()
-        if action in {'v', 'villager', 'villagers'}:
+        if action in {"v", "villager", "villagers"}:
             return Action.VILLAGER
-        if action in {'tc', 'tcs', 'towncenter', 'towncenters'}:
+        if action in {"tc", "tcs", "towncenter", "towncenters"}:
             return Action.TOWNCENTER
-        if action in {'age2', 'feudal'}:
+        if action in {"age2", "feudal"}:
             return Action.FEUDAL
-        if action in {'age3', 'castle'}:
+        if action in {"age3", "castle"}:
             return Action.CASTLE
-        if action in {'age4', 'imp', 'imperial'}:
+        if action in {"age4", "imp", "imperial"}:
             return Action.IMPERIAL
-        if action in {'wb', 'wheel', 'wheelbarrow'}:
+        if action in {"wb", "wheel", "wheelbarrow"}:
             return Action.WHEELBARROW
         raise ValueError(f"Doesn't exist: {action}")
 
@@ -80,27 +80,27 @@ class Condition(BaseModel):
         default_count = 1
         operator = Operator.UNKNOWN
 
-        optional_count_regex = r'(\d+)?'
-        action_regex = r'(\w+)'
-        operator_regex = '(<)?'
-        time_regex = r'(\d+)?'
-        time_suffix_regex = '(s|m)?'
-        matcher_regex = f'{optional_count_regex}{action_regex}{operator_regex}{time_regex}{time_suffix_regex}'
+        optional_count_regex = r"(\d+)?"
+        action_regex = r"(\w+)"
+        operator_regex = "(<)?"
+        time_regex = r"(\d+)?"
+        time_suffix_regex = "(s|m)?"
+        matcher_regex = f"{optional_count_regex}{action_regex}{operator_regex}{time_regex}{time_suffix_regex}"
         compiled = re.compile(matcher_regex)
         regex_match = compiled.fullmatch(condition)
 
         if regex_match is None:
-            raise ValueError('Unable to parse condition.')
+            raise ValueError("Unable to parse condition.")
 
         count = default_count if regex_match.group(1) is None else int(regex_match.group(1))
         action_string = regex_match.group(2)
         operator_parsed = regex_match.group(3)
-        if operator_parsed is not None and operator_parsed == '<':
+        if operator_parsed is not None and operator_parsed == "<":
             operator = Operator.BEFORE
 
         duration = None if regex_match.group(4) is None else int(regex_match.group(4))
         time_suffix = regex_match.group(5)
-        if duration is not None and time_suffix is not None and time_suffix == 'm':
+        if duration is not None and time_suffix is not None and time_suffix == "m":
             duration *= 60
 
         return Condition(
@@ -112,9 +112,9 @@ class Condition(BaseModel):
 
     @property
     def to_string(self) -> str:
-        seconds = self.time_in_seconds or ''
-        operator = '<' if seconds else ''
-        return f'{self.target_count}{self.action.name.lower()}{operator}{seconds}'
+        seconds = self.time_in_seconds or ""
+        operator = "<" if seconds else ""
+        return f"{self.target_count}{self.action.name.lower()}{operator}{seconds}"
 
 
 @dataclass
@@ -124,12 +124,12 @@ class BuildOrderParserOptions:
     # How many games to browse per profile (1 to 100)
     games_per_profile: int = 50
     # If given a profile_id, will only check this profile for matches with the given build order conditions
-    profile_id: int | None = field(alias=['-p', '-id'], default=None)
+    profile_id: int | None = field(alias=["-p", "-id"], default=None)
     # Only allow players to have played this civilization
     # One of: "ab", "ch", "de", "en", "fr", "ho", "ma", "mo", "ot", "ru"
-    race: str = field(alias=['-r', '--civ', '--civilization'], default='en')
+    race: str = field(alias=["-r", "--civ", "--civilization"], default="en")
     # A list of conditions, e.g. "2tc<360s" or "wheelbarrow<240,feudal<360s,castle<11m"
-    condition: str | None = field(alias=['-c', '--count'], default=None)
+    condition: str | None = field(alias=["-c", "--count"], default=None)
 
     # constant_villager_production: bool = field(alias=['-cvp'], default=False, action='store_true')
 
@@ -142,13 +142,13 @@ class BuildOrderParserOptions:
     @property
     def to_string(self) -> str:
         args = (
-            [f'--profiles_limit {self.profiles_limit} --games_per_profile {self.games_per_profile} --race {self.race}']
+            [f"--profiles_limit {self.profiles_limit} --games_per_profile {self.games_per_profile} --race {self.race}"]
             # Optional profile_id
-            + (['--profile_id', str(self.profile_id)] if self.profile_id is not None else [])
+            + (["--profile_id", str(self.profile_id)] if self.profile_id is not None else [])
             # Optional condition
-            + (['--condition', self.condition] if self.condition is not None else [])
+            + (["--condition", self.condition] if self.condition is not None else [])
         )
-        return ' '.join(args)
+        return " ".join(args)
 
     @property
     def race_parsed(self) -> str:
@@ -161,11 +161,11 @@ class BuildOrderParserOptions:
     def conditions_parsed(self) -> list[Condition]:
         if self.condition is None:
             return []
-        return [Condition.from_string(c) for c in self.condition.split(',')]
+        return [Condition.from_string(c) for c in self.condition.split(",")]
 
 
 public_fetch_aoe4_bo_parser = ArgumentParser()
-public_fetch_aoe4_bo_parser.add_arguments(BuildOrderParserOptions, dest='params')
+public_fetch_aoe4_bo_parser.add_arguments(BuildOrderParserOptions, dest="params")
 
 
 def get_help_string() -> str:
@@ -197,12 +197,12 @@ async def public_search_aoe4_players(
         logger.info(f"Searching for player name '{message}'")
         players: list[PlayerSearchResult] = await search(session, message)
         if len(players) == 0:
-            return 'Could not find any player with this name.'
+            return "Could not find any player with this name."
         players.sort(key=lambda player: player.last_game_at_arrow, reverse=True)
-        players_string = '\n'.join(
+        players_string = "\n".join(
             [
-                f'Last game was {player.last_game_at_arrow.humanize()}, {player.name} '
-                f'<https://aoe4world.com/players/{player.profile_id}>'
+                f"Last game was {player.last_game_at_arrow.humanize()}, {player.name} "
+                f"<https://aoe4world.com/players/{player.profile_id}>"
                 # Only list the first 10 players
                 for player in players[:10]
             ]
@@ -215,19 +215,19 @@ async def public_analyse_aoe4_game(
     event: GuildMessageCreateEvent,
     message: str,
 ) -> str:
-    """Needs to be able to parse
+    '''Needs to be able to parse
     message = "https://aoe4world.com/players/7344587/games/65673113"
     message = "<https://aoe4world.com/players/7344587/games/65673113>"
     then analyzes the games and gives information about the macro of the player.
-    """
-    message = message.strip('<').strip('>')
-    game_url_pattern = r'https://aoe4world\.com/players/(\d+).*/games/(\d+).*'
+    '''
+    message = message.strip("<").strip(">")
+    game_url_pattern = r"https://aoe4world\.com/players/(\d+).*/games/(\d+).*"
     game_url_compiled = re.compile(game_url_pattern)
     match = game_url_compiled.fullmatch(message)
     if match is None:
         return (
-            'Unable to process request. Please submit a link to a match, e.g. '
-            '<https://aoe4world.com/players/7344587/games/65673113>'
+            "Unable to process request. Please submit a link to a match, e.g. "
+            "<https://aoe4world.com/players/7344587/games/65673113>"
         )
 
     player_profile_id = int(match.group(1))
@@ -247,10 +247,10 @@ async def public_analyse_aoe4_game(
             player_profile_id,
         )
         if data is None:
-            return 'Game was not found. Is the link valid?'
+            return "Game was not found. Is the link valid?"
         game_player_data: GamePlayerData = data[0]
-        url = f'https://aoe4world.com/players/{player_profile_id}/games/{game_id}'
-        return f'Analysis of game <{url}>\n{game_player_data.to_discord_message()}'
+        url = f"https://aoe4world.com/players/{player_profile_id}/games/{game_id}"
+        return f"Analysis of game <{url}>\n{game_player_data.to_discord_message()}"
 
 
 async def public_fetch_aoe4_bo(
@@ -271,7 +271,7 @@ async def public_fetch_aoe4_bo(
     collected_games: list[CollectedBuildOrder] = []
     parsed_games_count = 0
     parsed_build_orders_count = 0
-    logger.debug('Fetching...')
+    logger.debug("Fetching...")
     async with aiohttp.ClientSession(
         connector=TCPConnector(
             # Limit amount of connections this ClientSession should posses
@@ -284,9 +284,9 @@ async def public_fetch_aoe4_bo(
         get_games_by_player_tasks = []
         if parsed_params.profile_id is not None:
             # A single profile id was given
-            profile_response = await session.get(f'https://aoe4world.com/api/v0/players/{parsed_params.profile_id}')
+            profile_response = await session.get(f"https://aoe4world.com/api/v0/players/{parsed_params.profile_id}")
             if not profile_response.ok:
-                return 'Could not find a profile with this id.'
+                return "Could not find a profile with this id."
             data = await profile_response.json()
             profiles = [PlayerSearchResult.parse_obj(data)]
         else:
@@ -312,7 +312,7 @@ async def public_fetch_aoe4_bo(
                     )
                 )
             )
-        logger.debug(f'Found {len(get_games_by_player_tasks)} profiles')
+        logger.debug(f"Found {len(get_games_by_player_tasks)} profiles")
 
         map_game_id_to_game_result: dict[int, GameResult] = {}
         get_build_order_tasks = []
@@ -331,7 +331,7 @@ async def public_fetch_aoe4_bo(
                     )
                 )
                 parsed_games_count += 1
-        logger.debug(f'{parsed_games_count=}')
+        logger.debug(f"{parsed_games_count=}")
 
         latest_patch = 0
         # Iterate them in any order
@@ -357,13 +357,13 @@ async def public_fetch_aoe4_bo(
                     player_profile=map_profile_id_to_player_profile[player_profile_id],
                 )
             )
-            logger.debug(f'Games matching the filter: {len(collected_games)}')
-        logger.debug(f'{parsed_build_orders_count=}')
+            logger.debug(f"Games matching the filter: {len(collected_games)}")
+        logger.debug(f"{parsed_build_orders_count=}")
 
     if len(collected_games) == 0:
-        return f'Parsed {parsed_games_count} games. No games match this request'
+        return f"Parsed {parsed_games_count} games. No games match this request"
     collected_games.sort(key=lambda item: item.arrow_played_at, reverse=True)
-    collected_games_string = '\n'.join(map(str, collected_games[:10]))
+    collected_games_string = "\n".join(map(str, collected_games[:10]))
     return f"""Found {len(collected_games)} games that match this request
 {collected_games_string}"""
 
@@ -475,7 +475,7 @@ class BuildOrderItem(BaseModel):
     transformed: List[int]
     destroyed: List[int]
 
-    @validator('id', check_fields=False)
+    @validator("id", check_fields=False)
     def format_id(cls, v: str | int | None) -> int | None:
         if v is None:
             return None
@@ -488,22 +488,22 @@ class BuildOrderItem(BaseModel):
             for digit in v:
                 if digit.isnumeric():
                     digits_collected.append(digit)
-            new_id = ''.join(digits_collected)
-            if new_id == '':
+            new_id = "".join(digits_collected)
+            if new_id == "":
                 return None
             return int(new_id)
         return int(v)
 
 
 def format_time(timestamps: list[int]) -> str:
-    """From a given list of timestamps, convert them to minute:second format
+    '''From a given list of timestamps, convert them to minute:second format
     E.g. input is [30, 90], output will be "0:30, 1:30"
-    """
+    '''
     times_formatted: list[str] = []
     for timestamp in timestamps:
         minutes, seconds = divmod(timestamp, 60)
-        times_formatted.append(f'{minutes}:{seconds:02}')
-    return ', '.join(times_formatted)
+        times_formatted.append(f"{minutes}:{seconds:02}")
+    return ", ".join(times_formatted)
 
 
 # pyre-fixme[13]
@@ -522,7 +522,7 @@ class GamePlayerData(BaseModel):
                 assert len(item.finished) == 0 or len(item.constructed) == 0
                 # .finished is filled for units and upgrades, and .constructed is filled for buildings
                 return item.finished + item.constructed
-        raise IndexError(f'Could not find icon in build order: {icon_name}')
+        raise IndexError(f"Could not find icon in build order: {icon_name}")
 
     def check_condition(self, condition: Condition) -> bool:
         """ Returns true if this build order matches the given condition. """
@@ -530,7 +530,7 @@ class GamePlayerData(BaseModel):
         if condition.action == Action.VILLAGER:
             if condition.time_in_seconds is None:
                 raise ValueError("Time for villager count must not be 'None'.")
-            finished_list = self.finished_list_of_icon('icons/races/common/units/villager')
+            finished_list = self.finished_list_of_icon("icons/races/common/units/villager")
             if condition.time_in_seconds is None:
                 bo_count = len(finished_list)
             else:
@@ -541,7 +541,7 @@ class GamePlayerData(BaseModel):
         if condition.action == Action.TOWNCENTER:
             if condition.time_in_seconds is None:
                 raise ValueError("Time for villager count must not be 'None'.")
-            finished_list = self.finished_list_of_icon('icons/races/common/buildings/town_center')
+            finished_list = self.finished_list_of_icon("icons/races/common/buildings/town_center")
             if condition.time_in_seconds is None:
                 bo_count = len(finished_list)
             else:
@@ -589,59 +589,56 @@ class GamePlayerData(BaseModel):
                 return self.actions.upgrade_unit_town_center_wheelbarrow_1[0] <= condition.time_in_seconds
             return False
         # pyre-fixme[7]
-        NotImplementedError(f'Not implemented for action: {condition.action}')
+        NotImplementedError(f"Not implemented for action: {condition.action}")
 
     def matches_all_conditions(self, conditions: list[Condition]) -> bool:
-        for condition in conditions:
-            if not self.check_condition(condition):
-                return False
-        return True
+        return all(self.check_condition(condition) for condition in conditions)
 
     def to_discord_message_towncenters(self) -> str:
         for item in self.build_order:
-            if item.icon == 'icons/races/common/buildings/town_center':
+            if item.icon == "icons/races/common/buildings/town_center":
                 if len(item.constructed) <= 1:
-                    return ''
-                return f'TCs completed: {format_time(item.constructed[1:])}'
-        return ''
+                    return ""
+                return f"TCs completed: {format_time(item.constructed[1:])}"
+        return ""
 
     def to_discord_message_villagers(self) -> str:
         count_timestamps_in_minutes = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
         villager_counts: list[str] = []
         last_count = 0
         for item in self.build_order:
-            if item.icon == 'icons/races/common/units/villager':
+            if item.icon == "icons/races/common/units/villager":
                 for max_timestamp in count_timestamps_in_minutes:
                     count = sum(1 for i in item.finished if i < max_timestamp * 60)
                     if count == last_count:
                         # Count didn't change, so game ended before?
                         break
                     last_count = count
-                    villager_counts.append(f'{count} ({max_timestamp}m)')
+                    villager_counts.append(f"{count} ({max_timestamp}m)")
                 break
         if len(villager_counts) == 0:
-            return ''
+            return ""
         return f"Villagers count: {', '.join(villager_counts)}"
 
     def to_discord_message_feudal(self) -> str:
         if len(self.actions.feudal_age) == 0:
-            return ''
-        return f'Feudal reached: {format_time(self.actions.feudal_age)}'
+            return ""
+        return f"Feudal reached: {format_time(self.actions.feudal_age)}"
 
     def to_discord_message_castle(self) -> str:
         if len(self.actions.castle_age) == 0:
-            return ''
-        return f'Castle reached: {format_time(self.actions.castle_age)}'
+            return ""
+        return f"Castle reached: {format_time(self.actions.castle_age)}"
 
     def to_discord_message_imperial(self) -> str:
         if len(self.actions.imperial_age) == 0:
-            return ''
-        return f'Imperial reached: {format_time(self.actions.imperial_age)}'
+            return ""
+        return f"Imperial reached: {format_time(self.actions.imperial_age)}"
 
     def to_discord_message_wheelbarrow(self) -> str:
         if len(self.actions.upgrade_unit_town_center_wheelbarrow_1) == 0:
-            return ''
-        return f'Wheelbarrow researched: {format_time(self.actions.upgrade_unit_town_center_wheelbarrow_1)}'
+            return ""
+        return f"Wheelbarrow researched: {format_time(self.actions.upgrade_unit_town_center_wheelbarrow_1)}"
 
     def to_discord_message(self) -> str:
         data = [
@@ -652,7 +649,7 @@ class GamePlayerData(BaseModel):
             self.to_discord_message_imperial(),
             self.to_discord_message_villagers(),
         ]
-        info_string = '\n'.join(i for i in data if i.strip() != '')
+        info_string = "\n".join(i for i in data if i.strip() != "")
         return info_string
 
 
@@ -667,8 +664,8 @@ class CollectedBuildOrder(BaseModel):
         return arrow.get(self.game_result.started_at)
 
     def __str__(self) -> str:
-        time_ago = self.arrow_played_at.strftime('%Y-%m-%d %H:%M:%S')
-        url = f'https://aoe4world.com/players/{self.game_player_data.profile_id}/games/{self.game_result.game_id}'
+        time_ago = self.arrow_played_at.strftime("%Y-%m-%d %H:%M:%S")
+        url = f"https://aoe4world.com/players/{self.game_player_data.profile_id}/games/{self.game_result.game_id}"
         return f"{time_ago} '{self.game_player_data.civilization[:2]}' {self.game_player_data.name} <{url}>"
 
 
@@ -677,14 +674,14 @@ async def search(
     player_name: str,
 ) -> list[PlayerSearchResult]:
     """A helper function to search for profiles via a player name query."""
-    url = f'https://aoe4world.com/api/v0/players/search?query={player_name}'
+    url = f"https://aoe4world.com/api/v0/players/search?query={player_name}"
     collected_players: list[PlayerSearchResult] = []
     response: aiohttp.ClientResponse
     response = await session.get(url)
     if not response.ok:
         raise aiohttp.ClientConnectionError
     data = await response.json()
-    for player_data in data['players']:
+    for player_data in data["players"]:
         player: PlayerSearchResult = PlayerSearchResult.parse_obj(player_data)
         collected_players.append(player)
     return collected_players
@@ -694,7 +691,7 @@ async def fetch_top_profiles(session: ClientSession, max_pages: int = 1) -> list
     """From the first n pages, grab the profiles and return them as generator."""
     assert max_pages >= 1
     tasks = [
-        asyncio.create_task(session.get(f'https://aoe4world.com/api/v0/leaderboards/rm_solo?page={page}'))
+        asyncio.create_task(session.get(f"https://aoe4world.com/api/v0/leaderboards/rm_solo?page={page}"))
         for page in range(1, max_pages + 1)
     ]
     collected_profiles: list[PlayerSearchResult] = []
@@ -704,7 +701,7 @@ async def fetch_top_profiles(session: ClientSession, max_pages: int = 1) -> list
         if not response.ok:
             continue
         data = await response.json()
-        for player_profle in data['players']:
+        for player_profle in data["players"]:
             profile = PlayerSearchResult.parse_obj(player_profle)
             collected_profiles.append(profile)
     return collected_profiles
@@ -722,7 +719,7 @@ async def get_games_by_player_id(
     assert max_pages >= 1
     tasks = [
         asyncio.create_task(
-            session.get(f'https://aoe4world.com/api/v0/games?page={page}&profile_ids={player_profile_id}')
+            session.get(f"https://aoe4world.com/api/v0/games?page={page}&profile_ids={player_profile_id}")
         ) for page in range(1, max_pages + 1)
     ]
     collected: list[tuple[GameResult, int]] = []
@@ -732,10 +729,10 @@ async def get_games_by_player_id(
         if not response.ok:
             continue
         data = await response.json()
-        if not data['games']:
-            logger.debug('Exiting because there are no games in this request.')
+        if not data["games"]:
+            logger.debug("Exiting because there are no games in this request.")
             continue
-        for game_data in data['games']:
+        for game_data in data["games"]:
             game_result = GameResult.parse_obj(game_data)
             # Skip short games
             if game_result.ongoing or game_result.duration is None or game_result.duration <= 600:
@@ -762,12 +759,12 @@ async def get_build_order_of_game(
     player_profile_id: int,
 ) -> tuple[GamePlayerData, int, int] | None:
     """A helper function that gets and parses the build order from a game belonging to a player."""
-    url = f'https://aoe4world.com/players/{player_profile_id}/games/{game_id}/summary'
+    url = f"https://aoe4world.com/players/{player_profile_id}/games/{game_id}/summary"
     response = await session.get(url)
     if not response.ok:
         return
     data = await response.json()
-    for player_data in data['players']:
+    for player_data in data["players"]:
         parsed = GamePlayerData.parse_obj(player_data)
         if parsed.profile_id is None or player_profile_id != parsed.profile_id:
             # Not the player we are looking for
@@ -780,21 +777,21 @@ async def main():
     # Test argument parser
 
     # Search for player name and return list of players and profiles
-    player_search_query = 'burny'
+    player_search_query = "burny"
     data = await public_search_aoe4_players(None, None, player_search_query)
     print(data)
 
     # Analyze game: give information about feudal, tc, wheelbarrow, villagers timestamps
-    message = '<https://aoe4world.com/players/585764/games/66434421>'
+    message = "<https://aoe4world.com/players/585764/games/66434421>"
     data = await public_analyse_aoe4_game(None, None, message)
     print(data)
 
     # message = "--profile_id 6672615 --race english --condition castle<720s"
-    message = '--race english --condition 2towncenter<400s,wheelbarrow<900s,feudal<360s,castle<660s'
+    message = "--race english --condition 2towncenter<400s,wheelbarrow<900s,feudal<360s,castle<660s"
     # message = "--race english --profiles_limit 100 --games_per_profile 100 --condition castle<540s"
     data = await public_fetch_aoe4_bo(None, None, message)
     print(data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())
