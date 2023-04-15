@@ -49,8 +49,8 @@ def test_action_enum_failure(test_input: str):
 
 @given(
     optional_count=st.from_regex(r"(\d+)?", fullmatch=True),
-    action=st.from_regex(r"(\w+)", fullmatch=True),
-    operator=st.from_regex("(<)?", fullmatch=True),
+    action=st.from_regex(r"\w+", fullmatch=True),
+    operator=st.from_regex("<?", fullmatch=True),
     duration=st.from_regex(r"(\d+)?", fullmatch=True),
     duration_suffix=st.from_regex("(s|m)?", fullmatch=True),
 )
@@ -61,10 +61,12 @@ def test_action_enum_failure(test_input: str):
 @example("", "wheelbarrow", "", "", "")
 @example("60", "villagers", "<", "600", "s")
 def test_condition_enum(optional_count: str, action: str, operator: str, duration: str, duration_suffix: str):
+    if operator == "":
+        duration = ""
     if duration == "":
         duration_suffix = ""
     input_string = f"{optional_count}{action}{operator}{duration}{duration_suffix}"
-    if action not in ALLOWED_ACTION_ENUM_VALUES:
+    if action.lower() not in ALLOWED_ACTION_ENUM_VALUES:
         with pytest.raises(ValueError):
             _parsed = Condition.from_string(input_string)
         return
