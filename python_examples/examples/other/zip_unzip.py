@@ -8,7 +8,7 @@ from burny_common.path_manipulation import recurse_path  # pyre-fixme[21]
 
 def zip_multiple_files(file_paths: Iterable[Path]) -> bytes:
     zip_buffer = io.BytesIO()
-    with ZipFile(zip_buffer, 'w', ZIP_DEFLATED, False) as zipfile_handler:
+    with ZipFile(zip_buffer, "w", ZIP_DEFLATED, False) as zipfile_handler:
         for file_path in file_paths:
             file_name = file_path.name
             with file_path.open() as f:
@@ -25,7 +25,7 @@ def unzip_multiple_files(data: bytes, target_folder: Path) -> None:
 
 def main():
     this_folder_path = Path(__file__).parent
-    temp_path = this_folder_path / 'temp'
+    temp_path = this_folder_path / "temp"
     zipped = zip_multiple_files(recurse_path(
         this_folder_path,
         depth=1,
@@ -33,5 +33,5 @@ def main():
     unzip_multiple_files(zipped, temp_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

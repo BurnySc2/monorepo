@@ -14,7 +14,7 @@ class Timeout:
         ...
     """
 
-    def __init__(self, seconds: int = 1, error_message='Timeout'):
+    def __init__(self, seconds: int = 1, error_message="Timeout"):
         assert isinstance(seconds, int), type(seconds)
         assert seconds > 0
         self.seconds = seconds
@@ -32,7 +32,7 @@ class Timeout:
 
 
 @contextmanager
-def timeout(seconds: int = 1, error_message='Timeout'):
+def timeout(seconds: int = 1, error_message="Timeout"):
     """
     Run something for a maximum limited time
     try:
@@ -44,7 +44,7 @@ def timeout(seconds: int = 1, error_message='Timeout'):
     assert seconds > 0
 
     # SIGALRM doesn't work on windows
-    if platform().startswith('win32'):
+    if platform().startswith("win32"):
         yield
         return
 
@@ -59,25 +59,25 @@ def timeout(seconds: int = 1, error_message='Timeout'):
 
 def main():
     # SIGALRM doesn't work on windows
-    if platform().startswith('win32'):
+    if platform().startswith("win32"):
         return
 
     # Test Timeout class
     try:
-        with Timeout(seconds=1, error_message='Fancy error message'):
+        with Timeout(seconds=1, error_message="Fancy error message"):
             time.sleep(3)
-            assert False, 'Should never be reached'
+            assert False, "Should never be reached"
     except TimeoutError:
         pass
 
     # Test timeout function with contextmanager
     try:
-        with timeout(seconds=1, error_message='Fancy error message'):
+        with timeout(seconds=1, error_message="Fancy error message"):
             time.sleep(3)
-            assert False, 'Should never be reached'
+            assert False, "Should never be reached"
     except TimeoutError:
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

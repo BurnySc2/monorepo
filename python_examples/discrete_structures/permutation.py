@@ -107,34 +107,34 @@ def get_previous_permutation(perm: list[Any]):
 
 
 def _test_permutations(limit: int = 6):
-    correct_perms = ['ABC', 'ACB', 'BAC', 'BCA', 'CAB', 'CBA']
-    for p, correct in zip(permutation_generator(list('ABC')), correct_perms):
+    correct_perms = ["ABC", "ACB", "BAC", "BCA", "CAB", "CBA"]
+    for p, correct in zip(permutation_generator(list("ABC")), correct_perms):
         assert p == list(correct)
 
-    assert get_index_of_permutation(list('ABC'), list('ABC')) == 0
-    assert get_index_of_permutation(list('ABC'), list('ACB')) == 1
-    assert get_index_of_permutation(list('ABC'), list('BAC')) == 2
-    assert get_index_of_permutation(list('ABC'), list('BCA')) == 3
-    assert get_index_of_permutation(list('ABC'), list('CAB')) == 4
-    assert get_index_of_permutation(list('ABC'), list('CBA')) == 5
+    assert get_index_of_permutation(list("ABC"), list("ABC")) == 0
+    assert get_index_of_permutation(list("ABC"), list("ACB")) == 1
+    assert get_index_of_permutation(list("ABC"), list("BAC")) == 2
+    assert get_index_of_permutation(list("ABC"), list("BCA")) == 3
+    assert get_index_of_permutation(list("ABC"), list("CAB")) == 4
+    assert get_index_of_permutation(list("ABC"), list("CBA")) == 5
 
-    assert get_index_of_permutation(list('ABCD'), list('ABCD')) == 0
-    assert get_index_of_permutation(list('ABCD'), list('DCBA')) == 23
+    assert get_index_of_permutation(list("ABCD"), list("ABCD")) == 0
+    assert get_index_of_permutation(list("ABCD"), list("DCBA")) == 23
 
     assert list(
-        permutation_generator(list('ABCD')),
-    ) == list(reversed(list(permutation_backwards_generator(list('ABCD')))))
+        permutation_generator(list("ABCD")),
+    ) == list(reversed(list(permutation_backwards_generator(list("ABCD")))))
 
-    assert get_next_permutation(list('ABC')) == list('ACB'), get_next_permutation(list('ABC'))
-    assert get_next_permutation(list('ACB')) == list('BAC'), get_next_permutation(list('ACB'))
-    assert get_next_permutation(list('CBA')) == list('ABC'), get_next_permutation(list('CBA'))
+    assert get_next_permutation(list("ABC")) == list("ACB"), get_next_permutation(list("ABC"))
+    assert get_next_permutation(list("ACB")) == list("BAC"), get_next_permutation(list("ACB"))
+    assert get_next_permutation(list("CBA")) == list("ABC"), get_next_permutation(list("CBA"))
 
-    assert get_previous_permutation(list('ACB')) == list('ABC'), get_previous_permutation(list('ABC'))
-    assert get_previous_permutation(list('BAC')) == list('ACB'), get_previous_permutation(list('ACB'))
-    assert get_previous_permutation(list('ABC')) == list('CBA'), get_previous_permutation(list('CBA'))
+    assert get_previous_permutation(list("ACB")) == list("ABC"), get_previous_permutation(list("ABC"))
+    assert get_previous_permutation(list("BAC")) == list("ACB"), get_previous_permutation(list("ACB"))
+    assert get_previous_permutation(list("ABC")) == list("CBA"), get_previous_permutation(list("CBA"))
 
     prev = None
-    for p in permutation_generator(list('ABCD')):
+    for p in permutation_generator(list("ABCD")):
         if prev is not None:
             assert prev == get_previous_permutation(p.copy()), (prev, get_previous_permutation(p.copy()))
             assert p == get_next_permutation(prev.copy()), (p, get_next_permutation(prev.copy()))
@@ -149,12 +149,12 @@ def _test_permutations(limit: int = 6):
             assert perm == perm2
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     _test_permutations()
 
-    with time_this('Permutation'):
+    with time_this("Permutation"):
         for n in range(10**4):
-            data = list('123')
+            data = list("123")
             for p in permutation_generator(data):
                 pass
             for p in permutation_backwards_generator(data):
@@ -169,5 +169,5 @@ if __name__ == '__main__':
     # for p in permutation_backwards_generator(data):
     #     print(p)
 
-    data = list('1234567')
+    data = list("1234567")
     assert list(permutation_generator(data)) == list(permutation_backwards_generator(data))[::-1]

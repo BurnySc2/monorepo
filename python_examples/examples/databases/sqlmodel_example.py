@@ -14,12 +14,12 @@ class Hero(SQLModel, table=True):
 
 
 def test_database_with_sqlmodel():
-    hero_1 = Hero(name='Deadpond', secret_name='Dive Wilson')
-    hero_2 = Hero(name='Spider-Boy', secret_name='Pedro Parqueador')
-    hero_3 = Hero(name='Rusty-Man', secret_name='Tommy Sharp', age=48)
+    hero_1 = Hero(name="Deadpond", secret_name="Dive Wilson")
+    hero_2 = Hero(name="Spider-Boy", secret_name="Pedro Parqueador")
+    hero_3 = Hero(name="Rusty-Man", secret_name="Tommy Sharp", age=48)
 
     # engine = create_engine('sqlite:///temp.db')
-    engine = create_engine('sqlite:///:memory:')
+    engine = create_engine("sqlite:///:memory:")
 
     SQLModel.metadata.create_all(engine)
 
@@ -30,34 +30,34 @@ def test_database_with_sqlmodel():
         session.commit()
 
     with Session(engine) as session:
-        statement = select(Hero).where(Hero.name == 'Spider-Boy')
+        statement = select(Hero).where(Hero.name == "Spider-Boy")
         hero = session.exec(statement).first()
         logger.info(hero)
 
         # Or statement
-        statement = select(Hero).where((Hero.name == 'Spider-Boy') | (Hero.name == 'Rusty-Man'))
+        statement = select(Hero).where((Hero.name == "Spider-Boy") | (Hero.name == "Rusty-Man"))
         heroes = session.exec(statement)
         for hero in heroes:
             logger.info(hero)
 
         # Or statement, alternative way
-        statement = select(Hero).where(or_(Hero.name == 'Spider-Boy', Hero.name == 'Rusty-Man'))
+        statement = select(Hero).where(or_(Hero.name == "Spider-Boy", Hero.name == "Rusty-Man"))
         heroes = session.exec(statement)
         for hero in heroes:
             logger.info(hero)
 
         # And statement
-        statement = select(Hero).where(Hero.name == 'Spider-Boy', Hero.secret_name == 'Pedro Parqueador')
+        statement = select(Hero).where(Hero.name == "Spider-Boy", Hero.secret_name == "Pedro Parqueador")
         heroes = session.exec(statement)
         for hero in heroes:
             logger.info(hero)
 
         # And statement, alternative way
-        statement = select(Hero).where(Hero.name == 'Spider-Boy').where(Hero.secret_name == 'Pedro Parqueador')
+        statement = select(Hero).where(Hero.name == "Spider-Boy").where(Hero.secret_name == "Pedro Parqueador")
         heroes = session.exec(statement)
         for hero in heroes:
             logger.info(hero)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_database_with_sqlmodel()

@@ -15,10 +15,7 @@ def combination_generator(my_list: list[Any], n: int) -> Generator[Any, None, No
 
 
 def _is_sorted(my_list: list[Any]) -> bool:
-    for current, next_value in zip(my_list, my_list[1:]):
-        if current > next_value:
-            return False
-    return True
+    return all(current <= next_value for current, next_value in zip(my_list, my_list[1:]))
 
 
 def combinations_with_replacement_generator(iterable: list[Any], replacement: int):
@@ -30,12 +27,12 @@ def combinations_with_replacement_generator(iterable: list[Any], replacement: in
             yield tuple(pool[i] for i in indices)
 
 
-if __name__ == '__main__':
-    data = list('123')
+if __name__ == "__main__":
+    data = list("123")
     for p in combination_generator(data, 2):
         print(p)
 
-    print('###################')
+    print("###################")
 
     for p in combinations_with_replacement_generator(data, 2):
         print(p)

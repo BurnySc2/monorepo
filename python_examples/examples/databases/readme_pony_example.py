@@ -4,7 +4,7 @@ from pony import orm  # pyre-fixme[21]
 db = orm.Database()
 
 # Create connection
-db.bind(provider='sqlite', filename=':memory:')
+db.bind(provider="sqlite", filename=":memory:")
 
 # Write to file instead
 # db.bind(provider='sqlite', filename='database.sqlite', create_db=True)
@@ -18,11 +18,11 @@ class Library(db.Entity):
     # "id" is autoinserted
     name = orm.Required(str)
     address = orm.Required(str)
-    books = orm.Set('BookInventory')
+    books = orm.Set("BookInventory")
 
 
 class BookInventory(db.Entity):
-    book = orm.Required('Book')
+    book = orm.Required("Book")
     library = orm.Required(Library)
     amount = orm.Required(int)
 
@@ -31,14 +31,14 @@ class Book(db.Entity):
     name = orm.Required(str)
     pages = orm.Required(int, py_check=lambda value: value > 0)
     release_year = orm.Required(int)
-    author = orm.Required('Author')
-    publisher = orm.Required('Publisher')
+    author = orm.Required("Author")
+    publisher = orm.Required("Publisher")
     book_inventories = orm.Set(BookInventory)
 
     def __repr__(self):
         return (
             f"Book(id={self.id}, author_id={self.author.id}, name='{self.name}', release_year={self.release_year}, "
-            f'publisher_id={self.publisher.id})'
+            f"publisher_id={self.publisher.id})"
         )
 
 
@@ -64,27 +64,27 @@ def run_database_with_pony_readme_example():
     # 2) Fill tables
     with orm.db_session():
         # Autocommit after with-statement
-        author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
-        author_2 = Author(name='Harper Lee', birth_year=1926)
-        author_3 = Author(name='George Orwell', birth_year=1903)
+        author_1 = Author(name="J. R. R. Tolkien", birth_year=1892)
+        author_2 = Author(name="Harper Lee", birth_year=1926)
+        author_3 = Author(name="George Orwell", birth_year=1903)
 
-        publisher_1 = Publisher(name='Aufbau-Verlag', founded_year=1945)
-        publisher_2 = Publisher(name='Hoffmann und Campe', founded_year=1781)
-        publisher_3 = Publisher(name='Heyne Verlag', founded_year=1934)
+        publisher_1 = Publisher(name="Aufbau-Verlag", founded_year=1945)
+        publisher_2 = Publisher(name="Hoffmann und Campe", founded_year=1781)
+        publisher_3 = Publisher(name="Heyne Verlag", founded_year=1934)
 
-        book_1 = Book(name='The Lord of the Rings', pages=1, release_year=1954, author=author_1, publisher=publisher_2)
-        book_2 = Book(name='To kill a Mockingbird', pages=2, release_year=1960, author=author_2, publisher=publisher_1)
-        book_3 = Book(name='Nineteen Eighty-Four', pages=3, release_year=1949, author=author_3, publisher=publisher_3)
+        book_1 = Book(name="The Lord of the Rings", pages=1, release_year=1954, author=author_1, publisher=publisher_2)
+        book_2 = Book(name="To kill a Mockingbird", pages=2, release_year=1960, author=author_2, publisher=publisher_1)
+        book_3 = Book(name="Nineteen Eighty-Four", pages=3, release_year=1949, author=author_3, publisher=publisher_3)
         _book_4 = Book(
-            name='This book was not written', pages=4, release_year=2100, author=author_3, publisher=publisher_3
+            name="This book was not written", pages=4, release_year=2100, author=author_3, publisher=publisher_3
         )
 
-        library_1 = Library(name='New York Public Library', address='224 East 125th Street')
+        library_1 = Library(name="New York Public Library", address="224 East 125th Street")
         library_inventory_2 = BookInventory(book=book_2, library=library_1, amount=15)
         library_inventory_1 = BookInventory(book=book_3, library=library_1, amount=40)
         library_1.books = [library_inventory_1, library_inventory_2]
 
-        library_2 = Library(name='California State Library', address='900 N Street')
+        library_2 = Library(name="California State Library", address="900 N Street")
         library_inventory_3 = BookInventory(book=book_1, library=library_2, amount=25)
         library_inventory_4 = BookInventory(book=book_2, library=library_2, amount=30)
         library_2.books = [library_inventory_3, library_inventory_4]
@@ -106,7 +106,7 @@ def run_database_with_pony_readme_example():
         # with OR statement:
         # books = Book.select(lambda b: b.release_year < 1960 or "doesnt exist" in b.name).prefetch(Author, Publisher)
         for book in books:
-            logger.info(f'Found books released before 1960: {book}')
+            logger.info(f"Found books released before 1960: {book}")
 
         for book_name, book_pages in orm.select((
             b.name,
@@ -129,7 +129,7 @@ def run_database_with_pony_readme_example():
 
     with orm.db_session():
         # Assert before, is None if not found
-        book = Book.get(name='This book was not written')
+        book = Book.get(name="This book was not written")
         assert book is not None
 
         # 5) Delete books
@@ -137,7 +137,7 @@ def run_database_with_pony_readme_example():
         # orm.delete(b for b in Book if b.name == "This book was not written")
 
         # Assert after
-        book = Book.get(name='This book was not written')
+        book = Book.get(name="This book was not written")
         assert book is None
 
     # 6) Get data from other tables
@@ -152,5 +152,5 @@ def run_database_with_pony_readme_example():
     # 9) Clear table
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_database_with_pony_readme_example()

@@ -39,7 +39,7 @@ class Book(Document):
 
 
 # BookInventory is defined later so we have to use ForwardRef
-ForwardRefBookInventory = ForwardRef('BookInventory')
+ForwardRefBookInventory = ForwardRef("BookInventory")
 
 
 # pyre-fixme[13]
@@ -64,7 +64,7 @@ Library.update_forward_refs()
 async def run_database_with_beanie():
     # Embedded pure-python dict based dictionary
 
-    client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://localhost:27017')
+    client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
 
     # 1) Create tables
     try:
@@ -84,9 +84,9 @@ async def run_database_with_beanie():
     await BookInventory.find_all().delete()
 
     # 2) Fill tables
-    author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
-    author_2 = Author(name='Harper Lee', birth_year=1926)
-    author_3 = Author(name='George Orwell', birth_year=1903)
+    author_1 = Author(name="J. R. R. Tolkien", birth_year=1892)
+    author_2 = Author(name="Harper Lee", birth_year=1926)
+    author_3 = Author(name="George Orwell", birth_year=1903)
     await author_1.insert()
     # Alternatively:
     await author_2.create()
@@ -94,9 +94,9 @@ async def run_database_with_beanie():
         author_3,
     ])
 
-    publisher_1 = Publisher(name='Aufbau-Verlag', founded_year=1945)
-    publisher_2 = Publisher(name='Hoffmann und Campe', founded_year=1781)
-    publisher_3 = Publisher(name='Heyne Verlag', founded_year=1934)
+    publisher_1 = Publisher(name="Aufbau-Verlag", founded_year=1945)
+    publisher_2 = Publisher(name="Hoffmann und Campe", founded_year=1781)
+    publisher_3 = Publisher(name="Heyne Verlag", founded_year=1934)
     await Publisher.insert_many([
         publisher_1,
         publisher_2,
@@ -104,25 +104,25 @@ async def run_database_with_beanie():
     ])
 
     book_1 = Book(
-        name='The Lord of the Rings',
+        name="The Lord of the Rings",
         release_year=1954,
         author=await Author.find_one(Author.name == author_1.name),
         publisher=await Publisher.find_one(Publisher.name == publisher_1.name)
     )
     book_2 = Book(
-        name='To kill a Mockingbird',
+        name="To kill a Mockingbird",
         release_year=1960,
         author=await Author.find_one(Author.name == author_2.name),
         publisher=await Publisher.find_one(Publisher.name == publisher_1.name)
     )
     book_3 = Book(
-        name='Nineteen Eighty-Four',
+        name="Nineteen Eighty-Four",
         release_year=1949,
         author=await Author.find_one(Author.name == author_3.name),
         publisher=await Publisher.find_one(Publisher.name == publisher_3.name)
     )
     book_4 = Book(
-        name='This book was not written',
+        name="This book was not written",
         release_year=2100,
         author=await Author.find_one(Author.name == author_3.name),
         publisher=await Publisher.find_one(Publisher.name == publisher_3.name)
@@ -134,8 +134,8 @@ async def run_database_with_beanie():
         book_4,
     ])
 
-    library_1 = Library(name='New York Public Library', address='224 East 125th Street', books=[])
-    library_2 = Library(name='California State Library', address='900 N Street', books=[])
+    library_1 = Library(name="New York Public Library", address="224 East 125th Street", books=[])
+    library_2 = Library(name="California State Library", address="900 N Street", books=[])
     await library_1.save()
     await library_2.save()
 
@@ -176,7 +176,7 @@ async def run_database_with_beanie():
     # 3) Select books
     # https://docs.mongoengine.org/guide/querying.html#query-operators
     async for book in Book.find(Book.release_year < 1960):
-        logger.info(f'Found books released before 1960: {book}')
+        logger.info(f"Found books released before 1960: {book}")
     # Alternatively with mongodb syntax
     # async for book in Book.find({"release_year": {"$lt": 1960}}):
     #     logger.info(f'Found books released before 1960: {book}')
@@ -189,17 +189,17 @@ async def run_database_with_beanie():
     assert await Book.find(Book.release_year < 1960).count() == 0
 
     # 5) Delete books
-    assert await Book.find(Book.name == 'This book was not written').count() == 1
-    await Book.find(Book.name == 'This book was not written').delete()
-    assert await Book.find(Book.name == 'This book was not written').count() == 0
+    assert await Book.find(Book.name == "This book was not written").count() == 1
+    await Book.find(Book.name == "This book was not written").delete()
+    assert await Book.find(Book.name == "This book was not written").count() == 0
 
     # 6) Get data from other tables
     async for book in Book.find_all():
-        logger.info(f'Book ({book}) has author ({book.author}) and publisher ({book.publisher})')
+        logger.info(f"Book ({book}) has author ({book.author}) and publisher ({book.publisher})")
 
     async for book_inventory in BookInventory.find_all():
         logger.info(
-            f'Library {book_inventory.library} has book inventory ({book_inventory}) of book ({book_inventory.book})'
+            f"Library {book_inventory.library} has book inventory ({book_inventory}) of book ({book_inventory.book})"
         )
 
     # 7) Join two tables and apply filter
@@ -209,8 +209,8 @@ async def run_database_with_beanie():
         BookInventory.book.author.birth_year < 1910,
     ):
         logger.info(
-            f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} '
-            f'times and the author is {book_inventory.book.author}'
+            f"Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} "
+            f"times and the author is {book_inventory.book.author}"
         )
 
     # 8) TODO: Migration
@@ -219,5 +219,5 @@ async def run_database_with_beanie():
     await Book.find_all().delete()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(run_database_with_beanie())

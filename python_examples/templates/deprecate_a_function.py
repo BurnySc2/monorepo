@@ -1,14 +1,14 @@
 import warnings
 
-warnings.simplefilter('once')
+warnings.simplefilter("once")
 
 
 def context_level_2():
     warnings.warn(
-        'With this stacklevel, the error will point to the call in context_level_1', DeprecationWarning, stacklevel=2
+        "With this stacklevel, the error will point to the call in context_level_1", DeprecationWarning, stacklevel=2
     )
     warnings.warn(
-        'With this stacklevel, the error will point to the call in the main function', DeprecationWarning, stacklevel=3
+        "With this stacklevel, the error will point to the call in the main function", DeprecationWarning, stacklevel=3
     )
 
 
@@ -23,5 +23,5 @@ def main():
     context_level_1()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -25,18 +25,18 @@ def calc_distance(x0: float, y0: float, x1: float, y1: float) -> float:
 
 def test_database():
     # with sqlite3.connect("example.db") as db:
-    with sqlite3.connect(':memory:') as db:
+    with sqlite3.connect(":memory:") as db:
         # Instead of returning tuples, return dicts https://stackoverflow.com/a/55986968
         db.row_factory = sqlite3.Row
 
         # Add a custom function
         # https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.create_function
-        db.create_function('dist', 4, calc_distance, deterministic=True)
+        db.create_function("dist", 4, calc_distance, deterministic=True)
 
         # Creates a new table "people" with 3 columns: text, real, integer
         # Fields marked with PRIMARY KEY are columns with unique values (?)
         db.execute(
-            '''
+            """
             CREATE TABLE IF NOT EXISTS people
             (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,38 +46,38 @@ def test_database():
                 x REAL NOT NULL,
                 y REAL NOT NULL
             )
-            '''
+            """
         )
 
         # Insert via string
         db.execute("INSERT INTO people (name, age, height, x, y) VALUES ('Someone', 80, 1.60, 100, 100)")
         # Insert by tuple
         db.execute(
-            'INSERT INTO people (name, age, height, x, y) VALUES (?, ?, ?, ?, ?)', ('Someone Else', 50, 1.65, 125, 75)
+            "INSERT INTO people (name, age, height, x, y) VALUES (?, ?, ?, ?, ?)", ("Someone Else", 50, 1.65, 125, 75)
         )
         # Optional (name, age, height) if all columns are supplied
         # db.execute("INSERT INTO people VALUES (?, ?, ?)", ("Someone Else", 50, 1.65))
 
         friends = [
-            ('Someone Else1', 40, 1.70, 80, 120),
-            ('Someone Else2', 30, 1.75, 85, 125),
-            ('Someone Else3', 20, 1.80, 90, 115),
-            ('Someone Else4', 20, 1.85, 105, 150),
+            ("Someone Else1", 40, 1.70, 80, 120),
+            ("Someone Else2", 30, 1.75, 85, 125),
+            ("Someone Else3", 20, 1.80, 90, 115),
+            ("Someone Else4", 20, 1.85, 105, 150),
         ]
         # Insert many over iterable
-        db.executemany('INSERT INTO people (name, age, height, x, y) VALUES (?, ?, ?, ?, ?)', friends)
+        db.executemany("INSERT INTO people (name, age, height, x, y) VALUES (?, ?, ?, ?, ?)", friends)
 
         # Insert unique name again
         try:
             db.execute(
-                'INSERT INTO people (name, age, height, x, y) VALUES (?, ?, ?, ?, ?)',
-                ('Someone Else', 50, 1.65, 100, 100)
+                "INSERT INTO people (name, age, height, x, y) VALUES (?, ?, ?, ?, ?)",
+                ("Someone Else", 50, 1.65, 100, 100)
             )
         except sqlite3.IntegrityError:
-            logger.info('Name already exists: Someone Else')
+            logger.info("Name already exists: Someone Else")
 
         # Delete an entry https://www.w3schools.com/sql/sql_delete.asp
-        db.execute('DELETE FROM people WHERE age=40')
+        db.execute("DELETE FROM people WHERE age=40")
 
         # Update entries https://www.w3schools.com/sql/sql_update.asp
         db.execute("UPDATE people SET height=1.90, age=35 WHERE name='Someone Else'")
@@ -101,19 +101,19 @@ def test_database():
         # SELECT: returns selected fields of the results, use * for all https://www.w3schools.com/sql/sql_select.asp
         # ORDER BY: Order by column 'age' and 'height' https://www.w3schools.com/sql/sql_orderby.asp
         # WHERE: Filters 'height >= 1.70' https://www.w3schools.com/sql/sql_where.asp
-        logger.info('Example query')
+        logger.info("Example query")
         results: sqlite3.Cursor = db.execute(
             "SELECT id, name, age, height FROM people WHERE height>=1.70 and name!='Someone Else2' "
-            'ORDER BY age ASC, height ASC',
+            "ORDER BY age ASC, height ASC",
         )
         for row in results:
             # Can also access values via row[0]
             row_as_dict = dict(row)
-            logger.info(f'Row: {row_as_dict}')
+            logger.info(f"Row: {row_as_dict}")
 
-        person = 'Someone'
+        person = "Someone"
         max_distance = 50
-        logger.info(f'Get all people in distance of {max_distance} of \'{person}\'')
+        logger.info(f"Get all people in distance of {max_distance} of \'{person}\'")
         results: sqlite3.Cursor = db.execute(
             f"""
             SELECT id, name, dist(people.x, people.y, people2.x, people2.y) AS distance,
@@ -126,7 +126,7 @@ def test_database():
         )
         for row in results:
             row_as_dict = dict(row)
-            logger.info(f'Row: {row_as_dict}')
+            logger.info(f"Row: {row_as_dict}")
 
         # Exclude entries where the same age is listed twice
         # Here, age 20 is listed twice in the database, select all but those
@@ -140,10 +140,10 @@ def test_database():
             """,
         )
 
-        logger.info('Exclude query')
+        logger.info("Exclude query")
         for row in results:
             row_as_dict = dict(row)
-            logger.info(f'Row: {row_as_dict}')
+            logger.info(f"Row: {row_as_dict}")
 
         # TODO: How to add or remove a column in existing database?
         # TODO: How to do migrations ideally? Migration table? How to set default values
@@ -158,12 +158,12 @@ def test_database():
 
         tables = db.execute("SELECT name FROM sqlite_master WHERE type='table'")
         for table in tables:
-            table_name = table['name']
-            logger.info(f'Table: {table_name}')
-            table_info = db.execute(f'pragma table_info({table_name})')
+            table_name = table["name"]
+            logger.info(f"Table: {table_name}")
+            table_info = db.execute(f"pragma table_info({table_name})")
             for column_info in table_info:
                 logger.info(dict(column_info))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_database()

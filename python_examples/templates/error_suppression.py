@@ -10,5 +10,5 @@ def main():
         divide_through_zero(420)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

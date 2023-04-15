@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -23,7 +22,7 @@ class MyDataClassList(DataClassJsonMixin):
 
 def save_object_to_json(path: Path, my_dataclass_list: list[MyDataClass]):
     """ Save the given list of objects to json file. """
-    with path.open('w') as f:
+    with path.open("w") as f:
         f.write(MyDataClass.schema().dumps(my_dataclass_list, many=True, indent=4))
 
 
@@ -35,7 +34,7 @@ def load_object_from_json(path: Path) -> list[MyDataClass]:
 
 def save_objects_to_json(path: Path, my_dataclass_list: MyDataClassList):
     """ Save the given data class object to json file. """
-    with path.open('w') as f:
+    with path.open("w") as f:
         f.write(my_dataclass_list.to_json(indent=4))
 
 
@@ -51,12 +50,12 @@ def test_data_class_to_and_from_json():
     # Reloading the list automatically converts it to a set again
 
     # Write and reload from file
-    test_path = Path(__file__).parent.parent.parent / 'data' / 'dataclass_test.json'
-    os.makedirs(test_path.parent, exist_ok=True)
+    test_path = Path(__file__).parent.parent.parent / "data" / "dataclass_test.json"
+    test_path.parent.mkdir(parents=True, exist_ok=True)
 
     # Create the objects we want to write
-    my_first_object = MyDataClass('burny', 420, {1, 2, 3})
-    my_second_object = MyDataClass('not_burny', 123, {4, 2, 0})
+    my_first_object = MyDataClass("burny", 420, {1, 2, 3})
+    my_second_object = MyDataClass("not_burny", 123, {4, 2, 0})
 
     # Method 1
     # Save
