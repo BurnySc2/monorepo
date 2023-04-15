@@ -165,7 +165,7 @@ class BuildOrderParserOptions:
 
 
 public_fetch_aoe4_bo_parser = ArgumentParser()
-public_fetch_aoe4_bo_parser.add_arguments(BuildOrderParserOptions, dest="params")
+public_fetch_aoe4_bo_parser.add_arguments(BuildOrderParserOptions, dest="params")  # pyre-fixme[6]
 
 
 def get_help_string() -> str:

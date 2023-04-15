@@ -61,7 +61,7 @@ beanie = "^1.11"
 # Create sqlalchemy migrations
 alembic = "^1.7"
 # Load environment variables from .env file
-python-dotenv = "^0.20"
+python-dotenv = "^1.0"
 # Data science and plotting
 pandas = "^1.4.2"
 # Plotting

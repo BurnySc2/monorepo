@@ -26,7 +26,7 @@ class CountEmotesParserOptions:
 
 
 public_count_emotes_parser = ArgumentParser()
-public_count_emotes_parser.add_arguments(CountEmotesParserOptions, dest="params")
+public_count_emotes_parser.add_arguments(CountEmotesParserOptions, dest="params")  # pyre-fixme[6]
 
 
 async def public_count_emotes(
