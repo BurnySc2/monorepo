@@ -85,12 +85,10 @@ async def generic_command_caller(
         return
 
     if isinstance(response, Embed):
-        sent_message = await event.message.respond(f'{event.author.mention}', embed=response, reply=True)
+        sent_message = await event.message.respond(f'{event.author.mention}', embed=response, reply=False)
     else:
         # Error message or raw string response
-        sent_message = await event.message.respond(f'{event.author.mention} {response}', reply=True)
-        # Alternatively:
-        # sent_message = await channel.send(f'{event.author.mention} {response}')
+        sent_message = await event.message.respond(f'{event.author.mention} {response}', reply=False)
     if add_remove_emoji:
         # https://www.fileformat.info/info/unicode/char/274c/index.htm
         await sent_message.add_reaction('\u274C')
