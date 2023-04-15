@@ -23,12 +23,12 @@ TODO_COUNTER = 0
 TODOS: list[TodoItem] = []
 
 
-@todo_list_router.get('/api')
+@todo_list_router.get("/api")
 async def show_all_todos() -> list[TodoItem]:
     return TODOS
 
 
-@todo_list_router.post('/api/{todo_description}')
+@todo_list_router.post("/api/{todo_description}")
 async def create_new_todo(todo_description: str):
     # https://fastapi.tiangolo.com/advanced/using-request-directly/
     global TODOS, TODO_COUNTER
@@ -45,7 +45,7 @@ async def create_new_todo(todo_description: str):
 
 
 # Alternative to above with request body:
-@todo_list_router.post('/api_body')
+@todo_list_router.post("/api_body")
 async def create_new_todo2(request: Request):
     """
     Example with accessing request body.
@@ -54,7 +54,7 @@ async def create_new_todo2(request: Request):
     # https://fastapi.tiangolo.com/advanced/using-request-directly/
     global TODOS, TODO_COUNTER
     request_body = await request.json()
-    todo_item = request_body.get('new_todo', None)
+    todo_item = request_body.get("new_todo", None)
     if todo_item:
         TODO_COUNTER += 1
         TODOS.append(
@@ -74,7 +74,7 @@ class Item:
 
 
 # Alternative to above with model:
-@todo_list_router.post('/api_model')
+@todo_list_router.post("/api_model")
 async def create_new_todo3(item: Item):
     """
     Example with accessing request body.
@@ -82,7 +82,7 @@ async def create_new_todo3(item: Item):
     """
     # https://fastapi.tiangolo.com/tutorial/body/#import-pydantics-basemodel
     global TODOS, TODO_COUNTER
-    logger.info(f'Received item: {item}')
+    logger.info(f"Received item: {item}")
     if item and item.todo_description:
         TODO_COUNTER += 1
         TODOS.append(
@@ -96,11 +96,11 @@ async def create_new_todo3(item: Item):
         )
 
 
-@todo_list_router.delete('/api/{todo_id}')
+@todo_list_router.delete("/api/{todo_id}")
 async def remove_todo(todo_id: int) -> bool:
     """ Example of using /api/itemid with DELETE request """
     global TODOS
-    logger.info(f'Attempting to remove todo id: {todo_id}')
+    logger.info(f"Attempting to remove todo id: {todo_id}")
     count_before = len(TODOS)
     TODOS = [item for item in TODOS if item.id != todo_id]
     count_after = len(TODOS)

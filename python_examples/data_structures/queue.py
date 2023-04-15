@@ -5,10 +5,10 @@ from typing import Optional
 @dataclass()
 class Node:
     value: int
-    next: Optional['Node'] = None
+    next: Optional["Node"] = None
 
     def __repr__(self):
-        return f'Node(value: {self.value}, next: {self.next})'
+        return f"Node(value: {self.value}, next: {self.next})"
 
 
 class Queue:
@@ -34,7 +34,7 @@ class Queue:
 
     def dequeue(self):
         if self.front is None:
-            raise IndexError('queue is empty')
+            raise IndexError("queue is empty")
 
         return_value = None
         if self.front is not None:
@@ -48,7 +48,7 @@ class Queue:
         return return_value
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     q = Queue()
     assert q.front is None
     assert q.tail is None

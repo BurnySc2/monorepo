@@ -39,31 +39,14 @@ pytest-playwright = "^0.3.0"
 # Autoformat
 yapf = "^0.32.0"
 toml = "^0.10.2"
-# Remove unused imports
-pycln = "^1.3.3"
-# Reorder imports
-isort = "^5.10.1"
 # Linter
 ruff = "^0.0.247"
 # Type checker
 pyre-check = "^0.9.18"
-# Requests types
-types-requests = "^2.28.11"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.pycln]
-all = true
-
-[tool.isort]
-line_length = 120
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
 
 [tool.yapf]
 based_on_style = "pep8"
@@ -73,6 +56,33 @@ dedent_closing_brackets = true
 allow_split_before_dict_value = false
 
 [tool.ruff]
+target-version = 'py38'
 line-length = 120
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+select = [
+    "C4", # flake8-comprehensions
+    "E",  # Error
+    "F",  # pyflakes
+    "BLE",  # flake8-blind-except
+    "I",  # isort
+    "ISC", # flake8-implicit-str-concat
+    "N",  # pep8-naming
+    "PGH",  # pygrep-hooks
+    "PTH", # flake8-use-pathlib
+    "SIM",  # flake8-simplify
+    "W",  # Warning
+    "Q",  # flake8-quotes
+    "YTT", # flake8-2020
+    "UP",  # pyupgrade
+#    "A",  # flake8-builtins
+]
+
+[tool.ruff.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+# Remove once support for py3.8 and 3.9 is dropped
+keep-runtime-typing = true
+
+[tool.ruff.pep8-naming]
+# Allow Pydantic's `@validator` decorator to trigger class method treatment.
+classmethod-decorators = ["pydantic.validator", "classmethod"]

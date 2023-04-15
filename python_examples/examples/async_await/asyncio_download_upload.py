@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import time
 from pathlib import Path
 from typing import Iterable
@@ -38,8 +37,8 @@ async def download_file(
                 # Assume everything went well with the response, no connection or server errors
                 assert response.status == 200
                 # Open file in binary write mode
-                os.makedirs(temp_file_path.parent, exist_ok=True)
-                with temp_file_path.open('wb') as f:
+                temp_file_path.parent.mkdir(parents=True, exist_ok=True)
+                with temp_file_path.open("wb") as f:
                     # Download file in chunks
                     async for data in response.content.iter_chunked(chunk_size):
                         # Write data to file in asyncio-mode using aiofiles
@@ -55,19 +54,19 @@ async def download_file(
                             time_last_subtracted = time_temp
                             await asyncio.sleep(accuracy)
             await asyncio.sleep(0.1)
-            os.makedirs(file_path.parent, exist_ok=True)
+            file_path.parent.mkdir(parents=True, exist_ok=True)
             try:
                 temp_file_path.rename(file_path)
                 return True
             except PermissionError:
                 # The file might be open by another process
-                logger.info(f'Permissionerror: Unable to rename file from ({temp_file_path}) to ({file_path})')
+                logger.info(f"Permissionerror: Unable to rename file from ({temp_file_path}) to ({file_path})")
         except asyncio.TimeoutError:
             # The server might suddenly not respond
-            logger.info(f'Received timeout error in url ({url}) in file path ({file_path})!')
+            logger.info(f"Received timeout error in url ({url}) in file path ({file_path})!")
     else:
         # The file already exists
-        logger.info(f'File for url ({url}) in file path ({file_path}) already exists!')
+        logger.info(f"File for url ({url}) in file path ({file_path}) already exists!")
     return False
 
 
@@ -96,9 +95,9 @@ async def download_all_sites(sites: Iterable[str]) -> list[aiohttp.ClientRespons
 
 
 async def main():
-    download_path = Path(__file__).parent / 'my_file.zip'
-    download_path_not_complete = Path(__file__).parent / 'my_file_incomplete'
-    file_url = 'http://ipv4.download.thinkbroadband.com/5MB.zip'
+    download_path = Path(__file__).parent / "my_file.zip"
+    download_path_not_complete = Path(__file__).parent / "my_file_incomplete"
+    file_url = "http://ipv4.download.thinkbroadband.com/5MB.zip"
 
     download_speed = 1000 * 2**10
     async with aiohttp.ClientSession() as session:
@@ -110,10 +109,10 @@ async def main():
             download_speed=download_speed,
         )
     if download_path.exists():
-        os.remove(download_path)
+        download_path.unlink()
     if download_path_not_complete.exists():
-        os.remove(download_path_not_complete)
+        download_path_not_complete.unlink()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())

@@ -50,5 +50,5 @@ def test_geometry_shapely():
     assert isinstance(multi, Polygon)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_geometry_shapely()

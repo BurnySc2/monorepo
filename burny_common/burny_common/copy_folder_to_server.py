@@ -43,14 +43,14 @@ def copy_folder_to_server_helper(
 
 
 @click.command()
-@click.option('--host', default='', help='host address')
-@click.option('--port', default=22, help='port')
-@click.option('--username', default='', help='user name')
-@click.option('--password', default='', help='user password')
-@click.option('--pkey', default='', help='private key')
-@click.option('--sourcepath', default='', help='source folder to copy')
-@click.option('--targetpath', default='', help='which folder the output should be')
-@click.option('--respectgitignore', default=True, help='ignore files that are ignored by .gitignore')
+@click.option("--host", default="", help="host address")
+@click.option("--port", default=22, help="port")
+@click.option("--username", default="", help="user name")
+@click.option("--password", default="", help="user password")
+@click.option("--pkey", default="", help="private key")
+@click.option("--sourcepath", default="", help="source folder to copy")
+@click.option("--targetpath", default="", help="which folder the output should be")
+@click.option("--respectgitignore", default=True, help="ignore files that are ignored by .gitignore")
 def copy_folder_to_server(
     host: str,
     port: int,
@@ -73,7 +73,7 @@ def copy_folder_to_server(
         allowed_files: Optional[Set] = None
         if respectgitignore:
             proc = subprocess.Popen(
-                ['git', 'ls-files'],
+                ["git", "ls-files"],
                 cwd=path_source_root_folder.absolute(),
                 stdout=subprocess.PIPE,
             )
@@ -98,16 +98,16 @@ def copy_folder_to_server(
 
 def main():
     runner = CliRunner()
-    ip = 'some.url'
-    username = 'some_name'
-    key = 'my ssh key'
+    ip = "some.url"
+    username = "some_name"
+    key = "my ssh key"
     result = runner.invoke(
         copy_folder_to_server, [
-            f'--host={ip}',
-            f'--username={username}',
-            f'--pkey={key}',
-            '--sourcepath=/home/burny/github/python-template',
-            '--targetpath=test5',
+            f"--host={ip}",
+            f"--username={username}",
+            f"--pkey={key}",
+            "--sourcepath=/home/burny/github/python-template",
+            "--targetpath=test5",
         ]
     )
     for line in result.output.splitlines():
@@ -117,5 +117,5 @@ def main():
         print(result.exit_code)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

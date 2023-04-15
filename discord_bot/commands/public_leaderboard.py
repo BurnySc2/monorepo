@@ -8,7 +8,7 @@ from hikari import GatewayBot, GuildMessageCreateEvent, Member
 from loguru import logger
 from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 from simple_parsing import ArgumentParser, field
-from table2ascii import Alignment, PresetStyle  # pyre-fixme[21]
+from table2ascii import Alignment, PresetStyle
 from table2ascii import table2ascii as t2a
 
 from db import DiscordMessage, supabase
@@ -22,7 +22,7 @@ class LeaderboardParserOptions:
 
 
 public_leaderboard_parser = ArgumentParser()
-public_leaderboard_parser.add_arguments(LeaderboardParserOptions, dest="params")
+public_leaderboard_parser.add_arguments(LeaderboardParserOptions, dest="params")  # pyre-fixme[6]
 
 
 def parse_rank_range_argument(argument_list: list[str]) -> tuple[int, int]:

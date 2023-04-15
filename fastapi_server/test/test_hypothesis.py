@@ -52,8 +52,8 @@ class TestHypothesis(TestCase):
     @settings(max_examples=100)
     @given(_number=st.integers())
     def test_hypothesis(self, _number: int):
-        assert self.class_number == 1, 'a'
-        assert self.class_number_pytest == 2, 'b'
-        assert self.method_number == 3, 'c'
-        assert self.method_number_pytest == 4, 'd'
-        assert self.example_number == 5, 'e'
+        assert self.class_number == 1, "a"
+        assert self.class_number_pytest == 2, "b"
+        assert self.method_number == 3, "c"
+        assert self.method_number_pytest == 4, "d"
+        assert self.example_number == 5, "e"

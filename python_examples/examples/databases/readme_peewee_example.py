@@ -1,7 +1,7 @@
 from loguru import logger
 from peewee import CharField, ForeignKeyField, IntegerField, Model, ModelSelect, SqliteDatabase  # pyre-fixme[21]
 
-db = SqliteDatabase('test.db')
+db = SqliteDatabase("test.db")
 
 
 # pyre-fixme[11]
@@ -31,9 +31,9 @@ class Book(Model):
         database = db
 
     def __str__(self):
-        data = self.__dict__['__data__']
-        items = ', '.join(f'{key}={value}' for key, value in data.items() if not key.startswith('_'))
-        return f'{self.__class__.__name__}({items})'
+        data = self.__dict__["__data__"]
+        items = ", ".join(f"{key}={value}" for key, value in data.items() if not key.startswith("_"))
+        return f"{self.__class__.__name__}({items})"
 
 
 class Library(Model):
@@ -46,7 +46,7 @@ class Library(Model):
 
 class BookInventory(Model):
     book = ForeignKeyField(Book)
-    library = ForeignKeyField(Library, backref='books')
+    library = ForeignKeyField(Library, backref="books")
     amount = IntegerField()
 
     class Meta:
@@ -59,25 +59,25 @@ def run_database_with_peewee_readme_example():
     db.create_tables([Book, Author, Publisher, Library, BookInventory])
 
     # 2) Fill tables
-    author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
-    author_2 = Author(name='Harper Lee', birth_year=1926)
-    author_3 = Author(name='George Orwell', birth_year=1903)
+    author_1 = Author(name="J. R. R. Tolkien", birth_year=1892)
+    author_2 = Author(name="Harper Lee", birth_year=1926)
+    author_3 = Author(name="George Orwell", birth_year=1903)
 
-    publisher_1 = Publisher(name='Aufbau-Verlag', founded_year=1945)
-    publisher_2 = Publisher(name='Hoffmann und Campe', founded_year=1781)
-    publisher_3 = Publisher(name='Heyne Verlag', founded_year=1934)
+    publisher_1 = Publisher(name="Aufbau-Verlag", founded_year=1945)
+    publisher_2 = Publisher(name="Hoffmann und Campe", founded_year=1781)
+    publisher_3 = Publisher(name="Heyne Verlag", founded_year=1934)
 
-    book_1 = Book(name='The Lord of the Rings', release_year=1954, author=author_1, publisher=publisher_2)
-    book_2 = Book(name='To kill a Mockingbird', release_year=1960, author=author_2, publisher=publisher_1)
-    book_3 = Book(name='Nineteen Eighty-Four', release_year=1949, author=author_3, publisher=publisher_3)
-    book_4 = Book(name='This book was not written', release_year=2100, author=author_3, publisher=publisher_3)
+    book_1 = Book(name="The Lord of the Rings", release_year=1954, author=author_1, publisher=publisher_2)
+    book_2 = Book(name="To kill a Mockingbird", release_year=1960, author=author_2, publisher=publisher_1)
+    book_3 = Book(name="Nineteen Eighty-Four", release_year=1949, author=author_3, publisher=publisher_3)
+    book_4 = Book(name="This book was not written", release_year=2100, author=author_3, publisher=publisher_3)
 
-    library_1 = Library(name='New York Public Library', address='224 East 125th Street')
+    library_1 = Library(name="New York Public Library", address="224 East 125th Street")
     library_inventory_2 = BookInventory(book=book_2, library=library_1, amount=15)
     library_inventory_1 = BookInventory(book=book_3, library=library_1, amount=40)
     library_1.books = [library_inventory_1, library_inventory_2]
 
-    library_2 = Library(name='California State Library', address='900 N Street')
+    library_2 = Library(name="California State Library", address="900 N Street")
     library_inventory_3 = BookInventory(book=book_1, library=library_2, amount=25)
     library_inventory_4 = BookInventory(book=book_2, library=library_2, amount=30)
     library_2.books = [library_inventory_3, library_inventory_4]
@@ -100,7 +100,7 @@ def run_database_with_peewee_readme_example():
 
     # 3) Select books
     for book in Book.select().where(Book.release_year < 1960):
-        logger.info(f'Found books released before 1960: {book}')
+        logger.info(f"Found books released before 1960: {book}")
 
     # 4) Update books
     assert Book.select().where(Book.release_year < 1960).count() == 2
@@ -110,18 +110,18 @@ def run_database_with_peewee_readme_example():
     assert Book.select().where(Book.release_year < 1960).count() == 0
 
     # 5) Delete books
-    assert Book.select().where(Book.name == 'This book was not written').count() == 1
-    Book.delete().where(Book.name == 'This book was not written').execute()
-    assert Book.select().where(Book.name == 'This book was not written').count() == 0
+    assert Book.select().where(Book.name == "This book was not written").count() == 1
+    Book.delete().where(Book.name == "This book was not written").execute()
+    assert Book.select().where(Book.name == "This book was not written").count() == 0
 
     # 6) Get data from other tables
     for book in Book.select():
-        logger.info(f'Book({book}) has Author({book.author}) and Publisher({book.publisher})')
+        logger.info(f"Book({book}) has Author({book.author}) and Publisher({book.publisher})")
 
     for library in Library.select():
-        logger.info(f'Library ({library}) has books:')
+        logger.info(f"Library ({library}) has books:")
         for book_inventory in library.books:
-            logger.info(f'    Book inventory ({book_inventory}) of book ({book_inventory.book})')
+            logger.info(f"    Book inventory ({book_inventory}) of book ({book_inventory.book})")
 
     # 7) Join two tables and apply filter
     # Find all books that are listed in libraries at least 25 times and where author was born before 1910
@@ -129,8 +129,8 @@ def run_database_with_peewee_readme_example():
     query = query.where((BookInventory.amount >= 25) & (Author.birth_year < 1910))
     for book_inventory in query:
         logger.info(
-            f'Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times '
-            f'and the author is ({book_inventory.book.author})'
+            f"Book ({book_inventory.book}) is listed in ({book_inventory.library}) {book_inventory.amount} times "
+            f"and the author is ({book_inventory.book.author})"
         )
 
     # 8) TODO: Run migration (verify and change table schema if necessary)
@@ -141,5 +141,5 @@ def run_database_with_peewee_readme_example():
     assert BookInventory.select().count() == 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_database_with_peewee_readme_example()

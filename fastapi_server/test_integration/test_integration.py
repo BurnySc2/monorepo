@@ -6,73 +6,73 @@ from playwright.sync_api import Page
 
 
 class TestClass:
-    FRONTEND_ADDRESS = 'http://localhost:3000'
-    BACKEND_ADDRESS = 'http://localhost:8000'
+    FRONTEND_ADDRESS = "http://localhost:3000"
+    BACKEND_ADDRESS = "http://localhost:8000"
 
     def test_backend_server_available(self, page: Page):
-        page.goto(self.BACKEND_ADDRESS, wait_until='networkidle')
+        page.goto(self.BACKEND_ADDRESS, wait_until="networkidle")
         assert '{"Hello":"World"}' in page.content()
 
     def test_frontend_server_available(self, page: Page):
-        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
-        assert 'Home' in page.content()
-        assert 'About' in page.content()
-        assert 'Chat' in page.content()
-        assert 'Todo' in page.content()
-        assert 'Slugs' in page.content()
-        assert 'BrowserStorage' in page.content()
+        page.goto(self.FRONTEND_ADDRESS, wait_until="networkidle")
+        assert "Home" in page.content()
+        assert "About" in page.content()
+        assert "Chat" in page.content()
+        assert "Todo" in page.content()
+        assert "Slugs" in page.content()
+        assert "BrowserStorage" in page.content()
 
     def test_add_todo_submit1(self, page: Page):
         """ Add a new to-do entry """
-        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
-        assert 'Hello world!' in page.content()
-        page.click('#todo')
-        page.wait_for_url('/todo', timeout=1_000)
-        assert 'Unable to connect to server - running local mode' not in page.content()
-        test_text = 'my amazing test todo text1'
+        page.goto(self.FRONTEND_ADDRESS, wait_until="networkidle")
+        assert "Hello world!" in page.content()
+        page.click("#todo")
+        page.wait_for_url("/todo", timeout=1_000)
+        assert "Unable to connect to server - running local mode" not in page.content()
+        test_text = "my amazing test todo text1"
         assert test_text not in page.content()
-        page.wait_for_selector('#newTodoInput', timeout=1_000)
-        page.fill('#newTodoInput', test_text)
-        page.click('#submit1')
+        page.wait_for_selector("#newTodoInput", timeout=1_000)
+        page.fill("#newTodoInput", test_text)
+        page.click("#submit1")
         page.wait_for_timeout(100)
         assert test_text in page.content()
-        assert 'Unable to connect to server - running local mode' not in page.content()
+        assert "Unable to connect to server - running local mode" not in page.content()
 
     def test_add_todo_submit2(self, page: Page):
         """ Add a new to-do entry """
-        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
-        assert 'Hello world!' in page.content()
-        page.click('#todo')
-        page.wait_for_url('/todo', timeout=1_000)
-        assert 'Unable to connect to server - running local mode' not in page.content()
-        test_text = 'my amazing test todo text2'
+        page.goto(self.FRONTEND_ADDRESS, wait_until="networkidle")
+        assert "Hello world!" in page.content()
+        page.click("#todo")
+        page.wait_for_url("/todo", timeout=1_000)
+        assert "Unable to connect to server - running local mode" not in page.content()
+        test_text = "my amazing test todo text2"
         assert test_text not in page.content()
-        assert '' == page.locator('#newTodoInput').input_value()
-        page.fill('#newTodoInput', test_text)
-        assert test_text == page.locator('#newTodoInput').input_value()
-        page.click('#submit2')
+        assert page.locator("#newTodoInput").input_value() == ""
+        page.fill("#newTodoInput", test_text)
+        assert test_text == page.locator("#newTodoInput").input_value()
+        page.click("#submit2")
         page.wait_for_timeout(100)
-        assert '' == page.locator('#newTodoInput').input_value()
+        assert page.locator("#newTodoInput").input_value() == ""
         assert test_text in page.content()
-        assert 'Unable to connect to server - running local mode' not in page.content()
+        assert "Unable to connect to server - running local mode" not in page.content()
 
     def test_add_todo_submit3(self, page: Page):
         """ Add a new to-do entry """
-        page.goto(self.FRONTEND_ADDRESS, wait_until='networkidle')
-        assert 'Hello world!' in page.content()
-        page.click('#todo')
-        page.wait_for_url('/todo', timeout=1_000)
-        assert 'Unable to connect to server - running local mode' not in page.content()
-        test_text = 'my amazing test todo text3'
+        page.goto(self.FRONTEND_ADDRESS, wait_until="networkidle")
+        assert "Hello world!" in page.content()
+        page.click("#todo")
+        page.wait_for_url("/todo", timeout=1_000)
+        assert "Unable to connect to server - running local mode" not in page.content()
+        test_text = "my amazing test todo text3"
         assert test_text not in page.content()
-        assert '' == page.locator('#newTodoInput').input_value()
-        page.fill('#newTodoInput', test_text)
-        assert test_text == page.locator('#newTodoInput').input_value()
-        page.click('#submit3')
+        assert page.locator("#newTodoInput").input_value() == ""
+        page.fill("#newTodoInput", test_text)
+        assert test_text == page.locator("#newTodoInput").input_value()
+        page.click("#submit3")
         page.wait_for_timeout(100)
-        assert '' == page.locator('#newTodoInput').input_value()
+        assert page.locator("#newTodoInput").input_value() == ""
         assert test_text in page.content()
-        assert 'Unable to connect to server - running local mode' not in page.content()
+        assert "Unable to connect to server - running local mode" not in page.content()
 
     # TODO Fix me
     # def test_chat_single(self, page: Page):

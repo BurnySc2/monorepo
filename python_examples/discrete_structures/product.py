@@ -13,9 +13,9 @@ def product_generator(*args: Iterable[Any], repeat: int = 1) -> Generator[Any, N
     yield from result
 
 
-if __name__ == '__main__':
-    data1 = list('123')
-    data2 = list('abc')
+if __name__ == "__main__":
+    data1 = list("123")
+    data2 = list("abc")
 
     for p in product_generator(data1, data2, repeat=2):
         print(p)

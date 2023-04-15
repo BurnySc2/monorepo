@@ -23,22 +23,14 @@ format:
     # pip install poetry
     # poetry install
 
+    # Convert single to double quotes
+    RUN poetry run ruff check . --select Q --fix
     # Remove unused imports
-    RUN poetry run pycln -q .
+    RUN poetry run ruff check . --select F --fix
     # Sort imports
-    RUN poetry run isort .
+    RUN poetry run ruff check . --select I --fix
     # Format code
     RUN poetry run yapf -ir .
-
-# Check if imports are unused
-remove-unused-imports-check:
-    FROM +install-dev
-    RUN poetry run pycln -c .
-
-# Check if imports require reordering
-sort-imports-check:
-    FROM +install-dev
-    RUN poetry run isort --check-only .
 
 # Check if files are correctly formatted
 format-check:
@@ -60,8 +52,6 @@ pytest:
     RUN poetry run pytest
 
 all:
-    BUILD +remove-unused-imports-check
-    BUILD +sort-imports-check
     BUILD +format-check
     BUILD +lint
     BUILD +pyre

@@ -30,6 +30,6 @@ class WebsocketManager:
         try:
             data_json = json.loads(data)
         except json.JSONDecodeError:
-            logger.error(f'Could not process data: {data}')
+            logger.error(f"Could not process data: {data}")
             return
         await self.handler.handle_data(websocket_manager=self, websocket=websocket, data_json=data_json)

@@ -11,14 +11,14 @@ arrow = "^1.2.2"
 # Discord bot
 hikari = "^2.0.0.dev110"
 # Simple logger
-loguru = "^0.6.0"
+loguru = "^0.7.0"
 # Table plotting
 ptable = "^0.9.2"
 # Remote SQL DB
 supabase = "^1.0.0"
 postgrest-py = "^0.10.2"
 # Argparse with dataclass
-simple-parsing = "^0.0.20"
+simple-parsing = "^0.1"
 # Table as ascii art
 table2ascii = "^1.1.0"
 pydantic = "^1.10.5"
@@ -77,4 +77,4 @@ keep-runtime-typing = true
 
 [tool.ruff.pep8-naming]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.
-classmethod-decorators = ["pydantic.validator"]
+classmethod-decorators = ["pydantic.validator", "classmethod"]

@@ -43,5 +43,5 @@ def main():
     assert optional_arg_count(func_with_2_args) == 2
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -51,14 +51,14 @@ class ActionNode:
         """ TODO: output tree to display/monitor via matplotlib or graphviz or similar """
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     class MyAction(ActionNode):
         my_status: int = 0
 
         def run_node(self) -> NodeOutcome:
             self.my_status += 1
-            logger.info(f'Counting up: {self.my_status}')
+            logger.info(f"Counting up: {self.my_status}")
             if self.my_status != 10:
                 return NodeOutcome.RUNNING
             return NodeOutcome.SUCCESS

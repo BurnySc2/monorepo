@@ -10,15 +10,15 @@ from paramiko.sftp_client import SFTPClient
 
 
 def generate_path(client: SSHClient, target_path: str) -> Path:
-    if target_path.startswith('/'):
+    if target_path.startswith("/"):
         return Path(target_path)
     # If target path doesn't start with "/" it means it's a relative path
-    _stdin, stdout, _stderr = client.exec_command('pwd')
+    _stdin, stdout, _stderr = client.exec_command("pwd")
     return Path(stdout.readline().strip()) / Path(target_path)
 
 
 def create_target_dir(client: SSHClient, target_folder_path: Path):
-    _stdin, _stdout, _stderr = client.exec_command(f'mkdir -p {target_folder_path}')
+    _stdin, _stdout, _stderr = client.exec_command(f"mkdir -p {target_folder_path}")
 
 
 def copy_file_to_server_helper(
@@ -34,14 +34,14 @@ def copy_file_to_server_helper(
 
 
 @click.command()
-@click.option('--host', default='', help='host address')
-@click.option('--port', default=22, help='port')
-@click.option('--username', default='', help='user name')
-@click.option('--password', default='', help='user password')
-@click.option('--pkey', default='', help='private key')
-@click.option('--sourcepath', default='', help='source file to copy')
-@click.option('--targetpath', default='', help='target path to copy the file to')
-@click.option('--createtargetdir', default=True, help='create directory if file doesnt exist')
+@click.option("--host", default="", help="host address")
+@click.option("--port", default=22, help="port")
+@click.option("--username", default="", help="user name")
+@click.option("--password", default="", help="user password")
+@click.option("--pkey", default="", help="private key")
+@click.option("--sourcepath", default="", help="source file to copy")
+@click.option("--targetpath", default="", help="target path to copy the file to")
+@click.option("--createtargetdir", default=True, help="create directory if file doesnt exist")
 def copy_file_to_server(
     host: str,
     port: int,
@@ -68,7 +68,7 @@ def copy_file_to_server(
 
         with client.open_sftp() as sftp:
             assert path_source.is_file()
-            print(f'Copying {path_source.absolute()} to {path_target.absolute()}')
+            print(f"Copying {path_source.absolute()} to {path_target.absolute()}")
             copy_file_to_server_helper(
                 client,
                 sftp,
@@ -81,17 +81,17 @@ def copy_file_to_server(
 
 def main():
     runner = CliRunner()
-    ip = 'some.url'
-    username = 'some_name'
-    key = 'my ssh key'
+    ip = "some.url"
+    username = "some_name"
+    key = "my ssh key"
     result = runner.invoke(
         copy_file_to_server,
         [
-            f'--host={ip}',
-            f'--username={username}',
-            f'--pkey={key}',
-            '--sourcepath=copy_file_to_server.py',
-            '--targetpath=test2/copy_file_to_server3.py',
+            f"--host={ip}",
+            f"--username={username}",
+            f"--pkey={key}",
+            "--sourcepath=copy_file_to_server.py",
+            "--targetpath=test2/copy_file_to_server3.py",
         ],
     )
     for line in result.output.splitlines():
@@ -101,5 +101,5 @@ def main():
         print(result.exit_code)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

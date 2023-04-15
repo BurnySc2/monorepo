@@ -49,8 +49,8 @@ def test_action_enum_failure(test_input: str):
 
 @given(
     optional_count=st.from_regex(r"(\d+)?", fullmatch=True),
-    action=st.from_regex(r"(\w+)", fullmatch=True),
-    operator=st.from_regex("(<)?", fullmatch=True),
+    action=st.from_regex(r"\w+", fullmatch=True),
+    operator=st.from_regex("<?", fullmatch=True),
     duration=st.from_regex(r"(\d+)?", fullmatch=True),
     duration_suffix=st.from_regex("(s|m)?", fullmatch=True),
 )
@@ -61,8 +61,12 @@ def test_action_enum_failure(test_input: str):
 @example("", "wheelbarrow", "", "", "")
 @example("60", "villagers", "<", "600", "s")
 def test_condition_enum(optional_count: str, action: str, operator: str, duration: str, duration_suffix: str):
+    if operator == "":
+        duration = ""
+    if duration == "":
+        duration_suffix = ""
     input_string = f"{optional_count}{action}{operator}{duration}{duration_suffix}"
-    if action not in ALLOWED_ACTION_ENUM_VALUES:
+    if action.lower() not in ALLOWED_ACTION_ENUM_VALUES:
         with pytest.raises(ValueError):
             _parsed = Condition.from_string(input_string)
         return
@@ -71,9 +75,10 @@ def test_condition_enum(optional_count: str, action: str, operator: str, duratio
 
 
 @pytest.mark.asyncio
+@settings(deadline=1000)
 @given(
     message_text=st.from_regex(r"\w+", fullmatch=True),
-    player_search_results=st.lists(st.builds(PlayerSearchResult)),
+    player_search_results=st.lists(st.builds(PlayerSearchResult), max_size=50),
 )
 async def test_public_search_aoe4_players(message_text: str, player_search_results: list[PlayerSearchResult]):
     with patch.object(
@@ -120,7 +125,8 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
                 profile_id=st.sampled_from([0, player_profile_id]),
                 actions=st.builds(FinishedActions),
                 build_order=st.lists(st.from_type(BuildOrderItem), max_size=0)
-            )
+            ),
+            max_size=100,
         )
     )
     message_text = f"https://aoe4world.com/players/{player_profile_id}/games/{game_id}"

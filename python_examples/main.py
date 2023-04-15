@@ -41,14 +41,14 @@ from templates.error_suppression import main as error_suppression_main
 from templates.inspect_function import main as inspect_main
 
 # SIGALRM doesn't work on windows
-if not platform().lower().startswith('win'):
+if not platform().lower().startswith("win"):
     from templates.timeout_function import main as timeout_main
 
 logger.remove()  # Remove previous default handlers
 # Log to console
-logger.add(sys.stdout, level='INFO')
+logger.add(sys.stdout, level="INFO")
 # Log to file
-logger.add('main.log', level='INFO')
+logger.add("main.log", level="INFO")
 
 
 def main_sync():
@@ -56,11 +56,11 @@ def main_sync():
 
 
 async def main():
-    logger.info('Simple {} logger output', 'loguru')
+    logger.info("Simple {} logger output", "loguru")
 
     regex_match_test()
 
-    sites: list[str] = ['http://www.jython.org', 'https://www.python.org/'] * 80
+    sites: list[str] = ["http://www.jython.org", "https://www.python.org/"] * 80
     start_time = time.perf_counter()
     await download_all_sites(sites)
 
@@ -68,9 +68,9 @@ async def main():
     async with aiohttp.ClientSession() as session:
         _result: bool = await download_file(
             session,
-            url='https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png',
-            file_path=Path(__file__).parent / 'data' / 'image.png',
-            temp_file_path=Path(__file__).parent / 'data' / 'image_download_not_complete',
+            url="https://file-examples.com/wp-content/uploads/2017/10/file_example_PNG_1MB.png",
+            file_path=Path(__file__).parent / "data" / "image.png",
+            temp_file_path=Path(__file__).parent / "data" / "image_download_not_complete",
             # Download at speed of 100kb/s
             download_speed=100 * 2**10,
         )
@@ -78,43 +78,43 @@ async def main():
     await api_rate_limited_example()
 
     end_time = time.perf_counter()
-    logger.info(f'Time for sites download taken: {end_time - start_time}')
+    logger.info(f"Time for sites download taken: {end_time - start_time}")
 
     _math_result = do_math(6)
 
     start_time = time.perf_counter()
     _result2 = do_multiprocessing()
     end_time = time.perf_counter()
-    logger.info(f'Time for multiprocessing taken: {end_time - start_time}')
+    logger.info(f"Time for multiprocessing taken: {end_time - start_time}")
 
     mass_replace_main()
 
-    logger.info('Creating hello world file...')
+    logger.info("Creating hello world file...")
     create_file()
 
-    logger.info('Testing writing dataclass to json and re-load and compare both objects')
+    logger.info("Testing writing dataclass to json and re-load and compare both objects")
     test_data_class_to_and_from_json()
 
     modify_dictionary()
 
-    logger.info('Validating all roman numbers up to 3999')
+    logger.info("Validating all roman numbers up to 3999")
     test_all_roman_numbers()
 
     test_geometry_shapely()
 
     # TODO Table printing / formatting without library: print table (2d array) with 'perfect' row width
 
-    logger.info('Converting all .jpg images in /images folder')
+    logger.info("Converting all .jpg images in /images folder")
     mass_convert_images()
 
-    logger.info('Testing database interaction')
+    logger.info("Testing database interaction")
     test_database()
     test_database_with_sqlalchemy()
     test_database_with_tinydb()
     test_database_with_sqlmodel()
     await test_database_with_mongodb()
 
-    logger.info('Running template files')
+    logger.info("Running template files")
     await async_timeout_main()
     deprecate_a_function_main()
     error_suppression_main()
@@ -122,10 +122,10 @@ async def main():
     await local_file_access_main()
 
     # SIGALRM doesn't work on windows
-    if not platform().lower().startswith('win'):
+    if not platform().lower().startswith("win"):
         timeout_main()
 
-    logger.info('Test plotting data')
+    logger.info("Test plotting data")
     matplotlib_plot_main()
     bokeh_plot_main()
     pandas_plot_main()
@@ -133,5 +133,5 @@ async def main():
     clean_up_main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main_sync()

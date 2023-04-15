@@ -11,7 +11,7 @@ def convert_string_to_path(multi_line_string: str) -> Iterable[Path]:
 
     to an iterator of Path
     """
-    for line in multi_line_string.strip().split('\n'):
+    for line in multi_line_string.strip().split("\n"):
         yield Path(line)
 
 

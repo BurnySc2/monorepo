@@ -5,11 +5,11 @@ from examples.other.mass_replace import mass_replacer
 
 
 def test_example_text():
-    text = 'my text cond\nition1 condition2'
-    replace_dict = {'cond\nition1': 'loves', 'condition2': 'fun'}
+    text = "my text cond\nition1 condition2"
+    replace_dict = {"cond\nition1": "loves", "condition2": "fun"}
 
     new_text = mass_replacer(text, replace_dict)
-    assert new_text == 'my text loves fun'
+    assert new_text == "my text loves fun"
 
 
 @given(
@@ -29,13 +29,13 @@ def test_many_texts(
         # or one key is contained in the other
         return
 
-    text = f'{w1}{w2}{w1}{w2}{w2}'
+    text = f"{w1}{w2}{w1}{w2}{w2}"
     replace_dict = {
         w1: w3,
         w2: w4,
     }
     new_text = mass_replacer(text, replace_dict)
-    expected_text = f'{w3}{w4}{w3}{w4}{w4}'
+    expected_text = f"{w3}{w4}{w3}{w4}{w4}"
     assert new_text == expected_text
 
     # The following may fail

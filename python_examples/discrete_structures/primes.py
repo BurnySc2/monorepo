@@ -47,10 +47,7 @@ def is_prime(n: int) -> bool:
     if n % 2 == 0:
         return False
     # For python 3.8: math.isqrt()
-    for i in range(3, int(math.sqrt(n)) + 1, 2):
-        if n % i == 0:
-            return False
-    return True
+    return all(n % i != 0 for i in range(3, math.isqrt(n) + 1, 2))
 
 
 def next_prime(n: int):
@@ -127,5 +124,5 @@ def test_prime_functions():
             assert prime_factors(i) == prime_factors_dict[i]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_prime_functions()
