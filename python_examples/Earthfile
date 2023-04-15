@@ -51,8 +51,11 @@ pytest:
     FROM +install-dev
     RUN poetry run pytest
 
-all:
+pre-commit:
     BUILD +format-check
     BUILD +lint
     BUILD +pyre
+
+all:
+    BUILD +pre-commit
     BUILD +pytest

@@ -22,6 +22,14 @@ install-frontend:
     BUILD ./bored_gems+install-all --NODEVERSION=${NODEVERSION}
     BUILD ./svelte_frontend+install-all --NODEVERSION=${NODEVERSION}
 
+pre-commit-backend:
+    BUILD ./burny_common+pre-commit --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./discord_bot+pre-commit --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./fastapi_server+pre-commit --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./python_examples+pre-commit --PYTHONVERSION=${PYTHONVERSION}
+
+# TODO pre-commit-frontend
+
 check-backend:
     BUILD ./burny_common+all --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./discord_bot+all --PYTHONVERSION=${PYTHONVERSION}
@@ -36,6 +44,11 @@ check-frontend:
 install-all:
     BUILD +install-backend
     BUILD +install-frontend
+
+# Run format-checks and linter
+pre-commit:
+    BUILD +pre-commit-backend
+    # BUILD +pre-commit-frontend
 
 # Run format-checks, linter and tests
 all:

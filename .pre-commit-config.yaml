@@ -43,35 +43,29 @@ repos:
   hooks:
   - id: check-github-workflows
 
-- repo: https://github.com/asottile/pyupgrade
-  rev: v3.2.0
-  hooks:
-  - id: pyupgrade
-    args: [--py38-plus, --keep-runtime-typing]
-
 # Detect functions and variables that are never used
 #- repo: https://github.com/asottile/dead
 #  rev: v1.4.0
 #  hooks:
 #  - id: dead
 
-#- repo: local
-#  hooks:
-#  # Install earthly requirements
-#  - id: earthly
-#    name: Install earthly requirements
-#    stages: [push]
-#    language: system
-#    entry: earthly +install-all --verbose true
-#    pass_filenames: false
+- repo: local
+  hooks:
+  # Install earthly requirements
+  - id: earthly-install
+    name: Install earthly requirements
+    stages: [commit]
+    language: system
+    entry: earthly +install-all --verbose true
+    pass_filenames: false
 
-  # Check formatting, lint, test
-#  - id: earthly
-#    name: Run earthly
-#    stages: [push]
-#    language: system
-#    entry: earthly +all --verbose true
-#    pass_filenames: false
+  # Check formatting, lint, dont run tests because pre-commit should be fast
+  - id: earthly-pre-commit
+    name: Run earthly pre commmit
+    stages: [commit]
+    language: system
+    entry: earthly +pre-commit --verbose true
+    pass_filenames: false
 
 #  - id: pytest-cov
 #    name: pytest

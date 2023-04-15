@@ -79,8 +79,11 @@ integration-test:
     COPY . /root/fastapi_server
     RUN sh run_integration_test.sh
 
-all:
+pre-commit:
     BUILD +format-check
     BUILD +lint
     BUILD +pyre
+
+all:
+    BUILD +pre-commit
     BUILD +pytest
