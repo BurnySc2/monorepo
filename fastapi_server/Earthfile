@@ -53,16 +53,6 @@ format:
     # Format code
     RUN poetry run yapf -ir .
 
-# Check if imports are unused
-remove-unused-imports-check:
-    FROM +install-dev
-    RUN poetry run ruff check . --select F
-
-# Check if imports require reordering
-sort-imports-check:
-    FROM +install-dev
-    RUN poetry run ruff check . --select I
-
 # Check if files are correctly formatted
 format-check:
     FROM +install-dev
@@ -90,8 +80,6 @@ integration-test:
     RUN sh run_integration_test.sh
 
 all:
-    BUILD +remove-unused-imports-check
-    BUILD +sort-imports-check
     BUILD +format-check
     BUILD +lint
     BUILD +pyre

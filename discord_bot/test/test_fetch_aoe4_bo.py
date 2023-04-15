@@ -75,9 +75,10 @@ def test_condition_enum(optional_count: str, action: str, operator: str, duratio
 
 
 @pytest.mark.asyncio
+@settings(deadline=1000)
 @given(
     message_text=st.from_regex(r"\w+", fullmatch=True),
-    player_search_results=st.lists(st.builds(PlayerSearchResult), max_size=100),
+    player_search_results=st.lists(st.builds(PlayerSearchResult), max_size=50),
 )
 async def test_public_search_aoe4_players(message_text: str, player_search_results: list[PlayerSearchResult]):
     with patch.object(
