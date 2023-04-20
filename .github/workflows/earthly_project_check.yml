@@ -50,7 +50,9 @@ jobs:
       run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
 
     - name: Install
-      run: earthly +install-backend --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+      run: |
+        touch discord_bot/SECRETS.toml
+        earthly +install-backend --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
     - name: Run code checks and tests
       run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
