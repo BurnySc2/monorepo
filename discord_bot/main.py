@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import os
 from pathlib import Path
 from typing import Any, AsyncGenerator, Awaitable, Callable
 
@@ -17,43 +16,27 @@ from hikari import (
     Intents,
     Message,
     OwnGuild,
-    PartialChannel,
     StartedEvent,
 )
 from hikari.channels import ChannelType
 from loguru import logger
 from postgrest import APIResponse
 
-from commands.public_emotes import public_count_emotes
 from commands.public_fetch_aoe4 import public_analyse_aoe4_game, public_fetch_aoe4_bo, public_search_aoe4_players
 from commands.public_leaderboard import public_leaderboard
 from commands.public_mmr import public_mmr
 from commands.public_remind import Remind
 from commands.public_twss import public_twss
-from db import DiscordMessage, DiscordQuotes, supabase
+from db import SECRETS, DiscordMessage, DiscordQuotes, supabase
 
-# Load key from env or from file
-token = os.getenv("DISCORDKEY")
-if token is None:
-    DISCORDKEY_PATH = Path(__file__).parent / "DISCORDKEY"
-    assert DISCORDKEY_PATH.is_file(), (
-        f"File '{DISCORDKEY_PATH}' not found, "
-        f"you can get it from https://discord.com/developers/applications/<bot_id>/bot"
-    )
-    with DISCORDKEY_PATH.open() as f:
-        token = f.read().strip()
-bot = GatewayBot(token=token, intents=Intents.ALL)
+bot = GatewayBot(token=SECRETS.discord_key, intents=Intents.ALL)
 BOT_USER_ID: int = -1
-del token
 
+# Discord command prefix
 PREFIX = "!"
 
 # Start reminder plugin
 my_reminder: Remind = Remind(bot)
-
-# Load stage via env variable
-assert os.getenv("STAGE", "DEV") in {"DEV", "PROD"}, os.getenv("STAGE", "DEV")
-STAGE = os.getenv("STAGE", "DEV")
 
 # Paths and folders of permanent data
 DATA_FOLDER = Path(__file__).parent / "data"
@@ -143,7 +126,6 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         logger.error(f"Last message in channel '{channel}' in server '{server}' could not be fetched")
         return
 
-    # Ignore E501
     # pyre-fixme[11]
     all_message_ids_response: APIResponse = await supabase.table(DiscordMessage.table_name()).select("message_id").eq(
         "channel_id",
@@ -179,7 +161,7 @@ async def get_all_servers() -> AsyncGenerator[OwnGuild, Any]:
     server: OwnGuild
     async for server in bot.rest.fetch_my_guilds():
         yield server
-        if STAGE == "PROD":
+        if SECRETS.stage == "PROD":
             # Add all messages to DB
             async for channel in get_text_channels_of_server(server):
                 # Create a coroutine that works in background to add messages of specific server and channel to database
@@ -203,11 +185,11 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if event.member.is_bot:
         return
 
-    channel: PartialChannel = await bot.rest.fetch_channel(event.channel_id)
+    channel: GuildTextChannel = await bot.rest.fetch_channel(event.channel_id)  # pyre-fixme[9]
     # Use channel 'bot_tests' only for development
-    if STAGE == "DEV" and channel.name != "bot_tests":
+    if SECRETS.stage == "DEV" and channel.name != "bot_tests":
         return
-    if STAGE == "PROD" and channel.name == "bot_tests":
+    if SECRETS.stage == "PROD" and channel.name == "bot_tests":
         return
 
     message: Message = await bot.rest.fetch_message(event.channel_id, event.message_id)
@@ -228,14 +210,14 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     # If "twss" reacted and reaction count >=3: add quote to db
     allowed_emoji_names = {"twss"}
     target_emoji_count = 3
-    if STAGE == "DEV" and channel.name == "bot_tests":
+    if SECRETS.stage == "DEV" and channel.name == "bot_tests":
         allowed_emoji_names = {"burnysStalker"}
         target_emoji_count = 1
     if not message.author.is_bot and event.emoji_name in allowed_emoji_names:
         for reaction in message.reactions:
             if reaction.emoji.name in allowed_emoji_names and reaction.count >= target_emoji_count:
                 # Add quote to db
-                if STAGE == "PROD":
+                if SECRETS.stage == "PROD":
                     try:
                         await (
                             supabase.table(DiscordQuotes.table_name()).insert(
@@ -272,7 +254,7 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                     f'Added {reaction.emoji.name} quote:\n{quote.when_arrow.strftime("%Y-%m-%d")} '
                     f'{quote.who}: {quote.what}'
                 )
-                await channel.send(response_message)  #pyre-fixme[16]
+                await channel.send(response_message)
                 return
         return
 
@@ -284,9 +266,9 @@ async def handle_new_message(event: GuildMessageCreateEvent) -> None:
     if not channel:
         return
     # Use channel 'bot_tests' only for development
-    if STAGE == "DEV" and channel.name != "bot_tests":
+    if SECRETS.stage == "DEV" and channel.name != "bot_tests":
         return
-    if STAGE == "PROD" and channel.name == "bot_tests":
+    if SECRETS.stage == "PROD" and channel.name == "bot_tests":
         return
 
     # Do not react if messages sent by webhook or bot, or message is empty
@@ -317,7 +299,7 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
         "reminders": my_reminder.public_list_reminders,
         "delreminder": my_reminder.public_del_remind,
         "mmr": public_mmr,
-        "emotes": public_count_emotes,
+        # "emotes": public_count_emotes,
         "twss": public_twss,
         "leaderboard": public_leaderboard,
         "aoe4find": public_search_aoe4_players,

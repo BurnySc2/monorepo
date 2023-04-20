@@ -22,6 +22,7 @@ simple-parsing = "^0.1"
 # Table as ascii art
 table2ascii = "^1.1.0"
 pydantic = "^1.10.5"
+toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -30,7 +31,6 @@ pytest = "^7.0.0"
 pytest-asyncio = "^0.15.1"
 # Autoformat
 yapf = "^0.32.0"
-toml = "^0.10.2"
 # Linter
 ruff = "^0.0.247"
 # Type checker

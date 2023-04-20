@@ -1,43 +1,46 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import asyncio
 
 import aiohttp
 from hikari import GatewayBot, GuildMessageCreateEvent
 
 # http://zetcode.com/python/prettytable/
-from prettytable import PrettyTable  # pip install PTable
+from prettytable import PrettyTable
+from pydantic import BaseModel
+
+from commands.mmr_models import PlayerData
 
 MESSAGE_CHARACTER_LIMIT = 2_000
 TABLE_ROW_LIMIT = 20
 
 
-@dataclass()
-class Sc2LadderResult:
-    realm: int
+class Sc2LadderResult(BaseModel):
+    realm: int = -1
     # One of US, EU, KR
-    region: str
+    region: str = ""
     # One of Master GrandMaster etc
     # rank: str
-    username: str
+    username: str = ""
     # Battle tag with #number
-    bnet_id: str
+    bnet_id: str = ""
     # One of Zerg Terran Protoss Random
-    race: str
+    race: str = ""
+    # Peak mmr
+    rating_max: int = -1
     # Last or current season mmr
-    mmr: str
+    mmr: str = ""
     # Current season games played
-    games_played: int
+    games_played: int = -1
     # Clantag or None if not given
-    clan_tag: str | None
+    clan_tag: str = ""
 
     @staticmethod
-    def from_api_result(data: dict) -> Sc2LadderResult:
-        members = data["members"]
-        character = members["character"]
-        previous_stats = data["previousStats"]
-        current_stats = data["currentStats"]
-        clan = members.get("clan")
+    def from_api_result(data: PlayerData) -> Sc2LadderResult:
+        members = data.members
+        character = members.character
+        previous_stats = data.previous_stats
+        current_stats = data.current_stats
         race = "Random"
         if "protossGamesPlayed" in members:
             race = "Protoss"
@@ -45,21 +48,16 @@ class Sc2LadderResult:
             race = "Terran"
         if "zergGamesPlayed" in members:
             race = "Zerg"
-        mmr = "-"
-        if previous_stats["rating"]:
-            mmr = str(previous_stats["rating"])
-        if current_stats["rating"]:
-            mmr = str(current_stats["rating"])
-        games_played = 0
-        if current_stats["gamesPlayed"]:
-            games_played = current_stats["gamesPlayed"]
-        clan_tag = clan["tag"] if clan else None
-        bnet_id = character["name"]
+        mmr = str(current_stats.rating or previous_stats.rating or "-")
+        games_played = current_stats.games_played or 0
+        clan_tag = (members.clan and members.clan.tag) or ""
+        bnet_id = character.name
         return Sc2LadderResult(
-            realm=character["realm"],
-            region=character["region"],
+            realm=character.realm,
+            region=character.region.value,
             bnet_id=bnet_id,
             race=race,
+            rating_max=data.rating_max,
             mmr=mmr,
             games_played=games_played,
             clan_tag=clan_tag,
@@ -115,9 +113,10 @@ async def public_mmr(
             fields = ["S-R", "MMR", "Games", "Name"]
             parsed_results: list[Sc2LadderResult] = []
             for api_result in results:
-                result_object: Sc2LadderResult = Sc2LadderResult.from_api_result(api_result)
+                parsed_player_data = PlayerData.parse_obj(api_result)
+                result_object: Sc2LadderResult = Sc2LadderResult.from_api_result(parsed_player_data)
                 parsed_results.append(result_object)
-            parsed_results.sort(key=lambda result: result.mmr, reverse=True)
+            parsed_results.sort(key=lambda result: (result.mmr, result.rating_max), reverse=True)
 
             pretty_table = PrettyTable(field_names=fields)
             pretty_table.border = False
@@ -134,3 +133,16 @@ async def public_mmr(
 
             query_link = f"<https://www.nephest.com/sc2/?type=search&name={query_name}#search>"
             return f"{query_link}\n```md\n{len(results)} results for {query_name}:\n{pretty_table}```"
+
+
+async def main():
+    async with aiohttp.ClientSession() as session:
+        url = "https://www.nephest.com/sc2/api/characters?name=maru"
+        response = await session.get(url)
+        data_json = await response.json()
+        data_parsed = [PlayerData.parse_obj(item) for item in data_json]
+        print(data_parsed)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

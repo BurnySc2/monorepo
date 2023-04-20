@@ -1,45 +1,36 @@
 from __future__ import annotations
 
 import asyncio
-import os
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Literal
 
 import arrow
+import toml
 from arrow import Arrow
-from postgrest.base_request_builder import APIResponse  # pyre-fixme[21]
+from postgrest.base_request_builder import APIResponse  #pyre-fixme[21]
+from pydantic import BaseModel
 
 from supabase_async_client import Client, create_client
 
-# Load url and key from env or from file
 
-url: str = os.getenv("SUPABASEURL")  # pyre-fixme[9]
-if url is None:
-    SUPABASEURL_PATH = Path(__file__).parent / "SUPABASEURL"
-    assert SUPABASEURL_PATH.is_file(), (
-        f"Missing file with supabase url: {SUPABASEURL_PATH}, "
-        f"you can get it from https://app.supabase.com/project/<project_id>/settings/api"
-    )
-    with SUPABASEURL_PATH.open("r") as f:
-        url = f.read().strip()
-key: str = os.getenv("SUPABASEKEY")  # pyre-fixme[9]
-if key is None:
-    SUPABASEKEY_PATH = Path(__file__).parent / "SUPABASEKEY"
-    assert SUPABASEKEY_PATH.is_file(), (
-        f"Missing file with supabase key: {SUPABASEKEY_PATH}, "
-        f"you can get it from https://app.supabase.com/project/<project_id>/settings/api"
-    )
-    with SUPABASEKEY_PATH.open("r") as f:
-        key = f.read().strip()
-
-supabase: Client = create_client(url, key)
-del url
-del key
+class Secrets(BaseModel):
+    supabase_url: str = ""
+    supabase_key: str = ""
+    discord_key: str = ""
+    stage: Literal["DEV", "PROD"] = "DEV"
 
 
-@dataclass
-class DiscordMessage:
+SECRETS_PATH = Path("SECRETS.toml")
+assert SECRETS_PATH.is_file(), """Could not find a 'SECRETS.toml' file.
+ Make sure to enter variables according to the 'Secrets' class."""
+
+with SECRETS_PATH.open() as f:
+    SECRETS = Secrets(**toml.loads(f.read()))
+
+supabase: Client = create_client(SECRETS.supabase_url, SECRETS.supabase_key)
+
+
+class DiscordMessage(BaseModel):
     message_id: int = 0
     guild_id: int = 0
     channel_id: int = 0
@@ -97,8 +88,7 @@ ORDER BY count(message_id) DESC;
             yield DiscordMessage(**row)
 
 
-@dataclass
-class DiscordQuotes:
+class DiscordQuotes(BaseModel):
     # TODO Describe Postgresql schema
     message_id: int = 0
     guild_id: int = 0

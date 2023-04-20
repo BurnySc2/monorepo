@@ -9,9 +9,14 @@
     ```
 - Required private file: DISCORDKEY, SUPABASEKEY, SUPABASEURL (the error messages should display if certain keys are missing)
 
+### Development
+Open this project folder `discord_bot` with VSCode via command `code discord_bot`. Configure the python interpreter to point to your venv location, which can be found via `poetry env info --path`. Now the debugger options from the project's launch.json and the `testing` tab should be available in VSCode. Consider installing the recommended VSCode extensions.
+
+You can run and debug the bot and tests via the debug config, or manually via terminal `poetry run python main.py` and the tests via `poetry run pytest`
+
 ### Running
 
-Run the bot with command
+Start the bot in `cwd=discord_bot/` with command
 
 `poetry run python main.py`
 

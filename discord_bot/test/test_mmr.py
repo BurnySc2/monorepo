@@ -1,10 +1,7 @@
-import pytest
-
 from commands.public_mmr import Sc2LadderResult
 
 
-@pytest.mark.asyncio
-async def test_parse_api_result():
+def test_parse_api_result():
     example_response = {
         "leagueMax": 6,
         "ratingMax": 6820,

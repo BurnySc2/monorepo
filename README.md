@@ -87,3 +87,6 @@ This runs pylint, mypy, pytest tests, apply autoformatter yapf
 
 # Autoformat all files
 `earthly +format`
+
+# Recommended websites and tools:
+[Convert JSON API response to types](https://app.quicktype.io/#l=Python)

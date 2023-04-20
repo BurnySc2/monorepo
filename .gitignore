@@ -112,6 +112,9 @@ venv.bak/
 .pants.*
 .pids
 
+# Pyre
+.pyre
+
 # Frontend
 .netlify
 build
@@ -134,7 +137,5 @@ todos.db
 fastapi_server/data
 
 # Discord bot files
-/discord_bot/DISCORDKEY
-/discord_bot/SUPABASEURL
-/discord_bot/SUPABASEKEY
+/discord_bot/SECRETS.toml
 /discord_bot/data/
