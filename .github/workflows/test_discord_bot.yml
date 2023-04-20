@@ -46,7 +46,9 @@ jobs:
 
     - name: Install
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+      run: |
+        touch SECRETS.toml
+        earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
     - name: Run code checks and tests
       working-directory: ${{ env.SUBDIRECTORY }}

@@ -1,3 +1,4 @@
+from commands.mmr_models import PlayerData
 from commands.public_mmr import Sc2LadderResult
 
 
@@ -49,7 +50,8 @@ def test_parse_api_result():
         }
     }
 
-    test_object = Sc2LadderResult.from_api_result(example_response)
+    parsed_data = PlayerData.parse_obj(example_response)
+    test_object = Sc2LadderResult.from_api_result(parsed_data)
     result = test_object.format_result()
 
     correct_result = ["EU P", "6632", "32", "[RBLN] Harstem"]

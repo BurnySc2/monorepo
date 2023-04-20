@@ -55,11 +55,11 @@ class Clan(BaseModel):
 class Members(BaseModel):
     character: Character
     account: Account
-    zerg_games_played: Optional[int] = Field(Optional[int], alias="zergGamesPlayed")
-    terran_games_played: Optional[int] = Field(Optional[int], alias="terranGamesPlayed")
+    zerg_games_played: int = Field(0, alias="zergGamesPlayed")
+    terran_games_played: int = Field(0, alias="terranGamesPlayed")
     clan: Optional[Clan] = None
-    protoss_games_played: Optional[int] = Field(Optional[int], alias="protossGamesPlayed")
-    random_games_played: Optional[int] = Field(Optional[int], alias="randomGamesPlayed")
+    protoss_games_played: int = Field(0, alias="protossGamesPlayed")
+    random_games_played: int = Field(0, alias="randomGamesPlayed")
 
 
 # pyre-fixme[13]

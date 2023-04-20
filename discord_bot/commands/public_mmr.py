@@ -42,11 +42,11 @@ class Sc2LadderResult(BaseModel):
         previous_stats = data.previous_stats
         current_stats = data.current_stats
         race = "Random"
-        if "protossGamesPlayed" in members:
+        if members.protoss_games_played > 0:
             race = "Protoss"
-        if "terranGamesPlayed" in members:
+        if members.terran_games_played > 0:
             race = "Terran"
-        if "zergGamesPlayed" in members:
+        if members.zerg_games_played > 0:
             race = "Zerg"
         mmr = str(current_stats.rating or previous_stats.rating or "-")
         games_played = current_stats.games_played or 0

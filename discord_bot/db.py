@@ -14,9 +14,9 @@ from supabase_async_client import Client, create_client
 
 
 class Secrets(BaseModel):
-    supabase_url: str = ""
-    supabase_key: str = ""
-    discord_key: str = ""
+    supabase_url: str = "https://dummyname.supabase.co"
+    supabase_key: str = "some.default.key"
+    discord_key: str = "somedefaultkey"
     stage: Literal["DEV", "PROD"] = "DEV"
 
 
