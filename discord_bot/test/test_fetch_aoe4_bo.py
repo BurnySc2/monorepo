@@ -42,7 +42,7 @@ def test_action_enum_success(test_input: str):
 
 @given(st.text())
 def test_action_enum_failure(test_input: str):
-    if test_input not in ALLOWED_ACTION_ENUM_VALUES:
+    if test_input.lower() not in ALLOWED_ACTION_ENUM_VALUES:
         with pytest.raises(ValueError):
             _parsed = Action.parse_action(test_input)
 

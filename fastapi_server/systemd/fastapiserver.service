@@ -3,7 +3,7 @@
 ExecStart=/usr/bin/docker run --rm --name fastapi_server \
     --publish 8000:8000 \
     --env STAGE=PROD \
-    --mount type=bind,source="/home/fastapiserver/data",destination=/root/fastapi_server/data \
+    -v ./data:/root/fastapi_server/data \
     burnysc2/fastapi_server:latest
 Restart=always
 RestartSec=20

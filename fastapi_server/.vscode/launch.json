@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Discord Bot: Run Current File",
+            "name": "Fastapi Server: Run Current File",
             "type": "python",
             "request": "launch",
             "program": "${file}",
@@ -13,7 +13,7 @@
             "justMyCode": true
         },
         {
-            "name": "Discord Bot: Start",
+            "name": "Fastapi Server: Start",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}",
@@ -22,12 +22,14 @@
             "justMyCode": true
         },
         {
-            "name": "Discord Bot: Run Tests",
+            "name": "Fastapi Server: Run Tests",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "module": "pytest",
-            "args": [],
+            "args": [
+                "test",
+            ],
             "console": "integratedTerminal",
             "justMyCode": true
         }

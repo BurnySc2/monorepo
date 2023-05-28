@@ -1,7 +1,7 @@
 # To stdout example
 echo 100
 
-# To stdout example
+# To stderr example
 cat file_doesnt_exist1
 
 # Redirect stdout to stderr

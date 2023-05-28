@@ -1,8 +1,8 @@
 # /etc/systemd/system/discordbot.service
 [Service]
 ExecStart=/usr/bin/docker run --rm --name discord_bot --env STAGE=PROD \
-    --mount type=bind,source="/home/discordbot/data",destination=/root/discord_bot/data \
-    --mount type=bind,source="/home/discordbot/SECRETS.toml",destination=/root/discord_bot/SECRETS.toml,readonly \
+    -v ./data:/root/discord_bot/data \
+    -v ./SECRETS.toml:/root/discord_bot/SECRETS.toml:ro \
     burnysc2/discord_bot:latest
 Restart=always
 RestartSec=20

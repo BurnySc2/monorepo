@@ -98,6 +98,10 @@ jobs:
       USERNAME: discordbot
 
     steps:
+      # Requires the following 3 lines added to "visudo" on the server
+      # discordbot ALL=(ALL) NOPASSWD: /bin/systemctl disable --now discordbot
+      # discordbot ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+      # discordbot ALL=(ALL) NOPASSWD: /bin/systemctl enable --now discordbot
     - name: Update docker image on server and restart server
       uses: appleboy/ssh-action@master
       with:

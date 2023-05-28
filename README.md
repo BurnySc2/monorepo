@@ -10,72 +10,21 @@
 My monorepo for various tools and showcases
 
 # Development
-## Pycharm
-Open the project in root folder, then add each project subfolder as `file -> Attach project...`. This enables different python virtual environments in each project folder.
+### Pre-requisites
+- [Python](https://www.python.org/downloads)
+    - [Poetry](https://python-poetry.org/docs/)
+- [Node / NPM](https://www.npmjs.com)
+- [Earthly](https://earthly.dev)
+
+## VScode
+Run VScode task called `Install requirements` or alternatively run `sh .vscode/install_requirements.sh` or alternatively run `poetry install` in the python projects or `npm install` in the frontend projects.
+
+Open the Command Palette and `Workspaces: Add Folder to Workspace...` and select the folders you want to edit.
+
+Now set up the correct interpreter path (may have to navigate the absolute path, on linux that is `~/.cache/pypoetry/virtualenvs/...`). The running the command `poetry env info --path` in each project shows where the environment was installed to. 
 
 ## VS code
 TODO
-
-# Useful Poetry commands
-https://python-poetry.org/docs/cli/
-### Create new project
-`poetry init`
-### Install dependencies
-`poetry install`
-
-`poetry install --no-dev`
-### Add dependencies
-`poetry add <package-name>`
-
-Add dev dependency:
-
-`poetry add <package-name> --dev`
-### Remove dependencies
-`poetry remove <package-name>`
-### Update dependencies
-`poetry update`
-### List current and latest available version
-`poetry show -l`
-### Same as above, but only show outdated
-`poetry show -o`
-### List of packages
-`poetry show`
-### Run a file in virtual environment
-`poetry run python python_examples/main.py`
-
-`poetry run pytest`
-
-### Write requirements.txt from Poetry lock file
-`poetry export -f requirements.txt > requirements.txt`
-
-
-# Run python files
-- install `poetry` using command `pip install poetry`
-- run the python file `main.py` using `poetry run python main.py`
-- or `poetry shell` and then run `python main.py`
-
-
-# Run Tests
-Single file:
-`poetry run pytest test/test_functions.py`
-Single function:
-`poetry run pytest test/test_functions.py::test_fuction_name`
-Single function in class:
-`poetry run pytest test/test_functions.py::class_name::test_fuction_name`
-
-Test all files in project:
-`poetry run pytest`
-
-# Run and display code coverage 
-In pycharm: right click folder and `More Run/Debug` -> `Run pytest in '...' with coverage'`
-
-```
-poetry run pytest --cov=. --cov-report xml --cov-report html && poetry run coverage html
-```
-
-then use `coverage gutters` extension in VScode
-
-or open the generated html file in folder `htmlcov`
 
 # Install and run pre-commit hook on all staged files
 ```sh
@@ -90,3 +39,4 @@ This runs pylint, mypy, pytest tests, apply autoformatter yapf
 
 # Recommended websites and tools:
 [Convert JSON API response to types](https://app.quicktype.io/#l=Python)
+[Convert curl to python requests](https://curlconverter.com)

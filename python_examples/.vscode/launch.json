@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Discord Bot: Run Current File",
+            "name": "Python Examples: Run Current File",
             "type": "python",
             "request": "launch",
             "program": "${file}",
@@ -13,21 +13,11 @@
             "justMyCode": true
         },
         {
-            "name": "Discord Bot: Start",
+            "name": "Python Examples: Run main.py",
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "program": "main.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        {
-            "name": "Discord Bot: Run Tests",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "module": "pytest",
-            "args": [],
             "console": "integratedTerminal",
             "justMyCode": true
         }

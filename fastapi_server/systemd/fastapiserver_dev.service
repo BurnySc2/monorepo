@@ -2,9 +2,9 @@
 [Service]
 ExecStart=/usr/bin/docker run --rm --name fastapi_server_dev \
     --publish 8001:8000 \
-    --env STAGE=DEV \
+    --env STAGE=dev \
     --env TIMEOUT=600 \
-    --mount type=bind,source="/home/fastapiserverdev/data",destination=/root/fastapi_server/data \
+    -v ./data:/root/fastapi_server/data \
     burnysc2/fastapi_server:latest_dev
 Restart=always
 RestartSec=20
