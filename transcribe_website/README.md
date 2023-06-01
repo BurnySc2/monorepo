@@ -18,8 +18,20 @@ https://github.com/ahmetoner/whisper-asr-webservice
         - mark jobs as fail if retry >= max_retry
         - mark jobs as stale if job_started time has been too long ago
     - start job and update progress to supabase https://github.com/openai/whisper/discussions/850#discussioncomment-5443424
+        - start by launching a docker container
+        - docker container only has access to mp3 file and an output directory for the resulting files
+        - docker has volume with whisper models
     - on finish: upload all output files as database row entry? or as zip
     - on failure: retry if recoverable fail
+
+# Dockerfile
+- image with faster_whisper but no models installed
+- models will be downloaded (and cached in volume) on container launch
+- endpoints
+    - detect language
+    - transcribe (+ translate) with params:
+        - autodetect or force language detection
+        - transcribe or translate (to english)
 
 
 # Backend - Mass transcribe
@@ -40,13 +52,13 @@ https://github.com/ahmetoner/whisper-asr-webservice
 | Field Name         | Data Type | Example |
 |--------------------|-----------|---------|
 | id                 |   int     | 1 |
-| user name          |   str        | burny |
-| job_added datetime |   datetime        | today 0:00 |
+| issued_user          |   str        | burny |
+| job_created datetime |   datetime        | today 0:00 |
 | job_started datetime |   null/datetime       | null |
-| retry              |   int     | 3
-| max retries        |   int     | 5
-| status        |   str     | completed |
-| input_data          | point to data bucket | my_file.mp3
+| job_completed datetime |   null/datetime       | null |
+| retry              |   int     | 2
+| max retries        |   int     | 3
+| status        |   str     | 55% completed |
 | output_data          | null / blob (zip of output) |
 | job_params | json | which model (tiny, small, medium), transcribe/translate, language (en, de)
 

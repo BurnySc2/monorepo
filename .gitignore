@@ -139,3 +139,8 @@ fastapi_server/data
 # Discord bot files
 /discord_bot/SECRETS.toml
 /discord_bot/data/
+
+# Transcribe website
+/transcribe_website/transcriber_backend/whisper_models/
+/transcribe_website/transcriber_backend/result/
+/transcribe_website/transcriber_backend/src/SECRETS.toml
