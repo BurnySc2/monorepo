@@ -144,3 +144,10 @@ fastapi_server/data
 /transcribe_website/transcriber_backend/whisper_models/
 /transcribe_website/transcriber_backend/result/
 /transcribe_website/transcriber_backend/src/SECRETS.toml
+
+# Telegram media downloader
+/telegram_media_downloader/SECRETS.toml
+/telegram_media_downloader/messages.db
+/telegram_media_downloader/messages.db-journal
+/telegram_media_downloader/media_downloader.session
+/telegram_media_downloader/media_downloader.session-journal
