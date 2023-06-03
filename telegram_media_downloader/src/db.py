@@ -72,6 +72,7 @@ class Status(enum.Enum):
 
 
 class MessageModel(db.Entity):
+    _table_ = "MessageModel" # Table name
     id = orm.PrimaryKey(int, auto=True)
     channel_id = orm.Required(str)
     message_id = orm.Required(int)

@@ -6,7 +6,7 @@ authors = ["BuRny <gamingburny@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.12"
+python = ">=3.8, <3.11"
 loguru = "^0.7.0"
 pydantic = "^1.10.5"
 toml = "^0.10.2"

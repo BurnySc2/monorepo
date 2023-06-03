@@ -21,9 +21,11 @@ def check_message(message: MessageModel) -> str:
     output_path = Path(message.output_file)
     if output_path.is_file():
         return Status.COMPLETED.name
-    elif audio_filter(message) and video_filter(message) and photo_filter(
-        message
-    ) and message.channel_id in SECRETS.channel_ids:
+    elif (
+        audio_filter(message) and video_filter(message) and photo_filter(message)
+        and SECRETS.media_min_date < message.message_date < SECRETS.media_max_date
+        and message.channel_id in SECRETS.channel_ids
+    ):
         return Status.QUEUED.name
     else:
         return Status.FILTERED.name

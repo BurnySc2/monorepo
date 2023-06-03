@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 from typing import Literal
 
@@ -14,6 +15,8 @@ class Secrets(BaseModel):
     output_folder: str = ""
     parallel_downloads_count: int = 1
     # Filters
+    media_min_date: datetime.datetime = datetime.datetime.fromisoformat("0001-01-01T00:00:00-00:00")
+    media_max_date: datetime.datetime = datetime.datetime.fromisoformat("9999-01-01T00:00:00-00:00")
     # Photo
     photo_min_file_size_bytes: int = 0
     photo_max_file_size_bytes: int = 4_000_000_000
