@@ -61,6 +61,7 @@ def audio_filter(message: MessageModel) -> bool:
 
 
 class Status(enum.Enum):
+    """Possible status of a message in the db."""
     UNKNOWN = 0
     QUEUED = 1
     FILTERED = 2
@@ -90,7 +91,7 @@ class MessageModel(db.Entity):
 
     @staticmethod
     def get_one_queued() -> MessageModel | None:
-
+        """Used in getting any queued message for the download-worker."""
         with orm.db_session():
             messages = orm.select(m for m in MessageModel if m.status == Status.QUEUED.name
                                   ).order_by(orm.desc(MessageModel.message_id)).limit(1)
@@ -100,6 +101,7 @@ class MessageModel(db.Entity):
 
     @staticmethod
     def get_oldest_message_id(channel_id: str) -> int:
+        """Used in finding the oldest parsed message_id of a channel. Returns 0 if channel has not been parsed yet."""
         with orm.db_session():
             messages = orm.select(m for m in MessageModel
                                   if m.channel_id == channel_id).order_by(MessageModel.message_id).limit(1)
@@ -108,24 +110,22 @@ class MessageModel(db.Entity):
             return list(messages)[0].message_id
 
     @staticmethod
-    def get_newest_message_id(channel_id: str) -> int:
-        with orm.db_session():
-            messages = orm.select(m for m in MessageModel
-                                  if m.channel_id == channel_id).order_by(orm.desc(MessageModel.message_id)).limit(1)
-            if len(messages) == 0:
-                return 10**10
-            return list(messages)[0].message_id
-
-    @staticmethod
     def get_count() -> tuple[int, int]:
+        """Returns a tuple of how many downloads are complete and how many total there are."""
         with orm.db_session():
             done_count = orm.count(m for m in MessageModel if m.status == Status.COMPLETED.name)
-            total_count = orm.count(m for m in MessageModel if m.status in [Status.COMPLETED.name, Status.QUEUED.name])
+            total_count = orm.count(
+                m for m in MessageModel if m.status in [
+                    Status.QUEUED.name,
+                    Status.DOWNLOADING.name,
+                    Status.COMPLETED.name,
+                ]
+            )
             return done_count, total_count
 
 
 # Enable debug mode to see the queries sent
 # orm.set_sql_debug(True)
 
-# 1) Create tables
+# Create tables if they didn't exist yet
 db.generate_mapping(create_tables=True)
