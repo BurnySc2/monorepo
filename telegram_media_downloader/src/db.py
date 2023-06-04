@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime
 import enum
+from pathlib import Path
 
 from pony import orm  # pyre-fixme[21]
 
@@ -69,26 +70,42 @@ class Status(enum.Enum):
     MISSING_FILE_NAME = 4
     NO_MEDIA = 5
     COMPLETED = 6
+    ERROR_DOWNLOADING = 7
+    ERROR_EXTRACTING_AUDIO = 8
 
 
 class MessageModel(db.Entity):
-    _table_ = "MessageModel" # Table name
+    _table_ = "MessageModel"  # Table name
     id = orm.PrimaryKey(int, auto=True)
     channel_id = orm.Required(str)
     message_id = orm.Required(int)
     message_date = orm.Required(datetime.datetime)
     link = orm.Required(str)
     status = orm.Required(str)
-    retry = orm.Required(int)
-    output_file = orm.Optional(str)
     media_type = orm.Optional(str)
     file_id = orm.Optional(str)
     file_unique_id = orm.Optional(str)
     file_name = orm.Optional(str)
-    file_size_bytes = orm.Optional(int)
+    file_size_bytes = orm.Optional(int, size=64)
     file_duration_seconds = orm.Optional(int)
     file_height = orm.Optional(int)
     file_width = orm.Optional(int)
+
+    @property
+    def temp_download_path(self) -> Path:
+        file_path = Path(self.file_name)
+        return SECRETS.output_folder_path / "downloading" / f"{file_path.name}.temp"
+
+    @property
+    def output_file_path(self) -> Path:
+        file_path = Path(self.file_name)
+        if self.media_type == "Video" and SECRETS.extract_audio_from_videos:
+            return SECRETS.output_folder_path / self.channel_id / "extracted_audio" / f"{file_path.stem}.mp3"
+        return SECRETS.output_folder_path / self.channel_id / self.media_type / file_path.name
+
+    @property
+    def download_completed(self) -> bool:
+        return self.output_file_path.is_file()
 
     @staticmethod
     def get_one_queued() -> MessageModel | None:
