@@ -3,51 +3,114 @@ Database models for supabase
 """
 from __future__ import annotations
 
+import datetime
+import enum
 from pathlib import Path
-from typing import Generator, Literal
+from typing import Optional
 
 import arrow
-import toml
-from postgrest.base_request_builder import APIResponse  # pyre-fixme[21]
+from pony import orm  # pyre-fixme[21]
 from pydantic import BaseModel
-from supabase import Client, create_client
+
+from src.secrets_loader import SECRETS
 
 
-class Secrets(BaseModel):
-    supabase_url: str = "https://dummyname.supabase.co"
-    supabase_key: str = "some.default.key"
-    discord_key: str = "somedefaultkey"
-    stage: Literal["DEV", "PROD"] = "DEV"
+class Task(enum.Enum):
+    Transcribe = 0
+    Translate = 1
+    Detect = 2
 
 
-SECRETS_PATH = Path("SECRETS.toml")
-assert SECRETS_PATH.is_file(), """Could not find a 'SECRETS.toml' file.
- Make sure to enter variables according to the 'Secrets' class."""
+class ModelSize(enum.Enum):
+    Tiny = 0
+    Base = 1
+    Small = 2
+    Medium = 3
+    Large = 4
+    # Largev1 = 5
 
-with SECRETS_PATH.open() as f:
-    SECRETS = Secrets(**toml.loads(f.read()))
 
-supabase: Client = create_client(SECRETS.supabase_url, SECRETS.supabase_key)
+class Language(enum.Enum):
+    en = 1
+    de = 2
 
 
-class JobItem(BaseModel):
-    id: int = 0
-    # When the job was queued - when did the user issue the job?
-    job_created: str = ""
-    # When the job has started processing
-    job_started: str | None = None
-    # When the job completed processing
-    job_completed: str | None = None
-    # Do not retry jobs with retry>=max_retries
-    retry: int = 0
-    max_retries: int = 0
-    # Other job params, e.g.
-    # task - (transcribe, translate, detect language)
-    # language - (en, de, ...)
-    # model - (tiny, base, small, medium, large)
-    job_params: dict = {}
+class JobParameters(BaseModel):
+    task: Task = Task.Transcribe
+    model_size: ModelSize = ModelSize.Small
+    forced_language: Optional[str] = None
+
+
+class JobStatus(enum.Enum):
+    UNKNOWN = 0
+    QUEUED = 1  # Ready to be processed
+    ACCEPTED = 2  # Accepted by a backend transcriber
+    PROCESSING = 3  # Files have been downloaded and progress started
+    FINISHING = 4  # Transcribing is completed, uploading results
+    DONE = 5  # Results uploaded to db
+
+
+db = orm.Database()
+
+db.bind(
+    provider=SECRETS.postgres_provider,
+    user=SECRETS.postgres_user,
+    database=SECRETS.postgres_database,
+    password=SECRETS.postgres_password,
+    host=SECRETS.postgres_host,
+    port=SECRETS.postgres_port,
+)
+
+
+class Mp3File(db.Entity):
+    _table_ = "transcribe_mp3s"  # Table name
+    id = orm.PrimaryKey(int, auto=True)
+    job_item = orm.Required("JobItem")
+    # The mp3 file to be analyzed
+    mp3_data = orm.Optional(bytes)
+
+
+class OutputResult(db.Entity):
+    _table_ = "transcribe_text"  # Table name
+    id = orm.PrimaryKey(int, auto=True)
+    job_item = orm.Required("JobItem")
     # Always generate a .zip file which contains a .srt file, from which all other formats can be converted
-    output_data: str | None = None
+    zip_data = orm.Optional(bytes)
+
+
+class JobItem(db.Entity):
+    _table_ = "transcribe_jobs"  # Table name
+    # id maps to f"{id}.mp3" in bucket "transcribe_mp3"
+    id = orm.PrimaryKey(int, auto=True)
+    # When the job was queued - when did the user issue the job?
+    job_created = orm.Optional(datetime.datetime)
+    # When the job has started processing
+    job_started = orm.Optional(datetime.datetime)
+    # When the job completed processing
+    job_completed = orm.Optional(datetime.datetime)
+    # Do not retry jobs with retry <= 0
+    remaining_retries = orm.Optional(int)
+    # task - (TRANSCRIBE, TRANSLATE, DETECT_LANGUAGE)
+    task = orm.Required(str, py_check=lambda val: Task[val])
+    # language - (en, de, ...)
+    detected_language = orm.Optional(str, py_check=lambda val: val == "" or Language[val])
+    # model_size - (tiny, base, small, medium, large)
+    model_size = orm.Required(str, py_check=lambda val: ModelSize[val])
+
+    input_file_mp3 = orm.Optional(Mp3File)
+    input_file_size_bytes = orm.Optional(int, size=64)
+    # input_file_duration = orm.Optional(int, size=32)
+    output_zip_data = orm.Optional(OutputResult)
+
+    issued_by = orm.Optional(str)
+    # The full path to the .mp3 file, dont add duplicates
+    local_file = orm.Optional(str, unique=True)
+    status = orm.Optional(str)
+    progress = orm.Optional(int)
+
+    @property
+    def job_parameters(self) -> JobParameters:
+        return JobParameters.parse_raw(self.job_params)
 
     @property
     def job_created_arrow(self) -> arrow.Arrow:
@@ -61,18 +124,30 @@ class JobItem(BaseModel):
     def job_completed_arrow(self) -> arrow.Arrow:
         return arrow.get(self.job_completed)
 
-    @staticmethod
-    def table_name() -> str:
-        return "transcribe_jobs"
+    @property
+    def local_file_path(self) -> Path:
+        return Path(self.local_file)
 
     @staticmethod
-    def from_select(response: APIResponse) -> Generator[JobItem, None, None]:
-        for row in response.data:
-            yield JobItem(**row)
+    def get_one_queued() -> JobItem | None:
+        """Used in getting any queued jobs for the processing-worker."""
+        with orm.db_session():
+            job_items = orm.select(m for m in JobItem if m.status == JobStatus.QUEUED.name).order_by(
+                orm.desc(JobItem.job_created),
+            ).limit(1)
+            if len(job_items) == 0:
+                return None
+            return list(job_items)[0]
 
+
+# Enable debug mode to see the queries sent
+# orm.set_sql_debug(True)
+
+db.generate_mapping(create_tables=True)
 
 if __name__ == "__main__":
-    response = supabase.table(JobItem.table_name()).select("*").order("job_created").execute()
-    for row in JobItem.from_select(response):
-        # job = JobItem(**row)
-        print(row)
+    with orm.db_session():
+        print(orm.select(j for j in JobItem).get_sql())
+        for job in orm.select(j for j in JobItem):
+            print(type(job.job_parameters))
+            print(job.job_parameters)

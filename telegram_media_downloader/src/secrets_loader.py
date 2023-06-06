@@ -46,4 +46,4 @@ class Secrets(BaseModel):
 
 
 with (Path(__file__).parent.parent / "SECRETS.toml").open() as f:
-    SECRETS = Secrets(**toml.loads(f.read()))
+    SECRETS: Secrets = Secrets(**toml.loads(f.read()))

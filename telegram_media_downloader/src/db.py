@@ -75,6 +75,7 @@ class Status(enum.Enum):
 
 
 class MessageModel(db.Entity):
+    # TODO Filter duplicate message, maybe with combination of "size_bytes" and "duration_seconds" has to be unique
     _table_ = "MessageModel"  # Table name
     id = orm.PrimaryKey(int, auto=True)
     channel_id = orm.Required(str)
@@ -111,8 +112,9 @@ class MessageModel(db.Entity):
     def get_one_queued() -> MessageModel | None:
         """Used in getting any queued message for the download-worker."""
         with orm.db_session():
-            messages = orm.select(m for m in MessageModel if m.status == Status.QUEUED.name
-                                  ).order_by(orm.desc(MessageModel.message_id)).limit(1)
+            messages = orm.select(m for m in MessageModel if m.status == Status.QUEUED.name).order_by(
+                orm.desc(MessageModel.message_id),
+            ).limit(1)
             if len(messages) == 0:
                 return None
             return list(messages)[0]

@@ -3,23 +3,28 @@ name = "transcriber-backend"
 version = "0.1.0"
 description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
-packages = [
-    { include = "src/*.py" },
-]
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.12"
-# Remote SQL DB
-supabase = "^1.0.0"
-postgrest-py = "^0.10.2"
+python = ">=3.8, <3.11"
 # Argparse with dataclass
 simple-parsing = "^0.1"
+# Better dataclasses
 pydantic = "^1.10.5"
-toml = "^0.10.2"
-faster-whisper = "^0.6.0"
+# Logging
 loguru = "^0.7.0"
-tqdm = "^4.65.0"
+# Read config files
+toml = "^0.10.2"
+# Better datetime
 arrow = "^1.2.3"
+# Database interaction
+pony = "^0.7.16"
+# Requires binary for Dockerfile
+# psycopg2 = "^2.9.6"
+psycopg2-binary = "^2.9.6"
+# Transcribing
+faster-whisper = "==0.6.0"
+# Progress bar
+tqdm = "^4.65.0"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -50,21 +55,21 @@ line-length = 120
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 select = [
-    "C4", # flake8-comprehensions
-    "E",  # Error
-    "F",  # pyflakes
-    "BLE",  # flake8-blind-except
-    "I",  # isort
+    "C4",  # flake8-comprehensions
+    "E",   # Error
+    "F",   # pyflakes
+    "BLE", # flake8-blind-except
+    "I",   # isort
     "ISC", # flake8-implicit-str-concat
-    "N",  # pep8-naming
-    "PGH",  # pygrep-hooks
+    "N",   # pep8-naming
+    "PGH", # pygrep-hooks
     "PTH", # flake8-use-pathlib
-    "SIM",  # flake8-simplify
-    "W",  # Warning
-    "Q",  # flake8-quotes
+    "SIM", # flake8-simplify
+    "W",   # Warning
+    "Q",   # flake8-quotes
     "YTT", # flake8-2020
     "UP",  # pyupgrade
-#    "A",  # flake8-builtins
+    #    "A",  # flake8-builtins
 ]
 
 [tool.ruff.pyupgrade]

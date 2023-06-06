@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import os
@@ -61,7 +63,19 @@ class DownloadWorker:
     @staticmethod
     async def extract_mp3_from_video(data_or_path: BytesIO | Path) -> BytesIO:
         if isinstance(data_or_path, BytesIO):
-            command = ["ffmpeg", "-i", "-", "-vn", "-c:a", "libmp3lame", "-q:a", "2", "-f", "mp3", "-"]
+            command = [
+                "ffmpeg",
+                "-i",
+                "-",
+                "-vn",
+                "-c:a",
+                "libmp3lame",
+                "-q:a",
+                "2",
+                "-f",
+                "mp3",
+                "-",
+            ]
             proc = await asyncio.create_subprocess_exec(
                 *command,
                 stdin=asyncio.subprocess.PIPE,
@@ -71,8 +85,17 @@ class DownloadWorker:
             stdout_data, _ = await proc.communicate(data_or_path.getvalue())
         elif isinstance(data_or_path, Path):
             command = [
-                "ffmpeg", "-i",
-                str(data_or_path.absolute()), "-vn", "-c:a", "libmp3lame", "-q:a", "2", "-f", "mp3", "-"
+                "ffmpeg",
+                "-i",
+                str(data_or_path.absolute()),
+                "-vn",
+                "-c:a",
+                "libmp3lame",
+                "-q:a",
+                "2",
+                "-f",
+                "mp3",
+                "-",
             ]
             proc = await asyncio.create_subprocess_exec(
                 *command,
@@ -224,6 +247,8 @@ def requeue_interrupted_downloads():
 async def main(client: Client):
     logger.info("Checking for changed filters...")
     requeue_interrupted_downloads()
+    # TODO Update all file_ids of status=Status.QUEUED files (= not downloaded and not filtered files)
+    # because the file_ids seem to expire
 
     await client.start()
     await DownloadWorker.launch_workers(n=SECRETS.parallel_downloads_count)
@@ -279,6 +304,7 @@ async def main(client: Client):
             break
         logger.info(f"Waiting for jobs to finish: {done} / {total}")
         await asyncio.sleep(30)
+
 
 if __name__ == "__main__":
     app = Client(
