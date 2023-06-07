@@ -23,11 +23,11 @@
                 "--input_file",
                 "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3",
                 "--task",
-                "Detect",
-                // "--language",
-                // "en",
+                "Transcribe",
+                "--language",
+                "en",
                 "--model",
-                "Base"
+                "Small"
             ],
             "console": "integratedTerminal",
             "justMyCode": false

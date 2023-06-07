@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import datetime
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from io import BytesIO
 from pathlib import Path
 from typing import ClassVar
@@ -18,33 +19,26 @@ from src.db import JobItem, JobStatus, OutputResult, orm
 
 @dataclass
 class Worker:
-    active_worker_count: ClassVar[int] = 0
-    job_id: int = 0
+    active_workers: ClassVar[list[Worker]] = []
+    job_to_task_map: ClassVar[dict[int, asyncio.Task]] = {}
+    job_id: int
+    started: datetime.datetime
 
     async def work(self) -> None:
         with orm.db_session():
             job_info: JobItem = JobItem[self.job_id]
             mp3_data: BytesIO = BytesIO(job_info.input_file_mp3.mp3_data)
-            job_info.status = JobStatus.PROCESSING.name
         logger.info(f"Worker: Started job id {self.job_id}")
         process = await asyncio.subprocess.create_subprocess_exec(
             *[
-                "docker",
-                "run",
-                "--rm",
-                "-i",
-                "--name",
-                f"temp_transcribe_{self.job_id}",
-                "--entrypoint",
                 "poetry",
-                "--volume",
-                f"{SECRETS.models_root}:/app/whisper_models",
-                "transcriber_image",
                 "run",
                 "python",
                 "src/argparser.py",
                 "--input_file",
                 "-",
+                "--database_job_id",
+                f"{job_info.id}",
                 "--task",
                 f"{job_info.task}",
                 # "--language",
@@ -55,66 +49,76 @@ class Worker:
                 "-",
             ],
             stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
         )
         # Process job
-        stdout_data, stderr_data = await process.communicate(mp3_data.getvalue())
-        if stdout_data == b"":  # or stderr_data != b"":
-            logger.error(f"There has been an error with job {self.job_id}:\n{stderr_data.decode()}")
-            Worker.active_worker_count -= 1
-            return
-        # Upload data to db
-        with orm.db_session():
-            job_info: JobItem = JobItem[self.job_id]
-            result_database_entry: OutputResult = OutputResult(
-                job_item=job_info,
-                zip_data=stdout_data,
-            )
-            job_info.output_zip_data = result_database_entry
-            job_info.status = JobStatus.DONE.name
+        await process.communicate(mp3_data.getvalue())
+        # Upload data to db already done from worker
+
         logger.info(f"Worker: Completed job id {self.job_id}")
-        Worker.active_worker_count -= 1
+        Worker.active_workers.remove(self)
 
 
 async def main():
-    # Build docker image to have the most up to date python files included
-    proc = await asyncio.subprocess.create_subprocess_exec(
-        *[
-            "docker",
-            "build",
-            "-t",
-            "transcriber_image",
-            ".",
-        ],
-        # stdin=asyncio.subprocess.DEVNULL,
-        stderr=asyncio.subprocess.DEVNULL,
-        stdout=asyncio.subprocess.DEVNULL,
-    )
-    await proc.communicate()
+    # Wait before starting in case something goes horribly wrong
+    await asyncio.sleep(60)
+
+    # Select and mark all jobs for update (=lock)
+    # - that are "processing" and processing job started too long ago
+    # - that were accepted too long ago
+    # mark those as "queued" again
+    time_1h_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=3600)
+    with orm.db_session():
+        jobs = orm.select(
+            j for j in JobItem if (j.job_started is None or j.job_started < time_1h_ago) and j.status in [
+                JobStatus.ACCEPTED.name,
+                JobStatus.PROCESSING.name,
+                JobStatus.FINISHING.name,
+            ]
+        ).for_update()
+        for job in jobs:
+            job.status = JobStatus.QUEUED.name
+            job.progress = 0
+            job.remaining_retries -= 1
 
     def done_callback(future):
         future.result()
 
     while 1:
-        while Worker.active_worker_count >= SECRETS.workers_limit:
-            # TODO if worker has been active for too long, cancel
+        while len(Worker.active_workers) >= SECRETS.workers_limit:
+            # If worker has been active for too long, cancel
+            for worker in Worker.active_workers:
+                if (datetime.datetime.utcnow() - worker.started).total_seconds() > 3600:
+                    logger.warning(f"Worker on job_id {worker.job_id} has taken more than 3600 seconds. Cancelling job")
+                    # Stop asyncio task
+                    Worker.job_to_task_map.pop(worker.job_id).cancel()
+                    Worker.active_workers.remove(worker)
+                    break
             await asyncio.sleep(1)
-        job: JobItem | None = JobItem.get_one_queued()
+        job: JobItem | None = JobItem.get_one_queued(SECRETS.workers_acceptable_models)
         if job is None:
             await asyncio.sleep(10)
             continue
 
         # Before starting worker: download model
-        # TODO Download all models? DL english models
-        download_model(job.model_size.lower(), cache_dir=SECRETS.models_root)
+        # Download international model
+        download_model(job.model_size.lower(), cache_dir="./whisper_models")
+        if ".en" not in job.model_size and "large" not in job.model_size.lower():
+            # Download english model
+            download_model(f"{job.model_size.lower()}.en", cache_dir="./whisper_models")
+
         with orm.db_session():
             job_info: JobItem = JobItem[job.id]
             job_info.status = JobStatus.ACCEPTED.name
         # Start worker
-        worker = Worker(job_id=job_info.id)
-        Worker.active_worker_count += 1
+        worker = Worker(
+            job_id=job_info.id,
+            started=datetime.datetime.utcnow(),
+        )
+        Worker.active_workers.append(worker)
         task = asyncio.create_task(worker.work())
+        Worker.job_to_task_map[worker.job_id] = task
         # TODO Create stacktrace if task errors
         task.add_done_callback(done_callback)
 

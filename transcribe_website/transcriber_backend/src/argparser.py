@@ -36,7 +36,7 @@ class TranscriberOptions:
     update_progress_to_database: bool = True
     # If given, will update the database entry
     database_job_id: int | None = None
-    # TODO
+    # TODO what do these do
     num_workers: int = 1
     cpu_threads: int = 0
 
@@ -76,8 +76,7 @@ MODEL_MAP = {
     ModelSize.Base: "base",
     ModelSize.Small: "small",
     ModelSize.Medium: "medium",
-    ModelSize.Large: "large",
-    # ModelSize.Largev1: "large-v1",
+    ModelSize.Large: "large-v2",
 }
 
 
@@ -86,18 +85,22 @@ def update_job_status(
     new_status: JobStatus,
     result: BytesIO | None = None,
     job_started: datetime.datetime | None = None,
-    job_completed: datetime.datetime | None = None,
 ) -> None:
     if job_id is not None:
         with orm.db_session():
-            job = JobItem[job_id]
-            job.status = new_status.name
+            job_info = JobItem[job_id]
+            job_info.status = new_status.name
             if result is not None:
-                job.output_zip_data = OutputResult(zip_data=result.getvalue())
+                job_info.output_zip_data = OutputResult(
+                    job_item=job_info,
+                    zip_data=result.getvalue(),
+                )
+                job_info.job_completed = datetime.datetime.utcnow()
+                # Delete input mp3 file and db entry to clear up storage
+                job_info.input_file_mp3.delete()
+                job_info.input_file_mp3 = None
             if job_started is not None:
-                job.job_started = job_started
-            if job_completed is not None:
-                job.job_completed = job_completed
+                job_info.job_started = job_started
 
 
 def get_model_string(options: TranscriberOptions) -> str:
@@ -115,27 +118,33 @@ def get_model_string(options: TranscriberOptions) -> str:
 
 
 def detect_language(options: TranscriberOptions) -> TranscriptionInfo:
-    # Sanity checks
-    assert options.input_file_path.is_file()
-
     model_size = get_model_string(options)
-    model = WhisperModel(model_size, device="cpu", compute_type="int8", download_root=SECRETS.models_root)
+    model = WhisperModel(
+        model_size,
+        device="cpu",
+        compute_type="int8",
+        download_root="./whisper_models",
+    )
     update_job_status(options.database_job_id, new_status=JobStatus.PROCESSING)
-    _, info = model.transcribe(str(options.input_file_path.absolute()), beam_size=5, language=options.language)
-    # TODO Upload info to supabase and mark job as finished
-    # for language_code, probability in reversed(info.all_language_probs[:10]):
+
+    if options.input_file == "-":
+        data = BytesIO(sys.stdin.buffer.read())
+        _, info = model.transcribe(data)
+    else:
+        assert options.input_file_path.is_file()
+        _, info = model.transcribe(str(options.input_file_path.absolute()))
+
+    # Upload info to db and mark job as finished
     sorted_results: list[tuple[str, float]] = sorted(info.all_language_probs, key=lambda x: x[1], reverse=True)
-    update_job_status(options.database_job_id, new_status=JobStatus.DONE, result=json.dumps(sorted_results))
+    update_job_status(options.database_job_id, new_status=JobStatus.DONE, result=json.dumps(sorted_results).encode())
     logger.debug(sorted_results[:10])
+    return info
 
 
 def transcribe(options: TranscriberOptions) -> None:
     # Sanity checks
     assert options.input_file == "-" or options.input_file_path.is_file(), "Input file does not exist"
     assert not options.output_file_path.is_file(), "Output already exists"
-
-    # TODO Allow more languages, or extract from open_whisper
-    assert options.language in {"en", "de", None}
 
     # Load model
     t0 = time.perf_counter()
@@ -144,7 +153,7 @@ def transcribe(options: TranscriberOptions) -> None:
         model_size,
         device="cpu",
         compute_type="int8",
-        download_root=SECRETS.models_root,
+        download_root="./whisper_models",
         # TODO What does this do
         num_workers=options.num_workers,
         cpu_threads=options.cpu_threads,
@@ -158,11 +167,16 @@ def transcribe(options: TranscriberOptions) -> None:
     else:
         segments, info = model.transcribe(str(options.input_file_path.absolute()), language=options.language)
 
-    logger.debug(f"Detected language '{info.language}' with probability {info.language_probability}")
+    if options.language is None:
+        logger.debug(f"Detected language '{info.language}' with probability {info.language_probability}")
 
     # Start transcribing / translating
     # Not needed?
-    update_job_status(options.database_job_id, JobStatus.PROCESSING, job_started=datetime.datetime.now())
+    update_job_status(
+        options.database_job_id,
+        JobStatus.PROCESSING,
+        job_started=datetime.datetime.now(),
+    )
     t0 = time.perf_counter()
     last_progress_bar_value: int = 0
     last_job_progress_value: int = 0
@@ -247,7 +261,6 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
             options.database_job_id,
             new_status=JobStatus.DONE,
             result=zip_data,
-            job_completed=datetime.datetime.now(),
         )
         return
 
@@ -286,7 +299,7 @@ parser.add_arguments(TranscriberOptions, dest="options")  # pyre-fixme[6]
 def main():
     args = parser.parse_args()
     options: TranscriberOptions = args.options
-    logger.debug(f"Options: {options}")
+    # logger.debug(f"Options: {options}")
     # Not needed?
     update_job_status(options.database_job_id, JobStatus.ACCEPTED)
     if options.task in {Task.Transcribe, Task.Translate}:
@@ -307,25 +320,10 @@ poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_A
 
 poetry run python src/argparser.py --input_file - --task Transcribe --language en --model Small --output_file - > result2.zip < test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3
 
-poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3" --task Detect --model Tiny
-poetry run python src/argparser.py --input_file - --task Detect --model Tiny < "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3"
+poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3" --task Detect --model Small
+
+poetry run python src/argparser.py --input_file - --task Detect --model Small < "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3"
 
 poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3" --task Translate --model Tiny
-
-docker build -t transcriber_image .
-docker run \
-    --rm -i \
-    --name temp_transcribe \
-    --entrypoint poetry \
-    --volume whisper_models:/app/whisper_models \
-    transcriber_image \
-    run python src/argparser.py \
-    --input_file - \
-    --task Transcribe \
-    --language en \
-    --model Tiny \
-    --output_file - \
-    > result.zip \
-    < test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3
     """
     main()

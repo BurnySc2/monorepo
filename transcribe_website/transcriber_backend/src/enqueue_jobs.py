@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import sys
+from io import BytesIO
 from pathlib import Path
 from typing import Generator
 
+from faster_whisper import WhisperModel
 from loguru import logger
 from pony import orm
-from pony.orm.core import TransactionIntegrityError
 from secrets_loader import SECRETS
 
 sys.path.append(str(Path(__file__).parent.parent))
@@ -29,8 +30,19 @@ def recurse_path(path: Path, depth: int = 1) -> Generator[Path, None, None]:
             yield from recurse_path(subfile_path, depth=depth - 1)
 
 
-def add_processing_jobs():
+async def add_processing_jobs():
     """Based on settings from SECRETS.toml, uploading all matching mp3 files for transcribing."""
+    with orm.db_session():
+        uploaded_files: list[str] = list(orm.select(j.local_file for j in JobItem))
+
+    if SECRETS.detect_language_before_queueing:
+        model = WhisperModel(
+            "large-v2",
+            device="cpu",
+            compute_type="int8",
+            download_root="./whisper_models",
+        )
+
     for folder in SECRETS.finder_folders_to_parse:
         folder_path = Path(folder)
         for path in recurse_path(folder_path, depth=10):
@@ -38,28 +50,34 @@ def add_processing_jobs():
                 continue
             if not path.match(SECRETS.finder_add_glob_pattern):
                 continue
-            # TODO Skip if it already has a srt or txt transcribtion
+            if str(path.absolute()) in uploaded_files:
+                continue
+            # TODO Skip if it already has a srt or txt transcription
 
             file_size_bytes = path.stat().st_size
 
-            # Add db entry
+            language_code = ""
+            with path.open("rb") as f:
+                file_data: BytesIO = BytesIO(f.read())
+            if (
+                SECRETS.detect_language_before_queueing
+                and SECRETS.detect_language_before_queueing_min_size_bytes < file_size_bytes
+            ):
+                _, info = model.transcribe(file_data)
+                language_code = info.language
+
+            # Upload file to db
+            logger.info(f"Uploading {file_size_bytes/2**20:.1f} mb {path.absolute()}")
             with orm.db_session():
-                # Upload file to db
-                logger.info(f"Uploading {file_size_bytes/2**20:.1f} mb {path.absolute()}")
-                try:
-                    job_item = JobItem(
-                        local_file=str(path.absolute()),
-                        task=Task.Transcribe.name,
-                        model_size=ModelSize.Medium.name,
-                        status=JobStatus.QUEUED.name,
-                        input_file_size_bytes=file_size_bytes,
-                    )
-                    with path.open("rb") as f:
-                        job_item.input_file_mp3 = Mp3File(job_item=job_item, mp3_data=f.read())
-                except TransactionIntegrityError:
-                    # Duplicate
-                    continue
-                # logger.info(f"Uploaded {path.absolute()}")
+                job_item = JobItem(
+                    local_file=str(path.absolute()),
+                    task=Task.Transcribe.name,
+                    detected_language=language_code,
+                    model_size=ModelSize.Small.name,
+                    status=JobStatus.QUEUED.name,
+                    input_file_size_bytes=file_size_bytes,
+                )
+                job_item.input_file_mp3 = Mp3File(job_item=job_item, mp3_data=file_data.getvalue())
 
 
 async def download_processed_results():
@@ -75,7 +93,7 @@ async def download_processed_results():
 
 
 async def main():
-    asyncio.gather(
+    await asyncio.gather(
         add_processing_jobs(),
         download_processed_results(),
     )

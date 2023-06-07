@@ -6,11 +6,9 @@ from __future__ import annotations
 import datetime
 import enum
 from pathlib import Path
-from typing import Optional
 
 import arrow
 from pony import orm  # pyre-fixme[21]
-from pydantic import BaseModel
 
 from src.secrets_loader import SECRETS
 
@@ -27,18 +25,6 @@ class ModelSize(enum.Enum):
     Small = 2
     Medium = 3
     Large = 4
-    # Largev1 = 5
-
-
-class Language(enum.Enum):
-    en = 1
-    de = 2
-
-
-class JobParameters(BaseModel):
-    task: Task = Task.Transcribe
-    model_size: ModelSize = ModelSize.Small
-    forced_language: Optional[str] = None
 
 
 class JobStatus(enum.Enum):
@@ -83,17 +69,17 @@ class JobItem(db.Entity):
     # id maps to f"{id}.mp3" in bucket "transcribe_mp3"
     id = orm.PrimaryKey(int, auto=True)
     # When the job was queued - when did the user issue the job?
-    job_created = orm.Optional(datetime.datetime)
+    job_created = orm.Optional(datetime.datetime, default=datetime.datetime.utcnow)
     # When the job has started processing
     job_started = orm.Optional(datetime.datetime)
     # When the job completed processing
     job_completed = orm.Optional(datetime.datetime)
     # Do not retry jobs with retry <= 0
-    remaining_retries = orm.Optional(int)
+    remaining_retries = orm.Optional(int, default=3)
     # task - (TRANSCRIBE, TRANSLATE, DETECT_LANGUAGE)
     task = orm.Required(str, py_check=lambda val: Task[val])
     # language - (en, de, ...)
-    detected_language = orm.Optional(str, py_check=lambda val: val == "" or Language[val])
+    detected_language = orm.Optional(str)
     # model_size - (tiny, base, small, medium, large)
     model_size = orm.Required(str, py_check=lambda val: ModelSize[val])
 
@@ -106,11 +92,7 @@ class JobItem(db.Entity):
     # The full path to the .mp3 file, dont add duplicates
     local_file = orm.Optional(str, unique=True)
     status = orm.Optional(str)
-    progress = orm.Optional(int)
-
-    @property
-    def job_parameters(self) -> JobParameters:
-        return JobParameters.parse_raw(self.job_params)
+    progress = orm.Optional(int, default=0)
 
     @property
     def job_created_arrow(self) -> arrow.Arrow:
@@ -129,12 +111,23 @@ class JobItem(db.Entity):
         return Path(self.local_file)
 
     @staticmethod
-    def get_one_queued() -> JobItem | None:
+    def get_one_queued(acceptable_models: list[str] | None = None) -> JobItem | None:
         """Used in getting any queued jobs for the processing-worker."""
         with orm.db_session():
-            job_items = orm.select(m for m in JobItem if m.status == JobStatus.QUEUED.name).order_by(
-                orm.desc(JobItem.job_created),
-            ).limit(1)
+            if acceptable_models is None:
+                job_items = orm.select(
+                    j for j in JobItem if j.status == JobStatus.QUEUED.name and j.remaining_retries > 0
+                ).order_by(
+                    JobItem.job_created,
+                ).limit(1)
+            else:
+                # Filter jobs that have inacceptable model sizes (e.g. machine has too low ram to use large model)
+                job_items = orm.select(
+                    j for j in JobItem if j.status == JobStatus.QUEUED.name and j.model_size in acceptable_models
+                    and j.remaining_retries > 0
+                ).order_by(
+                    JobItem.job_created,
+                ).limit(1)
             if len(job_items) == 0:
                 return None
             return list(job_items)[0]

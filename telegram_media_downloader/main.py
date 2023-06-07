@@ -240,7 +240,7 @@ async def add_to_queue(
 def requeue_interrupted_downloads():
     # Get and re-enqueue all messages from DB that were interrupted (or not finished) in last program run
     with orm.db_session():
-        for message in orm.select(m for m in MessageModel if m.file_unique_id != ""):
+        for message in orm.select(m for m in MessageModel if m.file_unique_id != "").for_update():
             message.status = check_message(message)
 
 

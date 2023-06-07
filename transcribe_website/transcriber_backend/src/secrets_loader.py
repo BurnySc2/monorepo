@@ -15,9 +15,10 @@ class Secrets(BaseModel):
     postgres_host: str = ""
     postgres_port: str = ""
 
-    models_root: str = ""
-
     workers_limit: int = 1
+    workers_acceptable_models: list[str] = ["Tiny", "Base", "Small"]
+    detect_language_before_queueing: bool = True
+    detect_language_before_queueing_min_size_bytes: int = 10_000_000
 
     finder_add_glob_pattern: str = ""
     finder_ignore_glob_pattern: str = ""
