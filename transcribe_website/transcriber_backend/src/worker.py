@@ -54,8 +54,8 @@ class Worker:
             ],
             stdin=asyncio.subprocess.PIPE,
             # Comment out to see errors
-            # stdout=asyncio.subprocess.DEVNULL,
-            # stderr=asyncio.subprocess.DEVNULL,
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.DEVNULL,
         )
         # Process job
         await process.communicate(mp3_data.getvalue())

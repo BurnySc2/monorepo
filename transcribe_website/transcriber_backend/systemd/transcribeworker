@@ -4,7 +4,7 @@ ExecStart=/usr/bin/docker run --rm \
     --name transcribe_worker \
     -v ./SECRETS.toml:/app/SECRETS.toml:ro \
     -v ./whisper_models:/app/whisper_models \
-    transcribe_worker
+    burnysc2/transcribe_worker:latest
 Restart=always
 RestartSec=20
 SyslogIdentifier=transcribeworker
