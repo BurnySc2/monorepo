@@ -137,17 +137,16 @@ todos.db
 fastapi_server/data
 
 # Discord bot files
-/discord_bot/SECRETS.toml
-/discord_bot/data/
+discord_bot/SECRETS.toml
+discord_bot/data/
 
 # Transcribe website
-/transcribe_website/transcriber_backend/whisper_models/
-/transcribe_website/transcriber_backend/result/
-/transcribe_website/transcriber_backend/SECRETS.toml
-
+transcribe_website/transcriber_backend/whisper_models/
+transcribe_website/transcriber_backend/result/
+transcribe_website/transcriber_backend/SECRETS.toml
 # Telegram media downloader
-/telegram_media_downloader/SECRETS.toml
-/telegram_media_downloader/messages.db
-/telegram_media_downloader/messages.db-journal
-/telegram_media_downloader/media_downloader.session
-/telegram_media_downloader/media_downloader.session-journal
+transcribe_website/transcriber_backend/SECRETS.toml
+transcribe_website/transcriber_backend/messages.db
+transcribe_website/transcriber_backend/messages.db-journal
+transcribe_website/transcriber_backend/media_downloader.session
+transcribe_website/transcriber_backend/media_downloader.session-journal

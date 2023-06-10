@@ -63,10 +63,18 @@ class TelegramDownloaderSecrets(BaseModel):
     @property
     def output_folder_path(self) -> Path:
         return Path(self.output_folder)
-    
+
+
+class TextSearcherSecrets(BaseModel):
+    glob_pattern: str = ""
+    regex_pattern: str = ""
+    allowed_languages: list[str] = ["en"]
+
+
 class Secrets(BaseModel):
     TelegramDownloader: TelegramDownloaderSecrets = TelegramDownloaderSecrets()
     Transcriber: TranscriberSecrets = TranscriberSecrets()
+    TextSearcher: TextSearcherSecrets = TextSearcherSecrets()
 
 
 with (Path(__file__).parent.parent / "SECRETS.toml").open() as f:

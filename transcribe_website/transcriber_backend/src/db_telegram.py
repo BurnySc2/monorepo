@@ -75,6 +75,7 @@ class Status(enum.Enum):
     ERROR_EXTRACTING_AUDIO = 8
 
 
+# pyre-fixme[11]
 class MessageModel(db.Entity):
     # TODO Filter duplicate message, maybe with combination of "size_bytes" and "duration_seconds" has to be unique
     _table_ = "MessageModel"  # Table name
@@ -83,7 +84,9 @@ class MessageModel(db.Entity):
     message_id = orm.Required(int)
     message_date = orm.Required(datetime.datetime)
     link = orm.Required(str)
-    status = orm.Required(str)
+    download_status = orm.Required(str)
+    downloaded_file_path = orm.Optional(str)  # Relative file path to download dir
+    # File meta info
     media_type = orm.Optional(str)
     file_id = orm.Optional(str)
     file_unique_id = orm.Optional(str)
@@ -113,7 +116,8 @@ class MessageModel(db.Entity):
     def get_one_queued() -> MessageModel | None:
         """Used in getting any queued message for the download-worker."""
         with orm.db_session():
-            messages = orm.select(m for m in MessageModel if m.status == Status.QUEUED.name).order_by(
+            # pyre-fixme[16]
+            messages = orm.select(m for m in MessageModel if m.download_status == Status.QUEUED.name).order_by(
                 orm.desc(MessageModel.message_id),
             ).limit(1)
             if len(messages) == 0:
@@ -124,6 +128,7 @@ class MessageModel(db.Entity):
     def get_oldest_message_id(channel_id: str) -> int:
         """Used in finding the oldest parsed message_id of a channel. Returns 0 if channel has not been parsed yet."""
         with orm.db_session():
+            # pyre-fixme[16]
             messages = orm.select(m for m in MessageModel
                                   if m.channel_id == channel_id).order_by(MessageModel.message_id).limit(1)
             if len(messages) == 0:
@@ -134,9 +139,10 @@ class MessageModel(db.Entity):
     def get_count() -> tuple[int, int]:
         """Returns a tuple of how many downloads are complete and how many total there are."""
         with orm.db_session():
-            done_count = orm.count(m for m in MessageModel if m.status == Status.COMPLETED.name)
+            # pyre-fixme[16]
+            done_count = orm.count(m for m in MessageModel if m.download_status == Status.COMPLETED.name)
             total_count = orm.count(
-                m for m in MessageModel if m.status in [
+                m for m in MessageModel if m.download_status in [
                     Status.QUEUED.name,
                     Status.DOWNLOADING.name,
                     Status.COMPLETED.name,

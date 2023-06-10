@@ -8,22 +8,20 @@ import datetime
 import json
 import sys
 import time
-import zipfile
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
-from faster_whisper import WhisperModel, format_timestamp
-from faster_whisper.transcribe import TranscriptionInfo
+from faster_whisper import WhisperModel, format_timestamp  # pyre-fixme[21]
+from faster_whisper.transcribe import TranscriptionInfo  # pyre-fixme[21]
 from loguru import logger
-from pony import orm
+from pony import orm  # pyre-fixme[21]
 from simple_parsing import ArgumentParser
 from tqdm import tqdm
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from db_transcriber import JobItem, JobStatus, ModelSize, OutputResult, Task
-from src.secrets_loader import SECRETS
+from src.db_transcriber import JobItem, JobStatus, ModelSize, OutputResult, Task, compress_files  # noqa: E402
 
 
 @dataclass
@@ -83,17 +81,21 @@ MODEL_MAP = {
 def update_job_status(
     job_id: int | None,
     new_status: JobStatus,
-    result: BytesIO | None = None,
+    txt_original: str | None = None,
+    srt_original_zipped: BytesIO | None = None,
     job_started: datetime.datetime | None = None,
+    detected_language: str | None = None,
 ) -> None:
     if job_id is not None:
         with orm.db_session():
-            job_info = JobItem[job_id]
+            job_info = JobItem[job_id]  # pyre-fixme[16]
             job_info.status = new_status.name
-            if result is not None:
+            if txt_original is not None and srt_original_zipped is not None:
+                # pyre-fixme[28]
                 job_info.output_zip_data = OutputResult(
                     job_item=job_info,
-                    zip_data=result.getvalue(),
+                    srt_original_zipped=srt_original_zipped.getvalue(),
+                    txt_original=txt_original,
                 )
                 job_info.job_completed = datetime.datetime.utcnow()
                 # Delete input mp3 file and db entry to clear up storage
@@ -101,6 +103,8 @@ def update_job_status(
                 job_info.input_file_mp3 = None
             if job_started is not None:
                 job_info.job_started = job_started
+            if detected_language is not None:
+                job_info.detected_language = detected_language
 
 
 def get_model_string(options: TranscriberOptions) -> str:
@@ -117,6 +121,7 @@ def get_model_string(options: TranscriberOptions) -> str:
     return model_map[options.model]
 
 
+# pyre-fixme[11]
 def detect_language(options: TranscriberOptions) -> TranscriptionInfo:
     model_size = get_model_string(options)
     model = WhisperModel(
@@ -136,6 +141,7 @@ def detect_language(options: TranscriberOptions) -> TranscriptionInfo:
 
     # Upload info to db and mark job as finished
     sorted_results: list[tuple[str, float]] = sorted(info.all_language_probs, key=lambda x: x[1], reverse=True)
+    # pyre-fixme[28]
     update_job_status(options.database_job_id, new_status=JobStatus.DONE, result=json.dumps(sorted_results).encode())
     logger.debug(sorted_results[:10])
     return info
@@ -176,6 +182,7 @@ def transcribe(options: TranscriberOptions) -> None:
         options.database_job_id,
         JobStatus.PROCESSING,
         job_started=datetime.datetime.now(),
+        detected_language=info.language,
     )
     t0 = time.perf_counter()
     last_progress_bar_value: int = 0
@@ -195,7 +202,8 @@ def transcribe(options: TranscriberOptions) -> None:
                 if last_job_progress_value != new_job_progress_value:
                     last_job_progress_value = new_job_progress_value
                     with orm.db_session():
-                        job = JobItem[options.database_job_id]
+                        # pyre-fixme[16]
+                        job: JobItem = JobItem[options.database_job_id]
                         job.progress = new_job_progress_value
 
     logger.debug(f"Done transcribing after {time.perf_counter() - t0:3f} seconds")
@@ -227,14 +235,6 @@ def generate_srt_data(transcribed_data: list[tuple[float, float, str]]) -> str:
     return "".join(data_list)
 
 
-def compress_files(files: dict[str, str]) -> BytesIO:
-    zip_data = BytesIO()
-    with zipfile.ZipFile(zip_data, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
-        for file_name, file_content in files.items():
-            zip_file.writestr(file_name, file_content)
-    return zip_data
-
-
 def write_data(transcribed_data: list[tuple[float, float, str]], options: TranscriberOptions) -> None:
     """
     From the transcribed data, generate the txt or srt files or a zip-file with both.
@@ -249,20 +249,28 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
         output_file = "*.zip"
             Write resulting .zip to target file
     """
+    # TODO Batch translate non-english texts? Requires a new column in the database
+    # https://github.com/nidhaloff/deep-translator
+    # translated = GoogleTranslator(detected_language, 'en').translate_batch(transcribed)
     txt_data: str = generate_txt_data(transcribed_data)
     srt_data: str = generate_srt_data(transcribed_data)
+
+    if options.database_job_id is not None:
+        srt_original_zipped: BytesIO = compress_files({
+            "transcribed.srt": srt_data,
+        })
+        update_job_status(
+            options.database_job_id,
+            new_status=JobStatus.DONE,
+            srt_original_zipped=srt_original_zipped,
+            txt_original=txt_data,
+        )
+        return
+
     zip_data: BytesIO = compress_files({
         "transcribed.txt": txt_data,
         "transcribed.srt": srt_data,
     })
-
-    if options.database_job_id is not None:
-        update_job_status(
-            options.database_job_id,
-            new_status=JobStatus.DONE,
-            result=zip_data,
-        )
-        return
 
     if options.output_file == "-":
         sys.stdout.buffer.write(zip_data.getvalue())
@@ -287,7 +295,7 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
         return
     if options.output_file_path.suffix == ".zip":
         with options.output_file_path.open("wb") as f:
-            f.write(zip_data)
+            f.write(zip_data.getvalue())
         return
     assert False, f"Shouldn't get here, output_file was {options.output_file}"
 
@@ -325,5 +333,5 @@ poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_A
 poetry run python src/argparser.py --input_file - --task Detect --model Small < "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3"
 
 poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3" --task Translate --model Tiny
-    """
+    """ # noqa: E501
     main()

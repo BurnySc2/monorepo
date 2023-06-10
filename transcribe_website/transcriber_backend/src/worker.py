@@ -3,18 +3,19 @@ from __future__ import annotations
 import asyncio
 import datetime
 import sys
-from dataclasses import dataclass, field
+import time
+from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 from typing import ClassVar
 
-from faster_whisper import download_model
+from faster_whisper import download_model  # pyre-fixme[21]
 from loguru import logger
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.db_transcriber import JobItem, JobStatus, OutputResult, orm
-from src.secrets_loader import SECRETS as SECRETS_FULL
+from src.db_transcriber import JobItem, JobStatus, orm  # noqa: E402
+from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 
 SECRETS = SECRETS_FULL.Transcriber
 
@@ -28,6 +29,7 @@ class Worker:
 
     async def work(self) -> None:
         with orm.db_session():
+            # pyre-fixme[16]
             job_info: JobItem = JobItem[self.job_id]
             mp3_data: BytesIO = BytesIO(job_info.input_file_mp3.mp3_data)
         logger.info(f"Worker: Started job id {self.job_id}")
@@ -51,8 +53,9 @@ class Worker:
                 "-",
             ],
             stdin=asyncio.subprocess.PIPE,
-            stdout=asyncio.subprocess.DEVNULL,
-            stderr=asyncio.subprocess.DEVNULL,
+            # Comment out to see errors
+            # stdout=asyncio.subprocess.DEVNULL,
+            # stderr=asyncio.subprocess.DEVNULL,
         )
         # Process job
         await process.communicate(mp3_data.getvalue())
@@ -63,8 +66,9 @@ class Worker:
 
 
 async def main():
-    # Wait before starting in case something goes horribly wrong
-    await asyncio.sleep(60)
+    # Dont run if system just booted up
+    while time.clock_gettime(time.CLOCK_BOOTTIME) < 600:
+        await asyncio.sleep(1)
 
     # Select and mark all jobs for update (=lock)
     # - that are "processing" and processing job started too long ago

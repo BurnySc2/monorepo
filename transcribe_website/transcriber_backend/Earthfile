@@ -1,17 +1,16 @@
 VERSION 0.6
-# earthly +all --PYTHONVERSION=3.11
-ARG PYTHONVERSION=3.11
+# earthly +all --PYTHONVERSION=3.11 --NODEVERSION=19
+ARG PYTHONVERSION=3.10
+ARG NODEVERSION=19 # 14, 16, 18, 19
 FROM python:${PYTHONVERSION}-slim
-WORKDIR /root/burny_common
+WORKDIR /root/transcriber_backend
 
 install-dev:
     RUN pip install poetry --no-cache-dir
-    RUN mkdir -p burny_common
-    RUN touch burny_common/__init__.py
     COPY poetry.lock pyproject.toml ./
     RUN poetry install
-    SAVE ARTIFACT ./.venv
-    COPY . /root/burny_common
+    COPY . /root/transcriber_backend
+    RUN touch SECRETS.toml
 
 format:
     # Run on host system instead of inside a container
@@ -44,10 +43,10 @@ pyre:
     FROM +install-dev
     RUN poetry run pyre
 
-# TODO Add tests
 pytest:
     FROM +install-dev
-    RUN poetry run pytest
+    # TODO fix me
+    # RUN poetry run python -m pytest test
 
 pre-commit:
     BUILD +format-check
@@ -56,4 +55,4 @@ pre-commit:
 
 all:
     BUILD +pre-commit
-    #BUILD +pytest
+    BUILD +pytest

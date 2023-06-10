@@ -6,14 +6,13 @@ from io import BytesIO
 from pathlib import Path
 from typing import Generator
 
-from faster_whisper import WhisperModel
+from faster_whisper import WhisperModel  # pyre-fixme[21]
 from loguru import logger
-from pony import orm
+from pony import orm  # pyre-fixme[21]
 
 sys.path.append(str(Path(__file__).parent.parent))
-from src.secrets_loader import SECRETS as SECRETS_FULL
-
 from src.db_transcriber import JobItem, JobStatus, ModelSize, Mp3File, Task  # noqa: E402
+from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 
 SECRETS = SECRETS_FULL.Transcriber
 
@@ -77,7 +76,7 @@ async def add_processing_jobs():
                 job_item = JobItem(
                     local_file=relative_file_path_str,
                     task=Task.Transcribe.name,
-                    detected_language=language_code,
+                    forced_language=language_code,
                     model_size=ModelSize.Small.name,
                     status=JobStatus.QUEUED.name,
                     input_file_size_bytes=file_size_bytes,

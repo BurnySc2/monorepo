@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import datetime
 import enum
+import zipfile
+from io import BytesIO
 from pathlib import Path
 
 import arrow
@@ -50,6 +52,7 @@ db.bind(
 )
 
 
+# pyre-fixme[11]
 class Mp3File(db.Entity):
     _table_ = "transcribe_mp3s"  # Table name
     id = orm.PrimaryKey(int, auto=True)
@@ -62,8 +65,9 @@ class OutputResult(db.Entity):
     _table_ = "transcribe_text"  # Table name
     id = orm.PrimaryKey(int, auto=True)
     job_item = orm.Required("JobItem")
-    # Always generate a .zip file which contains a .srt file, from which all other formats can be converted
-    zip_data = orm.Optional(bytes)
+    # Could zip the files but then unable to query them
+    srt_original_zipped = orm.Optional(bytes)
+    txt_original = orm.Optional(orm.LongStr)
 
 
 class JobItem(db.Entity):
@@ -81,14 +85,15 @@ class JobItem(db.Entity):
     # task - (TRANSCRIBE, TRANSLATE, DETECT_LANGUAGE)
     task = orm.Required(str, py_check=lambda val: Task[val])
     # language - (en, de, ...)
+    forced_language = orm.Optional(str)
     detected_language = orm.Optional(str)
     # model_size - (tiny, base, small, medium, large)
     model_size = orm.Required(str, py_check=lambda val: ModelSize[val])
 
-    input_file_mp3 = orm.Optional(Mp3File)
+    input_file_mp3 = orm.Optional(Mp3File, cascade_delete=True)
     input_file_size_bytes = orm.Optional(int, size=64)
     # input_file_duration = orm.Optional(int, size=32)
-    output_zip_data = orm.Optional(OutputResult)
+    output_data = orm.Optional(OutputResult, cascade_delete=True)
 
     issued_by = orm.Optional(str)
     # The full path to the .mp3 file, dont add duplicates
@@ -118,6 +123,7 @@ class JobItem(db.Entity):
         with orm.db_session():
             if acceptable_models is None:
                 job_items = orm.select(
+                    # pyre-fixme[16]
                     j for j in JobItem if j.status == JobStatus.QUEUED.name and j.remaining_retries > 0
                 ).order_by(
                     JobItem.job_created,
@@ -140,8 +146,27 @@ class JobItem(db.Entity):
 
 db.generate_mapping(create_tables=True)
 
+
+def compress_files(files: dict[str, str]) -> BytesIO:
+    zip_data = BytesIO()
+    with zipfile.ZipFile(zip_data, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
+        for file_name, file_content in files.items():
+            zip_file.writestr(file_name, file_content)
+    return zip_data
+
+
+def decompress_files(zip_file: BytesIO) -> dict[str, str]:
+    decompressed = {}
+    with zipfile.ZipFile(zip_file, mode="r") as zip_file:
+        for file_name in zip_file.namelist():
+            with zip_file.open(file_name, mode="r") as file:
+                decompressed[file_name] = file.read().decode()
+    return decompressed
+
+
 if __name__ == "__main__":
     with orm.db_session():
+        # pyre-fixme[16]
         print(orm.select(j for j in JobItem).get_sql())
         for job in orm.select(j for j in JobItem):
             print(type(job.job_parameters))

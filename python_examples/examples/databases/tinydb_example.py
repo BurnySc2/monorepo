@@ -8,7 +8,7 @@ def test_database_with_tinydb():
     db_path = Path(__file__).parent.parent.parent / "data" / "db.json"
     db_path.parent.mkdir(parents=True, exist_ok=True)
     db = TinyDB(db_path)
-    User = Query()  # noqa: N806
+    User = Query()  # Ignore N806
     # Insert
     db.insert({"name": "John", "age": 22})
     # Find
