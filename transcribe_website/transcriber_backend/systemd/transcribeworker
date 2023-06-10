@@ -1,0 +1,16 @@
+# /etc/systemd/system/transcribeworker.service
+[Service]
+ExecStart=/usr/bin/docker run --rm \
+    --name transcribe_worker \
+    -v ./SECRETS.toml:/app/SECRETS.toml:ro \
+    -v ./whisper_models:/app/whisper_models \
+    transcribe_worker
+Restart=always
+RestartSec=20
+SyslogIdentifier=transcribeworker
+User=transcribeworker
+Group=transcribeworker
+WorkingDirectory=/home/transcribeworker
+
+[Install]
+WantedBy=multi-user.target

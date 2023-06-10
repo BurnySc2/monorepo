@@ -34,7 +34,7 @@ format-check:
     FROM +install-dev
     RUN poetry run yapf -dr .
 
-# Ignore errors via "# Ignore F841"
+# Ignore errors via "# noqa: F841"
 lint:
     FROM +install-dev
     RUN poetry run ruff check .

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, declarative_base
 
 def test_database_with_sqlalchemy():
     # Declare tables https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_orm_declaring_mapping.htm
-    Base = declarative_base()  # noqa: N806
+    Base = declarative_base()  # Ignore N806
 
     class Customers(Base):
         __tablename__ = "customers"

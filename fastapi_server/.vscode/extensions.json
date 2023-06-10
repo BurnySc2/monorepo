@@ -3,7 +3,7 @@
         "charliermarsh.ruff",
         "ms-python.vscode-pylance",
         "ms-python.python",
-        "bungcip.better-toml",
+        "tamasfe.even-better-toml",
         "earthly.earthfile-syntax-highlighting",
         "quicktype.quicktype"
     ]

@@ -49,6 +49,7 @@ class Author(db.Entity):
 
 
 class Publisher(db.Entity):
+    _table_ = "publisher" # custom table name
     name = orm.Required(str)
     founded_year = orm.Required(int)
     books = orm.Set(Book)
@@ -60,6 +61,25 @@ def run_database_with_pony_readme_example():
 
     # 1) Create tables
     db.generate_mapping(create_tables=True)
+
+    with orm.db_session():
+        tables = db.select(
+            """
+            * FROM information_schema.tables 
+    WHERE table_schema = 'public'
+            """
+        )
+        table_schema = db.select(
+            """
+                table_name, 
+                column_name, 
+                data_type 
+            FROM 
+                information_schema.columns
+            WHERE 
+                table_name = 'Book';
+            """
+        )
 
     # 2) Fill tables
     with orm.db_session():

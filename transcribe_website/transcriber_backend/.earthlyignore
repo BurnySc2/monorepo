@@ -1,0 +1,13 @@
+**/__pycache__
+.benchmarks
+.hypothesis
+.idea
+.pyre
+.pytest_cache
+.ruff_cache
+SECRETS.toml
+whisper_models
+messages.db
+messages.db-journal
+media_downloader.session
+media_downloader.session-journal
