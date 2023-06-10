@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import sys
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -13,8 +14,11 @@ from pony import orm  # pyre-fixme[21]
 from pyrogram import Client
 from pyrogram.types import Audio, Message, Photo, Video
 
-from src.db import MessageModel, Status, audio_filter, photo_filter, video_filter
-from src.secrets_loader import SECRETS
+sys.path.append(str(Path(__file__).parent.parent))
+from src.db_telegram import MessageModel, Status, audio_filter, photo_filter, video_filter
+from src.secrets_loader import SECRETS as SECRETS_FULL
+
+SECRETS = SECRETS_FULL.TelegramDownloader
 
 # Supress pyrogram messages that are caught anyway
 logging.disable()
@@ -246,7 +250,7 @@ def requeue_interrupted_downloads():
 
 async def main(client: Client):
     logger.info("Checking for changed filters...")
-    requeue_interrupted_downloads()
+    # requeue_interrupted_downloads()
     # TODO Update all file_ids of status=Status.QUEUED files (= not downloaded and not filtered files)
     # because the file_ids seem to expire
 
@@ -307,10 +311,12 @@ async def main(client: Client):
 
 
 if __name__ == "__main__":
+    current_folder = Path(__file__).parent.parent
     app = Client(
         name="media_downloader",
         api_id=SECRETS.api_id,
         api_hash=SECRETS.api_hash,
+        workdir=current_folder,
     )
     DownloadWorker.client = app
     asyncio.run(main(app), debug=False)

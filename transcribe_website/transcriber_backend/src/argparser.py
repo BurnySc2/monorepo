@@ -22,7 +22,7 @@ from tqdm import tqdm
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.db import JobItem, JobStatus, ModelSize, OutputResult, Task
+from db_transcriber import JobItem, JobStatus, ModelSize, OutputResult, Task
 from src.secrets_loader import SECRETS
 
 

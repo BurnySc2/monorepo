@@ -1,0 +1,39 @@
+{
+	"folders": [
+		{
+			"name": "✨ root",
+			"path": "."
+		},
+		{
+			"path": "burny_common"
+		},
+		{
+			"path": "discord_bot"
+		},
+		{
+			"path": "fastapi_server"
+		},
+		{
+			"path": "python_examples"
+		},
+		{
+			"path": "bored_gems"
+		},
+		{
+			"path": "replay_comparer"
+		},
+		{
+			"path": "supabase_stream_scripts"
+		},
+		{
+			"path": "svelte_frontend"
+		},
+		{
+			"path": "transcribe_website/transcriber_backend"
+		},
+		{
+			"path": "transcribe_website/transcriber_proxy"
+		}
+	],
+	"settings": {}
+}

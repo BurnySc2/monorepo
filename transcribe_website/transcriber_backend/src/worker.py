@@ -10,11 +10,13 @@ from typing import ClassVar
 
 from faster_whisper import download_model
 from loguru import logger
-from secrets_loader import SECRETS
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.db import JobItem, JobStatus, OutputResult, orm
+from src.db_transcriber import JobItem, JobStatus, OutputResult, orm
+from src.secrets_loader import SECRETS as SECRETS_FULL
+
+SECRETS = SECRETS_FULL.Transcriber
 
 
 @dataclass

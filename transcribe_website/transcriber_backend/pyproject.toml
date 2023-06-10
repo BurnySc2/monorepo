@@ -5,7 +5,7 @@ description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.11"
+python = ">=3.8, <3.11" # Pony doesnt support 3.11 yet
 # Argparse with dataclass
 simple-parsing = "^0.1"
 # Better dataclasses
@@ -25,6 +25,8 @@ psycopg2-binary = "^2.9.6"
 faster-whisper = "==0.6.0"
 # Progress bar
 tqdm = "^4.65.0"
+pyrogram = "==2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel downloads
+tgcrypto = "^1.2.5"
 
 [tool.poetry.group.dev.dependencies]
 # Test library

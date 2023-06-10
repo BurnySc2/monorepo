@@ -6,8 +6,9 @@ from pathlib import Path
 
 from pony import orm  # pyre-fixme[21]
 
-from src.secrets_loader import SECRETS
+from src.secrets_loader import SECRETS as SECRETS_FULL
 
+SECRETS = SECRETS_FULL.TelegramDownloader
 db = orm.Database()
 
 # Create connection

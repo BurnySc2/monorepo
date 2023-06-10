@@ -9,10 +9,13 @@ from typing import Generator
 from faster_whisper import WhisperModel
 from loguru import logger
 from pony import orm
-from secrets_loader import SECRETS
 
 sys.path.append(str(Path(__file__).parent.parent))
-from db import JobItem, JobStatus, ModelSize, Mp3File, Task  # noqa: E402
+from src.secrets_loader import SECRETS as SECRETS_FULL
+
+from src.db_transcriber import JobItem, JobStatus, ModelSize, Mp3File, Task  # noqa: E402
+
+SECRETS = SECRETS_FULL.Transcriber
 
 
 def recurse_path(path: Path, depth: int = 1) -> Generator[Path, None, None]:
@@ -50,7 +53,9 @@ async def add_processing_jobs():
                 continue
             if not path.match(SECRETS.finder_add_glob_pattern):
                 continue
-            if str(path.absolute()) in uploaded_files:
+            relative_file_path = path.relative_to(folder_path)
+            relative_file_path_str = str(relative_file_path)
+            if relative_file_path_str in uploaded_files:
                 continue
             # TODO Skip if it already has a srt or txt transcription
 
@@ -70,7 +75,7 @@ async def add_processing_jobs():
             logger.info(f"Uploading {file_size_bytes/2**20:.1f} mb {path.absolute()}")
             with orm.db_session():
                 job_item = JobItem(
-                    local_file=str(path.absolute()),
+                    local_file=relative_file_path_str,
                     task=Task.Transcribe.name,
                     detected_language=language_code,
                     model_size=ModelSize.Small.name,
@@ -80,23 +85,8 @@ async def add_processing_jobs():
                 job_item.input_file_mp3 = Mp3File(job_item=job_item, mp3_data=file_data.getvalue())
 
 
-async def download_processed_results():
-    """Download results from add_processing_jobs()."""
-    # Check which files have already been processed and exported locally
-    with orm.db_session():
-        pass
-
-    while 1:
-        with orm.db_session():
-            pass
-        await asyncio.sleep(10)
-
-
 async def main():
-    await asyncio.gather(
-        add_processing_jobs(),
-        download_processed_results(),
-    )
+    await add_processing_jobs()
 
 
 if __name__ == "__main__":
