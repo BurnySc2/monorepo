@@ -3,7 +3,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import subprocess
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -48,6 +50,7 @@ def check_message(message: MessageModel) -> str:
 # pyre-fixme[13]
 class DownloadWorker:
     client: ClassVar[Client]  # set after client has been created
+    executor: ClassVar[ProcessPoolExecutor]
 
     @staticmethod
     async def launch_workers(n: int = 10):
@@ -62,6 +65,7 @@ class DownloadWorker:
             task = asyncio.create_task(worker.run())
             # Create stacktrace if task errors
             task.add_done_callback(done_callback)
+            # await task
 
     async def run(self):
         while 1:
@@ -69,8 +73,56 @@ class DownloadWorker:
             await DownloadWorker.download_one()
 
     @staticmethod
+    def extract_mp3_from_video_sync(data_or_path: BytesIO | Path) -> BytesIO:
+        if isinstance(data_or_path, BytesIO):
+            command = [
+                "ffmpeg",
+                "-i",
+                "-",
+                "-vn",
+                "-c:a",
+                "libmp3lame",
+                "-q:a",
+                "2",
+                "-f",
+                "mp3",
+                "-",
+            ]
+            proc = subprocess.Popen(
+                command,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            stdout_data, _ = proc.communicate(data_or_path.getvalue())
+        elif isinstance(data_or_path, Path):
+            command = [
+                "ffmpeg",
+                "-i",
+                str(data_or_path.absolute()),
+                "-vn",
+                "-c:a",
+                "libmp3lame",
+                "-q:a",
+                "2",
+                "-f",
+                "mp3",
+                "-",
+            ]
+            proc = subprocess.Popen(
+                command,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            stdout_data, _ = proc.communicate()
+        else:
+            raise TypeError(f"Needs to be BytesIO or Path, was {type(data_or_path)}")
+        return BytesIO(stdout_data)
+
+    @staticmethod
     async def extract_mp3_from_video(data_or_path: BytesIO | Path) -> BytesIO:
         if isinstance(data_or_path, BytesIO):
+
             command = [
                 "ffmpeg",
                 "-i",
@@ -119,11 +171,12 @@ class DownloadWorker:
     async def download_one():
         # Get a new message
         with orm.db_session():
-            message = MessageModel.get_one_queued()
+            message: MessageModel | None = MessageModel.get_one_queued()
             if message is None:
                 return
             message.download_status = Status.DOWNLOADING.name
 
+        logger.info(f"Started downloading ({message.file_size_bytes} b) {message.output_file_path.absolute()}")
         data: BytesIO = await DownloadWorker.client.download_media(
             message=message.file_id,
             in_memory=True,
@@ -153,13 +206,29 @@ class DownloadWorker:
 
         # Extract mp3 from mp4 file in memory via ffmpeg if SECRET.extract_audio_from_videos is True
         if SECRETS.extract_audio_from_videos and message.media_type == "Video":
-            extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data)
+            logger.info(f"Started processing audio ({message.file_size_bytes} b) {message.output_file_path.absolute()}")
+
+            # extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data)
+
+            loop = asyncio.get_event_loop()
+            future = loop.run_in_executor(DownloadWorker.executor, DownloadWorker.extract_mp3_from_video_sync, data)
+            extracted_mp3_data = await future
+            # extracted_mp3_data = BytesIO(b"")
+
             if len(extracted_mp3_data.getvalue()) < 200:
                 # Write to file because ffmpeg can't read this video in one go and needs to seek
                 message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
                 with message.temp_download_path.open("wb") as f:
                     f.write(data.getvalue())
-                extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(message.temp_download_path)
+
+                # extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(message.temp_download_path)
+
+                loop = asyncio.get_event_loop()
+                future = loop.run_in_executor(
+                    DownloadWorker.executor, DownloadWorker.extract_mp3_from_video_sync, message.temp_download_path
+                )
+                extracted_mp3_data = await future
+
                 # Delete file after extracting the audio
                 message.temp_download_path.unlink()
                 if len(extracted_mp3_data.getvalue()) < 200:
@@ -168,6 +237,9 @@ class DownloadWorker:
                         message = MessageModel[message.id]
                         message.download_status = Status.ERROR_EXTRACTING_AUDIO.name
                     return
+            logger.info(
+                f"Finished processing audio ({message.file_size_bytes} b) {message.output_file_path.absolute()}"
+            )
             data = extracted_mp3_data
 
         # Write original data or (if enabled) extracted mp3 file
@@ -206,6 +278,9 @@ async def add_to_queue(
             file_unique_id=media.file_unique_id,
         )
         if message_from_db is not None:
+            # Update file_id if changed
+            message_from_db.file_id = media.file_id
+            message_from_db.file_unique_id = media.file_unique_id
             return message_from_db
 
         # Try to find from db, else create new row
@@ -254,23 +329,7 @@ async def add_to_queue(
     return message_from_db
 
 
-def requeue_interrupted_downloads():
-    # Get and re-enqueue all messages from DB that were interrupted (or not finished) in last program run
-    with orm.db_session():
-        for message in orm.select(m for m in MessageModel if m.file_unique_id != "").for_update():
-            message: MessageModel
-            message.download_status = check_message(message)
-
-
-async def main(client: Client):
-    logger.info("Checking for changed filters...")
-    # requeue_interrupted_downloads()
-    # TODO Update all file_ids of download_status=Status.QUEUED files (= not downloaded and not filtered files)
-    # because the file_ids seem to expire
-
-    await client.start()
-    await DownloadWorker.launch_workers(n=SECRETS.parallel_downloads_count)
-
+async def download_messages() -> None:
     for channel_id in SECRETS.channel_ids:
         done, total = MessageModel.get_count()
         logger.info(f"{done} / {total} Grabbing messages from channel: {channel_id}")
@@ -283,7 +342,7 @@ async def main(client: Client):
             previous_oldest_message_id = oldest_message_id
 
             # Get all messages (from newest to oldest), start with the oldest-parsed message
-            messages_iter = client.get_chat_history(
+            messages_iter = DownloadWorker.client.get_chat_history(
                 chat_id=channel_id,
                 offset_id=oldest_message_id,
                 limit=1000,
@@ -316,6 +375,30 @@ async def main(client: Client):
                             link=message.link,
                             download_status=Status.NO_MEDIA.name,
                         )
+
+
+def requeue_interrupted_downloads():
+    # Get and re-enqueue all messages from DB that were interrupted (or not finished) in last program run
+    with orm.db_session():
+        for message in orm.select(
+            m for m in MessageModel if m.file_unique_id != "" and m.download_status != Status.COMPLETED.name
+        ).for_update():
+            message: MessageModel
+            message.download_status = check_message(message)
+
+
+async def main(client: Client):
+    logger.info("Checking for changed filters...")
+    requeue_interrupted_downloads()
+    # TODO Update all file_ids of download_status=Status.QUEUED files (= not downloaded and not filtered files)
+    # because the file_ids seem to expire
+
+    await client.start()
+
+    DownloadWorker.executor = ProcessPoolExecutor()
+    # DownloadWorker.executor = ProcessPoolExecutor(max_workers=8)
+    await DownloadWorker.launch_workers(n=SECRETS.parallel_downloads_count)
+
     # Wait for downloads to finish
     while 1:
         # Check if jobs remaining and give status update

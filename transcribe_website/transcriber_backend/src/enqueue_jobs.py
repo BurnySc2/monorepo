@@ -82,6 +82,7 @@ async def add_processing_jobs():
                     input_file_size_bytes=file_size_bytes,
                 )
                 job_item.input_file_mp3 = Mp3File(job_item=job_item, mp3_data=file_data.getvalue())
+    logger.warning("Done uploading files!")
 
 
 async def main():

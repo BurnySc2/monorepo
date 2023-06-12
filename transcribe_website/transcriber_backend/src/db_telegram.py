@@ -118,7 +118,7 @@ class MessageModel(db.Entity):
         with orm.db_session():
             # pyre-fixme[16]
             messages = orm.select(m for m in MessageModel if m.download_status == Status.QUEUED.name).order_by(
-                orm.desc(MessageModel.message_id),
+                orm.desc(MessageModel.id),
             ).limit(1)
             if len(messages) == 0:
                 return None
