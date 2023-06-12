@@ -65,12 +65,19 @@ def audio_filter(message: MessageModel) -> bool:
 class Status(enum.Enum):
     """Possible status of a message in the db."""
     UNKNOWN = 0
+    # Planned to download
     QUEUED = 1
+    # Ignored because of current filters
     FILTERED = 2
+    # Downloading
+    ACCEPTED_TO_DOWNLOAD = 10
     DOWNLOADING = 3
+    # Done downloading
+    DUPLICATE = 9
+    COMPLETED = 6
+    # Errors
     MISSING_FILE_NAME = 4
     NO_MEDIA = 5
-    COMPLETED = 6
     ERROR_DOWNLOADING = 7
     ERROR_EXTRACTING_AUDIO = 8
 
@@ -139,12 +146,16 @@ class MessageModel(db.Entity):
     def get_count() -> tuple[int, int]:
         """Returns a tuple of how many downloads are complete and how many total there are."""
         with orm.db_session():
-            # pyre-fixme[16]
-            done_count = orm.count(m for m in MessageModel if m.download_status == Status.COMPLETED.name)
+            done_count = orm.count(
+                # pyre-fixme[16]
+                m for m in MessageModel if m.download_status in [Status.DUPLICATE.name, Status.COMPLETED.name]
+            )
             total_count = orm.count(
                 m for m in MessageModel if m.download_status in [
                     Status.QUEUED.name,
+                    Status.ACCEPTED_TO_DOWNLOAD.name,
                     Status.DOWNLOADING.name,
+                    Status.DUPLICATE.name,
                     Status.COMPLETED.name,
                 ]
             )

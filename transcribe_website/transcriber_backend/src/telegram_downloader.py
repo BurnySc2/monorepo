@@ -128,6 +128,23 @@ class DownloadWorker:
             message: MessageModel | None = MessageModel.get_one_queued()
             if message is None:
                 return
+            message.download_status = Status.ACCEPTED_TO_DOWNLOAD.name
+
+        # Find duplicate in database - if found, mark this as duplicate
+        with orm.db_session():
+            for _duplicate in orm.select(
+                # pyre-fixme[16]
+                m for m in MessageModel if (
+                    m.file_size_bytes == message.file_size_bytes and m.file_duration_seconds == message.
+                    file_duration_seconds and m.download_status in [Status.COMPLETED.name, Status.DOWNLOADING.name]
+                )
+            ):
+                # pyre-fixme[16]
+                message = MessageModel[message.id]
+                message.download_status = Status.DUPLICATE.name
+                return
+            # No return means no duplciate was found, start download
+            message = MessageModel[message.id]
             message.download_status = Status.DOWNLOADING.name
 
         logger.debug(
@@ -155,7 +172,6 @@ class DownloadWorker:
             # Error again, file not downloadable
             logger.warning(f"Unable to download {message.link}")
             with orm.db_session():
-                # pyre-fixme[16]
                 message = MessageModel[message.id]
                 message.download_status = Status.ERROR_DOWNLOADING.name
             return
@@ -329,7 +345,10 @@ def requeue_interrupted_downloads():
     # Get and re-enqueue all messages from DB that were interrupted (or not finished) in last program run
     with orm.db_session():
         for message in orm.select(
-            m for m in MessageModel if m.file_unique_id != "" and m.download_status != Status.COMPLETED.name
+            m for m in MessageModel if m.file_unique_id != "" and m.download_status not in [
+                Status.COMPLETED.name,
+                Status.DUPLICATE.name,
+            ]
         ).for_update():
             message: MessageModel
             message.download_status = check_message(message)
@@ -354,7 +373,7 @@ async def main():
             logger.info("Done with all downloads!")
             break
         logger.info(f"Waiting for jobs to finish: {done} / {total}")
-        await asyncio.sleep(30)
+        await asyncio.sleep(60)
 
 
 if __name__ == "__main__":

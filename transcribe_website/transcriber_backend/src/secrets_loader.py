@@ -69,6 +69,7 @@ class TextSearcherSecrets(BaseModel):
     glob_pattern: str = ""
     regex_pattern: str = ""
     allowed_languages: list[str] = ["en"]
+    case_sensitive: bool = False
 
 
 class Secrets(BaseModel):
