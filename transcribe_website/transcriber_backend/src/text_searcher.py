@@ -43,7 +43,8 @@ async def regex_search(regex_pattern: str, allowed_languages: list[str]) -> list
             if j == o.job_item and orm.raw_sql(f"o.txt_original ~ '{regex_pattern}'")
         )
         matching_file_names_results: list[str] = list(matching_file_names)
-        # TODO Find in text file - if exists, find in SRT file and find the context (one line before) where in the video/audio it happened
+        # TODO Find in text file - if exists, find in SRT file and find the context (one line before)
+        # where in the video/audio it happened
         matching_messages: list[MessageModel] = orm.select(
             # pyre-fixme[16]
             m for m in MessageModel if m.downloaded_file_path in matching_file_names_results

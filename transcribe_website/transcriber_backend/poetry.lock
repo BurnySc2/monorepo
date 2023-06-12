@@ -279,13 +279,13 @@ pyyaml = ">=5.3,<7"
 
 [[package]]
 name = "dataclasses-json"
-version = "0.5.7"
+version = "0.5.8"
 description = "Easily serialize dataclasses to and from JSON"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "dataclasses-json-0.5.7.tar.gz", hash = "sha256:c2c11bc8214fbf709ffc369d11446ff6945254a7f09128154a7620613d8fda90"},
-    {file = "dataclasses_json-0.5.7-py3-none-any.whl", hash = "sha256:bc285b5f892094c3a53d558858a88553dd6a61a11ab1a8128a0e554385dcc5dd"},
+    {file = "dataclasses-json-0.5.8.tar.gz", hash = "sha256:6572ac08ad9340abcb74fd8c4c8e9752db2a182a402c8e871d0a8aa119e3804e"},
+    {file = "dataclasses_json-0.5.8-py3-none-any.whl", hash = "sha256:65b167c15fdf9bde27569c09ac18dd39bf1cc5b7998525024cb4678d2653946c"},
 ]
 
 [package.dependencies]
@@ -294,7 +294,7 @@ marshmallow-enum = ">=1.5.1,<2.0.0"
 typing-inspect = ">=0.4.0"
 
 [package.extras]
-dev = ["flake8", "hypothesis", "ipython", "mypy (>=0.710)", "portray", "pytest (>=6.2.3)", "simplejson", "types-dataclasses"]
+dev = ["flake8", "hypothesis", "ipython", "mypy (>=0.710)", "portray", "pytest (>=7.2.0)", "simplejson", "types-dataclasses"]
 
 [[package]]
 name = "deep-translator"
@@ -471,13 +471,13 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "hypothesis"
-version = "6.77.0"
+version = "6.78.1"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "hypothesis-6.77.0-py3-none-any.whl", hash = "sha256:bfa03bb5c7d8b775378fc795d9251c885cd1be7d8ddf677f3ebd8f3892efc782"},
-    {file = "hypothesis-6.77.0.tar.gz", hash = "sha256:23bfe3743d0c88e61330debca60fc813db2ef83be5777f2baf113d035ac76081"},
+    {file = "hypothesis-6.78.1-py3-none-any.whl", hash = "sha256:4dd3b9534f09956e2d8ec57af4bd278eb40c6336c5ccb6eb82633ecf4292a5d5"},
+    {file = "hypothesis-6.78.1.tar.gz", hash = "sha256:d39968022d03ea264a301420c3a347c88b6ecd21d674c2ec77b41688bb42cebf"},
 ]
 
 [package.dependencies]
@@ -1544,4 +1544,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8, <3.11"
-content-hash = "5f48ae1047801502dbe253b143386d0be4164809a6cfb42e8a7a5c42cecbd8ca"
+content-hash = "04d399bb2e3a7f12b1d129359cf4d24ab481df578f9f1a38bbcdcda595a3227e"

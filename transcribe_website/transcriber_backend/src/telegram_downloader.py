@@ -3,9 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-import subprocess
 import sys
-from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -24,6 +22,10 @@ SECRETS = SECRETS_FULL.TelegramDownloader
 
 # Supress pyrogram messages that are caught anyway
 logging.disable()
+
+# Exclude debug logging messages
+logger.remove()
+logger.add(sys.stderr, level="INFO")
 
 
 def check_message(message: MessageModel) -> str:
@@ -50,74 +52,26 @@ def check_message(message: MessageModel) -> str:
 # pyre-fixme[13]
 class DownloadWorker:
     client: ClassVar[Client]  # set after client has been created
-    executor: ClassVar[ProcessPoolExecutor]
+
+    worker_id: int = 0
 
     @staticmethod
-    async def launch_workers(n: int = 10):
+    async def launch_workers(n: int = 5):
         """Start n download-workers that download files in parallel."""
         logger.info(f"Launching {n} workers")
-
-        def done_callback(future):
-            future.result()
-
-        for _ in range(n):
-            worker = DownloadWorker()
-            task = asyncio.create_task(worker.run())
-            # Create stacktrace if task errors
-            task.add_done_callback(done_callback)
-            # await task
+        for i in range(n):
+            worker = DownloadWorker(worker_id=i + 1)
+            _ = asyncio.create_task(worker.run(), name=f"{i}")
 
     async def run(self):
         while 1:
             await asyncio.sleep(1)
-            await DownloadWorker.download_one()
-
-    @staticmethod
-    def extract_mp3_from_video_sync(data_or_path: BytesIO | Path) -> BytesIO:
-        if isinstance(data_or_path, BytesIO):
-            command = [
-                "ffmpeg",
-                "-i",
-                "-",
-                "-vn",
-                "-c:a",
-                "libmp3lame",
-                "-q:a",
-                "2",
-                "-f",
-                "mp3",
-                "-",
-            ]
-            proc = subprocess.Popen(
-                command,
-                stdin=asyncio.subprocess.PIPE,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.DEVNULL,
-            )
-            stdout_data, _ = proc.communicate(data_or_path.getvalue())
-        elif isinstance(data_or_path, Path):
-            command = [
-                "ffmpeg",
-                "-i",
-                str(data_or_path.absolute()),
-                "-vn",
-                "-c:a",
-                "libmp3lame",
-                "-q:a",
-                "2",
-                "-f",
-                "mp3",
-                "-",
-            ]
-            proc = subprocess.Popen(
-                command,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.DEVNULL,
-            )
-            stdout_data, _ = proc.communicate()
-        else:
-            raise TypeError(f"Needs to be BytesIO or Path, was {type(data_or_path)}")
-        return BytesIO(stdout_data)
+            try:
+                await DownloadWorker.download_one(worker_id=self.worker_id)
+            except Exception as e:
+                # Catch errors by worker and end program
+                logger.exception(e)
+                sys.exit(1)
 
     @staticmethod
     async def extract_mp3_from_video(data_or_path: BytesIO | Path) -> BytesIO:
@@ -168,7 +122,7 @@ class DownloadWorker:
         return BytesIO(stdout_data)
 
     @staticmethod
-    async def download_one():
+    async def download_one(worker_id: int | None = None):
         # Get a new message
         with orm.db_session():
             message: MessageModel | None = MessageModel.get_one_queued()
@@ -176,44 +130,43 @@ class DownloadWorker:
                 return
             message.download_status = Status.DOWNLOADING.name
 
-        logger.info(f"Started downloading ({message.file_size_bytes} b) {message.output_file_path.absolute()}")
-        data: BytesIO = await DownloadWorker.client.download_media(
-            message=message.file_id,
+        logger.debug(
+            f"{worker_id} Started downloading ({message.file_size_bytes} b) {message.output_file_path.absolute()}"
+        )
+
+        # pyre-fixme[9]
+        up_to_date_message: Message | None = await DownloadWorker.client.get_messages(
+            chat_id=message.channel_id,
+            message_ids=message.message_id,
+            replies=0,
+        )
+        if up_to_date_message is None:
+            return
+        up_to_date_media: Video | Audio | Photo = (
+            up_to_date_message.video or up_to_date_message.audio or up_to_date_message.photo
+        )
+        # pyre-fixme[9]
+        data: BytesIO | None = await DownloadWorker.client.download_media(
+            # message=message.file_id,
+            message=up_to_date_media.file_id,
             in_memory=True,
         )
-        # Unable to download, need to refresh entry in database because file_id is too old
-        # (is there a better way to fix this?)
-        if data.getvalue() == b"":
-            telegram_message: Message = await DownloadWorker.client.get_messages(
-                chat_id=message.channel_id,
-                message_ids=message.message_id,
-                replies=0,
-            )
-            # Update entry in db
-            message = await add_to_queue(telegram_message, channel_id=message.channel_id)
-            # Try to download again
-            data: BytesIO = await DownloadWorker.client.download_media(
-                message=message.file_id,
-                in_memory=True,
-            )
-            if data.getvalue() == b"":
-                # Error again, file not downloadable
-                logger.warning(f"Unable to process {message.link}")
-                with orm.db_session():
-                    message = MessageModel[message.id]
-                    message.download_status = Status.ERROR_DOWNLOADING.name
-                return
+        if data is None or data.getvalue() == b"":
+            # Error again, file not downloadable
+            logger.warning(f"Unable to download {message.link}")
+            with orm.db_session():
+                # pyre-fixme[16]
+                message = MessageModel[message.id]
+                message.download_status = Status.ERROR_DOWNLOADING.name
+            return
 
         # Extract mp3 from mp4 file in memory via ffmpeg if SECRET.extract_audio_from_videos is True
         if SECRETS.extract_audio_from_videos and message.media_type == "Video":
-            logger.info(f"Started processing audio ({message.file_size_bytes} b) {message.output_file_path.absolute()}")
-
-            # extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data)
-
-            loop = asyncio.get_event_loop()
-            future = loop.run_in_executor(DownloadWorker.executor, DownloadWorker.extract_mp3_from_video_sync, data)
-            extracted_mp3_data = await future
-            # extracted_mp3_data = BytesIO(b"")
+            logger.debug(
+                f"{worker_id} Started processing audio ({message.file_size_bytes} b) "
+                f"{message.output_file_path.absolute()}"
+            )
+            extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data)
 
             if len(extracted_mp3_data.getvalue()) < 200:
                 # Write to file because ffmpeg can't read this video in one go and needs to seek
@@ -221,13 +174,7 @@ class DownloadWorker:
                 with message.temp_download_path.open("wb") as f:
                     f.write(data.getvalue())
 
-                # extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(message.temp_download_path)
-
-                loop = asyncio.get_event_loop()
-                future = loop.run_in_executor(
-                    DownloadWorker.executor, DownloadWorker.extract_mp3_from_video_sync, message.temp_download_path
-                )
-                extracted_mp3_data = await future
+                extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(message.temp_download_path)
 
                 # Delete file after extracting the audio
                 message.temp_download_path.unlink()
@@ -237,8 +184,9 @@ class DownloadWorker:
                         message = MessageModel[message.id]
                         message.download_status = Status.ERROR_EXTRACTING_AUDIO.name
                     return
-            logger.info(
-                f"Finished processing audio ({message.file_size_bytes} b) {message.output_file_path.absolute()}"
+            logger.debug(
+                f"{worker_id} Finished processing audio ({message.file_size_bytes} b) "
+                f"{message.output_file_path.absolute()}"
             )
             data = extracted_mp3_data
 
@@ -260,7 +208,7 @@ class DownloadWorker:
             message.download_status = Status.COMPLETED.name
             message.downloaded_file_path = str(relative_file_path)
 
-        logger.info(f"Done downloading {message.output_file_path.absolute()}")
+        logger.debug(f"{worker_id} Done downloading {message.output_file_path.absolute()}")
 
 
 async def add_to_queue(
@@ -387,17 +335,16 @@ def requeue_interrupted_downloads():
             message.download_status = check_message(message)
 
 
-async def main(client: Client):
+async def main():
     logger.info("Checking for changed filters...")
     requeue_interrupted_downloads()
-    # TODO Update all file_ids of download_status=Status.QUEUED files (= not downloaded and not filtered files)
-    # because the file_ids seem to expire
 
-    await client.start()
+    await DownloadWorker.client.start()
 
-    DownloadWorker.executor = ProcessPoolExecutor()
-    # DownloadWorker.executor = ProcessPoolExecutor(max_workers=8)
     await DownloadWorker.launch_workers(n=SECRETS.parallel_downloads_count)
+
+    # Start parsing channels and messages
+    await download_messages()
 
     # Wait for downloads to finish
     while 1:
@@ -420,4 +367,4 @@ if __name__ == "__main__":
         workdir=current_folder,
     )
     DownloadWorker.client = app
-    asyncio.run(main(app), debug=False)
+    asyncio.run(main(), debug=False)
