@@ -28,18 +28,6 @@ logger.remove()
 logger.add(sys.stderr, level="INFO")
 
 
-def check_message(message: TelegramMessage) -> str:
-    """
-    Check if a media passes the filters or even already exists.
-    Otherwise mark it as queued to be processed to be downloaded.
-    """
-    if message.download_completed:
-        if message.downloaded_file_path == "":
-            message.downloaded_file_path = message.relative_path
-        return Status.COMPLETED.name
-    return Status.QUEUED.name
-
-
 @dataclass
 # pyre-fixme[13]
 class DownloadWorker:
@@ -154,6 +142,9 @@ class DownloadWorker:
             replies=0,
         )
         if up_to_date_message is None:
+            with orm.db_session():
+                message = TelegramMessage[message.id]
+                message.download_status = Status.ERROR_DOWNLOADING.name
             return
         up_to_date_media: Video | Audio | Photo | None = (
             up_to_date_message.video or up_to_date_message.audio or up_to_date_message.photo
@@ -164,6 +155,7 @@ class DownloadWorker:
                 message.download_status = Status.ERROR_DOWNLOADING.name
             return
 
+        # Attempt to download file
         # pyre-fixme[9]
         data: BytesIO | None = await DownloadWorker.client.download_media(
             # message=message.file_id,
@@ -355,7 +347,7 @@ def requeue_interrupted_downloads():
             download_status NOT IN ('{Status.COMPLETED.name}', '{Status.DUPLICATE.name}')
             AND file_unique_id <> ''
             AND
-            (media_type = 'Photo' AND 'Photo' IN {(tuple(SECRETS.media_types))} 
+            ((media_type = 'Photo' AND 'Photo' IN {(tuple(SECRETS.media_types))} 
             AND {SECRETS.photo_min_file_size_bytes} <= file_size_bytes 
             AND file_size_bytes <= {SECRETS.photo_max_file_size_bytes})
             OR
@@ -369,7 +361,7 @@ def requeue_interrupted_downloads():
             AND {SECRETS.audio_min_file_size_bytes} <= file_size_bytes
             AND file_size_bytes <= {SECRETS.audio_max_file_size_bytes}
             AND {SECRETS.audio_min_file_duration_seconds} <= file_duration_seconds
-            AND file_duration_seconds <= {SECRETS.audio_max_file_duration_seconds});            
+            AND file_duration_seconds <= {SECRETS.audio_max_file_duration_seconds}));            
         """
         )
 
