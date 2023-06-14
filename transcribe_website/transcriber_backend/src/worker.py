@@ -14,7 +14,7 @@ from loguru import logger
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.db_transcriber import JobItem, JobStatus, orm  # noqa: E402
+from src.models.db import JobStatus, TranscriptionJob, orm  # noqa: E402
 from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 
 SECRETS = SECRETS_FULL.Transcriber
@@ -29,8 +29,7 @@ class Worker:
 
     async def work(self) -> None:
         with orm.db_session():
-            # pyre-fixme[16]
-            job_info: JobItem = JobItem[self.job_id]
+            job_info: TranscriptionJob = TranscriptionJob[self.job_id]
             mp3_data: BytesIO = BytesIO(job_info.input_file_mp3.mp3_data)
         logger.info(f"Worker: Started job id {self.job_id}")
         process = await asyncio.subprocess.create_subprocess_exec(
@@ -77,7 +76,7 @@ async def main():
     time_1h_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=3600)
     with orm.db_session():
         jobs = orm.select(
-            j for j in JobItem if (j.job_started is None or j.job_started < time_1h_ago) and j.status in [
+            j for j in TranscriptionJob if (j.job_started is None or j.job_started < time_1h_ago) and j.status in [
                 JobStatus.ACCEPTED.name,
                 JobStatus.PROCESSING.name,
                 JobStatus.FINISHING.name,
@@ -102,7 +101,7 @@ async def main():
                     Worker.active_workers.remove(worker)
                     break
             await asyncio.sleep(1)
-        job: JobItem | None = JobItem.get_one_queued(SECRETS.workers_acceptable_models)
+        job: TranscriptionJob | None = TranscriptionJob.get_one_queued(SECRETS.workers_acceptable_models)
         if job is None:
             await asyncio.sleep(10)
             continue
@@ -115,7 +114,7 @@ async def main():
             download_model(f"{job.model_size.lower()}.en", cache_dir="./whisper_models")
 
         with orm.db_session():
-            job_info: JobItem = JobItem[job.id]
+            job_info: TranscriptionJob = TranscriptionJob[job.id]
             job_info.status = JobStatus.ACCEPTED.name
         # Start worker
         worker = Worker(

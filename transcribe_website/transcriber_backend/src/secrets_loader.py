@@ -41,19 +41,11 @@ class TelegramDownloaderSecrets(BaseModel):
     # Photo
     photo_min_file_size_bytes: int = 0
     photo_max_file_size_bytes: int = 4_000_000_000
-    photo_min_width: int = 0
-    photo_max_width: int = 1_000_000
-    photo_min_height: int = 0
-    photo_max_height: int = 1_000_000
     # Video
     video_min_file_size_bytes: int = 0
     video_max_file_size_bytes: int = 4_000_000_000
     video_min_file_duration_seconds: int = 0
     video_max_file_duration_seconds: int = 4_000_000_000
-    video_min_width: int = 0
-    video_max_width: int = 1_000_000
-    video_min_height: int = 0
-    video_max_height: int = 1_000_000
     # Audio
     audio_min_file_size_bytes: int = 0
     audio_max_file_size_bytes: int = 4_000_000_000
@@ -70,6 +62,8 @@ class TextSearcherSecrets(BaseModel):
     regex_pattern: str = ""
     allowed_languages: list[str] = ["en"]
     case_sensitive: bool = False
+    min_duration: int = 0
+    max_duration: int = 10**6
 
 
 class Secrets(BaseModel):

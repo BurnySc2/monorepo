@@ -6,60 +6,10 @@ from pathlib import Path
 
 from pony import orm  # pyre-fixme[21]
 
+from src.models import db
 from src.secrets_loader import SECRETS as SECRETS_FULL
 
 SECRETS = SECRETS_FULL.TelegramDownloader
-db = orm.Database()
-
-# Create connection
-db.bind(provider="sqlite", filename="../messages.db", create_db=True)
-
-
-def photo_filter(message: MessageModel) -> bool:
-    # Returns True if it fits the criteria (= should be downloaded)
-    if message.media_type != "Photo":
-        return True
-    if "Photo" not in SECRETS.media_types:
-        return False
-    return all(
-        [
-            SECRETS.photo_min_file_size_bytes <= message.file_size_bytes <= SECRETS.photo_max_file_size_bytes,
-            SECRETS.photo_min_width <= message.file_width <= SECRETS.photo_max_width,
-            SECRETS.photo_min_height <= message.file_height <= SECRETS.photo_max_height,
-        ]
-    )
-
-
-def video_filter(message: MessageModel) -> bool:
-    # Returns True if it fits the criteria (= should be downloaded)
-    if message.media_type != "Video":
-        return True
-    if "Video" not in SECRETS.media_types:
-        return False
-    return all(
-        [
-            SECRETS.video_min_file_size_bytes <= message.file_size_bytes <= SECRETS.video_max_file_size_bytes,
-            SECRETS.video_min_file_duration_seconds <= message.file_duration_seconds <=
-            SECRETS.video_max_file_duration_seconds,
-            SECRETS.video_min_width <= message.file_width <= SECRETS.video_max_width,
-            SECRETS.video_min_height <= message.file_height <= SECRETS.video_max_height,
-        ]
-    )
-
-
-def audio_filter(message: MessageModel) -> bool:
-    # Returns True if it fits the criteria (= should be downloaded)
-    if message.media_type != "Audio":
-        return True
-    if "Audio" not in SECRETS.media_types:
-        return False
-    return all(
-        [
-            SECRETS.audio_min_file_size_bytes <= message.file_size_bytes <= SECRETS.audio_max_file_size_bytes,
-            SECRETS.audio_min_file_duration_seconds <= message.file_duration_seconds <=
-            SECRETS.audio_max_file_duration_seconds
-        ]
-    )
 
 
 class Status(enum.Enum):
@@ -83,9 +33,9 @@ class Status(enum.Enum):
 
 
 # pyre-fixme[11]
-class MessageModel(db.Entity):
+class TelegramMessage(db.Entity):
     # TODO Filter duplicate message, maybe with combination of "size_bytes" and "duration_seconds" has to be unique
-    _table_ = "MessageModel"  # Table name
+    _table_ = "telegram_messages_to_download"  # Table name
     id = orm.PrimaryKey(int, auto=True)
     channel_id = orm.Required(str)
     message_id = orm.Required(int)
@@ -102,6 +52,8 @@ class MessageModel(db.Entity):
     file_duration_seconds = orm.Optional(int)
     file_height = orm.Optional(int)
     file_width = orm.Optional(int)
+    issued_by = orm.Optional(str)
+    linked_transcription = orm.Optional("TranscriptionJob")
 
     @property
     def temp_download_path(self) -> Path:
@@ -119,13 +71,19 @@ class MessageModel(db.Entity):
     def download_completed(self) -> bool:
         return self.output_file_path.is_file()
 
+    @property
+    def relative_path(self) -> str:
+        # Path that needs to be stored in DB without the root download folder,
+        # so that the root download folder may be moved
+        return str(self.output_file_path.relative_to(SECRETS.output_folder_path))
+
     @staticmethod
-    def get_one_queued() -> MessageModel | None:
+    def get_one_queued() -> TelegramMessage | None:
         """Used in getting any queued message for the download-worker."""
         with orm.db_session():
             # pyre-fixme[16]
-            messages = orm.select(m for m in MessageModel if m.download_status == Status.QUEUED.name).order_by(
-                orm.desc(MessageModel.id),
+            messages = orm.select(m for m in TelegramMessage if m.download_status == Status.QUEUED.name).order_by(
+                orm.desc(TelegramMessage.id),
             ).limit(1)
             if len(messages) == 0:
                 return None
@@ -136,8 +94,8 @@ class MessageModel(db.Entity):
         """Used in finding the oldest parsed message_id of a channel. Returns 0 if channel has not been parsed yet."""
         with orm.db_session():
             # pyre-fixme[16]
-            messages = orm.select(m for m in MessageModel
-                                  if m.channel_id == channel_id).order_by(MessageModel.message_id).limit(1)
+            messages = orm.select(m for m in TelegramMessage
+                                  if m.channel_id == channel_id).order_by(TelegramMessage.message_id).limit(1)
             if len(messages) == 0:
                 return 0
             return list(messages)[0].message_id
@@ -148,10 +106,10 @@ class MessageModel(db.Entity):
         with orm.db_session():
             done_count = orm.count(
                 # pyre-fixme[16]
-                m for m in MessageModel if m.download_status in [Status.DUPLICATE.name, Status.COMPLETED.name]
+                m for m in TelegramMessage if m.download_status in [Status.DUPLICATE.name, Status.COMPLETED.name]
             )
             total_count = orm.count(
-                m for m in MessageModel if m.download_status in [
+                m for m in TelegramMessage if m.download_status in [
                     Status.QUEUED.name,
                     Status.ACCEPTED_TO_DOWNLOAD.name,
                     Status.DOWNLOADING.name,
@@ -160,10 +118,3 @@ class MessageModel(db.Entity):
                 ]
             )
             return done_count, total_count
-
-
-# Enable debug mode to see the queries sent
-# orm.set_sql_debug(True)
-
-# Create tables if they didn't exist yet
-db.generate_mapping(create_tables=True)

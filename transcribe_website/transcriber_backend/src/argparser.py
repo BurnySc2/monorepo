@@ -21,7 +21,14 @@ from tqdm import tqdm
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.db_transcriber import JobItem, JobStatus, ModelSize, OutputResult, Task, compress_files  # noqa: E402
+from src.models.db import (  # noqa: E402
+    JobStatus,
+    ModelSize,
+    Task,
+    TranscriptionJob,
+    TranscriptionResult,
+    compress_files,
+)
 
 
 @dataclass
@@ -88,11 +95,10 @@ def update_job_status(
 ) -> None:
     if job_id is not None:
         with orm.db_session():
-            job_info = JobItem[job_id]  # pyre-fixme[16]
+            job_info = TranscriptionJob[job_id]
             job_info.status = new_status.name
             if txt_original is not None and srt_original_zipped is not None:
-                # pyre-fixme[28]
-                job_info.output_zip_data = OutputResult(
+                job_info.output_zip_data = TranscriptionResult(
                     job_item=job_info,
                     srt_original_zipped=srt_original_zipped.getvalue(),
                     txt_original=txt_original,
@@ -202,8 +208,7 @@ def transcribe(options: TranscriberOptions) -> None:
                 if last_job_progress_value != new_job_progress_value:
                     last_job_progress_value = new_job_progress_value
                     with orm.db_session():
-                        # pyre-fixme[16]
-                        job: JobItem = JobItem[options.database_job_id]
+                        job: TranscriptionJob = TranscriptionJob[options.database_job_id]
                         job.progress = new_job_progress_value
 
     logger.debug(f"Done transcribing after {time.perf_counter() - t0:3f} seconds")
