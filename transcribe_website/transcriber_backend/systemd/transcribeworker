@@ -11,6 +11,7 @@ SyslogIdentifier=transcribeworker
 User=transcribeworker
 Group=transcribeworker
 WorkingDirectory=/home/transcribeworker
+ExecStop=/usr/bin/docker rm -f transcribe_worker
 
 [Install]
 WantedBy=multi-user.target
