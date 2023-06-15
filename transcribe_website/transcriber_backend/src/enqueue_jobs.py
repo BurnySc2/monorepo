@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import sys
 from io import BytesIO
 from pathlib import Path
 from typing import Generator
@@ -10,7 +9,6 @@ from faster_whisper import WhisperModel  # pyre-fixme[21]
 from loguru import logger
 from pony import orm  # pyre-fixme[21]
 
-sys.path.append(str(Path(__file__).parent.parent))
 from src.models.db import (  # noqa: E402
     JobStatus,
     ModelSize,

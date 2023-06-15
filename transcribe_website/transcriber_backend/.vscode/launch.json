@@ -11,7 +11,10 @@
             "cwd": "${workspaceFolder}",
             "program": "${file}",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         },
         {
             "name": "Transcriber_backend: Transcribe",

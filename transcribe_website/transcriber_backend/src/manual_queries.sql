@@ -2,6 +2,10 @@
 SELECT COUNT(*) FROM transcribe_jobs
 WHERE status <> 'DONE';
 
+-- Sum of file sizes of queued transcriptions
+SELECT SUM(input_file_size_bytes) FROM transcribe_jobs
+WHERE status <> 'DONE';
+
 -- Find all duplicate files in the database based on file size and duration
 SELECT file_size_bytes, file_duration_seconds, COUNT(*)
 FROM telegram_messages_to_download

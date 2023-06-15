@@ -2,19 +2,15 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import sys
 import time
 from dataclasses import dataclass
 from io import BytesIO
-from pathlib import Path
 from typing import ClassVar
 
 from faster_whisper import download_model  # pyre-fixme[21]
 from loguru import logger
 
-sys.path.append(str(Path(__file__).parent.parent))
-
-from src.models.db import JobStatus, TranscriptionJob, orm  # noqa: E402
+from src.models.db import JobStatus, TranscriptionJob, TranscriptionMp3File, orm  # noqa: E402
 from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 
 SECRETS = SECRETS_FULL.Transcriber
@@ -31,7 +27,8 @@ class Worker:
         with orm.db_session():
             job_info: TranscriptionJob = TranscriptionJob[self.job_id]
             mp3_data: BytesIO = BytesIO(job_info.input_file_mp3.mp3_data)
-        logger.info(f"Worker: Started job id {self.job_id}")
+            remaining_jobs = orm.count(m for m in TranscriptionMp3File)
+        logger.info(f"Worker: ({remaining_jobs}) Started job id {self.job_id}")
         process = await asyncio.subprocess.create_subprocess_exec(
             *[
                 "poetry",

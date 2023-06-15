@@ -14,7 +14,6 @@ from pony import orm  # pyre-fixme[21]
 from pyrogram import Client
 from pyrogram.types import Audio, Message, Photo, Video
 
-sys.path.append(str(Path(__file__).parent.parent))
 from src.models.db import Status, TelegramMessage, db  # noqa: E402
 from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 

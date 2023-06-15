@@ -19,8 +19,6 @@ from pony import orm  # pyre-fixme[21]
 from simple_parsing import ArgumentParser
 from tqdm import tqdm
 
-sys.path.append(str(Path(__file__).parent.parent))
-
 from src.models.db import (  # noqa: E402
     JobStatus,
     ModelSize,
