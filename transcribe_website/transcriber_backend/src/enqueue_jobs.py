@@ -14,6 +14,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from src.models.db import (  # noqa: E402
     JobStatus,
     ModelSize,
+    Status,
     Task,
     TelegramMessage,
     TranscriptionJob,
@@ -42,7 +43,7 @@ def recurse_path(path: Path, depth: int = 1) -> Generator[Path, None, None]:
 async def add_processing_jobs():
     """Based on settings from SECRETS.toml, uploading all matching mp3 files for transcribing."""
     with orm.db_session():
-        uploaded_files: list[str] = list(orm.select(j.local_file for j in TranscriptionJob))
+        uploaded_files: list[str] = set(orm.select(j.local_file for j in TranscriptionJob))
 
     if SECRETS.detect_language_before_queueing:
         model = WhisperModel(
@@ -62,14 +63,6 @@ async def add_processing_jobs():
             relative_file_path = path.relative_to(folder_path)
             relative_file_path_str = str(relative_file_path)
             if relative_file_path_str in uploaded_files:
-                with orm.db_session():
-                    # Link telegram message to transcription job
-                    related_message: TelegramMessage | None = TelegramMessage.get(
-                        downloaded_file_path=relative_file_path_str
-                    )
-                    transcription_job = TranscriptionJob.get(local_file=relative_file_path_str)
-                    if related_message is not None and transcription_job is not None:
-                        related_message.linked_transcription = transcription_job
                 continue
             # TODO Skip if it already has a srt or txt transcription
 
@@ -88,6 +81,7 @@ async def add_processing_jobs():
             # Upload file to db
             logger.info(f"Uploading {file_size_bytes/2**20:.1f} mb {path.absolute()}")
             with orm.db_session():
+                message: TelegramMessage = TelegramMessage.get(downloaded_file_path=relative_file_path_str)
                 transcription_job = TranscriptionJob(
                     local_file=relative_file_path_str,
                     task=Task.Transcribe.name,
@@ -99,16 +93,58 @@ async def add_processing_jobs():
                 transcription_job.input_file_mp3 = TranscriptionMp3File(
                     job_item=transcription_job, mp3_data=file_data.getvalue()
                 )
-                # Link message to transcription job if it exists
-                related_message: TelegramMessage | None = TelegramMessage.get(
-                    downloaded_file_path=relative_file_path_str
-                )
-                if related_message is not None:
-                    related_message.linked_transcription = transcription_job
+                # Link to telegram message
+                message.linked_transcription = transcription_job
+            uploaded_files.add(relative_file_path_str)
     logger.warning("Done uploading files!")
 
 
+async def link_local_files_to_telegram_messages():
+    """Helper functions to get lost files back into the db."""
+    with orm.db_session():
+        completed_messages: list[TelegramMessage] = list(
+            orm.select(t for t in TelegramMessage if t.download_status == Status.COMPLETED.name)
+        )
+        unique_id_to_message: dict[str, TelegramMessage] = {m.file_unique_id: m for m in completed_messages}
+
+        for path in recurse_path(SECRETS_FULL.TelegramDownloader.output_folder_path, depth=10):
+            if path.is_dir():
+                continue
+            # Link files to db
+            if path.stem in unique_id_to_message:
+                relative_path = str(path.relative_to(SECRETS_FULL.TelegramDownloader.output_folder_path))
+                message = unique_id_to_message[path.stem]
+                if message.downloaded_file_path != relative_path:
+                    message.downloaded_file_path = relative_path
+                    logger.warning(f"Linked {relative_path} to db entry {message.id}")
+
+
+async def link_telegram_messages_to_transcription_jobs():
+    """Link all telegram messages to their transcription jobs in case they do not have a link yet."""
+    with orm.db_session():
+        uploaded_files: set[str] = set(orm.select(j.local_file for j in TranscriptionJob))
+        messages_without_link: list[TelegramMessage] = orm.select(
+            t for t in TelegramMessage if t.linked_transcription is None and t.file_unique_id != ""
+        )
+        for message in messages_without_link:
+            if message.downloaded_file_path in uploaded_files:
+                transcriptions = list(
+                    orm.select(t for t in TranscriptionJob if t.local_file == message.downloaded_file_path).limit(2)
+                )
+                if len(transcriptions) == 0:
+                    # Transcription doesnt exist, file wasnt uploaded yet
+                    pass
+                elif len(transcriptions) == 1:
+                    transcription_job = transcriptions[0]
+                    message.linked_transcription = transcription_job
+                    logger.info(f"Linked {message.downloaded_file_path} to {transcription_job.id}")
+                else:
+                    # Delete all transcriptions because duplicate file
+                    orm.delete(t for t in TranscriptionJob if t.local_file == message.downloaded_file_path)
+
+
 async def main():
+    # await link_telegram_messages_to_transcription_jobs()
     await add_processing_jobs()
 
 

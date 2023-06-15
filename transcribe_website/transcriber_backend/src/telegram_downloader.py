@@ -116,19 +116,17 @@ class DownloadWorker:
                 return
             message.download_status = Status.ACCEPTED_TO_DOWNLOAD.name
 
-        # Find duplicate in database - if found, mark this as duplicate
-        with orm.db_session():
-            for _duplicate in orm.select(
+            # Find duplicates based on file size and duration
+            duplicates_count = orm.count(
                 m for m in TelegramMessage if (
                     m.file_size_bytes == message.file_size_bytes and m.file_duration_seconds == message.
                     file_duration_seconds and m.download_status in [Status.COMPLETED.name, Status.DOWNLOADING.name]
                 )
-            ):
-                message = TelegramMessage[message.id]
+            )
+            if duplicates_count > 0:
                 message.download_status = Status.DUPLICATE.name
                 return
             # No return means no duplciate was found, start download
-            message = TelegramMessage[message.id]
             message.download_status = Status.DOWNLOADING.name
 
         logger.debug(
@@ -158,7 +156,6 @@ class DownloadWorker:
         # Attempt to download file
         # pyre-fixme[9]
         data: BytesIO | None = await DownloadWorker.client.download_media(
-            # message=message.file_id,
             message=up_to_date_media.file_id,
             in_memory=True,
         )
@@ -209,8 +206,8 @@ class DownloadWorker:
         message.output_file_path.parent.mkdir(parents=True, exist_ok=True)
         # TODO what if file exists
         if message.output_file_path.is_file():
-            logger.warning(f"File already exists {message.output_file_path.absolute()}")
-            sys.exit(1)
+            logger.error(f"File already exists {message.output_file_path.absolute()}")
+            return
         message.temp_download_path.rename(message.output_file_path)
         # Set modified date to message date
         os.utime(message.output_file_path, (message.message_date.timestamp(), message.message_date.timestamp()))
@@ -257,30 +254,27 @@ async def add_to_queue(
         load_message_ids_to_cache(channel_id)
         add_to_queue_cache[channel_id].add(message.id)
 
-        # Attempt to find file ending and a file name
-        # pyre-fixme[16]
-        if not hasattr(media, "file_name") or media.file_name is None:
-            if not hasattr(media, "mime_type"):
-                # Unable to process media
-                new_telegram_message.download_status = Status.MISSING_FILE_NAME.name
-                return
-            # pyre-fixme[16]
-            file_ending = media.mime_type.split("/")[-1]
-            extracted_file_name = f"{media.file_unique_id}.{file_ending}"
-        else:
-            # pyre-fixme[16]
-            extracted_file_name = media.file_name
-
         new_telegram_message.media_type = media_class_name
-        new_telegram_message.file_id = media.file_id
         new_telegram_message.file_unique_id = media.file_unique_id
-        new_telegram_message.file_name = extracted_file_name
         new_telegram_message.file_size_bytes = media.file_size
         if isinstance(media, (Audio, Video)):
             new_telegram_message.file_duration_seconds = media.duration
+            # Duplicate due to file size and file duration
+            if orm.exists(
+                m for m in TelegramMessage
+                if m.file_size_bytes == media.file_size and m.file_duration_seconds == media.duration
+            ):
+                new_telegram_message.download_status = Status.DUPLICATE.name
+                return
         if isinstance(media, (Photo, Video)):
             new_telegram_message.file_height = media.height
             new_telegram_message.file_width = media.width
+
+        # Duplicate due to file_unique_id
+        if orm.exists(m for m in TelegramMessage if m.file_unique_id == media.file_unique_id):
+            new_telegram_message.download_status = Status.DUPLICATE.name
+            return
+
         # Mark as queued on next run
         new_telegram_message.download_status = Status.FILTERED.name
     return
@@ -347,21 +341,23 @@ def requeue_interrupted_downloads():
             download_status NOT IN ('{Status.COMPLETED.name}', '{Status.DUPLICATE.name}')
             AND file_unique_id <> ''
             AND
-            ((media_type = 'Photo' AND 'Photo' IN {(tuple(SECRETS.media_types))} 
-            AND {SECRETS.photo_min_file_size_bytes} <= file_size_bytes 
-            AND file_size_bytes <= {SECRETS.photo_max_file_size_bytes})
-            OR
-            (media_type = 'Video' AND 'Video' IN {(tuple(SECRETS.media_types))}
-            AND {SECRETS.video_min_file_size_bytes} <= file_size_bytes
-            AND file_size_bytes <= {SECRETS.video_max_file_size_bytes}
-            AND {SECRETS.video_min_file_duration_seconds} <= file_duration_seconds
-            AND file_duration_seconds <= {SECRETS.video_max_file_duration_seconds})
-            OR
-            (media_type = 'Audio' AND 'Audio' IN {(tuple(SECRETS.media_types))}
-            AND {SECRETS.audio_min_file_size_bytes} <= file_size_bytes
-            AND file_size_bytes <= {SECRETS.audio_max_file_size_bytes}
-            AND {SECRETS.audio_min_file_duration_seconds} <= file_duration_seconds
-            AND file_duration_seconds <= {SECRETS.audio_max_file_duration_seconds}));            
+            (
+                    (media_type = 'Photo' AND 'Photo' IN {tuple(SECRETS.media_types)} 
+                    AND {SECRETS.photo_min_file_size_bytes} <= file_size_bytes 
+                    AND file_size_bytes <= {SECRETS.photo_max_file_size_bytes})
+                OR
+                    (media_type = 'Video' AND 'Video' IN {tuple(SECRETS.media_types)}
+                    AND {SECRETS.video_min_file_size_bytes} <= file_size_bytes
+                    AND file_size_bytes <= {SECRETS.video_max_file_size_bytes}
+                    AND {SECRETS.video_min_file_duration_seconds} <= file_duration_seconds
+                    AND file_duration_seconds <= {SECRETS.video_max_file_duration_seconds})
+                OR
+                    (media_type = 'Audio' AND 'Audio' IN {tuple(SECRETS.media_types)}
+                    AND {SECRETS.audio_min_file_size_bytes} <= file_size_bytes
+                    AND file_size_bytes <= {SECRETS.audio_max_file_size_bytes}
+                    AND {SECRETS.audio_min_file_duration_seconds} <= file_duration_seconds
+                    AND file_duration_seconds <= {SECRETS.audio_max_file_duration_seconds})
+            );            
         """
         )
 
