@@ -27,6 +27,25 @@ logging.disable()
 logger.remove()
 logger.add(sys.stderr, level="INFO")
 
+# {channel_id: {message_id: file_id}}
+file_ids_cache: dict[str, dict[int, str]] = {}
+
+
+def update_file_ids_cache(channel_id: str, messages: list[Message]) -> None:
+    """Update file_ids_cache with new messages."""
+    if channel_id not in file_ids_cache:
+        file_ids_cache[channel_id] = {}
+    for message in messages:
+        media: Audio | Video | Photo | None = message.audio or message.video or message.photo
+        if media is not None:
+            file_ids_cache[channel_id][message.id] = media.file_id
+
+
+def get_from_file_ids_cache(channel_id: str, message_id: int) -> str | None:
+    """Get file_id from cache."""
+    if channel_id in file_ids_cache and message_id in file_ids_cache[channel_id]:
+        return file_ids_cache[channel_id][message_id]
+
 
 @dataclass
 # pyre-fixme[13]
@@ -137,34 +156,33 @@ class DownloadWorker:
             # No return means no duplciate was found, start download
             message.download_status = Status.DOWNLOADING.name
 
+        # Get file id from cache or update cache
+        file_id = get_from_file_ids_cache(message.channel_id, message.message_id)
+        if file_id is None:
+            two_hundred_message_ids: list[int] = TelegramMessage.get_n_queued_by_channel(message.channel_id)
+            if len(two_hundred_message_ids) > 200:
+                raise ValueError("The api does not allow more than 200 messages to be downloaded at once.")
+            # pyre-fixme[9]
+            up_to_date_messages: list[Message] = await DownloadWorker.client.get_messages(
+                chat_id=message.channel_id,
+                message_ids=two_hundred_message_ids,
+                replies=0,
+            )
+            update_file_ids_cache(message.channel_id, up_to_date_messages)
+            file_id = get_from_file_ids_cache(message.channel_id, message.message_id)
+            if file_id is None:
+                with orm.db_session():
+                    message = TelegramMessage[message.id]
+                    message.download_status = Status.ERROR_DOWNLOADING.name
+                return
+
+        # Attempt to download file
         logger.debug(
             f"{worker_id} Started downloading ({message.file_size_bytes} b) {message.output_file_path.absolute()}"
         )
-
-        # pyre-fixme[9]
-        up_to_date_message: Message | None = await DownloadWorker.client.get_messages(
-            chat_id=message.channel_id,
-            message_ids=message.message_id,
-            replies=0,
-        )
-        if up_to_date_message is None:
-            with orm.db_session():
-                message = TelegramMessage[message.id]
-                message.download_status = Status.ERROR_DOWNLOADING.name
-            return
-        up_to_date_media: Video | Audio | Photo | None = (
-            up_to_date_message.video or up_to_date_message.audio or up_to_date_message.photo
-        )
-        if up_to_date_media is None:
-            with orm.db_session():
-                message = TelegramMessage[message.id]
-                message.download_status = Status.ERROR_DOWNLOADING.name
-            return
-
-        # Attempt to download file
         # pyre-fixme[9]
         data: BytesIO | None = await DownloadWorker.client.download_media(
-            message=up_to_date_media.file_id,
+            message=file_id,
             in_memory=True,
         )
         if data is None or data.getvalue() == b"":

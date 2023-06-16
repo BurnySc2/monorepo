@@ -98,25 +98,40 @@ class TelegramMessage(db.Entity):
 
     @staticmethod
     def get_one_queued() -> TelegramMessage | None:
-        """Used in getting any queued message for the download-worker."""
+        """Used in getting a single queued message for the download-worker."""
+        with orm.db_session():
+            messages: list[TelegramMessage] = list(
+                orm.select(
+                    # pyre-fixme[16]
+                    m for m in TelegramMessage if m.download_status == Status.QUEUED.name
+                ).order_by(
+                    TelegramMessage.channel_id,
+                    TelegramMessage.file_size_bytes,
+                ).limit(1)
+            )
+            if len(messages) > 0:
+                return messages[0]
+
+    @staticmethod
+    def get_n_queued_by_channel(channel_id: str, limit: int = 200) -> list[int]:
+        """Get a bunch of queued messages of a channel to batch-update their file ids."""
         with orm.db_session():
             messages: list[TelegramMessage] = orm.select(
                 # pyre-fixme[16]
-                m for m in TelegramMessage if m.download_status == Status.QUEUED.name
+                m for m in TelegramMessage if m.download_status == Status.QUEUED.name and m.channel_id == channel_id
             ).order_by(
                 TelegramMessage.file_size_bytes,
-            ).limit(1)
-            if len(messages) == 0:
-                return None
-            return list(messages)[0]
+            ).limit(limit)
+            return [m.message_id for m in messages]
 
     @staticmethod
     def get_oldest_message_id(channel_id: str) -> int:
         """Used in finding the oldest parsed message_id of a channel. Returns 0 if channel has not been parsed yet."""
         with orm.db_session():
             # pyre-fixme[16]
-            messages = orm.select(m for m in TelegramMessage
-                                  if m.channel_id == channel_id).order_by(TelegramMessage.message_id).limit(1)
+            messages = orm.select(m for m in TelegramMessage if m.channel_id == channel_id).order_by(
+                TelegramMessage.message_id,
+            ).limit(1)
             if len(messages) == 0:
                 return 0
             return list(messages)[0].message_id
