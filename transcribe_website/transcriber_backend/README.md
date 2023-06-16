@@ -1,16 +1,26 @@
-# Prerequisites
-- Python >= 3.8 <3.11
+# Transcriber Service
+## Prerequisites
+- Python >= 3.8 <3.11 (pony doesn't support 3.11 yet)
+- Postgres server (or modify `src/db.py` to connect to local sqlite)
 - (Optional) Docker
 
 Copy the `SECRETS.example.toml` to `SECRETS.toml` and fill out your secrets.
 
-# Enqueue Worker
-`poetry run python enqueue_jobs.py`
+Install
+```
+pip install --user poetry
+poetry install
+```
 
-# Processing Worker
+## Enqueue Worker
+Configure the `SECRETS.toml` accordingly to match the files you want to upload to be enqueued in transcription.
+
+`poetry run python src/enqueue_jobs.py`
+
+## Processing Worker
 The docker processes all jobs with the faster_whisper model.
 
-`poetry run python worker.py`
+`poetry run python src/worker.py`
 
 or containerized via docker
 
@@ -41,14 +51,15 @@ This tool aims to fix that by
 
 ## Usage
 Prerequisite:
+- Python >= 3.8 <3.11 (pony doesn't support 3.11 yet)
+- Postgres server (or modify `src/db.py` to connect to local sqlite)
 - A telegram account
-- Python 3.8 or newer
 
 Copy the `SECRETS.example.toml` to `SECRETS.toml` and adjust the parameters.
 
-To get your API keys open https://my.telegram.org/apps
+Get your API keys from https://my.telegram.org/apps
 ```
 pip install --user poetry
 poetry install
-poetry run python main.py
+poetry run python src/telegram_downloader.py
 ```

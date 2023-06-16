@@ -9,12 +9,13 @@ from io import BytesIO
 from pathlib import Path
 from typing import ClassVar
 
+import humanize
 from loguru import logger
 from pony import orm  # pyre-fixme[21]
 from pyrogram import Client
 from pyrogram.types import Audio, Message, Photo, Video
 
-from src.models.db import Status, TelegramMessage, db  # noqa: E402
+from src.models.db import Status, TelegramChannel, TelegramMessage, db  # noqa: E402
 from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 
 SECRETS = SECRETS_FULL.TelegramDownloader
@@ -55,7 +56,6 @@ class DownloadWorker:
     @staticmethod
     async def extract_mp3_from_video(data_or_path: BytesIO | Path) -> BytesIO:
         if isinstance(data_or_path, BytesIO):
-
             command = [
                 "ffmpeg",
                 "-i",
@@ -104,26 +104,35 @@ class DownloadWorker:
     async def download_one(worker_id: int | None = None) -> None:
         # Get a new message
         with orm.db_session():
-            # No message in queue
             message: TelegramMessage | None = TelegramMessage.get_one_queued()
             if message is None:
+                # No message in queue
+                return
+            # Duplicate due to file_unique_id
+            if orm.exists(
+                m for m in TelegramMessage
+                if m.file_unique_id == message.file_unique_id and m.message_id != message.message_id
+            ):
+                message.download_status = Status.DUPLICATE.name
+                logger.debug(f"Duplicate found: {message.link}")
+                return
+            # Find duplicates based on file size and duration
+            duplicates_exist = orm.exists(
+                m for m in TelegramMessage if (
+                    m.file_size_bytes == message.file_size_bytes
+                    and m.file_duration_seconds == message.file_duration_seconds and m.download_status in
+                    [Status.COMPLETED.name, Status.DOWNLOADING.name] and m.message_id != message.message_id
+                )
+            )
+            if duplicates_exist:
+                message.download_status = Status.DUPLICATE.name
+                logger.debug(f"Duplicate found: {message.link}")
                 return
             # File already exists locally
             if message.download_completed:
                 message.download_status = Status.COMPLETED.name
                 message.downloaded_file_path = message.relative_path
-                return
-            message.download_status = Status.ACCEPTED_TO_DOWNLOAD.name
-
-            # Find duplicates based on file size and duration
-            duplicates_count = orm.count(
-                m for m in TelegramMessage if (
-                    m.file_size_bytes == message.file_size_bytes and m.file_duration_seconds == message.
-                    file_duration_seconds and m.download_status in [Status.COMPLETED.name, Status.DOWNLOADING.name]
-                )
-            )
-            if duplicates_count > 0:
-                message.download_status = Status.DUPLICATE.name
+                logger.warning(f"Files already exists: {message.link}")
                 return
             # No return means no duplciate was found, start download
             message.download_status = Status.DOWNLOADING.name
@@ -216,6 +225,9 @@ class DownloadWorker:
             message = TelegramMessage[message.id]
             message.download_status = Status.COMPLETED.name
             message.downloaded_file_path = message.relative_path
+            # Get actual size of mp3 file
+            if message.media_type == "Video" and SECRETS.extract_audio_from_videos:
+                message.extracted_mp3_size_bytes = message.output_file_path.stat().st_size
 
         logger.debug(f"{worker_id} Done downloading {message.output_file_path.absolute()}")
 
@@ -258,36 +270,38 @@ async def add_to_queue(
         new_telegram_message.file_size_bytes = media.file_size
         if isinstance(media, (Audio, Video)):
             new_telegram_message.file_duration_seconds = media.duration
-            # Duplicate due to file size and file duration
-            if orm.exists(
-                m for m in TelegramMessage
-                if m.file_size_bytes == media.file_size and m.file_duration_seconds == media.duration
-            ):
-                new_telegram_message.download_status = Status.DUPLICATE.name
-                return
         if isinstance(media, (Photo, Video)):
             new_telegram_message.file_height = media.height
             new_telegram_message.file_width = media.width
-
-        # Duplicate due to file_unique_id
-        if orm.exists(m for m in TelegramMessage if m.file_unique_id == media.file_unique_id):
-            new_telegram_message.download_status = Status.DUPLICATE.name
-            return
-
         # Mark as queued on next run
         new_telegram_message.download_status = Status.FILTERED.name
     return
 
 
-async def download_messages() -> None:
+async def parse_channel_messages() -> None:
     for channel_id in SECRETS.channel_ids:
-        done, total = TelegramMessage.get_count()
-        logger.info(f"{done} / {total} Grabbing messages from channel: {channel_id}")
+        # done, total, done_bytes, total_bytes = TelegramMessage.get_count()
+        # logger.info(f"Remaining count {total - done}, "
+        #     f"remaining size {humanize.naturalsize(total_bytes - done_bytes)}")
+        with orm.db_session():
+            channel: TelegramChannel | None = TelegramChannel.get(channel_id=channel_id)
+            if not channel:
+                # Create channel entry
+                TelegramChannel(channel_id=channel_id)
+                continue
+            if channel.done_parsing:
+                # Continue with next channel
+                continue
+
+        logger.info(f"Grabbing messages from channel: {channel_id}")
         previous_oldest_message_id = -1
         for _ in range(50):
             oldest_message_id: int = TelegramMessage.get_oldest_message_id(channel_id)
             # Detect if channel has been parsed completely
             if previous_oldest_message_id == oldest_message_id:
+                with orm.db_session():
+                    channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)  # pyre-fixme[35]
+                    channel.done_parsing = True
                 break
             previous_oldest_message_id = oldest_message_id
 
@@ -334,10 +348,16 @@ def requeue_interrupted_downloads():
         )
     with orm.db_session():
         # Mark all messages that are not complete as queued which match filter
+        status_tuples = (
+            Status.COMPLETED.name,
+            Status.DUPLICATE.name,
+            Status.ERROR_DOWNLOADING.name,
+            Status.ERROR_EXTRACTING_AUDIO.name,
+        )
         db.execute(
             f"""
             UPDATE telegram_messages_to_download SET download_status = '{Status.QUEUED.name}' WHERE
-            download_status NOT IN ('{Status.COMPLETED.name}', '{Status.DUPLICATE.name}')
+            download_status NOT IN {status_tuples}
             AND file_unique_id <> ''
             AND
             (
@@ -370,16 +390,20 @@ async def main():
     await DownloadWorker.launch_workers(n=SECRETS.parallel_downloads_count)
 
     # Start parsing channels and messages
-    await download_messages()
+    await parse_channel_messages()
 
     # Wait for downloads to finish
     while 1:
         # Check if jobs remaining and give status update
-        done, total = TelegramMessage.get_count()
+        done, total, done_bytes, total_bytes = TelegramMessage.get_count()
         if done == total:
             logger.info("Done with all downloads!")
             break
-        logger.info(f"Waiting for jobs to finish: {done} / {total}")
+        logger.info(
+            f"Waiting for jobs to finish: remaining count {total - done}, "
+            f"remaining size {humanize.naturalsize(total_bytes - done_bytes)}, "
+            f"total size {humanize.naturalsize(total_bytes)}"
+        )
         await asyncio.sleep(60)
 
 

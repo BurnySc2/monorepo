@@ -84,7 +84,7 @@ class TranscriptionJob(db.Entity):
 
     issued_by = orm.Optional(str)
     # The full path to the .mp3 file, dont add duplicates
-    local_file = orm.Optional(str, unique=True)
+    local_file = orm.Required(str, unique=True)
     status = orm.Optional(str)
     progress = orm.Optional(int, default=0)
     # The telegram message that may have triggered this job
@@ -133,3 +133,25 @@ class TranscriptionJob(db.Entity):
             if len(job_items) == 0:
                 return None
             return list(job_items)[0]
+
+    @staticmethod
+    def get_count() -> tuple[int, int, int, int]:
+        """Returns a tuple of how many transcriptions are done and how many there are in total.
+        Additionally returns size of completed transcriptions and how many total."""
+        done_status = [JobStatus.DONE.name]
+        total_count_status = [
+            JobStatus.QUEUED.name,
+            JobStatus.ACCEPTED.name,
+            JobStatus.PROCESSING.name,
+            JobStatus.FINISHING.name,
+            JobStatus.DONE.name,
+        ]
+        with orm.db_session():
+            done_count = orm.count(
+                # pyre-fixme[16]
+                m for m in TranscriptionJob if m.status in done_status
+            )
+            total_count = orm.count(m for m in TranscriptionJob if m.status in total_count_status)
+            done_bytes = orm.sum(m.input_file_size_bytes for m in TranscriptionJob if m.status in done_status)
+            total_bytes = orm.sum(m.input_file_size_bytes for m in TranscriptionJob if m.status in total_count_status)
+            return done_count, total_count, done_bytes, total_bytes

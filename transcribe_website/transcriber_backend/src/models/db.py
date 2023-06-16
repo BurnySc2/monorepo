@@ -9,7 +9,7 @@ from io import BytesIO
 from pony import orm  # pyre-fixme[21]
 
 from src.models import db
-from src.models.telegram_model import Status, TelegramMessage
+from src.models.telegram_model import Status, TelegramChannel, TelegramMessage
 from src.models.transcribe_model import (
     JobStatus,
     ModelSize,
@@ -23,7 +23,15 @@ from src.secrets_loader import SECRETS as SECRETS_FULL
 SECRETS = SECRETS_FULL.Transcriber
 
 __all__ = [
-    TelegramMessage, Status, TranscriptionJob, TranscriptionMp3File, TranscriptionResult, JobStatus, ModelSize, Task
+    TelegramChannel,
+    TelegramMessage,
+    Status,
+    TranscriptionJob,
+    TranscriptionMp3File,
+    TranscriptionResult,
+    JobStatus,
+    ModelSize,
+    Task,
 ]
 
 db.bind(

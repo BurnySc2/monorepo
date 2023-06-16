@@ -20,20 +20,26 @@ class Status(enum.Enum):
     # Ignored because of current filters
     FILTERED = 2
     # Downloading
-    ACCEPTED_TO_DOWNLOAD = 10
     DOWNLOADING = 3
     # Done downloading
     DUPLICATE = 9
     COMPLETED = 6
     # Errors
     MISSING_FILE_NAME = 4
-    MISSING_FILE_TYPE = 11
+    MISSING_FILE_TYPE = 10
     NO_MEDIA = 5
     ERROR_DOWNLOADING = 7
     ERROR_EXTRACTING_AUDIO = 8
 
 
 # pyre-fixme[11]
+class TelegramChannel(db.Entity):
+    _table_ = "telegram_channels"  # Table name
+    id = orm.PrimaryKey(int, auto=True)
+    channel_id = orm.Required(str)
+    done_parsing = orm.Required(bool, default=False)
+
+
 class TelegramMessage(db.Entity):
     # TODO Filter duplicate message, maybe with combination of "size_bytes" and "duration_seconds" has to be unique
     _table_ = "telegram_messages_to_download"  # Table name
@@ -44,7 +50,7 @@ class TelegramMessage(db.Entity):
     link = orm.Required(str)
     download_status = orm.Required(str)
     # Prevent duplicate
-    downloaded_file_path = orm.Optional(str)  # Relative file path to download dir
+    downloaded_file_path = orm.Optional(str, unique=True, nullable=True)  # Relative file path to download dir
     # File meta info
     media_type = orm.Optional(str)
     # Prevent duplicate
@@ -54,6 +60,8 @@ class TelegramMessage(db.Entity):
     file_height = orm.Optional(int)
     file_width = orm.Optional(int)
     issued_by = orm.Optional(str)
+    # TODO Add another columun for mp3 file path and mp3 file size?
+    extracted_mp3_size_bytes = orm.Optional(int, size=64, nullable=True)
     linked_transcription = orm.Optional("TranscriptionJob")
 
     @property
@@ -96,7 +104,7 @@ class TelegramMessage(db.Entity):
                 # pyre-fixme[16]
                 m for m in TelegramMessage if m.download_status == Status.QUEUED.name
             ).order_by(
-                TelegramMessage.id,
+                TelegramMessage.file_size_bytes,
             ).limit(1)
             if len(messages) == 0:
                 return None
@@ -114,20 +122,44 @@ class TelegramMessage(db.Entity):
             return list(messages)[0].message_id
 
     @staticmethod
-    def get_count() -> tuple[int, int]:
-        """Returns a tuple of how many downloads are complete and how many total there are."""
+    def get_count() -> tuple[int, int, int, int]:
+        """Returns a tuple of how many downloads are complete and how many total there are. 
+        Also how many bytes are done downloading and how many there are in total."""
+        done_status = [Status.DUPLICATE.name, Status.COMPLETED.name]
+        total_count_status = [
+            Status.QUEUED.name,
+            Status.DOWNLOADING.name,
+            Status.DUPLICATE.name,
+            Status.COMPLETED.name,
+        ]
         with orm.db_session():
             done_count = orm.count(
                 # pyre-fixme[16]
-                m for m in TelegramMessage if m.download_status in [Status.DUPLICATE.name, Status.COMPLETED.name]
+                m for m in TelegramMessage if m.download_status in done_status
+            )
+            total_count = orm.count(m for m in TelegramMessage if m.download_status in total_count_status)
+            done_bytes = orm.sum(m.file_size_bytes for m in TelegramMessage if m.download_status in done_status)
+            total_bytes = orm.sum(m.file_size_bytes for m in TelegramMessage if m.download_status in total_count_status)
+            return done_count, total_count, done_bytes, total_bytes
+
+    @staticmethod
+    def get_count_without_transcription() -> tuple[int, int, int, int]:
+        """Returns a tuple of how many uploads are complete and how many total there are. 
+        Also how many bytes are done uploading and how many there are in total."""
+        with orm.db_session():
+            done_count = orm.count(
+                # pyre-fixme[16]
+                m for m in TelegramMessage if m.linked_transcription is not None
             )
             total_count = orm.count(
-                m for m in TelegramMessage if m.download_status in [
-                    Status.QUEUED.name,
-                    Status.ACCEPTED_TO_DOWNLOAD.name,
-                    Status.DOWNLOADING.name,
-                    Status.DUPLICATE.name,
-                    Status.COMPLETED.name,
-                ]
+                m for m in TelegramMessage
+                if (m.downloaded_file_path is not None and m.download_status == Status.COMPLETED.name)
             )
-            return done_count, total_count
+            done_bytes = orm.sum(
+                m.extracted_mp3_size_bytes for m in TelegramMessage if m.linked_transcription is not None
+            )
+            total_bytes = orm.sum(
+                m.extracted_mp3_size_bytes for m in TelegramMessage
+                if (m.downloaded_file_path is not None and m.download_status == Status.COMPLETED.name)
+            )
+            return done_count, total_count, done_bytes, total_bytes
