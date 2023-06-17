@@ -118,7 +118,8 @@ class TelegramMessage(db.Entity):
         with orm.db_session():
             messages: list[TelegramMessage] = orm.select(
                 # pyre-fixme[16]
-                m for m in TelegramMessage if m.download_status == Status.QUEUED.name and m.channel_id == channel_id
+                m for m in TelegramMessage
+                if m.download_status in [Status.QUEUED.name, Status.DOWNLOADING.name] and m.channel_id == channel_id
             ).order_by(
                 TelegramMessage.file_size_bytes,
             ).limit(limit)

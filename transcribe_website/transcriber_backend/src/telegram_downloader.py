@@ -31,14 +31,18 @@ logger.add(sys.stderr, level="INFO")
 file_ids_cache: dict[str, dict[int, str]] = {}
 
 
-def update_file_ids_cache(channel_id: str, messages: list[Message]) -> None:
+def update_file_ids_cache(channel_id: str, messages: list[Message], message_ids: list[int]) -> None:
     """Update file_ids_cache with new messages."""
     if channel_id not in file_ids_cache:
         file_ids_cache[channel_id] = {}
+    for message_id in message_ids:
+        file_ids_cache[channel_id][message_id] = "UNKNOWN"
     for message in messages:
         media: Audio | Video | Photo | None = message.audio or message.video or message.photo
-        if media is not None:
-            file_ids_cache[channel_id][message.id] = media.file_id
+        if media is None:
+            file_ids_cache[channel_id][message.id] = "UNKNOWN"
+            continue
+        file_ids_cache[channel_id][message.id] = media.file_id
 
 
 def get_from_file_ids_cache(channel_id: str, message_id: int) -> str | None:
@@ -158,6 +162,12 @@ class DownloadWorker:
 
         # Get file id from cache or update cache
         file_id = get_from_file_ids_cache(message.channel_id, message.message_id)
+        if file_id == "UNKNOWN":
+            # File id has been checked before and is not available, don't batch download again
+            with orm.db_session():
+                message = TelegramMessage[message.id]
+                message.download_status = Status.ERROR_DOWNLOADING.name
+            return
         if file_id is None:
             two_hundred_message_ids: list[int] = TelegramMessage.get_n_queued_by_channel(message.channel_id)
             if len(two_hundred_message_ids) > 200:
@@ -168,9 +178,9 @@ class DownloadWorker:
                 message_ids=two_hundred_message_ids,
                 replies=0,
             )
-            update_file_ids_cache(message.channel_id, up_to_date_messages)
+            update_file_ids_cache(message.channel_id, up_to_date_messages, two_hundred_message_ids)
             file_id = get_from_file_ids_cache(message.channel_id, message.message_id)
-            if file_id is None:
+            if file_id is None or file_id == "UNKNOWN":
                 with orm.db_session():
                     message = TelegramMessage[message.id]
                     message.download_status = Status.ERROR_DOWNLOADING.name
@@ -297,17 +307,20 @@ async def add_to_queue(
 
 
 async def parse_channel_messages() -> None:
+    with orm.db_session():
+        done_channels = set(orm.select(c.channel_id for c in TelegramChannel if c.done_parsing))
     for channel_id in SECRETS.channel_ids:
         # done, total, done_bytes, total_bytes = TelegramMessage.get_count()
         # logger.info(f"Remaining count {total - done}, "
         #     f"remaining size {humanize.naturalsize(total_bytes - done_bytes)}")
+        if channel_id in done_channels:
+            continue
         with orm.db_session():
             channel: TelegramChannel | None = TelegramChannel.get(channel_id=channel_id)
-            if not channel:
+            if channel is None:
                 # Create channel entry
                 TelegramChannel(channel_id=channel_id)
-                continue
-            if channel.done_parsing:
+            elif channel.done_parsing:
                 # Continue with next channel
                 continue
 

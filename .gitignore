@@ -150,3 +150,4 @@ transcribe_website/transcriber_backend/messages.db
 transcribe_website/transcriber_backend/messages.db-journal
 transcribe_website/transcriber_backend/media_downloader.session
 transcribe_website/transcriber_backend/media_downloader.session-journal
+transcribe_website/transcriber_backend/unknown_errors.txt
