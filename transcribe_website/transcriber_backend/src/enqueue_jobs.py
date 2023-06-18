@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import sys
+import time
 from io import BytesIO
 from pathlib import Path
 from typing import Generator
@@ -123,12 +124,14 @@ async def add_from_telegram_message():
             orm.select(
                 t for t in TelegramMessage if (
                     t.linked_transcription is None and t.download_status == Status.COMPLETED.name
-                    and t.extracted_mp3_size_bytes != ""
+                    and t.extracted_mp3_size_bytes is not None
                 )
             ).order_by(TelegramMessage.file_size_bytes)
         )
-    for i, message in enumerate(messages):
-        if i % 100 == 0:
+    last_logger_print = 0
+    for message in messages:
+        if time.perf_counter() - last_logger_print > 60:
+            last_logger_print = time.perf_counter()
             done, total, done_bytes, total_bytes = TelegramMessage.get_count_without_transcription()
             logger.info(
                 f"Uploads remaining {total - done}, "
