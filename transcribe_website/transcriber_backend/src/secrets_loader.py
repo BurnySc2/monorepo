@@ -24,6 +24,7 @@ class TranscriberSecrets(BaseModel):
     finder_add_glob_pattern: str = ""
     finder_ignore_glob_pattern: str = ""
     finder_folders_to_parse: list[str] = []
+    finder_delete_after_upload: bool = False
 
 
 class TelegramDownloaderSecrets(BaseModel):

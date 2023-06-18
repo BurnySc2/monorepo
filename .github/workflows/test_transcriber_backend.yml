@@ -108,8 +108,8 @@ jobs:
         key: ${{ secrets.TRANSCRIBEWORKERKEY }}
         passphrase: ''
         script: |
-          docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-          sudo systemctl daemon-reload
+          yes | docker image prune -a
+          docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 

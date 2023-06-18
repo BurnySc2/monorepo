@@ -87,7 +87,7 @@ async def add_from_file_system():
                 language_code = info.language
 
             # Upload file to db
-            logger.info(f"Uploading {file_size_bytes/2**20:.1f} mb {path.absolute()}")
+            logger.info(f"Uploading {humanize.naturalsize(file_size_bytes)} {path.absolute()}")
             with orm.db_session():
                 transcription_job = TranscriptionJob(
                     local_file=relative_file_path_str,
@@ -101,6 +101,8 @@ async def add_from_file_system():
                     job_item=transcription_job, mp3_data=file_data.getvalue()
                 )
             uploaded_files.add(relative_file_path_str)
+            if SECRETS.finder_delete_after_upload:
+                path.unlink()
     logger.warning("Done uploading files!")
 
 
