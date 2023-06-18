@@ -155,7 +155,7 @@ class DownloadWorker:
             if message.download_completed:
                 message.download_status = Status.COMPLETED.name
                 message.downloaded_file_path = message.relative_path
-                logger.warning(f"Files already exists: {message.link}")
+                logger.warning(f"File already exists: {message.link}")
                 return
             # No return means no duplciate was found, start download
             message.download_status = Status.DOWNLOADING.name
@@ -371,10 +371,14 @@ def requeue_interrupted_downloads():
     # Get and re-enqueue all messages from DB that were interrupted (or not finished) in last program run
     with orm.db_session():
         # Mark all queued messages as filtered
+        status_tuples = (
+            Status.QUEUED.name,
+            Status.DOWNLOADING.name,
+        )
         db.execute(
             f"""
             UPDATE telegram_messages_to_download SET download_status = '{Status.FILTERED.name}'
-            WHERE download_status = '{Status.QUEUED.name}';
+            WHERE download_status in {status_tuples};
             """
         )
     with orm.db_session():
@@ -427,14 +431,14 @@ async def main():
     while 1:
         # Check if jobs remaining and give status update
         done, total, done_bytes, total_bytes = TelegramMessage.get_count()
-        if done == total:
-            logger.info("Done with all downloads!")
-            break
         logger.info(
             f"Waiting for jobs to finish: remaining count {total - done}, "
             f"remaining size {humanize.naturalsize(total_bytes - done_bytes)}, "
             f"total size {humanize.naturalsize(total_bytes)}"
         )
+        if done == total:
+            logger.info("Done with all downloads!")
+            break
         await asyncio.sleep(60)
 
 

@@ -7,7 +7,7 @@
 Copy the `SECRETS.example.toml` to `SECRETS.toml` and fill out your secrets.
 
 Install
-```
+```sh
 pip install --user poetry
 poetry install
 ```
@@ -17,6 +17,19 @@ Configure the `SECRETS.toml` accordingly to match the files you want to upload t
 
 `poetry run python src/enqueue_jobs.py`
 
+or containerized via docker (don't forget to set your upload path correctly)
+
+```sh
+docker build -t transcribe_worker .
+docker run --rm \
+    --name enqueue_worker \
+    -v ./SECRETS.toml:/app/SECRETS.toml:ro \
+    -v ./download_path:/app/download_path \
+    --entrypoint poetry \
+    transcribe_worker \
+    run python src/enqueue_jobs.py
+```
+
 ## Processing Worker
 The docker processes all jobs with the faster_whisper model.
 
@@ -24,7 +37,7 @@ The docker processes all jobs with the faster_whisper model.
 
 or containerized via docker
 
-```
+```sh
 docker build -t transcribe_worker .
 docker run --rm \
     --name transcribe_worker \
@@ -58,8 +71,21 @@ Prerequisite:
 Copy the `SECRETS.example.toml` to `SECRETS.toml` and adjust the parameters.
 
 Get your API keys from https://my.telegram.org/apps
-```
+```sh
 pip install --user poetry
 poetry install
 poetry run python src/telegram_downloader.py
+```
+
+or containerized via docker (don't forget to set your download path correctly)
+
+```sh
+docker build -t transcribe_worker .
+docker run --rm \
+    --name telegram_downloader \
+    -v ./SECRETS.toml:/app/SECRETS.toml:ro \
+    -v ./download_path:/app/download_path \
+    --entrypoint poetry \
+    transcribe_worker \
+    run python src/telegram_downloader.py
 ```

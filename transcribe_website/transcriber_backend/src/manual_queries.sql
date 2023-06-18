@@ -6,6 +6,10 @@ WHERE status <> 'DONE';
 SELECT SUM(input_file_size_bytes) FROM transcribe_jobs
 WHERE status <> 'DONE';
 
+-- Select files with no link and show total mp3 size
+SELECT SUM(extracted_mp3_size_bytes) FROM telegram_messages_to_download
+WHERE linked_transcription IS NULL AND extracted_mp3_size_bytes IS NOT NULL;
+
 -- Find all duplicate files in the database based on file size and duration
 SELECT file_size_bytes, file_duration_seconds, COUNT(*)
 FROM telegram_messages_to_download
@@ -47,7 +51,7 @@ ORDER BY downloaded_file_path;
 WITH temp AS (
 	SELECT linked_transcription
 	FROM telegram_messages_to_download 
-	WHERE linked_transcription IS NOT NULL
+	WHERE linked_transcription IS NULL
 )
 
 SELECT * FROM transcribe_jobs

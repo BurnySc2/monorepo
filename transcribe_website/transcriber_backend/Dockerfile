@@ -10,6 +10,7 @@ RUN poetry install --without dev
 
 COPY src/ /app/src/
 
+# Allow imports to function correctly
 ENV PYTHONPATH=/app
 
 ENTRYPOINT [ "poetry", "run", "python", "src/worker.py" ]
