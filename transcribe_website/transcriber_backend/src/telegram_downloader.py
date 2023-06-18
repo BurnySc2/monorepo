@@ -389,6 +389,9 @@ def requeue_interrupted_downloads():
             Status.ERROR_DOWNLOADING.name,
             Status.ERROR_EXTRACTING_AUDIO.name,
         )
+        accept_photo = str("Photo" in SECRETS.media_types).lower()
+        accept_video = str("Video" in SECRETS.media_types).lower()
+        accept_audio = str("Audio" in SECRETS.media_types).lower()
         db.execute(
             f"""
             UPDATE telegram_messages_to_download SET download_status = '{Status.QUEUED.name}' WHERE
@@ -396,17 +399,17 @@ def requeue_interrupted_downloads():
             AND file_unique_id <> ''
             AND
             (
-                    (media_type = 'Photo' AND 'Photo' IN {tuple(SECRETS.media_types)} 
+                    (media_type = 'Photo' AND {accept_photo} 
                     AND {SECRETS.photo_min_file_size_bytes} <= file_size_bytes 
                     AND file_size_bytes <= {SECRETS.photo_max_file_size_bytes})
                 OR
-                    (media_type = 'Video' AND 'Video' IN {tuple(SECRETS.media_types)}
+                    (media_type = 'Video' AND {accept_video}
                     AND {SECRETS.video_min_file_size_bytes} <= file_size_bytes
                     AND file_size_bytes <= {SECRETS.video_max_file_size_bytes}
                     AND {SECRETS.video_min_file_duration_seconds} <= file_duration_seconds
                     AND file_duration_seconds <= {SECRETS.video_max_file_duration_seconds})
                 OR
-                    (media_type = 'Audio' AND 'Audio' IN {tuple(SECRETS.media_types)}
+                    (media_type = 'Audio' AND {accept_audio}
                     AND {SECRETS.audio_min_file_size_bytes} <= file_size_bytes
                     AND file_size_bytes <= {SECRETS.audio_max_file_size_bytes}
                     AND {SECRETS.audio_min_file_duration_seconds} <= file_duration_seconds
