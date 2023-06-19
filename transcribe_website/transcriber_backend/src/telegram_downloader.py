@@ -78,6 +78,37 @@ class DownloadWorker:
                 sys.exit(1)
 
     @staticmethod
+    async def extract_audio_from_video(message: TelegramMessage, data_or_path: BytesIO | Path) -> BytesIO:
+        message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
+        if isinstance(data_or_path, BytesIO):
+            logger.debug(
+                f"Started processing audio ({message.file_size_bytes} b) "
+                f"{message.output_file_path.absolute()}"
+            )
+            extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data_or_path)
+
+            if len(extracted_mp3_data.getbuffer()) >= 200:
+                logger.debug(
+                    f"Finished processing audio ({message.file_size_bytes} b) "
+                    f"{message.output_file_path.absolute()}"
+                )
+                return extracted_mp3_data
+            else:
+                # Write to file because ffmpeg can't read this video in one go and needs to seek
+                with message.temp_download_path.open("wb") as f:
+                    f.write(data_or_path.getbuffer())
+                data_or_path = message.temp_download_path
+        # Try again from file
+        extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data_or_path)
+        # Delete file after extracting the audio
+        message.temp_download_path.unlink()
+        logger.debug(
+            f"Finished processing audio ({message.file_size_bytes} b) "
+            f"{message.output_file_path.absolute()}"
+        )
+        return extracted_mp3_data
+
+    @staticmethod
     async def extract_mp3_from_video(data_or_path: BytesIO | Path) -> BytesIO:
         if isinstance(data_or_path, BytesIO):
             command = [
@@ -192,57 +223,53 @@ class DownloadWorker:
         logger.debug(
             f"{worker_id} Started downloading ({message.file_size_bytes} b) {message.output_file_path.absolute()}"
         )
-        # pyre-fixme[9]
-        data: BytesIO | None = await DownloadWorker.client.download_media(
-            message=file_id,
-            in_memory=True,
-        )
-        if data is None or data.getbuffer()[:2] == b"":
-            # Error again, file not downloadable
-            logger.warning(f"Unable to download {message.link}")
-            with orm.db_session():
-                message = TelegramMessage[message.id]
-                message.download_status = Status.ERROR_DOWNLOADING.name
-            return
-
-        # Extract mp3 from mp4 file in memory via ffmpeg if SECRET.extract_audio_from_videos is True
-        if SECRETS.extract_audio_from_videos and message.media_type == "Video":
-            logger.debug(
-                f"{worker_id} Started processing audio ({message.file_size_bytes} b) "
-                f"{message.output_file_path.absolute()}"
+        message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
+        download_to_memory = (
+            SECRETS.extract_audio_from_videos and message.media_type == "Video" and message.file_size_bytes < 2**30
+        )  # More than 1 gb means download to file
+        if download_to_memory:
+            # pyre-fixme[9]
+            data: BytesIO | None = await DownloadWorker.client.download_media(
+                message=file_id,
+                in_memory=True,
             )
-            extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data)
-
-            if len(extracted_mp3_data.getbuffer()[:300]) < 200:
-                # Write to file because ffmpeg can't read this video in one go and needs to seek
-                message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
-                with message.temp_download_path.open("wb") as f:
-                    f.write(data.getbuffer())
-
-                extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(message.temp_download_path)
-
-                # Delete file after extracting the audio
-                message.temp_download_path.unlink()
-                if len(extracted_mp3_data.getbuffer()[:300]) < 200:
-                    logger.warning(f"Unable to extract audio {message.link}")
-                    with orm.db_session():
-                        message = TelegramMessage[message.id]
-                        message.download_status = Status.ERROR_EXTRACTING_AUDIO.name
-                    return
-            logger.debug(
-                f"{worker_id} Finished processing audio ({message.file_size_bytes} b) "
-                f"{message.output_file_path.absolute()}"
-            )
+            if data is None or data.getbuffer() == b"":
+                # Error, file not downloadable
+                logger.warning(f"Unable to download {message.link}")
+                TelegramMessage.update_status(message.id, Status.ERROR_DOWNLOADING)
+                return
+            # Extract mp3 from video file in memory via ffmpeg
+            extracted_mp3_data = await DownloadWorker.extract_audio_from_video(message, data)
+            if len(extracted_mp3_data.getbuffer()) < 200:
+                logger.warning(f"Unable to extract audio {message.link}")
+                TelegramMessage.update_status(message.id, Status.ERROR_EXTRACTING_AUDIO)
+                return
+            # Try to free memory where possible
             del data
             gc.collect()
-            data = extracted_mp3_data
-
-        # Write original data or (if enabled) extracted mp3 file
-        message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
-        with message.temp_download_path.open("wb") as f:
-            f.write(data.getbuffer())
-        del data
-        gc.collect()
+            # Write extracted mp3 file
+            with message.temp_download_path.open("wb") as f:
+                f.write(extracted_mp3_data.getbuffer())
+        else:
+            # Download to file
+            await DownloadWorker.client.download_media(
+                message=file_id,
+                file_name=str(message.temp_download_path.absolute()),
+            )
+            if not message.temp_download_path.is_file():
+                # File not downloadable
+                logger.warning(f"Unable to download {message.link}")
+                TelegramMessage.update_status(message.id, Status.ERROR_DOWNLOADING)
+                return
+            # File was larger than limit, extract mp3 from video
+            if SECRETS.extract_audio_from_videos and message.media_type == "Video":
+                extracted_mp3_data = await DownloadWorker.extract_audio_from_video(message, message.temp_download_path)
+                if len(extracted_mp3_data.getbuffer()) < 200:
+                    logger.warning(f"Unable to extract audio {message.link}")
+                    TelegramMessage.update_status(message.id, Status.ERROR_EXTRACTING_AUDIO.name)
+                    return
+                with message.temp_download_path.open("wb") as f:
+                    f.write(extracted_mp3_data.getbuffer())
 
         # Rename to wanted file name and move to proper directory
         message.output_file_path.parent.mkdir(parents=True, exist_ok=True)

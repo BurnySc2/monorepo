@@ -97,6 +97,13 @@ class TelegramMessage(db.Entity):
         return str(self.output_file_path.relative_to(SECRETS.output_folder_path))
 
     @staticmethod
+    def update_status(message_id: int, status: Status) -> None:
+        with orm.db_session():
+            # pyre-fixme[16]
+            message: TelegramMessage = TelegramMessage[message_id]
+            message.download_status = status.name
+
+    @staticmethod
     def get_one_queued() -> TelegramMessage | None:
         """Used in getting a single queued message for the download-worker."""
         with orm.db_session():

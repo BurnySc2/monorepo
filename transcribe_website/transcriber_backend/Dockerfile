@@ -7,7 +7,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir poetry==1.5.1
+RUN pip install --no-cache-dir poetry==1.5.1 \
+    && yes | poetry cache clear PyPI --all
 
 WORKDIR /app
 
