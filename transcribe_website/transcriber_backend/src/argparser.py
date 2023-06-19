@@ -276,6 +276,7 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
     })
 
     if options.output_file == "-":
+        # pyre-fixme[6]
         sys.stdout.buffer.write(zip_data.getbuffer())
         return
 

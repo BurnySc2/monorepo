@@ -99,6 +99,7 @@ class DownloadWorker:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL,
             )
+            # pyre-fixme[6]
             stdout_data, _ = await proc.communicate(data_or_path.getbuffer())
         elif isinstance(data_or_path, Path):
             command = [

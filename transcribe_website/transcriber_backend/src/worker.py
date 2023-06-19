@@ -54,6 +54,7 @@ class Worker:
             stderr=asyncio.subprocess.DEVNULL,
         )
         # Process job
+        # pyre-fixme[6]
         await process.communicate(mp3_data.getbuffer())
         # Upload data to db already done from worker
 
