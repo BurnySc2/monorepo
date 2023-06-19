@@ -54,7 +54,7 @@ class Worker:
             stderr=asyncio.subprocess.DEVNULL,
         )
         # Process job
-        await process.communicate(mp3_data.getvalue())
+        await process.communicate(mp3_data.getbuffer())
         # Upload data to db already done from worker
 
         logger.info(f"Worker: Completed job id {self.job_id}")

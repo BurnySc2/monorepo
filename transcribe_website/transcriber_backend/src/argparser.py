@@ -276,7 +276,7 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
     })
 
     if options.output_file == "-":
-        sys.stdout.buffer.write(zip_data.getvalue())
+        sys.stdout.buffer.write(zip_data.getbuffer())
         return
 
     if options.output_file is None:
@@ -285,7 +285,7 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
         with options.srt_file_path.open("w") as f:
             f.write(srt_data)
         with options.zip_file_path.open("wb") as f:
-            f.write(zip_data.getvalue())
+            f.write(zip_data.getbuffer())
         return
 
     if options.output_file_path.suffix == ".txt":
@@ -298,7 +298,7 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
         return
     if options.output_file_path.suffix == ".zip":
         with options.output_file_path.open("wb") as f:
-            f.write(zip_data.getvalue())
+            f.write(zip_data.getbuffer())
         return
     assert False, f"Shouldn't get here, output_file was {options.output_file}"
 

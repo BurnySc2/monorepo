@@ -99,7 +99,7 @@ class DownloadWorker:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL,
             )
-            stdout_data, _ = await proc.communicate(data_or_path.getvalue())
+            stdout_data, _ = await proc.communicate(data_or_path.getbuffer())
         elif isinstance(data_or_path, Path):
             command = [
                 "ffmpeg",
@@ -196,7 +196,7 @@ class DownloadWorker:
             message=file_id,
             in_memory=True,
         )
-        if data is None or data.getvalue() == b"":
+        if data is None or data.getbuffer()[:2] == b"":
             # Error again, file not downloadable
             logger.warning(f"Unable to download {message.link}")
             with orm.db_session():
@@ -212,17 +212,17 @@ class DownloadWorker:
             )
             extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data)
 
-            if len(extracted_mp3_data.getvalue()) < 200:
+            if len(extracted_mp3_data.getbuffer()[:300]) < 200:
                 # Write to file because ffmpeg can't read this video in one go and needs to seek
                 message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
                 with message.temp_download_path.open("wb") as f:
-                    f.write(data.getvalue())
+                    f.write(data.getbuffer())
 
                 extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(message.temp_download_path)
 
                 # Delete file after extracting the audio
                 message.temp_download_path.unlink()
-                if len(extracted_mp3_data.getvalue()) < 200:
+                if len(extracted_mp3_data.getbuffer()[:300]) < 200:
                     logger.warning(f"Unable to extract audio {message.link}")
                     with orm.db_session():
                         message = TelegramMessage[message.id]
@@ -239,7 +239,7 @@ class DownloadWorker:
         # Write original data or (if enabled) extracted mp3 file
         message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
         with message.temp_download_path.open("wb") as f:
-            f.write(data.getvalue())
+            f.write(data.getbuffer())
         del data
         gc.collect()
 
