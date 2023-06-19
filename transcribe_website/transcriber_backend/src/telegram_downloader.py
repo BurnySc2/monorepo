@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import gc
 import logging
 import os
 import sys
@@ -231,16 +232,19 @@ class DownloadWorker:
                 f"{worker_id} Finished processing audio ({message.file_size_bytes} b) "
                 f"{message.output_file_path.absolute()}"
             )
+            del data
+            gc.collect()
             data = extracted_mp3_data
 
         # Write original data or (if enabled) extracted mp3 file
         message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
         with message.temp_download_path.open("wb") as f:
             f.write(data.getvalue())
+        del data
+        gc.collect()
 
         # Rename to wanted file name and move to proper directory
         message.output_file_path.parent.mkdir(parents=True, exist_ok=True)
-        # TODO what if file exists
         if message.output_file_path.is_file():
             logger.error(f"File already exists {message.output_file_path.absolute()}")
             return
