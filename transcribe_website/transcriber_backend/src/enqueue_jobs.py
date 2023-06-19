@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import sys
 import time
-from io import BytesIO
 from pathlib import Path
 from typing import Generator
 
@@ -49,9 +48,6 @@ async def add_from_file_system():
     """Based on settings from SECRETS.toml, uploading all matching mp3 files for transcribing.
     Does not link to telegam messages.
     """
-    with orm.db_session():
-        uploaded_files: list[str] = set(orm.select(j.local_file for j in TranscriptionJob))
-
     if SECRETS.detect_language_before_queueing:
         model = WhisperModel(
             "large-v2",
@@ -70,20 +66,19 @@ async def add_from_file_system():
                 continue
             relative_file_path = path.relative_to(folder_path)
             relative_file_path_str = str(relative_file_path)
-            if relative_file_path_str in uploaded_files:
-                continue
+            with orm.db_session():
+                if orm.exists(t for t in TranscriptionJob if t.local_file == relative_file_path_str):
+                    continue
             # TODO Skip if it already has a srt or txt transcription
 
             file_size_bytes = path.stat().st_size
 
             language_code = ""
-            with path.open("rb") as f:
-                file_data: BytesIO = BytesIO(f.read())
             if (
                 SECRETS.detect_language_before_queueing
                 and SECRETS.detect_language_before_queueing_min_size_bytes < file_size_bytes
             ):
-                _, info = model.transcribe(file_data)
+                _, info = model.transcribe(str(path.absolute()))
                 language_code = info.language
 
             # Upload file to db
@@ -97,10 +92,10 @@ async def add_from_file_system():
                     status=JobStatus.QUEUED.name,
                     input_file_size_bytes=file_size_bytes,
                 )
-                transcription_job.input_file_mp3 = TranscriptionMp3File(
-                    job_item=transcription_job, mp3_data=file_data.getvalue()
-                )
-            uploaded_files.add(relative_file_path_str)
+                with path.open("rb") as f:
+                    transcription_job.input_file_mp3 = TranscriptionMp3File(
+                        job_item=transcription_job, mp3_data=f.read()
+                    )
             if SECRETS.finder_delete_after_upload:
                 path.unlink()
     logger.warning("Done uploading files!")
@@ -109,9 +104,6 @@ async def add_from_file_system():
 async def add_from_telegram_message():
     """Based on settings from SECRETS.toml, uploading all matching mp3 files for transcribing.
     Does link to telegram message"""
-    with orm.db_session():
-        uploaded_files: set[str] = set(orm.select(j.local_file for j in TranscriptionJob))
-
     if SECRETS.detect_language_before_queueing:
         model = WhisperModel(
             "large-v2",
@@ -148,8 +140,8 @@ async def add_from_telegram_message():
             continue
         if not full_path.match(SECRETS.finder_add_glob_pattern):
             continue
-        if message.downloaded_file_path in uploaded_files:
-            with orm.db_session():
+        with orm.db_session():
+            if orm.exists(t for t in TranscriptionJob if t.local_file == message.downloaded_file_path):
                 message = TelegramMessage[message.id]
                 transcription = TranscriptionJob.get(local_file=message.downloaded_file_path)
                 if transcription is None:
@@ -159,22 +151,19 @@ async def add_from_telegram_message():
                     message.linked_transcription = transcription
                 else:
                     logger.error(f"File {full_path} was already linked, why is this parsed?")
-            logger.warning(f"File {full_path} already uploaded, skipping")
-            uploaded_files.add(message.downloaded_file_path)
-            continue
+                logger.warning(f"File {full_path} already uploaded, skipping")
+                continue
         # TODO Skip if it already has a srt or txt transcription
 
         file_size_bytes = full_path.stat().st_size
 
         # Detect language if file is big enough
         language_code = ""
-        with full_path.open("rb") as f:
-            file_data: BytesIO = BytesIO(f.read())
         if (
             SECRETS.detect_language_before_queueing
             and SECRETS.detect_language_before_queueing_min_size_bytes < file_size_bytes
         ):
-            _, info = model.transcribe(file_data)
+            _, info = model.transcribe(str(full_path.absolute()))
             language_code = info.language
 
         # Upload file to db
@@ -191,12 +180,12 @@ async def add_from_telegram_message():
                 status=JobStatus.QUEUED.name,
                 input_file_size_bytes=file_size_bytes,
             )
-            transcription_job.input_file_mp3 = TranscriptionMp3File(
-                job_item=transcription_job, mp3_data=file_data.getvalue()
-            )
+            with full_path.open("rb") as f:
+                transcription_job.input_file_mp3 = TranscriptionMp3File(job_item=transcription_job, mp3_data=f.read())
             # Link to telegram message
             message.linked_transcription = transcription_job
-        uploaded_files.add(message.downloaded_file_path)
+        if SECRETS.finder_delete_after_upload:
+            message.output_file_path.unlink()
     logger.warning("Done uploading files!")
 
 
