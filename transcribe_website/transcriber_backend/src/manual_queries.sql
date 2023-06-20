@@ -56,3 +56,12 @@ WITH temp AS (
 
 SELECT * FROM transcribe_jobs
 WHERE id IN (SELECT linked_transcription FROM temp);
+
+-- Reset all completed downloads which have no link
+UPDATE telegram_messages_to_download
+SET downloaded_file_path = NULL, 
+	extracted_mp3_size_bytes = NULL,
+	download_status = 'FILTERED'
+WHERE linked_transcription IS NULL 
+AND download_status = 'COMPLETED'
+AND downloaded_file_path IS NOT NULL;

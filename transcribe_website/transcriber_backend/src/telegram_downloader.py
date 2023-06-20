@@ -266,7 +266,7 @@ class DownloadWorker:
                 extracted_mp3_data = await DownloadWorker.extract_audio_from_video(message, message.temp_download_path)
                 if len(extracted_mp3_data.getbuffer()) < 200:
                     logger.warning(f"Unable to extract audio {message.link}")
-                    TelegramMessage.update_status(message.id, Status.ERROR_EXTRACTING_AUDIO.name)
+                    TelegramMessage.update_status(message.id, Status.ERROR_EXTRACTING_AUDIO)
                     return
                 with message.temp_download_path.open("wb") as f:
                     f.write(extracted_mp3_data.getbuffer())
