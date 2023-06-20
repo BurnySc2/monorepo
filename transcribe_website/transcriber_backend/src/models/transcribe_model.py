@@ -147,7 +147,10 @@ class TranscriptionJob(db.Entity):
             processing_rate_per_second = size_of_completed_jobs / 3600
             _, _, done_bytes, total_bytes = TranscriptionJob.get_count()
             remaining_bytes = total_bytes - done_bytes
-            remaining_time_seconds = remaining_bytes / processing_rate_per_second
+            if processing_rate_per_second == 0:
+                remaining_time_seconds = 365 * 420 * 24 * 3600
+            else:
+                remaining_time_seconds = remaining_bytes / processing_rate_per_second
             return processing_rate_per_second, remaining_time_seconds
 
     @staticmethod
