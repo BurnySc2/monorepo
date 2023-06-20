@@ -1,5 +1,5 @@
 """
-Database models for supabase
+Database models for postgres
 """
 from __future__ import annotations
 
@@ -37,6 +37,7 @@ class JobStatus(enum.Enum):
     PROCESSING = 3  # Files have been downloaded and progress started
     FINISHING = 4  # Transcribing is completed, uploading results
     DONE = 5  # Results uploaded to db
+    AV_ERROR = 6
 
 
 # pyre-fixme[11]
@@ -112,29 +113,6 @@ class TranscriptionJob(db.Entity):
         return Path(self.local_file)
 
     @staticmethod
-    def get_one_queued(acceptable_models: list[str] | None = None) -> TranscriptionJob | None:
-        """Used in getting any queued jobs for the processing-worker."""
-        with orm.db_session():
-            if acceptable_models is None:
-                job_items = orm.select(
-                    # pyre-fixme[16]
-                    j for j in TranscriptionJob if j.status == JobStatus.QUEUED.name and j.remaining_retries > 0
-                ).order_by(
-                    TranscriptionJob.job_created,
-                ).limit(1)
-            else:
-                # Filter jobs that have inacceptable model sizes (e.g. machine has too low ram to use large model)
-                job_items = orm.select(
-                    j for j in TranscriptionJob if j.status == JobStatus.QUEUED.name
-                    and j.model_size in acceptable_models and j.remaining_retries > 0
-                ).order_by(
-                    TranscriptionJob.job_created,
-                ).limit(1)
-            if len(job_items) == 0:
-                return None
-            return list(job_items)[0]
-
-    @staticmethod
     def get_count() -> tuple[int, int, int, int]:
         """Returns a tuple of how many transcriptions are done and how many there are in total.
         Additionally returns size of completed transcriptions and how many total."""
@@ -155,3 +133,58 @@ class TranscriptionJob(db.Entity):
             done_bytes = orm.sum(m.input_file_size_bytes for m in TranscriptionJob if m.status in done_status)
             total_bytes = orm.sum(m.input_file_size_bytes for m in TranscriptionJob if m.status in total_count_status)
             return done_count, total_count, done_bytes, total_bytes
+
+    @staticmethod
+    def get_count_by_model_size(model_size: str, english: bool = False) -> int:
+        with orm.db_session():
+            if english:
+                # Return jobs with english language - to be used with the english language model
+                return orm.count(
+                    # pyre-fixme[16]
+                    m for m in TranscriptionJob if (
+                        m.status == JobStatus.QUEUED.name and m.model_size.lower() == model_size and
+                        (m.forced_language == "en" or m.detected_language == "en")
+                    )
+                )
+            # Return all all jobs that are non-english or have no language set
+            return orm.count(
+                m for m in TranscriptionJob if (
+                    m.status == JobStatus.QUEUED.name and m.model_size.lower() == model_size and
+                    (m.forced_language != "en" and m.detected_language != "en")
+                )
+            )
+
+    @staticmethod
+    def get_one_queued(
+        model_size: str, english: bool = False, mark_as_accepted: bool = False
+    ) -> TranscriptionJob | None:
+        """Used in getting any queued jobs for the processing-worker."""
+        with orm.db_session():
+            if english:
+                # Return jobs with english language - to be used with the english language model
+                job_items = orm.select(
+                    # pyre-fixme[16]
+                    t for t in TranscriptionJob if (
+                        t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size
+                        and t.remaining_retries > 0 and (t.forced_language == "en" or t.detected_language == "en")
+                    )
+                ).order_by(
+                    TranscriptionJob.job_created,
+                ).limit(1)
+            else:
+                # Return all all jobs that are non-english or have no language set
+                job_items = orm.select(
+                    t for t in TranscriptionJob if (
+                        t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size
+                        and t.remaining_retries > 0 and (t.forced_language != "en" and t.detected_language != "en")
+                    )
+                ).order_by(
+                    TranscriptionJob.job_created,
+                ).limit(1)
+            if len(job_items) == 0:
+                return None
+            job_item = job_items[0]
+            if mark_as_accepted:
+                job_item.status = JobStatus.ACCEPTED.name
+                job_item.job_started = datetime.datetime.utcnow()
+            return job_item

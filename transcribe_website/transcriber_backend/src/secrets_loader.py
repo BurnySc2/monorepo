@@ -17,7 +17,7 @@ class TranscriberSecrets(BaseModel):
     postgres_port: str = ""
 
     workers_limit: int = 1
-    workers_acceptable_models: list[str] = ["Tiny", "Base", "Small"]
+    workers_acceptable_models: list[str] = ["tiny", "base", "small"]
     detect_language_before_queueing: bool = True
     detect_language_before_queueing_min_size_bytes: int = 10_000_000
 

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
-from faster_whisper import WhisperModel, format_timestamp  # pyre-fixme[21]
+from faster_whisper import WhisperModel  # pyre-fixme[21]
 from faster_whisper.transcribe import TranscriptionInfo  # pyre-fixme[21]
 from loguru import logger
 from pony import orm  # pyre-fixme[21]
@@ -26,6 +26,8 @@ from src.models.db import (  # noqa: E402
     TranscriptionJob,
     TranscriptionResult,
     compress_files,
+    generate_srt_data,
+    generate_txt_data,
 )
 
 
@@ -102,6 +104,7 @@ def update_job_status(
                     txt_original=txt_original,
                 )
                 job_info.job_completed = datetime.datetime.utcnow()
+                job_info.progress = 100
                 # Delete input mp3 file and db entry to clear up storage
                 job_info.input_file_mp3.delete()
                 job_info.input_file_mp3 = None
@@ -213,29 +216,6 @@ def transcribe(options: TranscriberOptions) -> None:
     update_job_status(options.database_job_id, JobStatus.FINISHING)
     # Write to .zip in memory to be uploaded to supabase directly
     write_data(transcribed_data, options)
-
-
-def generate_txt_data(transcribed_data: list[tuple[float, float, str]]) -> str:
-    data_list = []
-    for line in transcribed_data:
-        data_list.append(f"{line[2]}\n")
-    return "".join(data_list)
-
-
-def generate_srt_data(transcribed_data: list[tuple[float, float, str]]) -> str:
-    # def seconds_to_timestamp(seconds: float) -> str:
-    #     minutes, seconds = divmod(seconds, 60)
-    #     hours, minutes = divmod(minutes, 60)
-    #     milliseconds = f"{seconds:.3f}".split(".")[1]
-    #     return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds}"
-    data_list = []
-    for i, line in enumerate(transcribed_data, start=1):
-        data_list.append(f"{i}\n")
-        start = format_timestamp(line[0], always_include_hours=True, decimal_marker=",")
-        end = format_timestamp(line[1], always_include_hours=True, decimal_marker=",")
-        data_list.append(f"{start} --> {end}\n")
-        data_list.append(f"{line[2]}\n\n")
-    return "".join(data_list)
 
 
 def write_data(transcribed_data: list[tuple[float, float, str]], options: TranscriberOptions) -> None:

@@ -1,3 +1,6 @@
+"""
+Database models for postgres
+"""
 from __future__ import annotations
 
 import datetime
@@ -172,17 +175,27 @@ class TelegramMessage(db.Entity):
         with orm.db_session():
             done_count = orm.count(
                 # pyre-fixme[16]
-                m for m in TelegramMessage if m.linked_transcription is not None
+                m for m in TelegramMessage if (
+                    m.extracted_mp3_size_bytes is not None and m.downloaded_file_path is not None
+                    and m.download_status == Status.COMPLETED.name and m.linked_transcription is not None
+                )
             )
             total_count = orm.count(
-                m for m in TelegramMessage
-                if (m.downloaded_file_path is not None and m.download_status == Status.COMPLETED.name)
+                m for m in TelegramMessage if (
+                    m.extracted_mp3_size_bytes is not None and m.downloaded_file_path is not None
+                    and m.download_status == Status.COMPLETED.name
+                )
             )
             done_bytes = orm.sum(
-                m.extracted_mp3_size_bytes for m in TelegramMessage if m.linked_transcription is not None
+                m.extracted_mp3_size_bytes for m in TelegramMessage if (
+                    m.extracted_mp3_size_bytes is not None and m.downloaded_file_path is not None
+                    and m.download_status == Status.COMPLETED.name and m.linked_transcription is not None
+                )
             )
             total_bytes = orm.sum(
-                m.extracted_mp3_size_bytes for m in TelegramMessage
-                if (m.downloaded_file_path is not None and m.download_status == Status.COMPLETED.name)
+                m.extracted_mp3_size_bytes for m in TelegramMessage if (
+                    m.extracted_mp3_size_bytes is not None and m.downloaded_file_path is not None
+                    and m.download_status == Status.COMPLETED.name
+                )
             )
             return done_count, total_count, done_bytes, total_bytes
