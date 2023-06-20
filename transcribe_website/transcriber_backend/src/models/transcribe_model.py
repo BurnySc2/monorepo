@@ -135,6 +135,22 @@ class TranscriptionJob(db.Entity):
             return done_count, total_count, done_bytes, total_bytes
 
     @staticmethod
+    def get_processing_rate_and_remaining_time() -> tuple[float, float]:
+        """Returns rate in bytes per second and remaining time in seconds."""
+        time_1h_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=3600)
+        with orm.db_session():
+            size_of_completed_jobs = orm.sum(
+                # pyre-fixme[16]
+                t.input_file_size_bytes for t in TranscriptionJob
+                if t.job_completed is not None and t.job_completed > time_1h_ago
+            )
+            processing_rate_per_second = size_of_completed_jobs / 3600
+            _, _, done_bytes, total_bytes = TranscriptionJob.get_count()
+            remaining_bytes = total_bytes - done_bytes
+            remaining_time_seconds = remaining_bytes / processing_rate_per_second
+            return processing_rate_per_second, remaining_time_seconds
+
+    @staticmethod
     def get_count_by_model_size(model_size: str, english: bool = False) -> int:
         with orm.db_session():
             if english:

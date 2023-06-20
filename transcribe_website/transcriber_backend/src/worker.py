@@ -72,12 +72,22 @@ class Worker:
         if working_model_size.endswith(".en"):
             Worker.loaded_model_language = "en"
 
+        last_report_print = 0
         while 1:
             # If no more jobs of this model size, wait for tasks to complete before loading next model
             if TranscriptionJob.get_count_by_model_size(model_size, english=use_english_model) == 0:
                 while len(Worker.job_to_task_map) > 0:
                     await asyncio.sleep(1)
                 return
+
+            if last_report_print + 60 < time.time():
+                last_report_print = time.time()
+                processing_per_second, remaining_time_seconds = TranscriptionJob.get_processing_rate_and_remaining_time(
+                )
+                logger.info(
+                    f"Status: {humanize.naturalsize(processing_per_second * 3600 * 24)} per day, "
+                    f"estimated remaining time: {humanize.precisedelta(remaining_time_seconds)}"
+                )
 
             # Start worker and use this model instance to transcribe
             while len(Worker.job_to_task_map) >= SECRETS.workers_limit:
