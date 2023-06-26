@@ -90,6 +90,8 @@ class Worker:
                 )
 
             # Start worker and use this model instance to transcribe
+
+            # Wait while worker limit is reached
             while len(Worker.job_to_task_map) >= SECRETS.workers_limit:
                 await asyncio.sleep(1)
 

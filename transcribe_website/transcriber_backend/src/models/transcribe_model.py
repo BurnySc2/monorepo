@@ -6,6 +6,7 @@ from __future__ import annotations
 import datetime
 import enum
 from pathlib import Path
+from typing import Generator
 
 import arrow
 from pony import orm  # pyre-fixme[21]
@@ -56,6 +57,26 @@ class TranscriptionResult(db.Entity):
     # Could zip the files but then unable to query them
     srt_original_zipped = orm.Optional(bytes)
     txt_original = orm.Optional(orm.LongStr)
+
+
+def query_generator_english(model_size: str) -> Generator[TranscriptionJob, None, None]:
+    return (
+        # pyre-fixme[16]
+        t for t in TranscriptionJob if (
+            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0 and
+            (t.forced_language == "en" or t.detected_language == "en")
+        )
+    )
+
+
+def query_generator_multilingual(model_size: str) -> Generator[TranscriptionJob, None, None]:
+    return (
+        # pyre-fixme[16]
+        t for t in TranscriptionJob if (
+            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0 and
+            (t.forced_language != "en" and t.detected_language != "en")
+        )
+    )
 
 
 class TranscriptionJob(db.Entity):
@@ -127,11 +148,11 @@ class TranscriptionJob(db.Entity):
         with orm.db_session():
             done_count = orm.count(
                 # pyre-fixme[16]
-                m for m in TranscriptionJob if m.status in done_status
+                t for t in TranscriptionJob if t.status in done_status
             )
-            total_count = orm.count(m for m in TranscriptionJob if m.status in total_count_status)
-            done_bytes = orm.sum(m.input_file_size_bytes for m in TranscriptionJob if m.status in done_status)
-            total_bytes = orm.sum(m.input_file_size_bytes for m in TranscriptionJob if m.status in total_count_status)
+            total_count = orm.count(t for t in TranscriptionJob if t.status in total_count_status)
+            done_bytes = orm.sum(t.input_file_size_bytes for t in TranscriptionJob if t.status in done_status)
+            total_bytes = orm.sum(t.input_file_size_bytes for t in TranscriptionJob if t.status in total_count_status)
             return done_count, total_count, done_bytes, total_bytes
 
     @staticmethod
@@ -139,12 +160,12 @@ class TranscriptionJob(db.Entity):
         """Returns rate in bytes per second and remaining time in seconds."""
         time_1h_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=3600)
         with orm.db_session():
-            size_of_completed_jobs = orm.sum(
+            size_of_completed_jobs_in_bytes = orm.sum(
                 # pyre-fixme[16]
                 t.input_file_size_bytes for t in TranscriptionJob
                 if t.job_completed is not None and t.job_completed > time_1h_ago
             )
-            processing_rate_per_second = size_of_completed_jobs / 3600
+            processing_rate_per_second = size_of_completed_jobs_in_bytes / 3600
             _, _, done_bytes, total_bytes = TranscriptionJob.get_count()
             remaining_bytes = total_bytes - done_bytes
             if processing_rate_per_second == 0:
@@ -158,20 +179,9 @@ class TranscriptionJob(db.Entity):
         with orm.db_session():
             if english:
                 # Return jobs with english language - to be used with the english language model
-                return orm.count(
-                    # pyre-fixme[16]
-                    t for t in TranscriptionJob if (
-                        t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size
-                        and t.remaining_retries > 0 and (t.forced_language == "en" or t.detected_language == "en")
-                    )
-                )
+                return orm.count(query_generator_english(model_size=model_size))
             # Return all all jobs that are non-english or have no language set
-            return orm.count(
-                t for t in TranscriptionJob if (
-                    t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0
-                    and (t.forced_language != "en" and t.detected_language != "en")
-                )
-            )
+            return orm.count(query_generator_multilingual(model_size=model_size))
 
     @staticmethod
     def get_one_queued(
@@ -181,25 +191,12 @@ class TranscriptionJob(db.Entity):
         with orm.db_session():
             if english:
                 # Return jobs with english language - to be used with the english language model
-                job_items = orm.select(
-                    # pyre-fixme[16]
-                    t for t in TranscriptionJob if (
-                        t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size
-                        and t.remaining_retries > 0 and (t.forced_language == "en" or t.detected_language == "en")
-                    )
-                ).order_by(
-                    TranscriptionJob.job_created,
-                ).limit(1)
+                job_items = orm.select(query_generator_english(model_size=model_size))
             else:
                 # Return all all jobs that are non-english or have no language set
-                job_items = orm.select(
-                    t for t in TranscriptionJob if (
-                        t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size
-                        and t.remaining_retries > 0 and (t.forced_language != "en" and t.detected_language != "en")
-                    )
-                ).order_by(
-                    TranscriptionJob.job_created,
-                ).limit(1)
+                job_items = orm.select(query_generator_multilingual(model_size=model_size))
+            # pyre-fixme[35]
+            job_items: list[TranscriptionJob] = list(job_items.order_by(TranscriptionJob.job_created).limit(1))
             if len(job_items) == 0:
                 return None
             job_item = job_items[0]
