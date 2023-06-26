@@ -290,6 +290,8 @@ class DownloadWorker:
                 message.extracted_mp3_size_bytes = message.output_file_path.stat().st_size
 
         logger.debug(f"{worker_id} Done downloading {message.output_file_path.absolute()}")
+        # Uncomment when running scalene to run 1 download
+        # exit(0)
 
 
 # Cache channels to list of message_ids to prevent multiple small select queries

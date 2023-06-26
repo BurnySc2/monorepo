@@ -89,10 +89,6 @@ hypothesis = "^6.34"
 snakeviz = "^2.1"
 # Line profiler
 scalene = "^1.3.16"
-# Line profiler, unable to install on windows?
-# line_profiler = "^3.0"
-# Required by line_profiler
-# ipython = "^7.16"
 # Autoformat
 yapf = "^0.32.0"
 toml = "^0.10.2"

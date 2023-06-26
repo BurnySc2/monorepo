@@ -160,16 +160,16 @@ class TranscriptionJob(db.Entity):
                 # Return jobs with english language - to be used with the english language model
                 return orm.count(
                     # pyre-fixme[16]
-                    m for m in TranscriptionJob if (
-                        m.status == JobStatus.QUEUED.name and m.model_size.lower() == model_size and
-                        (m.forced_language == "en" or m.detected_language == "en")
+                    t for t in TranscriptionJob if (
+                        t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size
+                        and t.remaining_retries > 0 and (t.forced_language == "en" or t.detected_language == "en")
                     )
                 )
             # Return all all jobs that are non-english or have no language set
             return orm.count(
-                m for m in TranscriptionJob if (
-                    m.status == JobStatus.QUEUED.name and m.model_size.lower() == model_size and
-                    (m.forced_language != "en" and m.detected_language != "en")
+                t for t in TranscriptionJob if (
+                    t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0
+                    and (t.forced_language != "en" and t.detected_language != "en")
                 )
             )
 

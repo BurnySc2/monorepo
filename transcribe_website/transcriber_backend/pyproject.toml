@@ -41,6 +41,8 @@ yapf = "^0.32.0"
 ruff = "^0.0.247"
 # Type checker
 pyre-check = "^0.9.18"
+# Cpu and memory profiler
+scalene = "^1.5.21.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

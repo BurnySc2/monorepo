@@ -140,6 +140,7 @@ async def add_from_telegram_message():
             continue
         if not full_path.match(SECRETS.finder_add_glob_pattern):
             continue
+        # Check if transcription job already exists
         with orm.db_session():
             if orm.exists(t for t in TranscriptionJob if t.local_file == message.downloaded_file_path):
                 message = TelegramMessage[message.id]
@@ -187,6 +188,8 @@ async def add_from_telegram_message():
         if SECRETS.finder_delete_after_upload:
             message.output_file_path.unlink()
     logger.warning("Done uploading files!")
+    # Uncomment when running scalene to run 1 upload
+    # exit(0)
 
 
 async def link_local_files_to_telegram_messages():

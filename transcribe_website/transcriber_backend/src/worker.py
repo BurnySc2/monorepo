@@ -75,6 +75,7 @@ class Worker:
         last_report_print = 0
         while 1:
             # If no more jobs of this model size, wait for tasks to complete before loading next model
+            a = TranscriptionJob.get_count_by_model_size(model_size, english=use_english_model)
             if TranscriptionJob.get_count_by_model_size(model_size, english=use_english_model) == 0:
                 while len(Worker.job_to_task_map) > 0:
                     await asyncio.sleep(1)
@@ -95,6 +96,9 @@ class Worker:
 
             # Get next job (matching model size) and mark as processing
             next_job = TranscriptionJob.get_one_queued(model_size, english=use_english_model, mark_as_accepted=True)
+            if next_job is None:
+                logger.info("No more jobs to process, waiting for jobs to complete")
+                continue
             # Start worker
             worker = Worker(next_job.id, started=datetime.datetime.utcnow())
             Worker.job_to_task_map[next_job.id] = asyncio.create_task(worker.work_and_catch_exception())
@@ -183,6 +187,8 @@ class Worker:
 
         duration = time.perf_counter() - transcription_start_time
         logger.info(f"Worker: Completed job id {self.job_id} after {humanize.precisedelta(int(duration))}")
+        # Uncomment when running scalene to run 1 transcription
+        exit(0)
 
 
 async def main():
