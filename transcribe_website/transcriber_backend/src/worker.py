@@ -187,7 +187,7 @@ class Worker:
         duration = time.perf_counter() - transcription_start_time
         logger.info(f"Worker: Completed job id {self.job_id} after {humanize.precisedelta(int(duration))}")
         # Uncomment when running scalene to run 1 transcription
-        exit(0)
+        # exit(0)
 
 
 async def main():
