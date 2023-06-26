@@ -75,7 +75,6 @@ class Worker:
         last_report_print = 0
         while 1:
             # If no more jobs of this model size, wait for tasks to complete before loading next model
-            a = TranscriptionJob.get_count_by_model_size(model_size, english=use_english_model)
             if TranscriptionJob.get_count_by_model_size(model_size, english=use_english_model) == 0:
                 while len(Worker.job_to_task_map) > 0:
                     await asyncio.sleep(1)
