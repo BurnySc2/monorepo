@@ -60,7 +60,7 @@ async def main():
 
     regex_match_test()
 
-    sites: list[str] = ["http://www.jython.org", "https://www.python.org/"] * 50
+    sites: list[str] = ["http://www.jython.org", "https://www.python.org/"] * 20
     start_time = time.perf_counter()
     await download_all_sites(sites)
 
