@@ -22,7 +22,10 @@
             "cwd": "${workspaceFolder}",
             "program": "main.py",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "env": {
+                "PYDEVD_DISABLE_FILE_VALIDATION": "1",
+            }
         },
         {
             "name": "Fastapi Server: Run Tests",
