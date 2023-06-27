@@ -1,0 +1,5 @@
+.idea 
+.pytest_cache
+.svelte-kit 
+build 
+node_modules
