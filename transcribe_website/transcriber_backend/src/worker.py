@@ -219,6 +219,7 @@ async def main():
         # Always use multilingual model first to detect language and then use english model
         await Worker.work_model_size(model_size, use_english_model=False)
         await Worker.work_model_size(model_size, use_english_model=True)
+    logger.info("Worker: Done with all jobs! Waiting for new jobs...")
 
 
 if __name__ == "__main__":

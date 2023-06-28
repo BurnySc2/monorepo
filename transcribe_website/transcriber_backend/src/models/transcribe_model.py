@@ -63,7 +63,8 @@ def query_generator_english(model_size: str) -> Generator[TranscriptionJob, None
     return (
         # pyre-fixme[16]
         t for t in TranscriptionJob if (
-            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0 and
+            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0
+            and t.input_file_size_bytes <= SECRETS.max_transcribe_mp3_size_bytes and
             (t.forced_language == "en" or t.detected_language == "en")
         )
     )
@@ -73,7 +74,8 @@ def query_generator_multilingual(model_size: str) -> Generator[TranscriptionJob,
     return (
         # pyre-fixme[16]
         t for t in TranscriptionJob if (
-            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0 and
+            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0
+            and t.input_file_size_bytes <= SECRETS.max_transcribe_mp3_size_bytes and
             (t.forced_language != "en" and t.detected_language != "en")
         )
     )
@@ -90,7 +92,7 @@ class TranscriptionJob(db.Entity):
     # When the job completed processing
     job_completed = orm.Optional(datetime.datetime)
     # Do not retry jobs with retry <= 0
-    remaining_retries = orm.Optional(int, default=3)
+    remaining_retries = orm.Optional(int, default=10)
     # task - (TRANSCRIBE, TRANSLATE, DETECT_LANGUAGE)
     task = orm.Required(str, py_check=lambda val: Task[val])
     # language - (en, de, ...)

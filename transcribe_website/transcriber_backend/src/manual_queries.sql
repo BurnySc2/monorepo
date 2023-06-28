@@ -25,7 +25,7 @@ GROUP BY downloaded_file_path
 HAVING COUNT(*) > 1
 ORDER BY downloaded_file_path
 
--- Find duplicates in trascribe_jobs table
+-- Find duplicates in transcribe_jobs table
 SELECT local_file
 FROM transcribe_jobs
 WHERE local_file <> ''
@@ -65,3 +65,13 @@ SET downloaded_file_path = NULL,
 WHERE linked_transcription IS NULL 
 AND download_status = 'COMPLETED'
 AND downloaded_file_path IS NOT NULL;
+
+-- Get all transcribe jobs which have a mp3 file
+WITH temp AS (
+	SELECT job_item
+	FROM transcribe_mp3s 
+)
+
+SELECT * FROM transcribe_jobs
+WHERE id IN (SELECT job_item FROM temp)
+ORDER BY input_file_size_bytes DESC
