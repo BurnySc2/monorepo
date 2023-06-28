@@ -134,6 +134,9 @@ class Worker:
             with orm.db_session():
                 job_info: TranscriptionJob = TranscriptionJob[self.job_id]
                 job_info.status = JobStatus.AV_ERROR.name
+                # Delete mp3 file
+                job_info.input_file_mp3.delete()
+                job_info.input_file_mp3 = None
             # logger.warning(f"Worker: Error with job id {self.job_id}")
             return
         if transcription_language is None:
