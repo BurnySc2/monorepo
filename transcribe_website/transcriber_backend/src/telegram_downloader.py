@@ -414,6 +414,7 @@ async def parse_channel_messages() -> None:
                         if current_message_count < 5 and message.id == oldest_message_id:
                             # We reached the oldest message in a few iterations, although we requested 1000 apart
                             # This means there were not many new messages
+                            # pyre-fixme[35]
                             channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)
                             channel.last_parsed = datetime.datetime.utcnow()
                             raise StopIteration
