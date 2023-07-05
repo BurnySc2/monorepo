@@ -49,7 +49,8 @@ class Worker:
     @staticmethod
     async def work_model_size(model_size: str, use_english_model: bool = False) -> None:
         # Get all jobs of this model size
-        if TranscriptionJob.get_count_by_model_size(model_size, english=use_english_model) == 0:
+        job_count_of_this_model = TranscriptionJob.get_count_by_model_size(model_size, english=use_english_model)
+        if job_count_of_this_model == 0:
             # If no such jobs exist, return early
             return
 
@@ -204,10 +205,10 @@ async def main():
     # - that are "processing" and processing job started too long ago
     # - that were accepted too long ago
     # mark those as "queued" again
-    time_1h_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=3600)
+    time_4h_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=3600 * 4)
     with orm.db_session():
         jobs = orm.select(
-            j for j in TranscriptionJob if (j.job_started is None or j.job_started < time_1h_ago) and j.status in [
+            j for j in TranscriptionJob if (j.job_started is None or j.job_started < time_4h_ago) and j.status in [
                 JobStatus.ACCEPTED.name,
                 JobStatus.PROCESSING.name,
                 JobStatus.FINISHING.name,
@@ -217,6 +218,10 @@ async def main():
             job.status = JobStatus.QUEUED.name
             job.progress = 0
             job.remaining_retries -= 1
+
+    # TODO Figure out memory usage of each model
+    # Then calculate from free memory if a job of certain size can be accepted,
+    # otherwise reduce model size to reduce memory usage
 
     for model_size in SECRETS.workers_acceptable_models:
         # Always use multilingual model first to detect language and then use english model

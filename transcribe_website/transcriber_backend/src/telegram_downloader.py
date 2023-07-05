@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import datetime
 import gc
 import logging
 import os
@@ -343,62 +344,80 @@ async def add_to_queue(
 async def parse_channel_messages() -> None:
     with orm.db_session():
         done_channels = set(orm.select(c.channel_id for c in TelegramChannel if c.done_parsing))
+        channels_that_may_have_new_messages = set(
+            orm.select(
+                c.channel_id for c in TelegramChannel
+                if c.last_parsed < datetime.datetime.now() - datetime.timedelta(days=1)
+            )
+        )
     for channel_id in SECRETS.channel_ids:
-        # done, total, done_bytes, total_bytes = TelegramMessage.get_count()
-        # logger.info(f"Remaining count {total - done}, "
-        #     f"remaining size {humanize.naturalsize(total_bytes - done_bytes)}")
-        if channel_id in done_channels:
+        channel_has_been_parsed_completely = channel_id in done_channels
+        channel_has_new_messages = channel_id not in channels_that_may_have_new_messages
+        if channel_has_been_parsed_completely and not channel_has_new_messages:
             continue
         with orm.db_session():
             channel: TelegramChannel | None = TelegramChannel.get(channel_id=channel_id)
             if channel is None:
                 # Create channel entry
                 TelegramChannel(channel_id=channel_id)
-            elif channel.done_parsing:
-                # Continue with next channel
-                continue
 
         logger.info(f"Grabbing messages from channel: {channel_id}")
         previous_oldest_message_id = -1
-        for _ in range(50):
-            oldest_message_id: int = TelegramMessage.get_oldest_message_id(channel_id)
-            # Detect if channel has been parsed completely
-            if previous_oldest_message_id == oldest_message_id:
-                with orm.db_session():
-                    channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)  # pyre-fixme[35]
-                    channel.done_parsing = True
-                break
-            previous_oldest_message_id = oldest_message_id
+        try:
+            for _ in range(50):  # Download in chunks of 1000 message
+                if not channel_has_been_parsed_completely:
+                    # Work your way back to the oldest message
+                    oldest_message_id: int = TelegramMessage.get_oldest_message_id(channel_id)
+                else:
+                    # Try to get new messages
+                    oldest_message_id: int = TelegramMessage.get_newest_message_id(channel_id) + 1000
 
-            # Get all messages (from newest to oldest), start with the oldest-parsed message
-            messages_iter = DownloadWorker.client.get_chat_history(
-                chat_id=channel_id,
-                offset_id=oldest_message_id,
-                limit=1000,
-            )
-            # This for loop can be in one session because it goes very quickly
-            with orm.db_session():
-                # pyre-fixme[16]
-                async for message in messages_iter:
-                    message: Message
-                    if message.empty is True:
-                        continue
-                    # Don't add same message_id twice
-                    load_message_ids_to_cache(channel_id)
-                    if message.id in add_to_queue_cache[channel_id]:
-                        continue
-                    # TODO documents
-                    if message.photo or message.audio or message.video:
-                        await add_to_queue(message, channel_id=channel_id)
-                    else:
-                        # Message has no media but add to database anyway to not parse it again
-                        TelegramMessage(
-                            channel_id=channel_id,
-                            message_id=message.id,
-                            message_date=message.date,
-                            link=message.link,
-                            download_status=Status.NO_MEDIA.name,
-                        )
+                # Detect if channel has been parsed completely
+                if previous_oldest_message_id == oldest_message_id:
+                    with orm.db_session():
+                        channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)  # pyre-fixme[35]
+                        channel.done_parsing = True
+                    break
+                previous_oldest_message_id = oldest_message_id
+
+                # Get all messages (from newest to oldest), start with the oldest-parsed message
+                messages_iter = DownloadWorker.client.get_chat_history(
+                    chat_id=channel_id,
+                    offset_id=oldest_message_id,
+                    limit=1000,
+                )
+                # This for loop can be in one session because it goes very quickly
+                with orm.db_session():
+                    current_message_count = 0
+                    # pyre-fixme[16]
+                    async for message in messages_iter:
+                        current_message_count += 1
+                        message: Message
+                        if message.empty is True:
+                            continue
+                        # Don't add same message_id twice
+                        load_message_ids_to_cache(channel_id)
+                        if message.id in add_to_queue_cache[channel_id]:
+                            continue
+                        # TODO documents
+                        if message.photo or message.audio or message.video:
+                            await add_to_queue(message, channel_id=channel_id)
+                        else:
+                            # Message has no media but add to database anyway to not parse it again
+                            TelegramMessage(
+                                channel_id=channel_id,
+                                message_id=message.id,
+                                message_date=message.date,
+                                link=message.link,
+                                download_status=Status.NO_MEDIA.name,
+                            )
+                        if current_message_count < 5 and message.id == oldest_message_id:
+                            # We reached the oldest message in a few iterations, although we requested 1000 apart
+                            # This means there were not many new messages
+                            raise StopIteration
+        except StopIteration:
+            # Exit inner loop because latest messages have been grabbed
+            pass
 
 
 def requeue_interrupted_downloads():

@@ -4,7 +4,7 @@ WHERE status <> 'DONE';
 
 -- Sum of file sizes of queued transcriptions
 SELECT SUM(input_file_size_bytes) FROM transcribe_jobs
-WHERE status <> 'DONE';
+WHERE status NOT IN ('DONE', 'AV_ERROR');
 
 -- Select files with no link and show total mp3 size
 SELECT SUM(extracted_mp3_size_bytes) FROM telegram_messages_to_download
@@ -75,3 +75,13 @@ WITH temp AS (
 SELECT * FROM transcribe_jobs
 WHERE id IN (SELECT job_item FROM temp)
 ORDER BY input_file_size_bytes DESC
+
+-- Delete all mp3s where transcribe jobs that have AV_ERROR
+WITH temp AS (
+	SELECT id
+	FROM transcribe_jobs 
+	WHERE status = 'AV_ERROR'
+)
+
+DELETE FROM transcribe_mp3s
+WHERE job_item IN (SELECT id FROM temp);

@@ -56,7 +56,6 @@ async def add_from_file_system():
             download_root="./whisper_models",
         )
 
-    # TODO Loop over all files from telegram db instead
     for folder in SECRETS.finder_folders_to_parse:
         folder_path = Path(folder)
         for path in recurse_path(folder_path, depth=10):

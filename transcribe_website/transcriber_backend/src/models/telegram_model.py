@@ -40,7 +40,10 @@ class TelegramChannel(db.Entity):
     _table_ = "telegram_channels"  # Table name
     id = orm.PrimaryKey(int, auto=True)
     channel_id = orm.Required(str)
+    # Check if the oldest message has been reached
     done_parsing = orm.Required(bool, default=False)
+    # Check for new messages
+    last_parsed = orm.Required(datetime.datetime, default=datetime.datetime.utcnow)
 
 
 class TelegramMessage(db.Entity):
@@ -145,6 +148,19 @@ class TelegramMessage(db.Entity):
             ).limit(1)
             if len(messages) == 0:
                 return 0
+            return list(messages)[0].message_id
+
+    @staticmethod
+    def get_newest_message_id(channel_id: str) -> int | None:
+        """Used in finding the newest parsed message_id of a channel.
+        Returns None if channel has not been parsed yet."""
+        with orm.db_session():
+            # pyre-fixme[16]
+            messages = orm.select(m for m in TelegramMessage if m.channel_id == channel_id).order_by(
+                orm.desc(TelegramMessage.message_id),
+            ).limit(1)
+            if len(messages) == 0:
+                return None
             return list(messages)[0].message_id
 
     @staticmethod
