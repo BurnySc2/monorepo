@@ -4,8 +4,6 @@ For examples see at the bottom.
 """
 from __future__ import annotations
 
-import datetime
-import json
 import sys
 import time
 from dataclasses import dataclass
@@ -15,16 +13,13 @@ from pathlib import Path
 from faster_whisper import WhisperModel  # pyre-fixme[21]
 from faster_whisper.transcribe import TranscriptionInfo  # pyre-fixme[21]
 from loguru import logger
-from pony import orm  # pyre-fixme[21]
 from simple_parsing import ArgumentParser
 from tqdm import tqdm
 
-from src.models.db import (  # noqa: E402
-    JobStatus,
+from src.models.db import (
+    # noqa: E402
     ModelSize,
     Task,
-    TranscriptionJob,
-    TranscriptionResult,
     compress_files,
     generate_srt_data,
     generate_txt_data,
@@ -39,8 +34,6 @@ class TranscriberOptions:
     language: str | None = None  # Force this language to transcribe or translate, e.g. "en"
     model: ModelSize | None = None  # One of the models: tiny, base, small, medium, large, largev1
     update_progress_to_database: bool = True
-    # If given, will update the database entry
-    database_job_id: int | None = None
     # TODO what do these do
     num_workers: int = 1
     cpu_threads: int = 0
@@ -85,35 +78,6 @@ MODEL_MAP = {
 }
 
 
-def update_job_status(
-    job_id: int | None,
-    new_status: JobStatus,
-    txt_original: str | None = None,
-    srt_original_zipped: BytesIO | None = None,
-    job_started: datetime.datetime | None = None,
-    detected_language: str | None = None,
-) -> None:
-    if job_id is not None:
-        with orm.db_session():
-            job_info = TranscriptionJob[job_id]
-            job_info.status = new_status.name
-            if txt_original is not None and srt_original_zipped is not None:
-                job_info.output_zip_data = TranscriptionResult(
-                    job_item=job_info,
-                    srt_original_zipped=srt_original_zipped.getvalue(),
-                    txt_original=txt_original,
-                )
-                job_info.job_completed = datetime.datetime.utcnow()
-                job_info.progress = 100
-                # Delete input mp3 file and db entry to clear up storage
-                job_info.input_file_mp3.delete()
-                job_info.input_file_mp3 = None
-            if job_started is not None:
-                job_info.job_started = job_started
-            if detected_language is not None:
-                job_info.detected_language = detected_language
-
-
 def get_model_string(options: TranscriberOptions) -> str:
     model_map = MODEL_MAP.copy()
     if options.language == "en":
@@ -137,7 +101,6 @@ def detect_language(options: TranscriberOptions) -> TranscriptionInfo:
         compute_type="int8",
         download_root="./whisper_models",
     )
-    update_job_status(options.database_job_id, new_status=JobStatus.PROCESSING)
 
     if options.input_file == "-":
         data = BytesIO(sys.stdin.buffer.read())
@@ -148,8 +111,6 @@ def detect_language(options: TranscriberOptions) -> TranscriptionInfo:
 
     # Upload info to db and mark job as finished
     sorted_results: list[tuple[str, float]] = sorted(info.all_language_probs, key=lambda x: x[1], reverse=True)
-    # pyre-fixme[28]
-    update_job_status(options.database_job_id, new_status=JobStatus.DONE, result=json.dumps(sorted_results).encode())
     logger.debug(sorted_results[:10])
     return info
 
@@ -184,16 +145,8 @@ def transcribe(options: TranscriberOptions) -> None:
         logger.debug(f"Detected language '{info.language}' with probability {info.language_probability}")
 
     # Start transcribing / translating
-    # Not needed?
-    update_job_status(
-        options.database_job_id,
-        JobStatus.PROCESSING,
-        job_started=datetime.datetime.now(),
-        detected_language=info.language,
-    )
     t0 = time.perf_counter()
     last_progress_bar_value: int = 0
-    last_job_progress_value: int = 0
     transcribed_data: list[tuple[float, float, str]] = []
     total_mp3_duration = int(info.duration)
     with tqdm(total=total_mp3_duration, mininterval=1) as progress_bar:
@@ -202,18 +155,8 @@ def transcribe(options: TranscriberOptions) -> None:
             last_progress_bar_value = int(segment.end)
             transcribed_data.append((segment.start, segment.end, segment.text.lstrip()))
             # print(f"{segment.start:.2f} {segment.end:.2f} {segment.text}")
-            # Upload info to database
-            if options.database_job_id is not None:
-                # Update only if percentage value changed
-                new_job_progress_value = int(100 * last_progress_bar_value / total_mp3_duration)
-                if last_job_progress_value != new_job_progress_value:
-                    last_job_progress_value = new_job_progress_value
-                    with orm.db_session():
-                        job: TranscriptionJob = TranscriptionJob[options.database_job_id]
-                        job.progress = new_job_progress_value
 
     logger.debug(f"Done transcribing after {time.perf_counter() - t0:3f} seconds")
-    update_job_status(options.database_job_id, JobStatus.FINISHING)
     # Write to .zip in memory to be uploaded to supabase directly
     write_data(transcribed_data, options)
 
@@ -237,18 +180,6 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
     # translated = GoogleTranslator(detected_language, 'en').translate_batch(transcribed)
     txt_data: str = generate_txt_data(transcribed_data)
     srt_data: str = generate_srt_data(transcribed_data)
-
-    if options.database_job_id is not None:
-        srt_original_zipped: BytesIO = compress_files({
-            "transcribed.srt": srt_data,
-        })
-        update_job_status(
-            options.database_job_id,
-            new_status=JobStatus.DONE,
-            srt_original_zipped=srt_original_zipped,
-            txt_original=txt_data,
-        )
-        return
 
     zip_data: BytesIO = compress_files({
         "transcribed.txt": txt_data,
@@ -293,7 +224,6 @@ def main():
     options: TranscriberOptions = args.options
     # logger.debug(f"Options: {options}")
     # Not needed?
-    update_job_status(options.database_job_id, JobStatus.ACCEPTED)
     if options.task in {Task.Transcribe, Task.Translate}:
         transcribe(options)
     elif options.task == Task.Detect:

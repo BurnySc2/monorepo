@@ -21,14 +21,15 @@ pony = "^0.7.16"
 # Requires binary for Dockerfile
 # psycopg2 = "^2.9.6"
 psycopg2-binary = "^2.9.6"
+# Display sizes in human readable format
+humanize = "^4.6.0"
 # Transcribing
 faster-whisper = "==0.6.0"
 # Progress bar
 tqdm = "^4.65.0"
 pyrogram = "==2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel downloads
-tgcrypto = "^1.2.5"
-deep-translator = "^1.11.1"
-humanize = "^4.6.0"
+# tgcrypto = "^1.2.5"
+# deep-translator = "^1.11.1"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
