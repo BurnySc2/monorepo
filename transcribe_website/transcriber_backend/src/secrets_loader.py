@@ -20,7 +20,6 @@ class TranscriberSecrets(BaseModel):
     workers_acceptable_models: list[str] = ["tiny", "base", "small"]
     detect_language_before_queueing: bool = True
     detect_language_before_queueing_min_size_bytes: int = 10_000_000
-    max_transcribe_mp3_size_bytes: int = 200_000_000
 
     finder_add_glob_pattern: str = ""
     finder_ignore_glob_pattern: str = ""

@@ -68,8 +68,6 @@ def query_generator_english(model_size: str) -> Generator[TranscriptionJob, None
             and t.model_size.lower() == model_size
             # Skip jobs that have been retried too many times
             and t.remaining_retries > 0
-            # Skip too large mp3 files
-            and t.input_file_size_bytes <= SECRETS.max_transcribe_mp3_size_bytes
             # Skip not matching model language
             and (t.forced_language == "en" or t.detected_language == "en")
         )
@@ -80,8 +78,7 @@ def query_generator_multilingual(model_size: str) -> Generator[TranscriptionJob,
     return (
         # pyre-fixme[16]
         t for t in TranscriptionJob if (
-            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0
-            and t.input_file_size_bytes <= SECRETS.max_transcribe_mp3_size_bytes and
+            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0 and
             (t.forced_language != "en" and t.detected_language != "en")
         )
     )
