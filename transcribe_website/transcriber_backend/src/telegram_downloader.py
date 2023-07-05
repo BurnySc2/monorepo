@@ -352,7 +352,7 @@ async def parse_channel_messages() -> None:
         )
     for channel_id in SECRETS.channel_ids:
         channel_has_been_parsed_completely = channel_id in done_channels
-        channel_has_new_messages = channel_id not in channels_that_may_have_new_messages
+        channel_has_new_messages = channel_id in channels_that_may_have_new_messages
         if channel_has_been_parsed_completely and not channel_has_new_messages:
             continue
         with orm.db_session():
@@ -414,6 +414,8 @@ async def parse_channel_messages() -> None:
                         if current_message_count < 5 and message.id == oldest_message_id:
                             # We reached the oldest message in a few iterations, although we requested 1000 apart
                             # This means there were not many new messages
+                            channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)
+                            channel.last_parsed = datetime.datetime.utcnow()
                             raise StopIteration
         except StopIteration:
             # Exit inner loop because latest messages have been grabbed

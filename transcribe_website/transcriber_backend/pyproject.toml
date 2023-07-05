@@ -28,7 +28,8 @@ faster-whisper = "==0.6.0"
 # Progress bar
 tqdm = "^4.65.0"
 pyrogram = "==2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel downloads
-# tgcrypto = "^1.2.5"
+# Required by pyrogram
+tgcrypto = "^1.2.5"
 # deep-translator = "^1.11.1"
 
 [tool.poetry.group.dev.dependencies]
