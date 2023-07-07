@@ -209,3 +209,16 @@ class TranscriptionJob(db.Entity):
                 job_item.status = JobStatus.ACCEPTED.name
                 job_item.job_started = datetime.datetime.utcnow()
             return job_item
+
+    @staticmethod
+    def update_progress(job_id: int, new_progress: int, old_progress: int, mp3_data_size: int) -> int:
+        # Update only if certain conditions are met
+        if mp3_data_size < 10 * 2**20:  # needs to be more than 10 mb
+            return old_progress
+        if old_progress <= new_progress:
+            return old_progress
+        with orm.db_session():
+            # pyre-fixme[16]
+            job_item = TranscriptionJob[job_id]
+            job_item.progress = new_progress
+        return new_progress

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
+import os
 import sys
 import time
 from dataclasses import dataclass
@@ -31,9 +32,23 @@ from src.models.transcribe_model import TranscriptionResult  # noqa: E402
 from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 
 SECRETS = SECRETS_FULL.Transcriber
-logging.basicConfig()
+
 logging.getLogger("faster_whisper").setLevel(logging.CRITICAL)
 logging.getLogger("libav.mp3").setLevel(logging.CRITICAL)
+
+
+def loguru_handler(record):
+    level = record.levelname.upper()
+    message = record.getMessage()
+    logger.log(level, message)
+
+
+PONY_DEBUG = os.getenv("PONY_DEBUG") == "True"
+if PONY_DEBUG:
+    pony_logger = logging.getLogger("pony.orm")
+    pony_logger.setLevel(logging.DEBUG)
+    pony_logger.addHandler(logging.StreamHandler())
+    pony_logger.handlers[-1].emit = loguru_handler
 
 
 @dataclass
@@ -116,6 +131,12 @@ class Worker:
             sys.exit(1)
 
     async def work(self) -> None:
+        """
+        # TODO
+        This function may encounter
+        pony.orm.dbapiprovider.OperationalError
+        and needs to be caught and auto-restarted or auto-continued
+        """
         done_count, total_count, _, _ = TranscriptionJob.get_count()
         transcription_start_time = time.perf_counter()
 
@@ -126,7 +147,7 @@ class Worker:
             transcription_language = "en" if (
                 job_info.forced_language == "en" or job_info.detected_language == "en"
             ) else None
-            update_database_progress: bool = mp3_data.getbuffer().nbytes > 0.1 * 2**20  # 10 mb
+            mp3_data_size_bytes: int = mp3_data.getbuffer().nbytes
         try:
             # Initialize transcribing
             segments, info = Worker.loaded_model.transcribe(mp3_data, language=transcription_language)
@@ -157,17 +178,18 @@ class Worker:
 
         # Start tanscribing
         transcribed_data: list[tuple[float, float, str]] = []
-        percentage_value: int = 0
+        old_percentage_value: int = 0
         total_mp3_duration = int(info.duration)
         for segment in segments:
             transcribed_data.append((segment.start, segment.end, segment.text.lstrip()))
             # Update progress in database only if mp3 is large
             new_percentage_value = int(100 * segment.end / total_mp3_duration)
-            if update_database_progress and percentage_value != new_percentage_value:
-                percentage_value = new_percentage_value
-                with orm.db_session():
-                    job_info: TranscriptionJob = TranscriptionJob[self.job_id]
-                    job_info.progress = new_percentage_value
+            old_percentage_value = TranscriptionJob.update_progress(
+                self.job_id,
+                new_progress=new_percentage_value,
+                old_progress=old_percentage_value,
+                mp3_data_size=mp3_data_size_bytes,
+            )
 
         # Done transcribing, write srt and txt file to db
         txt_data: str = generate_txt_data(transcribed_data)
@@ -187,6 +209,7 @@ class Worker:
                 txt_original=txt_data,
             )
             # Delete input mp3 file and db entry to clear up storage
+            # TODO it seems it downloads the mp3 again - find a way to delete it via sql query
             job_info.input_file_mp3.delete()
             job_info.input_file_mp3 = None
 
@@ -221,7 +244,7 @@ async def main():
 
     # TODO Figure out memory usage of each model
     # Then calculate from free memory if a job of certain size can be accepted,
-    # otherwise reduce model size to reduce memory usage
+    # otherwise reduce model size to reduce memory usage?
 
     for model_size in SECRETS.workers_acceptable_models:
         # Always use multilingual model first to detect language and then use english model

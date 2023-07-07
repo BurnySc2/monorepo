@@ -3,6 +3,7 @@ Import all models from this file to ensure that they are registered with PonyORM
 """
 from __future__ import annotations
 
+import os
 import zipfile
 from io import BytesIO
 
@@ -45,7 +46,7 @@ db.bind(
 )
 
 # Enable debug mode to see the queries sent
-# orm.set_sql_debug(True)
+orm.set_sql_debug(os.getenv("PONY_DEBUG") == "True")
 
 db.generate_mapping(create_tables=True)
 
