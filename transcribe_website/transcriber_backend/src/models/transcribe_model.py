@@ -163,14 +163,15 @@ class TranscriptionJob(db.Entity):
     @staticmethod
     def get_processing_rate_and_remaining_time() -> tuple[float, float]:
         """Returns rate in bytes per second and remaining time in seconds."""
-        time_1h_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=3600)
+        time_24h_ago = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
+        seconds_in_24h = 24 * 3600
         with orm.db_session():
             size_of_completed_jobs_in_bytes = orm.sum(
                 # pyre-fixme[16]
                 t.input_file_size_bytes for t in TranscriptionJob
-                if t.job_completed is not None and t.job_completed > time_1h_ago
+                if t.job_completed is not None and t.job_completed > time_24h_ago
             )
-            processing_rate_per_second = size_of_completed_jobs_in_bytes / 3600
+            processing_rate_per_second = size_of_completed_jobs_in_bytes / seconds_in_24h
             _, _, done_bytes, total_bytes = TranscriptionJob.get_count()
             remaining_bytes = total_bytes - done_bytes
             if processing_rate_per_second == 0:
