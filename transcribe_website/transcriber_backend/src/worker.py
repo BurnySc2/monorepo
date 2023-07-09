@@ -83,6 +83,10 @@ class Worker:
             device="cpu",
             compute_type="int8",
             download_root="./whisper_models",
+            # Changing number of workers or threads doesnt seem to affect speed on multi-core pc
+            # https://github.com/guillaumekln/faster-whisper/issues/100#issuecomment-1492141352
+            # num_workers=8,
+            # cpu_threads=2,
         )
         Worker.loaded_model_language = "multilingual"
         if working_model_size.endswith(".en"):
@@ -169,6 +173,7 @@ class Worker:
             with orm.db_session():
                 job_info: TranscriptionJob = TranscriptionJob[self.job_id]
                 job_info.detected_language = transcription_language
+            logger.info(f"Set detected language to '{transcription_language}' for job id {self.job_id}")
         if transcription_language == "en" and Worker.loaded_model_language != "en":
             # Currently loaded is multilingual, not english
             # But detected language is english

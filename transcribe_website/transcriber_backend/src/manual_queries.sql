@@ -4,7 +4,7 @@ WHERE status <> 'DONE';
 
 -- Sum of file sizes of queued transcriptions
 SELECT SUM(input_file_size_bytes) FROM transcribe_jobs
-WHERE status NOT IN ('DONE', 'AV_ERROR');
+WHERE status IN ('QUEUED', 'ACCEPTED', 'PROCESSING');
 
 -- Select files with no link and show total mp3 size
 SELECT SUM(extracted_mp3_size_bytes) FROM telegram_messages_to_download
