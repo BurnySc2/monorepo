@@ -177,6 +177,9 @@ class Worker:
         if transcription_language == "en" and Worker.loaded_model_language != "en":
             # Currently loaded is multilingual, not english
             # But detected language is english
+            with orm.db_session():
+                job_info: TranscriptionJob = TranscriptionJob[self.job_id]
+                job_info.status = JobStatus.QUEUED.name
             return
 
         logger.info(f"Worker: (Remaining: {total_count - done_count}) Started job id {self.job_id}")
