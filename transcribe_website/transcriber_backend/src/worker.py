@@ -180,6 +180,7 @@ class Worker:
             with orm.db_session():
                 job_info: TranscriptionJob = TranscriptionJob[self.job_id]
                 job_info.status = JobStatus.QUEUED.name
+                job_info.job_started = None
             return
 
         logger.info(f"Worker: (Remaining: {total_count - done_count}) Started job id {self.job_id}")
@@ -247,6 +248,7 @@ async def main():
         ).for_update()
         for job in jobs:
             job.status = JobStatus.QUEUED.name
+            job.job_started = None
             job.progress = 0
             job.remaining_retries -= 1
 
