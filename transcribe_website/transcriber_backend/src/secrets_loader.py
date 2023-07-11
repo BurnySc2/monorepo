@@ -1,7 +1,9 @@
+import contextlib
 import datetime
 from pathlib import Path
 from typing import Literal
 
+import owncloud  # pyre-fixme[21]
 import toml
 from pydantic import BaseModel
 
@@ -15,6 +17,12 @@ class TranscriberSecrets(BaseModel):
     postgres_password: str = ""
     postgres_host: str = ""
     postgres_port: str = ""
+
+    # mp3 file storage for transcription
+    owncloud_domain: str = "my.domain.com"
+    owncloud_username: str = "myusername"
+    owncloud_password: str = "mypassword"
+    owncloud_files_path: str = "mp3_transcription_files/"
 
     workers_limit: int = 1
     workers_acceptable_models: list[str] = ["tiny", "base", "small"]
@@ -76,3 +84,10 @@ class Secrets(BaseModel):
 with (Path(__file__).parent.parent / "SECRETS.toml").open() as f:
     toml_data = toml.loads(f.read())
     SECRETS: Secrets = Secrets.parse_obj(toml_data)
+
+# Connect to owncloud
+oc = owncloud.Client(SECRETS.Transcriber.owncloud_domain)
+oc.login(SECRETS.Transcriber.owncloud_username, SECRETS.Transcriber.owncloud_password)
+# Try to create subfolder if it doesn't exist
+with contextlib.suppress(owncloud.owncloud.HTTPResponseError):
+    oc.mkdir(SECRETS.Transcriber.owncloud_files_path)

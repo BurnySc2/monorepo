@@ -67,21 +67,6 @@ AND download_status = 'COMPLETED'
 AND downloaded_file_path IS NOT NULL;
 
 -- Get all transcribe jobs which have a mp3 file
-WITH temp AS (
-	SELECT job_item
-	FROM transcribe_mp3s 
-)
-
 SELECT * FROM transcribe_jobs
-WHERE id IN (SELECT job_item FROM temp)
+WHERE input_file_mp3_owncloud_path IS NOT NULL
 ORDER BY input_file_size_bytes DESC
-
--- Delete all mp3s where transcribe jobs that have AV_ERROR
-WITH temp AS (
-	SELECT id
-	FROM transcribe_jobs 
-	WHERE status = 'AV_ERROR'
-)
-
-DELETE FROM transcribe_mp3s
-WHERE job_item IN (SELECT id FROM temp);

@@ -11,14 +11,15 @@ from faster_whisper import WhisperModel  # pyre-fixme[21]
 from loguru import logger
 from pony import orm  # pyre-fixme[21]
 
-from src.models.db import (  # noqa: E402
+from src.models.db import (
+    # noqa: E402
     JobStatus,
     ModelSize,
     Status,
     Task,
     TelegramMessage,
     TranscriptionJob,
-    TranscriptionMp3File,
+    oc,
 )
 from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 
@@ -92,9 +93,9 @@ async def add_from_file_system():
                     input_file_size_bytes=file_size_bytes,
                 )
                 with path.open("rb") as f:
-                    transcription_job.input_file_mp3 = TranscriptionMp3File(
-                        job_item=transcription_job, mp3_data=f.read()
-                    )
+                    # TODO Make sure file doesn't exist?
+                    oc.put_file_contents(SECRETS.owncloud_files_path + path.name, f.read())
+                transcription_job.input_file_mp3_owncloud_path = path.name
             if SECRETS.finder_delete_after_upload:
                 path.unlink()
     logger.warning("Done uploading files!")
@@ -181,7 +182,9 @@ async def add_from_telegram_message():
                 input_file_size_bytes=file_size_bytes,
             )
             with full_path.open("rb") as f:
-                transcription_job.input_file_mp3 = TranscriptionMp3File(job_item=transcription_job, mp3_data=f.read())
+                # TODO Make sure file doesn't exist?
+                oc.put_file_contents(SECRETS.owncloud_files_path + full_path.name, f.read())
+            transcription_job.input_file_mp3_owncloud_path = full_path.name
             # Link to telegram message
             message.linked_transcription = transcription_job
         if SECRETS.finder_delete_after_upload:

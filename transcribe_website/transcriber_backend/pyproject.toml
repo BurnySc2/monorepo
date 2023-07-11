@@ -31,6 +31,8 @@ pyrogram = "==2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel d
 # Required by pyrogram
 tgcrypto = "^1.2.5"
 # deep-translator = "^1.11.1"
+# Owncloud client
+pyocclient = "^0.6"
 
 [tool.poetry.group.dev.dependencies]
 # Test library

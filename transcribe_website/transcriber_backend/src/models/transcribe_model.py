@@ -13,6 +13,7 @@ from pony import orm  # pyre-fixme[21]
 
 from src.models import db
 from src.secrets_loader import SECRETS as SECRETS_FULL
+from src.secrets_loader import oc
 
 SECRETS = SECRETS_FULL.Transcriber
 
@@ -42,14 +43,6 @@ class JobStatus(enum.Enum):
 
 
 # pyre-fixme[11]
-class TranscriptionMp3File(db.Entity):
-    _table_ = "transcribe_mp3s"  # Table name
-    id = orm.PrimaryKey(int, auto=True)
-    job_item = orm.Required("TranscriptionJob")
-    # The mp3 file to be analyzed
-    mp3_data = orm.Optional(bytes)
-
-
 class TranscriptionResult(db.Entity):
     _table_ = "transcribe_text"  # Table name
     id = orm.PrimaryKey(int, auto=True)
@@ -104,7 +97,7 @@ class TranscriptionJob(db.Entity):
     # model_size - (tiny, base, small, medium, large)
     model_size = orm.Required(str, py_check=lambda val: ModelSize[val])
 
-    input_file_mp3 = orm.Optional(TranscriptionMp3File, cascade_delete=True)
+    input_file_mp3_owncloud_path = orm.Optional(str, nullable=True)
     input_file_size_bytes = orm.Optional(int, size=64)
     # input_file_duration = orm.Optional(int, size=32)
     output_data = orm.Optional(TranscriptionResult, cascade_delete=True)
@@ -121,6 +114,21 @@ class TranscriptionJob(db.Entity):
     def from_tuple(cls, job_tuple: tuple) -> TranscriptionJob:
         entity_dict = {col_name: value for col_name, value in zip(cls._columns_, job_tuple)}  # pyre-ignore[16]
         return TranscriptionJob(**entity_dict)
+
+    @property
+    def owncloud_full_mp3_path(self) -> str:
+        return SECRETS.owncloud_files_path + self.input_file_mp3_owncloud_path
+
+    @property
+    def mp3_data(self) -> bytes:
+        """Download the file contents as bytes from the owncloud server."""
+        assert self.input_file_mp3_owncloud_path is not None
+        return oc.get_file_contents(self.owncloud_full_mp3_path)
+
+    def delete_mp3_from_owncloud(self):
+        """Given the stored path, delete the file from owncloud. Path needs to be set to 'None' afterwards."""
+        assert self.input_file_mp3_owncloud_path is not None
+        oc.delete(self.owncloud_full_mp3_path)
 
     @property
     def job_created_arrow(self) -> arrow.Arrow:

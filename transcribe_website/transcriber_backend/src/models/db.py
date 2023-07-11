@@ -17,10 +17,10 @@ from src.models.transcribe_model import (
     ModelSize,
     Task,
     TranscriptionJob,
-    TranscriptionMp3File,
     TranscriptionResult,
 )
 from src.secrets_loader import SECRETS as SECRETS_FULL
+from src.secrets_loader import oc
 
 SECRETS = SECRETS_FULL.Transcriber
 
@@ -29,11 +29,11 @@ __all__ = [
     TelegramMessage,
     Status,
     TranscriptionJob,
-    TranscriptionMp3File,
     TranscriptionResult,
     JobStatus,
     ModelSize,
     Task,
+    oc,
 ]
 
 db.bind(

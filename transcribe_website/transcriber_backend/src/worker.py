@@ -21,13 +21,7 @@ from faster_whisper import (
 from loguru import logger
 from pony import orm  # pyre-fixme[21]
 
-from src.models.db import (
-    JobStatus,
-    TranscriptionJob,
-    compress_files,
-    generate_srt_data,
-    generate_txt_data,
-)
+from src.models.db import JobStatus, TranscriptionJob, compress_files, generate_srt_data, generate_txt_data
 from src.models.transcribe_model import TranscriptionResult  # noqa: E402
 from src.secrets_loader import SECRETS as SECRETS_FULL  # noqa: E402
 
@@ -147,7 +141,8 @@ class Worker:
         with orm.db_session():
             job_info: TranscriptionJob = TranscriptionJob[self.job_id]
             job_info.status = JobStatus.PROCESSING.name
-            mp3_data: BytesIO = BytesIO(job_info.input_file_mp3.mp3_data)
+            # Load mp3 file from owncloud
+            mp3_data: BytesIO = BytesIO(job_info.mp3_data)
             transcription_language = "en" if (
                 job_info.forced_language == "en" or job_info.detected_language == "en"
             ) else None
@@ -161,8 +156,8 @@ class Worker:
                 job_info: TranscriptionJob = TranscriptionJob[self.job_id]
                 job_info.status = JobStatus.AV_ERROR.name
                 # Delete mp3 file
-                job_info.input_file_mp3.delete()
-                job_info.input_file_mp3 = None
+                job_info.delete_mp3_from_owncloud()
+                job_info.input_file_mp3_owncloud_path = None
             # logger.warning(f"Worker: Error with job id {self.job_id}")
             return
         if transcription_language is None:
@@ -217,10 +212,9 @@ class Worker:
                 srt_original_zipped=srt_original_zipped.getvalue(),
                 txt_original=txt_data,
             )
-            # Delete input mp3 file and db entry to clear up storage
-            # TODO it seems it downloads the mp3 again - find a way to delete it via sql query
-            job_info.input_file_mp3.delete()
-            job_info.input_file_mp3 = None
+            # Delete mp3 file
+            job_info.delete_mp3_from_owncloud()
+            job_info.input_file_mp3_owncloud_path = None
 
         duration = time.perf_counter() - transcription_start_time
         logger.info(f"Worker: Completed job id {self.job_id} after {humanize.precisedelta(int(duration))}")
