@@ -66,15 +66,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - id: wait-for-jobs
-      uses: yogeshlonkar/wait-for-jobs@v0
-      with:
-        gh-token: ${{ secrets.GITHUB_TOKEN }}
-        jobs: |
-          test_backend_py3.8
-          test_backend_py3.9
-          test_backend_py3.10
-
     - name: Build docker image
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
@@ -86,6 +77,15 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - id: wait-for-jobs
+      uses: yogeshlonkar/wait-for-jobs@v0
+      with:
+        gh-token: ${{ secrets.GITHUB_TOKEN }}
+        jobs: |
+          test_backend_py3.8
+          test_backend_py3.9
+          test_backend_py3.10
 
     - name: Upload docker image
       if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
