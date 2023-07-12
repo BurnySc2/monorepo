@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import ClassVar
 
 import humanize
+import pyrogram
 from loguru import logger
 from pony import orm  # pyre-fixme[21]
 from pyrogram import Client
@@ -475,11 +476,36 @@ def requeue_interrupted_downloads():
         )
 
 
+async def list_all_joined_public_chats(min_users: int) -> list[str]:
+    """Yield all chats that this telegram user has joined."""
+    chats: list[tuple[str, int]] = []
+    async for dialog in app.get_dialogs():
+        # pyre-fixme[35]
+        dialog: pyrogram.types.Dialog
+        chat: pyrogram.types.Chat = dialog.chat
+        # Not public
+        if chat.username is None:
+            continue
+        # Private chat
+        if chat.members_count is None:
+            continue
+        # Minimum not met
+        if chat.members_count < min_users:
+            continue
+        chats.append((chat.username, chat.members_count))
+
+    chats.sort(key=lambda i: i[1], reverse=True)
+    return [i[0] for i in chats]
+
+
 async def main():
     logger.info("Checking for changed filters...")
     requeue_interrupted_downloads()
 
     await DownloadWorker.client.start()
+    # chats = await list_all_joined_public_chats(min_users=300)
+    # for chat in chats:
+    #     print(f'"{chat}",')
 
     await DownloadWorker.launch_workers(n=SECRETS.parallel_downloads_count)
 
