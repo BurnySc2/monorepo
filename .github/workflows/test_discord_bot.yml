@@ -18,6 +18,7 @@ env:
 
 jobs:
   test_backend:
+    name: test_backend_py${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -81,6 +82,16 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    - id: wait-for-jobs
+      uses: yogeshlonkar/wait-for-jobs@v0
+      with:
+        gh-token: ${{ secrets.GITHUB_TOKEN }}
+        jobs: |
+          test_backend_py3.8
+          test_backend_py3.9
+          test_backend_py3.10
+          test_backend_py3.11
+            
     - name: Upload docker image
       if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       run: |

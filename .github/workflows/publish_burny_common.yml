@@ -16,6 +16,7 @@ env:
 
 jobs:
   run_code_check:
+    name: run_code_check_py${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -91,6 +92,16 @@ jobs:
     - name: Build
       working-directory: ${{ env.SUBDIRECTORY }}
       run: poetry build
+
+    - id: wait-for-jobs
+      uses: yogeshlonkar/wait-for-jobs@v0
+      with:
+        gh-token: ${{ secrets.GITHUB_TOKEN }}
+        jobs: |
+          run_code_check_py3.8
+          run_code_check_py3.9
+          run_code_check_py3.10
+          run_code_check_py3.11
 
       # Publish package on pypi
     - name: Publish
