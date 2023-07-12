@@ -17,6 +17,7 @@ env:
 
 jobs:
   test_backend:
+    name: test_backend
     strategy:
       fail-fast: false
       matrix:
@@ -56,7 +57,6 @@ jobs:
 #      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
   build_and_deploy_docker_image:
-    needs: [test_backend]
     strategy:
       fail-fast: false
       matrix:
@@ -71,6 +71,12 @@ jobs:
       run: |
         docker build -t burnysc2/${{ env.IMAGENAME }}:latest .
         docker build -t burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}} .
+
+    - id: wait-for-jobs
+      uses: yogeshlonkar/wait-for-jobs@v0
+      with:
+        gh-token: ${{ secrets.GITHUB_TOKEN }}
+        jobs: test_backend
 
     - name: Login to DockerHub
       uses: docker/login-action@v2
