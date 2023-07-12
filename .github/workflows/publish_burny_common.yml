@@ -56,7 +56,6 @@ jobs:
 #      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
   build_and_publish:
-    needs: [run_code_check]
     strategy:
       fail-fast: false
       matrix:
