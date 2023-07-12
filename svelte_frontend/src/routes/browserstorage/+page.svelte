@@ -2,8 +2,6 @@
     import { onMount } from "svelte"
     import { writable, type Writable } from "svelte/store"
 
-    import Headers from "../../components/Headers.svelte"
-
     // Key names in local and session storage
     const localStorageKey = "localValue"
     const sessionStorageKey = "sessionValue"
@@ -34,7 +32,6 @@
     })
 </script>
 
-<Headers />
 <div class="flex">
     <div class="m-1">Local Storage</div>
     <div id="localStorageValue" class="m-1">{localStorageValue}</div>

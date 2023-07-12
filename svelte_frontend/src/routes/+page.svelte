@@ -1,18 +1,8 @@
-<script lang="ts">
-    import { onMount } from "svelte"
-
-    import Headers from "../components/Headers.svelte"
-    import Home from "../pages/Home.svelte"
-
-    console.log(process.env.BACKEND_SERVER)
-
-    let siteLoaded = false
-    onMount(() => {
-        siteLoaded = true
-    })
+<script>
+    let name = "world"
 </script>
 
-{#if siteLoaded}
-    <Headers />
-    <Home />
-{/if}
+<h1 class="text-center my-2">Hello {name}!</h1>
+<p class="text-center my-2">
+    Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.
+</p>
