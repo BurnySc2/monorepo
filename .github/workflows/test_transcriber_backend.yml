@@ -17,7 +17,7 @@ env:
 
 jobs:
   test_backend:
-    name: test_backend
+    name: test_backend_py${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -66,17 +66,20 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - id: wait-for-jobs
+      uses: yogeshlonkar/wait-for-jobs@v0
+      with:
+        gh-token: ${{ secrets.GITHUB_TOKEN }}
+        jobs: |
+          test_backend_py3.8
+          test_backend_py3.9
+          test_backend_py3.10
+
     - name: Build docker image
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         docker build -t burnysc2/${{ env.IMAGENAME }}:latest .
         docker build -t burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}} .
-
-    - id: wait-for-jobs
-      uses: yogeshlonkar/wait-for-jobs@v0
-      with:
-        gh-token: ${{ secrets.GITHUB_TOKEN }}
-        jobs: test_backend
 
     - name: Login to DockerHub
       uses: docker/login-action@v2
