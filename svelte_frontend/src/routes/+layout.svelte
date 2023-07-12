@@ -1,15 +1,7 @@
 <script lang="ts">
-    // import { onMount } from "svelte"
-
     console.log(process.env.BACKEND_SERVER)
-
-    // let siteLoaded = false
-    // onMount(() => {
-    //     siteLoaded = true
-    // })
 </script>
 
-<!-- {#if siteLoaded} -->
 <div class="my2 flex justify-center">
     <!-- https://kit.svelte.dev/docs/link-options#data-sveltekit-preload-data -->
     <a class="m-1 p-1 border-2" id="home" data-sveltekit-preload-data="hover" href="/">Home</a>
@@ -22,4 +14,3 @@
     >
 </div>
 <slot />
-<!-- {/if} -->

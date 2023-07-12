@@ -6,28 +6,30 @@
     const localStorageKey = "localValue"
     const sessionStorageKey = "sessionValue"
 
-    let localStorageStore: Writable<string>
+    // Store values
+    let localStorageStore: Writable<number>
+    let sessionStorageStore: Writable<number>
+    // Local values
     let localStorageValue: number
-    let sessionStorageStore: Writable<string>
     let sessionStorageValue: number
 
     onMount(() => {
         // Get value from localStorage
-        localStorageStore = writable(localStorage.getItem(localStorageKey) || "0")
-        localStorageValue = parseInt(localStorage.getItem(localStorageKey) || "0")
+        localStorageStore = writable(Number(localStorage.getItem(localStorageKey)) ?? 0)
+        localStorageValue = Number(localStorage.getItem(localStorageKey)) ?? 0
 
-        sessionStorageStore = writable(sessionStorage.getItem(sessionStorageKey) || "0")
-        sessionStorageValue = parseInt(sessionStorage.getItem(sessionStorageKey) || "0")
+        sessionStorageStore = writable(Number(sessionStorage.getItem(sessionStorageKey)) ?? 0)
+        sessionStorageValue = Number(sessionStorage.getItem(sessionStorageKey)) ?? 0
 
         // Event based notification when a value in a store changes
         localStorageStore.subscribe((newValue) => {
             // Write to localStorage and set local value
-            localStorage.setItem(localStorageKey, newValue.toString())
-            localStorageValue = parseInt(newValue)
+            localStorage.setItem(localStorageKey, String(newValue))
+            localStorageValue = Number(newValue)
         })
         sessionStorageStore.subscribe((newValue) => {
-            sessionStorage.setItem(sessionStorageKey, newValue.toString())
-            sessionStorageValue = parseInt(newValue)
+            sessionStorage.setItem(sessionStorageKey, String(newValue))
+            sessionStorageValue = Number(newValue)
         })
     })
 </script>
@@ -39,21 +41,21 @@
         id="increaseLocalStorage"
         class="m-1"
         on:click={() => {
-            localStorageStore.update((n) => (parseInt(n) + 1).toString())
+            localStorageStore.update((n) => n + 1)
         }}>Increase</button
     >
     <button
         id="decreaseLocalStorage"
         class="m-1"
         on:click={() => {
-            localStorageStore.update((n) => (parseInt(n) - 1).toString())
+            localStorageStore.update((n) => n - 1)
         }}>Decrease</button
     >
     <button
         id="resetLocalStorage"
         class="m-1"
         on:click={() => {
-            localStorageStore.update(() => "0")
+            localStorageStore.update(() => 0)
         }}>Reset</button
     >
 </div>
@@ -64,21 +66,21 @@
         id="increaseSessionStorage"
         class="m-1"
         on:click={() => {
-            sessionStorageStore.update((n) => (parseInt(n) + 1).toString())
+            sessionStorageStore.update((n) => n + 1)
         }}>Increase</button
     >
     <button
         id="decreaseSessionStorage"
         class="m-1"
         on:click={() => {
-            sessionStorageStore.update((n) => (parseInt(n) - 1).toString())
+            sessionStorageStore.update((n) => n - 1)
         }}>Decrease</button
     >
     <button
         id="resetSessionStorage"
         class="m-1"
         on:click={() => {
-            sessionStorageStore.update(() => "0")
+            sessionStorageStore.update(() => 0)
         }}>Reset</button
     >
 </div>

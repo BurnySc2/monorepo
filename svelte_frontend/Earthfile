@@ -14,8 +14,14 @@ install-dev:
     SAVE ARTIFACT ./*
 
 install-test:
-    FROM +install-dev
+    # FROM +install-dev
+    COPY package.json package-lock.json ./
+    RUN npm install
     RUN npx playwright install --with-deps chromium
+    COPY src /root/svelte_frontend/src
+    COPY static /root/svelte_frontend/static
+    # Why is tsconfig.json not needed here?
+    COPY svelte.config.js vite.config.js ./
     COPY tests /root/svelte_frontend/tests
     COPY playwright.config.ts ./
 
