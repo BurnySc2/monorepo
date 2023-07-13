@@ -348,7 +348,7 @@ async def parse_channel_messages() -> None:
         channels_that_may_have_new_messages = set(
             orm.select(
                 c.channel_id for c in TelegramChannel
-                if c.last_parsed < datetime.datetime.now() - datetime.timedelta(days=1)
+                if c.last_parsed < datetime.datetime.now() - datetime.timedelta(days=7)
             )
         )
     for channel_id in SECRETS.channel_ids:
@@ -378,6 +378,7 @@ async def parse_channel_messages() -> None:
                     with orm.db_session():
                         channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)  # pyre-fixme[35]
                         channel.done_parsing = True
+                        channel.last_parsed = datetime.datetime.utcnow()
                     break
                 previous_oldest_message_id = oldest_message_id
 
