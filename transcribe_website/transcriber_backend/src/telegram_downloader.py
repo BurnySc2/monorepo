@@ -364,6 +364,7 @@ async def parse_channel_messages() -> None:
 
         logger.info(f"Grabbing messages from channel: {channel_id}")
         previous_oldest_message_id = -1
+        added_messages = 0
         try:
             for _ in range(50):  # Download in chunks of 1000 message
                 if not channel_has_been_parsed_completely:
@@ -383,6 +384,7 @@ async def parse_channel_messages() -> None:
                 previous_oldest_message_id = oldest_message_id
 
                 # Get all messages (from newest to oldest), start with the oldest-parsed message
+                current_message_count = 0
                 messages_iter = DownloadWorker.client.get_chat_history(
                     chat_id=channel_id,
                     offset_id=oldest_message_id,
@@ -390,7 +392,6 @@ async def parse_channel_messages() -> None:
                 )
                 # This for loop can be in one session because it goes very quickly
                 with orm.db_session():
-                    current_message_count = 0
                     # pyre-fixme[16]
                     async for message in messages_iter:
                         current_message_count += 1
@@ -401,6 +402,7 @@ async def parse_channel_messages() -> None:
                         load_message_ids_to_cache(channel_id)
                         if message.id in add_to_queue_cache[channel_id]:
                             continue
+                        added_messages += 1
                         # TODO documents
                         if message.photo or message.audio or message.video:
                             await add_to_queue(message, channel_id=channel_id)
@@ -423,6 +425,7 @@ async def parse_channel_messages() -> None:
         except StopIteration:
             # Exit inner loop because latest messages have been grabbed
             pass
+        logger.info(f"Added {added_messages} new messages for channel: {channel_id}")
 
 
 def requeue_interrupted_downloads():

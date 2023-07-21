@@ -9,34 +9,27 @@
     // Store values
     let localStorageStore: Writable<number>
     let sessionStorageStore: Writable<number>
-    // Local values
-    let localStorageValue: number
-    let sessionStorageValue: number
 
     onMount(() => {
         // Get value from localStorage
         localStorageStore = writable(Number(localStorage.getItem(localStorageKey)) ?? 0)
-        localStorageValue = Number(localStorage.getItem(localStorageKey)) ?? 0
 
         sessionStorageStore = writable(Number(sessionStorage.getItem(sessionStorageKey)) ?? 0)
-        sessionStorageValue = Number(sessionStorage.getItem(sessionStorageKey)) ?? 0
 
         // Event based notification when a value in a store changes
         localStorageStore.subscribe((newValue) => {
             // Write to localStorage and set local value
             localStorage.setItem(localStorageKey, String(newValue))
-            localStorageValue = Number(newValue)
         })
         sessionStorageStore.subscribe((newValue) => {
             sessionStorage.setItem(sessionStorageKey, String(newValue))
-            sessionStorageValue = Number(newValue)
         })
     })
 </script>
 
 <div class="flex">
     <div class="m-1">Local Storage</div>
-    <div id="localStorageValue" class="m-1">{localStorageValue}</div>
+    <div id="localStorageValue" class="m-1">{$localStorageStore}</div>
     <button
         id="increaseLocalStorage"
         class="m-1"
@@ -61,7 +54,7 @@
 </div>
 <div class="flex">
     <div class="m-1">Session Storage</div>
-    <div id="sessionStorageValue" class="m-1">{sessionStorageValue}</div>
+    <div id="sessionStorageValue" class="m-1">{$sessionStorageStore}</div>
     <button
         id="increaseSessionStorage"
         class="m-1"
