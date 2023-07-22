@@ -369,10 +369,15 @@ async def parse_channel_messages() -> None:
             for _ in range(50):  # Download in chunks of 1000 message
                 if not channel_has_been_parsed_completely:
                     # Work your way back to the oldest message
+                    # pyre-fixme[35]
                     oldest_message_id: int = TelegramMessage.get_oldest_message_id(channel_id)
                 else:
                     # Try to get new messages
-                    oldest_message_id: int = TelegramMessage.get_newest_message_id(channel_id) + 1000
+                    oldest_message_id: int | None = TelegramMessage.get_newest_message_id(channel_id)
+                    if oldest_message_id is None:
+                        logger.info(f"Channel is unavailable: {channel_id}")
+                        raise StopIteration
+                    oldest_message_id += 1000
 
                 # Detect if channel has been parsed completely
                 if previous_oldest_message_id == oldest_message_id:
@@ -425,7 +430,8 @@ async def parse_channel_messages() -> None:
         except StopIteration:
             # Exit inner loop because latest messages have been grabbed
             pass
-        logger.info(f"Added {added_messages} new messages for channel: {channel_id}")
+        if added_messages > 0:
+            logger.info(f"Added {added_messages} new messages for channel: {channel_id}")
 
 
 def requeue_interrupted_downloads():
