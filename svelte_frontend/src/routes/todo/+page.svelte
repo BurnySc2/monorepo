@@ -120,27 +120,44 @@
     }
 </script>
 
-<div class="flex flex-col items-center">
-    <div class="flex">
-        <input
-            id="newTodoInput"
-            class="border-2 my-2 mx-1"
-            type="text"
-            bind:value={newTodoText}
-            placeholder="My new todo item"
-        />
-        <button class="border-2 my-2 mx-1" id="submit1" on:click={submitPressed}>Submit</button>
-        <button class="border-2 my-2 mx-1" id="submit2" on:click={submitPressedBody}>SubmitBody</button>
-        <button class="border-2 my-2 mx-1" id="submit3" on:click={submitPressedModel}>SubmitModel</button>
-    </div>
-    {#if !APIserverIsResponding}
-        <div class="bg-red-300 border-2 p-1">Unable to connect to server - running local mode</div>
-    {/if}
-    {#each cards as { id, todo_text }, _i}
-        <TodoCard cardText={todo_text} index={id} {removeTodo} />
-    {/each}
-    <!-- Same as above -->
-    <!-- {#each cards as card, i}
+<body>
+    <div class="flex flex-col items-center">
+        <div class="flex">
+            <input id="newTodoInput" type="text" bind:value={newTodoText} placeholder="My new todo item" />
+            <button id="submit1" on:click={submitPressed}>Submit</button>
+            <button id="submit2" on:click={submitPressedBody}>SubmitBody</button>
+            <button id="submit3" on:click={submitPressedModel}>SubmitModel</button>
+        </div>
+        {#if !APIserverIsResponding}
+            <div class="bg-red-300 border-2 p-1">Unable to connect to server - running local mode</div>
+        {/if}
+        {#each cards as { id, todo_text }, _i}
+            <TodoCard cardText={todo_text} index={id} {removeTodo} />
+        {/each}
+        <!-- Same as above -->
+        <!-- {#each cards as card, i}
         <TodoCard cardText={card.todo_text} index={card.id} {removeTodo} />
-    {/each} -->
-</div>
+        {/each} -->
+    </div>
+</body>
+
+<style>
+    body > div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    body > div > div {
+        display: flex;
+        flex-direction: row;
+    }
+    body > div > div > button {
+        border-width: 1px;
+        padding: 2px;
+        margin-left: 1px;
+        margin-right: 1px;
+        margin-top: 2px;
+        margin-bottom: 2px;
+    }
+</style>

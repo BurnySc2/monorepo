@@ -27,53 +27,61 @@
     })
 </script>
 
-<div class="flex">
-    <div class="m-1">Local Storage</div>
-    <div id="localStorageValue" class="m-1">{$localStorageStore}</div>
-    <button
-        id="increaseLocalStorage"
-        class="m-1"
-        on:click={() => {
-            localStorageStore.update((n) => n + 1)
-        }}>Increase</button
-    >
-    <button
-        id="decreaseLocalStorage"
-        class="m-1"
-        on:click={() => {
-            localStorageStore.update((n) => n - 1)
-        }}>Decrease</button
-    >
-    <button
-        id="resetLocalStorage"
-        class="m-1"
-        on:click={() => {
-            localStorageStore.update(() => 0)
-        }}>Reset</button
-    >
-</div>
-<div class="flex">
-    <div class="m-1">Session Storage</div>
-    <div id="sessionStorageValue" class="m-1">{$sessionStorageStore}</div>
-    <button
-        id="increaseSessionStorage"
-        class="m-1"
-        on:click={() => {
-            sessionStorageStore.update((n) => n + 1)
-        }}>Increase</button
-    >
-    <button
-        id="decreaseSessionStorage"
-        class="m-1"
-        on:click={() => {
-            sessionStorageStore.update((n) => n - 1)
-        }}>Decrease</button
-    >
-    <button
-        id="resetSessionStorage"
-        class="m-1"
-        on:click={() => {
-            sessionStorageStore.update(() => 0)
-        }}>Reset</button
-    >
-</div>
+<body>
+    <div>
+        <div>Local Storage</div>
+        <div id="localStorageValue">{$localStorageStore}</div>
+        <button
+            id="increaseLocalStorage"
+            on:click={() => {
+                localStorageStore.update((n) => n + 1)
+            }}>Increase</button
+        >
+        <button
+            id="decreaseLocalStorage"
+            on:click={() => {
+                localStorageStore.update((n) => n - 1)
+            }}>Decrease</button
+        >
+        <button
+            id="resetLocalStorage"
+            on:click={() => {
+                localStorageStore.update(() => 0)
+            }}>Reset</button
+        >
+    </div>
+    <div>
+        <div>Session Storage</div>
+        <div id="sessionStorageValue">{$sessionStorageStore}</div>
+        <button
+            id="increaseSessionStorage"
+            on:click={() => {
+                sessionStorageStore.update((n) => n + 1)
+            }}>Increase</button
+        >
+        <button
+            id="decreaseSessionStorage"
+            on:click={() => {
+                sessionStorageStore.update((n) => n - 1)
+            }}>Decrease</button
+        >
+        <button
+            id="resetSessionStorage"
+            on:click={() => {
+                sessionStorageStore.update(() => 0)
+            }}>Reset</button
+        >
+    </div>
+</body>
+
+<style>
+    body > div {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+    body > div > * {
+        margin: 0.5rem;
+    }
+</style>
