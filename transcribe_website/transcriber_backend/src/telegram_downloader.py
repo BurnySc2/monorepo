@@ -227,8 +227,9 @@ class DownloadWorker:
         )
         message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
         download_to_memory = (
-            SECRETS.extract_audio_from_videos and message.media_type == "Video" and message.file_size_bytes < 2**30
-        )  # More than 1 gb means download to file
+            SECRETS.extract_audio_from_videos and message.media_type == "Video"
+            and message.file_size_bytes < 100 * 2**20
+        )  # More than 100 mb means download to file
         if download_to_memory:
             # pyre-fixme[9]
             data: BytesIO | None = await DownloadWorker.client.download_media(
