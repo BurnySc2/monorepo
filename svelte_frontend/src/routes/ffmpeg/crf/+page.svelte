@@ -59,7 +59,7 @@
         file = e.detail.acceptedFiles[0]
     }
 
-    async function convert(file: string | Blob | undefined) {
+    async function convert() {
         resultName = file.name
         resultProgress = 0
         ffmpeg.on("progress", ({ progress }) => {
@@ -78,44 +78,42 @@
         {#if file === undefined}
             <Dropzone on:drop={handleFilesSelect} />
         {:else}
-            <span>
-                <!-- <button
+            <!-- <button
                     on:click={() => {
                         file = undefined
                     }}>Delete</button
                 > -->
-                <!-- <a href={URL.createObjectURL(file)} download={file.name}>Download original</a> -->
-                <span>
-                    Input: {file.name}
-                </span>
-                {#if resultName === undefined}
-                    <!-- Uploaded -->
-                    <label>
-                        <input type="number" bind:value={crfValue} min="10" max="50" step="1" />
-                        CRF
-                    </label>
-                    <button on:click={() => convert(file)}>Convert</button>
-                    <input type="text" value={"ffmpeg " + commandString} readonly size={commandString.length} />
-                {:else if resultUrl === undefined}
-                    <!-- Converting -->
-                    <progress value={resultProgress} />
-                {:else}
-                    <!-- Done -->
-                    <a href={resultUrl} download={resultName}>Download result</a>
-                {/if}
-                {#if resultName !== undefined}
-                    <label>
-                        Output file name:
-                        <input type="text" placeholder="Rename me" bind:value={resultName} />
-                    </label>
-                {/if}
+            <!-- <a href={URL.createObjectURL(file)} download={file.name}>Download original</a> -->
+            <span>
+                Input: {file.name}
             </span>
+            {#if resultName === undefined}
+                <!-- Uploaded -->
+                <label>
+                    <input type="number" bind:value={crfValue} min="10" max="50" step="1" />
+                    CRF
+                </label>
+                <button on:click={convert}>Convert</button>
+                <input type="text" value={"ffmpeg " + commandString} readonly size={commandString.length} />
+            {:else if resultUrl === undefined}
+                <!-- Converting -->
+                <progress value={resultProgress} />
+            {:else}
+                <!-- Done -->
+                <a href={resultUrl} download={resultName}>Download result</a>
+            {/if}
+            {#if resultName !== undefined}
+                <label>
+                    Output file name:
+                    <input type="text" placeholder="Rename me" bind:value={resultName} />
+                </label>
+            {/if}
         {/if}
     </section>
 </body>
 
 <style>
-    body > section > span {
+    body > section {
         display: flex;
         flex-direction: column;
         gap: 10px;
