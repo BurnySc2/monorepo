@@ -2,7 +2,7 @@
     import { onMount } from "svelte"
 
     // Site layout according to https://youtu.be/bOUhq46fd5g
-    let width = 0
+    export let width = 0
     $: imgUrl = `https://picsum.photos/${width}/100`
     function setWidth() {
         width = window.innerWidth
@@ -39,6 +39,15 @@
             <p>
                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Minima consequatur, eum ducimus molestiae odio
                 voluptate dolorem sit? A, vel aliquam!
+            </p>
+            <aside>
+                <p>Some extra info</p>
+            </aside>
+            <p>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta qui tempora voluptas ea voluptatem? Quasi
+                corporis nulla iusto, qui vero minima quam voluptatum natus rerum molestias omnis dolores aliquid
+                necessitatibus dolorum saepe nobis aut error itaque consequuntur? Quam quasi animi numquam doloribus
+                ipsam, ad error, minima iusto perspiciatis ea perferendis!
             </p>
         </section>
     </main>
@@ -80,5 +89,18 @@
     }
     li {
         list-style: none;
+    }
+    aside {
+        width: 40%;
+        padding-left: 0.5rem;
+        margin-left: 0.5rem;
+        float: right;
+        box-shadow: inset 5px 0 5px -5px #29627e;
+        font-style: italic;
+        color: #29627e;
+        background-color: lightgray;
+    }
+    aside > p {
+        margin: 0.5rem;
     }
 </style>

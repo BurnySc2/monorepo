@@ -517,6 +517,8 @@ async def main():
     # chats = await list_all_joined_public_chats(min_users=300)
     # for chat in chats:
     #     print(f'"{chat}",')
+    
+    # TODO clear "downloading" folder
 
     await DownloadWorker.launch_workers(n=SECRETS.parallel_downloads_count)
 

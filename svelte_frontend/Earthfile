@@ -11,6 +11,9 @@ install-dev:
     COPY static /root/svelte_frontend/static
     # Why is tsconfig.json not needed here?
     COPY svelte.config.js vite.config.js ./
+    # Fix ffmpeg package.json
+    COPY fixes/package_ffmpeg.json node_modules/@ffmpeg/ffmpeg/package.json
+    COPY fixes/package_utils.json node_modules/@ffmpeg/util/package.json
     SAVE ARTIFACT ./*
 
 install-test:
@@ -24,6 +27,9 @@ install-test:
     COPY svelte.config.js vite.config.js ./
     COPY tests /root/svelte_frontend/tests
     COPY playwright.config.ts ./
+    # Fix ffmpeg package.json
+    COPY fixes/package_ffmpeg.json node_modules/@ffmpeg/ffmpeg/package.json
+    COPY fixes/package_utils.json node_modules/@ffmpeg/util/package.json
 
 format:
     # Run on host system instead of inside a container

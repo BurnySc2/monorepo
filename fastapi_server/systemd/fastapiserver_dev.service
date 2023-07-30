@@ -2,7 +2,7 @@
 [Service]
 ExecStart=/usr/bin/docker run --rm --name fastapi_server_dev \
     --publish 8001:8000 \
-    --env STAGE=dev \
+    --env STAGE=DEV \
     --env TIMEOUT=600 \
     -v ./data:/root/fastapi_server/data \
     burnysc2/fastapi_server:latest_dev

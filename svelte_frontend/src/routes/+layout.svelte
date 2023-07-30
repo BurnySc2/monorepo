@@ -3,15 +3,16 @@
 </script>
 
 <header>
-    <div class="my2 flex justify-center">
+    <div>
         <!-- https://kit.svelte.dev/docs/link-options#data-sveltekit-preload-data -->
         <a id="home" data-sveltekit-preload-data="hover" href="/">Home</a>
+        <a id="ffmpegcrf" data-sveltekit-preload-data="hover" href="/ffmpeg/crf">FFMPEG</a>
         <a id="about" data-sveltekit-preload-data="hover" href="/about">About</a>
         <a id="chat" data-sveltekit-preload-data="hover" href="/normalchat">Chat</a>
         <a id="todo" data-sveltekit-preload-data="hover" href="/todo">Todo</a>
         <a id="slug" data-sveltekit-preload-data="hover" href="/slug/hello-world">Slugs</a>
         <a id="browserstorage" data-sveltekit-preload-data="hover" href="/browserstorage">Browser Storage</a>
-        <a id="templates/site" data-sveltekit-preload-data="hover" href="/templates/site">Website Template</a>
+        <a id="templates/site" data-sveltekit-preload-data="hover" href="/templateWebsite">Website Template</a>
     </div>
 </header>
 <slot />

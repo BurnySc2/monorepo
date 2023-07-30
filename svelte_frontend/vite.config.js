@@ -7,4 +7,7 @@ export default defineConfig({
     define: {
         "process.env": process.env,
     },
+    optimizeDeps: {
+        exclude: ["@ffmpeg/ffmpeg", "@ffmpeg/util"],
+    },
 })

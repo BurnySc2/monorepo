@@ -16,13 +16,10 @@ from loguru import logger
 from simple_parsing import ArgumentParser
 from tqdm import tqdm
 
-from src.models.db import (
-    # noqa: E402
-    ModelSize,
-    Task,
-    compress_files,
-    generate_srt_data,
-    generate_txt_data,
+sys.path.append(".")
+
+from src.models.db import (  # noqa: E402 I001
+    ModelSize, Task, compress_files, generate_srt_data, generate_txt_data,
 )
 
 
@@ -33,10 +30,6 @@ class TranscriberOptions:
     task: Task = Task.Transcribe  # Transcribe, translate or detect language
     language: str | None = None  # Force this language to transcribe or translate, e.g. "en"
     model: ModelSize | None = None  # One of the models: tiny, base, small, medium, large, largev1
-    update_progress_to_database: bool = True
-    # TODO what do these do
-    num_workers: int = 1
-    cpu_threads: int = 0
 
     @property
     def input_file_path(self) -> Path:
@@ -128,9 +121,6 @@ def transcribe(options: TranscriberOptions) -> None:
         device="cpu",
         compute_type="int8",
         download_root="./whisper_models",
-        # TODO What does this do
-        num_workers=options.num_workers,
-        cpu_threads=options.cpu_threads,
     )
 
     logger.debug(f"Loading model {model_size} took {time.perf_counter() - t0:3f} seconds")
@@ -162,19 +152,6 @@ def transcribe(options: TranscriberOptions) -> None:
 
 
 def write_data(transcribed_data: list[tuple[float, float, str]], options: TranscriberOptions) -> None:
-    """
-    From the transcribed data, generate the txt or srt files or a zip-file with both.
-    Write result to "output_file"
-    Special cases:
-        output_file = "-"
-            Write resulting .zip to stdout
-        output_file = "*.txt"
-            Write resulting .txt to target file
-        output_file = "*.srt"
-            Write resulting .srt to target file
-        output_file = "*.zip"
-            Write resulting .zip to target file
-    """
     # TODO Batch translate non-english texts? Requires a new column in the database
     # https://github.com/nidhaloff/deep-translator
     # translated = GoogleTranslator(detected_language, 'en').translate_batch(transcribed)
@@ -214,7 +191,7 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
         return
     assert False, f"Shouldn't get here, output_file was {options.output_file}"
 
-
+# TODO Burn subtitles into video, or add subtitles to video (selectable language)
 parser = ArgumentParser()
 parser.add_arguments(TranscriberOptions, dest="options")  # pyre-fixme[6]
 
