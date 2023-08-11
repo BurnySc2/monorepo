@@ -191,6 +191,7 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
         return
     assert False, f"Shouldn't get here, output_file was {options.output_file}"
 
+
 # TODO Burn subtitles into video, or add subtitles to video (selectable language)
 parser = ArgumentParser()
 parser.add_arguments(TranscriberOptions, dest="options")  # pyre-fixme[6]

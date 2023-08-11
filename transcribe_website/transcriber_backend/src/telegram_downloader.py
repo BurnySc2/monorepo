@@ -33,6 +33,9 @@ logger.add(sys.stderr, level="INFO")
 # {channel_id: {message_id: file_id}}
 file_ids_cache: dict[str, dict[int, str]] = {}
 
+# Only run 'value' amount of ffmpeg processes at the same time
+ffmpeg_sem = asyncio.Semaphore(value=1)
+
 
 def update_file_ids_cache(channel_id: str, messages: list[Message], message_ids: list[int]) -> None:
     """Update file_ids_cache with new messages."""
@@ -87,7 +90,8 @@ class DownloadWorker:
                 f"Started processing audio ({message.file_size_bytes} b) "
                 f"{message.output_file_path.absolute()}"
             )
-            extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data_or_path)
+            async with ffmpeg_sem:
+                extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data_or_path)
 
             if len(extracted_mp3_data.getbuffer()) >= 200:
                 logger.debug(
@@ -101,7 +105,8 @@ class DownloadWorker:
                     f.write(data_or_path.getbuffer())
                 data_or_path = message.temp_download_path
         # Try again from file
-        extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data_or_path)
+        async with ffmpeg_sem:
+            extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data_or_path)
         # Delete file after extracting the audio
         message.temp_download_path.unlink()
         logger.debug(
@@ -517,7 +522,7 @@ async def main():
     # chats = await list_all_joined_public_chats(min_users=300)
     # for chat in chats:
     #     print(f'"{chat}",')
-    
+
     # TODO clear "downloading" folder
 
     await DownloadWorker.launch_workers(n=SECRETS.parallel_downloads_count)
