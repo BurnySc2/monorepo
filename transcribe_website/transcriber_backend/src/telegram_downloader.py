@@ -34,7 +34,7 @@ logger.add(sys.stderr, level="INFO")
 file_ids_cache: dict[str, dict[int, str]] = {}
 
 # Only run 'value' amount of ffmpeg processes at the same time
-ffmpeg_sem = asyncio.Semaphore(value=1)
+ffmpeg_sem = asyncio.Semaphore(value=SECRETS.parallel_ffmpeg_count)
 
 
 def update_file_ids_cache(channel_id: str, messages: list[Message], message_ids: list[int]) -> None:

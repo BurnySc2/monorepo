@@ -44,6 +44,7 @@ class TelegramDownloaderSecrets(BaseModel):
     extract_audio_from_videos: bool = True
     output_folder: str = ""
     parallel_downloads_count: int = 1
+    parallel_ffmpeg_count: int = 1
     # Filters
     media_min_date: datetime.datetime = datetime.datetime.fromisoformat("0001-01-01T00:00:00-00:00")
     media_max_date: datetime.datetime = datetime.datetime.fromisoformat("9999-01-01T00:00:00-00:00")
