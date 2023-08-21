@@ -12,12 +12,14 @@ format:
     BUILD ./python_examples+format
     BUILD ./bored_gems+format
     BUILD ./svelte_frontend+format
+    BUILD ./transcribe_website/transcriber_backend+format
 
 install-backend:
     BUILD ./burny_common+install-dev --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./discord_bot+install-dev --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./fastapi_server+install-dev --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./python_examples+install-dev --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./transcribe_website/transcriber_backend+install-dev --PYTHONVERSION=3.10
 
 install-frontend:
     BUILD ./bored_gems+install-all --NODEVERSION=${NODEVERSION}
@@ -28,6 +30,7 @@ pre-commit-backend:
     BUILD ./discord_bot+pre-commit --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./fastapi_server+pre-commit --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./python_examples+pre-commit --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./transcribe_website/transcriber_backend+pre-commit --PYTHONVERSION=3.10
 
 # TODO pre-commit-frontend
 
@@ -36,6 +39,7 @@ check-backend:
     BUILD ./discord_bot+all --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./fastapi_server+all --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./python_examples+all --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./transcribe_website/transcriber_backend+all --PYTHONVERSION=3.10
     BUILD ./nim_examples+all --NIMVERSION=${NIMVERSION}
 
 check-frontend:

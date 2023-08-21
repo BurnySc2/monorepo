@@ -16,6 +16,7 @@ import pyrogram
 from loguru import logger
 from pony import orm  # pyre-fixme[21]
 from pyrogram import Client
+from pyrogram.errors.exceptions.bad_request_400 import UsernameNotOccupied
 from pyrogram.types import Audio, Message, Photo, Video
 
 from src.models.db import Status, TelegramChannel, TelegramMessage, db  # noqa: E402
@@ -435,7 +436,7 @@ async def parse_channel_messages() -> None:
                                 channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)
                                 channel.last_parsed = datetime.datetime.utcnow()
                                 raise StopIteration
-                    except pyrogram.errors.excepions.bad_request_400.UsernameNotOccupied:
+                    except UsernameNotOccupied:
                         # If any errors occur, skip parsing this channel
                         logger.error(f"Error with channel {channel_id}")
                         break
