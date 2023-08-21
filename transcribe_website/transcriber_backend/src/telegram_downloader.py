@@ -213,12 +213,19 @@ class DownloadWorker:
             two_hundred_message_ids: list[int] = TelegramMessage.get_n_queued_by_channel(message.channel_id)
             if len(two_hundred_message_ids) > 200:
                 raise ValueError("The api does not allow more than 200 messages to be downloaded at once.")
-            # pyre-fixme[9]
-            up_to_date_messages: list[Message] = await DownloadWorker.client.get_messages(
-                chat_id=message.channel_id,
-                message_ids=two_hundred_message_ids,
-                replies=0,
-            )
+            try:
+                # pyre-fixme[9]
+                up_to_date_messages: list[Message] = await DownloadWorker.client.get_messages(
+                    chat_id=message.channel_id,
+                    message_ids=two_hundred_message_ids,
+                    replies=0,
+                )
+            except UsernameNotOccupied:
+                # Error when trying to download from channel that is inaccessible
+                with orm.db_session():
+                    message = TelegramMessage[message.id]
+                    message.download_status = Status.ERROR_CHANNEL_INACCESSIBLE.name
+                return
             update_file_ids_cache(message.channel_id, up_to_date_messages, two_hundred_message_ids)
             file_id = get_from_file_ids_cache(message.channel_id, message.message_id)
             if file_id is None or file_id == "UNKNOWN":

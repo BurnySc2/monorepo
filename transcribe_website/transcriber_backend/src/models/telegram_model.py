@@ -33,6 +33,7 @@ class Status(enum.Enum):
     NO_MEDIA = 5
     ERROR_DOWNLOADING = 7
     ERROR_EXTRACTING_AUDIO = 8
+    ERROR_CHANNEL_INACCESSIBLE = 9
 
 
 # pyre-fixme[11]
