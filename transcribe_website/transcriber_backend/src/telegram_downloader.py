@@ -353,6 +353,7 @@ async def parse_channel_messages() -> None:
         done_channels = set(orm.select(c.channel_id for c in TelegramChannel if c.done_parsing))
         channels_that_may_have_new_messages = set(
             orm.select(
+                # TODO turn the timedelta argument into a variable setting: days_before_known_channels_are_reparsed
                 c.channel_id for c in TelegramChannel
                 if c.last_parsed < datetime.datetime.now() - datetime.timedelta(days=7)
             )
@@ -403,36 +404,41 @@ async def parse_channel_messages() -> None:
                 )
                 # This for loop can be in one session because it goes very quickly
                 with orm.db_session():
-                    # pyre-fixme[16]
-                    async for message in messages_iter:
-                        current_message_count += 1
-                        message: Message
-                        if message.empty is True:
-                            continue
-                        # Don't add same message_id twice
-                        load_message_ids_to_cache(channel_id)
-                        if message.id in add_to_queue_cache[channel_id]:
-                            continue
-                        added_messages += 1
-                        # TODO documents
-                        if message.photo or message.audio or message.video:
-                            await add_to_queue(message, channel_id=channel_id)
-                        else:
-                            # Message has no media but add to database anyway to not parse it again
-                            TelegramMessage(
-                                channel_id=channel_id,
-                                message_id=message.id,
-                                message_date=message.date,
-                                link=message.link,
-                                download_status=Status.NO_MEDIA.name,
-                            )
-                        if current_message_count < 5 and message.id == oldest_message_id:
-                            # We reached the oldest message in a few iterations, although we requested 1000 apart
-                            # This means there were not many new messages
-                            # pyre-fixme[35]
-                            channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)
-                            channel.last_parsed = datetime.datetime.utcnow()
-                            raise StopIteration
+                    try:
+                        # pyre-fixme[16]
+                        async for message in messages_iter:
+                            current_message_count += 1
+                            message: Message
+                            if message.empty is True:
+                                continue
+                            # Don't add same message_id twice
+                            load_message_ids_to_cache(channel_id)
+                            if message.id in add_to_queue_cache[channel_id]:
+                                continue
+                            added_messages += 1
+                            # TODO documents
+                            if message.photo or message.audio or message.video:
+                                await add_to_queue(message, channel_id=channel_id)
+                            else:
+                                # Message has no media but add to database anyway to not parse it again
+                                TelegramMessage(
+                                    channel_id=channel_id,
+                                    message_id=message.id,
+                                    message_date=message.date,
+                                    link=message.link,
+                                    download_status=Status.NO_MEDIA.name,
+                                )
+                            if current_message_count < 5 and message.id == oldest_message_id:
+                                # We reached the oldest message in a few iterations, although we requested 1000 apart
+                                # This means there were not many new messages
+                                # pyre-fixme[35]
+                                channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)
+                                channel.last_parsed = datetime.datetime.utcnow()
+                                raise StopIteration
+                    except pyrogram.errors.excepions.bad_request_400.UsernameNotOccupied:
+                        # If any errors occur, skip parsing this channel
+                        logger.error(f"Error with channel {channel_id}")
+                        break
         except StopIteration:
             # Exit inner loop because latest messages have been grabbed
             pass
