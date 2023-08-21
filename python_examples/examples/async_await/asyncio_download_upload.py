@@ -9,6 +9,9 @@ import aiohttp
 from loguru import logger
 
 
+# TODO Rewrite with semaphores
+# Limit download speed of multiple downloads (shared variable)
+# Limit number of downloads at the same time (semaphore)
 async def download_file(
     session: aiohttp.ClientSession,
     url: str,
