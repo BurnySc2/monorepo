@@ -1,6 +1,7 @@
 VERSION 0.6
 ARG NODEVERSION=19 # 14, 16, 18, 19
 ARG PYTHONVERSION=3.11 # 3.8 to 3.11
+ARG NIMVERSION=2.0.0
 FROM alpine:3.15 # Is only used for formatting, so image can be as small as possible
 
 # Run autoformatter on all projects
@@ -35,6 +36,7 @@ check-backend:
     BUILD ./discord_bot+all --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./fastapi_server+all --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./python_examples+all --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./nim_examples+all --NIMVERSION=${NIMVERSION}
 
 check-frontend:
     BUILD ./bored_gems+all --NODEVERSION=${NODEVERSION}

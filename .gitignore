@@ -115,6 +115,10 @@ venv.bak/
 # Pyre
 .pyre
 
+# nim
+testresults
+nimcache
+
 # Frontend
 .netlify
 build

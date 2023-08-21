@@ -1,0 +1,29 @@
+VERSION 0.6
+# earthly +all --NIMVERSION=1.6.14
+ARG NIMVERSION=1.6.14
+FROM nimlang/nim:${NIMVERSION}-ubuntu
+WORKDIR /root/nim_examples
+
+setup:
+    COPY . ./
+
+run-local:
+    # Run on host system instead of inside a container
+    LOCALLY
+    RUN nim r -d:release main.nim
+
+run:
+    FROM +setup
+    RUN nim r -d:release main.nim
+
+compile:
+    FROM +setup
+    RUN nim c -d:release main.nim
+
+run-tests:
+    FROM +setup
+    RUN testament pattern "tests/*.nim"
+
+all:
+    BUILD +compile
+    BUILD +run-tests
