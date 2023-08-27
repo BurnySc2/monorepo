@@ -11,7 +11,6 @@ proc isPrime*(n: Positive): bool =
             return false
         i.inc(2)
     true
-
 when isMainModule:
     assert not isPrime(1)
     assert isPrime(2)
