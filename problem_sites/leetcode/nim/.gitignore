@@ -2,9 +2,6 @@ nimcache/
 nimblecache/
 htmldocs/
 
-# No proto files
-*.proto
-
 # No executables
 bin
 

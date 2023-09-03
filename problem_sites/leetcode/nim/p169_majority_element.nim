@@ -1,8 +1,7 @@
 # 169
 # https://leetcode.com/problems/majority-element/
-# nim js -d:release -o:majority_element_js.js majority_element.nim
-# nim js -d:danger -o:majority_element_js.js majority_element.nim
-
+# nim js -d:release -o:p169_majority_element_js.js p169_majority_element.nim
+# nim js -d:danger -o:p169_majority_element_js.js p169_majority_element.nim
 import tables
 
 proc majorityElement(nums: seq[int]): int {.exportc.} =
