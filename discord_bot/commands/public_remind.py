@@ -75,7 +75,7 @@ Example usage:
         self.reminders: list[tuple[float, Reminder]] = []
         self.reminder_file_path: Path = Path(__file__).parent.parent / "data" / "reminders.json"
         # Limit of reminders per person
-        self.reminder_limit = 10
+        self.reminder_limit = 20
 
     async def load_reminders(self):
         if self.reminder_file_path.is_file():
@@ -255,11 +255,7 @@ Example usage:
         """ Reminds the user in a couple days, hours or minutes with a certain message. """
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
-            user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
-            return (
-                f"You already have {len(user_reminders)} / {self.reminder_limit} reminders, "
-                f"which is higher than the limit."
-            )
+            return (f"You already have {self.reminder_limit} / {self.reminder_limit} reminders, which is the maximum.")
 
         result = await self._parse_time_shift_from_message(reminder_message)
         if result is None:
