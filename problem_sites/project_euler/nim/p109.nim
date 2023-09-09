@@ -35,4 +35,5 @@ proc solve109(): int =
         if score < 100:
             result += 1
 
-echo solve109()
+when isMainModule:
+    echo solve109()

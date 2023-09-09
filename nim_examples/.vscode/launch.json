@@ -8,7 +8,8 @@
             "preLaunchTask": "nim: build current file (for debugging)",
             "program": "${workspaceFolder}/bin/${fileBasenameNoExtension}",
             "args": [],
-            "cwd": "${workspaceFolder}",
+            // "cwd": "${workspaceFolder}",
+            "cwd": "${fileDirname}",
         }
     ]
 }
