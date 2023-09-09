@@ -20,14 +20,20 @@ proc hello*(ctx: prologue.Context) {.async.} =
     resp readFile("templates/hello_world.html")
 
 proc getTodos*(ctx: context.Context) {.async, gcsafe.} =
-    var c = newContext()
+    var total: string
+    let myTemplate = readFile("templates/todo_list.html")
     # Tell compiler to shut up
     # https://stackoverflow.com/a/76583939
     {.cast(gcsafe).}:
         # https://nim-lang.org/docs/manual.html#guards-and-locks-sections-protecting-global-variables
         withLock glock:
-            c["todos"] = todos
-    resp readFile("templates/todo_list.html").render(c)
+            for todo in todos:
+                var c = newContext()
+                c["id"] = todo.id
+                c["text"] = todo.text
+                c["done"] = todo.done
+                total &= myTemplate.render(c)
+    resp total
 
 proc addTodo*(ctx: context.Context) {.async, gcsafe.} =
     let data: Table[string, string] = ctx.request.body.decodeQuery.toSeq.toTable

@@ -2,7 +2,7 @@
   <button
     hx-delete="http://0.0.0.0:8080/todo/{{id}}"
     hx-trigger="click"
-    hx-include="[todoId='{{id}}']"
+    hx-swap="outerHTML"
     hx-target="#todo{{id}}"
     class="border-2 border-gray-500 p-2"
   >
