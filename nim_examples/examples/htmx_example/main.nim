@@ -21,23 +21,22 @@ proc hello*(ctx: prologue.Context) {.async.} =
 
 proc getTodos*(ctx: context.Context) {.async, gcsafe.} =
     var total: string
-    let myTemplate = readFile("templates/todo_list.html")
+    let myTemplate = readFile("templates/todo_item.html")
     # Tell compiler to shut up
     # https://stackoverflow.com/a/76583939
     {.cast(gcsafe).}:
         # https://nim-lang.org/docs/manual.html#guards-and-locks-sections-protecting-global-variables
         withLock glock:
             for todo in todos:
-                var c = newContext()
-                c["id"] = todo.id
-                c["text"] = todo.text
-                c["done"] = todo.done
-                total &= myTemplate.render(c)
+                total &= myTemplate.render(newContext(values = {
+                    "id": todo.id.castValue,
+                    "text": todo.text.castValue,
+                    "done": todo.done.castValue,
+                }.toTable))
     resp total
 
 proc addTodo*(ctx: context.Context) {.async, gcsafe.} =
     let data: Table[string, string] = ctx.request.body.decodeQuery.toSeq.toTable
-    var c = newContext()
     var newTodo: TodoItem
     {.cast(gcsafe).}:
         withLock glock:
@@ -46,10 +45,11 @@ proc addTodo*(ctx: context.Context) {.async, gcsafe.} =
                 else: todos[^1].id + 1
             newTodo = (todoId, todoTask, false)
             todos.add(newTodo)
-    c["id"] = newTodo.id
-    c["text"] = newTodo.text
-    c["done"] = newTodo.done
-    resp readFile("templates/todo_item.html").render(c)
+    resp readFile("templates/todo_item.html").render(newContext(values = {
+                    "id": newTodo.id.castValue,
+                    "text": newTodo.text.castValue,
+                    "done": newTodo.done.castValue,
+        }.toTable))
 
 proc toggleTodo*(ctx: context.Context) {.async, gcsafe.} =
     let todoId = ctx.request.pathParams["todoId"].parseInt
