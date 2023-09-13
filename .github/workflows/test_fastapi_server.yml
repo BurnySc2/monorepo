@@ -86,7 +86,6 @@ jobs:
       with:
         gh-token: ${{ secrets.GITHUB_TOKEN }}
         jobs: |
-          test_backend_py3.8
           test_backend_py3.9
           test_backend_py3.10
           test_backend_py3.11
