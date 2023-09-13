@@ -1,0 +1,8 @@
+<div id="todo{{ id }}">
+  <button hx-delete="http://0.0.0.0:8000/htmxapi/todo/{{ id }}" hx-trigger="click" hx-swap="outerHTML" hx-target="#todo{{ id }}"
+    class="border-2 border-gray-500 p-2">
+    Delete
+  </button>
+  <input type="checkbox" {% if done %}checked{% endif %} hx-patch="http://0.0.0.0:8000/htmxapi/todo/{{ id }}" hx-swap="none" />
+  {{ todotext }}
+</div>

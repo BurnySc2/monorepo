@@ -1,7 +1,7 @@
 from pathlib import Path
 from test.base_test import BaseTest
 
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 from zephyrus_sc2_parser import parse_replay  # pyre-fixme[21]
 
 SECOND = 22.4

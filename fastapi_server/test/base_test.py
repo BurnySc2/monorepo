@@ -2,7 +2,7 @@ import contextlib
 from typing import Generator
 
 import pytest
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 
 from main import app
 

@@ -1,7 +1,4 @@
 import os
-import sys
-from contextlib import suppress
-from pathlib import Path
 from typing import Literal
 
 import uvicorn  # pyre-fixme[21]
@@ -9,13 +6,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-with suppress(IndexError):
-    sys.path.append(str(Path(__file__).parents[1]))
-
+from models.todo_item import create_tables
 from routes.chat import chat_router
 from routes.hello_world import hello_world_router
 from routes.replay_parser import replay_parser_router
 from routes.todolist import todo_list_router
+from routes.todolist_htmx import htmx_todolist_router
 from routes.twitch_clipper import clip_router
 
 assert os.getenv("STAGE", "DEV") in {"DEV", "PROD"}, os.getenv("STAGE")
@@ -26,6 +22,7 @@ app.include_router(hello_world_router)
 app.include_router(replay_parser_router)
 app.include_router(todo_list_router)
 app.include_router(clip_router)
+app.include_router(htmx_todolist_router)
 
 origins = [
     "https://burnysc2.github.io",
@@ -51,6 +48,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     # asyncio.create_task(background_task_function('hello', other_text=' world!'))
+    await create_tables()
     logger.info("Hello world!")
 
 

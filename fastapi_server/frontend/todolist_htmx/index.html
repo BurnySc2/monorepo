@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX+Fastapi Todo App</title>
+    <script
+      src="https://unpkg.com/htmx.org@1.9.5"
+      integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.tailwindcss.com/3.3.0"></script>
+  </head>
+
+  <body id="parent-div" class="flex flex-col justify-center items-center">
+    <div class="text-xl">HTMX+Fastapi Todo App</div>
+    <form id="myform"
+      class="m-2"
+      hx-post="http://0.0.0.0:8000/htmxapi/todo"
+      hx-trigger="submit"
+      hx-target="#todo-list"
+      hx-swap="beforeend"
+    >
+      <input
+        type="text"
+        name="todotext"
+        placeholder="Add a todo"
+        required
+        class="border-2 border-gray-500 p-2"
+      />
+      <button type="submit" class="border-2 border-gray-500 p-2"
+      hx-trigger="reset"
+      hx-target="#myform"
+      >Add</button>
+    </form>
+    <section
+      id="todo-list"
+      hx-get="http://0.0.0.0:8000/htmxapi/todo"
+      hx-trigger="load"
+      class="flex flex-col space-y-2"
+    ></section>
+  </body>
+</html>
