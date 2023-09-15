@@ -9,6 +9,7 @@ from fastapi.responses import RedirectResponse
 
 login_router = APIRouter()
 
+FRONTEND_SERVER_URL = os.getenv("FRONTEND_SERVER_URL", "0.0.0.0:8000")
 CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
 CLIENT_SECRET = os.getenv("GITHUB_APP_CLIENT_SECRET", "2aab3b1a609cb1a4126c7eec121bad2343332113")
 
@@ -37,7 +38,7 @@ async def user_login(code: str | None = None, ):
         data = await post_response.json()
         if "error" in data:
             return "wrong client id code"
-        redirect = RedirectResponse("https://0.0.0.0:8000/chat")
+        redirect = RedirectResponse(f"https://{FRONTEND_SERVER_URL}/chat")
         # TODO What does "secure" and "same_site" do?
         redirect.set_cookie(key="github_access_token", value=data["access_token"], secure=True)
         return redirect
@@ -48,6 +49,6 @@ async def user_logout(github_access_token: Annotated[str | None, Cookie()] = Non
     if github_access_token is None:
         # TODO Error, should not be able to log out if theres no cookie set
         return
-    redirect = RedirectResponse("https://0.0.0.0:8000/chat")
+    redirect = RedirectResponse(f"https://{FRONTEND_SERVER_URL}/chat")
     redirect.delete_cookie("github_access_token")
     return redirect
