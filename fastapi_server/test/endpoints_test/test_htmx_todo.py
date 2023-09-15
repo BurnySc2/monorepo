@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from test.base_test import BaseTest
 from unittest.mock import AsyncMock, patch
 
