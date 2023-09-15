@@ -1,6 +1,7 @@
 <header>
   <div>
     <!-- https://kit.svelte.dev/docs/link-options#data-sveltekit-preload-data -->
+    {% if logged_in %}
     <a href="https://{{ server_url }}/logout">Log out</a>
     {% endif %} {% if not logged_in %}
     <a href="https://github.com/login/oauth/authorize?client_id={{ client_id }}"
