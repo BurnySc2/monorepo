@@ -123,7 +123,8 @@ jobs:
         key: ${{ secrets.FASTAPISERVERDEVKEY }}
         passphrase: ''
         script: |
-          sudo /bin/systemctl disable --now ${{ env.USERNAME }}yes | docker image prune -a
+          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+          docker image prune -af
           docker pull burnysc2/${{ env.IMAGENAME }}:latest_dev
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
@@ -152,6 +153,6 @@ jobs:
         passphrase: ''
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-          docker image prune -a
+          docker image prune -af
           docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}

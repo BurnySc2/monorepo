@@ -118,7 +118,7 @@ jobs:
         passphrase: ''
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-          yes | docker image prune -a
+          docker image prune -af
           docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
