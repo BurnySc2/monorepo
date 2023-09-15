@@ -1,12 +1,9 @@
-import os
 from test.base_test import BaseTest
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
-import routes.todolist_htmx
-
-os.environ["POSTGRES_CONNECTION_STRING"] = "postgresql://postgres:123@localhost:5432/postgres"
+import routes.htmx_todolist
 
 
 class TestTodolist(BaseTest):
@@ -22,7 +19,7 @@ class TestTodolist(BaseTest):
     async def test_get_todos(self):
         with self.method_client_context() as client:  # noqa: SIM117
             with patch.object(
-                routes.todolist_htmx, "get_all_todos",
+                routes.htmx_todolist, "get_all_todos",
                 AsyncMock(return_value=[{
                     "id": 1,
                     "todotext": "asd",
@@ -35,7 +32,7 @@ class TestTodolist(BaseTest):
     def test_add_todo(self):
         with self.method_client_context() as client:  # noqa: SIM117
             with patch.object(
-                routes.todolist_htmx, "add_todo",
+                routes.htmx_todolist, "add_todo",
                 AsyncMock(return_value={
                     "id": 1,
                     "todotext": "my_text",

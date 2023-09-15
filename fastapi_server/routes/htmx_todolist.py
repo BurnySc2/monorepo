@@ -6,8 +6,8 @@ from fastapi.templating import Jinja2Templates
 from models.todo_item import add_todo, delete_todo, get_all_todos, toggle_todo
 
 htmx_todolist_router = APIRouter()
-index_templates = Jinja2Templates(directory="frontend/todolist_htmx")
-templates = Jinja2Templates(directory="templates")
+index_templates = Jinja2Templates(directory="frontend/todo")
+templates = Jinja2Templates(directory="templates/todo")
 
 
 # TODO disable endpoint in production as this should be served by a frontend separately
@@ -18,6 +18,8 @@ def todo_index(request: Request):
 
 @htmx_todolist_router.get("/htmxapi/todo", response_class=HTMLResponse)
 async def get_todo_items(request: Request):
+    # # Url to the client
+    # origin = request.headers.get("origin")
     t = templates.get_template("todo_item.html")
     todos = await get_all_todos()
     return "".join(

@@ -1,10 +1,14 @@
 # /etc/systemd/system/fastapiserver.service
 [Service]
 ExecStart=/usr/bin/docker run --rm --name fastapi_server \
-    --publish 8000:8000 \
     --env STAGE=PROD \
-    --env-file ./.env
+    --env-file ./.env \
     -v ./data:/root/fastapi_server/data \
+    -l traefik.enable=true \
+    -l traefik.http.routers.api.rule=Host(`api.burnysc2.de`) \
+    -l traefik.http.services.api.loadbalancer.server.port=8001 \
+    -l traefik.http.routers.api.tls=true \
+    -l traefik.http.routers.api.tls.certresolver=production \
     burnysc2/fastapi_server:latest
 Restart=always
 RestartSec=20

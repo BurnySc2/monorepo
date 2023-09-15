@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import os
 from typing import Literal
 
@@ -10,7 +9,7 @@ from asyncpg import Record
 assert os.getenv("STAGE", "DEV") in {"DEV", "PROD"}, os.getenv("STAGE")
 STAGE: Literal["DEV", "PROD"] = os.getenv("STAGE", "DEV")  # pyre-fixme[9]
 
-TABLE_NAME = f"{STAGE}_todo_items"
+TABLE_NAME = f"{STAGE}_chat_messages"
 
 
 # pyre-fixme[11]
@@ -33,69 +32,54 @@ SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '{tabl
     return data.get("exists")
 
 
-async def todo_create_tables() -> None:
+async def chat_create_tables() -> None:
     if not await table_exists(TABLE_NAME):
         conn = await create_connection()
         async with conn.transaction():
+            # TODO parse timestamp
             await conn.execute(
                 f"""
 CREATE TABLE {TABLE_NAME} (
 id serial PRIMARY KEY,
-todotext text NOT NULL,
-done boolean NOT NULL
+time_stamp text NOT NULL,
+message_author text NOT NULL,
+chat_message text NOT NULL
 );
-INSERT INTO {TABLE_NAME} (todotext, done) VALUES ('asd', true);
+INSERT INTO {TABLE_NAME} (time_stamp, message_author, chat_message) VALUES ('4:20:00', 'BuRny', 'Hello world!');
 """
             )
 
 
-async def get_all_todos() -> list[Record]:
+async def get_all_messages() -> list[Record]:
     conn = await create_connection()
     async with conn.transaction():
-        return await conn.fetch(f"""
-SELECT id, todotext, done FROM {TABLE_NAME}
-ORDER BY id ASC;
-""")
+        return await conn.fetch(
+            f"""
+SELECT id, time_stamp, message_author, chat_message FROM {TABLE_NAME}
+ORDER BY id DESC
+LIMIT 100;
+"""
+        )
 
 
-async def add_todo(todotext: str) -> Record:
+async def add_message(time_stamp: str, message_author: str, chat_message: str) -> Record:
     conn = await create_connection()
     async with conn.transaction():
-        await conn.execute(f"""
-INSERT INTO {TABLE_NAME} (todotext, done) VALUES ('{todotext}', false);
-""")
+        # TODO use timestamp.now()
+        await conn.execute(
+            f"""
+INSERT INTO {TABLE_NAME} (time_stamp, message_author, chat_message) 
+VALUES ('{time_stamp}', '{message_author}', '{chat_message}');
+"""
+        )
         # Assume increasing ids
         row: Record = await conn.fetchrow(
             f"""
-SELECT id, todotext, done FROM {TABLE_NAME}
+SELECT id, time_stamp, message_author, chat_message FROM {TABLE_NAME}
 ORDER BY id DESC
 LIMIT 1;
 """
         )
-        assert row.get("todotext") == todotext
+        assert row.get("message_author") == message_author
+        assert row.get("chat_message") == chat_message
         return row
-
-
-async def toggle_todo(todoid: int) -> None:
-    conn = await create_connection()
-    async with conn.transaction():
-        await conn.execute(f"""
-UPDATE {TABLE_NAME} SET done = NOT done WHERE id = {todoid};
-""")
-
-
-async def delete_todo(todoid: int) -> None:
-    conn = await create_connection()
-    async with conn.transaction():
-        await conn.execute(f"""
-DELETE FROM {TABLE_NAME} WHERE id = {todoid};
-""")
-
-
-async def main():
-    await todo_create_tables()
-    print(await get_all_todos())
-
-
-if __name__ == "__main__":
-    asyncio.run(main())

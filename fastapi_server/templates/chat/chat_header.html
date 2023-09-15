@@ -1,0 +1,35 @@
+<header>
+  <div>
+    <!-- https://kit.svelte.dev/docs/link-options#data-sveltekit-preload-data -->
+    <a id="home" data-sveltekit-preload-data="hover" href="/">Home</a>
+    <a id="ffmpegcrf" data-sveltekit-preload-data="hover" href="/ffmpeg/crf"
+      >FFMPEG</a
+    >
+    <a id="about" data-sveltekit-preload-data="hover" href="/about">About</a>
+    <a id="chat" data-sveltekit-preload-data="hover" href="/normalchat">Chat</a>
+    {% if logged_in %}
+    <a id="todo" data-sveltekit-preload-data="hover" href="/todo">Todo</a>
+    <a id="slug" data-sveltekit-preload-data="hover" href="/slug/hello-world"
+      >Slugs</a
+    >
+    <a
+      id="browserstorage"
+      data-sveltekit-preload-data="hover"
+      href="/browserstorage"
+      >Browser Storage</a
+    >
+    <a
+      id="templates/site"
+      data-sveltekit-preload-data="hover"
+      href="/templateWebsite"
+      >Website Template</a
+    >
+    <a href="https://{{ server_url }}/logout">Log out</a>
+    {% endif %} {% if not logged_in %}
+    <a
+      href="https://github.com/login/oauth/authorize?client_id={{ client_id }}"
+      >Log in with Github</a
+    >
+    {% endif %}
+  </div>
+</header>
