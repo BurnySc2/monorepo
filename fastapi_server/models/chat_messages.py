@@ -26,7 +26,7 @@ async def table_exists(table_name: str) -> bool:
     # pyre-fixme[11]
     data: Record = await conn.fetchrow(
         f"""
-SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '{table_name}');
+SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE '{table_name}');
 """
     )
     return data.get("exists")
