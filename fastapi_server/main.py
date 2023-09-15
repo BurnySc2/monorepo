@@ -19,6 +19,7 @@ from routes.twitch_clipper import clip_router
 
 assert os.getenv("STAGE", "DEV") in {"DEV", "PROD"}, os.getenv("STAGE")
 STAGE: Literal["DEV", "PROD"] = os.getenv("STAGE", "DEV")  # pyre-fixme[9]
+BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
 
 app = FastAPI()
 app.include_router(hello_world_router)
@@ -34,8 +35,6 @@ origins = [
     "https://replaycomparer.netlify.app",
     "https://burnysc2-monorepo.netlify.app",
     "https://burnysc2-monorepo-dev.netlify.app",
-    "https://fastapihtmxdev.netlify.app",
-    "https://fastapihtmx.netlify.app",
 ]
 
 logger.info(f"Starting in 'STAGE == {STAGE}' mode")
@@ -75,6 +74,6 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,
-        ssl_keyfile="helper/app-key.pem",
-        ssl_certfile="helper/app.pem",
+        ssl_keyfile="helper/app-key.pem" if BACKEND_SERVER_URL == "0.0.0.0:8000" else None,
+        ssl_certfile="helper/app.pem" if BACKEND_SERVER_URL == "0.0.0.0:8000" else None,
     )
