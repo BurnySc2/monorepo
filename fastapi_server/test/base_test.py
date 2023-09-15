@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import contextlib
-from typing import Generator
+from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient

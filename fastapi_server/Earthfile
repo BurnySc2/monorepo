@@ -20,6 +20,7 @@ install-dev:
     RUN poetry install
     COPY . /root/fastapi_server
 
+# TODO Remove as svelte is no longer used
 install-integration:
     FROM nikolaik/python-nodejs:python${PYTHONVERSION}-nodejs${NODEVERSION}-slim
     WORKDIR /root/fastapi_server
