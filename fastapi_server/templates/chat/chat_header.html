@@ -2,6 +2,7 @@
   <div>
     <!-- https://kit.svelte.dev/docs/link-options#data-sveltekit-preload-data -->
     <div
+      class="flex"
       hx-trigger="load"
       hx-get="https://{{ server_url }}/htmxapi/login"
       hx-swap="outerHTML"
