@@ -19,10 +19,15 @@
       if (codeParam !== null) {
         // Use the value of the "code" parameter
         console.log("Value of 'code' parameter:", codeParam);
-        document.cookie = `code=${codeParam}; expires=30; path=/`;
 
-        // Redirect after successful login
-        window.location.href = "/chat";
+        fetch(`https://{{ server_url }}/htmxapi/login?code=${codeParam}`).then(
+          (response) => {
+            if (response.ok) {
+              // Redirect after successful login
+              window.location.href = "/chat";
+            }
+          }
+        );
       } else {
         // "code" parameter is not present in the URL
         console.log("'code' parameter is missing.");

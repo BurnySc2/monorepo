@@ -5,7 +5,7 @@ from typing import Annotated
 
 import aiohttp
 from fastapi import APIRouter, Cookie, Request, Response, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 login_router = APIRouter()
@@ -36,16 +36,13 @@ def logout_page(request: Request):
 
 @login_router.get("/htmxapi/login")
 async def user_login(
-    response: Response,
-    code: Annotated[str | None, Cookie()] = None,
-    github_access_token: Annotated[str | None, Cookie()] = None
+    response: Response, code: str | None = None, github_access_token: Annotated[str | None, Cookie()] = None
 ):
     # TODO Check/log where the request came from (ip or website?)
     if code is None:
         response.status_code = status.HTTP_204_NO_CONTENT
         return
     if github_access_token is not None:
-        response.delete_cookie(key="code")
         response.status_code = status.HTTP_204_NO_CONTENT
         return
 
@@ -65,8 +62,15 @@ async def user_login(
         data = await post_response.json()
         if "error" in data:
             return "wrong client id code"
-        redirect = RedirectResponse("/htmxapi/chatheader")
         # TODO What does "secure" and "same_site" do?
-        redirect.set_cookie(key="github_access_token", value=data["access_token"], secure=True)
-        redirect.delete_cookie(key="code")
-        return redirect
+        response.set_cookie(key="github_access_token", value=data["access_token"], secure=True)
+        return
+
+
+@login_router.get("/htmxapi/logout")
+async def user_logout(response: Response, github_access_token: Annotated[str | None, Cookie()] = None):
+    # TODO Check/log where the request came from (ip or website?)
+    if github_access_token is not None:
+        response.delete_cookie(key="github_access_token")
+        response.status_code = status.HTTP_204_NO_CONTENT
+        return
