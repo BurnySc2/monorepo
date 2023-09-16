@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HTMX+Fastapi Todo App</title>
     <script>
-      fetch("https://{{ server_url }}/htmxapi/logout").then((response) => {
-        if (response.ok) {
-          // Redirect after successful removal of cookies
-          window.location.href = "/chat";
-        }
-      });
+      document.cookie = `github_access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+
+        // Redirect after successful removal of cookies
+      window.location.href = "/chat";
     </script>
   </head>
 

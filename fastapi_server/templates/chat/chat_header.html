@@ -6,6 +6,7 @@
       hx-get="https://{{ server_url }}/htmxapi/login"
       hx-swap="outerHTML"
       hx-target="#chatheader"
+      hx-request="credentials"
     ></div>
     {% if logged_in %}
     <a href="https://{{ server_url }}/logout">Log out</a>
