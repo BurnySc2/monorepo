@@ -12,7 +12,6 @@ login_router = APIRouter()
 login_templates = Jinja2Templates(directory="frontend/login")
 logout_templates = Jinja2Templates(directory="frontend/logout")
 
-FRONTEND_SERVER_URL = os.getenv("FRONTEND_SERVER_URL", "0.0.0.0:8000")
 # Github app for local development
 CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
 CLIENT_SECRET = os.getenv("GITHUB_APP_CLIENT_SECRET", "2aab3b1a609cb1a4126c7eec121bad2343332113")
@@ -47,10 +46,10 @@ async def user_login(
             }
         )
         if not post_response.ok:
-            return "error etc"
+            return "Github server is not responding"
         data = await post_response.json()
         if "error" in data:
-            return "wrong client id code"
+            return "Invalid code"
         redirect = RedirectResponse("/chat")
         # TODO What does "secure" and "same_site" do?
         redirect.set_cookie(key="github_access_token", value=data["access_token"], secure=True)

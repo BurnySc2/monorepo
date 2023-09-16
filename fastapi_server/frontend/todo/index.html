@@ -14,7 +14,8 @@
 
   <body id="parent-div" class="flex flex-col justify-center items-center">
     <div class="text-xl">HTMX+Fastapi Todo App</div>
-    <form id="myform"
+    <form
+      id="myform"
       class="m-2"
       hx-post="https://0.0.0.0:8000/htmxapi/todo"
       hx-trigger="submit"
@@ -28,10 +29,14 @@
         required
         class="border-2 border-gray-500 p-2"
       />
-      <button type="submit" class="border-2 border-gray-500 p-2"
-      hx-trigger="reset"
-      hx-target="#myform"
-      >Add</button>
+      <button
+        type="submit"
+        class="border-2 border-gray-500 p-2"
+        hx-trigger="reset"
+        hx-target="#myform"
+      >
+        Add
+      </button>
     </form>
     <section
       id="todo-list"
