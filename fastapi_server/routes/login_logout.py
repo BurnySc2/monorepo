@@ -4,8 +4,8 @@ import os
 from typing import Annotated
 
 import aiohttp
-from fastapi import APIRouter, Cookie, Request, Response, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, Cookie, Response, status
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 login_router = APIRouter()
@@ -22,23 +22,9 @@ BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
 # TODO Other login services like google, twitch etc
 
 
-# TODO Disable in production as it should be served by frontend, not by backend
-@login_router.get("/login", response_class=HTMLResponse)
-def login_page(request: Request):
-    return login_templates.TemplateResponse("index.html", {"request": request, "server_url": BACKEND_SERVER_URL})
-
-
-# TODO Disable in production as it should be served by frontend, not by backend
-@login_router.get("/logout", response_class=HTMLResponse)
-def logout_page(request: Request):
-    return logout_templates.TemplateResponse("index.html", {"request": request, "server_url": BACKEND_SERVER_URL})
-
-
-@login_router.get("/htmxapi/login")
+@login_router.get("/login")
 async def user_login(
-    response: Response,
-    code: Annotated[str | None, Cookie()] = None,
-    github_access_token: Annotated[str | None, Cookie()] = None
+    response: Response, code: str | None = None, github_access_token: Annotated[str | None, Cookie()] = None
 ):
     # TODO Check/log where the request came from (ip or website?)
     if code is None:
@@ -65,17 +51,16 @@ async def user_login(
         data = await post_response.json()
         if "error" in data:
             return "wrong client id code"
-        redirect = RedirectResponse("/htmxapi/chatheader")
+        redirect = RedirectResponse("/chat")
         # TODO What does "secure" and "same_site" do?
         redirect.set_cookie(key="github_access_token", value=data["access_token"], secure=True)
-        redirect.delete_cookie(key="code")
         return redirect
 
 
-# @login_router.get("/htmxapi/logout")
-# async def user_logout(response: Response, github_access_token: Annotated[str | None, Cookie()] = None):
-#     # TODO Check/log where the request came from (ip or website?)
-#     if github_access_token is not None:
-#         response.delete_cookie(key="github_access_token")
-#         response.status_code = status.HTTP_204_NO_CONTENT
-#         return
+@login_router.get("/logout")
+async def user_logout(response: Response, github_access_token: Annotated[str | None, Cookie()] = None):
+    # TODO Check/log where the request came from (ip or website?)
+    if github_access_token is not None:
+        redirect = RedirectResponse("/chat")
+        redirect.delete_cookie(key="github_access_token")
+        return redirect
