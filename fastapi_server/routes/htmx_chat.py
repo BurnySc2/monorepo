@@ -18,13 +18,14 @@ from fastapi.routing import APIRouter
 from fastapi.templating import Jinja2Templates
 from loguru import logger
 
-from models.chat_messages import add_message, get_all_messages
+from models.chat_messages import add_message, debug_delete_all_messages, get_all_messages
 
 htmx_chat_router = APIRouter()
 index_templates = Jinja2Templates(directory="frontend/chat")
 templates = Jinja2Templates(directory="templates/chat")
 
 connected_users: OrderedDict[str, list[WebSocket]] = OrderedDict()
+user_is_typing: OrderedDict[str, str] = OrderedDict()
 
 BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
 CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
@@ -58,6 +59,14 @@ async def broadcast(message: str) -> None:
 
 async def handle_join(user: str, websocket: WebSocket) -> None:
     await websocket.accept()
+    # Clear chat messages
+    await websocket.send_text("""
+    <div hx-swap-oob="innerHTML:#content" />
+    """)
+    # Clear user list
+    await websocket.send_text("""
+    <div hx-swap-oob="innerHTML:#userlist" />
+    """)
 
     # Send message history
     messages = await get_all_messages()
@@ -105,7 +114,7 @@ async def handle_leave(user: str, websocket: WebSocket) -> None:
     #     }))
 
 
-async def handle_message(user: str, message: str) -> None:
+async def handle_message(user: str, message: str, websocket: WebSocket) -> None:
     new_message = await add_message(
         arrow.now().format("HH:mm:ss"),
         user,
@@ -113,7 +122,7 @@ async def handle_message(user: str, message: str) -> None:
     )
 
     t = templates.get_template("chat_message.html")
-    logger.info(f"Received data: {message}")
+    # TODO Scroll to bottom of chat https://css-tricks.com/books/greatest-css-tricks/pin-scrolling-to-bottom/
     await broadcast(
         t.render(
             {
@@ -125,11 +134,34 @@ async def handle_message(user: str, message: str) -> None:
     )
 
 
+async def handle_typing(user: str, message: str, websocket: WebSocket) -> None:
+    if user not in user_is_typing:
+        user_is_typing[user] = message
+        await broadcast(f"""
+<div hx-swap-oob="beforeend:#typing">
+    <div id="typing_{user}" />
+</div>
+""")
+    if message == "":
+        # Delete 'user is typing'
+        if user in user_is_typing:
+            del user_is_typing[user]
+            await broadcast(f"""
+        <div hx-swap-oob="delete:#typing_{user}" />""")
+        return
+    t = templates.get_template("chat_typing.html")
+    await broadcast(t.render({
+        "message_author": user,
+        "chat_message": message,
+    }))
+
+
 @htmx_chat_router.get("/htmxapi/chatheader", response_class=HTMLResponse)
 async def get_header(request: Request, github_access_token: Annotated[str | None, Cookie()] = None):
     return templates.TemplateResponse(
         "chat_header.html", {
             "request": request,
+            "debug": BACKEND_SERVER_URL == "0.0.0.0:8000",
             "server_url": BACKEND_SERVER_URL,
             "client_id": CLIENT_ID,
             "logged_in": github_access_token is not None,
@@ -159,6 +191,25 @@ async def htmx_chat_websocket(
 
         # TODO Update message list on DELETE
 
-        if "chat_message" in data:
+        # TODO Check for HEADERS['HX-Trigger-Name']
+        # TODO react to key-up events and send content to all users (except to the one who is typing)
+        if "chat_message" in data and data["HEADERS"]["HX-Trigger-Name"] == "chat_message_form":
             # User sent a message
-            await handle_message(user, data["chat_message"])
+            await handle_message(user, data["chat_message"], websocket)
+            # TODO Reset typing field
+            # Reset input field
+            t = templates.get_template("chat_input.html")
+            await websocket.send_text(t.render({}))
+            # User stopped typing
+            await handle_typing(user, "", websocket)
+        if "chat_message" in data and data["HEADERS"]["HX-Trigger-Name"] == "chat_message":
+            # User is typing
+            await handle_typing(user, data["chat_message"], websocket)
+
+
+# TODO Only expose route in DEV stage
+@htmx_chat_router.delete("/htmxapi/detele_messages", response_class=HTMLResponse)
+async def debug_delete_messages(user: Annotated[str | None, Depends(get_username)], ):
+    if user is None:
+        return
+    await debug_delete_all_messages()

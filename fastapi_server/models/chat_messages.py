@@ -56,7 +56,7 @@ async def get_all_messages() -> list[Record]:
         return await conn.fetch(
             f"""
 SELECT id, time_stamp, message_author, chat_message FROM {TABLE_NAME}
-ORDER BY id DESC
+ORDER BY id ASC
 LIMIT 100;
 """
         )
@@ -83,3 +83,11 @@ LIMIT 1;
         assert row.get("message_author") == message_author
         assert row.get("chat_message") == chat_message
         return row
+
+
+async def debug_delete_all_messages() -> None:
+    conn = await create_connection()
+    async with conn.transaction():
+        await conn.fetch(f"""
+DELETE FROM {TABLE_NAME};
+""")
