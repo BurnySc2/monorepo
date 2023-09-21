@@ -7,8 +7,6 @@ authors = ["BuRny <gamingburny@gmail.com>"]
 [tool.poetry.dependencies]
 python = ">=3.8.1 <3.12"
 # Write and read classes to/from json
-# TODO Use pydantic BaseModel instead
-dataclasses-json = "^0.5"
 # Fastapi server
 fastapi = "^0.103.1"
 httpx = "^0.25.0" # Required by starlette
@@ -32,6 +30,8 @@ asyncpg = "^0.28.0"
 arrow = "^1.2.3"
 # Requests
 aiohttp = "^3.8.5"
+# Awesome dataclasses with validation
+pydantic = "^2"
 
 [tool.poetry.group.dev.dependencies]
 # Test library

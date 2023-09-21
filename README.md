@@ -1,9 +1,6 @@
-[![test_svelte_frontend](https://github.com/BurnySc2/monorepo/actions/workflows/test_svelte_frontend.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_svelte_frontend.yml)
 [![python_examples](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml)
 [![test_discord_bot](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml)
 [![test_fastapi_server](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml)
-[![test_supabase_stream_scripts](https://github.com/BurnySc2/monorepo/actions/workflows/test_supabase_stream_scripts.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_supabase_stream_scripts.yml)
-[![test_bored_gems](https://github.com/BurnySc2/monorepo/actions/workflows/test_bored_gems.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_bored_gems.yml)
 [![run_earthly_checks](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml)
 
 # Monorepo

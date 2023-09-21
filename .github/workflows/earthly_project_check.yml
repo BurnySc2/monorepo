@@ -4,7 +4,7 @@ name: run_earthly_checks
 on: [push, pull_request]
 
 jobs:
-  run_earthly_checks_backend:
+  run_earthly_checks:
     strategy:
       fail-fast: false
       matrix:
@@ -52,31 +52,10 @@ jobs:
     - name: Install
       run: |
         touch discord_bot/SECRETS.toml
-        earthly +install-backend --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+        earthly +install-all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
     - name: Run code checks and tests
       run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
 
 #    - name: Save cache
 #      run: earthly +export-cache-backend --verbose true --PYTHONVERSION=${{ matrix.python-version }}
-
-  run_earthly_checks_frontend:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        node: ['19']
-    runs-on: ${{ matrix.os }}
-
-    steps:
-    - uses: actions/checkout@v3
-
-    # https://earthly.dev/get-earthly
-    - name: Install Earthly
-      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
-
-    - name: Install
-      run: earthly +install-frontend --verbose true --NODEVERSION=${{ matrix.node }}
-
-    - name: Run code checks and tests
-      run: earthly +check-frontend --verbose true --NODEVERSION=${{ matrix.node }}

@@ -1,7 +1,6 @@
 VERSION 0.6
-# earthly +all --PYTHONVERSION=3.11 --NODEVERSION=19
+# earthly +all --PYTHONVERSION=3.11
 ARG PYTHONVERSION=3.11
-ARG NODEVERSION=19 # 14, 16, 18, 19
 FROM python:${PYTHONVERSION}-slim
 WORKDIR /root/fastapi_server
 
@@ -19,24 +18,6 @@ install-dev:
     COPY poetry.lock pyproject.toml ./
     RUN poetry install
     COPY . /root/fastapi_server
-
-# TODO Remove as svelte is no longer used
-install-integration:
-    FROM nikolaik/python-nodejs:python${PYTHONVERSION}-nodejs${NODEVERSION}-slim
-    WORKDIR /root/fastapi_server
-    # Allow "killall"
-    RUN apt -y update && \
-        apt install -y --no-install-recommends psmisc
-    COPY poetry.lock pyproject.toml ./
-    # Poetry already installed
-    RUN poetry install
-    # Required for integration tests
-    RUN poetry run playwright install --with-deps chromium
-    WORKDIR /root/svelte_frontend
-    # Re-use node modules folder
-    COPY ../svelte_frontend+install-dev/ ./
-    # This shouldn't install anything
-    RUN npm install
 
 format:
     # Run on host system instead of inside a container
@@ -72,13 +53,6 @@ pyre:
 pytest:
     FROM +install-dev
     RUN poetry run pytest test
-
-# Integration test with svelte_frontend as frontend
-integration-test:
-    FROM +install-integration
-    WORKDIR /root/fastapi_server
-    COPY . /root/fastapi_server
-    RUN sh run_integration_test.sh
 
 pre-commit:
     BUILD +format-check
