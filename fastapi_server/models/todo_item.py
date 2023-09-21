@@ -26,9 +26,9 @@ async def table_exists(table_name: str) -> bool:
     conn = await create_connection()
     # pyre-fixme[11]
     data: Record = await conn.fetchrow(
-        f"""
-SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE '{table_name}');
-"""
+        """
+SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE $1);
+""", table_name
     )
     return data.get("exists")
 
@@ -62,8 +62,8 @@ async def add_todo(todotext: str) -> Record:
     conn = await create_connection()
     async with conn.transaction():
         await conn.execute(f"""
-INSERT INTO {TABLE_NAME} (todotext, done) VALUES ('{todotext}', false);
-""")
+INSERT INTO {TABLE_NAME} (todotext, done) VALUES ($1, false);
+""", todotext)
         # Assume increasing ids
         row: Record = await conn.fetchrow(
             f"""
@@ -80,16 +80,16 @@ async def toggle_todo(todoid: int) -> None:
     conn = await create_connection()
     async with conn.transaction():
         await conn.execute(f"""
-UPDATE {TABLE_NAME} SET done = NOT done WHERE id = {todoid};
-""")
+UPDATE {TABLE_NAME} SET done = NOT done WHERE id = $1;
+""", todoid)
 
 
 async def delete_todo(todoid: int) -> None:
     conn = await create_connection()
     async with conn.transaction():
         await conn.execute(f"""
-DELETE FROM {TABLE_NAME} WHERE id = {todoid};
-""")
+DELETE FROM {TABLE_NAME} WHERE id = $1;
+""", todoid)
 
 
 async def main():

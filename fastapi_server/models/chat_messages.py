@@ -25,9 +25,9 @@ async def table_exists(table_name: str) -> bool:
     conn = await create_connection()
     # pyre-fixme[11]
     data: Record = await conn.fetchrow(
-        f"""
-SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE '{table_name}');
-"""
+        """
+SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE $1);
+""", table_name
     )
     return data.get("exists")
 
@@ -53,6 +53,7 @@ INSERT INTO {TABLE_NAME} (time_stamp, message_author, chat_message) VALUES ('4:2
 async def get_all_messages() -> list[Record]:
     conn = await create_connection()
     async with conn.transaction():
+        # TODO Only get messages <24h old
         return await conn.fetch(
             f"""
 SELECT id, time_stamp, message_author, chat_message FROM {TABLE_NAME}
@@ -69,8 +70,8 @@ async def add_message(time_stamp: str, message_author: str, chat_message: str) -
         await conn.execute(
             f"""
 INSERT INTO {TABLE_NAME} (time_stamp, message_author, chat_message) 
-VALUES ('{time_stamp}', '{message_author}', '{chat_message}');
-"""
+VALUES ($1, $2, $3);
+""", time_stamp, message_author, chat_message
         )
         # Assume increasing ids
         row: Record = await conn.fetchrow(

@@ -112,7 +112,7 @@ class TranscriptionJob(db.Entity):
 
     @classmethod
     def from_tuple(cls, job_tuple: tuple) -> TranscriptionJob:
-        entity_dict = {col_name: value for col_name, value in zip(cls._columns_, job_tuple)}  # pyre-ignore[16]
+        entity_dict = {col_name: value for col_name, value in zip(cls._columns_, job_tuple)}  # pyre-fixme[16]
         return TranscriptionJob(**entity_dict)
 
     @property
