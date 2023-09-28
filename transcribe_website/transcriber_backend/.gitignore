@@ -1,0 +1,6 @@
+*.mp4
+*.zip
+*.srt
+*.txt
+# Dont ignore files in test folder
+!test
