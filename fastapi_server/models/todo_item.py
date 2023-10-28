@@ -44,7 +44,6 @@ id serial PRIMARY KEY,
 todotext text NOT NULL,
 done boolean NOT NULL
 );
-INSERT INTO {TABLE_NAME} (todotext, done) VALUES ('asd', true);
 """
             )
 

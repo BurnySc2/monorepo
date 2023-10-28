@@ -45,7 +45,6 @@ time_stamp text NOT NULL,
 message_author text NOT NULL,
 chat_message text NOT NULL
 );
-INSERT INTO {TABLE_NAME} (time_stamp, message_author, chat_message) VALUES ('4:20:00', 'BuRny', 'Hello world!');
 """
             )
 

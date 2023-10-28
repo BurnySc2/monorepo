@@ -35,7 +35,7 @@ origins = [
 ]
 
 logger.info(f"Starting in 'STAGE == {STAGE}' mode")
-if STAGE != "PROD":
+if BACKEND_SERVER_URL == "0.0.0.0:8000":
     origins += [f"http://localhost:{i}" for i in range(1, 2**16)]
     origins += [f"https://localhost:{i}" for i in range(1, 2**16)]
 
@@ -69,7 +69,7 @@ if __name__ == "__main__":
         "__main__:app",
         host="0.0.0.0",
         port=8000,
-        reload=True,
+        reload=BACKEND_SERVER_URL == "0.0.0.0:8000",
         # Enable ssl when developing locally
         ssl_keyfile="helper/app-key.pem" if BACKEND_SERVER_URL == "0.0.0.0:8000" else None,
         ssl_certfile="helper/app.pem" if BACKEND_SERVER_URL == "0.0.0.0:8000" else None,

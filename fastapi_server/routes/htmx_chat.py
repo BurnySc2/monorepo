@@ -18,6 +18,7 @@ from fastapi.routing import APIRouter
 from fastapi.templating import Jinja2Templates
 from loguru import logger
 
+from helper.jinja_renderer import render
 from models.chat_messages import add_message, debug_delete_all_messages, get_all_messages
 
 htmx_chat_router = APIRouter()
@@ -33,8 +34,21 @@ CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
 
 # TODO disable endpoint in production as this should be served by a frontend separately
 @htmx_chat_router.get("/chat", response_class=HTMLResponse)
-def chat_index(request: Request):
-    return index_templates.TemplateResponse("index.html", {"request": request, "server_url": BACKEND_SERVER_URL})
+def chat_index(request: Request) -> str:
+    return render(index_templates, "index.html", {"request": request, "server_url": BACKEND_SERVER_URL})
+
+
+@htmx_chat_router.get("/htmxapi/chatheader", response_class=HTMLResponse)
+async def get_header(request: Request, github_access_token: Annotated[str | None, Cookie()] = None) -> str:
+    return render(
+        templates, "chat_header.html", {
+            "request": request,
+            "debug": BACKEND_SERVER_URL == "0.0.0.0:8000",
+            "server_url": BACKEND_SERVER_URL,
+            "client_id": CLIENT_ID,
+            "logged_in": github_access_token is not None,
+        }
+    )
 
 
 async def get_username(github_access_token: Annotated[str | None, Cookie()] = None, ) -> str | None:
@@ -70,15 +84,14 @@ async def handle_join(user: str, websocket: WebSocket) -> None:
 
     # Send message history
     messages = await get_all_messages()
-    t = templates.get_template("chat_message.html")
-    rendered_messages = "".join(
-        t.render(
+    rendered_messages = render(
+        templates, "chat_message.html", [
             {
                 "time_stamp": c.get("time_stamp"),
                 "message_author": c.get("message_author"),
                 "chat_message": c.get("chat_message"),
-            }
-        ) for c in reversed(messages)
+            } for c in messages
+        ]
     )
     await websocket.send_text(rendered_messages)
 
@@ -135,6 +148,7 @@ async def handle_message(user: str, message: str, websocket: WebSocket) -> None:
 
 
 async def handle_typing(user: str, message: str, websocket: WebSocket) -> None:
+    # TODO dont show typing for yourself
     if user not in user_is_typing:
         user_is_typing[user] = message
         await broadcast(f"""
@@ -154,19 +168,6 @@ async def handle_typing(user: str, message: str, websocket: WebSocket) -> None:
         "message_author": user,
         "chat_message": message,
     }))
-
-
-@htmx_chat_router.get("/htmxapi/chatheader", response_class=HTMLResponse)
-async def get_header(request: Request, github_access_token: Annotated[str | None, Cookie()] = None):
-    return templates.TemplateResponse(
-        "chat_header.html", {
-            "request": request,
-            "debug": BACKEND_SERVER_URL == "0.0.0.0:8000",
-            "server_url": BACKEND_SERVER_URL,
-            "client_id": CLIENT_ID,
-            "logged_in": github_access_token is not None,
-        }
-    )
 
 
 @htmx_chat_router.websocket("/htmx_ws")

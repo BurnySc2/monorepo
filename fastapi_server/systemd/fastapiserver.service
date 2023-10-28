@@ -1,22 +1,22 @@
-# /etc/systemd/system/fastapiserver.service
+# /etc/systemd/system/fastapi.service
 [Service]
 ExecStart=/usr/bin/docker run --rm --name fastapi_server \
     --env STAGE=PROD \
     --env-file ./.env \
     -v ./data:/root/fastapi_server/data \
     -l traefik.enable=true \
-    -l traefik.http.routers.fastapiserver.rule=Host(`api.burnysc2.de`) \
-    -l traefik.http.services.fastapiserver.loadbalancer.server.port=8000 \
-    -l traefik.http.routers.fastapiserver.tls=true \
-    -l traefik.http.routers.fastapiserver.tls.certresolver=production \
+    -l traefik.http.routers.fastapi.rule=Host(`api.burnysc2.de`) \
+    -l traefik.http.services.fastapi.loadbalancer.server.port=8000 \
+    -l traefik.http.routers.fastapi.tls=true \
+    -l traefik.http.routers.fastapi.tls.certresolver=production \
     --network traefiknet \
     burnysc2/fastapi_server:latest
 Restart=always
 RestartSec=20
-SyslogIdentifier=fastapiserver
-User=fastapiserver
-Group=fastapiserver
-WorkingDirectory=/home/fastapiserver/
+SyslogIdentifier=fastapi
+User=fastapi
+Group=fastapi
+WorkingDirectory=/home/fastapi/
 
 [Install]
 WantedBy=multi-user.target
