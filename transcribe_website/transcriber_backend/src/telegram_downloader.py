@@ -6,6 +6,7 @@ import gc
 import logging
 import os
 import sys
+import time
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -36,6 +37,8 @@ file_ids_cache: dict[str, dict[int, str]] = {}
 
 # Only run 'value' amount of ffmpeg processes at the same time
 ffmpeg_sem = asyncio.Semaphore(value=SECRETS.parallel_ffmpeg_count)
+
+last_client_get_messages = time.time()
 
 
 def update_file_ids_cache(channel_id: str, messages: list[Message], message_ids: list[int]) -> None:
@@ -138,7 +141,6 @@ class DownloadWorker:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.DEVNULL,
             )
-            # pyre-fixme[6]
             stdout_data, _ = await proc.communicate(data_or_path.getbuffer())
         elif isinstance(data_or_path, Path):
             command = [
@@ -166,6 +168,7 @@ class DownloadWorker:
 
     @staticmethod
     async def download_one(worker_id: int | None = None) -> None:
+        global last_client_get_messages
         # Get a new message
         with orm.db_session():
             message: TelegramMessage | None = TelegramMessage.get_one_queued()
@@ -214,6 +217,10 @@ class DownloadWorker:
             if len(two_hundred_message_ids) > 200:
                 raise ValueError("The api does not allow more than 200 messages to be downloaded at once.")
             try:
+                while time.time() - last_client_get_messages < 15:
+                    # Don't send too many requests at once, need to wait at least 15 seconds
+                    await asyncio.sleep(0.1)
+                last_client_get_messages = time.time()
                 # pyre-fixme[9]
                 up_to_date_messages: list[Message] = await DownloadWorker.client.get_messages(
                     chat_id=message.channel_id,

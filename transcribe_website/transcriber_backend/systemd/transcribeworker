@@ -1,4 +1,4 @@
-# /etc/systemd/system/transcribeworker.service
+# /etc/systemd/system/transcribe.service
 [Service]
 ExecStart=/usr/bin/docker run --rm \
     --name transcribe_worker \
@@ -7,10 +7,10 @@ ExecStart=/usr/bin/docker run --rm \
     burnysc2/transcribe_worker:latest
 Restart=always
 RestartSec=20
-SyslogIdentifier=transcribeworker
-User=transcribeworker
-Group=transcribeworker
-WorkingDirectory=/home/transcribeworker
+SyslogIdentifier=transcribe
+User=transcribe
+Group=transcribe
+WorkingDirectory=/home/transcribe
 ExecStop=/usr/bin/docker rm -f transcribe_worker
 
 [Install]

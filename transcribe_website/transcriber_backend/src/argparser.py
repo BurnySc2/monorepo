@@ -127,9 +127,11 @@ def transcribe(options: TranscriberOptions) -> None:
 
     if options.input_file == "-":
         data = BytesIO(sys.stdin.buffer.read())
-        segments, info = model.transcribe(data, language=options.language)
+        segments, info = model.transcribe(data, language=options.language, task=options.task.name.lower())
     else:
-        segments, info = model.transcribe(str(options.input_file_path.absolute()), language=options.language)
+        segments, info = model.transcribe(
+            str(options.input_file_path.absolute()), language=options.language, task=options.task.name.lower()
+        )
 
     if options.language is None:
         logger.debug(f"Detected language '{info.language}' with probability {info.language_probability}")
@@ -146,7 +148,7 @@ def transcribe(options: TranscriberOptions) -> None:
             transcribed_data.append((segment.start, segment.end, segment.text.lstrip()))
             # print(f"{segment.start:.2f} {segment.end:.2f} {segment.text}")
 
-    logger.debug(f"Done transcribing after {time.perf_counter() - t0:3f} seconds")
+    logger.debug(f"Done transcribing/translating after {time.perf_counter() - t0:3f} seconds")
     # Write to .zip in memory to be uploaded to supabase directly
     write_data(transcribed_data, options)
 
@@ -224,6 +226,10 @@ poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_A
 
 poetry run python src/argparser.py --input_file - --task Detect --model Small < "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3"
 
-poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3" --task Translate --model Tiny
+poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3" --task Translate --model Large
+
+poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3" --task Translate --language en --model Large --output_file - > result.zip
+
+# TODO Add option to add subtitles to video (hardcoded or soft subtitles)
     """ # noqa: E501
     main()
