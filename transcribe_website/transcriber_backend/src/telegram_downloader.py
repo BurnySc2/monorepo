@@ -6,7 +6,6 @@ import gc
 import logging
 import os
 import sys
-import time
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -38,7 +37,6 @@ file_ids_cache: dict[str, dict[int, str]] = {}
 # Only run 'value' amount of ffmpeg processes at the same time
 ffmpeg_sem = asyncio.Semaphore(value=SECRETS.parallel_ffmpeg_count)
 
-last_client_get_messages = time.time()
 get_messages_sem = asyncio.Semaphore(value=1)
 
 
@@ -169,7 +167,6 @@ class DownloadWorker:
 
     @staticmethod
     async def download_one(worker_id: int | None = None) -> None:
-        global last_client_get_messages
         # Get a new message
         with orm.db_session():
             message: TelegramMessage | None = TelegramMessage.get_one_queued()
@@ -217,21 +214,23 @@ class DownloadWorker:
             two_hundred_message_ids: list[int] = TelegramMessage.get_n_queued_by_channel(message.channel_id)
             if len(two_hundred_message_ids) > 200:
                 raise ValueError("The api does not allow more than 200 messages to be downloaded at once.")
-            # Don't send too many requests at once, need to wait at least 20 seconds
+            up_to_date_messages: list[Message] = []
+            # Don't send too many requests at once
             async with get_messages_sem:
                 try:
-                    while time.time() - last_client_get_messages < 20:
-                        await asyncio.sleep(0.1)
-                    last_client_get_messages = time.time()
-                    # pyre-fixme[9]
-                    up_to_date_messages: list[Message] = await DownloadWorker.client.get_messages(
-                        chat_id=message.channel_id,
-                        message_ids=two_hundred_message_ids,
-                        replies=0,
-                    )
-                    # TODO fix floodwait
-                    # pyrogram.errors.exceptions.flood_420.FloodWait
-                    # https://stackoverflow.com/questions/71773181/avoid-floodwait-in-python
+                    # Try to 'get_messages' until there is no more FloodWait exception
+                    while len(up_to_date_messages) == 0:
+                        try:
+                            # pyre-fixme[9]
+                            up_to_date_messages = await DownloadWorker.client.get_messages(
+                                chat_id=message.channel_id,
+                                message_ids=two_hundred_message_ids,
+                                replies=0,
+                            )
+                            # https://stackoverflow.com/questions/71773181/avoid-floodwait-in-python
+                        except pyrogram.errors.exceptions.flood_420.FloodWait:
+                            # Try again
+                            await asyncio.sleep(1)
                 except UsernameNotOccupied:
                     # Error when trying to download from channel that is inaccessible
                     with orm.db_session():
