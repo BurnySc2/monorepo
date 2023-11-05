@@ -5,7 +5,7 @@ ExecStart=/usr/bin/docker run --rm --name fastapi_server \
     --env-file ./.env \
     -v ./data:/root/fastapi_server/data \
     -l traefik.enable=true \
-    -l traefik.http.routers.fastapi.rule=Host(`api.burnysc2.de`) \
+    -l traefik.http.routers.fastapi.rule=Host(`api.burnysc2.xyz`) \
     -l traefik.http.services.fastapi.loadbalancer.server.port=8000 \
     -l traefik.http.routers.fastapi.tls=true \
     -l traefik.http.routers.fastapi.tls.certresolver=production \
