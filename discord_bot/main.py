@@ -295,9 +295,12 @@ async def handle_new_message(event: GuildMessageCreateEvent) -> None:
 async def handle_commands(event: GuildMessageCreateEvent, command: str, message: str) -> None:
     function_mapping = {
         "reminder": my_reminder.public_remind_in,
+        "r": my_reminder.public_remind_in,
         "remindat": my_reminder.public_remind_at,
+        "ra": my_reminder.public_remind_at,
         "reminders": my_reminder.public_list_reminders,
         "delreminder": my_reminder.public_del_remind,
+        "dr": my_reminder.public_del_remind,
         "mmr": public_mmr,
         # "emotes": public_count_emotes,
         "twss": public_twss,
