@@ -1,0 +1,36 @@
+{
+    "mods": 
+    [
+      
+      {
+        "name": "base",
+        "enabled": true
+      },
+      
+      {
+        "name": "auto-research",
+        "enabled": true
+      },
+      
+      {
+        "name": "AutoDeconstruct",
+        "enabled": true
+      },
+      
+      {
+        "name": "Bottleneck",
+        "enabled": true
+      },
+      
+      {
+        "name": "far-reach",
+        "enabled": true
+      },
+      
+      {
+        "name": "Squeak Through",
+        "enabled": true
+      }
+    ]
+  }
+  

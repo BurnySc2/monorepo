@@ -1,0 +1,106 @@
+# Execute with
+# ansible-playbook factorio_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/.ansible_secrets
+- name: Create and start factorio service
+  hosts: all
+  vars:
+    USERNAME: factorio
+  tasks:
+  - name: Create group 'factorio'
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create 'factorio' user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Get user id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -u
+    register: USER_ID
+
+  - name: Get group id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -g
+    register: GROUP_ID
+
+  - name: Print user id
+    ansible.builtin.debug:
+      var: USER_ID.stdout
+      verbosity: 0
+
+  - name: Print group id
+    ansible.builtin.debug:
+      var: GROUP_ID.stdout
+      verbosity: 0
+
+  - name: Create systemd file
+    template:
+      src: files/factorio.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Create directories
+    file:
+      path: '{{ item }}'
+      recurse: true
+      state: directory
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+    loop:
+    - /home/{{ USERNAME }}/data/config
+    - /home/{{ USERNAME }}/data/mods
+
+  - name: Copy admin list file
+    template:
+      src: files/server-adminlist.json
+      dest: /home/{{ USERNAME }}/data/config/server-adminlist.json
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+  - name: Copy server settings file
+    template:
+      src: files/server-settings.json
+      dest: /home/{{ USERNAME }}/data/config/server-settings.json
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Copy mod list settings
+    template:
+      src: files/mod-list.json
+      dest: /home/{{ USERNAME }}/data/mods/mod-list.json
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Stop factorio server
+    ansible.builtin.systemd_service:
+      name: factorio
+      state: stopped
+      enabled: false
+
+  - name: Stop factorio container
+    community.docker.docker_container:
+      name: factorio
+      state: stopped
+      image: factoriotools/factorio
+
+  - name: Remove factorio container
+    community.docker.docker_container:
+      name: factorio
+      state: absent
+      image: factoriotools/factorio
+
+  - name: Start factorio server again
+    ansible.builtin.systemd_service:
+      name: factorio
+      state: started
+      daemon_reload: true
+      enabled: true
+
+  - name: Print reminder
+    ansible.builtin.debug:
+      msg: Remember to upload an existing savegame manually, aswell as putting mods as .zip files in the '/home/{{ USERNAME }}/data/mods' folder

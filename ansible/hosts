@@ -1,0 +1,3 @@
+my_servers:
+  hosts:
+    contabo: # Same as '~/.ssh/config' entry

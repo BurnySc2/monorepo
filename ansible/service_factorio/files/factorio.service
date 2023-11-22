@@ -1,0 +1,26 @@
+# /etc/systemd/system/{{ USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker run \
+    --rm \
+    --name factorio \
+    -e PUID={{ USER_ID.stdout }} \
+    -e PGID={{ GROUP_ID.stdout }} \
+    -p 34197:34197/udp \
+    -p 27015:27015/tcp \
+    -v ./data:/factorio \
+    -e GENERATE_NEW_SAVE=true \
+    -e SAVE_NAME={{ secrets.FACTORIO.SAVE_NAME }} \
+    -e UPDATE_MODS_ON_START=true \
+    -l traefik.enable=true \
+    -l traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN }}`) \
+    -l traefik.http.services.{{ USERNAME }}.loadbalancer.server.port=27015 \
+    -l traefik.http.routers.{{ USERNAME }}.tls=true \
+    -l traefik.http.routers.{{ USERNAME }}.tls.certresolver=production \
+    --network {{ secrets.TRAFIK_NETWORK }} \
+    factoriotools/factorio
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ USERNAME }}
+User={{ USERNAME }}
+Group={{ USERNAME }}
+WorkingDirectory=/home/{{ USERNAME }}
