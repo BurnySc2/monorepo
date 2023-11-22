@@ -5,6 +5,7 @@
         "ms-python.python",
         "tamasfe.even-better-toml",
         "earthly.earthfile-syntax-highlighting",
-        "quicktype.quicktype"
+        "quicktype.quicktype",
+        "eeyore.yapf"
     ]
 }

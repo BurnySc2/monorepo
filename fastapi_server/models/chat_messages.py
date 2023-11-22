@@ -14,7 +14,7 @@ TABLE_NAME = f"{STAGE}_chat_messages"
 
 # pyre-fixme[11]
 async def create_connection() -> asyncpg.Connection:
-    # TODO use 'with' statement of possible
+    # TODO use 'with' statement if possible
     return await asyncpg.connect(
         os.getenv("POSTGRES_CONNECTION_STRING"),
         timeout=60,  # Allow max 60 seconds per connection
