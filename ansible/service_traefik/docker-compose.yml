@@ -1,0 +1,60 @@
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+services:
+  reverse-proxy:
+    # The official v2 Traefik docker image
+    image: traefik:v2.10
+    container_name: traefik
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    # Enables the web UI and tells Traefik to listen to docker
+    command:
+    - --api=true
+    - --api.dashboard=true
+    - --api.insecure=false
+    - --pilot.dashboard=false
+    - --global.sendAnonymousUsage=false
+    - --global.checkNewVersion=false
+    - --log=true
+    - --log.level=DEBUG
+    - --log.filepath=/config/traefik.log
+    - --providers.docker=true
+    - --providers.docker.exposedByDefault=false
+    - --entryPoints.http=true
+    - --entryPoints.http.address=:8080/tcp
+    - --entryPoints.http.http.redirections.entryPoint.to=https
+    - --entryPoints.http.http.redirections.entryPoint.scheme=https
+      ## Please see the Forwarded Header Trust section of the Authelia Traefik Integration documentation.
+      # - '--entryPoints.http.forwardedHeaders.trustedIPs=10.0.0.0/8,172.16.0.0/16,192.168.0.0/16,fc00::/7'
+      # - '--entryPoints.http.proxyProtocol.trustedIPs=10.0.0.0/8,172.16.0.0/16,192.168.0.0/16,fc00::/7'
+    - --entryPoints.http.forwardedHeaders.insecure=false
+    - --entryPoints.http.proxyProtocol.insecure=false
+    - --entryPoints.https=true
+    - --entryPoints.https.address=:8443/tcp
+      ## Please see the Forwarded Header Trust section of the Authelia Traefik Integration documentation.
+      # - '--entryPoints.https.forwardedHeaders.trustedIPs=10.0.0.0/8,172.16.0.0/16,192.168.0.0/16,fc00::/7'
+      # - '--entryPoints.https.proxyProtocol.trustedIPs=10.0.0.0/8,172.16.0.0/16,192.168.0.0/16,fc00::/7'
+    - --entryPoints.https.forwardedHeaders.insecure=false
+    - --entryPoints.https.proxyProtocol.insecure=false
+    ports:
+      # The HTTP port
+    - 80:80
+      # The HTTPS port
+    - 443:443
+      # The Web UI (enabled by --api.insecure=true), dont use in production!
+    - 8080:8080
+    volumes:
+    - ./traefik:/etc/traefik
+      # So that Traefik can listen to the Docker events
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.api.rule=Host(`{{ secrets.TRAEFIK.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.routers.api.entryPoints=web,websecure
+    - traefik.http.routers.api.tls=true
+    - traefik.http.routers.api.tls.certresolver=production
+    - traefik.http.routers.api.service=api@internal
+      #- 'traefik.http.routers.api.middlewares=authelia@docker'
+    - traefik.http.services.api.loadbalancer.server.port=8080

@@ -1,0 +1,12 @@
+# /etc/systemd/system/{{ secrets.TRAEFIK.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker compose up
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.TRAEFIK.USERNAME }}
+User={{ secrets.TRAEFIK.USERNAME }}
+Group={{ secrets.TRAEFIK.USERNAME }}
+WorkingDirectory=/home/{{ secrets.TRAEFIK.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target

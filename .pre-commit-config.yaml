@@ -31,11 +31,11 @@ repos:
   - id: python-use-type-annotations
 
 # Autoformat yaml files
-- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.4.0
-  hooks:
-  - id: pretty-format-yaml
-    args: [--autofix, --indent, '2']
+# - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+#   rev: v2.11.0
+#   hooks:
+#   - id: pretty-format-yaml
+#     args: [--autofix, --indent, '2']
 
 # Check github action workflow files
 - repo: https://github.com/sirosen/check-jsonschema

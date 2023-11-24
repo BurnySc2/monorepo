@@ -1,0 +1,38 @@
+# Execute with
+# ansible-playbook navidrome_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Stop, remove image, and start navidrome service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.NAVIDROME.USERNAME }}'
+  tasks:
+  - name: Stop navidrome server
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Stop navidrome container
+    community.docker.docker_container:
+      name: navidrome
+      state: stopped
+      image: deluan/navidrome:latest
+
+  - name: Remove navidrome container
+    community.docker.docker_container:
+      name: navidrome
+      state: absent
+      image: deluan/navidrome:latest
+
+  - name: Remove navidrome image
+    community.docker.docker_image:
+      name: deluan/navidrome
+      tag: latest
+      state: absent
+
+  - name: Start navidrome server again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true
+

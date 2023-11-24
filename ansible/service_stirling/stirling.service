@@ -1,0 +1,25 @@
+# /etc/systemd/system/{{ secrets.STIRLING.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker run \
+    --rm \
+    --name=stirling \
+    -v ./training_data:/usr/share/tesseract-ocr/4.00/tessdata \
+    -v ./configs:/configs \
+    -v ./customFiles:/customFiles \
+    -e DOCKER_ENABLE_SECURITY=false \
+    -l traefik.enable=true \
+    -l traefik.http.routers.{{ secrets.STIRLING.USERNAME }}.rule=Host(`{{ secrets.STIRLING.USERNAME }}.{{ secrets.MY_DOMAIN }}`) \
+    -l traefik.http.services.{{ secrets.STIRLING.USERNAME }}.loadbalancer.server.port=8080 \
+    -l traefik.http.routers.{{ secrets.STIRLING.USERNAME }}.tls=true \
+    -l traefik.http.routers.{{ secrets.STIRLING.USERNAME }}.tls.certresolver=production \
+    --network {{ secrets.TRAFIK_NETWORK }} \
+    frooodle/s-pdf:latest
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.STIRLING.USERNAME }}
+User={{ secrets.STIRLING.USERNAME }}
+Group={{ secrets.STIRLING.USERNAME }}
+WorkingDirectory=/home/{{ secrets.STIRLING.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target

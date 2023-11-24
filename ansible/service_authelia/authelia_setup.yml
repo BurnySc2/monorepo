@@ -1,17 +1,17 @@
-# https://hub.docker.com/r/factoriotools/factorio/
+# https://www.authelia.com/integration/proxies/traefik/
 # Execute with
-# ansible-playbook factorio_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start factorio service
+# ansible-playbook authelia_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start authelia service
   hosts: all
   vars:
-    USERNAME: factorio
+    USERNAME: '{{ secrets.AUTHELIA.USERNAME }}'
   tasks:
-  - name: Create group 'factorio'
+  - name: Create group
     ansible.builtin.group:
       name: '{{ USERNAME }}'
       state: present
 
-  - name: Create 'factorio' user
+  - name: Create user
     ansible.builtin.user:
       name: '{{ USERNAME }}'
       groups:
@@ -41,62 +41,53 @@
 
   - name: Create systemd file
     template:
-      src: files/factorio.service
+      src: authelia.service
       dest: /etc/systemd/system/{{ USERNAME }}.service
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
-  - name: Stop factorio service
+  - name: Stop authelia service
     ansible.builtin.systemd_service:
-      name: factorio
+      name: '{{ USERNAME }}'
       state: stopped
       enabled: false
 
-  - name: Remove factorio container
+  - name: Remove authelia container
     community.docker.docker_container:
-      name: factorio
+      name: authelia
       state: absent
-      image: factoriotools/factorio
+      image: authelia/authelia:4.37.5
+
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
 
   - name: Create directories
     file:
-      path: '{{ item }}'
+      path: /home/{{ USERNAME }}/authelia
       recurse: true
       state: directory
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
-    loop:
-    - /home/{{ USERNAME }}/data/config
-    - /home/{{ USERNAME }}/data/mods
-
-  - name: Copy admin list file
+  - name: Copy authelia config file
     template:
-      src: files/server-adminlist.json
-      dest: /home/{{ USERNAME }}/data/config/server-adminlist.json
+      src: /home/burny/syncthing/secrets/ansible_secrets/authelia/configuration.yml
+      dest: /home/{{ USERNAME }}/authelia/configuration.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+  - name: Copy users database file
+    template:
+      src: /home/burny/syncthing/secrets/ansible_secrets/authelia/users_database.yml
+      dest: /home/{{ USERNAME }}/authelia/users_database.yml
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
-  - name: Copy server settings file
-    template:
-      src: files/server-settings.json
-      dest: /home/{{ USERNAME }}/data/config/server-settings.json
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Copy mod list settings
-    template:
-      src: files/mod-list.json
-      dest: /home/{{ USERNAME }}/data/mods/mod-list.json
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Start factorio service again
+  - name: Start authelia service again
     ansible.builtin.systemd_service:
-      name: factorio
+      name: '{{ USERNAME }}'
       state: started
       daemon_reload: true
       enabled: true
-
-  - name: Print reminder
-    ansible.builtin.debug:
-      msg: Remember to upload an existing savegame manually, aswell as putting mods as .zip files (or mod-list.json) in the '/home/{{ USERNAME }}/data/mods' folder

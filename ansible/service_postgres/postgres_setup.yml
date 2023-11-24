@@ -1,0 +1,93 @@
+# https://github.com/nocodb/nocodb 
+# https://www.nocodb.com/ 
+# Execute with
+# ansible-playbook postgres_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start postgres service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.POSTGRES.USERNAME }}'
+  tasks:
+  - name: Create group
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Get user id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -u
+    register: USER_ID
+
+  - name: Get group id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -g
+    register: GROUP_ID
+
+  - name: Print user id
+    ansible.builtin.debug:
+      var: USER_ID.stdout
+      verbosity: 0
+
+  - name: Print group id
+    ansible.builtin.debug:
+      var: GROUP_ID.stdout
+      verbosity: 0
+
+  - name: Create systemd file
+    template:
+      src: postgres.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Stop postgres service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Remove postgres_postgres container
+    community.docker.docker_container:
+      name: postgres_postgres
+      state: absent
+      image: postgres:15-alpine
+
+  - name: Remove postgres_pgadmin container
+    community.docker.docker_container:
+      name: postgres_pgadmin
+      state: absent
+      image: dpage/pgadmin4:7
+
+  - name: Remove postgres_nocodb container
+    community.docker.docker_container:
+      name: postgres_nocodb
+      state: absent
+      image: nocodb/nocodb:latest
+
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Backup once per day as user 'syncthing'
+    ansible.builtin.cron:
+      name: Execute backup daily
+      job: docker exec postgres_postgres pg_dump -U postgres -F t postgres > {{ secrets.POSTGRES.USERNAME }}/$(date +"%Y-%m-%d_%H:%M:%S").tar
+      special_time: daily
+      user: syncthing
+
+  - name: Start postgres service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

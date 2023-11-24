@@ -1,0 +1,37 @@
+# Execute with
+# ansible-playbook syncthing_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start syncthing service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.SYNCTHING.USERNAME }}'
+  tasks:
+  - name: Stop syncthing service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Stop syncthing container
+    community.docker.docker_container:
+      name: syncthing
+      state: stopped
+      image: lscr.io/linuxserver/syncthing:latest
+
+  - name: Remove syncthing container
+    community.docker.docker_container:
+      name: syncthing
+      state: absent
+      image: lscr.io/linuxserver/syncthing:latest
+
+  - name: Remove syncthing image
+    community.docker.docker_image:
+      name: lscr.io/linuxserver/syncthing
+      tag: latest
+      state: absent
+
+  - name: Start syncthing service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

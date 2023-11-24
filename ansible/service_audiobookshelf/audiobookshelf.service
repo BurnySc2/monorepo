@@ -1,0 +1,27 @@
+# /etc/systemd/system/{{ secrets.AUDIOBOOKSHELF.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker run \
+    --rm \
+    --name=audiobookshelf \
+    -e PUID={{ SYNCTHING_USER_ID.stdout }} \
+    -e PGID={{ SYNCTHING_GROUP_ID.stdout }} \
+    -v ./config:/config \
+    -v ./metadata:/metadata \
+    -v {{ secrets.AUDIOBOOKSHELF.MEDIA_FOLDER_AUDIOBOOKS }}:/audiobooks \
+    -v {{ secrets.AUDIOBOOKSHELF.MEDIA_FOLDER_PODCASTS }}:/podcasts \
+    -l traefik.enable=true \
+    -l traefik.http.routers.{{ secrets.AUDIOBOOKSHELF.USERNAME }}.rule=Host(`{{ secrets.AUDIOBOOKSHELF.USERNAME }}.{{ secrets.MY_DOMAIN }}`) \
+    -l traefik.http.services.{{ secrets.AUDIOBOOKSHELF.USERNAME }}.loadbalancer.server.port=80 \
+    -l traefik.http.routers.{{ secrets.AUDIOBOOKSHELF.USERNAME }}.tls=true \
+    -l traefik.http.routers.{{ secrets.AUDIOBOOKSHELF.USERNAME }}.tls.certresolver=production \
+    --network {{ secrets.TRAFIK_NETWORK }} \
+    ghcr.io/advplyr/audiobookshelf
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.AUDIOBOOKSHELF.USERNAME }}
+User={{ secrets.AUDIOBOOKSHELF.USERNAME }}
+Group={{ secrets.AUDIOBOOKSHELF.USERNAME }}
+WorkingDirectory=/home/{{ secrets.AUDIOBOOKSHELF.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target
