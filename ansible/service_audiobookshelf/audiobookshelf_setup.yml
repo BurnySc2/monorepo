@@ -1,0 +1,81 @@
+# https://www.audiobookshelf.org/
+# https://www.audiobookshelf.org/docs#docker-install
+# https://play.google.com/store/apps/details?id=com.audiobookshelf.app
+# Find podcasts:
+# https://www.listennotes.com/
+# https://castos.com/tools/find-podcast-rss-feed/
+# Execute with
+# ansible-playbook audiobookshelf_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start audiobookshelf service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.AUDIOBOOKSHELF.USERNAME }}'
+  tasks:
+  - name: Create group
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Get user id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -u
+    register: USER_ID
+
+  - name: Get group id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -g
+    register: GROUP_ID
+
+  - name: Get syncthing user id
+    ansible.builtin.shell:
+      cmd: id syncthing -u
+    register: SYNCTHING_USER_ID
+
+  - name: Get syncthing group id
+    ansible.builtin.shell:
+      cmd: id syncthing -g
+    register: SYNCTHING_GROUP_ID
+
+  - name: Print user id
+    ansible.builtin.debug:
+      var: USER_ID.stdout
+      verbosity: 0
+
+  - name: Print group id
+    ansible.builtin.debug:
+      var: GROUP_ID.stdout
+      verbosity: 0
+
+  - name: Create systemd file
+    template:
+      src: audiobookshelf.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Stop audiobookshelf service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Remove audiobookshelf container
+    community.docker.docker_container:
+      name: audiobookshelf
+      state: absent
+      image: ghcr.io/advplyr/audiobookshelf
+
+  - name: Start audiobookshelf service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

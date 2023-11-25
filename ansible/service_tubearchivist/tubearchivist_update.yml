@@ -1,0 +1,61 @@
+# Execute with
+# ansible-playbook tubearchivist_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start tubearchivist service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.TUBEARCHIVIST.USERNAME }}'
+  tasks:
+  - name: Stop tubearchivist service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Stop tubearchivist container
+    community.docker.docker_container:
+      name: tubearchivist
+      state: stopped
+      image: bbilly1/tubearchivist:latest
+
+  - name: Remove tubearchivist container
+    community.docker.docker_container:
+      name: tubearchivist
+      state: absent
+      image: bbilly1/tubearchivist:latest
+
+  - name: Stop tubearchivist-redis container
+    community.docker.docker_container:
+      name: archivist-redis
+      state: stopped
+      image: redis/redis-stack-server:latest
+
+  - name: Remove tubearchivist-redis container
+    community.docker.docker_container:
+      name: archivist-redis
+      state: absent
+      image: redis/redis-stack-server:latest
+
+  - name: Stop tubearchivist-es container
+    community.docker.docker_container:
+      name: tubearchivist
+      state: stopped
+      image: bbilly1/tubearchivist-es:latest
+
+  - name: Remove tubearchivist-es container
+    community.docker.docker_container:
+      name: tubearchivist
+      state: absent
+      image: bbilly1/tubearchivist-es:latest
+
+  - name: Remove tubearchivist image
+    community.docker.docker_image:
+      name: bbilly1/tubearchivist
+      tag: latest
+      state: absent
+
+  - name: Start tubearchivist service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

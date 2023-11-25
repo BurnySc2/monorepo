@@ -1,0 +1,44 @@
+# Execute with
+# ansible-playbook trillium_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Stop, remove image, and start trillium service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.TRILLIUM.USERNAME }}'
+  tasks:
+  - name: Stop trillium service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Stop trillium container
+    community.docker.docker_container:
+      name: trillium
+      state: stopped
+      image: zadam/trilium:latest
+
+  - name: Remove trillium container
+    community.docker.docker_container:
+      name: trillium
+      state: absent
+      image: zadam/trilium:latest
+
+  - name: Create systemd file
+    template:
+      src: trillium.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Remove trillium image
+    community.docker.docker_image:
+      name: zadam/trilium
+      tag: latest
+      state: absent
+
+  - name: Start trillium service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

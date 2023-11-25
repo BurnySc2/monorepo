@@ -6,7 +6,7 @@
   vars:
     USERNAME: factorio
   tasks:
-  - name: Stop factorio server
+  - name: Stop factorio service
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: stopped
@@ -30,7 +30,7 @@
       tag: latest
       state: absent
 
-  - name: Start factorio server again
+  - name: Start factorio service again
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: started

@@ -1,0 +1,95 @@
+# Execute with
+# ansible-playbook traefik_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start traefik service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.TRAEFIK.USERNAME }}'
+  tasks:
+  - name: Create group
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Get user id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -u
+    register: USER_ID
+
+  - name: Get group id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -g
+    register: GROUP_ID
+
+  - name: Print user id
+    ansible.builtin.debug:
+      var: USER_ID.stdout
+      verbosity: 0
+
+  - name: Print group id
+    ansible.builtin.debug:
+      var: GROUP_ID.stdout
+      verbosity: 0
+
+  - name: Create systemd file
+    template:
+      src: traefik.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Stop traefik service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Remove traefik container
+    community.docker.docker_container:
+      name: traefik
+      state: absent
+      image: traefik:v2.10
+
+  # https://hollo.me/devops/routing-to-multiple-docker-compose-development-setups-with-traefik.html
+  - name: Create docker external network
+    docker_network:
+      name: '{{ secrets.TRAFIK_NETWORK }}'
+      internal: false
+      attachable: true
+      driver: bridge
+
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Create directories
+    file:
+      path: /home/{{ USERNAME }}/traefik
+      recurse: true
+      state: directory
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Copy traefik.yml file
+    template:
+      src: traefik.yml
+      dest: /home/{{ USERNAME }}/traefik/traefik.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Start traefik service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

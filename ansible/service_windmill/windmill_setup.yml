@@ -1,0 +1,76 @@
+# https://www.windmill.dev/docs/intro
+# https://www.windmill.dev/docs/advanced/self_host#docker
+# Log in with (first time use)
+# admin@windmill.dev /// changeme
+# Execute with
+# ansible-playbook windmill_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start windmill service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.WINDMILL.USERNAME }}'
+  tasks:
+  - name: Create group
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Get user id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -u
+    register: USER_ID
+
+  - name: Get group id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -g
+    register: GROUP_ID
+
+  - name: Print user id
+    ansible.builtin.debug:
+      var: USER_ID.stdout
+      verbosity: 0
+
+  - name: Print group id
+    ansible.builtin.debug:
+      var: GROUP_ID.stdout
+      verbosity: 0
+
+  - name: Create systemd file
+    template:
+      src: windmill.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Stop windmill server
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Remove windmill container
+    community.docker.docker_container:
+      name: windmill_server
+      state: absent
+      image: ghcr.io/windmill-labs/windmill:main
+
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+      
+  - name: Start windmill server again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

@@ -1,0 +1,72 @@
+# Execute with
+# ansible-playbook syncthing_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start syncthing service
+  hosts: all
+  vars:
+    USERNAME: '{{ secrets.SYNCTHING.USERNAME }}'
+  tasks:
+  - name: Create group
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Get user id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -u
+    register: USER_ID
+
+  - name: Get group id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -g
+    register: GROUP_ID
+
+  - name: Print user id
+    ansible.builtin.debug:
+      var: USER_ID.stdout
+      verbosity: 0
+
+  - name: Print group id
+    ansible.builtin.debug:
+      var: GROUP_ID.stdout
+      verbosity: 0
+
+  - name: Create systemd file
+    template:
+      src: syncthing.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Stop syncthing service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Remove syncthing container
+    community.docker.docker_container:
+      name: syncthing
+      state: absent
+      image: lscr.io/linuxserver/syncthing:latest
+
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+      
+  - name: Start syncthing service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

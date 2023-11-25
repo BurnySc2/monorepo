@@ -1,0 +1,27 @@
+version: '3.5'
+
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+services:
+  syncthing:
+    container_name: syncthing
+    hostname: syncthing
+    restart: unless-stopped
+    image: lscr.io/linuxserver/syncthing:latest
+    volumes:
+    - ./config:/config
+    - ./data1:/data1
+    environment:
+    - PUID={{ USER_ID.stdout }}
+    - PGID={{ GROUP_ID.stdout }}
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.{{ secrets.SYNCTHING.USERNAME }}.rule=Host(`{{ secrets.SYNCTHING.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ secrets.SYNCTHING.USERNAME }}.loadbalancer.server.port=8384
+    - traefik.http.routers.{{ secrets.SYNCTHING.USERNAME }}.tls=true
+    - traefik.http.routers.{{ secrets.SYNCTHING.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.SYNCTHING.USERNAME }}.middlewares=authelia@docker

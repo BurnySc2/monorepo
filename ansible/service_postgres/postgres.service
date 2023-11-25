@@ -1,0 +1,12 @@
+# /etc/systemd/system/{{ secrets.POSTGRES.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker compose up
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.POSTGRES.USERNAME }}
+User={{ secrets.POSTGRES.USERNAME }}
+Group={{ secrets.POSTGRES.USERNAME }}
+WorkingDirectory=/home/{{ secrets.POSTGRES.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target
