@@ -72,12 +72,14 @@
       state: directory
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
+
   - name: Copy authelia config file
     template:
       src: /home/burny/syncthing/secrets/ansible_secrets/authelia/configuration.yml
       dest: /home/{{ USERNAME }}/authelia/configuration.yml
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
+      
   - name: Copy users database file
     template:
       src: /home/burny/syncthing/secrets/ansible_secrets/authelia/users_database.yml
