@@ -4,7 +4,7 @@
 - name: Create and start trillium service
   hosts: all
   vars:
-    USERNAME: '{{ secrets.POSTGRES.USERNAME }}'
+    USERNAME: '{{ secrets.TRILLIUM.USERNAME }}'
   tasks:
   - name: Create group
     ansible.builtin.group:

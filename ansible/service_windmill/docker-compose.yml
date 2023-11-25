@@ -41,6 +41,7 @@ services:
     - traefik.http.services.{{ secrets.WINDMILL.USERNAME }}.loadbalancer.server.port=8000
     - traefik.http.routers.{{ secrets.WINDMILL.USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.WINDMILL.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.WINDMILL.USERNAME }}.middlewares=authelia@docker
     environment:
     - DATABASE_URL={{ secrets.WINDMILL.DATABASE_URL }}
     - MODE=server

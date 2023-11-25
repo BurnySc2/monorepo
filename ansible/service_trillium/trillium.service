@@ -9,6 +9,7 @@ ExecStart=/usr/bin/docker run \
     -l traefik.http.services.{{ secrets.TRILLIUM.USERNAME }}.loadbalancer.server.port=8080 \
     -l traefik.http.routers.{{ secrets.TRILLIUM.USERNAME }}.tls=true \
     -l traefik.http.routers.{{ secrets.TRILLIUM.USERNAME }}.tls.certresolver=production \
+    -l traefik.http.routers.{{ secrets.TRILLIUM.USERNAME }}.middlewares=authelia@docker \
     --network {{ secrets.TRAFIK_NETWORK }} \
     zadam/trilium
 Restart=always

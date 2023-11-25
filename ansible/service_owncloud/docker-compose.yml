@@ -24,7 +24,7 @@ services:
     - traefik.http.services.{{ secrets.OWNCLOUD.USERNAME }}.loadbalancer.server.port=8080
     - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.tls.certresolver=production
-      #- "traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.middlewares=authelia@docker"
+    - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.middlewares=authelia@docker
     depends_on:
     - mariadb
     - redis
@@ -83,4 +83,3 @@ services:
       retries: 5
     volumes:
     - redis:/data
-

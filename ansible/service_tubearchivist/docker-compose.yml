@@ -39,6 +39,7 @@ services:
     - traefik.http.services.{{ secrets.TUBEARCHIVIST.USERNAME }}.loadbalancer.server.port=8000
     - traefik.http.routers.{{ secrets.TUBEARCHIVIST.USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.TUBEARCHIVIST.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.TUBEARCHIVIST.USERNAME }}.middlewares=authelia@docker
   archivist-redis:
     image: redis/redis-stack-server:latest
     container_name: archivist-redis

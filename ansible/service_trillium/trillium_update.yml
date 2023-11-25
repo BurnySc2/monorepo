@@ -3,7 +3,7 @@
 - name: Stop, remove image, and start trillium service
   hosts: all
   vars:
-    USERNAME: '{{ secrets.POSTGRES.USERNAME }}'
+    USERNAME: '{{ secrets.TRILLIUM.USERNAME }}'
   tasks:
   - name: Stop trillium service
     ansible.builtin.systemd_service:

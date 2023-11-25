@@ -14,6 +14,7 @@ ExecStart=/usr/bin/docker run \
     -l traefik.http.services.{{ secrets.AUDIOBOOKSHELF.USERNAME }}.loadbalancer.server.port=80 \
     -l traefik.http.routers.{{ secrets.AUDIOBOOKSHELF.USERNAME }}.tls=true \
     -l traefik.http.routers.{{ secrets.AUDIOBOOKSHELF.USERNAME }}.tls.certresolver=production \
+    -l traefik.http.routers.{{ secrets.AUDIOBOOKSHELF.USERNAME }}.middlewares=authelia@docker \
     --network {{ secrets.TRAFIK_NETWORK }} \
     ghcr.io/advplyr/audiobookshelf
 Restart=always

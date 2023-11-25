@@ -24,3 +24,4 @@ services:
     - traefik.http.services.{{ secrets.SYNCTHING.USERNAME }}.loadbalancer.server.port=8384
     - traefik.http.routers.{{ secrets.SYNCTHING.USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.SYNCTHING.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.SYNCTHING.USERNAME }}.middlewares=authelia@docker

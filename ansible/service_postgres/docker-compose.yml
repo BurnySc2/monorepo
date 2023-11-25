@@ -56,6 +56,7 @@ services:
     - traefik.http.services.{{ secrets.POSTGRES.NOCODB_USERNAME }}.loadbalancer.server.port=8080
     - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.middlewares=authelia@docker
     restart: unless-stopped
     volumes:
     - ./nocodb:/usr/app/data/
