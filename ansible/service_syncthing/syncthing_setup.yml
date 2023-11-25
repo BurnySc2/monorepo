@@ -63,6 +63,7 @@
       dest: /home/{{ USERNAME }}/docker-compose.yml
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
+      
   - name: Start syncthing service again
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'

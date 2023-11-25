@@ -42,6 +42,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: '{{ secrets.POSTGRES.PGADMIN_USER }}'
       PGADMIN_DEFAULT_PASSWORD: '{{ secrets.POSTGRES.PGADMIN_PASSWORD }}'
     volumes:
+    # pgadmindata folder needs to be owned by user id '5050'
     - ./pgadmindata:/var/lib/pgadmin
 
   nocodb:
@@ -58,5 +59,8 @@ services:
     - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls.certresolver=production
     - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.middlewares=authelia@docker
     restart: unless-stopped
+    environment:
+      PUID: '{{ USER_ID.stdout }}'
+      PGID: '{{ GROUP_ID.stdout }}'
     volumes:
     - ./nocodb:/usr/app/data/
