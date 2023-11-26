@@ -10,6 +10,7 @@ ExecStart=/usr/bin/docker run \
     -l traefik.http.services.{{ secrets.COCALC.USERNAME }}.loadbalancer.server.port=80 \
     -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.tls=true \
     -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.tls.certresolver=production \
+    -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.middlewares=authelia@docker \
     --network {{ secrets.TRAFIK_NETWORK }} \
     sagemathinc/cocalc-v2:latest
 Restart=always

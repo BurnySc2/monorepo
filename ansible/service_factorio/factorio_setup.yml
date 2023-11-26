@@ -97,6 +97,8 @@
       daemon_reload: true
       enabled: true
 
+  # TODO backup once per day via cron. if hash of new backup matches the latest, dont do anything. else copy. only keep up to 3 saves
+
   - name: Print reminder
     ansible.builtin.debug:
       msg: Remember to upload an existing savegame manually, aswell as putting mods as .zip files (or mod-list.json) in the '/home/{{ USERNAME }}/data/mods' folder

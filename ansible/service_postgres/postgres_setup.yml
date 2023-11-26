@@ -97,6 +97,6 @@
   - name: Backup once per day as user 'syncthing'
     ansible.builtin.cron:
       name: Execute backup daily
-      job: docker exec postgres_postgres pg_dump -U postgres -F t postgres > {{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/$(date +"%Y-%m-%d_%H:%M:%S").tar
+      job: /usr/bin/docker exec postgres_postgres pg_dump -U postgres -F t postgres > {{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/$(date +"%Y-%m-%d_%H:%M:%S").tar
       special_time: daily
       user: syncthing

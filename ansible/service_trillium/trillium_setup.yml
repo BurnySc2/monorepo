@@ -58,6 +58,8 @@
       state: absent
       image: zadam/trilium
 
+  # TODO backup once per day via cron. if hash of new backup matches the latest, dont do anything. else copy. only keep up to 3 backups
+  
   - name: Start trillium server again
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'

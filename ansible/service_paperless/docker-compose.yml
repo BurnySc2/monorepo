@@ -29,6 +29,7 @@ services:
     - traefik.http.services.{{ secrets.PAPERLESS.USERNAME }}.loadbalancer.server.port=8000
     - traefik.http.routers.{{ secrets.PAPERLESS.USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.PAPERLESS.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.PAPERLESS.USERNAME }}.middlewares=authelia@docker
     healthcheck:
       test: [CMD, curl, -fs, -S, --max-time, '2', 'http://localhost:8000']
       interval: 30s

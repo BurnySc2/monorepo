@@ -16,6 +16,7 @@ services:
   owncloud:
     image: owncloud/server:latest
     container_name: owncloud_server
+    hostname: owncloud_server
     networks:
     - '{{ secrets.TRAFIK_NETWORK }}'
     labels:
@@ -32,7 +33,7 @@ services:
     - PUID="{{ USER_ID.stdout }}"
     - PGID="{{ GROUP_ID.stdout }}"
     - OWNCLOUD_DOMAIN={{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
-    - OWNCLOUD_TRUSTED_DOMAINS="localhost,{{ USERNAME}}.{{ secrets.MY_DOMAIN }}
+    - OWNCLOUD_TRUSTED_DOMAINS="localhost,{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
     - OWNCLOUD_DB_TYPE=mysql
     - OWNCLOUD_DB_NAME=owncloud
     - OWNCLOUD_DB_USERNAME=owncloud

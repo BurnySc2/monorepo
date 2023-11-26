@@ -42,7 +42,7 @@
 
   - name: Create systemd file
     template:
-      src: cloud.service
+      src: owncloud.service
       dest: /etc/systemd/system/{{ USERNAME }}.service
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
@@ -53,7 +53,7 @@
       state: stopped
       enabled: false
 
-  - name: Remove cloud container
+  - name: Remove cloud-server container
     community.docker.docker_container:
       name: owncloud_server
       state: absent
