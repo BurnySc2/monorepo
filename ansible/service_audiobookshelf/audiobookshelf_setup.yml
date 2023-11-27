@@ -72,8 +72,6 @@
       name: audiobookshelf
       state: absent
       image: ghcr.io/advplyr/audiobookshelf
-
-  # TODO backup once per day via cron. if hash of new backup matches the latest, dont do anything. else copy. only keep up to 3 backups
   
   - name: Start audiobookshelf service again
     ansible.builtin.systemd_service:

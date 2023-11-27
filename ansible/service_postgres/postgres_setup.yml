@@ -30,6 +30,16 @@
       cmd: id {{ USERNAME }} -g
     register: GROUP_ID
 
+  - name: Get syncthing user id
+    ansible.builtin.shell:
+      cmd: id syncthing -u
+    register: SYNCTHING_USER_ID
+
+  - name: Get syncthing group id
+    ansible.builtin.shell:
+      cmd: id syncthing -g
+    register: SYNCTHING_GROUP_ID
+
   - name: Print user id
     ansible.builtin.debug:
       var: USER_ID.stdout
@@ -47,6 +57,22 @@
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
+  - name: Create directories
+    file:
+      path: /home/{{ USERNAME }}/pgadmindata
+      recurse: true
+      state: directory
+      # pgadmin user
+      owner: '5050'
+      group: '5050'
+      
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+      
   - name: Stop postgres service
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
@@ -71,22 +97,6 @@
       state: absent
       image: nocodb/nocodb:latest
 
-  - name: Create directories
-    file:
-      path: /home/{{ USERNAME }}/pgadmindata
-      recurse: true
-      state: directory
-      # pgadmin user
-      owner: '5050'
-      group: '5050'
-
-  - name: Copy docker-compose.yml file
-    template:
-      src: docker-compose.yml
-      dest: /home/{{ USERNAME }}/docker-compose.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
   - name: Start postgres service again
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
@@ -94,9 +104,25 @@
       daemon_reload: true
       enabled: true
 
-  - name: Backup once per day as user 'syncthing'
+  # BACKUP
+  - name: Create directories
+    file:
+      path: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}' 
+      recurse: true
+      state: directory
+      owner: '{{ SYNCTHING_USER_ID.stdout }}'
+      group: '{{ SYNCTHING_GROUP_ID.stdout }}'
+
+  - name: Copy backup script file
+    template:
+      src: backup_postgres.sh
+      dest: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Backup once per day as user 'root'
     ansible.builtin.cron:
-      name: Execute backup daily
-      job: /usr/bin/docker exec postgres_postgres pg_dump -U postgres -F t postgres > {{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/$(date +"%Y-%m-%d_%H:%M:%S").tar
+      name: Run postgres backup
+      job: /bin/sh '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.log'
       special_time: daily
-      user: syncthing
+      user: root

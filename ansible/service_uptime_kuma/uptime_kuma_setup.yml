@@ -65,8 +65,6 @@
       daemon_reload: true
       enabled: true
 
-  # TODO backup once per day via cron. if hash of new backup matches the latest, dont do anything. else copy. only keep up to 3 backups
-
   - name: Print reminder
     ansible.builtin.debug:
       msg: Remember to make an admin account asap (on first time use)

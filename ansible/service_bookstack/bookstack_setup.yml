@@ -77,8 +77,6 @@
       daemon_reload: true
       enabled: true
 
-  # TODO backup once per day via cron. if hash of new backup matches the latest, dont do anything. else copy. only keep up to 3 backups
-
   - name: Print reminder to make admin user
     ansible.builtin.debug:
       msg: Initial login are 'admin@admin.com' and password 'password'

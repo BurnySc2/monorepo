@@ -5,12 +5,12 @@ networks:
     external: true
 
 services:
-  mydbpg:
+  postgres:
     container_name: postgres_postgres
     # In pgadmin and nocodb we can now use connection string where hostname is 'postgres_postgres'
     # postgres://user:password@host/dbname
     # nocodb:
-    # postgresql://postgres:{ POSTGRES_PASSWORD }@postgres_postgres:5432/{ POSTGRES_USER }
+    # postgresql://{ POSTGRES_USER }:{ POSTGRES_PASSWORD }@postgres_postgres:5432/{ POSTGRES_DATABASE }
     hostname: postgres_postgres
     image: postgres:15-alpine
     networks:
@@ -22,8 +22,8 @@ services:
       POSTGRES_USER: '{{ secrets.POSTGRES.POSTGRES_USER }}'
       POSTGRES_PASSWORD: '{{ secrets.POSTGRES.POSTGRES_PASSWORD }}'
     volumes:
+    # Do I need to mount a backup path?
     - ./postgres_data:/var/lib/postgresql/data
-    - /home/syncthing/data1/media-contabo/pg-backup:/backup
 
   pgadmin:
     container_name: postgres_pgadmin
