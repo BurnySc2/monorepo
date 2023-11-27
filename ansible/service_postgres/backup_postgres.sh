@@ -16,7 +16,7 @@ docker exec $CONTAINER_NAME pg_dump -U postgres -F t postgres > $BACKUP_PATH
 # Make owner syncthing so that it can sync properly
 chown syncthing:syncthing $BACKUP_PATH
 # Only owner can read/write, group can read
-chmod 640 $BACKUP_PATH
+chmod 700 $BACKUP_PATH
 
 # Remove backups with file size < 1kb (= failed backups)
 cd $BACKUP_FOLDER

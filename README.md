@@ -10,7 +10,6 @@ My monorepo for various tools and showcases
 ### Pre-requisites
 - [Python](https://www.python.org/downloads)
     - [Poetry](https://python-poetry.org/docs/)
-- [Node / NPM](https://www.npmjs.com)
 - [Earthly](https://earthly.dev)
 
 ## VScode
