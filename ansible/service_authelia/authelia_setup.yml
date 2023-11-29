@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook authelia_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start authelia service
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: '{{ secrets.AUTHELIA.USERNAME }}'
   tasks:

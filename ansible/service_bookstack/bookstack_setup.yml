@@ -1,7 +1,7 @@
 # Execute with
 # ansible-playbook bookstack_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start bookstack service
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: '{{ secrets.BOOKSTACK.USERNAME }}'
   tasks:

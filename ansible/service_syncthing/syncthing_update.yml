@@ -1,7 +1,7 @@
 # Execute with
 # ansible-playbook syncthing_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start syncthing service
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: '{{ secrets.SYNCTHING.USERNAME }}'
   tasks:

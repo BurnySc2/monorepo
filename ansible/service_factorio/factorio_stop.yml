@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook factorio_stop.yml -i ../hosts
 - name: Stop factorio
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: factorio
   tasks:

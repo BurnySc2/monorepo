@@ -1,7 +1,7 @@
 # Execute with
 # ansible-playbook ping.yml -i ../hosts
 - name: Ping all
-  hosts: all
+  hosts: my_servers
   gather_facts: false
 
   tasks:

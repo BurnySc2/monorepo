@@ -1,7 +1,7 @@
 # Execute with
 # ansible-playbook audiobookshelf_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Stop, remove image, and start audiobookshelf service
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: '{{ secrets.AUDIOBOOKSHELF.USERNAME }}'
   tasks:

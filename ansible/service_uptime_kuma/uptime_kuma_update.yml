@@ -1,7 +1,7 @@
 # Execute with
 # ansible-playbook uptime_kuma_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start uptime_kuma service
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: '{{ secrets.UPTIME_KUMA.USERNAME }}'
   tasks:

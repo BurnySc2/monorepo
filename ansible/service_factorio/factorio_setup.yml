@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook factorio_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start factorio service
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: factorio
   tasks:

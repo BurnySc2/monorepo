@@ -4,7 +4,7 @@
 # Execute with
 # ansible-playbook jellyfin_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start jellyfin service
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: '{{ secrets.JELLYFIN.USERNAME }}'
   tasks:

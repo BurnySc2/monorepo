@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook factorio_update.yml -i ../hosts
 - name: Update factorio
-  hosts: all
+  hosts: my_servers
   vars:
     USERNAME: factorio
   tasks:
