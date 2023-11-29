@@ -4,3 +4,12 @@
 *.txt
 # Dont ignore files in test folder
 !test
+
+whisper_models
+result
+SECRETS.toml
+messages.db
+messages.db-journal
+media_downloader.session
+media_downloader.session-journal
+unknown_errors.txt

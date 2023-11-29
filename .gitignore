@@ -119,15 +119,6 @@ venv.bak/
 testresults
 nimcache
 
-# Frontend
-.netlify
-build
-.svelte-kit
-node_modules
-svelte_frontend/test_frontend/latest_logs
-svelte_frontend/latest_logs
-latest_logs
-
 # Test files from main.py
 hello_world.txt
 image.png
@@ -136,22 +127,3 @@ main.log
 db.json
 sqlite_asyncio_example.db
 todos.db
-
-# Fastapi files
-fastapi_server/data
-
-# Discord bot files
-discord_bot/SECRETS.toml
-discord_bot/data/
-
-# Transcribe website
-transcribe_website/transcriber_backend/whisper_models/
-transcribe_website/transcriber_backend/result/
-transcribe_website/transcriber_backend/SECRETS.toml
-# Telegram media downloader
-transcribe_website/transcriber_backend/SECRETS.toml
-transcribe_website/transcriber_backend/messages.db
-transcribe_website/transcriber_backend/messages.db-journal
-transcribe_website/transcriber_backend/media_downloader.session
-transcribe_website/transcriber_backend/media_downloader.session-journal
-transcribe_website/transcriber_backend/unknown_errors.txt

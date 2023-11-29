@@ -52,6 +52,8 @@ toml = "^0.10.2"
 ruff = "^0.0.247"
 # Type checker
 pyre-check = "^0.9.18"
+# Analyze depenencies
+pipdeptree = "^2.13.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

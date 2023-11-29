@@ -22,6 +22,12 @@ Now set up the correct interpreter path (may have to navigate the absolute path,
 ## VS code
 TODO
 
+# Check dependencies
+To avoid packages with large packages, we can use `pipdeptree`
+```sh
+poetry run pipdeptree > deps.txt
+```
+
 # Install and run pre-commit hook on all staged files
 ```sh
 poetry run pre-commit install
