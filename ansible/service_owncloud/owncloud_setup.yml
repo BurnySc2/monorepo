@@ -2,17 +2,17 @@
 # https://owncloud.com/
 # Execute with
 # ansible-playbook owncloud_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start cloud service
+- name: Create and start owncloud service
   hosts: my_servers
   vars:
     USERNAME: '{{ secrets.OWNCLOUD.USERNAME }}'
   tasks:
-  - name: Create group 'cloud'
+  - name: Create group
     ansible.builtin.group:
       name: '{{ USERNAME }}'
       state: present
 
-  - name: Create 'cloud' user
+  - name: Create user
     ansible.builtin.user:
       name: '{{ USERNAME }}'
       groups:
@@ -47,7 +47,7 @@
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
-  - name: Stop cloud service
+  - name: Stop owncloud service
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: stopped
@@ -78,9 +78,9 @@
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
-  - name: Start cloud service again
+  - name: Start owncloud service again
     ansible.builtin.systemd_service:
-      name: cloud
+      name: '{{ USERNAME }}'
       state: started
       daemon_reload: true
       enabled: true

@@ -5,7 +5,7 @@
   vars:
     USERNAME: '{{ secrets.WINDMILL.USERNAME }}'
   tasks:
-  - name: Stop windmill server
+  - name: Stop windmill service
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: stopped
@@ -29,7 +29,7 @@
       tag: latest
       state: absent
 
-  - name: Start windmill server again
+  - name: Start windmill service again
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: started

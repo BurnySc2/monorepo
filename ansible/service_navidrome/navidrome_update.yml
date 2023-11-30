@@ -5,7 +5,7 @@
   vars:
     USERNAME: '{{ secrets.NAVIDROME.USERNAME }}'
   tasks:
-  - name: Stop navidrome server
+  - name: Stop navidrome service
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: stopped
@@ -29,7 +29,7 @@
       tag: latest
       state: absent
 
-  - name: Start navidrome server again
+  - name: Start navidrome service again
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: started

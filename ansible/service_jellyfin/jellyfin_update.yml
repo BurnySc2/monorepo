@@ -5,7 +5,7 @@
   vars:
     USERNAME: '{{ secrets.JELLYFIN.USERNAME }}'
   tasks:
-  - name: Stop jellyfin server
+  - name: Stop jellyfin service
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: stopped
@@ -29,7 +29,7 @@
       tag: latest
       state: absent
 
-  - name: Start jellyfin server again
+  - name: Start jellyfin service again
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
       state: started
