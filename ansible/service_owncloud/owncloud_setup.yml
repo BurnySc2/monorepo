@@ -70,7 +70,7 @@
     community.docker.docker_container:
       name: owncloud_mariadb
       state: absent
-      image: mariadb:10.6
+      image: mariadb:10.11
 
   - name: Remove cloud-redis container
     community.docker.docker_container:
@@ -89,7 +89,7 @@
     ansible.builtin.cron:
       name: Clean up trash
       job: docker exec owncloud_server occ trashbin:cleanup
-      special_time: hourly
+      special_time: daily
       user: '{{ USERNAME }}'
 
   - name: Scan once per day

@@ -4,14 +4,6 @@ networks:
   '{{secrets.TRAFIK_NETWORK}}':
     external: true
 
-volumes:
-  files:
-    driver: local
-  mysql:
-    driver: local
-  redis:
-    driver: local
-
 services:
   owncloud:
     image: owncloud/server:latest
@@ -19,6 +11,7 @@ services:
     hostname: owncloud_server
     networks:
     - '{{ secrets.TRAFIK_NETWORK }}'
+    restart: always
     labels:
     - traefik.enable=true
     - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.rule=Host(`{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
@@ -28,22 +21,21 @@ services:
     - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.middlewares=authelia@docker
     depends_on:
     - mariadb
-    - redis
     environment:
     - PUID="{{ USER_ID.stdout }}"
     - PGID="{{ GROUP_ID.stdout }}"
     - OWNCLOUD_DOMAIN={{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
     - OWNCLOUD_TRUSTED_DOMAINS="localhost,{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
     - OWNCLOUD_DB_TYPE=mysql
-    - OWNCLOUD_DB_NAME=owncloud
-    - OWNCLOUD_DB_USERNAME=owncloud
-    - OWNCLOUD_DB_PASSWORD=owncloud
-    - OWNCLOUD_DB_HOST=mariadb
+    - OWNCLOUD_DB_NAME={{ secrets.OWNCLOUD.MYSQL_DATABASE }}
+    - OWNCLOUD_DB_USERNAME={{ secrets.OWNCLOUD.MYSQL_USER }}
+    - OWNCLOUD_DB_PASSWORD={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}
+    - OWNCLOUD_DB_HOST=owncloud_mariadb
     - OWNCLOUD_ADMIN_USERNAME={{ secrets.OWNCLOUD.ADMIN_USERNAME }}
     - OWNCLOUD_ADMIN_PASSWORD={{ secrets.OWNCLOUD.ADMIN_PASSWORD }}
     - OWNCLOUD_MYSQL_UTF8MB4=true
-    - OWNCLOUD_REDIS_ENABLED=true
-    - OWNCLOUD_REDIS_HOST=redis
+    - OWNCLOUD_REDIS_ENABLED=false
+    - OWNCLOUD_REDIS_HOST=owncloud_redis
     healthcheck:
       test: [CMD, /usr/bin/healthcheck]
       interval: 30s
@@ -53,8 +45,10 @@ services:
     - ./data:/mnt/data
 
   mariadb:
-    image: mariadb:10.6 # minimum required ownCloud version is 10.9
+    image: mariadb:10.11 # minimum required ownCloud version is 10.9
     container_name: owncloud_mariadb
+    hostname: owncloud_mariadb
+    restart: always
     networks:
     - '{{ secrets.TRAFIK_NETWORK }}'
     environment:
@@ -69,18 +63,4 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-    - mysql:/var/lib/mysql
-
-  redis:
-    image: redis:6
-    container_name: owncloud_redis
-    networks:
-    - '{{ secrets.TRAFIK_NETWORK }}'
-    command: [--databases, '1']
-    healthcheck:
-      test: [CMD, redis-cli, ping]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-    - redis:/data
+    - ./mysql:/var/lib/mysql

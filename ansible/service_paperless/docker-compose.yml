@@ -7,7 +7,7 @@ networks:
 services:
   broker:
     container_name: paperless-broker
-    hostname: broker
+    hostname: paperless-broker
     image: docker.io/library/redis:7
     restart: unless-stopped
     networks:
@@ -42,7 +42,7 @@ services:
     - ./consume:/usr/src/paperless/consume
     env_file: docker-compose.env
     environment:
-      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_REDIS: redis://paperless-broker:6379
       PAPERLESS_URL: https://{{ secrets.PAPERLESS.USERNAME }}.{{ secrets.MY_DOMAIN }}
       PAPERLESS_CSRF_TRUSTED_ORIGINS: https://{{ secrets.PAPERLESS.USERNAME }}.{{ secrets.MY_DOMAIN }}
       PAPERLESS_CORS_ALLOWED_HOSTS: https://{{ secrets.PAPERLESS.USERNAME }}.{{ secrets.MY_DOMAIN }}
