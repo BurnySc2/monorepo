@@ -46,18 +46,6 @@
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
-  - name: Stop factorio service
-    ansible.builtin.systemd_service:
-      name: factorio
-      state: stopped
-      enabled: false
-
-  - name: Remove factorio container
-    community.docker.docker_container:
-      name: factorio
-      state: absent
-      image: factoriotools/factorio
-
   - name: Create directories
     file:
       path: '{{ item }}'
@@ -89,6 +77,18 @@
       dest: /home/{{ USERNAME }}/data/mods/mod-list.json
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
+
+  - name: Stop factorio service
+    ansible.builtin.systemd_service:
+      name: factorio
+      state: stopped
+      enabled: false
+
+  - name: Remove factorio container
+    community.docker.docker_container:
+      name: factorio
+      state: absent
+      image: factoriotools/factorio
 
   - name: Start factorio service again
     ansible.builtin.systemd_service:

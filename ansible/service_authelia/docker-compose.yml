@@ -1,7 +1,7 @@
-version: '3.3'
+version: "3.3"
 
 networks:
-  '{{secrets.TRAFIK_NETWORK}}':
+  "{{secrets.TRAFIK_NETWORK}}":
     external: true
 
 services:
@@ -9,24 +9,36 @@ services:
     image: authelia/authelia:4.37.5
     container_name: authelia
     volumes:
-    - ./authelia:/config
+      - ./authelia:/config
     networks:
-    - '{{ secrets.TRAFIK_NETWORK }}'
+      - "{{ secrets.TRAFIK_NETWORK }}"
     labels:
-    - traefik.enable=true
-    - traefik.http.routers.authelia.rule=Host(`{{ secrets.AUTHELIA.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-    - traefik.http.routers.authelia.entrypoints=web,websecure
-    - traefik.http.routers.authelia.tls=true
-    - traefik.http.routers.authelia.tls.certresolver=production
-    - traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2F{{ secrets.AUTHELIA.USERNAME }}.{{ secrets.MY_DOMAIN }}
-    - traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true
-    - traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email
-    - traefik.http.middlewares.authelia-basic.forwardAuth.address=http://authelia:9091/api/verify?auth=basic
-    - traefik.http.middlewares.authelia-basic.forwardAuth.trustForwardHeader=true
-    - traefik.http.middlewares.authelia-basic.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email
+      - traefik.enable=true
+      - traefik.http.routers.authelia.rule=Host(`{{ secrets.AUTHELIA.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.routers.authelia.entrypoints=web,websecure
+      - traefik.http.routers.authelia.tls=true
+      - traefik.http.routers.authelia.tls.certresolver=production
+      - traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=https%3A%2F%2F{{ secrets.AUTHELIA.USERNAME }}.{{ secrets.MY_DOMAIN }}
+      - traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true
+      - traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email
+      - traefik.http.middlewares.authelia-basic.forwardAuth.address=http://authelia:9091/api/verify?auth=basic
+      - traefik.http.middlewares.authelia-basic.forwardAuth.trustForwardHeader=true
+      - traefik.http.middlewares.authelia-basic.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email
     restart: unless-stopped
     healthcheck:
       ## In production the healthcheck section should be commented.
       disable: true
     environment:
-    - TZ=Etc/UTC
+      - TZ=Etc/UTC
+
+  redis:
+    image: redis:alpine
+    container_name: authelia_redis
+    hostname: authelia_redis
+    networks:
+      - "{{ secrets.TRAFIK_NETWORK }}"
+    volumes:
+      - ./redis:/data
+    restart: unless-stopped
+    environment:
+      - TZ=Etc/UTC

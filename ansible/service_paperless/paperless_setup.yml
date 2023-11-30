@@ -45,6 +45,14 @@
       dest: /etc/systemd/system/{{ USERNAME }}.service
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
+
+  - name: Copy docker-compose.env file
+    template:
+      src: docker-compose.env
+      dest: /home/{{ USERNAME }}/docker-compose.env
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+      
   - name: Stop paperless service
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
@@ -67,13 +75,6 @@
     template:
       src: docker-compose.yml
       dest: /home/{{ USERNAME }}/docker-compose.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Copy docker-compose.env file
-    template:
-      src: docker-compose.env
-      dest: /home/{{ USERNAME }}/docker-compose.env
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
       

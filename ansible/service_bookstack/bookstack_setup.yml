@@ -45,6 +45,13 @@
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
   - name: Stop bookstack service
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
@@ -62,13 +69,6 @@
       name: bookstack_db
       state: absent
       image: lscr.io/linuxserver/mariadb:latest
-
-  - name: Copy docker-compose.yml file
-    template:
-      src: docker-compose.yml
-      dest: /home/{{ USERNAME }}/docker-compose.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
 
   - name: Start bookstack service again
     ansible.builtin.systemd_service:

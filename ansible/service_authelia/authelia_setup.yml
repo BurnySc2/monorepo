@@ -46,18 +46,6 @@
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
-  - name: Stop authelia service
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: stopped
-      enabled: false
-
-  - name: Remove authelia container
-    community.docker.docker_container:
-      name: authelia
-      state: absent
-      image: authelia/authelia:4.37.5
-
   - name: Copy docker-compose.yml file
     template:
       src: docker-compose.yml
@@ -87,6 +75,24 @@
       owner: '{{ USER_ID.stdout }}'
       group: '{{ GROUP_ID.stdout }}'
 
+  - name: Stop authelia service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Remove authelia container
+    community.docker.docker_container:
+      name: authelia
+      state: absent
+      image: authelia/authelia:4.37.5
+
+  - name: Remove authelia_redis container
+    community.docker.docker_container:
+      name: authelia_redis
+      state: absent
+      image: redis:alpine
+      
   - name: Start authelia service again
     ansible.builtin.systemd_service:
       name: '{{ USERNAME }}'
