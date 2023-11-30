@@ -1,0 +1,12 @@
+# /etc/systemd/system/{{ secrets.REACTIVE_RESUME.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker compose up
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.REACTIVE_RESUME.USERNAME }}
+User={{ secrets.REACTIVE_RESUME.USERNAME }}
+Group={{ secrets.REACTIVE_RESUME.USERNAME }}
+WorkingDirectory=/home/{{ secrets.REACTIVE_RESUME.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target

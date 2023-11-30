@@ -15,7 +15,13 @@ backup_function() {
     mkdir -p "$TARGET_DIRECTORY"
 
     # Perform rdiff-backup
-    rdiff-backup backup --exclude "**/transcodes/*" "$SOURCE_DIRECTORY" "$TARGET_DIRECTORY"
+    rdiff-backup backup \
+        --exclude "**/data/transcodes/*" \
+        --exclude "**/data/metadata/*" \
+        --exclude "**/cache/*" \
+        --exclude "**/log/*" \
+        "$SOURCE_DIRECTORY" \
+        "$TARGET_DIRECTORY"
 
     # Change ownership to syncthing:syncthing
     chown -R syncthing:syncthing "$TARGET_DIRECTORY"

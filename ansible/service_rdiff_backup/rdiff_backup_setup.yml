@@ -44,6 +44,10 @@
         LOG_NAME: backup_navidrome.log
         SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_NAVIDROME }}"
         TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/navidrome"
+      - name: reactive_resume
+        LOG_NAME: backup_reactive_resume.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_REACTIVE_RESUME }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/reactive_resume"
   tasks:
     - name: Get syncthing user id
       ansible.builtin.shell:
