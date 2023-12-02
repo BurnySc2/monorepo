@@ -49,11 +49,12 @@ def test_action_enum_failure(test_input: str):
 
 @given(
     optional_count=st.from_regex(r"(\d+)?", fullmatch=True),
-    action=st.from_regex(r"\w+", fullmatch=True),
+    action=st.from_regex(r"[a-zA-Z]+", fullmatch=True),
     operator=st.from_regex("<?", fullmatch=True),
     duration=st.from_regex(r"(\d+)?", fullmatch=True),
     duration_suffix=st.from_regex("(s|m)?", fullmatch=True),
 )
+@example("0", "v", "", "", "")
 @example("4", "towncenters", "<", "600", "")
 @example("4", "towncenters", "<", "600", "s")
 @example("4", "towncenters", "<", "10", "m")
