@@ -1,0 +1,37 @@
+# Execute with
+# ansible-playbook sonarqube_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Stop, remove image, and start sonarqube service
+  hosts: my_servers
+  vars:
+    USERNAME: "{{ secrets.SONARQUBE.USERNAME }}"
+  tasks:
+    - name: Stop sonarqube service
+      ansible.builtin.systemd_service:
+        name: "{{ USERNAME }}"
+        state: stopped
+        enabled: false
+
+    - name: Remove sonarqube-server container
+      community.docker.docker_container:
+        name: sonarqube-community
+        state: absent
+        image: sonarqube:lts-community
+
+    - name: Remove sonarqube-db container
+      community.docker.docker_container:
+        name: sonarqube-db
+        state: absent
+        image: postgres:12
+
+    - name: Remove sonarqube image
+      community.docker.docker_image:
+        name: sonarqube
+        tag: lts-community
+        state: absent
+
+    - name: Start sonarqube service again
+      ansible.builtin.systemd_service:
+        name: "{{ USERNAME }}"
+        state: started
+        daemon_reload: true
+        enabled: true

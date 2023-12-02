@@ -16,10 +16,10 @@
         LOG_NAME: backup_uptime_kuma.log
         SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_UPTIME_KUMA }}"
         TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/uptime_kuma"
-      - name: syncthing
-        LOG_NAME: backup_syncthing.log
-        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_SYNCTHING }}"
-        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/syncthing"
+      # - name: syncthing
+      #   LOG_NAME: backup_syncthing.log
+      #   SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_SYNCTHING }}"
+      #   TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/syncthing"
       - name: jellyfin
         LOG_NAME: backup_jellyfin.log
         SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_JELLYFIN }}"
