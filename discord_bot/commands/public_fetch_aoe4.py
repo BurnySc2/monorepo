@@ -588,8 +588,7 @@ class GamePlayerData(BaseModel):
                 # pyre-fixme[58]
                 return self.actions.upgrade_unit_town_center_wheelbarrow_1[0] <= condition.time_in_seconds
             return False
-        # pyre-fixme[7]
-        NotImplementedError(f"Not implemented for action: {condition.action}")
+        raise NotImplementedError(f"Not implemented for action: {condition.action}")
 
     def matches_all_conditions(self, conditions: list[Condition]) -> bool:
         return all(self.check_condition(condition) for condition in conditions)
