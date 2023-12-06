@@ -14,7 +14,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -106,19 +105,19 @@ venv.bak/
 # Pycharm
 .idea/
 
-# Vscode
-.vscode/
-
 # Header files
 *.h
 
-# Frontend
-build
-.svelte-kit
-node_modules
-svelte_frontend/test_frontend/latest_logs
-svelte_frontend/latest_logs
-latest_logs
+# Pants workspace files
+.pants.*
+.pids
+
+# Pyre
+.pyre
+
+# nim
+testresults
+nimcache
 
 # Test files from main.py
 hello_world.txt
@@ -128,6 +127,3 @@ main.log
 db.json
 sqlite_asyncio_example.db
 todos.db
-
-# Fastapi files
-fastapi_server/data

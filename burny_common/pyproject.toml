@@ -1,0 +1,70 @@
+[tool.poetry]
+name = "burny_common"
+version = "0.0.10"
+description = ""
+authors = ["BurnySc2 <gamingburny@gmail.com>"]
+packages = [
+    { include = "burny_common/*.py" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8, <3.12"
+loguru = "^0.7"
+click = "^8.1"
+paramiko = "^2.11"
+psutil = "^5.9"
+requests = "^2.28"
+types-requests = "^2.27"
+portpicker = "^1.5"
+
+[tool.poetry.group.dev.dependencies]
+toml = "^0.10.2"
+# Autoformat
+yapf = "^0.32.0"
+# Linter
+ruff = "^0.0.247"
+# Type checker
+pyre-check = "^0.9.18"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 120
+split_arguments_when_comma_terminated = true
+dedent_closing_brackets = true
+allow_split_before_dict_value = false
+
+[tool.ruff]
+target-version = 'py38'
+line-length = 120
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+select = [
+    "C4", # flake8-comprehensions
+    "E",  # Error
+    "F",  # pyflakes
+    "BLE",  # flake8-blind-except
+    "I",  # isort
+    "ISC", # flake8-implicit-str-concat
+    "N",  # pep8-naming
+    "PGH",  # pygrep-hooks
+    "PTH", # flake8-use-pathlib
+    "SIM",  # flake8-simplify
+    "W",  # Warning
+    "Q",  # flake8-quotes
+    "YTT", # flake8-2020
+    "UP",  # pyupgrade
+    "A",  # flake8-builtins
+]
+
+[tool.ruff.pyupgrade]
+# Preserve types, even if a file imports `from __future__ import annotations`.
+# Remove once support for py3.8 and 3.9 is dropped
+keep-runtime-typing = true
+
+[tool.ruff.pep8-naming]
+# Allow Pydantic's `@validator` decorator to trigger class method treatment.
+classmethod-decorators = ["pydantic.validator", "classmethod"]

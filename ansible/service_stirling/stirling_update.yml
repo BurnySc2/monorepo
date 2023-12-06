@@ -1,0 +1,37 @@
+# Execute with
+# ansible-playbook stirling_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start stirling service
+  hosts: my_servers
+  vars:
+    USERNAME: '{{ secrets.STIRLING.USERNAME }}'
+  tasks:
+  - name: Stop stirling service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Stop stirling container
+    community.docker.docker_container:
+      name: stirling
+      state: stopped
+      image: frooodle/s-pdf:latest
+
+  - name: Remove stirling container
+    community.docker.docker_container:
+      name: stirling
+      state: absent
+      image: frooodle/s-pdf:latest
+
+  - name: Remove stirling image
+    community.docker.docker_image:
+      name: frooodle/s-pdf
+      tag: latest
+      state: absent
+
+  - name: Start stirling service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

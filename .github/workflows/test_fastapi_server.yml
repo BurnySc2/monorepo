@@ -6,60 +6,153 @@ on:
     paths:
     - burny_common/**
     - fastapi_server/**
-    - poetry.lock
     - .github/workflows/test_fastapi_server.yml
   pull_request:
     branches:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: fastapi_server
+  IMAGENAME: fastapi_server
+  VERSION_NUMBER: 1.0.0
+
 jobs:
   test_backend:
-    env:
-      SUBDIRECTORY: fastapi_server
-      DATABASE_PATH: sqlite:///data/sqlmodel.db
+    name: test_backend_py${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.10', '3.11']
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
-      with:
-        python-version: ${{ matrix.python-version }}
+# In conflict with pyre-check
+#    - name: Set up Python ${{ matrix.python-version }}
+#      uses: actions/setup-python@v4
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#
+#    - name: Cache .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: .venv
+#        key: ${{ env.SUBDIRECTORY }}-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
 
-    - name: Cache poetry
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
 
-    - name: Install Python dependencies
+    - name: Install
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+    - name: Run code checks and tests
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+#    - name: Save cache
+#      working-directory: ${{ env.SUBDIRECTORY }}
+#      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+  build_and_deploy_docker_image:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build docker image
+      working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        python -m pip install poetry
-        poetry install
+        docker build -t burnysc2/${{ env.IMAGENAME }}:latest .
+        docker build -t burnysc2/${{ env.IMAGENAME }}:latest_dev .
+        docker build -t burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}} .
 
-    - name: Run Python tests
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - id: wait-for-jobs
+      uses: yogeshlonkar/wait-for-jobs@v0
+      with:
+        gh-token: ${{ secrets.GITHUB_TOKEN }}
+        jobs: |
+          test_backend_py3.10
+          test_backend_py3.11
+
+    - name: Upload docker image (develop)
+      if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       run: |
-        poetry run pytest ${{ env.SUBDIRECTORY }}
+        docker push burnysc2/${{ env.IMAGENAME }}:latest_dev
+        docker push burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}}
 
-  deploy_backend:
+    - name: Upload docker image (master)
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      run: docker push burnysc2/${{ env.IMAGENAME }}:latest
+
+  deploy_backend_dev:
+    if: github.ref == 'refs/heads/develop'
+    needs: [build_and_deploy_docker_image]
     strategy:
       matrix:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
-    needs: [test_backend]
+    env:
+      USERNAME: fastapidev
 
     steps:
-    - uses: actions/checkout@v2
+      # Requires the following 3 lines added to "visudo" on the server
+      # fastapidev ALL=(ALL) NOPASSWD: /bin/systemctl disable --now fastapidev
+      # fastapidev ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+      # fastapidev ALL=(ALL) NOPASSWD: /bin/systemctl enable --now fastapidev
+    - name: Update docker image on server and restart server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERDEVKEY }}
+        passphrase: ''
+        script: |
+          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+          docker image prune -af
+          docker pull burnysc2/${{ env.IMAGENAME }}:latest_dev
+          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
-    - name: Deploy backend
-      if: github.ref == 'refs/heads/master'
-      run: |
-        rm -rf data
-    # TODO Stop/disable service, upload to server, update poetry packages, start/enable service
+  deploy_backend_prod:
+    if: github.ref == 'refs/heads/master'
+    needs: [build_and_deploy_docker_image]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      USERNAME: fastapi
+
+    steps:
+      # Requires the following 3 lines added to "visudo" on the server
+      # fastapi ALL=(ALL) NOPASSWD: /bin/systemctl disable --now fastapi
+      # fastapi ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+      # fastapi ALL=(ALL) NOPASSWD: /bin/systemctl enable --now fastapi
+    - name: Update docker image on server and restart server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERKEY }}
+        passphrase: ''
+        script: |
+          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+          docker image prune -af
+          docker pull burnysc2/${{ env.IMAGENAME }}:latest
+          sudo /bin/systemctl enable --now ${{ env.USERNAME }}

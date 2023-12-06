@@ -6,69 +6,132 @@ on:
     paths:
     - python_examples/**
     - poetry.lock
+    - .github/workflows/python_examples.yml
   pull_request:
     branches:
     - master
     - develop
 
+env:
+  SUBDIRECTORY: python_examples
+
 jobs:
-  run_python_examples:
-    env:
-      SUBDIRECTORY: python_examples
+  run_code_check:
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.8', '3.9', '3.10']
-        mongodb-version: [5.0.0]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
+# In conflict with pyre-check
+#    - name: Set up Python ${{ matrix.python-version }}
+#      uses: actions/setup-python@v4
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#
+#    - name: Cache .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: .venv
+#        key: ${{ env.SUBDIRECTORY }}-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+    - name: Start MongoDB
+      uses: ankane/setup-mongodb@v1
+
+    - name: Start Postgres
+      uses: ankane/setup-postgres@v1
+      with:
+        postgres-version: 14
+
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+
+    - name: Install
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+    - name: Run code checks and tests
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+#    - name: Save cache
+#      working-directory: ${{ env.SUBDIRECTORY }}
+#      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+  run_python_examples:
+    needs: [run_code_check]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.9', '3.10', '3.11']
+        include:
+        - os: macos-latest
+          python-version: '3.10'
+        - os: windows-latest
+          python-version: '3.10'
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Cache poetry
-      uses: actions/cache@v2
+    - name: Install Poetry
+      run: pip install poetry
+
+    - name: Make poetry use local .venv folder
+      run: poetry config virtualenvs.in-project true
+
+    - name: Set up cache
+      if: matrix.os != 'windows-latest'
+      uses: actions/cache@v3
       with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+        path: ${{ env.SUBDIRECTORY }}.venv
+        key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
 
-    - name: Start MongoDB in docker
-      run: |
-        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:${{ matrix.mongodb-version }}
+    - name: Start MongoDB
+      uses: ankane/setup-mongodb@v1
+#      with:
+#        mongodb-version: 5.0
 
-    - name: Start Postgres in docker
-      run: |
-        docker run --rm -d --name postgresql-container -p 5432:5432 \
-          -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
+#    - name: Start MongoDB in docker
+#      if: ${{ matrix.os != 'macos-latest'}}
+#      run: |
+#        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0
 
-    - uses: actions/cache@v2
+    - name: Start Postgres
+      uses: ankane/setup-postgres@v1
       with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+        postgres-version: 14
+
+#    - name: Start Postgres in docker
+#      if: ${{ matrix.os == 'ubuntu-latest'}}
+#      run: |
+#        docker run --rm -d --name postgresql-container -p 5432:5432 \
+#          -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
 
     - name: Print environment variables (linux)
       run: |
         printenv
 
-    - name: Install dependencies
-      run: |
-        python -m pip install poetry
-        poetry install
+    - name: Install Python dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry install
 
-    - name: Test with pytest
-      run: |
-        poetry run pytest ${{ env.SUBDIRECTORY }}
+    - name: Run Python tests
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run python -m pytest
 
     - name: Run main.py
-      run: |
-        poetry run python ${{ env.SUBDIRECTORY }}/main.py
-
-    - name: Run radon (cyclomatic complexity report)
-      # './' denotes the current directory
-      run: |
-        poetry run radon cc ./ -a -nb
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run python main.py

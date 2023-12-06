@@ -1,0 +1,91 @@
+# https://github.com/rdiff-backup/rdiff-backup
+# Execute with
+# ansible-playbook rdiff_backup_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start duplicati service
+  hosts: my_servers
+  vars:
+    USERNAME: root
+    BACKUP_SCRIPT_PATH: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/backup_script.sh"
+    AMOUNT_OF_BACKUPS: 3
+    backup_jobs:
+      - name: factorio
+        LOG_NAME: backup_factorio.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_FACTORIO }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/factorio"
+      - name: uptime_kuma
+        LOG_NAME: backup_uptime_kuma.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_UPTIME_KUMA }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/uptime_kuma"
+      # - name: syncthing
+      #   LOG_NAME: backup_syncthing.log
+      #   SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_SYNCTHING }}"
+      #   TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/syncthing"
+      - name: jellyfin
+        LOG_NAME: backup_jellyfin.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_JELLYFIN }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/jellyfin"
+      - name: trillium
+        LOG_NAME: backup_trillium.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_TRILLIUM }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/trillium"
+      - name: audiobookshelf
+        LOG_NAME: backup_audiobookshelf.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_AUDIOBOOKSHELF }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/audiobookshelf"
+      - name: paperless
+        LOG_NAME: backup_paperless.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_PAPERLESS }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/paperless"
+      - name: bookshelf
+        LOG_NAME: backup_bookshelf.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_BOOKSHELF }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/bookshelf"
+      - name: navidrome
+        LOG_NAME: backup_navidrome.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_NAVIDROME }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/navidrome"
+      - name: reactive_resume
+        LOG_NAME: backup_reactive_resume.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_REACTIVE_RESUME }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/reactive_resume"
+  tasks:
+    - name: Get syncthing user id
+      ansible.builtin.shell:
+        cmd: id syncthing -u
+      register: SYNCTHING_USER_ID
+
+    - name: Get syncthing group id
+      ansible.builtin.shell:
+        cmd: id syncthing -g
+      register: SYNCTHING_GROUP_ID
+
+    # Install latest version of https://github.com/rdiff-backup/rdiff-backup
+    - name: Install rdiff-backup
+      ansible.builtin.apt:
+        name: rdiff-backup
+        state: latest
+
+    - name: Create directories
+      file:
+        path: "{{ item }}"
+        recurse: true
+        state: directory
+        owner: "{{ SYNCTHING_USER_ID.stdout }}"
+        group: "{{ SYNCTHING_GROUP_ID.stdout }}"
+      loop:
+        - "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}"
+
+    - name: Copy backup script
+      template:
+        src: backup_script.sh
+        dest: "{{ BACKUP_SCRIPT_PATH }}"
+        owner: "{{ SYNCTHING_USER_ID.stdout }}"
+        group: "{{ SYNCTHING_GROUP_ID.stdout }}"
+
+    - name: Add backups
+      ansible.builtin.cron:
+        name: "Run {{ item.name }} backup"
+        job: /bin/sh '{{ BACKUP_SCRIPT_PATH }}' '{{ item.SOURCE_DIRECTORY }}' '{{ item.TARGET_DIRECTORY }}' '{{ AMOUNT_OF_BACKUPS }}' >> '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/{{ item.LOG_NAME }}'
+        special_time: daily
+        user: "{{ USERNAME }}"
+      with_items: "{{ backup_jobs }}"

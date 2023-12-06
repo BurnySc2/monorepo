@@ -1,0 +1,12 @@
+# /etc/systemd/system/{{ secrets.BOOKSTACK.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker compose up
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.BOOKSTACK.USERNAME }}
+User={{ secrets.BOOKSTACK.USERNAME }}
+Group={{ secrets.BOOKSTACK.USERNAME }}
+WorkingDirectory=/home/{{ secrets.BOOKSTACK.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target

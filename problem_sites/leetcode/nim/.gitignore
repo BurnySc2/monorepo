@@ -1,0 +1,17 @@
+nimcache/
+nimblecache/
+htmldocs/
+
+# No executables
+bin
+
+# Ignore files without an extension
+*
+!*/
+!*.*
+
+# Ignore generated javascript files
+*.js
+
+nimpb_build
+nimpb_build.exe

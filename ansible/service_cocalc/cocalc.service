@@ -1,0 +1,24 @@
+# /etc/systemd/system/{{ secrets.COCALC.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker run \
+    --rm \
+    --name=cocalc \
+    --env NOSSL=true \
+    -v ./cocalc:/projects \
+    -l traefik.enable=true \
+    -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.rule=Host(`{{ secrets.COCALC.USERNAME }}.{{ secrets.MY_DOMAIN }}`) \
+    -l traefik.http.services.{{ secrets.COCALC.USERNAME }}.loadbalancer.server.port=80 \
+    -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.tls=true \
+    -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.tls.certresolver=production \
+    -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.middlewares=authelia@docker \
+    --network {{ secrets.TRAFIK_NETWORK }} \
+    sagemathinc/cocalc-v2:latest
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.COCALC.USERNAME }}
+User={{ secrets.COCALC.USERNAME }}
+Group={{ secrets.COCALC.USERNAME }}
+WorkingDirectory=/home/{{ secrets.COCALC.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target

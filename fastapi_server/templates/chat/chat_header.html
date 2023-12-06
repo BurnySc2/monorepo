@@ -1,0 +1,15 @@
+<header id="chatheader">
+  <div>
+    <!-- https://kit.svelte.dev/docs/link-options#data-sveltekit-preload-data -->
+    {% if debug %}
+    <button hx-delete="/htmxapi/detele_messages">DEBUG delete all messages</button>
+    {% endif %}
+    {% if logged_in %}
+    <a href="https://{{ server_url }}/logout">Log out</a>
+    {% endif %} {% if not logged_in %}
+    <a href="https://github.com/login/oauth/authorize?client_id={{ client_id }}"
+      >Log in with Github</a
+    >
+    {% endif %}
+  </div>
+</header>

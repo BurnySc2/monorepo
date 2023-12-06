@@ -1,0 +1,15 @@
+# /etc/systemd/system/discordbot.service
+[Service]
+ExecStart=/usr/bin/docker run --rm --name discord_bot --env STAGE=PROD \
+    -v ./data:/root/discord_bot/data \
+    -v ./SECRETS.toml:/root/discord_bot/SECRETS.toml:ro \
+    burnysc2/discord_bot:latest
+Restart=always
+RestartSec=20
+SyslogIdentifier=discordbot
+User=discordbot
+Group=discordbot
+WorkingDirectory=/home/discordbot
+
+[Install]
+WantedBy=multi-user.target

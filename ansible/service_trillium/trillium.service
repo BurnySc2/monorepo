@@ -1,0 +1,23 @@
+# /etc/systemd/system/{{ secrets.TRILLIUM.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker run \
+    --rm \
+    --name=trillium \
+    -v ./data:/home/node/trilium-data \
+    -l traefik.enable=true \
+    -l traefik.http.routers.{{ secrets.TRILLIUM.USERNAME }}.rule=Host(`{{ secrets.TRILLIUM.USERNAME }}.{{ secrets.MY_DOMAIN }}`) \
+    -l traefik.http.services.{{ secrets.TRILLIUM.USERNAME }}.loadbalancer.server.port=8080 \
+    -l traefik.http.routers.{{ secrets.TRILLIUM.USERNAME }}.tls=true \
+    -l traefik.http.routers.{{ secrets.TRILLIUM.USERNAME }}.tls.certresolver=production \
+    -l traefik.http.routers.{{ secrets.TRILLIUM.USERNAME }}.middlewares=authelia@docker \
+    --network {{ secrets.TRAFIK_NETWORK }} \
+    zadam/trilium
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.TRILLIUM.USERNAME }}
+User={{ secrets.TRILLIUM.USERNAME }}
+Group={{ secrets.TRILLIUM.USERNAME }}
+WorkingDirectory=/home/{{ secrets.TRILLIUM.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target

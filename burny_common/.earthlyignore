@@ -1,0 +1,8 @@
+__pycache__
+.benchmarks
+.hypothesis
+.idea
+.pyre
+.pytest_cache
+.ruff_cache
+data

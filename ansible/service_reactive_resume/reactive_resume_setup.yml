@@ -1,0 +1,96 @@
+# Execute with
+# ansible-playbook reactive_resume_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start reactive_resume service
+  hosts: my_servers
+  vars:
+    USERNAME: "{{ secrets.REACTIVE_RESUME.USERNAME }}"
+  tasks:
+    - name: Create group
+      ansible.builtin.group:
+        name: "{{ USERNAME }}"
+        state: present
+
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ USERNAME }}"
+        groups:
+          - "{{ USERNAME }}"
+          - docker
+        shell: "{{ secrets.DEFAULT_SHELL }}"
+
+    - name: Get user id
+      ansible.builtin.shell:
+        cmd: id {{ USERNAME }} -u
+      register: USER_ID
+
+    - name: Get group id
+      ansible.builtin.shell:
+        cmd: id {{ USERNAME }} -g
+      register: GROUP_ID
+
+    - name: Print user id
+      ansible.builtin.debug:
+        var: USER_ID.stdout
+        verbosity: 0
+
+    - name: Print group id
+      ansible.builtin.debug:
+        var: GROUP_ID.stdout
+        verbosity: 0
+
+    - name: Create systemd file
+      template:
+        src: reactive_resume.service
+        dest: /etc/systemd/system/{{ USERNAME }}.service
+        owner: "{{ USER_ID.stdout }}"
+        group: "{{ GROUP_ID.stdout }}"
+
+    - name: Create docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+        owner: "{{ USER_ID.stdout }}"
+        group: "{{ GROUP_ID.stdout }}"
+
+    - name: Stop reactive_resume service
+      ansible.builtin.systemd_service:
+        name: "{{ USERNAME }}"
+        state: stopped
+        enabled: false
+
+    - name: Remove reactive_resume_app container
+      community.docker.docker_container:
+        name: reactive_resume_app
+        state: absent
+        image: amruthpillai/reactive-resume:latest
+
+    - name: Remove reactive_resume_postgres container
+      community.docker.docker_container:
+        name: reactive_resume_postgres
+        state: absent
+        image: postgres:15-alpine
+
+    - name: Remove reactive_resume_minio container
+      community.docker.docker_container:
+        name: reactive_resume_postgres
+        state: absent
+        image: minio/minio:latest
+
+    - name: Remove reactive_resume_chrome container
+      community.docker.docker_container:
+        name: reactive_resume_chrome
+        state: absent
+        image: browserless/chrome:1.61.0-puppeteer-21.4.1
+
+    - name: Remove reactive_resume_redis container
+      community.docker.docker_container:
+        name: reactive_resume_redis
+        state: absent
+        image: redis:alpine
+
+    - name: Start reactive_resume service again
+      ansible.builtin.systemd_service:
+        name: "{{ USERNAME }}"
+        state: started
+        daemon_reload: true
+        enabled: true

@@ -1,80 +1,44 @@
-[![publish_example_package](https://github.com/BurnySc2/monorepo/actions/workflows/publish_example_package.yml/badge.svg?branch=master)](https://github.com/BurnySc2/monorepo/actions/workflows/publish_example_package.yml)
 [![python_examples](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml)
+[![test_discord_bot](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml)
 [![test_fastapi_server](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml)
-[![test_react_frontend](https://github.com/BurnySc2/monorepo/actions/workflows/test_react_frontend.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_react_frontend.yml)
-[![test_svelte_frontend](https://github.com/BurnySc2/monorepo/actions/workflows/test_svelte_frontend.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_svelte_frontend.yml)
+[![run_earthly_checks](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml)
 
 # Monorepo
 My monorepo for various tools and showcases
 
-# Useful Poetry commands
-https://python-poetry.org/docs/cli/
-### Create new project
-`poetry init`
-### Install dependencies
-`poetry install`
+# Development
+### Pre-requisites
+- [Python](https://www.python.org/downloads)
+    - [Poetry](https://python-poetry.org/docs/)
+- [Earthly](https://earthly.dev)
 
-`poetry install --no-dev`
-### Add dependencies
-`poetry add <package-name>`
+## VScode
+Run VScode task called `Install requirements` or alternatively run `sh .vscode/install_requirements.sh` or alternatively run `poetry install` in the python projects or `npm install` in the frontend projects.
 
-Add dev dependency:
+Open the Command Palette and `Workspaces: Add Folder to Workspace...` and select the folders you want to edit.
 
-`poetry add <package-name> --dev`
-### Remove dependencies
-`poetry remove <package-name>`
-### Update dependencies
-`poetry update`
-### List current and latest available version
-`poetry show -l`
-### Same as above, but only show outdated
-`poetry show -o`
-### List of packages
-`poetry show`
-### Run a file in virtual environment
-`poetry run python python_examples/main.py`
+Now set up the correct interpreter path (may have to navigate the absolute path, on linux that is `~/.cache/pypoetry/virtualenvs/...`). The running the command `poetry env info --path` in each project shows where the environment was installed to. 
 
-`poetry run pytest`
+## VS code
+TODO
 
-### Write requirements.txt from Poetry lock file
-`poetry export -f requirements.txt > requirements.txt`
-
-
-# Run python files
-- install `poetry` using command `pip install poetry`
-- run the python file `main.py` using `poetry run python main.py`
-- or `poetry shell` and then run `python main.py`
-
-
-# Run Tests
-Single file:
-`poetry run pytest test/test_functions.py`
-Single function:
-`poetry run pytest test/test_functions.py::test_fuction_name`
-Single function in class:
-`poetry run pytest test/test_functions.py::class_name::test_fuction_name`
-
-Test all files in project:
-`poetry run pytest`
-
-# Run and display code coverage 
-In pycharm: right click folder and `More Run/Debug` -> `Run pytest in '...' with coverage'`
-
-```
-poetry run pytest --cov=. --cov-report xml --cov-report html && poetry run coverage html
+# Check dependencies
+To avoid packages with large packages, we can use `pipdeptree`
+```sh
+poetry run pipdeptree > deps.txt
 ```
 
-then use `coverage gutters` extension in VScode
-
-or open the generated html file in folder `htmlcov`
-
-# Install and run all pre-commit hook scripts
-```py
+# Install and run pre-commit hook on all staged files
+```sh
 poetry run pre-commit install
-poetry run pre-commit run --all-files
+poetry run pre-commit run --all-files --verbose --hook-stage push
 ```
 
 This runs pylint, mypy, pytest tests, apply autoformatter yapf
 
-# Autoformat all python files
-`poetry run yapf ./**/*.py -i`
+# Autoformat all files
+`earthly +format`
+
+# Recommended websites and tools:
+[Convert JSON API response to types](https://app.quicktype.io/#l=Python)
+[Convert curl to python requests](https://curlconverter.com)

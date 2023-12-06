@@ -1,0 +1,17 @@
+# /etc/systemd/system/transcribe.service
+[Service]
+ExecStart=/usr/bin/docker run --rm \
+    --name transcribe_worker \
+    -v ./SECRETS.toml:/app/SECRETS.toml:ro \
+    -v ./whisper_models:/app/whisper_models \
+    burnysc2/transcribe_worker:latest
+Restart=always
+RestartSec=20
+SyslogIdentifier=transcribe
+User=transcribe
+Group=transcribe
+WorkingDirectory=/home/transcribe
+ExecStop=/usr/bin/docker rm -f transcribe_worker
+
+[Install]
+WantedBy=multi-user.target

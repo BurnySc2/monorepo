@@ -1,0 +1,124 @@
+name: test_transcriber_backend
+
+
+on:
+  push:
+    paths:
+    - transcribe_website/transcriber_backend/**
+    - .github/workflows/test_transcriber_backend.yml
+  pull_request:
+    branches:
+    - develop
+
+env:
+  SUBDIRECTORY: transcribe_website/transcriber_backend
+  IMAGENAME: transcribe_worker
+  VERSION_NUMBER: 1.0.0
+
+jobs:
+  test_backend:
+    name: test_backend_py${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.8', '3.9', '3.10']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+# In conflict with pyre-check
+#    - name: Set up Python ${{ matrix.python-version }}
+#      uses: actions/setup-python@v4
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#
+#    - name: Cache .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: .venv
+#        key: ${{ env.SUBDIRECTORY }}-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+
+    - name: Install
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+    - name: Run code checks and tests
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+#    - name: Save cache
+#      working-directory: ${{ env.SUBDIRECTORY }}
+#      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+  build_and_deploy_docker_image:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build docker image
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: |
+        docker build -t burnysc2/${{ env.IMAGENAME }}:latest .
+        docker build -t burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}} .
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - id: wait-for-jobs
+      uses: yogeshlonkar/wait-for-jobs@v0
+      with:
+        gh-token: ${{ secrets.GITHUB_TOKEN }}
+        jobs: |
+          test_backend_py3.8
+          test_backend_py3.9
+          test_backend_py3.10
+
+    - name: Upload docker image
+      if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+      run: |
+        docker push burnysc2/${{ env.IMAGENAME }}:latest
+        docker push burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}}
+
+  deploy_transcribe_worker:
+    if: github.ref == 'refs/heads/develop'
+    needs: [build_and_deploy_docker_image]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      USERNAME: transcribe
+
+    steps:
+      # Requires the following 3 lines added to "visudo" on the server
+      # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl disable --now transcribe
+      # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+      # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl enable --now transcribe
+    - name: Update docker image on server and restart server
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.TRANSCRIBEWORKERKEY }}
+        passphrase: ''
+        script: |
+          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+          docker image prune -af
+          docker pull burnysc2/${{ env.IMAGENAME }}:latest
+          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
+

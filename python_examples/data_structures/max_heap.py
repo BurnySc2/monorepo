@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import math
-from typing import List
 
 # [
 #     1,
@@ -11,21 +12,21 @@ from typing import List
 class MaxHeap:
 
     def __init__(self):
-        self.tree: List[int] = [0]
+        self.tree: list[int] = [0]
 
     def __repr__(self):
         return_list = []
         multiples_of_two = {2**n for n in range(1, 1 + int(math.log(len(self.tree), 2)))}
         for index, value in enumerate(self.tree[1:], start=1):
             if index in multiples_of_two:
-                return_list.append('\n')
+                return_list.append("\n")
             return_list.append(value)
-            return_list.append(' ')
-        return ''.join(str(x) for x in return_list)
+            return_list.append(" ")
+        return "".join(str(x) for x in return_list)
 
     def pop(self):
         if len(self.tree) < 2:
-            raise IndexError('cant pop empty heap')
+            raise IndexError("cant pop empty heap")
         return_value = self.tree[1]
         if len(self.tree) > 2:
             self.tree[1] = self.tree[-1]
@@ -41,11 +42,11 @@ class MaxHeap:
     @classmethod
     def _get_parent(cls, index: int) -> int:
         if index < 2:
-            raise IndexError('root node has no parents')
+            raise IndexError("root node has no parents")
         return index // 2
 
     @classmethod
-    def _get_children(cls, index: int) -> List[int]:
+    def _get_children(cls, index: int) -> list[int]:
         times_two = index * 2
         return [times_two, times_two + 1]
 
@@ -64,13 +65,7 @@ class MaxHeap:
 
         if child1 > max_index:
             return
-
-        swap_child = None
-        if child2 > max_index:
-            swap_child = child1
-        else:
-            swap_child = max(child1, child2, key=lambda x: self.tree[x])
-        assert swap_child is not None
+        swap_child = child1 if child2 > max_index else max(child1, child2, key=lambda x: self.tree[x])
 
         # Swap current element with the biggest child
         if self.tree[swap_child] > self.tree[index]:
@@ -78,7 +73,7 @@ class MaxHeap:
             self._move_down(swap_child)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     m = MaxHeap()
     for i in range(1, 8):
         m.insert(i)
@@ -86,6 +81,6 @@ if __name__ == '__main__':
     for i in range(7, 0, -1):
         print(m)
         my_value = m.pop()
-        assert i == my_value, f'Expected {i}, got {my_value}'
+        assert i == my_value, f"Expected {i}, got {my_value}"
 
     print(m)

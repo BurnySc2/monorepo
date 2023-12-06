@@ -1,22 +1,23 @@
+from __future__ import annotations
+
 import math
-from typing import List, Optional
 
 
 class MinHeap:
 
     def __init__(self):
         """ Implementation of binary heap as min-heap """
-        self.heap: List[int] = [-1]
+        self.heap: list[int] = [-1]
 
     def __repr__(self):
         return_list = []
         multiples_of_two = {2**n for n in range(1, 1 + int(math.log(len(self.heap), 2)))}
         for i, value in enumerate(self.heap[1:], start=1):
             if i in multiples_of_two:
-                return_list.append('\n')
+                return_list.append("\n")
             return_list.append(value)
-            return_list.append(' ')
-        return ''.join(str(x) for x in return_list)
+            return_list.append(" ")
+        return "".join(str(x) for x in return_list)
 
     def get_parent(self, index: int) -> int:
         return self.heap[index // 2]
@@ -33,13 +34,13 @@ class MinHeap:
     def get_right_child_index(cls, index: int) -> int:
         return index * 2 + 1
 
-    def get_left_child(self, index: int) -> Optional[int]:
+    def get_left_child(self, index: int) -> int | None:
         try:
             return self.heap[index * 2]
         except IndexError:
             return None
 
-    def get_right_child(self, index: int) -> Optional[int]:
+    def get_right_child(self, index: int) -> int | None:
         try:
             return self.heap[index * 2 + 1]
         except IndexError:
@@ -88,12 +89,12 @@ class MinHeap:
     def get_min(self) -> int:
         if len(self.heap) > 0:
             return self.heap[1]
-        raise IndexError('get_min from empty heap')
+        raise IndexError("get_min from empty heap")
 
     def delete_min(self):
         # Swap minimum with last item in list before removing
         if len(self.heap) < 2:
-            raise IndexError('delete_min from empty heap')
+            raise IndexError("delete_min from empty heap")
         if len(self.heap) < 3:
             self.heap.pop(1)
             return
@@ -109,22 +110,23 @@ class MinHeap:
             self.insert(i)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     p = MinHeap()
     build_list = [1, 2, 3, 4, 5, 6, 7]
     p.build(build_list)
-    assert len(p.heap) == 8, 'build() function or insert() function not working as expected'
+    assert len(p.heap) == 8, "build() function or insert() function not working as expected"
     """ p:
     1
     2 3
     4 5 6 7
     """
     for i in build_list:
-        assert not p.is_empty(), 'Min heap should be not empty, but is returned to be empty'
+        assert not p.is_empty(), "Min heap should be not empty, but is returned to be empty"
         value = p.get_min()
-        assert (
-            value == i
-        ), f"get_min or delete_min function not working as expected, received value '{value}' but should have been '{i}', heap:\n{p}"
+        assert (value == i), (
+            f"get_min or delete_min function not working as expected, "
+            f"received value '{value}' but should have been '{i}', heap:\n{p}"
+        )
         p.delete_min()
 
     assert p.is_empty(), "Min heap should be empty, but isn't"

@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import math
 from collections import Counter
 from typing import Counter as TypingCounter
-from typing import List
 
 
-def sieve_of_eratosthenes(limit: int) -> List[int]:
+def sieve_of_eratosthenes(limit: int) -> list[int]:
     if limit < 2:
         return []
     sieve = [True for _ in range(limit)]
@@ -21,7 +22,7 @@ def sieve_of_eratosthenes(limit: int) -> List[int]:
     return primes
 
 
-def prime_factors(n: int, primes: List[int] = None) -> Counter:
+def prime_factors(n: int, primes: list[int] | None = None) -> Counter:
     if primes is None:
         primes = sieve_of_eratosthenes(int(n**0.5 + 1))
     i = 0
@@ -46,10 +47,7 @@ def is_prime(n: int) -> bool:
     if n % 2 == 0:
         return False
     # For python 3.8: math.isqrt()
-    for i in range(3, int(math.sqrt(n)) + 1, 2):
-        if n % i == 0:
-            return False
-    return True
+    return all(n % i != 0 for i in range(3, math.isqrt(n) + 1, 2))
 
 
 def next_prime(n: int):
@@ -126,5 +124,5 @@ def test_prime_functions():
             assert prime_factors(i) == prime_factors_dict[i]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_prime_functions()

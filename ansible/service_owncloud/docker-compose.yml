@@ -1,0 +1,66 @@
+version: '3'
+
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+services:
+  owncloud:
+    image: owncloud/server:latest
+    container_name: owncloud_server
+    hostname: owncloud_server
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    restart: always
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.rule=Host(`{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ secrets.OWNCLOUD.USERNAME }}.loadbalancer.server.port=8080
+    - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.tls=true
+    - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.middlewares=authelia@docker
+    depends_on:
+    - mariadb
+    environment:
+    - PUID="{{ USER_ID.stdout }}"
+    - PGID="{{ GROUP_ID.stdout }}"
+    - OWNCLOUD_DOMAIN={{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
+    - OWNCLOUD_TRUSTED_DOMAINS="localhost,{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
+    - OWNCLOUD_DB_TYPE=mysql
+    - OWNCLOUD_DB_NAME={{ secrets.OWNCLOUD.MYSQL_DATABASE }}
+    - OWNCLOUD_DB_USERNAME={{ secrets.OWNCLOUD.MYSQL_USER }}
+    - OWNCLOUD_DB_PASSWORD={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}
+    - OWNCLOUD_DB_HOST=owncloud_mariadb
+    - OWNCLOUD_ADMIN_USERNAME={{ secrets.OWNCLOUD.ADMIN_USERNAME }}
+    - OWNCLOUD_ADMIN_PASSWORD={{ secrets.OWNCLOUD.ADMIN_PASSWORD }}
+    - OWNCLOUD_MYSQL_UTF8MB4=true
+    - OWNCLOUD_REDIS_ENABLED=false
+    - OWNCLOUD_REDIS_HOST=owncloud_redis
+    healthcheck:
+      test: [CMD, /usr/bin/healthcheck]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+    - ./data:/mnt/data
+
+  mariadb:
+    image: mariadb:10.11 # minimum required ownCloud version is 10.9
+    container_name: owncloud_mariadb
+    hostname: owncloud_mariadb
+    restart: always
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    environment:
+    - MYSQL_ROOT_PASSWORD={{ secrets.OWNCLOUD.MYSQL_ROOT_PASSWORD }}
+    - MYSQL_USER={{ secrets.OWNCLOUD.MYSQL_USER }}
+    - MYSQL_PASSWORD={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}
+    - MYSQL_DATABASE={{ secrets.OWNCLOUD.MYSQL_DATABASE }}
+    command: [--max-allowed-packet=128M, --innodb-log-file-size=64M]
+    healthcheck:
+      test: [CMD, mysqladmin, ping, -u, root, '--password={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+    - ./mysql:/var/lib/mysql

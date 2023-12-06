@@ -1,0 +1,94 @@
+[tool.poetry]
+name = "fastapi_server"
+version = "0.1.0"
+description = ""
+authors = ["BuRny <gamingburny@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.8.1 <3.12"
+# Write and read classes to/from json
+# Fastapi server
+fastapi = "^0.103.1"
+httpx = "^0.25.0" # Required by starlette
+uvicorn = {extras = ["standard"], version = "^0.18.1"}
+# HTML Templating
+jinja2 = "^3.1.2"
+# Somehow required
+colorama = "^0.4.4"
+# Simple logger
+loguru = "^0.5"
+# Replay parser
+zephyrus-sc2-parser = "^0.3.7"
+# Multipart replay upload
+python-multipart = "^0.0.5"
+portpicker = "^1.5.2"
+# Video downloader
+streamlink = "^5.0.1"
+# Async postgresql connection
+asyncpg = "^0.28.0"
+# Timestamps
+arrow = "^1.2.3"
+# Requests
+aiohttp = "^3.8.5"
+# Awesome dataclasses with validation
+pydantic = "^2"
+
+[tool.poetry.group.dev.dependencies]
+# Test library
+pytest = "^7.1"
+pytest-asyncio = "^0.16"
+pytest-benchmark = "^4.0"
+# Property based testing
+hypothesis = "^6.39.3"
+# Info about the system
+psutil = "^5.9.1"
+# End to end tests
+playwright = "^1.22.0"
+pytest-playwright = "^0.3.0"
+# Autoformat
+yapf = "^0.32.0"
+toml = "^0.10.2"
+# Linter
+ruff = "^0.0.247"
+# Type checker
+pyre-check = "^0.9.18"
+# Analyze depenencies
+pipdeptree = "^2.13.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.yapf]
+based_on_style = "pep8"
+column_limit = 120
+split_arguments_when_comma_terminated = true
+dedent_closing_brackets = true
+allow_split_before_dict_value = false
+
+[tool.ruff]
+target-version = 'py310'
+line-length = 120
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+select = [
+    "C4", # flake8-comprehensions
+    "E",  # Error
+    "F",  # pyflakes
+    "BLE",  # flake8-blind-except
+    "I",  # isort
+    "ISC", # flake8-implicit-str-concat
+    "N",  # pep8-naming
+    "PGH",  # pygrep-hooks
+    "PTH", # flake8-use-pathlib
+    "SIM",  # flake8-simplify
+    "W",  # Warning
+    "Q",  # flake8-quotes
+    "YTT", # flake8-2020
+    "UP",  # pyupgrade
+#    "A",  # flake8-builtins
+]
+
+[tool.ruff.pep8-naming]
+# Allow Pydantic's `@validator` decorator to trigger class method treatment.
+classmethod-decorators = ["pydantic.validator", "classmethod"]

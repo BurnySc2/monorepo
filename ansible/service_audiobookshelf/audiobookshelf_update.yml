@@ -1,0 +1,37 @@
+# Execute with
+# ansible-playbook audiobookshelf_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Stop, remove image, and start audiobookshelf service
+  hosts: my_servers
+  vars:
+    USERNAME: '{{ secrets.AUDIOBOOKSHELF.USERNAME }}'
+  tasks:
+  - name: Stop audiobookshelf service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Stop audiobookshelf container
+    community.docker.docker_container:
+      name: audiobookshelf
+      state: stopped
+      image: ghcr.io/advplyr/audiobookshelf
+
+  - name: Remove audiobookshelf container
+    community.docker.docker_container:
+      name: audiobookshelf
+      state: absent
+      image: ghcr.io/advplyr/audiobookshelf
+
+  - name: Remove audiobookshelf image
+    community.docker.docker_image:
+      name: ghcr.io/advplyr/audiobookshelf
+      tag: latest
+      state: absent
+
+  - name: Start audiobookshelf service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

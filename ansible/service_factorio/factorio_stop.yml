@@ -1,0 +1,37 @@
+# Stop factorio service, remove container, remove image
+# Execute with
+# ansible-playbook factorio_stop.yml -i ../hosts
+- name: Stop factorio
+  hosts: my_servers
+  vars:
+    USERNAME: factorio
+  tasks:
+  - name: Stop factorio server
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Stop factorio container
+    community.docker.docker_container:
+      name: '{{ USERNAME }}'
+      state: stopped
+      image: factoriotools/factorio
+
+  - name: Remove factorio container
+    community.docker.docker_container:
+      name: '{{ USERNAME }}'
+      state: absent
+      image: factoriotools/factorio
+
+  - name: Remove factorio image
+    community.docker.docker_image:
+      name: factoriotools/factorio
+      tag: latest
+      state: absent
+
+    # - name: Remove the user 'factorio'
+    #   ansible.builtin.user:
+    #     name: {{ USERNAME }}
+    #     state: absent
+    #     remove: true

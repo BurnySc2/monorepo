@@ -1,9 +1,9 @@
 import io
 from pathlib import Path
 from typing import Iterable
-from zipfile import ZipFile, ZIP_DEFLATED
+from zipfile import ZIP_DEFLATED, ZipFile
 
-from burny_common.path_manipulation import recurse_path
+from burny_common.path_manipulation import recurse_path  # pyre-fixme[21]
 
 
 def zip_multiple_files(file_paths: Iterable[Path]) -> bytes:
@@ -19,8 +19,8 @@ def zip_multiple_files(file_paths: Iterable[Path]) -> bytes:
 
 
 def unzip_multiple_files(data: bytes, target_folder: Path) -> None:
-    zip = ZipFile(io.BytesIO(data))
-    zip.extractall(target_folder)
+    with ZipFile(io.BytesIO(data)) as zip_file:
+        zip_file.extractall(target_folder)
 
 
 def main():
@@ -33,5 +33,5 @@ def main():
     unzip_multiple_files(zipped, temp_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

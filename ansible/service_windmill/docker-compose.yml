@@ -1,0 +1,114 @@
+version: '3.7'
+
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+services:
+  db:
+    container_name: windmill_db
+    hostname: windmill_db
+    deploy:
+      # To use an external database, set replicas to 0 and set DATABASE_URL to the external database url in the .env file
+      replicas: 1
+    image: postgres:14
+    restart: unless-stopped
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    volumes:
+    - ./db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: '{{ secrets.WINDMILL.POSTGRES_DB }}'
+      POSTGRES_PASSWORD: '{{ secrets.WINDMILL.POSTGRES_PASSWORD }}'
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U postgres]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  windmill_server:
+    container_name: windmill_server
+    image: ghcr.io/windmill-labs/windmill:main
+    pull_policy: always
+    deploy:
+      replicas: 1
+    restart: unless-stopped
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.{{ secrets.WINDMILL.USERNAME }}.rule=Host(`{{ secrets.WINDMILL.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ secrets.WINDMILL.USERNAME }}.loadbalancer.server.port=8000
+    - traefik.http.routers.{{ secrets.WINDMILL.USERNAME }}.tls=true
+    - traefik.http.routers.{{ secrets.WINDMILL.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.WINDMILL.USERNAME }}.middlewares=authelia@docker
+    environment:
+    - DATABASE_URL={{ secrets.WINDMILL.DATABASE_URL }}
+    - MODE=server
+    depends_on:
+      db:
+        condition: service_healthy
+
+  windmill_worker:
+    image: ghcr.io/windmill-labs/windmill:main
+    pull_policy: always
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2048M
+    restart: unless-stopped
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    environment:
+    - DATABASE_URL={{ secrets.WINDMILL.DATABASE_URL }}
+    - MODE=worker
+    - WORKER_GROUP=default
+    depends_on:
+      db:
+        condition: service_healthy
+    # to mount the worker folder to debug, KEEP_JOB_DIR=true and mount /tmp/windmill
+    volumes:
+      # mount the docker socket to allow to run docker containers from within the workers
+    - /var/run/docker.sock:/var/run/docker.sock
+    - worker_dependency_cache:/tmp/windmill/cache
+
+  ## This worker is specialized for "native" jobs. Native jobs run in-process and thus are much more lightweight than other jobs
+  windmill_worker_native:
+    image: ghcr.io/windmill-labs/windmill:main
+    pull_policy: always
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.1'
+          memory: 128M
+    restart: unless-stopped
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    environment:
+    - DATABASE_URL={{ secrets.WINDMILL.DATABASE_URL }}
+    - MODE=worker
+    - WORKER_GROUP=native
+    depends_on:
+      db:
+        condition: service_healthy
+
+  lsp:
+    image: ghcr.io/windmill-labs/windmill-lsp:latest
+    pull_policy: always
+    restart: unless-stopped
+    volumes:
+    - lsp_cache:/root/.cache
+
+  multiplayer:
+    image: ghcr.io/windmill-labs/windmill-multiplayer:latest
+    deploy:
+      replicas: 0 # Set to 1 to enable multiplayer, only available on Enterprise Edition
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  worker_dependency_cache:
+  lsp_cache:

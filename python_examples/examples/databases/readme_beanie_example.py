@@ -3,29 +3,34 @@ https://github.com/roman-right/beanie/
 https://roman-right.github.io/beanie/
 MongoDB GUI Interface: Robo 3T
 """
+from __future__ import annotations
+
 import asyncio
 import sys
-from typing import ForwardRef, List
+from typing import ForwardRef
 
-import motor
+import motor  # pyre-fixme[21]
 from beanie import Document, init_beanie
 from beanie.odm.operators.update.general import Set
 from loguru import logger
 from pydantic import Field
-from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
 
 
 # Queries can be cached https://roman-right.github.io/beanie/tutorial/cache/
+# pyre-fixme[13]
 class Author(Document):
     name: str
     birth_year: int
 
 
+# pyre-fixme[13]
 class Publisher(Document):
     name: str
     founded_year: int
 
 
+# pyre-fixme[13]
 class Book(Document):
     name: str
     release_year: int
@@ -34,37 +39,40 @@ class Book(Document):
 
 
 # BookInventory is defined later so we have to use ForwardRef
-ForwardRefBookInventory = ForwardRef('BookInventory')
+ForwardRefBookInventory = ForwardRef("BookInventory")
 
 
+# pyre-fixme[13]
 class Library(Document):
     name: str
     address: str
-    books: List[ForwardRefBookInventory] = Field(default_factory=list)  # type: ignore
+    # pyre-fixme[11]
+    books: list[ForwardRefBookInventory] = Field(default_factory=list)
 
 
+# pyre-fixme[13]
 class BookInventory(Document):
     amount: int
     book: Book
     library: Library
 
 
+# pyre-fixme[16]
 Library.update_forward_refs()
 
 
-# pylint: disable=R0914
-# pylint: disable=R0915
-async def test_database_with_beanie():
+async def run_database_with_beanie():
     # Embedded pure-python dict based dictionary
 
-    client = motor.motor_asyncio.AsyncIOMotorClient('mongodb://localhost:27017')
+    client = motor.motor_asyncio.AsyncIOMotorClient("mongodb://localhost:27017")
 
     # 1) Create tables
     try:
         await init_beanie(database=client.db_name, document_models=[Author, Publisher, Book, Library, BookInventory])
     except ServerSelectionTimeoutError:
         logger.error(
-            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0.0'",
+            "You can run mongodb by running: 'docker run --rm -d -p 27017-27019:27017-27019 "
+            "--name mongodb mongo:6.0.1'",
         )
         sys.exit(1)
 
@@ -76,9 +84,9 @@ async def test_database_with_beanie():
     await BookInventory.find_all().delete()
 
     # 2) Fill tables
-    author_1 = Author(name='J. R. R. Tolkien', birth_year=1892)
-    author_2 = Author(name='Harper Lee', birth_year=1926)
-    author_3 = Author(name='George Orwell', birth_year=1903)
+    author_1 = Author(name="J. R. R. Tolkien", birth_year=1892)
+    author_2 = Author(name="Harper Lee", birth_year=1926)
+    author_3 = Author(name="George Orwell", birth_year=1903)
     await author_1.insert()
     # Alternatively:
     await author_2.create()
@@ -86,9 +94,9 @@ async def test_database_with_beanie():
         author_3,
     ])
 
-    publisher_1 = Publisher(name='Aufbau-Verlag', founded_year=1945)
-    publisher_2 = Publisher(name='Hoffmann und Campe', founded_year=1781)
-    publisher_3 = Publisher(name='Heyne Verlag', founded_year=1934)
+    publisher_1 = Publisher(name="Aufbau-Verlag", founded_year=1945)
+    publisher_2 = Publisher(name="Hoffmann und Campe", founded_year=1781)
+    publisher_3 = Publisher(name="Heyne Verlag", founded_year=1934)
     await Publisher.insert_many([
         publisher_1,
         publisher_2,
@@ -96,25 +104,25 @@ async def test_database_with_beanie():
     ])
 
     book_1 = Book(
-        name='The Lord of the Rings',
+        name="The Lord of the Rings",
         release_year=1954,
         author=await Author.find_one(Author.name == author_1.name),
         publisher=await Publisher.find_one(Publisher.name == publisher_1.name)
     )
     book_2 = Book(
-        name='To kill a Mockingbird',
+        name="To kill a Mockingbird",
         release_year=1960,
         author=await Author.find_one(Author.name == author_2.name),
         publisher=await Publisher.find_one(Publisher.name == publisher_1.name)
     )
     book_3 = Book(
-        name='Nineteen Eighty-Four',
+        name="Nineteen Eighty-Four",
         release_year=1949,
         author=await Author.find_one(Author.name == author_3.name),
         publisher=await Publisher.find_one(Publisher.name == publisher_3.name)
     )
     book_4 = Book(
-        name='This book was not written',
+        name="This book was not written",
         release_year=2100,
         author=await Author.find_one(Author.name == author_3.name),
         publisher=await Publisher.find_one(Publisher.name == publisher_3.name)
@@ -126,8 +134,8 @@ async def test_database_with_beanie():
         book_4,
     ])
 
-    library_1 = Library(name='New York Public Library', address='224 East 125th Street', books=[])
-    library_2 = Library(name='California State Library', address='900 N Street', books=[])
+    library_1 = Library(name="New York Public Library", address="224 East 125th Street", books=[])
+    library_2 = Library(name="California State Library", address="900 N Street", books=[])
     await library_1.save()
     await library_2.save()
 
@@ -167,8 +175,8 @@ async def test_database_with_beanie():
 
     # 3) Select books
     # https://docs.mongoengine.org/guide/querying.html#query-operators
-    async for book in Book.find(Book.release_year < 1960):  # pylint: disable=E1133
-        logger.info(f'Found books released before 1960: {book}')
+    async for book in Book.find(Book.release_year < 1960):
+        logger.info(f"Found books released before 1960: {book}")
     # Alternatively with mongodb syntax
     # async for book in Book.find({"release_year": {"$lt": 1960}}):
     #     logger.info(f'Found books released before 1960: {book}')
@@ -181,27 +189,28 @@ async def test_database_with_beanie():
     assert await Book.find(Book.release_year < 1960).count() == 0
 
     # 5) Delete books
-    assert await Book.find(Book.name == 'This book was not written').count() == 1
-    await Book.find(Book.name == 'This book was not written').delete()
-    assert await Book.find(Book.name == 'This book was not written').count() == 0
+    assert await Book.find(Book.name == "This book was not written").count() == 1
+    await Book.find(Book.name == "This book was not written").delete()
+    assert await Book.find(Book.name == "This book was not written").count() == 0
 
     # 6) Get data from other tables
-    async for book in Book.find_all():  # pylint: disable=E1133
-        logger.info(f'Book ({book}) has author ({book.author}) and publisher ({book.publisher})')
+    async for book in Book.find_all():
+        logger.info(f"Book ({book}) has author ({book.author}) and publisher ({book.publisher})")
 
-    async for book_inventory in BookInventory.find_all():  # pylint: disable=E1133
+    async for book_inventory in BookInventory.find_all():
         logger.info(
-            f'Library {book_inventory.library} has book inventory ({book_inventory}) of book ({book_inventory.book})'
+            f"Library {book_inventory.library} has book inventory ({book_inventory}) of book ({book_inventory.book})"
         )
 
     # 7) Join two tables and apply filter
     # Find all books that are listed in libraries at least 25 times and where author was born before 1910
-    async for book_inventory in BookInventory.find( # pylint: disable=E1133
+    async for book_inventory in BookInventory.find(
         BookInventory.amount <= 25,
         BookInventory.book.author.birth_year < 1910,
     ):
         logger.info(
-            f'Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} times and the author is {book_inventory.book.author}'
+            f"Book {book_inventory.book} is listed in {book_inventory.library} {book_inventory.amount} "
+            f"times and the author is {book_inventory.book.author}"
         )
 
     # 8) TODO: Migration
@@ -210,5 +219,5 @@ async def test_database_with_beanie():
     await Book.find_all().delete()
 
 
-if __name__ == '__main__':
-    asyncio.run(test_database_with_beanie())
+if __name__ == "__main__":
+    asyncio.run(run_database_with_beanie())

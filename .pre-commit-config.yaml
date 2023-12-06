@@ -1,94 +1,25 @@
-repos:
-# Check yaml files like this one and github actions if they are valid
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
-  hooks:
-  - id: check-yaml
+# To install hooks:
+# poetry run pre-commit install
+# To update hooks:
+# poetry run pre-commit autoupdate
+# To run hooks:
+# poetry run pre-commit run --all-files --hook-stage push
 
-# Autoformat yaml files
-- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.1.0
-  hooks:
-  - id: pretty-format-yaml
-    args: [--autofix, --indent, '2']
-
-# Check github action workflow files
-- repo: https://github.com/sirosen/check-jsonschema
-  rev: 0.3.2
-  hooks:
-  - id: check-github-workflows
-
-# Check toml files like pyproject.toml if it is valid
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
-  hooks:
-  - id: check-toml
-
-# This removes comments
+# This removes comments which is unwanted
 #- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
 #  rev: v2.1.0
 #  hooks:
 #  - id: pretty-format-toml
 #    args: [--autofix]
 
-# As the name says
+repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
+  rev: v4.2.0
   hooks:
-  - id: double-quote-string-fixer
-
-# Convert simple things like set([]) to set()
-- repo: https://github.com/asottile/pyupgrade
-  rev: v2.26.0
-  hooks:
-  - id: pyupgrade
-
-# Remove unused imports
-- repo: https://github.com/hadialqattan/pycln
-  rev: v1.0.3
-  hooks:
-  - id: pycln
-    args: [--config=pyproject.toml]
-
-# Convert relative to absolute imports
-- repo: https://github.com/MarcoGorelli/absolufy-imports
-  rev: v0.3.0
-  hooks:
-  - id: absolufy-imports
-
-# Sort imports
-- repo: https://github.com/pycqa/isort
-  rev: 5.5.4
-  hooks:
-  - id: isort
-    files: \.(py)$
-    args: [--settings-path=pyproject.toml]
-
-# If project is written in Python 3.9+, it will autofix List[str] to list[str] etc
-#- repo: https://github.com/sondrelg/pep585-upgrade
-#  rev: ''  # Use the sha / tag you want to point at
-#  hooks:
-#  - id: upgrade-type-hints
-
-# Autoformat code
-- repo: local
-  hooks:
-  - id: yapf
-    name: yapf
-    stages: [commit]
-    language: system
-    entry: poetry run yapf -i
-    types: [python]
-    exclude: setup.py
-
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.0.1
-  hooks:
-  # Check if python files are vlaid
-  - id: check-ast
-  - id: check-builtin-literals
-  - id: check-docstring-first
-  - id: debug-statements
+  # Check yaml files like this one and github actions if they are valid
+  - id: check-yaml
+  # Check toml files like pyproject.toml if it is valid
+  - id: check-toml
 
 - repo: https://github.com/pre-commit/pygrep-hooks
   rev: v1.9.0
@@ -99,6 +30,19 @@ repos:
   # Enforce type annotation instead of comment annotation
   - id: python-use-type-annotations
 
+# Autoformat yaml files
+# - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+#   rev: v2.11.0
+#   hooks:
+#   - id: pretty-format-yaml
+#     args: [--autofix, --indent, '2']
+
+# Check github action workflow files
+- repo: https://github.com/sirosen/check-jsonschema
+  rev: 0.18.4
+  hooks:
+  - id: check-github-workflows
+
 # Detect functions and variables that are never used
 #- repo: https://github.com/asottile/dead
 #  rev: v1.4.0
@@ -107,51 +51,20 @@ repos:
 
 - repo: local
   hooks:
-  - id: format_svelte
-    name: format_svelte
+  # Install earthly requirements
+  - id: earthly-install
+    name: Install earthly requirements
     stages: [commit]
     language: system
-    entry: bash -c "cd svelte_frontend && npm run format"
+    entry: earthly +install-all --verbose true
     pass_filenames: false
 
-  - id: pylint
-    name: pylint
+  # Check formatting, lint, dont run tests because pre-commit should be fast
+  - id: earthly-pre-commit
+    name: Run earthly pre commmit
     stages: [commit]
     language: system
-    entry: poetry run pylint
-    types: [python]
-
-  # Run mypy type checks
-  - id: mypy
-    name: mypy
-    stages: [commit]
-    language: system
-    entry: poetry run mypy .
-    types: [python]
-    pass_filenames: false
-
-  # Run python examples tests
-  - id: pytest_python_examples
-    name: pytest_python_examples
-    stages: [commit]
-    language: system
-    entry: poetry run pytest python_examples
-    pass_filenames: false
-
-  # Run fastapi server tests
-  - id: pytest_fastapi_server
-    name: pytest_fastapi_server
-    stages: [commit]
-    language: system
-    entry: poetry run pytest fastapi_server
-    pass_filenames: false
-
-  # Run svelte e2e tests
-  - id: svelte_e2e_tests
-    name: svelte_e2e_tests
-    stages: [commit]
-    language: system
-    entry: poetry run pytest svelte_frontend/test_frontend/test_e2e.py --benchmark-skip --headless
+    entry: earthly +pre-commit --verbose true
     pass_filenames: false
 
 #  - id: pytest-cov

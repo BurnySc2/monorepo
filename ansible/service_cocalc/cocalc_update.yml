@@ -1,0 +1,44 @@
+# Execute with
+# ansible-playbook cocalc_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start cocalc service
+  hosts: my_servers
+  vars:
+    USERNAME: '{{ secrets.COCALC.USERNAME }}'
+  tasks:
+  - name: Stop cocalc service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Stop cocalc container
+    community.docker.docker_container:
+      name: cocalc
+      state: stopped
+      image: sagemathinc/cocalc-v2:latest
+
+  - name: Remove cocalc container
+    community.docker.docker_container:
+      name: cocalc
+      state: absent
+      image: sagemathinc/cocalc-v2:latest
+
+  - name: Create systemd file
+    template:
+      src: cocalc.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Remove cocalc image
+    community.docker.docker_image:
+      name: sagemathinc/cocalc-v2
+      tag: latest
+      state: absent
+
+  - name: Start cocalc service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true

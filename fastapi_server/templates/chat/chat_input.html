@@ -1,0 +1,11 @@
+<div hx-swap-oob="innerHTML:#chat_input_form">
+  <input
+    type="text"
+    name="chat_message"
+    placeholder="My message"
+    class="w-2/3 bg-gray-200"
+    hx-trigger="keyup changed"
+    ws-send
+  />
+  <button type="submit" class="w-1/3">Send message</button>
+</div>

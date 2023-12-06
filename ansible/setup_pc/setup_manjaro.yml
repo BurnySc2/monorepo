@@ -1,0 +1,159 @@
+# Execute with
+# ansible-playbook setup_manjaro.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: After a fresh manjaro installation, install or upgrade all software
+  hosts: my_pcs
+  vars:
+    USERNAME: burny
+  tasks:
+    - name: Print initial instructions
+      ansible.builtin.debug:
+        msg:
+          - On a fresh manjaro installation you will want to connect to wifi / internep asap.
+          - After install run in terminal 'sudo systemctl enable --now sshd'
+          - To find out the local network ip, run 'nmcli device show | grep IP4.ADDRESS' on the remote device
+          - Create a key pair with 'ssh-keygen -t rsa'
+          - ssh onto the remote with 'ssh root@<local ip>' and put the public key in '/root/.ssh/authorized_keys'
+          - Modify '~/.ssh/config' on the controller device to have an entry
+          - ======================
+          - Host <same name as in hosts file>
+          - HostName <local ip>
+          - IdentityFile ~/.ssh/<private key>
+          - User root
+          - ServerAliveInterval 60
+          - ======================
+
+    - name: Run the equivalent of "pacman -Sy" as a separate step
+      community.general.pacman:
+        update_cache: true
+
+    - name: Run the equivalent of "pacman -Su" as a separate step
+      community.general.pacman:
+        upgrade: true
+
+    - name: Install pacman packages
+      community.general.pacman:
+        name:
+          # Package manager
+          - yay
+          # Internet browser
+          - brave-browser
+          # Programming and server tools
+          - docker
+          - git
+          - cloc
+          - openssh
+          - filezilla
+          - ansible
+          - ansible-lint
+          - syncthing
+          # Terminal
+          - fish
+          # Explorer
+          - thunar
+          # Communication
+          - thunderbird
+          - discord
+          # Drawing and media viewer
+          - xournalpp
+          - gimp
+          - vlc
+          # System & utility tools
+          - gnome-system-monitor
+          - zip
+          - pavucontrol
+          - flameshot
+          - ffmpeg
+          - simple-scan
+          - inxi # system information
+          - samba # share folders in local network
+          # Games
+          - lutris
+          # Programming languages
+          - make # For other pamac packages
+          - gcc
+          - rustup
+          - python-pip
+          - python-poetry
+        state: latest
+
+    - name: Create group
+      ansible.builtin.group:
+        name: docker
+        state: present
+
+    - name: Create user and set default shell
+      ansible.builtin.user:
+        name: "{{ USERNAME }}"
+        groups:
+          - "{{ USERNAME }}"
+          - docker
+          - wheel # sudo rights
+        shell: "{{ secrets.DEFAULT_SHELL }}"
+
+    - name: Start syncthing service for user
+      become_user: '{{ USERNAME }}'
+      ansible.builtin.systemd_service:
+        name: syncthing.service
+        scope: user
+        state: started
+        daemon_reload: true
+        enabled: true
+
+    - name: Update AUR store
+      community.general.pacman:
+        executable: yay
+        update_cache: true
+        extra_args: --answerclean N --answerdiff N --answerupgrade N --noprogressbar
+
+    - name: Upgrade AUR packages
+      community.general.pacman:
+        executable: yay
+        upgrade: true
+        extra_args: --answerclean N --answerdiff N --answerupgrade N --noprogressbar
+      timeout: 600 # Max 600 seconds
+    
+    # TODO this lists as "changed" even when all packages are already installed
+    - name: Install AUR packages
+      # From https://github.com/mnussbaum/ansible-yay/blob/4fd5ec87f3c3ec5366376b30317714fee7e20b06/yay#L143
+      ansible.builtin.command:
+        cmd: "yay --answerclean N --answerdiff N --answerupgrade N  --noconfirm --noprogressbar --needed --sync {{ item }}"
+      timeout: 600 # Max 600 seconds per installation
+      with_items:
+        - aur/visual-studio-code-bin
+        - aur/earthly # development helper
+        - aur/qdirstat # disk space usage
+        - aur/xnviewmp # image viewer
+        - aur/zoom
+        - aur/anydesk-bin
+
+    - name: Create directories
+      file:
+        path: "{{ item }}"
+        recurse: true
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+      loop:
+        - "~/syncthing"
+
+    - name: Enable sync clock
+      ansible.builtin.systemd_service:
+        name: ntpd
+        scope: system
+        state: started
+        daemon_reload: true
+        enabled: true
+
+    - name: Print reminder
+      ansible.builtin.debug:
+        msg:
+          - If using brave browser, set up sync
+          - If using syncthing, set it up. Set GUI to dark mode and default folder to '~/syncthing'
+          - Power manager, turn off display power management when plugged in
+          - Set up terminal to have solid background
+          - Set keyboard repeat rate to 40 and delay to 250
+          - Set up 'keyboard' settings shortcut for terminal to remove '--dropbown' and 'ctrl+g' to open 'thunar'
+          - Set up thunar to show hidden files, use 'list view' and proper datetime display for modified files
+          - Set system clock, and sync clock 'time only' and format '%A %d %b %y, %T'
+          - Never group windows in task bar
+          - Set task bar to 2 rows and row size 20

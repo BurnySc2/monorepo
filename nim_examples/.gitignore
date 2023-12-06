@@ -1,0 +1,17 @@
+nimcache/
+nimblecache/
+htmldocs/
+
+# No proto files
+*.proto
+
+# No executables
+bin
+
+# Ignore files without an extension
+*
+!*/
+!*.*
+
+nimpb_build
+nimpb_build.exe

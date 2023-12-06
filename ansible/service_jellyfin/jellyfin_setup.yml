@@ -1,0 +1,72 @@
+# https://jellyfin.org/
+# https://jellyfin.org/docs/general/installation/container/
+# https://play.google.com/store/apps/details?id=org.jellyfin.mobile&hl=de
+# Execute with
+# ansible-playbook jellyfin_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start jellyfin service
+  hosts: my_servers
+  vars:
+    USERNAME: '{{ secrets.JELLYFIN.USERNAME }}'
+  tasks:
+  - name: Create group
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Get user id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -u
+    register: USER_ID
+
+  - name: Get group id
+    ansible.builtin.shell:
+      cmd: id {{ USERNAME }} -g
+    register: GROUP_ID
+
+  - name: Print user id
+    ansible.builtin.debug:
+      var: USER_ID.stdout
+      verbosity: 0
+
+  - name: Print group id
+    ansible.builtin.debug:
+      var: GROUP_ID.stdout
+      verbosity: 0
+
+  - name: Create systemd file
+    template:
+      src: jellyfin.service
+      dest: /etc/systemd/system/{{ USERNAME }}.service
+      owner: '{{ USER_ID.stdout }}'
+      group: '{{ GROUP_ID.stdout }}'
+
+  - name: Stop jellyfin service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Remove jellyfin container
+    community.docker.docker_container:
+      name: jellyfin
+      state: absent
+      image: lscr.io/linuxserver/jellyfin:latest
+
+  - name: Start jellyfin service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true
+
+  - name: Print reminder
+    ansible.builtin.debug:
+      msg: Remember to create libraries and users on first time setup

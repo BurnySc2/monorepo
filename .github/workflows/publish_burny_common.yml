@@ -1,0 +1,110 @@
+name: publish_burny_common
+
+
+on:
+  push:
+    paths:
+    - burny_common/**
+    - .github/workflows/publish_burny_common.yml
+  pull_request:
+    branches:
+    - master
+    - develop
+
+env:
+  SUBDIRECTORY: burny_common
+
+jobs:
+  run_code_check:
+    name: run_code_check_py${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+# In conflict with pyre-check
+#    - name: Set up Python ${{ matrix.python-version }}
+#      uses: actions/setup-python@v4
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#
+#    - name: Cache .venv
+#      uses: actions/cache@v3
+#      with:
+#        path: .venv
+#        key: ${{ env.SUBDIRECTORY }}-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+    # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+
+    - name: Install
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+    - name: Run code checks and tests
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+#    - name: Save cache
+#      working-directory: ${{ env.SUBDIRECTORY }}
+#      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+  build_and_publish:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.10']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      id: setup-python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      run: pip install poetry
+
+    - name: Make poetry use local .venv folder
+      run: poetry config virtualenvs.in-project true
+
+    - name: Set up cache
+      uses: actions/cache@v3
+      with:
+        path: ${{ env.SUBDIRECTORY }}/.venv
+        key: ${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
+
+    - name: Install dependencies
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry install --no-dev
+
+    - name: Build
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry build
+
+    - id: wait-for-jobs
+      uses: yogeshlonkar/wait-for-jobs@v0
+      with:
+        gh-token: ${{ secrets.GITHUB_TOKEN }}
+        jobs: |
+          run_code_check_py3.8
+          run_code_check_py3.9
+          run_code_check_py3.10
+          run_code_check_py3.11
+
+      # Publish package on pypi
+    - name: Publish
+      if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+      working-directory: ${{ env.SUBDIRECTORY }}
+      continue-on-error: true
+      run: poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}

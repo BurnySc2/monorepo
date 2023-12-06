@@ -1,0 +1,12 @@
+# /etc/systemd/system/{{ secrets.SYNCTHING.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker compose up
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.SYNCTHING.USERNAME }}
+User={{ secrets.SYNCTHING.USERNAME }}
+Group={{ secrets.SYNCTHING.USERNAME }}
+WorkingDirectory=/home/{{ secrets.SYNCTHING.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target

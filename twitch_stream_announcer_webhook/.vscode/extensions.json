@@ -1,0 +1,11 @@
+{
+    "recommendations": [
+        "charliermarsh.ruff",
+        "ms-python.vscode-pylance",
+        "ms-python.python",
+        "earthly.earthfile-syntax-highlighting",
+        "quicktype.quicktype",
+        "tamasfe.even-better-toml",
+        "eeyore.yapf"
+    ]
+}

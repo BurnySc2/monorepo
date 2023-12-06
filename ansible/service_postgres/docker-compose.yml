@@ -1,0 +1,66 @@
+version: '3.8'
+
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+services:
+  postgres:
+    container_name: postgres_postgres
+    # In pgadmin and nocodb we can now use connection string where hostname is 'postgres_postgres'
+    # postgres://user:password@host/dbname
+    # nocodb:
+    # postgresql://{ POSTGRES_USER }:{ POSTGRES_PASSWORD }@postgres_postgres:5432/{ POSTGRES_DATABASE }
+    hostname: postgres_postgres
+    image: postgres:15-alpine
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    restart: unless-stopped
+    ports:
+    - 5432:5432
+    environment:
+      POSTGRES_USER: '{{ secrets.POSTGRES.POSTGRES_USER }}'
+      POSTGRES_PASSWORD: '{{ secrets.POSTGRES.POSTGRES_PASSWORD }}'
+    volumes:
+    # Do I need to mount a backup path?
+    - ./postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: postgres_pgadmin
+    image: dpage/pgadmin4:7
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.rule=Host(`{{ secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.loadbalancer.server.port=80
+    - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.tls=true
+    - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.middlewares=authelia@docker
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: '{{ secrets.POSTGRES.PGADMIN_USER }}'
+      PGADMIN_DEFAULT_PASSWORD: '{{ secrets.POSTGRES.PGADMIN_PASSWORD }}'
+    volumes:
+    # pgadmindata folder needs to be owned by user id '5050'
+    - ./pgadmindata:/var/lib/pgadmin
+
+  nocodb:
+    # TODO Add default connection
+    container_name: postgres_nocodb
+    image: nocodb/nocodb:latest
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.rule=Host(`{{ secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ secrets.POSTGRES.NOCODB_USERNAME }}.loadbalancer.server.port=8080
+    - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls=true
+    - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.middlewares=authelia@docker
+    restart: unless-stopped
+    environment:
+      PUID: '{{ USER_ID.stdout }}'
+      PGID: '{{ GROUP_ID.stdout }}'
+    volumes:
+    - ./nocodb:/usr/app/data/

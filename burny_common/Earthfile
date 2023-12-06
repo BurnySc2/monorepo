@@ -1,0 +1,59 @@
+VERSION 0.6
+# earthly +all --PYTHONVERSION=3.11
+ARG PYTHONVERSION=3.11
+FROM python:${PYTHONVERSION}-slim
+WORKDIR /root/burny_common
+
+install-dev:
+    RUN pip install poetry --no-cache-dir
+    RUN mkdir -p burny_common
+    RUN touch burny_common/__init__.py
+    COPY poetry.lock pyproject.toml ./
+    RUN poetry install
+    SAVE ARTIFACT ./.venv
+    COPY . /root/burny_common
+
+format:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Requirements:
+    # pip install poetry
+    # poetry install
+
+    # Convert single to double quotes
+    RUN poetry run ruff check . --select Q --fix
+    # Remove unused imports
+    RUN poetry run ruff check . --select F --fix
+    # Sort imports
+    RUN poetry run ruff check . --select I --fix
+    # Format code
+    RUN poetry run yapf -ir .
+
+# Check if files are correctly formatted
+format-check:
+    FROM +install-dev
+    RUN poetry run yapf -dr .
+
+# Ignore errors via "# noqa: F841"
+lint:
+    FROM +install-dev
+    RUN poetry run ruff check .
+
+# Ignore errors via "# pyre-fixme[11]"
+pyre:
+    FROM +install-dev
+    RUN poetry run pyre
+
+# TODO Add tests
+pytest:
+    FROM +install-dev
+    RUN poetry run pytest
+
+pre-commit:
+    BUILD +format-check
+    BUILD +lint
+    BUILD +pyre
+
+all:
+    BUILD +pre-commit
+    #BUILD +pytest

@@ -1,0 +1,50 @@
+version: "3"
+
+networks:
+  "{{secrets.TRAFIK_NETWORK}}":
+    external: true
+
+services:
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: sonarqube-community
+    hostname: sonarqube-community
+    restart: unless-stopped
+    # user: 1000:1000
+    depends_on:
+      - db
+    networks:
+      - "{{ secrets.TRAFIK_NETWORK }}"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://sonarqube-db:5432/sonar
+      SONAR_JDBC_USERNAME: '{{ secrets.SONARQUBE.POSTGRES_USER }}'
+      SONAR_JDBC_PASSWORD: '{{ secrets.SONARQUBE.POSTGRES_PASSWORD }}'
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ secrets.SONARQUBE.USERNAME }}.rule=Host(`{{ secrets.SONARQUBE.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ secrets.SONARQUBE.USERNAME }}.loadbalancer.server.port=9000
+      - traefik.http.routers.{{ secrets.SONARQUBE.USERNAME }}.tls=true
+      - traefik.http.routers.{{ secrets.SONARQUBE.USERNAME }}.tls.certresolver=production
+      - traefik.http.routers.{{ secrets.SONARQUBE.USERNAME }}.middlewares=authelia@docker
+
+  db:
+    image: postgres:12
+    container_name: sonarqube-db
+    hostname: sonarqube-db
+    restart: unless-stopped
+    networks:
+      - "{{ secrets.TRAFIK_NETWORK }}"
+    environment:
+      POSTGRES_USER: '{{ secrets.SONARQUBE.POSTGRES_USER }}'
+      POSTGRES_PASSWORD: '{{ secrets.SONARQUBE.POSTGRES_PASSWORD }}'
+    volumes:
+      - ./postgresql_data:/var/lib/postgresql/data
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
