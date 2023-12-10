@@ -5,16 +5,17 @@ import os
 
 import aiohttp
 import arrow
-from asyncpg import Record
+from asyncpg import Record  # pyre-fixme[21]
 from discord import Embed, Webhook
 from dotenv import load_dotenv
 from loguru import logger
-from model import get_streams_to_announce, set_stream_offline, set_stream_online
+from model import get_streams_to_announce, set_stream_offline, set_stream_online  # pyre-fixme[21]
 from twitchAPI.twitch import Stream, Twitch
 
 load_dotenv()
 
 
+# pyre-fixme[11]
 def group_my_rows(data: list[Record]) -> dict[str, list[Record]]:
     grouped = {}
     for i in data:
@@ -28,6 +29,7 @@ def group_my_rows(data: list[Record]) -> dict[str, list[Record]]:
 
 async def check_twitch(grouped_data: dict[str, list[Record]]):
     twitch = await Twitch(
+        # pyre-fixme[6]
         os.getenv("TWITCH_APP_ID"),
         os.getenv("TWITCH_APP_SECRET"),
     )
@@ -44,6 +46,7 @@ async def check_twitch(grouped_data: dict[str, list[Record]]):
                     # If stream was offline previously and hasn't been announced yet, announce it
                     last_announced: arrow.Arrow = arrow.get(row.get("announced_at"))
                     diff = arrow.now() - last_announced
+                    # pyre-fixme[6]
                     if diff.total_seconds() > int(os.getenv("OFFLINE_GRACE_TIME")):
                         # Announce stream being online in webhook
                         await send_webhook(
@@ -57,6 +60,7 @@ async def check_twitch(grouped_data: dict[str, list[Record]]):
                     await set_stream_online(twitch_username)
                 else:
                     await set_stream_offline(twitch_username)
+    await session.close()
 
 
 async def send_webhook(

@@ -1,0 +1,56 @@
+VERSION 0.6
+# earthly +all --PYTHONVERSION=3.11
+ARG PYTHONVERSION=3.11
+FROM python:${PYTHONVERSION}-slim
+WORKDIR /root/stream_announcer
+
+install-dev:
+    RUN apt -y update
+    RUN pip install poetry --no-cache-dir
+    COPY poetry.lock pyproject.toml ./
+    RUN poetry install
+    COPY . /root/stream_announcer
+
+format:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Requirements:
+    # pip install poetry
+    # poetry install
+
+    # Convert single to double quotes
+    RUN poetry run ruff check . --select Q --fix
+    # Remove unused imports
+    RUN poetry run ruff check . --select F --fix
+    # Sort imports
+    RUN poetry run ruff check . --select I --fix
+    # Format code
+    RUN poetry run yapf -ir .
+
+# Check if files are correctly formatted
+format-check:
+    FROM +install-dev
+    RUN poetry run yapf -dr .
+
+# Ignore errors via "# noqa: F841"
+lint:
+    FROM +install-dev
+    RUN poetry run ruff check .
+
+# Ignore errors via "# pyre-fixme[11]"
+pyre:
+    FROM +install-dev
+    RUN poetry run pyre
+
+# pytest:
+#     FROM +install-dev
+#     RUN poetry run pytest test
+
+pre-commit:
+    BUILD +format-check
+    BUILD +lint
+    BUILD +pyre
+
+all:
+    BUILD +pre-commit
+    #BUILD +pytest

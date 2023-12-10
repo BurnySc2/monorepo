@@ -13,6 +13,7 @@ TABLE_NAME = "stream_announcer_streams"
 a = os.environ
 
 
+# pyre-fixme[11]
 async def create_connection() -> asyncpg.Connection:
     # TODO use 'with' statement of possible
     return await asyncpg.connect(
