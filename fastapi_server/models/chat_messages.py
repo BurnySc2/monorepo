@@ -27,7 +27,8 @@ async def table_exists(table_name: str) -> bool:
     data: Record = await conn.fetchrow(
         """
 SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE $1);
-""", table_name
+""",
+        table_name,
     )
     return data.get("exists")
 
@@ -68,9 +69,13 @@ async def add_message(time_stamp: str, message_author: str, chat_message: str) -
         # TODO use timestamp.now()
         await conn.execute(
             f"""
-INSERT INTO {TABLE_NAME} (time_stamp, message_author, chat_message) 
+INSERT INTO {TABLE_NAME}
+(time_stamp, message_author, chat_message)
 VALUES ($1, $2, $3);
-""", time_stamp, message_author, chat_message
+""",
+            time_stamp,
+            message_author,
+            chat_message,
         )
         # Assume increasing ids
         row: Record = await conn.fetchrow(

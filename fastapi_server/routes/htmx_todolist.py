@@ -18,8 +18,7 @@ def todo_index(request: Request):
 
 
 @htmx_todolist_router.get("/htmxapi/todo", response_class=HTMLResponse)
-async def get_todo_items(request: Request):
-    # # Url to the client
+async def get_todo_items(request: Request) -> str:
     todos = await get_all_todos()
     return render(
         templates, "todo_item.html", [
@@ -53,5 +52,8 @@ async def update_todo_item(todoid: int):
 
 @htmx_todolist_router.delete("/htmxapi/todo/{todoid}", response_class=HTMLResponse)
 async def del_todo_item(todoid: int):
+    """
+    Replace the element to make sure that the request went through, instaed of using 'hx-swap="delete"'.
+    """
     await delete_todo(todoid)
     return ""

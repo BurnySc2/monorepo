@@ -17,7 +17,7 @@ def render(templates: Jinja2Templates, template_file_name: str, contexts: list[d
 
 def render(templates: Jinja2Templates, template_file_name: str, context: dict | list[dict]) -> str:
     """
-    Render a single template with the given context. 
+    Render a single template with the given context.
     If context is a list, render multiple times using the same template.
     """
     t = templates.get_template(template_file_name)

@@ -5,7 +5,7 @@ description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8.1 <3.12"
+python = ">=3.8.1 <3.13"
 # Write and read classes to/from json
 # Fastapi server
 fastapi = "^0.103.1"
@@ -23,7 +23,7 @@ zephyrus-sc2-parser = "^0.3.7"
 python-multipart = "^0.0.5"
 portpicker = "^1.5.2"
 # Video downloader
-streamlink = "^5.0.1"
+streamlink = "^6.4.2"
 # Async postgresql connection
 asyncpg = "^0.28.0"
 # Timestamps
@@ -32,6 +32,10 @@ arrow = "^1.2.3"
 aiohttp = "^3.8.5"
 # Awesome dataclasses with validation
 pydantic = "^2"
+# Language manipulation
+nltk = "^3.8.1"
+# Fastapi alternative
+litestar = "^2.4.3"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -49,7 +53,7 @@ pytest-playwright = "^0.3.0"
 yapf = "^0.32.0"
 toml = "^0.10.2"
 # Linter
-ruff = "^0.0.247"
+ruff = "^0.1.7"
 # Type checker
 pyre-check = "^0.9.18"
 # Analyze depenencies
