@@ -9,6 +9,7 @@ format:
     BUILD ./discord_bot+format
     BUILD ./fastapi_server+format
     BUILD ./python_examples+format
+    BUILD ./twitch_stream_announcer+format
     BUILD ./transcribe_website/transcriber_backend+format
 
 install-all:
@@ -16,6 +17,7 @@ install-all:
     BUILD ./discord_bot+install-dev --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./fastapi_server+install-dev --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./python_examples+install-dev --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./twitch_stream_announcer+install-dev --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./transcribe_website/transcriber_backend+install-dev --PYTHONVERSION=3.10
 
 pre-commit:
@@ -23,6 +25,7 @@ pre-commit:
     BUILD ./discord_bot+pre-commit --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./fastapi_server+pre-commit --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./python_examples+pre-commit --PYTHONVERSION=${PYTHONVERSION}
+    BUILD ./twitch_stream_announcer+pre-commit --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./transcribe_website/transcriber_backend+pre-commit --PYTHONVERSION=3.10
 
 check-all:
@@ -31,6 +34,7 @@ check-all:
     BUILD ./fastapi_server+all --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./python_examples+all --PYTHONVERSION=${PYTHONVERSION}
     BUILD ./transcribe_website/transcriber_backend+all --PYTHONVERSION=3.10
+    BUILD ./twitch_stream_announcer+all --PYTHONVERSION=3.10
     BUILD ./nim_examples+all --NIMVERSION=${NIMVERSION}
 
 # Run format-checks, linter and tests
