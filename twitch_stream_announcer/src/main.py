@@ -15,7 +15,7 @@ from twitchAPI.twitch import Stream, Twitch
 load_dotenv()
 
 
-def group_my_rows(data: list[Record]) -> dict[str, list[list]]:
+def group_my_rows(data: list[Record]) -> dict[str, list[Record]]:
     grouped = {}
     for i in data:
         twitch_name = i.get("twitch_name")
@@ -33,6 +33,7 @@ async def check_twitch(grouped_data: dict[str, list[Record]]):
     )
     session = aiohttp.ClientSession()
     for twitch_username, data in grouped_data.items():
+        logger.info(f"Checking '{twitch_username}'...")
         stream_info: Stream
         async for stream_info in twitch.get_streams(user_login=[twitch_username]):
             stream_is_online: bool = stream_info.type == "live"
