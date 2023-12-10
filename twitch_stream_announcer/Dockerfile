@@ -14,6 +14,6 @@ COPY poetry.lock pyproject.toml ./
 
 RUN poetry install --without dev
 
-COPY src /root/announcer
+COPY src /root/announcer/src
 
 CMD ["poetry", "run", "python", "src/main.py"]
