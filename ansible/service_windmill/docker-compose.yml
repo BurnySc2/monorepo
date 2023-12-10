@@ -109,6 +109,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  db_data:
   worker_dependency_cache:
   lsp_cache:

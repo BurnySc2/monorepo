@@ -66,6 +66,7 @@
           - simple-scan
           - inxi # system information
           - samba # share folders in local network
+          - gnome-disk-utility # disk and usb stick management
           # Games
           - lutris
           # Programming languages

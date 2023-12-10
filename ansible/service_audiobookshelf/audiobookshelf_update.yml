@@ -15,13 +15,13 @@
     community.docker.docker_container:
       name: audiobookshelf
       state: stopped
-      image: ghcr.io/advplyr/audiobookshelf
+      image: ghcr.io/advplyr/audiobookshelf:latest
 
   - name: Remove audiobookshelf container
     community.docker.docker_container:
       name: audiobookshelf
       state: absent
-      image: ghcr.io/advplyr/audiobookshelf
+      image: ghcr.io/advplyr/audiobookshelf:latest
 
   - name: Remove audiobookshelf image
     community.docker.docker_image:
