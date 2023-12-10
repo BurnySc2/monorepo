@@ -1,0 +1,16 @@
+# /etc/systemd/system/announcer.service
+[Service]
+ExecStart=/usr/bin/docker run \
+    --rm \
+    --name announcer \
+    --env-file .env \
+    burnysc2/twitch_stream_announcer:latest
+Restart=always
+RestartSec=60
+SyslogIdentifier=announcer
+User=announcer
+Group=announcer
+WorkingDirectory=/home/announcer
+
+[Install]
+WantedBy=multi-user.target

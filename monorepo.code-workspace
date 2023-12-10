@@ -1,24 +1,27 @@
 {
-	"folders": [
-		{
-			"name": "root",
-			"path": "."
-		},
-		{
-			"path": "burny_common"
-		},
-		{
-			"path": "discord_bot"
-		},
-		{
-			"path": "fastapi_server"
-		},
-		{
-			"path": "python_examples"
-		},
-		{
-			"path": "transcribe_website/transcriber_backend"
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "name": "root",
+      "path": "."
+    },
+    {
+      "path": "burny_common"
+    },
+    {
+      "path": "discord_bot"
+    },
+    {
+      "path": "fastapi_server"
+    },
+    {
+      "path": "python_examples"
+    },
+    {
+      "path": "transcribe_website/transcriber_backend"
+    },
+    {
+      "path": "twitch_stream_announcer"
+    }
+  ],
+  "settings": {}
 }
