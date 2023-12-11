@@ -36,8 +36,11 @@ async def check_twitch(grouped_data: dict[str, list[Record]]):
     session = aiohttp.ClientSession()
     for twitch_username, data in grouped_data.items():
         logger.info(f"Checking '{twitch_username}'...")
+        stream_parsed_once = False
         stream_info: Stream
+        # Seems to only return results if stream is online
         async for stream_info in twitch.get_streams(user_login=[twitch_username]):
+            stream_parsed_once = True
             stream_is_online: bool = stream_info.type == "live"
             stream_online_since: arrow.Arrow = arrow.get(stream_info.started_at)
             for row in data:
@@ -60,6 +63,8 @@ async def check_twitch(grouped_data: dict[str, list[Record]]):
                     await set_stream_online(twitch_username)
                 else:
                     await set_stream_offline(twitch_username)
+        if not stream_parsed_once:
+            await set_stream_offline(twitch_username)
     await session.close()
 
 
