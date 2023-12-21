@@ -1,0 +1,56 @@
+version: "3.2"
+
+networks:
+  "{{secrets.TRAFIK_NETWORK}}":
+    external: true
+
+services:
+  changedetection:
+    image: ghcr.io/dgtlmoon/changedetection.io
+    container_name: changedetection
+    hostname: changedetection
+    networks:
+      - "{{ secrets.TRAFIK_NETWORK }}"
+    restart: always
+    volumes:
+      - ./changedetection-data:/datastore
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ secrets.CHANGE_DETECTION.USERNAME }}.rule=Host(`{{ secrets.CHANGE_DETECTION.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ secrets.CHANGE_DETECTION.USERNAME }}.loadbalancer.server.port=5000
+      - traefik.http.routers.{{ secrets.CHANGE_DETECTION.USERNAME }}.tls=true
+      - traefik.http.routers.{{ secrets.CHANGE_DETECTION.USERNAME }}.tls.certresolver=production
+      - traefik.http.routers.{{ secrets.CHANGE_DETECTION.USERNAME }}.middlewares=authelia@docker
+
+    environment:
+      - PLAYWRIGHT_DRIVER_URL=ws://changedetection-playwright-chrome:3000/?stealth=1&--disable-web-security=true
+    depends_on:
+      playwright-chrome:
+        condition: service_started
+
+  # Used for fetching pages via Playwright+Chrome where you need Javascript support.
+  # Note: Playwright/browserless not supported on ARM type devices (rPi etc)
+  # RECOMMENDED FOR FETCHING PAGES WITH CHROME
+  playwright-chrome:
+    container_name: changedetection-playwright-chrome
+    hostname: changedetection-playwright-chrome
+    image: browserless/chrome:1.60-chrome-stable
+    networks:
+      - "{{ secrets.TRAFIK_NETWORK }}"
+    restart: always
+    environment:
+      - SCREEN_WIDTH=1920
+      - SCREEN_HEIGHT=1024
+      - SCREEN_DEPTH=16
+      - ENABLE_DEBUGGER=false
+      - PREBOOT_CHROME=true
+      - CONNECTION_TIMEOUT=300000
+      - MAX_CONCURRENT_SESSIONS=10
+      - CHROME_REFRESH_TIME=600000
+      - DEFAULT_BLOCK_ADS=true
+      - DEFAULT_STEALTH=true
+      # Ignore HTTPS errors, like for self-signed certs
+      - DEFAULT_IGNORE_HTTPS_ERRORS=true
+
+volumes:
+  changedetection-data:
