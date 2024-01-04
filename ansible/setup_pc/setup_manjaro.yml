@@ -33,11 +33,14 @@
     - name: Install pacman packages
       community.general.pacman:
         name:
+          # TODO add obsidian, rust
           # Package manager
           - yay
+          - pacman-mirrors
           # Internet browser
           - brave-browser
           # Programming and server tools
+          - base-devel
           - docker
           - git
           - cloc

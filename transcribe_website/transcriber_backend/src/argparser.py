@@ -1,6 +1,6 @@
 """
-A argparser to run commands from terminal. 
-For examples see at the bottom.
+A argparser to run commands from terminal.
+For examples, see at the bottom.
 """
 from __future__ import annotations
 
@@ -73,6 +73,8 @@ MODEL_MAP = {
 
 def get_model_string(options: TranscriberOptions) -> str:
     model_map = MODEL_MAP.copy()
+    # TODO Use general model first to detect language, then use 'en' model if english was detected?!
+    # What if an audio has multiple languages?
     if options.language == "en":
         # Use better english models if forced language was "en"
         model_map = {
@@ -146,6 +148,7 @@ def transcribe(options: TranscriberOptions) -> None:
             progress_bar.update(int(segment.end) - last_progress_bar_value)
             last_progress_bar_value = int(segment.end)
             transcribed_data.append((segment.start, segment.end, segment.text.lstrip()))
+            # TODO Translate from english to german
             # print(f"{segment.start:.2f} {segment.end:.2f} {segment.text}")
 
     logger.debug(f"Done transcribing/translating after {time.perf_counter() - t0:3f} seconds")
