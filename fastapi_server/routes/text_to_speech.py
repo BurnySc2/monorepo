@@ -85,6 +85,12 @@ class Voices(enum.Enum):
     OPTIMUS_PRIME = "es_female_fp1"
 
 
+@dataclass
+class TTSData:
+    tts_voice: str
+    tts_text: str
+
+
 async def generate_tts(voice: Voices, text: str) -> tuple[str, float]:
     async with aiohttp.ClientSession() as s:
         headers = {
@@ -119,11 +125,6 @@ class MyTTSRoute(Controller):
             "voices": self.VOICES_LIST,
             "mp3_b64_data": "",
         })
-
-    @dataclass
-    class TTSData:
-        tts_voice: str
-        tts_text: str
 
     @post("/generate_mp3")
     async def generate_mp3(
