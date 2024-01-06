@@ -11,16 +11,12 @@ from models.todo_item import todo_create_tables
 from routes.htmx_chat import htmx_chat_router
 from routes.htmx_todolist import htmx_todolist_router
 from routes.login_logout import login_router
-from routes.replay_parser import replay_parser_router
-from routes.twitch_clipper import clip_router
 
 assert os.getenv("STAGE", "DEV") in {"DEV", "PROD"}, os.getenv("STAGE")
 STAGE: Literal["DEV", "PROD"] = os.getenv("STAGE", "DEV")  # pyre-fixme[9]
 BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
 
 app = FastAPI()
-app.include_router(replay_parser_router)
-app.include_router(clip_router)
 app.include_router(htmx_todolist_router)
 app.include_router(htmx_chat_router)
 app.include_router(login_router)

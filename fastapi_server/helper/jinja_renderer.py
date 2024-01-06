@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import overload
 
 from fastapi.templating import Jinja2Templates

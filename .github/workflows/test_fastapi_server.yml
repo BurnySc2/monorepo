@@ -15,7 +15,7 @@ on:
 env:
   SUBDIRECTORY: fastapi_server
   IMAGENAME: fastapi_server
-  VERSION_NUMBER: 1.0.0
+  VERSION_NUMBER: 1.1.0
 
 jobs:
   test_backend:
@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12']
     runs-on: ${{ matrix.os }}
 
     steps:

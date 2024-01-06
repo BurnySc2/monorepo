@@ -1,10 +1,10 @@
-from fastapi import Form, Request
+from fastapi import Request
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRouter
 from fastapi.templating import Jinja2Templates
 
 from helper.jinja_renderer import render
-from models.todo_item import add_todo, delete_todo, get_all_todos, toggle_todo
+from models.todo_item import delete_todo, get_all_todos, toggle_todo
 
 htmx_todolist_router = APIRouter()
 index_templates = Jinja2Templates(directory="frontend/todo")
@@ -32,17 +32,17 @@ async def get_todo_items(request: Request) -> str:
     )
 
 
-@htmx_todolist_router.post("/htmxapi/todo", response_class=HTMLResponse)
-async def add_todo_item(request: Request, todotext: str = Form()):
-    row = await add_todo(todotext)
-    return render(
-        templates, "todo_item.html", {
-            "request": request,
-            "id": row.get("id"),
-            "todotext": row.get("todotext"),
-            "done": row.get("done"),
-        }
-    )
+# @htmx_todolist_router.post("/htmxapi/todo", response_class=HTMLResponse)
+# async def add_todo_item(request: Request, todotext: str = Form()):
+#     row = await add_todo(todotext)
+#     return render(
+#         templates, "todo_item.html", {
+#             "request": request,
+#             "id": row.get("id"),
+#             "todotext": row.get("todotext"),
+#             "done": row.get("done"),
+#         }
+#     )
 
 
 @htmx_todolist_router.patch("/htmxapi/todo/{todoid}")
