@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://unpkg.com/htmx.org@1.9.5"
+      integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.tailwindcss.com/3.3.0"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+  </head>
+  <body class="flex flex-col h-screen justify-center items-center bg-gray-200">
+    <form
+      hx-post="/tts/generate_mp3"
+      hx-target="#audio"
+      hx-swap="outerHTML"
+      class="w-2/3h-fit flex flex-col"
+    >
+      <div class="grid grid-cols-2">
+        <div>Voice</div>
+        <select name="tts_voice">
+          {% for voice_name in voices %} {% if voice_name == 'SONG_TENOR' %}
+          <option selected>{{ voice_name }}</option>
+          {% else %}
+          <option>{{ voice_name }}</option>
+          {% endif %} {% endfor %}
+        </select>
+        <div>Text</div>
+        <input type="text" name="tts_text" placeholder="Your text here" />
+      </div>
+      <button type="submit" class="m-2 p-2 border border-black">
+        Generate audio
+      </button>
+    </form>
+    <audio controls id="audio">
+      <source
+        src="data:audio/mpeg;base64, {{ mp3_b64_data }}"
+        type="audio/mpeg"
+      />
+      Your browser does not support the audio element.
+    </audio>
+  </body>
+</html>

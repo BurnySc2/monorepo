@@ -1,11 +1,10 @@
 import random
 
-import nltk  # pyre-fixme[21]
 from litestar import Controller, get
 from nltk.corpus import wordnet as wn  # pyre-fixme[21]
 from nltk.corpus.reader.wordnet import Synset  # pyre-fixme[21]
 
-nltk.download("wordnet")
+# nltk.download("wordnet")
 
 # dog: Synset = wn.synset("dog.n.01")
 # print(dog.hypernyms())

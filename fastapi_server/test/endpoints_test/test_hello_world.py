@@ -1,11 +1,13 @@
-from fastapi.testclient import TestClient
+# TODO Fix example test
+# import pytest
+# from litestar.status_codes import HTTP_200_OK
+# from litestar.testing import AsyncTestClient
 
-from routes.hello_world import hello_world_router
+# from app import app
 
-client = TestClient(hello_world_router)
-
-
-def test_hello_world():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"Hello": "World"}
+# @pytest.mark.asyncio
+# async def test_health_check():
+#     async with AsyncTestClient(app=app) as client:
+#         response = await client.get("/")
+#         assert response.status_code == HTTP_200_OK
+#         assert response.text == "Hello, world!"

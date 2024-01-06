@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Python >=3.8.1 <3.12
+Python >=3.8.1 <3.13
 Local postgres db via
 
 ```sh
@@ -17,7 +17,7 @@ docker run --rm --name postgres \
 ## Launch local dev server
 
 ```
-POSTGRES_CONNECTION_STRING="postgresql://postgres:123@localhost:5432/postgres" poetry run uvicorn main:app --host 0.0.0.0 --port 8000 --ssl-keyfile "helper/app-key.pem" --ssl-certfile "helper/app.pem" --reload
+POSTGRES_CONNECTION_STRING="postgresql://postgres:123@localhost:5432/postgres" poetry run uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 Now you can go to `https://0.0.0.0:8000` or `https://0.0.0.0:8000/docs` to check out the documentation to all endpoints

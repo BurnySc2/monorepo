@@ -36,11 +36,12 @@ pydantic = "^2"
 nltk = "^3.8.1"
 # Fastapi alternative
 litestar = "^2.4.3"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
 pytest = "^7.1"
-pytest-asyncio = "^0.16"
+pytest-asyncio = "^0.23"
 pytest-benchmark = "^4.0"
 # Property based testing
 hypothesis = "^6.39.3"

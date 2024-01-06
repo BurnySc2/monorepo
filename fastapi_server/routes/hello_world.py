@@ -1,14 +1,15 @@
 import asyncio
 
-from fastapi.routing import APIRouter
+from litestar import Controller, get
 from loguru import logger
 
-hello_world_router = APIRouter()
 
+class MyRootRoute(Controller):
+    path = "/"
 
-@hello_world_router.get("/")
-def hello_world():
-    return {"Hello": "World"}
+    @get("/test")
+    async def index(self) -> dict[str, str]:
+        return {"Hello": "World"}
 
 
 async def background_task_function(my_text: str, other_text: str = " something!"):
