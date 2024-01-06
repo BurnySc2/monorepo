@@ -1,5 +1,6 @@
 import random
 
+# import nltk
 from litestar import Controller, get
 from nltk.corpus import wordnet as wn  # pyre-fixme[21]
 from nltk.corpus.reader.wordnet import Synset  # pyre-fixme[21]
