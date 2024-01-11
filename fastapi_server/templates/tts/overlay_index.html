@@ -16,7 +16,7 @@
     <div
       class="flex flex-col justify-center items-center h-screen"
       hx-ext="ws"
-      ws-connect="ws:0.0.0.0:8000/tts-ws/{{ stream_name }}/{{ read_name_lang }}"
+      ws-connect="{{ ws_backend_server_url }}/tts-ws/{{ stream_name }}/{{ read_name_lang }}"
     >
       <div id="content">
         <audio controls hidden>

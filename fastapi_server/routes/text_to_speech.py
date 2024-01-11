@@ -10,6 +10,7 @@ TTS for twitch streamers
 """
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import Annotated, Literal
 
@@ -22,6 +23,7 @@ from litestar.template.config import TemplateConfig
 
 from routes.tts.generate_tts import Voices, generate_tts
 
+WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:0.0.0.0:8000")
 template_config = TemplateConfig(engine=JinjaTemplateEngine, directory="templates")
 
 
@@ -76,6 +78,7 @@ class MyTTSRoute(Controller):
         return Template(
             template_name="tts/overlay_index.html",
             context={
+                "ws_backend_server_url": WS_BACKEND_SERVER_URL,
                 "stream_name": stream_name.lower(),
                 "read_name_lang": read_name_lang,
             },
