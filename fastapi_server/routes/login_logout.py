@@ -43,7 +43,7 @@ async def user_login(
                 "client_id": CLIENT_ID,
                 "client_secret": CLIENT_SECRET,
                 "code": code,
-            }
+            },
         )
         if not post_response.ok:
             return "Github server is not responding"

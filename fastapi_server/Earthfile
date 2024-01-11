@@ -37,12 +37,12 @@ format:
     # Sort imports
     RUN poetry run ruff check . --select I --fix
     # Format code
-    RUN poetry run yapf -ir .
+    RUN poetry run ruff format .
 
 # Check if files are correctly formatted
 format-check:
     FROM +install-dev
-    RUN poetry run yapf -dr .
+    RUN poetry run ruff format . --check --diff
 
 # Ignore errors via "# noqa: F841"
 lint:

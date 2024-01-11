@@ -1,3 +1,4 @@
+import asyncio
 import os
 from pathlib import Path
 from typing import Literal
@@ -15,8 +16,14 @@ from routes.hello_world import MyRootRoute
 
 # from routes.similar_words import MyWordsRoute
 from routes.text_to_speech import MyTTSRoute
+from routes.tts.websocket_handler import TTSQueue, TTSWebsocketHandler
 
 load_dotenv()
+
+
+# Paths and folders of permanent data
+DATA_FOLDER = Path(__file__).parent / "data"
+logger.add(DATA_FOLDER / "app.log")
 
 assert os.getenv("STAGE", "DEV") in {"DEV", "PROD"}, os.getenv("STAGE")
 STAGE: Literal["DEV", "PROD"] = os.getenv("STAGE", "DEV")  # pyre-fixme[9]
@@ -34,6 +41,9 @@ async def get_book(book_id: int) -> dict[str, int]:
 
 
 async def startup_event():
+    # Run websocket handler which handles tts
+    asyncio.create_task(TTSQueue.start_irc_bot())
+
     # asyncio.create_task(background_task_function('hello', other_text=' world!'))
     try:
         await todo_create_tables()
@@ -48,7 +58,7 @@ def shutdown_event():
 
 
 app = Litestar(
-    [index, get_book, MyRootRoute, MyTTSRoute],
+    [index, get_book, MyRootRoute, MyTTSRoute, TTSWebsocketHandler],
     on_startup=[startup_event],
     on_shutdown=[shutdown_event],
     template_config=TemplateConfig(

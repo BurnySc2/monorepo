@@ -21,14 +21,17 @@ def todo_index(request: Request):
 async def get_todo_items(request: Request) -> str:
     todos = await get_all_todos()
     return render(
-        templates, "todo_item.html", [
+        templates,
+        "todo_item.html",
+        [
             {
                 "request": request,
                 "id": c.get("id"),
                 "todotext": c.get("todotext"),
                 "done": c.get("done"),
-            } for c in todos
-        ]
+            }
+            for c in todos
+        ],
     )
 
 

@@ -30,6 +30,9 @@ nltk = "^3.8.1"
 # Fastapi alternative
 litestar = "^2.4.3"
 python-dotenv = "^1.0.0"
+twitchio = "^2.8.2"
+soundfile = "^0.12.1"
+numpy = "^1.26.3"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -43,10 +46,8 @@ psutil = "^5.9.1"
 # End to end tests
 playwright = "^1.22.0"
 pytest-playwright = "^0.3.0"
-# Autoformat
-yapf = "^0.32.0"
 toml = "^0.10.2"
-# Linter
+# Linter and autoformat
 ruff = "^0.1.7"
 # Type checker
 pyre-check = "^0.9.18"
@@ -75,7 +76,6 @@ select = [
     "F",  # pyflakes
     "BLE",  # flake8-blind-except
     "I",  # isort
-    "ISC", # flake8-implicit-str-concat
     "N",  # pep8-naming
     "PGH",  # pygrep-hooks
     "PTH", # flake8-use-pathlib

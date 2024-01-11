@@ -41,17 +41,21 @@ def chat_index(request: Request) -> str:
 @htmx_chat_router.get("/htmxapi/chatheader", response_class=HTMLResponse)
 async def get_header(request: Request, github_access_token: Annotated[str | None, Cookie()] = None) -> str:
     return render(
-        templates, "chat_header.html", {
+        templates,
+        "chat_header.html",
+        {
             "request": request,
             "debug": BACKEND_SERVER_URL == "0.0.0.0:8000",
             "server_url": BACKEND_SERVER_URL,
             "client_id": CLIENT_ID,
             "logged_in": github_access_token is not None,
-        }
+        },
     )
 
 
-async def get_username(github_access_token: Annotated[str | None, Cookie()] = None, ) -> str | None:
+async def get_username(
+    github_access_token: Annotated[str | None, Cookie()] = None,
+) -> str | None:
     if github_access_token is None:
         return None
     async with aiohttp.ClientSession() as session:
@@ -74,40 +78,58 @@ async def broadcast(message: str) -> None:
 async def handle_join(user: str, websocket: WebSocket) -> None:
     await websocket.accept()
     # Clear chat messages
-    await websocket.send_text("""
+    await websocket.send_text(
+        """
     <div hx-swap-oob="innerHTML:#content" />
-    """)
+    """
+    )
     # Clear user list
-    await websocket.send_text("""
+    await websocket.send_text(
+        """
     <div hx-swap-oob="innerHTML:#userlist" />
-    """)
+    """
+    )
 
     # Send message history
     messages = await get_all_messages()
     rendered_messages = render(
-        templates, "chat_message.html", [
+        templates,
+        "chat_message.html",
+        [
             {
                 "time_stamp": c.get("time_stamp"),
                 "message_author": c.get("message_author"),
                 "chat_message": c.get("chat_message"),
-            } for c in messages
-        ]
+            }
+            for c in messages
+        ],
     )
     await websocket.send_text(rendered_messages)
 
     # Send user list
     t = templates.get_template("chat_user.html")
-    await websocket.send_text("".join(t.render({
-        "username": u,
-    }) for u in connected_users))
+    await websocket.send_text(
+        "".join(
+            t.render(
+                {
+                    "username": u,
+                }
+            )
+            for u in connected_users
+        )
+    )
     # Nofity all connected that someone joined
     if user in connected_users:
         connected_users[user].append(websocket)
     else:
         connected_users[user] = [websocket]
-    await broadcast(t.render({
-        "username": user,
-    }))
+    await broadcast(
+        t.render(
+            {
+                "username": user,
+            }
+        )
+    )
 
 
 async def handle_leave(user: str, websocket: WebSocket) -> None:
@@ -151,23 +173,31 @@ async def handle_typing(user: str, message: str, websocket: WebSocket) -> None:
     # TODO dont show typing for yourself
     if user not in user_is_typing:
         user_is_typing[user] = message
-        await broadcast(f"""
+        await broadcast(
+            f"""
 <div hx-swap-oob="beforeend:#typing">
     <div id="typing_{user}" />
 </div>
-""")
+"""
+        )
     if message == "":
         # Delete 'user is typing'
         if user in user_is_typing:
             del user_is_typing[user]
-            await broadcast(f"""
-        <div hx-swap-oob="delete:#typing_{user}" />""")
+            await broadcast(
+                f"""
+        <div hx-swap-oob="delete:#typing_{user}" />"""
+            )
         return
     t = templates.get_template("chat_typing.html")
-    await broadcast(t.render({
-        "message_author": user,
-        "chat_message": message,
-    }))
+    await broadcast(
+        t.render(
+            {
+                "message_author": user,
+                "chat_message": message,
+            }
+        )
+    )
 
 
 @htmx_chat_router.websocket("/htmx_ws")
@@ -210,7 +240,9 @@ async def htmx_chat_websocket(
 
 # TODO Only expose route in DEV stage
 @htmx_chat_router.delete("/htmxapi/detele_messages", response_class=HTMLResponse)
-async def debug_delete_messages(user: Annotated[str | None, Depends(get_username)], ):
+async def debug_delete_messages(
+    user: Annotated[str | None, Depends(get_username)],
+):
     if user is None:
         return
     await debug_delete_all_messages()

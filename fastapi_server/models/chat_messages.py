@@ -93,6 +93,8 @@ LIMIT 1;
 async def debug_delete_all_messages() -> None:
     conn = await create_connection()
     async with conn.transaction():
-        await conn.fetch(f"""
+        await conn.fetch(
+            f"""
 DELETE FROM {TABLE_NAME};
-""")
+"""
+        )
