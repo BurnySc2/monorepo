@@ -27,7 +27,7 @@ humanize = "^4.6.0"
 faster-whisper = ">=0.6.0"
 # Progress bar
 tqdm = "^4.65.0"
-pyrogram = "==2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel downloads
+pyrogram = "^2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel downloads
 # Required by pyrogram
 tgcrypto = "^1.2.5"
 # Translator
