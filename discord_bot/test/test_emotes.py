@@ -44,7 +44,7 @@ def test_count_emotes_parser(all_: bool, nostatic: bool, noanimated: bool, days:
 
 
 def fake_get_emoji(value: int) -> KnownCustomEmoji:
-    return KnownCustomEmoji(#pyre-fixme[28]
+    return KnownCustomEmoji(  # pyre-fixme[28]
         id=Snowflake(value),
         name="some_emote",
         is_animated=False,

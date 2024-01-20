@@ -172,7 +172,7 @@ def get_help_string() -> str:
     _temp = public_fetch_aoe4_bo_parser.parse_known_args([])
     temp_help_string = public_fetch_aoe4_bo_parser.format_help()
     index_string = "BuildOrderParserOptions ['params']:"
-    return temp_help_string[temp_help_string.find(index_string) + len(index_string):].strip()
+    return temp_help_string[temp_help_string.find(index_string) + len(index_string) :].strip()
 
 
 help_string = get_help_string()
@@ -215,11 +215,11 @@ async def public_analyse_aoe4_game(
     event: GuildMessageCreateEvent,
     message: str,
 ) -> str:
-    '''Needs to be able to parse
+    """Needs to be able to parse
     message = "https://aoe4world.com/players/7344587/games/65673113"
     message = "<https://aoe4world.com/players/7344587/games/65673113>"
     then analyzes the games and gives information about the macro of the player.
-    '''
+    """
     message = message.strip("<").strip(">")
     game_url_pattern = r"https://aoe4world\.com/players/(\d+).*/games/(\d+).*"
     game_url_compiled = re.compile(game_url_pattern)
@@ -318,7 +318,7 @@ async def public_fetch_aoe4_bo(
         get_build_order_tasks = []
         # Iterate them in any order
         for future in asyncio.as_completed(get_games_by_player_tasks):
-            for (game_result, player_profile_id) in await future:
+            for game_result, player_profile_id in await future:
                 game_result: GameResult
                 map_game_id_to_game_result[game_result.game_id] = game_result
                 get_build_order_tasks.append(
@@ -496,9 +496,9 @@ class BuildOrderItem(BaseModel):
 
 
 def format_time(timestamps: list[int]) -> str:
-    '''From a given list of timestamps, convert them to minute:second format
+    """From a given list of timestamps, convert them to minute:second format
     E.g. input is [30, 90], output will be "0:30, 1:30"
-    '''
+    """
     times_formatted: list[str] = []
     for timestamp in timestamps:
         minutes, seconds = divmod(timestamp, 60)
@@ -525,7 +525,7 @@ class GamePlayerData(BaseModel):
         raise IndexError(f"Could not find icon in build order: {icon_name}")
 
     def check_condition(self, condition: Condition) -> bool:
-        """ Returns true if this build order matches the given condition. """
+        """Returns true if this build order matches the given condition."""
         # VILLAGER CONDITION
         if condition.action == Action.VILLAGER:
             if condition.time_in_seconds is None:
@@ -719,7 +719,8 @@ async def get_games_by_player_id(
     tasks = [
         asyncio.create_task(
             session.get(f"https://aoe4world.com/api/v0/games?page={page}&profile_ids={player_profile_id}")
-        ) for page in range(1, max_pages + 1)
+        )
+        for page in range(1, max_pages + 1)
     ]
     collected: list[tuple[GameResult, int]] = []
     # Iterate them in any order

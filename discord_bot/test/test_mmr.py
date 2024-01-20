@@ -7,16 +7,8 @@ def test_parse_api_result():
         "leagueMax": 6,
         "ratingMax": 6820,
         "totalGamesPlayed": 8088,
-        "previousStats": {
-            "rating": 6599,
-            "gamesPlayed": 68,
-            "rank": 1653
-        },
-        "currentStats": {
-            "rating": 6632,
-            "gamesPlayed": 32,
-            "rank": 69
-        },
+        "previousStats": {"rating": 6599, "gamesPlayed": 68, "rank": 1653},
+        "currentStats": {"rating": 6632, "gamesPlayed": 32, "rank": 69},
         "members": {
             "protossGamesPlayed": 8088,
             "character": {
@@ -26,14 +18,9 @@ def test_parse_api_result():
                 "accountId": 677353,
                 "region": "EU",
                 "battlenetId": 7100931,
-                "clanId": 4535
+                "clanId": 4535,
             },
-            "account": {
-                "battleTag": "Harstem#21371",
-                "id": 677353,
-                "partition": "GLOBAL",
-                "hidden": None
-            },
+            "account": {"battleTag": "Harstem#21371", "id": 677353, "partition": "GLOBAL", "hidden": None},
             "clan": {
                 "tag": "RBLN",
                 "id": 4535,
@@ -43,11 +30,11 @@ def test_parse_api_result():
                 "activeMembers": 4,
                 "avgRating": 6111,
                 "avgLeagueType": 5,
-                "games": 852
+                "games": 852,
             },
             "proNickname": "Harstem",
-            "proTeam": "ShopifyRebels"
-        }
+            "proTeam": "ShopifyRebels",
+        },
     }
 
     parsed_data = PlayerData.parse_obj(example_response)

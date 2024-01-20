@@ -120,7 +120,8 @@ async def public_leaderboard(
             index,
             r["count"],
             map_author_id_to_server_nickname[r["author_id"]],
-        ] for index, r in enumerate(leaderboard_result, start=start_rank)
+        ]
+        for index, r in enumerate(leaderboard_result, start=start_rank)
     ]
 
     # Source: https://stackoverflow.com/a/69574344
@@ -135,29 +136,35 @@ async def public_leaderboard(
 
 
 async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
-    query: AsyncSelectRequestBuilder = ( #pyre-fixme[11]
-        supabase.table(DiscordMessage.table_name_leaderboard_all()).select(
+    query: AsyncSelectRequestBuilder = (  # pyre-fixme[11]
+        supabase.table(DiscordMessage.table_name_leaderboard_all())
+        .select(
             "guild_id, author_id, count",
-        ).eq(
+        )
+        .eq(
             "guild_id",
             server_id,
-        ).range( # https://supabase.com/docs/reference/javascript/range
+        )
+        .range(  # https://supabase.com/docs/reference/javascript/range
             start_rank - 1,
             end_rank,
         )
     )
-    query_response: APIResponse = await query.execute()  #pyre-fixme[11]
+    query_response: APIResponse = await query.execute()  # pyre-fixme[11]
     return query_response.data
 
 
 async def get_leaderboard_month(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
     query: AsyncSelectRequestBuilder = (
-        supabase.table(DiscordMessage.table_name_leaderboard_month()).select(
+        supabase.table(DiscordMessage.table_name_leaderboard_month())
+        .select(
             "guild_id, author_id, count",
-        ).eq(
+        )
+        .eq(
             "guild_id",
             server_id,
-        ).range(
+        )
+        .range(
             start_rank - 1,
             end_rank,
         )
@@ -168,12 +175,15 @@ async def get_leaderboard_month(server_id: int, start_rank: int, end_rank: int) 
 
 async def get_leaderboard_week(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
     query: AsyncSelectRequestBuilder = (
-        supabase.table(DiscordMessage.table_name_leaderboard_week()).select(
+        supabase.table(DiscordMessage.table_name_leaderboard_week())
+        .select(
             "guild_id, author_id, count",
-        ).eq(
+        )
+        .eq(
             "guild_id",
             server_id,
-        ).range(
+        )
+        .range(
             start_rank - 1,
             end_rank,
         )

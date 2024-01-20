@@ -78,7 +78,7 @@ async def generic_command_caller(
 
 
 async def loop_function() -> None:
-    """ A function that is called every X seconds based on the asyncio.sleep(time) below. """
+    """A function that is called every X seconds based on the asyncio.sleep(time) below."""
     while 1:
         await asyncio.sleep(1)
         await my_reminder.tick()
@@ -97,7 +97,8 @@ async def add_message_to_db(server_id: int, channel_id: int, message: Message) -
     """Insert message into database. Ignore if it's a duplicate"""
     try:
         await (
-            supabase.table(DiscordMessage.table_name()).insert(
+            supabase.table(DiscordMessage.table_name())
+            .insert(
                 {
                     "message_id": message.id,
                     "guild_id": server_id,
@@ -107,7 +108,8 @@ async def add_message_to_db(server_id: int, channel_id: int, message: Message) -
                     "when": str(message.created_at),
                     "what": message.content,
                 }
-            ).execute()
+            )
+            .execute()
         )
     except postgrest.exceptions.APIError:
         logger.error(f"Mesage already exists or could not insert message: {message.id}")
@@ -127,10 +129,15 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         return
 
     # pyre-fixme[11]
-    all_message_ids_response: APIResponse = await supabase.table(DiscordMessage.table_name()).select("message_id").eq(
-        "channel_id",
-        channel.id,
-    ).execute()
+    all_message_ids_response: APIResponse = (
+        await supabase.table(DiscordMessage.table_name())
+        .select("message_id")
+        .eq(
+            "channel_id",
+            channel.id,
+        )
+        .execute()
+    )
     message_ids_already_exist_in_db: set[int] = {row["message_id"] for row in all_message_ids_response.data}
 
     messages_inserted_count = 0
@@ -151,9 +158,14 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
 
 async def get_all_servers() -> AsyncGenerator[OwnGuild, Any]:
     try:
-        _check_if_supabase_is_up: APIResponse = await supabase.table(DiscordMessage.table_name()).select(
-            "message_id",
-        ).limit(1).execute()
+        _check_if_supabase_is_up: APIResponse = (
+            await supabase.table(DiscordMessage.table_name())
+            .select(
+                "message_id",
+            )
+            .limit(1)
+            .execute()
+        )
     except httpx.ConnectError as e:
         logger.trace(f"Error trying to access supabase: {e}")
         return
@@ -201,7 +213,9 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     # Mention is same user who reacted
     # Remove message if :x: was reacted to it
     if (
-        message.author.id == BOT_USER_ID and message.content and f"<@{event.user_id}>" in message.content
+        message.author.id == BOT_USER_ID
+        and message.content
+        and f"<@{event.user_id}>" in message.content
         and event.is_for_emoji("\u274C")
     ):
         await message.delete()
@@ -220,7 +234,8 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                 if SECRETS.stage == "PROD":
                     try:
                         await (
-                            supabase.table(DiscordQuotes.table_name()).insert(
+                            supabase.table(DiscordQuotes.table_name())
+                            .insert(
                                 {
                                     "message_id": message.id,
                                     "guild_id": event.guild_id,
@@ -231,12 +246,13 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                                     "what": message.content,
                                     "emoji_name": reaction.emoji.name,
                                 }
-                            ).execute()
+                            )
+                            .execute()
                         )
                     except postgrest.exceptions.APIError as e:
                         if (
-                            e.message !=
-                            f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"'
+                            e.message
+                            != f'duplicate key value violates unique constraint "{DiscordQuotes.table_name()}_pkey"'
                         ):
                             raise
                         logger.error(f"Quote already exists: {message.id}")
@@ -287,7 +303,7 @@ async def handle_new_message(event: GuildMessageCreateEvent) -> None:
 
     if event.content is not None and event.content.startswith(PREFIX):
         command, *message_list = event.content.split()
-        command = command[len(PREFIX):]
+        command = command[len(PREFIX) :]
         message = " ".join(message_list)
         await handle_commands(event, command, message)
 

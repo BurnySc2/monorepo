@@ -32,7 +32,7 @@ pytest-asyncio = "^0.15.1"
 # Autoformat
 yapf = "^0.32.0"
 # Linter
-ruff = "^0.0.247"
+ruff = "^0.1.14"
 # Type checker
 pyre-check = "^0.9.18"
 

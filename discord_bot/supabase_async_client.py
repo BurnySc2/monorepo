@@ -9,7 +9,6 @@ from supabase.lib.client_options import ClientOptions
 
 
 class Client(SyncClient):
-
     def __init__(
         self,
         supabase_url: str,
@@ -17,7 +16,7 @@ class Client(SyncClient):
         options: ClientOptions = ClientOptions(),
     ):
         super().__init__(supabase_url=supabase_url, supabase_key=supabase_key, options=options)
-        self.postgrest: AsyncPostgrestClient = self._init_postgrest_client(#pyre-fixme[11]
+        self.postgrest: AsyncPostgrestClient = self._init_postgrest_client(  # pyre-fixme[11]
             rest_url=self.rest_url,
             supabase_key=self.supabase_key,
             headers=options.headers,
@@ -25,7 +24,7 @@ class Client(SyncClient):
         )
 
     # adapted to return AsyncRequestBuilder instead of SyncRequestBuilder
-    def table(self, table_name: str) -> AsyncRequestBuilder:  #pyre-fixme[11]
+    def table(self, table_name: str) -> AsyncRequestBuilder:  # pyre-fixme[11]
         return self.from_(table_name)
 
     # adapted to return AsyncRequestBuilder instead of SyncRequestBuilder
@@ -33,16 +32,14 @@ class Client(SyncClient):
         return self.postgrest.from_(table_name)
 
     # adapted to return AsyncFilterRequestBuilder instead of SyncFilterRequestBuilder
-    def rpc(self, fn: str, params: dict[Any, Any]) -> Coroutine[None, None, AsyncFilterRequestBuilder]:  #pyre-fixme[11]
+    def rpc(
+        self, fn: str, params: dict[Any, Any]
+    ) -> Coroutine[None, None, AsyncFilterRequestBuilder]:  # pyre-fixme[11]
         return self.postgrest.rpc(fn, params)
 
     @staticmethod
-    def _init_postgrest_client(#pyre-fixme[14]
-        rest_url: str,
-        supabase_key: str,
-        headers: dict[str, str],
-        schema: str,
-        timeout: float = 5
+    def _init_postgrest_client(  # pyre-fixme[14]
+        rest_url: str, supabase_key: str, headers: dict[str, str], schema: str, timeout: float = 5
     ) -> AsyncPostgrestClient:
         """Private helper for creating an instance of the Postgrest client."""
         client = AsyncPostgrestClient(rest_url, headers=headers, schema=schema)

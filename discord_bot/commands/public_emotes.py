@@ -43,8 +43,9 @@ async def public_count_emotes(
         return f"Unknown params: {' '.join(unknown_args)}\n{public_count_emotes_parser.format_help()}"
     params: CountEmotesParserOptions = parsed.params
 
-    query: AsyncSelectRequestBuilder = ( #pyre-fixme[11]
-        supabase.table(DiscordMessage.table_name()).select(
+    query: AsyncSelectRequestBuilder = (  # pyre-fixme[11]
+        supabase.table(DiscordMessage.table_name())
+        .select(
             "what",
         )
         # Get messages written in that guild
@@ -65,10 +66,10 @@ async def public_count_emotes(
             event.author_id,
         )
     if params.days is not None:
-        after: Arrow = Arrow.utcnow().shift(days=-params.days)  #pyre-fixme[16]
+        after: Arrow = Arrow.utcnow().shift(days=-params.days)  # pyre-fixme[16]
         query = query.gt("when", str(after))
 
-    result_emotes: APIResponse = await query.execute()  #pyre-fixme[11]
+    result_emotes: APIResponse = await query.execute()  # pyre-fixme[11]
 
     # What emotes to include in response
     if params.nostatic and params.noanimated:
@@ -104,7 +105,8 @@ async def public_count_emotes(
 
     emote_names_sorted_by_usage: list[str] = sorted(emote_counter, key=lambda i: emote_counter[i], reverse=True)
     emote_count: list[str] = [
-        f"{emote_counter[name]} {name}" for index, name in enumerate(
+        f"{emote_counter[name]} {name}"
+        for index, name in enumerate(
             emote_names_sorted_by_usage,
             start=1,
         )

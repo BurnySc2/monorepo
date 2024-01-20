@@ -12,7 +12,6 @@ from loguru import logger
 
 
 class Reminder:
-
     def __init__(
         self,
         reminder_utc_timestamp: float = 0,
@@ -66,7 +65,7 @@ Example usage:
 !reminder 5d 3h 2m 1s remind me of this
 !reminder 1day 1hour 1min 1second remind me of this
 !reminder 5days 3hours 2mins 420seconds remind me of this
-        """
+        """,
     )
 
     def __init__(self, client: GatewayBot):
@@ -96,7 +95,7 @@ Example usage:
             json.dump(reminders_serialized, f, indent=2)
 
     async def tick(self):
-        """ Function gets called every second. """
+        """Function gets called every second."""
         need_to_save_reminders = False
         reminded: bool = True
         while self.reminders and reminded:
@@ -165,7 +164,7 @@ Example usage:
         if result is None:
             return None
 
-        results = [(message[x[0]:x[1]] if x != (-1, -1) else "") for x in result.regs]
+        results = [(message[x[0] : x[1]] if x != (-1, -1) else "") for x in result.regs]
         _ = results.pop(0)
         year, month, day, hour, minute, second, reminder_message = results
 
@@ -217,7 +216,7 @@ Example usage:
         if result is None:
             return None
 
-        results = [(message[x[0]:x[1]] if x != (-1, -1) else "") for x in result.regs]
+        results = [(message[x[0] : x[1]] if x != (-1, -1) else "") for x in result.regs]
         _ = results.pop(0)
         day, hour, minute, second, reminder_message = results
 
@@ -252,10 +251,10 @@ Example usage:
         event: GuildMessageCreateEvent,
         reminder_message: str,
     ):
-        """ Reminds the user in a couple days, hours or minutes with a certain message. """
+        """Reminds the user in a couple days, hours or minutes with a certain message."""
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
-            return (f"You already have {self.reminder_limit} / {self.reminder_limit} reminders, which is the maximum.")
+            return f"You already have {self.reminder_limit} / {self.reminder_limit} reminders, which is the maximum."
 
         result = await self._parse_time_shift_from_message(reminder_message)
         if result is None:
@@ -287,7 +286,7 @@ Example usage:
         event: GuildMessageCreateEvent,
         reminder_message: str,
     ):
-        """ Add a reminder which reminds you at a certain time or date. """
+        """Add a reminder which reminds you at a certain time or date."""
         threshold_reached: bool = await self._user_reached_max_reminder_threshold(event.author_id)
         if threshold_reached:
             user_reminders = await self._get_all_reminders_by_user_id(event.author_id)
@@ -347,7 +346,7 @@ Example usage:
         event: GuildMessageCreateEvent,
         _message: str,
     ):
-        """ List all of the user's reminders """
+        """List all of the user's reminders"""
         # id, time formatted by iso standard format, in 5 minutes, text
         user_reminders: list[tuple[int, str, str, str]] = []
 
@@ -376,7 +375,7 @@ Example usage:
         event: GuildMessageCreateEvent,
         message: str,
     ):
-        """ Removes reminders from the user """
+        """Removes reminders from the user"""
         try:
             reminder_id_to_delete = int(message) - 1
         except ValueError:
@@ -426,13 +425,11 @@ def main():
     assert result[1] == "some message"
 
     class CustomAuthor:
-
         def __init__(self, id_: int, name: str):
             self.id = id_
             self.name = name
 
     class CustomMessage:
-
         def __init__(self, content: str, author: CustomAuthor):
             self.content = content
             self.author = author

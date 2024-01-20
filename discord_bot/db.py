@@ -7,7 +7,7 @@ from typing import Generator, Literal
 import arrow
 import toml
 from arrow import Arrow
-from postgrest.base_request_builder import APIResponse  #pyre-fixme[21]
+from postgrest.base_request_builder import APIResponse  # pyre-fixme[21]
 from pydantic import BaseModel
 
 from supabase_async_client import Client, create_client
@@ -50,40 +50,40 @@ class DiscordMessage(BaseModel):
     @staticmethod
     def table_name_leaderboard_all() -> str:
         """
-        Create view SQL query:
-CREATE VIEW discord_leaderboard_all AS SELECT guild_id, author_id, count(message_id)
-FROM discord_messages AS d
-GROUP BY guild_id, author_id
-ORDER BY count(message_id) DESC;
+                Create view SQL query:
+        CREATE VIEW discord_leaderboard_all AS SELECT guild_id, author_id, count(message_id)
+        FROM discord_messages AS d
+        GROUP BY guild_id, author_id
+        ORDER BY count(message_id) DESC;
         """
         return "discord_leaderboard_all"
 
     @staticmethod
     def table_name_leaderboard_month() -> str:
         """
-        Create view SQL query:
-CREATE VIEW discord_leaderboard_month AS SELECT guild_id, author_id, count(message_id)
-FROM discord_messages AS d
-WHERE date_trunc('month', now()) < d.when
-GROUP BY guild_id, author_id
-ORDER BY count(message_id) DESC;
+                Create view SQL query:
+        CREATE VIEW discord_leaderboard_month AS SELECT guild_id, author_id, count(message_id)
+        FROM discord_messages AS d
+        WHERE date_trunc('month', now()) < d.when
+        GROUP BY guild_id, author_id
+        ORDER BY count(message_id) DESC;
         """
         return "discord_leaderboard_month"
 
     @staticmethod
     def table_name_leaderboard_week() -> str:
         """
-        Create view SQL query:
-CREATE VIEW discord_leaderboard_week AS SELECT guild_id, author_id, count(message_id)
-FROM discord_messages AS d
-WHERE date_trunc('week', now()) < d.when
-GROUP BY guild_id, author_id
-ORDER BY count(message_id) DESC;
+                Create view SQL query:
+        CREATE VIEW discord_leaderboard_week AS SELECT guild_id, author_id, count(message_id)
+        FROM discord_messages AS d
+        WHERE date_trunc('week', now()) < d.when
+        GROUP BY guild_id, author_id
+        ORDER BY count(message_id) DESC;
         """
         return "discord_leaderboard_week"
 
     @staticmethod
-    def from_select(response: APIResponse) -> Generator[DiscordMessage, None, None]:  #pyre-fixme[11]
+    def from_select(response: APIResponse) -> Generator[DiscordMessage, None, None]:  # pyre-fixme[11]
         for row in response.data:
             yield DiscordMessage(**row)
 
@@ -110,8 +110,8 @@ class DiscordQuotes(BaseModel):
     @staticmethod
     def table_name_random_order_view() -> str:
         """
-        Create view SQL query:
-CREATE VIEW discord_quotes_random_order_view AS SELECT * FROM discord_quotes ORDER BY random();
+                Create view SQL query:
+        CREATE VIEW discord_quotes_random_order_view AS SELECT * FROM discord_quotes ORDER BY random();
         """
         return "discord_quotes_random_order_view"
 

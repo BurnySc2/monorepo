@@ -29,8 +29,23 @@ from commands.public_fetch_aoe4 import (
 logger.remove()
 
 ALLOWED_ACTION_ENUM_VALUES: set[str] = {
-    "v", "villager", "villagers", "tc", "tcs", "towncenter", "towncenters", "age2", "feudal", "age3", "castle", "age4",
-    "imp", "imperial", "wb", "wheel", "wheelbarrow"
+    "v",
+    "villager",
+    "villagers",
+    "tc",
+    "tcs",
+    "towncenter",
+    "towncenters",
+    "age2",
+    "feudal",
+    "age3",
+    "castle",
+    "age4",
+    "imp",
+    "imperial",
+    "wb",
+    "wheel",
+    "wheelbarrow",
 }
 
 
@@ -83,7 +98,8 @@ def test_condition_enum(optional_count: str, action: str, operator: str, duratio
 )
 async def test_public_search_aoe4_players(message_text: str, player_search_results: list[PlayerSearchResult]):
     with patch.object(
-        ClientSession, "get",
+        ClientSession,
+        "get",
         AsyncMock(
             return_value=AsyncMock(
                 ok=True,
@@ -93,7 +109,7 @@ async def test_public_search_aoe4_players(message_text: str, player_search_resul
                     }
                 ),
             )
-        )
+        ),
     ):
         # pyre-fixme[6]
         result = await public_search_aoe4_players(None, None, message_text)
@@ -125,7 +141,7 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
                 GamePlayerData,
                 profile_id=st.sampled_from([0, player_profile_id]),
                 actions=st.builds(FinishedActions),
-                build_order=st.lists(st.from_type(BuildOrderItem), max_size=0)
+                build_order=st.lists(st.from_type(BuildOrderItem), max_size=0),
             ),
             max_size=100,
         )
@@ -133,15 +149,16 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
     message_text = f"https://aoe4world.com/players/{player_profile_id}/games/{game_id}"
 
     with patch.object(
-        ClientSession, "get",
+        ClientSession,
+        "get",
         AsyncMock(
             return_value=AsyncMock(
                 ok=True,
                 json=AsyncMock(
                     return_value={"players": [game_player_data.dict() for game_player_data in game_players_data]}
-                )
+                ),
             )
-        )
+        ),
     ):
         # pyre-fixme[6]
         result = await public_analyse_aoe4_game(None, None, message_text)
@@ -216,7 +233,9 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
                         ).dict()
                     ),
                 ),
-            ] + amount_of_pages * [
+            ]
+            + amount_of_pages
+            * [
                 # Fetch games matching the profile, will be called 20 times (20 pages) because profile id was submitted
                 AsyncMock(
                     ok=True,
@@ -241,24 +260,26 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
                                                     player=st.builds(
                                                         PlayerOfTeam,
                                                         profile_id=st.just(player_profile_id),
-                                                        civilization=st.just(player_race)
-                                                    )
+                                                        civilization=st.just(player_race),
+                                                    ),
                                                 ),
                                                 min_size=amount_of_players_per_team,
                                                 max_size=amount_of_players_per_team,
                                             ),
                                             min_size=amount_of_teams,
-                                            max_size=amount_of_teams
-                                        )
+                                            max_size=amount_of_teams,
+                                        ),
                                     ),
                                     min_size=amount_of_games_per_page,
-                                    max_size=amount_of_games_per_page
+                                    max_size=amount_of_games_per_page,
                                 )
                             )
                         }
-                    )
+                    ),
                 )
-            ] + total_build_orders * [
+            ]
+            + total_build_orders
+            * [
                 # Fetch build orders of each player from the game
                 AsyncMock(
                     ok=True,
@@ -270,17 +291,17 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
                                         GamePlayerData,
                                         profile_id=st.just(player_profile_id),
                                         actions=st.builds(FinishedActions),
-                                        build_order=st.just([build_order_item])
+                                        build_order=st.just([build_order_item]),
                                     ),
                                     min_size=1,
                                     max_size=1,
                                 )
                             )
                         }
-                    )
+                    ),
                 ),
             ]
-        )
+        ),
     ) as get_mock:
         # pyre-fixme[6]
         result = await public_fetch_aoe4_bo(None, None, message_text)
