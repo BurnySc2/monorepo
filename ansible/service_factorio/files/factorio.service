@@ -24,3 +24,6 @@ SyslogIdentifier={{ USERNAME }}
 User={{ USERNAME }}
 Group={{ USERNAME }}
 WorkingDirectory=/home/{{ USERNAME }}
+
+[Install]
+WantedBy=multi-user.target
