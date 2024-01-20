@@ -19,7 +19,11 @@ from tqdm import tqdm
 sys.path.append(".")
 
 from src.models.db import (  # noqa: E402 I001
-    ModelSize, Task, compress_files, generate_srt_data, generate_txt_data,
+    ModelSize,
+    Task,
+    compress_files,
+    generate_srt_data,
+    generate_txt_data,
 )
 
 
@@ -163,10 +167,12 @@ def write_data(transcribed_data: list[tuple[float, float, str]], options: Transc
     txt_data: str = generate_txt_data(transcribed_data)
     srt_data: str = generate_srt_data(transcribed_data)
 
-    zip_data: BytesIO = compress_files({
-        "transcribed.txt": txt_data,
-        "transcribed.srt": srt_data,
-    })
+    zip_data: BytesIO = compress_files(
+        {
+            "transcribed.txt": txt_data,
+            "transcribed.srt": srt_data,
+        }
+    )
 
     if options.output_file == "-":
         # pyre-fixme[6]
@@ -234,5 +240,5 @@ poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_A
 poetry run python src/argparser.py --input_file "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3" --task Translate --language en --model Large --output_file - > result.zip
 
 # TODO Add option to add subtitles to video (hardcoded or soft subtitles)
-    """ # noqa: E501
+    """  # noqa: E501
     main()

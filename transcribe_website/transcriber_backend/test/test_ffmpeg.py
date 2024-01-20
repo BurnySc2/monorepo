@@ -19,7 +19,7 @@ def get_total_length_of_file(file_path: Path) -> float:
             "default=noprint_wrappers=1:nokey=1",
             str(file_path.absolute()),
         ],
-        capture_output=True
+        capture_output=True,
     )
     assert result.returncode == 0
     return float(result.stdout)
@@ -40,7 +40,7 @@ def test_get_duration_of_file():
             "default=noprint_wrappers=1:nokey=1",
             str(file_path.absolute()),
         ],
-        capture_output=True
+        capture_output=True,
     )
     assert result.stdout == b"193.632000\n", result.stdout
     result2 = get_total_length_of_file(file_path)

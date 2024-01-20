@@ -96,8 +96,10 @@ class Worker:
 
             if last_report_print + 60 < time.time():
                 last_report_print = time.time()
-                processing_per_second, remaining_time_seconds = TranscriptionJob.get_processing_rate_and_remaining_time(
-                )
+                (
+                    processing_per_second,
+                    remaining_time_seconds,
+                ) = TranscriptionJob.get_processing_rate_and_remaining_time()
                 logger.info(
                     f"Status: {humanize.naturalsize(processing_per_second * 3600 * 24)} per day, "
                     f"estimated remaining time: {humanize.precisedelta(remaining_time_seconds)}"
@@ -123,7 +125,7 @@ class Worker:
         try:
             await self.work()
             Worker.job_to_task_map.pop(self.job_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             # TODO set error in db?
             logger.exception(e)
             sys.exit(1)
@@ -143,9 +145,9 @@ class Worker:
             job_info.status = JobStatus.PROCESSING.name
             # Load mp3 file from owncloud
             mp3_data: BytesIO = BytesIO(job_info.mp3_data)
-            transcription_language = "en" if (
-                job_info.forced_language == "en" or job_info.detected_language == "en"
-            ) else None
+            transcription_language = (
+                "en" if (job_info.forced_language == "en" or job_info.detected_language == "en") else None
+            )
             mp3_data_size_bytes: int = mp3_data.getbuffer().nbytes
         try:
             # Initialize transcribing
@@ -198,9 +200,11 @@ class Worker:
         # Done transcribing, write srt and txt file to db
         txt_data: str = generate_txt_data(transcribed_data)
         srt_data: str = generate_srt_data(transcribed_data)
-        srt_original_zipped: BytesIO = compress_files({
-            "transcribed.srt": srt_data,
-        })
+        srt_original_zipped: BytesIO = compress_files(
+            {
+                "transcribed.srt": srt_data,
+            }
+        )
         with orm.db_session():
             job_info: TranscriptionJob = TranscriptionJob[self.job_id]
             job_info.job_completed = datetime.datetime.utcnow()
@@ -234,7 +238,11 @@ async def main():
     time_4h_ago = datetime.datetime.utcnow() - datetime.timedelta(seconds=3600 * 4)
     with orm.db_session():
         jobs = orm.select(
-            j for j in TranscriptionJob if (j.job_started is None or j.job_started < time_4h_ago) and j.status in [
+            j
+            for j in TranscriptionJob
+            if (j.job_started is None or j.job_started < time_4h_ago)
+            and j.status
+            in [
                 JobStatus.ACCEPTED.name,
                 JobStatus.PROCESSING.name,
                 JobStatus.FINISHING.name,

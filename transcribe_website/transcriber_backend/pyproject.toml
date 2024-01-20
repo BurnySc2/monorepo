@@ -24,7 +24,7 @@ psycopg2-binary = "^2.9.6"
 # Display sizes in human readable format
 humanize = "^4.6.0"
 # Transcribing
-faster-whisper = ">=0.6.0"
+faster-whisper = "^0.6.0"
 # Progress bar
 tqdm = "^4.65.0"
 pyrogram = "^2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel downloads
@@ -43,7 +43,7 @@ pytest-asyncio = "^0.15.1"
 # Autoformat
 yapf = "^0.32.0"
 # Linter
-ruff = "^0.0.247"
+ruff = "^0.1.14"
 # Type checker
 pyre-check = "^0.9.18"
 # Cpu and memory profiler

@@ -116,8 +116,11 @@ async def add_from_telegram_message():
     with orm.db_session():
         messages: list[TelegramMessage] = list(
             orm.select(
-                t for t in TelegramMessage if (
-                    t.linked_transcription is None and t.download_status == Status.COMPLETED.name
+                t
+                for t in TelegramMessage
+                if (
+                    t.linked_transcription is None
+                    and t.download_status == Status.COMPLETED.name
                     and t.extracted_mp3_size_bytes is not None
                 )
             ).order_by(TelegramMessage.file_size_bytes)

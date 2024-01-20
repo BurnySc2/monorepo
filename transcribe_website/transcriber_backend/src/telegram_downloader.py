@@ -37,6 +37,8 @@ file_ids_cache: dict[str, dict[int, str]] = {}
 # Only run 'value' amount of ffmpeg processes at the same time
 ffmpeg_sem = asyncio.Semaphore(value=SECRETS.parallel_ffmpeg_count)
 
+# Set again after asyncio.run
+# https://stackoverflow.com/questions/55918048/asyncio-semaphore-runtimeerror-task-got-future-attached-to-a-different-loop
 get_messages_sem = asyncio.Semaphore(value=1)
 
 
@@ -80,7 +82,7 @@ class DownloadWorker:
             await asyncio.sleep(1)
             try:
                 await DownloadWorker.download_one(worker_id=self.worker_id)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 # Catch errors by worker and end program
                 logger.exception(e)
                 sys.exit(1)
@@ -90,16 +92,14 @@ class DownloadWorker:
         message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
         if isinstance(data_or_path, BytesIO):
             logger.debug(
-                f"Started processing audio ({message.file_size_bytes} b) "
-                f"{message.output_file_path.absolute()}"
+                f"Started processing audio ({message.file_size_bytes} b) {message.output_file_path.absolute()}"
             )
             async with ffmpeg_sem:
                 extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data_or_path)
 
             if len(extracted_mp3_data.getbuffer()) >= 200:
                 logger.debug(
-                    f"Finished processing audio ({message.file_size_bytes} b) "
-                    f"{message.output_file_path.absolute()}"
+                    f"Finished processing audio ({message.file_size_bytes} b) {message.output_file_path.absolute()}"
                 )
                 return extracted_mp3_data
             else:
@@ -112,10 +112,7 @@ class DownloadWorker:
             extracted_mp3_data: BytesIO = await DownloadWorker.extract_mp3_from_video(data_or_path)
         # Delete file after extracting the audio
         message.temp_download_path.unlink()
-        logger.debug(
-            f"Finished processing audio ({message.file_size_bytes} b) "
-            f"{message.output_file_path.absolute()}"
-        )
+        logger.debug(f"Finished processing audio ({message.file_size_bytes} b) {message.output_file_path.absolute()}")
         return extracted_mp3_data
 
     @staticmethod
@@ -175,7 +172,8 @@ class DownloadWorker:
                 return
             # Duplicate due to file_unique_id
             if orm.exists(
-                m for m in TelegramMessage
+                m
+                for m in TelegramMessage
                 if m.file_unique_id == message.file_unique_id and m.message_id != message.message_id
             ):
                 message.download_status = Status.DUPLICATE.name
@@ -183,10 +181,13 @@ class DownloadWorker:
                 return
             # Find duplicates based on file size and duration
             duplicates_exist = orm.exists(
-                m for m in TelegramMessage if (
+                m
+                for m in TelegramMessage
+                if (
                     m.file_size_bytes == message.file_size_bytes
-                    and m.file_duration_seconds == message.file_duration_seconds and m.download_status in
-                    [Status.COMPLETED.name, Status.DOWNLOADING.name] and m.message_id != message.message_id
+                    and m.file_duration_seconds == message.file_duration_seconds
+                    and m.download_status in [Status.COMPLETED.name, Status.DOWNLOADING.name]
+                    and m.message_id != message.message_id
                 )
             )
             if duplicates_exist:
@@ -251,7 +252,8 @@ class DownloadWorker:
         )
         message.temp_download_path.parent.mkdir(parents=True, exist_ok=True)
         download_to_memory = (
-            SECRETS.extract_audio_from_videos and message.media_type == "Video"
+            SECRETS.extract_audio_from_videos
+            and message.media_type == "Video"
             and message.file_size_bytes < 100 * 2**20
         )  # More than 100 mb means download to file
         if download_to_memory:
@@ -281,7 +283,7 @@ class DownloadWorker:
             # Download to file
             await DownloadWorker.client.download_media(
                 message=file_id,
-                file_name=str(message.temp_download_path.absolute()),
+                file_name=str(message.temp_download_path.resolve()),
             )
             if not message.temp_download_path.is_file():
                 # File not downloadable
@@ -373,7 +375,8 @@ async def parse_channel_messages() -> None:
         channels_that_may_have_new_messages = set(
             orm.select(
                 # TODO turn the timedelta argument into a variable setting: days_before_known_channels_are_reparsed
-                c.channel_id for c in TelegramChannel
+                c.channel_id
+                for c in TelegramChannel
                 if c.last_parsed < datetime.datetime.now() - datetime.timedelta(days=7)
             )
         )
@@ -453,7 +456,7 @@ async def parse_channel_messages() -> None:
                             channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)
                             channel.last_parsed = datetime.datetime.utcnow()
                             raise StopIteration("Last message in channel has been grabbed")
-        except TypeError as e:
+        except (TypeError, OSError) as e:
             # https://github.com/BurnySc2/monorepo/issues/38
             logger.error(f"Error with channel {channel_id}: {e}")
             pass
@@ -500,8 +503,8 @@ def requeue_interrupted_downloads():
             AND file_unique_id <> ''
             AND
             (
-                    (media_type = 'Photo' AND {accept_photo} 
-                    AND {SECRETS.photo_min_file_size_bytes} <= file_size_bytes 
+                    (media_type = 'Photo' AND {accept_photo}
+                    AND {SECRETS.photo_min_file_size_bytes} <= file_size_bytes
                     AND file_size_bytes <= {SECRETS.photo_max_file_size_bytes})
                 OR
                     (media_type = 'Video' AND {accept_video}
@@ -515,7 +518,7 @@ def requeue_interrupted_downloads():
                     AND file_size_bytes <= {SECRETS.audio_max_file_size_bytes}
                     AND {SECRETS.audio_min_file_duration_seconds} <= file_duration_seconds
                     AND file_duration_seconds <= {SECRETS.audio_max_file_duration_seconds})
-            );            
+            );
         """
         )
 
@@ -543,6 +546,10 @@ async def list_all_joined_public_chats(min_users: int) -> list[str]:
 
 
 async def main():
+    global get_messages_sem, ffmpeg_sem
+    get_messages_sem = asyncio.Semaphore(value=1)
+    ffmpeg_sem = asyncio.Semaphore(value=SECRETS.parallel_ffmpeg_count)
+
     logger.info("Checking for changed filters...")
     requeue_interrupted_downloads()
 
@@ -561,13 +568,13 @@ async def main():
     # Wait for downloads to finish
     while 1:
         # Check if jobs remaining and give status update
-        done, total, done_bytes, total_bytes = TelegramMessage.get_count()
+        done_jobs, total_jobs, done_bytes, total_bytes = TelegramMessage.get_count()
         logger.info(
-            f"Waiting for jobs to finish: remaining count {total - done}, "
+            f"Waiting for jobs to finish: remaining count {total_jobs - done_jobs}, "
             f"remaining size {humanize.naturalsize(total_bytes - done_bytes)}, "
             f"total size {humanize.naturalsize(total_bytes)}"
         )
-        if done == total:
+        if done_jobs == total_jobs:
             logger.info("Done with all downloads!")
             break
         await asyncio.sleep(60)

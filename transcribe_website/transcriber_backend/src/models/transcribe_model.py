@@ -54,8 +54,10 @@ class TranscriptionResult(db.Entity):
 
 def query_generator_english(model_size: str) -> Generator[TranscriptionJob, None, None]:
     return (
+        t
         # pyre-fixme[16]
-        t for t in TranscriptionJob if (
+        for t in TranscriptionJob
+        if (
             t.status == JobStatus.QUEUED.name
             # Skip not matching model size
             and t.model_size.lower() == model_size
@@ -69,10 +71,14 @@ def query_generator_english(model_size: str) -> Generator[TranscriptionJob, None
 
 def query_generator_multilingual(model_size: str) -> Generator[TranscriptionJob, None, None]:
     return (
+        t
         # pyre-fixme[16]
-        t for t in TranscriptionJob if (
-            t.status == JobStatus.QUEUED.name and t.model_size.lower() == model_size and t.remaining_retries > 0 and
-            (t.forced_language != "en" and t.detected_language != "en")
+        for t in TranscriptionJob
+        if (
+            t.status == JobStatus.QUEUED.name
+            and t.model_size.lower() == model_size
+            and t.remaining_retries > 0
+            and (t.forced_language != "en" and t.detected_language != "en")
         )
     )
 
@@ -112,7 +118,7 @@ class TranscriptionJob(db.Entity):
 
     @classmethod
     def from_tuple(cls, job_tuple: tuple) -> TranscriptionJob:
-        entity_dict = {col_name: value for col_name, value in zip(cls._columns_, job_tuple)}  # pyre-fixme[16]
+        entity_dict = dict(zip(cls._columns_, job_tuple))  # pyre-fixme[16]
         return TranscriptionJob(**entity_dict)
 
     @property
@@ -160,8 +166,10 @@ class TranscriptionJob(db.Entity):
         ]
         with orm.db_session():
             done_count = orm.count(
+                t
                 # pyre-fixme[16]
-                t for t in TranscriptionJob if t.status in done_status
+                for t in TranscriptionJob
+                if t.status in done_status
             )
             total_count = orm.count(t for t in TranscriptionJob if t.status in total_count_status)
             done_bytes = orm.sum(t.input_file_size_bytes for t in TranscriptionJob if t.status in done_status)
@@ -175,8 +183,9 @@ class TranscriptionJob(db.Entity):
         seconds_in_24h = 24 * 3600
         with orm.db_session():
             size_of_completed_jobs_in_bytes = orm.sum(
+                t.input_file_size_bytes
                 # pyre-fixme[16]
-                t.input_file_size_bytes for t in TranscriptionJob
+                for t in TranscriptionJob
                 if t.job_completed is not None and t.job_completed > time_24h_ago
             )
             processing_rate_per_second = size_of_completed_jobs_in_bytes / seconds_in_24h
