@@ -454,9 +454,13 @@ async def parse_channel_messages() -> None:
                                 channel: TelegramChannel = TelegramChannel.get(channel_id=channel_id)
                                 channel.last_parsed = datetime.datetime.utcnow()
                                 raise StopIteration
+                    except TypeError as e:
+                        # If any errors occur, skip parsing this channel
+                        logger.error(f"Error with channel {channel_id}: {e}")
+                        break
                     except UsernameNotOccupied:
                         # If any errors occur, skip parsing this channel
-                        logger.error(f"Error with channel {channel_id}")
+                        logger.error(f"Error with channel {channel_id}, username not occupied")
                         break
         except StopIteration:
             # Exit inner loop because latest messages have been grabbed
