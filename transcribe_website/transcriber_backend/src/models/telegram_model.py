@@ -74,7 +74,7 @@ class TelegramMessage(db.Entity):
 
     @property
     def temp_download_path(self) -> Path:
-        return SECRETS.output_folder_path / "downloading" / f"{self.file_unique_id}.temp"
+        return SECRETS.output_folder_path / "downloading" / f"{self.file_unique_id}.temp_file"
 
     @property
     def media_ending(self) -> str:
