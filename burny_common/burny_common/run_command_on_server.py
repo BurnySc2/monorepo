@@ -33,12 +33,13 @@ def main():
     username = "some_name"
     key = "my ssh key"
     result = runner.invoke(
-        run_command_on_server, [
+        run_command_on_server,
+        [
             f"--host={ip}",
             f"--username={username}",
             f"--pkey={key}",
             "--command=ls -lah",
-        ]
+        ],
     )
     for line in result.output.splitlines():
         print(line)

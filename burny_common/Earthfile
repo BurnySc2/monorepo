@@ -10,7 +10,6 @@ install-dev:
     RUN touch burny_common/__init__.py
     COPY poetry.lock pyproject.toml ./
     RUN poetry install
-    SAVE ARTIFACT ./.venv
     COPY . /root/burny_common
 
 format:
@@ -27,12 +26,12 @@ format:
     # Sort imports
     RUN poetry run ruff check . --select I --fix
     # Format code
-    RUN poetry run yapf -ir .
+    RUN poetry run ruff format .
 
 # Check if files are correctly formatted
 format-check:
     FROM +install-dev
-    RUN poetry run yapf -dr .
+    RUN poetry run ruff format . --check --diff
 
 # Ignore errors via "# noqa: F841"
 lint:

@@ -28,7 +28,6 @@ def plot_01():
 
 
 def plot_02():
-
     q = np.array([0, 0, 0, -1, -1, 1, 1])
     r = np.array([0, -1, 1, 0, 1, -1, 0])
 
@@ -60,7 +59,7 @@ def plot_03():
         size=0.1,
         line_color=None,
         source=bins,
-        fill_color=linear_cmap("counts", "Viridis256", 0, max(bins.counts))
+        fill_color=linear_cmap("counts", "Viridis256", 0, max(bins.counts)),
     )
 
     output_file(CURRENT_DIRECTORY / "bokeh_hex_tile.html")
@@ -79,7 +78,7 @@ def plot_04():
             [[[4, 3, 3, 4], [3.2, 3.2, 3.6], [3.4, 3.8, 3.8]], [[1, 3, 1]]],
             [[[1, 1, 2, 2], [1.3, 1.7, 1.7, 1.3]]],
         ],
-        color=["blue", "red"]
+        color=["blue", "red"],
     )
 
     output_file(CURRENT_DIRECTORY / "bokeh_multipolygons.html")
@@ -115,7 +114,7 @@ def plot_06():
         "Brazil": 32,
         "France": 31,
         "Taiwan": 31,
-        "Spain": 29
+        "Spain": 29,
     }
 
     data = pd.Series(x).reset_index(name="value").rename(columns={"index": "country"})
@@ -128,7 +127,7 @@ def plot_06():
         toolbar_location=None,
         tools="hover",
         tooltips="@country: @value",
-        x_range=(-0.5, 1.0)
+        x_range=(-0.5, 1.0),
     )
 
     p.wedge(
@@ -140,7 +139,7 @@ def plot_06():
         line_color="white",
         fill_color="color",
         legend_field="country",
-        source=data
+        source=data,
     )
 
     p.axis.axis_label = None

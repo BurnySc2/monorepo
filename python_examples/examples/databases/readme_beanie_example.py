@@ -90,49 +90,55 @@ async def run_database_with_beanie():
     await author_1.insert()
     # Alternatively:
     await author_2.create()
-    await Author.insert_many([
-        author_3,
-    ])
+    await Author.insert_many(
+        [
+            author_3,
+        ]
+    )
 
     publisher_1 = Publisher(name="Aufbau-Verlag", founded_year=1945)
     publisher_2 = Publisher(name="Hoffmann und Campe", founded_year=1781)
     publisher_3 = Publisher(name="Heyne Verlag", founded_year=1934)
-    await Publisher.insert_many([
-        publisher_1,
-        publisher_2,
-        publisher_3,
-    ])
+    await Publisher.insert_many(
+        [
+            publisher_1,
+            publisher_2,
+            publisher_3,
+        ]
+    )
 
     book_1 = Book(
         name="The Lord of the Rings",
         release_year=1954,
         author=await Author.find_one(Author.name == author_1.name),
-        publisher=await Publisher.find_one(Publisher.name == publisher_1.name)
+        publisher=await Publisher.find_one(Publisher.name == publisher_1.name),
     )
     book_2 = Book(
         name="To kill a Mockingbird",
         release_year=1960,
         author=await Author.find_one(Author.name == author_2.name),
-        publisher=await Publisher.find_one(Publisher.name == publisher_1.name)
+        publisher=await Publisher.find_one(Publisher.name == publisher_1.name),
     )
     book_3 = Book(
         name="Nineteen Eighty-Four",
         release_year=1949,
         author=await Author.find_one(Author.name == author_3.name),
-        publisher=await Publisher.find_one(Publisher.name == publisher_3.name)
+        publisher=await Publisher.find_one(Publisher.name == publisher_3.name),
     )
     book_4 = Book(
         name="This book was not written",
         release_year=2100,
         author=await Author.find_one(Author.name == author_3.name),
-        publisher=await Publisher.find_one(Publisher.name == publisher_3.name)
+        publisher=await Publisher.find_one(Publisher.name == publisher_3.name),
     )
-    await Book.insert_many([
-        book_1,
-        book_2,
-        book_3,
-        book_4,
-    ])
+    await Book.insert_many(
+        [
+            book_1,
+            book_2,
+            book_3,
+            book_4,
+        ]
+    )
 
     library_1 = Library(name="New York Public Library", address="224 East 125th Street", books=[])
     library_2 = Library(name="California State Library", address="900 N Street", books=[])
@@ -142,22 +148,22 @@ async def run_database_with_beanie():
     library_inventory_1 = BookInventory(
         book=await Book.find_one(Book.name == book_3.name),
         library=await Library.find_one(Library.name == library_1.name),
-        amount=40
+        amount=40,
     )
     library_inventory_2 = BookInventory(
         book=await Book.find_one(Book.name == book_2.name),
         library=await Library.find_one(Library.name == library_1.name),
-        amount=15
+        amount=15,
     )
     library_inventory_3 = BookInventory(
         book=await Book.find_one(Book.name == book_1.name),
         library=await Library.find_one(Library.name == library_2.name),
-        amount=25
+        amount=25,
     )
     library_inventory_4 = BookInventory(
         book=await Book.find_one(Book.name == book_2.name),
         library=await Library.find_one(Library.name == library_2.name),
-        amount=30
+        amount=30,
     )
 
     # Add library_inventory, which returns the inserted objects (or ids with insert_many

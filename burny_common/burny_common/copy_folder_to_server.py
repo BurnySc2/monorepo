@@ -59,7 +59,7 @@ def copy_folder_to_server(
     pkey: str,
     sourcepath: str,
     targetpath: str,
-    respectgitignore: bool = True
+    respectgitignore: bool = True,
 ):
     client: SSHClient
     with SSHClient() as client:
@@ -102,13 +102,14 @@ def main():
     username = "some_name"
     key = "my ssh key"
     result = runner.invoke(
-        copy_folder_to_server, [
+        copy_folder_to_server,
+        [
             f"--host={ip}",
             f"--username={username}",
             f"--pkey={key}",
             "--sourcepath=/home/burny/github/python-template",
             "--targetpath=test5",
-        ]
+        ],
     )
     for line in result.output.splitlines():
         print(line)

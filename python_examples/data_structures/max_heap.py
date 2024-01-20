@@ -10,7 +10,6 @@ import math
 
 
 class MaxHeap:
-
     def __init__(self):
         self.tree: list[int] = [0]
 

@@ -84,10 +84,12 @@ async def test_database_with_mongodb():
 
             # Sort by name ASC, then by address DESC, both below works
             # for i in my_col.find().sort("name", pymongo.ASCENDING).sort("address", pymongo.DESCENDING):
-            for i in my_col.find().sort([
-                ("name", pymongo.ASCENDING),
-                ("address", pymongo.DESCENDING),
-            ]):
+            for i in my_col.find().sort(
+                [
+                    ("name", pymongo.ASCENDING),
+                    ("address", pymongo.DESCENDING),
+                ]
+            ):
                 logger.info(f"MongoDB item: {i}")
 
             # Delete one

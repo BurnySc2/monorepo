@@ -1,10 +1,9 @@
 from loguru import logger
-from peewee import CharField, ForeignKeyField, IntegerField, Model, ModelSelect, SqliteDatabase  # pyre-fixme[21]
+from peewee import CharField, ForeignKeyField, IntegerField, Model, ModelSelect, SqliteDatabase
 
 db = SqliteDatabase("test.db")
 
 
-# pyre-fixme[11]
 class Author(Model):
     name = CharField()
     birth_year = IntegerField()
@@ -88,8 +87,22 @@ def run_database_with_peewee_readme_example():
     assert Library.select().count() == 0, Library.select().count()
     assert BookInventory.select().count() == 0, BookInventory.select().count()
     for item in [
-        author_1, author_2, author_3, publisher_1, publisher_2, publisher_3, book_1, book_2, book_3, book_4, library_1,
-        library_2, library_inventory_1, library_inventory_2, library_inventory_3, library_inventory_4
+        author_1,
+        author_2,
+        author_3,
+        publisher_1,
+        publisher_2,
+        publisher_3,
+        book_1,
+        book_2,
+        book_3,
+        book_4,
+        library_1,
+        library_2,
+        library_inventory_1,
+        library_inventory_2,
+        library_inventory_3,
+        library_inventory_4,
     ]:
         item.save()
     assert Book.select().count() == 4, Book.select().count()

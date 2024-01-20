@@ -26,10 +26,12 @@ def unzip_multiple_files(data: bytes, target_folder: Path) -> None:
 def main():
     this_folder_path = Path(__file__).parent
     temp_path = this_folder_path / "temp"
-    zipped = zip_multiple_files(recurse_path(
-        this_folder_path,
-        depth=1,
-    ))
+    zipped = zip_multiple_files(
+        recurse_path(
+            this_folder_path,
+            depth=1,
+        )
+    )
     unzip_multiple_files(zipped, temp_path)
 
 

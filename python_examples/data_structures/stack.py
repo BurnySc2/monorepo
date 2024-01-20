@@ -9,9 +9,8 @@ class Item:
 
 
 class Stack:
-
     def __init__(self):
-        """ The stack will be initialized empty. """
+        """The stack will be initialized empty."""
         self.top: Optional[Item] = None
 
     def push(self, value: int) -> None:
@@ -64,7 +63,7 @@ if __name__ == "__main__":
 
     s.push(5)
     top = s.top and s.top.value
-    assert (top == 5), (
+    assert top == 5, (
         f"Push function does not work as intended, value on top of the stack should be 5 but is actually ({top}) "
         f"(top value exists: {bool(s.top)})"
     )
@@ -72,11 +71,11 @@ if __name__ == "__main__":
     s.push(8)
     first_element = s.top and s.top.value
     second_element = s.top and s.top.next and s.top.next.value
-    assert (first_element == 8), (
+    assert first_element == 8, (
         f"Push function does not work as intended, value on top of the stack should now be 8 (we just put 8 on the "
         f"stack) but is ({first_element})"
     )
-    assert (second_element == 5), (
+    assert second_element == 5, (
         f"Push function does not work as intended, value on top of the stack should be 8 and second element should "
         f"now be 5, but second element is ({second_element})"
     )

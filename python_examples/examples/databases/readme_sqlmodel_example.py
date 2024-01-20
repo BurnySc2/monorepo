@@ -101,7 +101,7 @@ def run_database_with_sqlmodel_readme_example():
                 # book_1, book_2, book_3,
                 book_4,
                 library_1,
-                library_2
+                library_2,
             ]
         )
         session.commit()
@@ -131,10 +131,14 @@ def run_database_with_sqlmodel_readme_example():
 
     # 5) Delete books
     with Session(engine) as session:
-        count_statement: SelectOfScalar = select(
-            func.count(),
-        ).select_from(Book).where(
-            Book.name == "This book was not written",
+        count_statement: SelectOfScalar = (
+            select(
+                func.count(),
+            )
+            .select_from(Book)
+            .where(
+                Book.name == "This book was not written",
+            )
         )
         amount = session.exec(count_statement).first()
         assert amount == 1, amount

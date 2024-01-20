@@ -40,15 +40,15 @@ class ActionNode:
         return outcome
 
     def run_node(self) -> NodeOutcome:
-        """ Run your code here """
+        """Run your code here"""
         _self = self
         return NodeOutcome.SUCCESS
 
     def print_tree(self):
-        """ TODO: output tree to console """
+        """TODO: output tree to console"""
 
     def display_tree(self):
-        """ TODO: output tree to display/monitor via matplotlib or graphviz or similar """
+        """TODO: output tree to display/monitor via matplotlib or graphviz or similar"""
 
 
 if __name__ == "__main__":

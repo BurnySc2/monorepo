@@ -5,7 +5,6 @@ from typing import Any
 
 
 class Node:
-
     def __init__(self, value: Any, left: Node | None = None, right: Node | None = None):
         self.value: Any = value
         self.left: Node | None = left
@@ -28,7 +27,6 @@ class Node:
 
 
 class Tree:
-
     def __init__(self):
         self.root: Node = None
         self.size: int = 0
@@ -40,16 +38,16 @@ class Tree:
             self.root = Node(value)
 
     def find(self, value):
-        """ Finds value and returns position? """
+        """Finds value and returns position?"""
 
     def pop(self, value):
-        """ Finds value and removes it """
+        """Finds value and removes it"""
 
     def popmin(self):
-        """ Finds the minimum value and returns it """
+        """Finds the minimum value and returns it"""
 
     def popmax(self):
-        """ Finds the maximum value and returns it """
+        """Finds the maximum value and returns it"""
 
     def load(self, string: str):
         height: list[str] = string.strip().split("\n")
@@ -152,12 +150,14 @@ if __name__ == "__main__":
     print()
 
     t = Tree()
-    t.load("""
+    t.load(
+        """
 A
  C
   FG
     HI
-    """)
+    """
+    )
     t.in_order_traversal(t.root)
     print()
     t.pre_order_traversal(t.root)

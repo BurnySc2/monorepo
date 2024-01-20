@@ -12,7 +12,6 @@ class Node:
 
 
 class Queue:
-
     def __init__(self):
         self.front: Optional[Node] = None
         self.tail: Optional[Node] = None

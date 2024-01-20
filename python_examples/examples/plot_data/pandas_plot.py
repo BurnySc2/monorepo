@@ -77,14 +77,12 @@ def plot_07():
 
 
 def plot_08():
-
     df2 = pd.DataFrame(np.random.rand(10, 4), columns=["a", "b", "c", "d"])
     df2.plot.barh(stacked=True)
     plt.savefig(CURRENT_DIRECTORY / "pandas_plot_08.png")
 
 
 def plot_09():
-
     df4 = pd.DataFrame(
         {
             "a": np.random.randn(1000) + 1,

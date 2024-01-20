@@ -4,9 +4,8 @@ import math
 
 
 class MinHeap:
-
     def __init__(self):
-        """ Implementation of binary heap as min-heap """
+        """Implementation of binary heap as min-heap"""
         self.heap: list[int] = [-1]
 
     def __repr__(self):
@@ -123,7 +122,7 @@ if __name__ == "__main__":
     for i in build_list:
         assert not p.is_empty(), "Min heap should be not empty, but is returned to be empty"
         value = p.get_min()
-        assert (value == i), (
+        assert value == i, (
             f"get_min or delete_min function not working as expected, "
             f"received value '{value}' but should have been '{i}', heap:\n{p}"
         )

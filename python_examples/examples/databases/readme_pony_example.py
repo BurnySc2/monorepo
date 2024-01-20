@@ -65,18 +65,18 @@ def run_database_with_pony_readme_example():
     with orm.db_session():
         _tables = db.select(
             """
-            * FROM information_schema.tables 
-    WHERE table_schema = 'public'
+            * FROM information_schema.tables
+            WHERE table_schema = 'public'
             """
         )
         _table_schema = db.select(
             """
-                table_name, 
-                column_name, 
-                data_type 
-            FROM 
+                table_name,
+                column_name,
+                data_type
+            FROM
                 information_schema.columns
-            WHERE 
+            WHERE
                 table_name = 'Book';
             """
         )
@@ -119,19 +119,27 @@ def run_database_with_pony_readme_example():
 
         # Both do the same
         # books = Book.select(lambda b: b.release_year < 1960).prefetch(Author, Publisher)
-        books = orm.select(b for b in Book if b.release_year < 1960).prefetch(Author, Publisher).order_by(
-            orm.desc(Book.name),
-            orm.desc(Book.pages),
-        )[:10]
+        books = (
+            orm.select(b for b in Book if b.release_year < 1960)
+            .prefetch(Author, Publisher)
+            .order_by(
+                orm.desc(Book.name),
+                orm.desc(Book.pages),
+            )[:10]
+        )
         # with OR statement:
         # books = Book.select(lambda b: b.release_year < 1960 or "doesnt exist" in b.name).prefetch(Author, Publisher)
         for book in books:
             logger.info(f"Found books released before 1960: {book}")
 
-        for book_name, book_pages in orm.select((
-            b.name,
-            b.pages,
-        ) for b in Book if b.release_year < 1960).order_by(-1, -2)[:10]:
+        for book_name, book_pages in orm.select(
+            (
+                b.name,
+                b.pages,
+            )
+            for b in Book
+            if b.release_year < 1960
+        ).order_by(-1, -2)[:10]:
             logger.info(f"Book name: '{book_name}' and pages count: {book_pages}")
 
     with orm.db_session():

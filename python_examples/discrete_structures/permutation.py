@@ -16,7 +16,7 @@ def permutation(my_list: list[Any]) -> list[Any]:
         return [my_list]
     result = []
     for i, middle in enumerate(my_list):
-        remaining_list = my_list[:i] + my_list[i + 1:]
+        remaining_list = my_list[:i] + my_list[i + 1 :]
         for p in permutation(remaining_list):
             result.append([middle] + p)
     return result
@@ -28,7 +28,7 @@ def permutation_generator(my_list: list[Any]) -> Generator[Any, None, None]:
         yield my_list
         return
     for i, middle in enumerate(my_list):
-        remaining_list = my_list[:i] + my_list[i + 1:]
+        remaining_list = my_list[:i] + my_list[i + 1 :]
         for p in permutation_generator(remaining_list):
             yield [middle] + p
 
@@ -40,7 +40,7 @@ def permutation_backwards_generator(my_list: list[Any]) -> Generator[Any, None, 
         return
     for i in reversed(range(len(my_list))):
         middle = my_list[i]
-        remaining_list = my_list[:i] + my_list[i + 1:]
+        remaining_list = my_list[:i] + my_list[i + 1 :]
         for p in permutation_backwards_generator(remaining_list):
             yield [middle] + p
 
@@ -55,7 +55,7 @@ def get_index_of_permutation(original: list[Any], perm: list[Any]) -> int:
     result, factor, cur, length = 0, 1, 1, len(perm)
     values = {char: i for i, char in enumerate(original)}
     for j in reversed(range(length)):
-        result += factor * sum(1 for i in perm[j + 1:] if values[i] < values[perm[j]])
+        result += factor * sum(1 for i in perm[j + 1 :] if values[i] < values[perm[j]])
         factor *= cur
         cur += 1
     return result
@@ -71,7 +71,7 @@ def get_permutation_at_index(original: list[Any], index: int) -> list[Any]:
     if len(original) == 1:
         return original
     quotient, remainder = divmod(index, factorial(len(original) - 1))
-    return [original[quotient]] + get_permutation_at_index(original[:quotient] + original[quotient + 1:], remainder)
+    return [original[quotient]] + get_permutation_at_index(original[:quotient] + original[quotient + 1 :], remainder)
 
 
 def get_next_permutation(perm: list[Any]):
@@ -83,8 +83,8 @@ def get_next_permutation(perm: list[Any]):
             prev = perm[j]
             if prev > last:
                 perm[i], perm[j] = perm[j], perm[i]
-                if len(perm[i + 1:]) > 1:
-                    perm[i + 1:] = sorted(perm[i + 1:])
+                if len(perm[i + 1 :]) > 1:
+                    perm[i + 1 :] = sorted(perm[i + 1 :])
                 return perm
     perm.sort()
     return perm
@@ -99,8 +99,8 @@ def get_previous_permutation(perm: list[Any]):
             prev = perm[j]
             if prev < last:
                 perm[i], perm[j] = perm[j], perm[i]
-                if len(perm[i + 1:]) > 1:
-                    perm[i + 1:] = sorted(perm[i + 1:], reverse=True)
+                if len(perm[i + 1 :]) > 1:
+                    perm[i + 1 :] = sorted(perm[i + 1 :], reverse=True)
                 return perm
     perm.sort(reverse=True)
     return perm

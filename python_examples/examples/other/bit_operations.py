@@ -21,7 +21,7 @@ class Float:
         sign = int(number < 0)
         number = abs(number)
         exponent = math.floor(math.log2(number)) + 127
-        number *= 2**(127 - exponent)
+        number *= 2 ** (127 - exponent)
         number -= 1
         number *= 2**127
         fraction = "0" + bin(int(number))[2:24]
@@ -39,7 +39,7 @@ class Float:
 
     def __float__(self) -> float:
         my_float = int("1" + self.fraction, 2) / 2**23
-        return -1**self.sign * 2**(self.exponent - 127) * my_float
+        return -(1**self.sign) * 2 ** (self.exponent - 127) * my_float
 
     def __str__(self) -> str:
         exponent_as_string = bin(self.exponent)[2:].zfill(8)
@@ -49,14 +49,14 @@ class Float:
 def test_ieee754():
     n1 = "11000001101001001100000000000000"  # str of ieee-754 bits
     my_float = Float.from_string(n1)
-    assert -20.59375 == float(my_float)
+    assert float(my_float) == -20.59375
     assert str(my_float).replace(" ", "") == n1
 
     n2 = -20.59375
     my_float2 = Float.from_float(n2)
     print(float(my_float2))
     print(str(my_float2))
-    assert -20.59375 == float(my_float2)
+    assert float(my_float2) == -20.59375
     assert str(my_float).replace(" ", "") == n2
 
 

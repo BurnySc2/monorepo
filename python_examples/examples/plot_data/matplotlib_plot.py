@@ -21,7 +21,7 @@ def plot_02():
 
 def plot_03():
     # evenly sampled time at 200ms intervals
-    t = np.arange(0., 5., 0.2)
+    t = np.arange(0.0, 5.0, 0.2)
 
     # red dashes, blue squares and green triangles
     plt.plot(t, t, "r--", t, t**2, "bs", t, t**3, "g^")
@@ -53,7 +53,7 @@ def plot_05():
     plt.xlabel("Smarts")
     plt.ylabel("Probability")
     plt.title("Histogram of IQ")
-    plt.text(60, .025, r"$\mu=100,\ \sigma=15$")
+    plt.text(60, 0.025, r"$\mu=100,\ \sigma=15$")
     plt.axis([40, 160, 0, 0.03])
     plt.grid(True)
     plt.savefig(CURRENT_DIRECTORY / "matplotlib_plot_05.png")
@@ -64,16 +64,13 @@ def plot_06():
 
     t = np.arange(0.0, 5.0, 0.01)
     s = np.cos(2 * np.pi * t)
-    _line, = plt.plot(t, s, lw=2)
+    (_line,) = plt.plot(t, s, lw=2)
 
     plt.annotate(
         "local max",
         xy=(2, 1),
         xytext=(3, 1.5),
-        arrowprops={
-            "facecolor": "black",
-            "shrink": 0.05
-        },
+        arrowprops={"facecolor": "black", "shrink": 0.05},
     )
 
     plt.ylim(-2, 2)
@@ -179,11 +176,8 @@ def plot_11():
         x,
         labels=labels,
         autopct="%.1f%%",
-        wedgeprops={
-            "linewidth": 3.0,
-            "edgecolor": "white"
-        },
-        textprops={"size": "x-large"}
+        wedgeprops={"linewidth": 3.0, "edgecolor": "white"},
+        textprops={"size": "x-large"},
     )
     ax.set_title("Sport Popularity", fontsize=18)
     plt.tight_layout()
@@ -222,7 +216,7 @@ def plot_13():
         explode=explode,
         shadow=True,
         autopct="%1.1f%%",
-        wedgeprops={"edgecolor": "black"}
+        wedgeprops={"edgecolor": "black"},
     )
     plt.savefig(CURRENT_DIRECTORY / "matplotlib_plot_13.png")
 
@@ -237,7 +231,7 @@ def plot_14():
     ingredients = [x.split()[-1] for x in recipe]
 
     def func(pct, allvals):
-        absolute = int(np.round(pct / 100. * np.sum(allvals)))
+        absolute = int(np.round(pct / 100.0 * np.sum(allvals)))
         return f"{pct:.1f}%\n({absolute} g)"
 
     wedges, _texts, autotexts = ax.pie(data, autopct=lambda pct: func(pct, data), textprops={"color": "w"})
@@ -265,7 +259,7 @@ def plot_15():
     kw = {"arrowprops": {"arrowstyle": "-"}, "bbox": bbox_props, "zorder": 0, "va": "center"}
 
     for i, p in enumerate(wedges):
-        ang = (p.theta2 - p.theta1) / 2. + p.theta1
+        ang = (p.theta2 - p.theta1) / 2.0 + p.theta1
         y = np.sin(np.deg2rad(ang))
         x = np.cos(np.deg2rad(ang))
         horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]

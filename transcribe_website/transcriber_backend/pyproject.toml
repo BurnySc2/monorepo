@@ -40,8 +40,6 @@ pyocclient = "^0.6"
 hypothesis = "^6.8.5"
 pytest = "^7.0.0"
 pytest-asyncio = "^0.15.1"
-# Autoformat
-yapf = "^0.32.0"
 # Linter
 ruff = "^0.1.14"
 # Type checker
@@ -71,7 +69,6 @@ select = [
     "F",   # pyflakes
     "BLE", # flake8-blind-except
     "I",   # isort
-    "ISC", # flake8-implicit-str-concat
     "N",   # pep8-naming
     "PGH", # pygrep-hooks
     "PTH", # flake8-use-pathlib

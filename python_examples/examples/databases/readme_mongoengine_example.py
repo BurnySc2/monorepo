@@ -85,8 +85,22 @@ def run_database_with_mongoengine():
     library_inventory_4 = BookInventory(book=book_2, library=library_2, amount=30)
 
     for document in [
-        author_1, author_2, author_3, publisher_1, publisher_2, publisher_3, book_1, book_2, book_3, book_4, library_1,
-        library_2, library_inventory_1, library_inventory_2, library_inventory_3, library_inventory_4
+        author_1,
+        author_2,
+        author_3,
+        publisher_1,
+        publisher_2,
+        publisher_3,
+        book_1,
+        book_2,
+        book_3,
+        book_4,
+        library_1,
+        library_2,
+        library_inventory_1,
+        library_inventory_2,
+        library_inventory_3,
+        library_inventory_4,
     ]:
         document.save()
 

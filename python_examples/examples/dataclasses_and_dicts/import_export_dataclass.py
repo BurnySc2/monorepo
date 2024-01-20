@@ -21,31 +21,31 @@ class MyDataClassList(DataClassJsonMixin):
 
 
 def save_object_to_json(path: Path, my_dataclass_list: list[MyDataClass]):
-    """ Save the given list of objects to json file. """
+    """Save the given list of objects to json file."""
     with path.open("w") as f:
         f.write(MyDataClass.schema().dumps(my_dataclass_list, many=True, indent=4))
 
 
 def load_object_from_json(path: Path) -> list[MyDataClass]:
-    """ Load a json file and re-create a list of data class objects from it. """
+    """Load a json file and re-create a list of data class objects from it."""
     with path.open() as f:
         return MyDataClass.schema().loads(f.read(), many=True)
 
 
 def save_objects_to_json(path: Path, my_dataclass_list: MyDataClassList):
-    """ Save the given data class object to json file. """
+    """Save the given data class object to json file."""
     with path.open("w") as f:
         f.write(my_dataclass_list.to_json(indent=4))
 
 
 def load_objects_from_json(path: Path) -> MyDataClassList:
-    """ Load a json file and re-create a data class list object from it. """
+    """Load a json file and re-create a data class list object from it."""
     with path.open() as f:
         return MyDataClassList.from_json(f.read())
 
 
 def test_data_class_to_and_from_json():
-    """ Creates a dataclass, saves to json, re-loads it from json file and compares them. """
+    """Creates a dataclass, saves to json, re-loads it from json file and compares them."""
     # Note: interestingly the class holds a set but the written json file contains a list
     # Reloading the list automatically converts it to a set again
 

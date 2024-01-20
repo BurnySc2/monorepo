@@ -5,7 +5,7 @@ from PIL import Image
 
 
 def mass_convert_images():
-    """ Convert all .jpg images to .png """
+    """Convert all .jpg images to .png"""
     images_folder = Path(__file__).parent.parent.parent / "images"
     for file_path in images_folder.iterdir():
         if file_path.suffix != ".jpg":

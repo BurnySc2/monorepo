@@ -48,7 +48,7 @@ playwright = "^1.22.0"
 pytest-playwright = "^0.3.0"
 toml = "^0.10.2"
 # Linter and autoformat
-ruff = "^0.1.7"
+ruff = "^0.1.14"
 # Type checker
 pyre-check = "^0.9.18"
 # Analyze depenencies

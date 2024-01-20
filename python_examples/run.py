@@ -22,7 +22,6 @@ bot_file_path = current_folder / "main.py"
 
 
 class BotRunner:
-
     def __init__(self):
         self.bot_process: Optional[subprocess.Popen] = None
 
@@ -49,7 +48,7 @@ class BotRunner:
 
 
 async def file_watcher():
-    """ End this script on .py file changes """
+    """End this script on .py file changes"""
     logger.info("Started file watcher")
     async for changes in awatch(".", watcher_cls=PythonWatcher, normal_sleep=5000):
         logger.info(f"Killing bot because of the following file changes: {changes}")
@@ -59,7 +58,7 @@ async def file_watcher():
 
 
 async def bot_restarter():
-    """ If bot process is dead, restart """
+    """If bot process is dead, restart"""
     logger.info("Started bot restarter")
     while 1:
         await asyncio.sleep(5)

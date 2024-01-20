@@ -71,7 +71,7 @@ def test_database():
         try:
             db.execute(
                 "INSERT INTO people (name, age, height, x, y) VALUES (?, ?, ?, ?, ?)",
-                ("Someone Else", 50, 1.65, 100, 100)
+                ("Someone Else", 50, 1.65, 100, 100),
             )
         except sqlite3.IntegrityError:
             logger.info("Name already exists: Someone Else")
@@ -113,7 +113,7 @@ def test_database():
 
         person = "Someone"
         max_distance = 50
-        logger.info(f"Get all people in distance of {max_distance} of \'{person}\'")
+        logger.info(f"Get all people in distance of {max_distance} of '{person}'")
         results: sqlite3.Cursor = db.execute(
             f"""
             SELECT id, name, dist(people.x, people.y, people2.x, people2.y) AS distance,

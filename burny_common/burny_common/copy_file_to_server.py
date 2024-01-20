@@ -50,7 +50,7 @@ def copy_file_to_server(
     pkey: str,
     sourcepath: str,
     targetpath: str,
-    createtargetdir: bool = True
+    createtargetdir: bool = True,
 ):
     with SSHClient() as client:
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

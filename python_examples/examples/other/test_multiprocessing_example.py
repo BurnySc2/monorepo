@@ -9,7 +9,7 @@ from hypothesis import strategies as st
 from examples.other.multiprocessing_example import cpu_bound_summing, do_math_async, find_sums
 
 
-@given(st.one_of(st.integers(), st.floats(min_value=-10**15, max_value=10**15)))
+@given(st.one_of(st.integers(), st.floats(min_value=-(10**15), max_value=10**15)))
 @pytest.mark.asyncio
 async def test_do_math_async(number: float):
     result = await do_math_async(number)

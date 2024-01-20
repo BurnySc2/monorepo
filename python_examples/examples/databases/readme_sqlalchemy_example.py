@@ -11,7 +11,6 @@ Base = declarative_base()
 
 
 class MyBase:
-
     def __repr__(self) -> str:
         items = ", ".join(f"{key}={value}" for key, value in self.__dict__.items() if not key.startswith("_"))
         return f"{self.__class__.__name__}({items})"
@@ -101,7 +100,7 @@ def run_database_with_sqlalchemy_readme_example():
                 # book_1, book_2, book_3
                 book_4,
                 library_1,
-                library_2
+                library_2,
             ]
         )
         session.commit()
@@ -158,8 +157,8 @@ def run_database_with_sqlalchemy_readme_example():
     # Find all books that are listed in libraries at least 25 times and where author was born before 1910
     with Session(engine) as session:
         statement: Query = session.query(BookInventory)
-        statement: Iterable[BookInventory] = statement.join(Book).join(Author).where(
-            (BookInventory.amount >= 25) & (Author.birth_year < 1910)
+        statement: Iterable[BookInventory] = (
+            statement.join(Book).join(Author).where((BookInventory.amount >= 25) & (Author.birth_year < 1910))
         )
         for book_inventory in statement:
             logger.info(

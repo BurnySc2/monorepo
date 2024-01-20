@@ -89,11 +89,9 @@ hypothesis = "^6.34"
 snakeviz = "^2.1"
 # Line profiler
 scalene = "^1.3.16"
-# Autoformat
-yapf = "^0.32.0"
 toml = "^0.10.2"
 # Linter
-ruff = "^0.0.247"
+ruff = "^0.1.14"
 # Type checker
 pyre-check = "^0.9.18"
 
@@ -119,7 +117,6 @@ select = [
     "F",  # pyflakes
     "BLE",  # flake8-blind-except
     "I",  # isort
-    "ISC", # flake8-implicit-str-concat
     "N",  # pep8-naming
     "PGH",  # pygrep-hooks
     "PTH", # flake8-use-pathlib

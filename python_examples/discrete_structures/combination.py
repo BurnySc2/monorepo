@@ -9,7 +9,7 @@ def combination_generator(my_list: list[Any], n: int) -> Generator[Any, None, No
     if n == 0:
         yield []
     for i, middle in enumerate(my_list):
-        remaining_list = my_list[i + 1:]
+        remaining_list = my_list[i + 1 :]
         for p in combination_generator(remaining_list, n - 1):
             yield [middle] + p
 
