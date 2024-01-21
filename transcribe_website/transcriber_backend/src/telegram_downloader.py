@@ -82,6 +82,10 @@ class DownloadWorker:
             await asyncio.sleep(1)
             try:
                 await DownloadWorker.download_one(worker_id=self.worker_id)
+            except OSError:
+                # OSError: Connection lost
+                # Try next item
+                continue
             except Exception as e:  # noqa: BLE001
                 # Catch errors by worker and end program
                 logger.exception(e)
