@@ -11,6 +11,26 @@
     ></script>
     <script src="https://cdn.tailwindcss.com/3.3.0"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+    <script>
+      // Change volume in websocket connection
+      document.addEventListener('htmx:oobAfterSwap', function(evt) {
+          document.getElementById("audio").volume = {{ volume }};
+      });
+      // Fade out element after load
+      document.addEventListener('htmx:wsOpen', function(e) {
+        document.getElementById("content").classList.add("loaded");
+      });
+    </script>
+    <style>
+      .fade-out-element {
+        opacity: 1;
+        transition: opacity 10s ease-out;
+        transition-delay: 5s;
+      }
+      .fade-out-element.loaded {
+        opacity: 0;
+      }
+    </style>
   </head>
   <body>
     <div
@@ -18,12 +38,9 @@
       hx-ext="ws"
       ws-connect="{{ ws_backend_server_url }}/tts-ws/{{ stream_name }}/{{ read_name_lang }}"
     >
-      <div id="content">
-        <audio controls hidden>
-          <source
-            src=""
-            type="audio/mpeg"
-          />
+      <div id="content" class="fade-out-element">
+        <audio controls id="audio">
+          <source src="" type="audio/mpeg" />
           Your browser does not support the audio element.
         </audio>
       </div>

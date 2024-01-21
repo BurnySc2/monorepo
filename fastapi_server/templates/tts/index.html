@@ -11,6 +11,12 @@
     ></script>
     <script src="https://cdn.tailwindcss.com/3.3.0"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+    <script>
+      // Change volume on '/tts'
+      document.addEventListener('htmx:afterRequest', function(evt) {
+          document.getElementById("audio").volume = {{ volume }};
+      });
+    </script>
   </head>
   <body class="flex flex-col h-screen justify-center items-center bg-gray-200">
     <form

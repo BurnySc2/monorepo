@@ -38,13 +38,17 @@ class MyTTSRoute(Controller):
     VOICES_LIST: list[str] = [v.name for v in Voices]
 
     @get("/")
-    async def index(self) -> Template:
+    async def index(
+        self,
+        volume: int = 100,
+    ) -> Template:
         # Return an initial index.html that can play tts from input form
         return Template(
             template_name="tts/index.html",
             context={
                 "voices": sorted(self.VOICES_LIST),
                 "mp3_b64_data": "",
+                "volume": volume / 100,
             },
         )
 
@@ -64,12 +68,15 @@ class MyTTSRoute(Controller):
             },
         )
 
-    @get("/twitch/{stream_name: str}/{read_name_lang: str}")
+    # https://URL/tts/twitch/STREAMER_NAME?read_name_lang=none&volume=100
+    @get("/twitch/{stream_name: str}")
     async def tts_with_name_en(
         self,
         stream_name: str,
         # Only allows these for 'read_name_lang'
-        read_name_lang: Literal["none", "en", "de"],
+        read_name_lang: Literal["none", "en", "de"] = "none",
+        # Volume between 0 and 100
+        volume: int = 100,
     ) -> Template:
         """
         Returns a template which connects to the websocket connection
@@ -81,6 +88,7 @@ class MyTTSRoute(Controller):
                 "ws_backend_server_url": WS_BACKEND_SERVER_URL,
                 "stream_name": stream_name.lower(),
                 "read_name_lang": read_name_lang,
+                "volume": volume / 100,
             },
         )
 
