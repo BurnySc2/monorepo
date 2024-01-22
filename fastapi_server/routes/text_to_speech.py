@@ -68,6 +68,7 @@ class MyTTSRoute(Controller):
             },
         )
 
+    # http://0.0.0.0:8000/tts/twitch/STREAMER_NAME?read_name_lang=none&volume=100
     # https://URL/tts/twitch/STREAMER_NAME?read_name_lang=none&volume=100
     @get("/twitch/{stream_name: str}")
     async def tts_with_name_en(

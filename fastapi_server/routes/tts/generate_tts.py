@@ -35,7 +35,7 @@ class Voices(enum.Enum):
     SPANISH_FEMALE_ALEJANDRA = "es_female_f6"
     SPANISH_FEMALE_MARIANA = "es_female_fp1"
     SPANISH_ALEX_WARM = "es_mx_002"
-    MEXICAN_OPTIMUS_PRIME_ = "es_mx_male_transformer"
+    MEXICAN_OPTIMUS_PRIME = "es_mx_male_transformer"
     PORTUGUESE_JULIA = "br_003"
     PORTUGUESE_ANA = "br_004"
     PORTUGUESE_LUCAS = "br_005"
