@@ -82,9 +82,10 @@ class DownloadWorker:
             await asyncio.sleep(1)
             try:
                 await DownloadWorker.download_one(worker_id=self.worker_id)
-            except OSError:
+            except OSError as e:
                 # OSError: Connection lost
                 # Try next item
+                logger.exception(f"OSError occured: {e}")
                 continue
             except Exception as e:  # noqa: BLE001
                 # Catch errors by worker and end program
@@ -463,11 +464,9 @@ async def parse_channel_messages() -> None:
         except (TypeError, OSError) as e:
             # https://github.com/BurnySc2/monorepo/issues/38
             logger.error(f"Error with channel {channel_id}: {e}")
-            pass
         except UsernameNotOccupied:
             # If any errors occur, skip parsing this channel
             logger.error(f"Error with channel {channel_id}, username not occupied")
-            pass
         except StopIteration:
             # Exit inner loop because latest messages have been grabbed
             pass
