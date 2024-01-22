@@ -21,6 +21,8 @@
           - User root
           - ServerAliveInterval 60
           - ======================
+    
+    # TODO Set up Appearance: Style=Matcha-dark-sea Icons=Papirus-Dark-Maia
 
     - name: Run the equivalent of "pacman -Sy" as a separate step
       community.general.pacman:
@@ -95,7 +97,7 @@
         shell: "{{ secrets.DEFAULT_SHELL }}"
 
     - name: Start syncthing service for user
-      become_user: '{{ USERNAME }}'
+      become_user: "{{ USERNAME }}"
       ansible.builtin.systemd_service:
         name: syncthing.service
         scope: user
@@ -115,7 +117,7 @@
         upgrade: true
         extra_args: --answerclean N --answerdiff N --answerupgrade N --noprogressbar
       timeout: 600 # Max 600 seconds
-    
+
     # TODO this lists as "changed" even when all packages are already installed
     - name: Install AUR packages
       # From https://github.com/mnussbaum/ansible-yay/blob/4fd5ec87f3c3ec5366376b30317714fee7e20b06/yay#L143
