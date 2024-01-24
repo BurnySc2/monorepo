@@ -74,6 +74,7 @@ bokeh = "^2.0"
 #manim = "^0.15.2"
 aiofiles = "^23.0"
 burny-common = "^0.0.9"
+psycopg = {extras = ["binary"], version = "^3.1.17"}
 
 [tool.poetry.group.dev.dependencies]
 # Test library

@@ -118,6 +118,9 @@ jobs:
         passphrase: ''
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+          docker rm -f transcribe_worker
+          docker rm -f telegram_downloader
+          docker rm -f enqueue_worker
           docker image prune -af
           docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
