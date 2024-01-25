@@ -17,14 +17,14 @@
     <form
       id="myform"
       class="m-2"
-      hx-post="https://0.0.0.0:8000/htmxapi/todo"
+      hx-post="/todo/api"
       hx-trigger="submit"
       hx-target="#todo-list"
       hx-swap="beforeend"
     >
       <input
         type="text"
-        name="todotext"
+        name="todo_text"
         placeholder="Add a todo"
         required
         class="border-2 border-gray-500 p-2"
@@ -40,7 +40,7 @@
     </form>
     <section
       id="todo-list"
-      hx-get="https://0.0.0.0:8000/htmxapi/todo"
+      hx-get="/todo/api"
       hx-trigger="load"
       class="flex flex-col space-y-2"
     ></section>

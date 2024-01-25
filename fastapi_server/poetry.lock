@@ -143,6 +143,17 @@ test = ["anyio[trio]", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "mock (>=
 trio = ["trio (<0.22)"]
 
 [[package]]
+name = "appdirs"
+version = "1.4.4"
+description = "A small Python module for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
+optional = false
+python-versions = "*"
+files = [
+    {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
+    {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
+]
+
+[[package]]
 name = "arrow"
 version = "1.3.0"
 description = "Better dates & times for Python"
@@ -320,6 +331,17 @@ files = [
 pycparser = "*"
 
 [[package]]
+name = "chardet"
+version = "5.2.0"
+description = "Universal encoding detector for Python 3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "chardet-5.2.0-py3-none-any.whl", hash = "sha256:e1cf59446890a00105fe7b7912492ea04b6e6f06d4b742b2c788469e34c82970"},
+    {file = "chardet-5.2.0.tar.gz", hash = "sha256:1b3b6ff479a8c414bc3fa2c0852995695c4a026dcd6d0633b2dd092ca39c1cf7"},
+]
+
+[[package]]
 name = "charset-normalizer"
 version = "3.3.2"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
@@ -457,6 +479,26 @@ files = [
 [package.dependencies]
 marshmallow = ">=3.18.0,<4.0.0"
 typing-inspect = ">=0.4.0,<1"
+
+[[package]]
+name = "diff-cover"
+version = "8.0.3"
+description = "Run coverage and linting reports on diffs"
+optional = false
+python-versions = ">=3.8.10,<4.0.0"
+files = [
+    {file = "diff_cover-8.0.3-py3-none-any.whl", hash = "sha256:5c2f54ebb3f4afaf2e07d3209c470722bac859a15914abe478e5b82240521b44"},
+    {file = "diff_cover-8.0.3.tar.gz", hash = "sha256:393565ca8668ae1e0e38e4e132b51cf028086fb06a7a7d9479deb5023e2f68d4"},
+]
+
+[package.dependencies]
+chardet = ">=3.0.0"
+Jinja2 = ">=2.7.1"
+pluggy = ">=0.13.1,<2"
+Pygments = ">=2.9.0,<3.0.0"
+
+[package.extras]
+toml = ["tomli (>=1.2.1)"]
 
 [[package]]
 name = "exceptiongroup"
@@ -1335,6 +1377,17 @@ files = [
 ]
 
 [[package]]
+name = "pathspec"
+version = "0.12.1"
+description = "Utility library for gitignore style pattern matching of file paths."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pathspec-0.12.1-py3-none-any.whl", hash = "sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08"},
+    {file = "pathspec-0.12.1.tar.gz", hash = "sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"},
+]
+
+[[package]]
 name = "pipdeptree"
 version = "2.13.2"
 description = "Command line utility to show dependency tree of packages."
@@ -2104,6 +2157,33 @@ cffi = ">=1.0"
 numpy = ["numpy"]
 
 [[package]]
+name = "sqlfluff"
+version = "2.3.5"
+description = "The SQL Linter for Humans"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "sqlfluff-2.3.5-py3-none-any.whl", hash = "sha256:2ca095a2f2cced5573a83fc8a6d2aceb36edd21a8c4c5d8099b6544e386d86a1"},
+    {file = "sqlfluff-2.3.5.tar.gz", hash = "sha256:fd77ef5a41ebfa798235a5b28bcfa71f7521e9336159a08b40b545953e84c3c3"},
+]
+
+[package.dependencies]
+appdirs = "*"
+chardet = "*"
+click = "*"
+colorama = ">=0.3"
+diff-cover = ">=2.5.0"
+Jinja2 = "*"
+pathspec = "*"
+pytest = "*"
+pyyaml = ">=5.1"
+regex = "*"
+tblib = "*"
+toml = {version = "*", markers = "python_version < \"3.11\""}
+tqdm = "*"
+typing-extensions = "*"
+
+[[package]]
 name = "starlette"
 version = "0.27.0"
 description = "The little ASGI library that shines."
@@ -2133,6 +2213,17 @@ files = [
 
 [package.extras]
 widechars = ["wcwidth"]
+
+[[package]]
+name = "tblib"
+version = "3.0.0"
+description = "Traceback serialization library."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "tblib-3.0.0-py3-none-any.whl", hash = "sha256:80a6c77e59b55e83911e1e607c649836a69c103963c5f28a46cbeef44acf8129"},
+    {file = "tblib-3.0.0.tar.gz", hash = "sha256:93622790a0a29e04f0346458face1e144dc4d32f493714c6c3dff82a4adb77e6"},
+]
 
 [[package]]
 name = "testslide"
@@ -2650,4 +2741,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10 <3.12"
-content-hash = "59fa8e91619c3ca12ff675916e03c91356ff3e9b8a55a31552f7652f590a2a7d"
+content-hash = "ed1de61749d5e100e9251b8c4364185223d15d624bb94cf09954c45552f270c4"

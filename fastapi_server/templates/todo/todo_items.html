@@ -1,0 +1,10 @@
+{% for item in items %}
+<div id="todo{{ item.id }}">
+  <button hx-post="/todo/delete/{{ item.id }}" hx-trigger="click" hx-swap="outerHTML" hx-target="#todo{{ item.id }}"
+    class="border-2 border-gray-500 p-2">
+    Delete
+  </button>
+  <input type="checkbox" {% if item.done %} checked {% endif %} hx-patch="/todo/api/{{ item.id }}" hx-swap="none" />
+  {{ item.todotext }}
+</div>
+{% endfor %}

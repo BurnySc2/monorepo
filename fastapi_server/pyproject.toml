@@ -9,8 +9,8 @@ python = ">=3.10 <3.12"
 # Write and read classes to/from json
 # Fastapi server
 fastapi = "^0.103.1"
-httpx = "^0.25.0" # Required by starlette
-uvicorn = {extras = ["standard"], version = "^0.18.1"}
+httpx = "^0.25.0"                                        # Required by starlette
+uvicorn = { extras = ["standard"], version = "^0.18.1" }
 # HTML Templating
 jinja2 = "^3.1.2"
 # Somehow required
@@ -53,6 +53,8 @@ ruff = "^0.1.14"
 pyre-check = "^0.9.18"
 # Analyze depenencies
 pipdeptree = "^2.13.1"
+# SQL formatting and validating
+sqlfluff = "^2.3.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -71,22 +73,39 @@ line-length = 120
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 select = [
-    "C4", # flake8-comprehensions
-    "E",  # Error
-    "F",  # pyflakes
-    "BLE",  # flake8-blind-except
-    "I",  # isort
-    "N",  # pep8-naming
-    "PGH",  # pygrep-hooks
+    "C4",  # flake8-comprehensions
+    "E",   # Error
+    "F",   # pyflakes
+    "BLE", # flake8-blind-except
+    "I",   # isort
+    "N",   # pep8-naming
+    "PGH", # pygrep-hooks
     "PTH", # flake8-use-pathlib
-    "SIM",  # flake8-simplify
-    "W",  # Warning
-    "Q",  # flake8-quotes
+    "SIM", # flake8-simplify
+    "W",   # Warning
+    "Q",   # flake8-quotes
     "YTT", # flake8-2020
     "UP",  # pyupgrade
-#    "A",  # flake8-builtins
+    #    "A",  # flake8-builtins
 ]
 
 [tool.ruff.pep8-naming]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.
 classmethod-decorators = ["pydantic.validator", "classmethod"]
+
+[tool.sqlfluff.core]
+# https://docs.sqlfluff.com/en/stable/configuration.html#configuration-files
+templater = "placeholder"
+sql_file_exts = ".sql"
+dialect = "postgres"
+max_line_length = 120
+
+[tool.sqlfluff]
+indent_unit = "space"
+
+[tool.sqlfluff.templater.placeholder]
+# https://docs.sqlfluff.com/en/stable/configuration.html#placeholder-templater
+param_style = "percent"
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"

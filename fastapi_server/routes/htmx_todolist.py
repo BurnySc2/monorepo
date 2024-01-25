@@ -1,62 +1,77 @@
-from fastapi import Request
-from fastapi.responses import HTMLResponse
-from fastapi.routing import APIRouter
-from fastapi.templating import Jinja2Templates
+from __future__ import annotations
 
-from helper.jinja_renderer import render
-from models.todo_item import delete_todo, get_all_todos, toggle_todo
+from dataclasses import dataclass
+from typing import Annotated
 
-htmx_todolist_router = APIRouter()
-index_templates = Jinja2Templates(directory="frontend/todo")
-templates = Jinja2Templates(directory="templates/todo")
+from litestar import Controller, get, patch, post
+from litestar.contrib.jinja import JinjaTemplateEngine
+from litestar.enums import RequestEncodingType
+from litestar.params import Body
+from litestar.response import Template
+from litestar.template.config import TemplateConfig
 
+from models.todo_item import add_todo, delete_todo, get_all_todos, toggle_todo
 
-# TODO disable endpoint in production as this should be served by a frontend separately if login is not required
-@htmx_todolist_router.get("/todo", response_class=HTMLResponse)
-def todo_index(request: Request):
-    return render(index_templates, "index.html", {"request": request})
+template_config = TemplateConfig(engine=JinjaTemplateEngine, directory="templates")
 
 
-@htmx_todolist_router.get("/htmxapi/todo", response_class=HTMLResponse)
-async def get_todo_items(request: Request) -> str:
-    todos = await get_all_todos()
-    return render(
-        templates,
-        "todo_item.html",
-        [
-            {
-                "request": request,
-                "id": c.get("id"),
-                "todotext": c.get("todotext"),
-                "done": c.get("done"),
-            }
-            for c in todos
-        ],
-    )
+@dataclass
+class NewTodoItem:
+    todo_text: str
 
 
-# @htmx_todolist_router.post("/htmxapi/todo", response_class=HTMLResponse)
-# async def add_todo_item(request: Request, todotext: str = Form()):
-#     row = await add_todo(todotext)
-#     return render(
-#         templates, "todo_item.html", {
-#             "request": request,
-#             "id": row.get("id"),
-#             "todotext": row.get("todotext"),
-#             "done": row.get("done"),
-#         }
-#     )
+class MyTodoRoute(Controller):
+    path = "/todo"
 
+    @get("/")
+    async def index(self) -> Template:
+        return Template(template_name="todo/index.html", context={})
 
-@htmx_todolist_router.patch("/htmxapi/todo/{todoid}")
-async def update_todo_item(todoid: int):
-    await toggle_todo(todoid)
+    @get("/api")
+    async def get_todos(self) -> Template:
+        todos = await get_all_todos()
+        return Template(
+            template_name="todo/todo_items.html",
+            context={
+                "items": [
+                    {
+                        "id": c.get("id"),
+                        "todotext": c.get("todotext"),
+                        "done": c.get("done"),
+                    }
+                    for c in todos
+                ]
+            },
+        )
 
+    @post("/api")
+    async def add_todo_item(
+        self,
+        data: Annotated[NewTodoItem, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    ) -> Template:
+        row = await add_todo(data.todo_text)
+        return Template(
+            template_name="todo/todo_items.html",
+            context={
+                "items": [
+                    {
+                        "id": row.get("id"),
+                        "todotext": row.get("todotext"),
+                        "done": row.get("done"),
+                    }
+                ]
+            },
+        )
 
-@htmx_todolist_router.delete("/htmxapi/todo/{todoid}", response_class=HTMLResponse)
-async def del_todo_item(todoid: int):
-    """
-    Replace the element to make sure that the request went through, instaed of using 'hx-swap="delete"'.
-    """
-    await delete_todo(todoid)
-    return ""
+    @patch("/api/{todoid: int}")
+    async def update_todo_item(self, todoid: int) -> None:
+        # TODO Replace todo item instead
+        await toggle_todo(todoid)
+
+    @post("/delete/{todoid: int}")
+    async def del_todo_item(self, todoid: int) -> str:
+        """
+        Replace the element to make sure that the request went through, instead of using 'hx-swap="delete"'.
+        """
+        await delete_todo(todoid)
+        return ""

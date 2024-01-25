@@ -13,6 +13,7 @@ from loguru import logger
 from models.chat_messages import chat_create_tables
 from models.todo_item import todo_create_tables
 from routes.hello_world import MyRootRoute
+from routes.htmx_todolist import MyTodoRoute
 
 # from routes.similar_words import MyWordsRoute
 from routes.text_to_speech import MyTTSRoute
@@ -59,7 +60,7 @@ def shutdown_event():
 
 
 app = Litestar(
-    [index, get_book, MyRootRoute, MyTTSRoute, TTSWebsocketHandler],
+    [index, get_book, MyRootRoute, MyTodoRoute, MyTTSRoute, TTSWebsocketHandler],
     on_startup=[startup_event],
     on_shutdown=[shutdown_event],
     template_config=TemplateConfig(
