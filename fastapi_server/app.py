@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Literal
 
-import uvicorn  # pyre-fixme[21]
+import uvicorn
 from dotenv import load_dotenv
 from litestar import Litestar, MediaType, get
 from litestar.contrib.jinja import JinjaTemplateEngine
@@ -14,7 +14,7 @@ from models.chat_messages import chat_create_tables
 from models.todo_item import todo_create_tables
 from routes.hello_world import MyRootRoute
 from routes.htmx_todolist import MyTodoRoute
-from routes.login_logout2 import MyLoginRoute, MyLogoutRoute
+from routes.login_logout import MyLoginRoute, MyLogoutRoute
 
 # from routes.similar_words import MyWordsRoute
 from routes.text_to_speech import MyTTSRoute
@@ -86,5 +86,5 @@ if __name__ == "__main__":
         port=8000,
         reload_delay=5,
         reload=BACKEND_SERVER_URL == "0.0.0.0:8000",
-        debug=True,
+        # debug=True,
     )

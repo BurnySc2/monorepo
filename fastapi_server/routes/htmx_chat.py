@@ -1,3 +1,4 @@
+# pyre-ignore-all-errors
 from __future__ import annotations
 
 import os
@@ -16,9 +17,9 @@ from fastapi import (
 from fastapi.responses import HTMLResponse
 from fastapi.routing import APIRouter
 from fastapi.templating import Jinja2Templates
+from helper.jinja_renderer import render
 from loguru import logger
 
-from helper.jinja_renderer import render
 from models.chat_messages import add_message, debug_delete_all_messages, get_all_messages
 
 htmx_chat_router = APIRouter()

@@ -6,32 +6,32 @@ authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.10 <3.12"
-# Write and read classes to/from json
-# Fastapi server
-fastapi = "^0.103.1"
-httpx = "^0.25.0"                                        # Required by starlette
-uvicorn = { extras = ["standard"], version = "^0.18.1" }
-# HTML Templating
-jinja2 = "^3.1.2"
 # Somehow required
-colorama = "^0.4.4"
+# colorama = "^0.4.4"
 # Simple logger
 loguru = "^0.5"
+# Fastapi alternative https://docs.litestar.dev/latest/
+litestar = {extras = ["standard"], version = "^2.5.1"}
+# Sync postgresql connection
+psycopg = {extras = ["binary"], version = "^3.1.17"}
 # Async postgresql connection
 asyncpg = "^0.28.0"
+# Requests (sync+async)
+requests = "^2.31.0"
+aiohttp = "^3.8.5"
 # Timestamps
 arrow = "^1.2.3"
-# Requests
-aiohttp = "^3.8.5"
+# Load .env files easily
+python-dotenv = "^1.0.0"
 # Awesome dataclasses with validation
 pydantic = "^2"
 # Language manipulation
 nltk = "^3.8.1"
-# Fastapi alternative
-litestar = "^2.4.3"
-python-dotenv = "^1.0.0"
+# Twitch chat bot
 twitchio = "^2.8.2"
+# Analyse mp3 files in memory
 soundfile = "^0.12.1"
+# Other
 numpy = "^1.26.3"
 
 [tool.poetry.group.dev.dependencies]

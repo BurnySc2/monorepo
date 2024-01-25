@@ -4,62 +4,90 @@ import os
 from typing import Annotated
 
 import aiohttp
-from fastapi import APIRouter, Cookie, Response, status
-from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
-
-login_router = APIRouter()
-login_templates = Jinja2Templates(directory="frontend/login")
-logout_templates = Jinja2Templates(directory="frontend/logout")
+from litestar import Controller, Response, get
+from litestar.datastructures import Cookie
+from litestar.params import Parameter
+from litestar.response import Redirect
+from litestar.status_codes import HTTP_302_FOUND, HTTP_409_CONFLICT, HTTP_503_SERVICE_UNAVAILABLE
 
 # Github app for local development
 CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
 CLIENT_SECRET = os.getenv("GITHUB_APP_CLIENT_SECRET", "2aab3b1a609cb1a4126c7eec121bad2343332113")
 
-BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
 
-# TODO Other login services like google, twitch etc
-
-
-@login_router.get("/login")
-async def user_login(
-    response: Response, code: str | None = None, github_access_token: Annotated[str | None, Cookie()] = None
-):
-    # TODO Check/log where the request came from (ip or website?)
-    if code is None:
-        response.status_code = status.HTTP_204_NO_CONTENT
-        return
-    if github_access_token is not None:
-        response.delete_cookie(key="code")
-        response.status_code = status.HTTP_204_NO_CONTENT
-        return
-
-    url = "https://github.com/login/oauth/access_token"
-    async with aiohttp.ClientSession() as session:
-        post_response = await session.post(
-            url,
-            headers={"Accept": "application/json"},
-            json={
-                "client_id": CLIENT_ID,
-                "client_secret": CLIENT_SECRET,
-                "code": code,
-            },
-        )
-        if not post_response.ok:
-            return "Github server is not responding"
-        data = await post_response.json()
-        if "error" in data:
-            return "Invalid code"
-        redirect = RedirectResponse("/chat")
-        # TODO What does "secure" and "same_site" do?
-        redirect.set_cookie(key="github_access_token", value=data["access_token"], secure=True)
-        return redirect
+# Github app for local development
+CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
+CLIENT_SECRET = os.getenv("GITHUB_APP_CLIENT_SECRET", "2aab3b1a609cb1a4126c7eec121bad2343332113")
 
 
-@login_router.get("/logout")
-async def user_logout(response: Response, github_access_token: Annotated[str | None, Cookie()] = None):
-    # TODO Check/log where the request came from (ip or website?)
-    if github_access_token is not None:
-        redirect = RedirectResponse("/chat")
-        redirect.delete_cookie(key="github_access_token")
+COOKIES = {
+    # TODO Other login services like google, twitch etc
+    "github": "github_access_token",
+}
+
+
+class MyLoginRoute(Controller):
+    path = "/login"
+
+    @get("/github")
+    async def user_login(
+        self,
+        code: str | None,
+        github_access_token: Annotated[str | None, Parameter(cookie=COOKIES["github"])],
+    ) -> Response | Redirect:
+        # If 'code' is not set as a param, redirect to github page
+        # which redirects to this page again with 'code' parameter
+        if code is None:
+            return Redirect(
+                f"https://github.com/login/oauth/authorize?client_id={CLIENT_ID}",
+                status_code=HTTP_302_FOUND,  # pyre-fixme[6]
+            )
+
+        # Access token has already been set before
+        if github_access_token is not None:
+            return Redirect(
+                "/",
+                status_code=HTTP_302_FOUND,  # pyre-fixme[6]
+            )
+
+        async with aiohttp.ClientSession() as session:
+            url = "https://github.com/login/oauth/access_token"
+            post_response = await session.post(
+                url,
+                headers={"Accept": "application/json"},
+                json={
+                    "client_id": CLIENT_ID,
+                    "client_secret": CLIENT_SECRET,
+                    "code": code,
+                },
+            )
+            if not post_response.ok:
+                return Response("Github may be unavailable", status_code=HTTP_503_SERVICE_UNAVAILABLE)
+            data = await post_response.json()
+            if "error" in data:
+                return Response("Error in json response. Try emptying your cookies", status_code=HTTP_409_CONFLICT)
+
+            redirect = Redirect(
+                "/",
+                status_code=HTTP_302_FOUND,  # pyre-fixme[6]
+            )
+            redirect.set_cookie(
+                Cookie(
+                    key=COOKIES["github"],
+                    value=data["access_token"],
+                    # Is this required?
+                    # secure=True,
+                )
+            )
+            return redirect
+
+
+class MyLogoutRoute(Controller):
+    path = "/logout"
+
+    @get("/", status_code=HTTP_302_FOUND)
+    async def user_logout(self) -> Redirect:
+        redirect = Redirect("/chat")
+        for cookie_key in COOKIES.values():
+            redirect.delete_cookie(cookie_key)
         return redirect
