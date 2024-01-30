@@ -78,11 +78,11 @@ class TwitchIrcBot(commands.Bot):  # pyre-fixme[11]
             if TTSQueue.is_connected(channel_name, read_name_lang):
                 if voice is not None:
                     # Put "burnysc2 says:"
-                    logger.info(f"{read_name_lang} {voice} {name_suffix}")
+                    # logger.info(f"{read_name_lang} {voice} {name_suffix}")
                     await TTSQueue.add_text_queue(channel_name, read_name_lang, voice, f"{display_name} {name_suffix}:")
 
                 # Put text into queue
-                logger.info(f"{read_name_lang} {text_from_chat}")
+                logger.info(f"{channel_name}: {read_name_lang} says: {text_from_chat}")
                 await TTSQueue.add_text_queue(channel_name, read_name_lang, selected_voice, text_from_chat)
 
 
@@ -195,16 +195,17 @@ class TTSQueueRunner:
 
             # TTS is still playing
             if arrow.utcnow() < self.tts_is_playing_till:
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0.1)
                 continue
 
             # No new items
             if self.text_queue.empty():
-                await asyncio.sleep(0.01)
+                await asyncio.sleep(0.1)
                 continue
 
             # Generate tts
             voice, text = await self.text_queue.get()
+            logger.info(f"Generating tts: {self.stream_name}: ({voice}) {text}")
 
             # Generate audio from text
             try:
@@ -212,6 +213,7 @@ class TTSQueueRunner:
                 # logger.info(f"{duration}s: {text}")
             except AssertionError:
                 continue
+            logger.info(f"Sending generated tts to clients: {self.stream_name}: ({voice}) {text}")
             self.text_queue.task_done()
             tasks = [
                 asyncio.create_task(
@@ -231,6 +233,7 @@ class TTSQueueRunner:
             ]
             for task in asyncio.as_completed(tasks):
                 await task
+            logger.info(f"Sent generated tts to clients: {self.stream_name}: ({voice}) {text}")
 
             self.tts_is_playing_till = arrow.utcnow() + timedelta(seconds=duration)
 
