@@ -124,6 +124,7 @@ jobs:
         passphrase: ''
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+          docker rm -f fastapidev
           docker image prune -af
           docker pull burnysc2/${{ env.IMAGENAME }}:latest_dev
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}
@@ -153,6 +154,7 @@ jobs:
         passphrase: ''
         script: |
           sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+          docker rm -f fastapi
           docker image prune -af
           docker pull burnysc2/${{ env.IMAGENAME }}:latest
           sudo /bin/systemctl enable --now ${{ env.USERNAME }}

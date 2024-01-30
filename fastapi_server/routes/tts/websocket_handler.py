@@ -124,14 +124,14 @@ class TTSQueue:
         If "read_name_lang" is not given, check if connected to "stream_name" at all.
         """
         if read_name_lang is None:
-            for read_name_lang in ALLOWED_NAME_LANGUAGES:
-                if cls.is_connected(stream_name, read_name_lang):
+            for read_name_lang_loop in ALLOWED_NAME_LANGUAGES:
+                if cls.is_connected(stream_name, read_name_lang_loop):
                     return True
         return (stream_name, read_name_lang) in cls.connected_websockets
 
     @classmethod
     async def remove_ws(cls, socket: WebSocket, stream_name: str, read_name_lang: str) -> None:
-        connected_websockets = cls.get_connected_websockets(stream_name, read_name_lang)
+        connected_websockets: list[WebSocket] = cls.get_connected_websockets(stream_name, read_name_lang)
         for ws in list(connected_websockets):
             if ws == socket:
                 connected_websockets.remove(socket)
@@ -149,7 +149,9 @@ class TTSQueue:
         cls.text_queue.pop((stream_name, read_name_lang))
         cls.connected_websockets.pop((stream_name, read_name_lang))
 
+        # Leave irc channel if no websocket is connected
         if not cls.is_connected(stream_name):
+            logger.info(f"Disconnecting from irc channel: {stream_name}")
             cls.joined_twitch_channels.discard(stream_name)
             await TTSQueue.twitch_irc_bot.part_channels([stream_name])  # pyre-fixme[16]
 
@@ -265,6 +267,7 @@ class TTSWebsocketHandler(WebsocketListener):
         # Join twitch channel
         await TTSQueue.twitch_irc_bot.wait_for_ready()  # pyre-fixme[16]
         if stream_name not in TTSQueue.joined_twitch_channels:
+            logger.info(f"Connecting to irc channel: {stream_name}")
             await TTSQueue.twitch_irc_bot.join_channels([stream_name])  # pyre-fixme[16]
             TTSQueue.joined_twitch_channels.add(stream_name)
 

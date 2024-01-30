@@ -1,6 +1,6 @@
 # /etc/systemd/system/fastapi.service
 [Service]
-ExecStart=/usr/bin/docker run --rm --name fastapi_server \
+ExecStart=/usr/bin/docker run --rm --name fastapi \
     --env STAGE=PROD \
     --env-file ./.env \
     -v ./data:/root/fastapi_server/data \
