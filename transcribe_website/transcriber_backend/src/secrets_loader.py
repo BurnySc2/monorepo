@@ -40,7 +40,7 @@ class TelegramDownloaderSecrets(BaseModel):
     api_hash: str = "some.default.hash"
     channel_ids: list[str] = ["somechannel"]
     stage: Literal["DEV", "PROD"] = "DEV"
-    media_types: set[str] = {"audio", "image", "video"}
+    media_types: set[str] = {"audio", "photo", "video"}
     extract_audio_from_videos: bool = True
     output_folder: str = ""
     parallel_downloads_count: int = 1

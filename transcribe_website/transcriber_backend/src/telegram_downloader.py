@@ -496,9 +496,9 @@ def requeue_interrupted_downloads():
             Status.ERROR_DOWNLOADING.name,
             Status.ERROR_EXTRACTING_AUDIO.name,
         )
-        accept_photo = str("Photo" in SECRETS.media_types).lower()
-        accept_video = str("Video" in SECRETS.media_types).lower()
-        accept_audio = str("Audio" in SECRETS.media_types).lower()
+        accept_photo = str("photo" in SECRETS.media_types).lower()
+        accept_video = str("video" in SECRETS.media_types).lower()
+        accept_audio = str("audio" in SECRETS.media_types).lower()
         db.execute(
             f"""
             UPDATE telegram_messages_to_download SET download_status = '{Status.QUEUED.name}' WHERE

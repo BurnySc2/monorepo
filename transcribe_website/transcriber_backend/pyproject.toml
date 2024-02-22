@@ -5,7 +5,7 @@ description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.11" # Pony doesnt support 3.11 yet
+python = ">=3.8, <3.12"
 # Argparse with dataclass
 simple-parsing = "^0.1"
 # Better dataclasses
@@ -34,6 +34,8 @@ tgcrypto = "^1.2.5"
 deep-translator = "^1.11.1"
 # Owncloud client
 pyocclient = "^0.6"
+psycopg = { extras = ["binary"], version = "^3.0.0" }
+sqlfluff = "^2.3.5"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -45,7 +47,7 @@ ruff = "^0.1.14"
 # Type checker
 pyre-check = "^0.9.18"
 # Cpu and memory profiler
-scalene = "^1.5.21.4"
+# scalene = "^1.5.21.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -88,3 +90,20 @@ keep-runtime-typing = true
 [tool.ruff.pep8-naming]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.
 classmethod-decorators = ["pydantic.validator", "classmethod"]
+
+[tool.sqlfluff.core]
+# https://docs.sqlfluff.com/en/stable/configuration.html#configuration-files
+templater = "placeholder"
+sql_file_exts = ".sql"
+dialect = "postgres"
+max_line_length = 120
+
+[tool.sqlfluff]
+indent_unit = "space"
+
+[tool.sqlfluff.templater.placeholder]
+# https://docs.sqlfluff.com/en/stable/configuration.html#placeholder-templater
+param_style = "pyformat"
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"
