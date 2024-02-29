@@ -19,7 +19,6 @@ looking_for_lower_case_words = ["words", "to", "look", "for"]
 out_path = Path("OUTPUT_FOLGER_PATH")
 
 out_path.mkdir(parents=True, exist_ok=True)
-log_file = out_path / "timestamps.txt"
 
 # https://github.com/openai/whisper#available-models-and-languages
 MODEL_SIZE = "medium"
@@ -27,7 +26,7 @@ model = WhisperModel(
     MODEL_SIZE,
     device="cpu",
     compute_type="int8",
-    download_root="./whisper_models",
+    download_root=str((Path(__file__).parent.parent / "whisper_models").resolve()),
 )
 
 
@@ -111,8 +110,8 @@ def extract(executor: ThreadPoolExecutor, input_file: Path) -> None:
 
         for segment in segments:
             for word in segment.words:
-                my_word = word.word.strip().strip(",.!?").lower()
-                if my_word not in looking_for_lower_case_words:
+                matched_word = word.word.strip().strip(",.!?").lower()
+                if matched_word not in looking_for_lower_case_words:
                     continue
 
                 buffer = 5
@@ -123,11 +122,7 @@ def extract(executor: ThreadPoolExecutor, input_file: Path) -> None:
                 clip_start_str = f"{clip_start:.3f}"
                 clip_end_str = f"{clip_end:.3f}"
 
-                clip_out_path = out_path / f"{input_file.stem} {clip_start_str} {clip_end_str}.mp4"
-                with log_file.open("a") as f:
-                    f.write(
-                        f"{input_file_str} {clip_start_str} {clip_end_str} {clip_out_path}\n",
-                    )
+                clip_out_path = out_path / f"{input_file.stem} {clip_start_str} {clip_end_str} - {matched_word}.mp4"
                 # Extract clip in new thread
                 executor.submit(
                     extract_with_ffmpeg,
@@ -136,6 +131,8 @@ def extract(executor: ThreadPoolExecutor, input_file: Path) -> None:
                     clip_start_str,
                     clip_end_str,
                 )
+        # Delete .wav file after processing
+        chunk_out_path.unlink()
 
 
 if __name__ == "__main__":
