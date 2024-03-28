@@ -2,6 +2,7 @@
 *.zip
 *.srt
 *.txt
+*.db
 # Dont ignore files in test folder
 !test
 
