@@ -1,0 +1,32 @@
+version: "3"
+
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+# More info at https://github.com/pi-hole/docker-pi-hole/ and https://docs.pi-hole.net/
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    environment:
+      TZ: 'Europe/Berlin'
+      # WEBPASSWORD: 'set a secure password here or it will be random'
+    # Volumes store your data between container upgrades
+    volumes:
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    # cap_add:
+    #   - NET_ADMIN # Required if you are using Pi-hole as your DHCP server, else not needed
+    restart: unless-stopped
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.rule=Host(`{{ secrets.PIHOLE.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ secrets.PIHOLE.USERNAME }}.loadbalancer.server.port=80
+    - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.tls=true
+    - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.middlewares=authelia@docker

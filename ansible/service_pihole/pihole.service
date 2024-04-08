@@ -1,0 +1,12 @@
+# /etc/systemd/system/{{ secrets.PIHOLE.USERNAME }}.service
+[Service]
+ExecStart=/usr/bin/docker compose up
+Restart=always
+RestartSec=20
+SyslogIdentifier={{ secrets.PIHOLE.USERNAME }}
+User={{ secrets.PIHOLE.USERNAME }}
+Group={{ secrets.PIHOLE.USERNAME }}
+WorkingDirectory=/home/{{ secrets.PIHOLE.USERNAME }}
+
+[Install]
+WantedBy=multi-user.target

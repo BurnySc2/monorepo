@@ -1,0 +1,31 @@
+# Execute with
+# ansible-playbook pihole_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Stop, remove image, and start pihole service
+  hosts: my_servers
+  vars:
+    USERNAME: '{{ secrets.PIHOLE.USERNAME }}'
+  tasks:
+  - name: Stop pihole service
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: stopped
+      enabled: false
+
+  - name: Remove pihole container
+    community.docker.docker_container:
+      name: pihole
+      state: absent
+      image: pihole/pihole:latest
+
+  - name: Remove pihole image
+    community.docker.docker_image:
+      name: pihole/pihole
+      tag: latest
+      state: absent
+
+  - name: Start pihole service again
+    ansible.builtin.systemd_service:
+      name: '{{ USERNAME }}'
+      state: started
+      daemon_reload: true
+      enabled: true
