@@ -1,10 +1,4 @@
 # https://github.com/Didstopia/vrising-server
-version: '3.8'
-
-networks:
-  '{{secrets.TRAFIK_NETWORK}}':
-    external: true
-
 services:
   vrising:
     image: didstopia/vrising-server:latest
@@ -12,8 +6,6 @@ services:
     container_name: vrising
     # restart: unless-stopped
     restart: no
-    networks:
-    - '{{ secrets.TRAFIK_NETWORK }}'
     environment:
       # Configure the server
       V_RISING_SERVER_PERSISTENT_DATA_PATH: "/app/vrising"
@@ -23,24 +15,7 @@ services:
       V_RISING_SERVER_START_MODE: "2" # Install, skip update check and start server
       V_RISING_SERVER_UPDATE_MODE: "1" # Enable update checking
 
-      # Customize the server
-      V_RISING_SERVER_NAME: "{{ secrets.VRISING.SERVER_NAME }}"
-      V_RISING_SERVER_DESCRIPTION: "Burny's server."
-      V_RISING_SERVER_GAME_PORT: 9876
-      V_RISING_SERVER_QUERY_PORT: 9877
-      V_RISING_SERVER_RCON_PORT: 9878
-      V_RISING_SERVER_RCON_ENABLED: true
-      V_RISING_SERVER_RCON_PASSWORD: "rc0n"
-      V_RISING_SERVER_MAX_CONNECTED_USERS: 1
-      V_RISING_SERVER_MAX_CONNECTED_ADMINS: 1
-      V_RISING_SERVER_SAVE_NAME: "{{ secrets.VRISING.SERVER_SAVEGAME_NAME }}"
-      V_RISING_SERVER_PASSWORD: "{{ secrets.VRISING.SERVER_PASSWORD }}"
-      V_RISING_SERVER_LIST_ON_MASTER_SERVER: false
-      V_RISING_SERVER_LIST_ON_STEAM: false
-      V_RISING_SERVER_LIST_ON_EOS: false
-      V_RISING_SERVER_AUTO_SAVE_COUNT: 5
-      V_RISING_SERVER_AUTO_SAVE_INTERVAL: 10
-      V_RISING_SERVER_GAME_SETTINGS_PRESET: "StandardPvE"
+      V_RISING_SERVER_DEFAULT_HOST_SETTINGS: false,
     ports:
       - "9876:9876/udp"
       - "9877:9877/udp"

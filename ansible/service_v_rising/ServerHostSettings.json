@@ -1,0 +1,27 @@
+{
+    "Name": "{{ secrets.VRISING.SERVER_NAME }}",
+    "Description": "Burny's server.",
+    "Port": 9876,
+    "QueryPort": 9877,
+    "MaxConnectedUsers": 8,
+    "MaxConnectedAdmins": 2,
+    "ServerFps": 30,
+    "SaveName": "{{ secrets.VRISING.SERVER_SAVEGAME_NAME }}",
+    "Password": "{{ secrets.VRISING.SERVER_PASSWORD }}",
+    "Secure": true,
+    "ListOnSteam": false,
+    "ListOnEOS": false,
+    "AutoSaveCount": 10,
+    "AutoSaveInterval": 120,
+    "CompressSaveFiles": false,
+    "GameSettingsPreset": "StandardPvE",
+    "AdminOnlyDebugEvents": true,
+    "DisableDebugEvents": false,
+    "API": {
+      "Enabled": false
+    },
+    "Rcon": {},
+    "Address": ""
+  }
+  
+  
