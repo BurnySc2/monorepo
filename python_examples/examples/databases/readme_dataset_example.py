@@ -4,7 +4,7 @@ from loguru import logger
 
 
 def run_database_with_dataset_readme_example():
-    db = dataset.connect("sqlite:///:memory:")
+    db: dataset.Database = dataset.connect("sqlite:///:memory:")
     # db = dataset.connect("sqlite:///data.db")
 
     # 1) Create tables
