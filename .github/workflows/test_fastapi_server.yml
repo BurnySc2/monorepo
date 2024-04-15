@@ -28,7 +28,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
 # In conflict with pyre-check
 #    - name: Set up Python ${{ matrix.python-version }}
@@ -66,7 +66,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build docker image
       working-directory: ${{ env.SUBDIRECTORY }}
