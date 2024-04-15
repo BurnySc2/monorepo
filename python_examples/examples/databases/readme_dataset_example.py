@@ -1,5 +1,5 @@
 # ruff: noqa: C408
-import dataset
+import dataset  # pyre-fixme[21]
 from loguru import logger
 
 
