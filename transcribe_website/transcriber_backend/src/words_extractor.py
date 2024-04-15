@@ -25,6 +25,12 @@ out_path = Path("OUTPUT_FOLGER_PATH")
 
 out_path.mkdir(parents=True, exist_ok=True)
 
+SYMBOLS = "!?.,"
+SENTENCE_END_SYMBOLS = "!?."
+CHUNK_SIZE = 300  # 5 minutes chunk size
+BUFFER_SIZE = 10  # 10 extra seconds
+CLIP_BUFFER = 3
+
 db_path = Path(__file__).parent / "word_extract.db"
 conn = sqlite3.connect(str(db_path.resolve()))
 
