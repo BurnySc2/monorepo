@@ -16,7 +16,34 @@ env:
   VERSION_NUMBER: 1.0.0
 
 jobs:
+  test_stream_announcer:
+    name: test_stream_announcer_py${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+      # https://earthly.dev/get-earthly
+    - name: Install Earthly
+      run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+
+    - name: Install
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: |
+        touch .env
+        earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
+    - name: Run code checks and tests
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+
   build_and_deploy_docker_image:
+    needs: [test_stream_announcer]
     strategy:
       fail-fast: false
       matrix:
