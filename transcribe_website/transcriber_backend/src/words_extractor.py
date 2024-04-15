@@ -14,10 +14,7 @@ from faster_whisper import WhisperModel  # pyre-fixme[21]
 from loguru import logger
 from tqdm import tqdm
 
-input_files = [
-    Path("PATH_TO_VIDEO_FILE1"),
-    Path("PATH_TO_VIDEO_FILE2"),
-]
+input_directory = Path("my_input_files")
 
 looking_for_lower_case_words = ["words", "to", "look", "for"]
 
