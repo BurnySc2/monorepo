@@ -77,6 +77,17 @@ def run_database_with_dataset_readme_example():
     for book in books:
         logger.info(f"Found books released before 1960: {book}")
 
+    ids = [1960, 1961]
+    # Works also with empty arrays:
+    # ids = []
+    placeholders = ", ".join(f":{i}" for i in range(len(ids)))
+    results = db.query(
+        f"SELECT id, name, author_id, publisher_id FROM book WHERE release_year IN ({placeholders})",
+        {f"{i}": value for i, value in enumerate(ids)},
+    )
+    for book in results:
+        logger.info(f"Found books released in 1960 or 1961: {book}")
+
     # 4) Update books
     # Assert before
     assert book_table.count(release_year={"<": 1960}) == 2

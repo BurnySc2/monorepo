@@ -105,6 +105,17 @@ def run_database_with_sqlite_readme_example():
             book_as_dict = dict(book)
             logger.info(f"Found books released before 1960: {book_as_dict}")
 
+        ids = [1960, 1961]
+        # Works also with empty arrays:
+        # ids = []
+        marks = ("?," * len(ids))[:-1]
+        results: sqlite3.Cursor = db.execute(
+            f"SELECT id, name, author_id, publisher_id FROM book WHERE release_year IN ({marks})", ids
+        )
+        for book in results:
+            book_as_dict = dict(book)
+            logger.info(f"Found books released in 1960 or 1961: {book_as_dict}")
+
         # 4) Update books
         db.execute("UPDATE book SET release_year=1970 WHERE release_year < 1960")
 
