@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Iterable
 
-from faster_whisper import WhisperModel
+from faster_whisper import WhisperModel  # pyre-fixme[21]
 from loguru import logger
 from tqdm import tqdm
 
@@ -286,7 +286,8 @@ ORDER BY video_relative_path
     for video_relative_path, counter in counters.items():
         logger.info(f"{video_relative_path} has words:")
         print(counter.most_common())
-    total_counter = sum(counters.values(), start=Counter())
+    # pyre-fixme[6, 9]
+    total_counter: Counter = sum(counters.values(), start=Counter())
     # Write total word count to file
     with Path("words.txt").open("w") as f:
         for word, count in total_counter.most_common():
@@ -295,17 +296,18 @@ ORDER BY video_relative_path
 
 def extract_matched_words(
     executor: ThreadPoolExecutor,
-    input_file_str: Path,
+    input_file: Path,
     words: list[str],
 ) -> None:
     assert len(words) >= 1
+    input_file_str = str(input_file.resolve())
     placeholder_list = ", ".join("?" for _ in words)
     results = conn.execute(
         f"""
 SELECT word_start_timestamp, word_end_timestamp, word FROM words
 WHERE video_relative_path = ? AND word IN ({placeholder_list});
         """,
-        [str(input_file_str.resolve()), *words],
+        [input_file_str, *words],
     )
 
     for start_time, end_time, word in results:
@@ -315,7 +317,7 @@ WHERE video_relative_path = ? AND word IN ({placeholder_list});
         clip_start_str = f"{clip_start:.3f}"
         clip_end_str = f"{clip_end:.3f}"
 
-        clip_out_path = out_path / f"{input_file_str.stem} {clip_start_str} {clip_end_str} - {word}.mp4"
+        clip_out_path = out_path / f"{input_file.stem} {clip_start_str} {clip_end_str} - {word}.mp4"
         if clip_out_path.is_file():
             continue
         # Extract clip in new thread

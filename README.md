@@ -1,7 +1,8 @@
+[![discord_bot](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml)
+[![fastapi_server](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml)
+[![stream_announcer](https://github.com/BurnySc2/monorepo/actions/workflows/test_stream_announcer.yml/badge.svg?branch=develop)](https://github.com/BurnySc2/monorepo/actions/workflows/test_stream_announcer.yml)
 [![python_examples](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml)
-[![test_discord_bot](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml)
-[![test_fastapi_server](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml)
-[![run_earthly_checks](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml)
+[![earthly_checks](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml)
 
 # Monorepo
 My monorepo for various tools and showcases
