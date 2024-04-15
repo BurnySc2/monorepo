@@ -32,7 +32,7 @@ async def set_stream_online(twitch_name: str) -> None:
             WHERE twitch_name = :twitch_name""",
         {
             "new_status": "online",
-            "current_timestamp": datetime.datetime.now(datetime.UTC),
+            "current_timestamp": datetime.datetime.now(datetime.timezone.utc),
             "twitch_name": twitch_name,
         },
     )
