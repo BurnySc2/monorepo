@@ -2,68 +2,52 @@ from __future__ import annotations
 
 import datetime
 import os
+from collections import OrderedDict
 
-import asyncpg  # pyre-fixme[21]
-from asyncpg import Record
+import dataset  # pyre-fixme[21]
 from dotenv import load_dotenv
 
 load_dotenv()
 
 TABLE_NAME = "stream_announcer_streams"
-a = os.environ
-
 
 # pyre-fixme[11]
-async def create_connection() -> asyncpg.Connection:
-    # TODO use 'with' statement of possible
-    return await asyncpg.connect(
-        os.getenv("POSTGRES_CONNECTION_STRING"),
-        timeout=60,  # Allow max 60 seconds per connection
-    )
+db: dataset.Database = dataset.connect(os.getenv("POSTGRES_CONNECTION_STRING"))
+
+# pyre-fixme[11]
+streams_table: dataset.Table = db[TABLE_NAME]
 
 
-async def table_exists(table_name: str) -> bool:
-    conn = await create_connection()
-    # pyre-fixme[11]
-    data: Record = await conn.fetchrow(
-        """
-SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE $1);
-""", table_name
-    )
-    return data.get("exists")
-
-
-async def get_streams_to_announce() -> list[Record]:
-    conn = await create_connection()
-    async with conn.transaction():
-        return await conn.fetch(
-            f"""SELECT twitch_name, discord_webhook, announce_message, announced_at, status
-            FROM {TABLE_NAME}
-            WHERE enabled = true
-            ORDER BY id ASC"""
-        )
+async def get_streams_to_announce() -> list[OrderedDict]:
+    streams = streams_table.find(enabled=True, order_by=["id"])
+    return list(streams)
 
 
 async def set_stream_online(twitch_name: str) -> None:
-    conn = await create_connection()
-    async with conn.transaction():
-        await conn.execute(
-            f"""UPDATE {TABLE_NAME}
-            SET status = $1, announced_at = $2
-            WHERE twitch_name = $3""",
-            "online",
-            datetime.datetime.utcnow(),
-            twitch_name,
-        )
+    db.query(
+        f"""UPDATE {TABLE_NAME}
+            SET
+                status = :new_status,
+                announced_at = :current_timestamp
+            WHERE twitch_name = :twitch_name""",
+        {
+            "new_status": "online",
+            "current_timestamp": datetime.datetime.now(datetime.UTC),
+            "twitch_name": twitch_name,
+        },
+    )
 
 
-async def set_stream_offline(twitch_name: str) -> None:
-    conn = await create_connection()
-    async with conn.transaction():
-        await conn.execute(
-            f"""UPDATE {TABLE_NAME}
-            SET status = $1
-            WHERE twitch_name = $2""",
-            "offline",
-            twitch_name,
-        )
+async def set_streams_offline(twitch_names: list[str]) -> None:
+    assert isinstance(twitch_names, list), type(twitch_names)
+    if len(twitch_names) == 0:
+        return
+    db.query(
+        f"""UPDATE {TABLE_NAME}
+            SET status = :new_status
+            WHERE twitch_name = ANY(:twitch_names)""",
+        {
+            "new_status": "offline",
+            "twitch_names": twitch_names,
+        },
+    )
