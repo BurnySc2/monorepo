@@ -129,7 +129,8 @@ WHERE video_relative_path = ?
     video_length = 0
     # https://superuser.com/questions/650291/how-to-get-video-duration-in-seconds
     # ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 input.mp4
-    # ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 input.mp4
+    # ffprobe -v error -select_streams v:0 -show_entries stream=duration 
+    # -of default=noprint_wrappers=1:nokey=1 input.mp4
     video_length = float(
         subprocess.check_output(
             [
@@ -161,10 +162,6 @@ WHERE video_relative_path = ?
     )
 
     # Extract .wav files in 5 minutes chunks, because whisper seems to lose accuracy if the video is too long.
-    SYMBOLS = "!?.,"
-    SENTENCE_END_SYMBOLS = "!?."
-    CHUNK_SIZE = 300  # 5 minutes chunk size
-    BUFFER_SIZE = 10  # 10 extra seconds
     chunk_start = pick_up_time - pick_up_time % CHUNK_SIZE
     conn.execute(
         """
@@ -312,7 +309,6 @@ WHERE video_relative_path = ? AND word IN ({placeholder_list});
     )
 
     for start_time, end_time, word in results:
-        CLIP_BUFFER = 3
         clip_start = max(0, start_time - CLIP_BUFFER)
         clip_end = end_time + CLIP_BUFFER
 
