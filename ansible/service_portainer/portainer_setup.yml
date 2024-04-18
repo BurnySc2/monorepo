@@ -1,15 +1,13 @@
-# https://github.com/navidrome/navidrome
-# https://www.navidrome.org/docs/installation/docker/
-# https://www.navidrome.org/docs/overview/#apps
+# https://docs.portainer.io/start/install-ce/server/docker/linux
 # Execute with
-# ansible-playbook navidrome_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook portainer_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: my_servers
   vars:
-    USERNAME: "{{ secrets.NAVIDROME.USERNAME }}"
-    SUBDOMAIN: "{{ secrets.NAVIDROME.SUBDOMAIN }}"
-    DOCKER_IMAGE: deluan/navidrome
-    APPLICATION_PORT: "4533"
+    USERNAME: "{{ secrets.PORTAINER.USERNAME }}"
+    SUBDOMAIN: "{{ secrets.PORTAINER.SUBDOMAIN }}"
+    DOCKER_IMAGE: portainer/portainer-ce
+    APPLICATION_PORT: "9000"
   tasks:
     # https://stackoverflow.com/a/64100593
     - name: Create Traefik labels's dictionary
@@ -88,8 +86,8 @@
         restart: yes
         restart_policy: unless-stopped
         volumes:
-          - "/home/{{ USERNAME }}/data:/data"
-          - "{{ secrets.NAVIDROME.MEDIA_FOLDER }}:/music:ro"
+          - /var/run/docker.sock:/var/run/docker.sock
+          - "/home/{{ USERNAME }}/portainer_data:/data"
         networks:
           - name: "{{ secrets.TRAFIK_NETWORK }}"
         labels: "{{ my_labels }}"

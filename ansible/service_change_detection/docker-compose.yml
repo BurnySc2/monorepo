@@ -11,13 +11,13 @@ services:
     hostname: changedetection
     networks:
       - "{{ secrets.TRAFIK_NETWORK }}"
-    restart: always
+    restart: unless-stopped
     volumes:
       - ./changedetection-data:/datastore
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ secrets.CHANGE_DETECTION.USERNAME }}.rule=Host(`{{ secrets.CHANGE_DETECTION.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ secrets.CHANGE_DETECTION.USERNAME }}.loadbalancer.server.port=5000
+      - traefik.http.services.{{ secrets.CHANGE_DETECTION.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ secrets.CHANGE_DETECTION.USERNAME }}.tls=true
       - traefik.http.routers.{{ secrets.CHANGE_DETECTION.USERNAME }}.tls.certresolver=production
       - traefik.http.routers.{{ secrets.CHANGE_DETECTION.USERNAME }}.middlewares=authelia@docker
@@ -37,7 +37,7 @@ services:
     image: browserless/chrome:1.60-chrome-stable
     networks:
       - "{{ secrets.TRAFIK_NETWORK }}"
-    restart: always
+    restart: unless-stopped
     environment:
       - SCREEN_WIDTH=1920
       - SCREEN_HEIGHT=1024

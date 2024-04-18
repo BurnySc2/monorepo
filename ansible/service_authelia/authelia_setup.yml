@@ -1,101 +1,73 @@
 # https://www.authelia.com/integration/proxies/traefik/
 # Execute with
 # ansible-playbook authelia_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start authelia service
+- name: Create service
   hosts: my_servers
   vars:
-    USERNAME: '{{ secrets.AUTHELIA.USERNAME }}'
+    USERNAME: "{{ secrets.AUTHELIA.USERNAME }}"
+    SUBDOMAIN: "{{ secrets.AUTHELIA.SUBDOMAIN }}"
   tasks:
-  - name: Create group
-    ansible.builtin.group:
-      name: '{{ USERNAME }}'
-      state: present
+    - name: Create group
+      ansible.builtin.group:
+        name: "{{ USERNAME }}"
+        state: present
 
-  - name: Create user
-    ansible.builtin.user:
-      name: '{{ USERNAME }}'
-      groups:
-      - '{{ USERNAME }}'
-      - docker
-      shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ USERNAME }}"
+        groups:
+          - "{{ USERNAME }}"
+          - docker
+        shell: "{{ secrets.DEFAULT_SHELL }}"
 
-  - name: Get user id
-    ansible.builtin.shell:
-      cmd: id {{ USERNAME }} -u
-    register: USER_ID
+    # - name: Get user id
+    #   ansible.builtin.shell:
+    #     cmd: id {{ USERNAME }} -u
+    #   register: USER_ID
 
-  - name: Get group id
-    ansible.builtin.shell:
-      cmd: id {{ USERNAME }} -g
-    register: GROUP_ID
+    # - name: Get group id
+    #   ansible.builtin.shell:
+    #     cmd: id {{ USERNAME }} -g
+    #   register: GROUP_ID
 
-  - name: Print user id
-    ansible.builtin.debug:
-      var: USER_ID.stdout
-      verbosity: 0
+    # - name: Print user id
+    #   ansible.builtin.debug:
+    #     var: USER_ID.stdout
+    #     verbosity: 0
 
-  - name: Print group id
-    ansible.builtin.debug:
-      var: GROUP_ID.stdout
-      verbosity: 0
+    # - name: Print group id
+    #   ansible.builtin.debug:
+    #     var: GROUP_ID.stdout
+    #     verbosity: 0
 
-  - name: Create systemd file
-    template:
-      src: authelia.service
-      dest: /etc/systemd/system/{{ USERNAME }}.service
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
 
-  - name: Copy docker-compose.yml file
-    template:
-      src: docker-compose.yml
-      dest: /home/{{ USERNAME }}/docker-compose.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
+    - name: Create directories
+      file:
+        path: /home/{{ USERNAME }}/authelia
+        recurse: true
+        state: directory
+        
+    - name: Copy authelia config file
+      template:
+        src: /home/burny/syncthing/secrets/ansible_secrets/authelia/configuration.yml
+        dest: /home/{{ USERNAME }}/authelia/configuration.yml
+        
+    - name: Copy users database file
+      template:
+        src: /home/burny/syncthing/secrets/ansible_secrets/authelia/users_database.yml
+        dest: /home/{{ USERNAME }}/authelia/users_database.yml
+        
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: absent
+        # Comment out to skip update
+        # remove_images: all
 
-  - name: Create directories
-    file:
-      path: /home/{{ USERNAME }}/authelia
-      recurse: true
-      state: directory
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Copy authelia config file
-    template:
-      src: /home/burny/syncthing/secrets/ansible_secrets/authelia/configuration.yml
-      dest: /home/{{ USERNAME }}/authelia/configuration.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-      
-  - name: Copy users database file
-    template:
-      src: /home/burny/syncthing/secrets/ansible_secrets/authelia/users_database.yml
-      dest: /home/{{ USERNAME }}/authelia/users_database.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Stop authelia service
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: stopped
-      enabled: false
-
-  - name: Remove authelia container
-    community.docker.docker_container:
-      name: authelia
-      state: absent
-      image: authelia/authelia:4.37.5
-
-  - name: Remove authelia_redis container
-    community.docker.docker_container:
-      name: authelia_redis
-      state: absent
-      image: redis:alpine
-      
-  - name: Start authelia service again
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: started
-      daemon_reload: true
-      enabled: true
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}

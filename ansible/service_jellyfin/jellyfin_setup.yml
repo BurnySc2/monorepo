@@ -3,70 +3,101 @@
 # https://play.google.com/store/apps/details?id=org.jellyfin.mobile&hl=de
 # Execute with
 # ansible-playbook jellyfin_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start jellyfin service
+- name: Create service
   hosts: my_servers
   vars:
-    USERNAME: '{{ secrets.JELLYFIN.USERNAME }}'
+    USERNAME: "{{ secrets.JELLYFIN.USERNAME }}"
+    SUBDOMAIN: "{{ secrets.JELLYFIN.SUBDOMAIN }}"
+    DOCKER_IMAGE: lscr.io/linuxserver/jellyfin
+    APPLICATION_PORT: "8096"
   tasks:
-  - name: Create group
-    ansible.builtin.group:
-      name: '{{ USERNAME }}'
-      state: present
+    # https://stackoverflow.com/a/64100593
+    - name: Create Traefik labels's dictionary
+      set_fact:
+        my_labels: "{{ my_labels | default({}) | combine ({ item.key : item.value }) }}"
+      with_items:
+        - { "key": "traefik.enable", "value": "true" }
+        - {
+            "key": "traefik.http.routers.{{ SUBDOMAIN }}.rule",
+            "value": "Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)",
+          }
+        - {
+            "key": "traefik.http.services.{{ SUBDOMAIN }}.loadbalancer.server.port",
+            "value": "{{ APPLICATION_PORT }}",
+          }
+        - { "key": "traefik.http.routers.{{ SUBDOMAIN }}.tls", "value": "true" }
+        - {
+            "key": "traefik.http.routers.{{ SUBDOMAIN }}.tls.certresolver",
+            "value": "production",
+          }
+        - {
+            "key": "traefik.http.routers.{{ SUBDOMAIN }}.middlewares",
+            "value": "authelia@docker",
+          }
 
-  - name: Create user
-    ansible.builtin.user:
-      name: '{{ USERNAME }}'
-      groups:
-      - '{{ USERNAME }}'
-      - docker
-      shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Create group
+      ansible.builtin.group:
+        name: "{{ USERNAME }}"
+        state: present
 
-  - name: Get user id
-    ansible.builtin.shell:
-      cmd: id {{ USERNAME }} -u
-    register: USER_ID
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ USERNAME }}"
+        groups:
+          - "{{ USERNAME }}"
+          - docker
+        shell: "{{ secrets.DEFAULT_SHELL }}"
 
-  - name: Get group id
-    ansible.builtin.shell:
-      cmd: id {{ USERNAME }} -g
-    register: GROUP_ID
+    # - name: Get user id
+    #   ansible.builtin.shell:
+    #     cmd: id {{ USERNAME }} -u
+    #   register: USER_ID
 
-  - name: Print user id
-    ansible.builtin.debug:
-      var: USER_ID.stdout
-      verbosity: 0
+    # - name: Get group id
+    #   ansible.builtin.shell:
+    #     cmd: id {{ USERNAME }} -g
+    #   register: GROUP_ID
 
-  - name: Print group id
-    ansible.builtin.debug:
-      var: GROUP_ID.stdout
-      verbosity: 0
+    # - name: Print user id
+    #   ansible.builtin.debug:
+    #     var: USER_ID.stdout
+    #     verbosity: 0
 
-  - name: Create systemd file
-    template:
-      src: jellyfin.service
-      dest: /etc/systemd/system/{{ USERNAME }}.service
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
+    # - name: Print group id
+    #   ansible.builtin.debug:
+    #     var: GROUP_ID.stdout
+    #     verbosity: 0
 
-  - name: Stop jellyfin service
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: stopped
-      enabled: false
+    - name: Stop container
+      community.docker.docker_container:
+        name: "{{ USERNAME }}"
+        image: "{{ DOCKER_IMAGE }}"
+        state: absent
 
-  - name: Remove jellyfin container
-    community.docker.docker_container:
-      name: jellyfin
-      state: absent
-      image: lscr.io/linuxserver/jellyfin:latest
+    # Comment out to skip update
+    # - name: Remove image
+    #   community.docker.docker_image:
+    #     name: '{{ DOCKER_IMAGE }}'
+    #     state: absent
 
-  - name: Start jellyfin service again
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: started
-      daemon_reload: true
-      enabled: true
+    - name: Creates directory and change owner
+      ansible.builtin.file:
+        path: "/home/{{ USERNAME }}/config"
+        recurse: true
+        state: directory
+        owner: '911'
+        group: '911'
 
-  - name: Print reminder
-    ansible.builtin.debug:
-      msg: Remember to create libraries and users on first time setup
+    - name: Start container
+      community.docker.docker_container:
+        name: "{{ USERNAME }}"
+        image: "{{ DOCKER_IMAGE }}"
+        state: started
+        restart: yes
+        restart_policy: unless-stopped
+        volumes:
+          - "/home/{{ USERNAME }}/config:/config"
+          - "{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media"
+        networks:
+          - name: "{{ secrets.TRAFIK_NETWORK }}"
+        labels: "{{ my_labels }}"

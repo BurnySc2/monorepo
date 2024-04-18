@@ -5,7 +5,7 @@
     "QueryPort": 9877,
     "MaxConnectedUsers": 8,
     "MaxConnectedAdmins": 2,
-    "ServerFps": 30,
+    "ServerFps": 15,
     "SaveName": "{{ secrets.VRISING.SERVER_SAVEGAME_NAME }}",
     "Password": "{{ secrets.VRISING.SERVER_PASSWORD }}",
     "Secure": true,
