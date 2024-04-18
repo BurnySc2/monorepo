@@ -4,8 +4,7 @@ services:
     image: didstopia/vrising-server:latest
     # build: .
     container_name: vrising
-    # restart: unless-stopped
-    restart: no
+    restart: unless-stopped
     environment:
       # Configure the server
       V_RISING_SERVER_PERSISTENT_DATA_PATH: "/app/vrising"
@@ -14,8 +13,7 @@ services:
       # V_RISING_SERVER_START_MODE: "1" # Install/update and exit
       V_RISING_SERVER_START_MODE: "2" # Install, skip update check and start server
       V_RISING_SERVER_UPDATE_MODE: "1" # Enable update checking
-
-      V_RISING_SERVER_DEFAULT_HOST_SETTINGS: false,
+      V_RISING_SERVER_DEFAULT_HOST_SETTINGS: false
     ports:
       - "9876:9876/udp"
       - "9877:9877/udp"

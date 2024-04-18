@@ -1,5 +1,3 @@
-version: "3.8"
-
 # In this Docker Compose example, it assumes that you maintain a reverse proxy externally (or chose not to).
 # The only two exposed ports here are from minio (:9000) and the app itself (:3000).
 # If these ports are changed, ensure that the env vars passed to the app are also changed accordingly.
@@ -137,8 +135,8 @@ services:
       # GOOGLE_CALLBACK_URL: http://localhost:3000/api/auth/google/callback
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ secrets.REACTIVE_RESUME.USERNAME }}.rule=Host(`{{ secrets.REACTIVE_RESUME.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ secrets.REACTIVE_RESUME.USERNAME }}.loadbalancer.server.port=3000
+      - traefik.http.routers.{{ secrets.REACTIVE_RESUME.USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ secrets.REACTIVE_RESUME.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ secrets.REACTIVE_RESUME.USERNAME }}.tls=true
       - traefik.http.routers.{{ secrets.REACTIVE_RESUME.USERNAME }}.tls.certresolver=production
       - traefik.http.routers.{{ secrets.REACTIVE_RESUME.USERNAME }}.middlewares=authelia@docker

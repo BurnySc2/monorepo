@@ -1,87 +1,46 @@
 # Execute with
 # ansible-playbook vrising_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start v_rising server
+- name: Create service
   hosts: my_servers
   vars:
-    USERNAME: '{{ secrets.VRISING.USERNAME }}'
+    USERNAME: "{{ secrets.VRISING.USERNAME }}"
   tasks:
-  - name: Create group
-    ansible.builtin.group:
-      name: '{{ USERNAME }}'
-      state: present
+    - name: Create group
+      ansible.builtin.group:
+        name: "{{ USERNAME }}"
+        state: present
 
-  - name: Create user
-    ansible.builtin.user:
-      name: '{{ USERNAME }}'
-      groups:
-      - '{{ USERNAME }}'
-      - docker
-      shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ USERNAME }}"
+        groups:
+          - "{{ USERNAME }}"
+          - docker
+        shell: "{{ secrets.DEFAULT_SHELL }}"
 
-  - name: Get user id
-    ansible.builtin.shell:
-      cmd: id {{ USERNAME }} -u
-    register: USER_ID
+    - name: Create "Settings" directory 
+      ansible.builtin.file:
+        path: /home/{{ USERNAME }}/vrising_saves/Settings/
+        recurse: true
+        state: directory
+        
+    - name: Copy ServerHostSettings file
+      template:
+        src: ServerHostSettings.json
+        dest: /home/{{ USERNAME }}/vrising_saves/Settings/ServerHostSettings.json
 
-  - name: Get group id
-    ansible.builtin.shell:
-      cmd: id {{ USERNAME }} -g
-    register: GROUP_ID
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+        
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: absent
+        # Comment out to skip update
+        # remove_images: all
 
-  - name: Print user id
-    ansible.builtin.debug:
-      var: USER_ID.stdout
-      verbosity: 0
-
-  - name: Print group id
-    ansible.builtin.debug:
-      var: GROUP_ID.stdout
-      verbosity: 0
-
-  - name: Create systemd file
-    template:
-      src: vrising.service
-      dest: /etc/systemd/system/{{ USERNAME }}.service
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Create docker-compose.yml file
-    template:
-      src: docker-compose.yml
-      dest: /home/{{ USERNAME }}/docker-compose.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Create "Settings" directory 
-    ansible.builtin.file:
-      path: /home/{{ USERNAME }}/vrising_saves/Settings/
-      recurse: true
-      state: directory
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-      
-  - name: Copy ServerHostSettings file
-    template:
-      src: ServerHostSettings.json
-      dest: /home/{{ USERNAME }}/vrising_saves/Settings/ServerHostSettings.json
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Stop vrising service
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: stopped
-      enabled: false
-
-  - name: Remove vrising container
-    community.docker.docker_container:
-      name: vrising
-      state: absent
-      image: didstopia/vrising-server:latest
-
-  - name: Start vrising service again
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: started
-      daemon_reload: true
-      enabled: true
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}

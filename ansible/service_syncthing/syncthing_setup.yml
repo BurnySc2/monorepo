@@ -3,7 +3,9 @@
 - name: Create and start syncthing service
   hosts: my_servers
   vars:
-    USERNAME: '{{ secrets.SYNCTHING.USERNAME }}'
+    USERNAME: "{{ secrets.SYNCTHING.USERNAME }}"
+    SUBDOMAIN: "{{ secrets.SYNCTHING.SUBDOMAIN }}"
+    APPLICATION_PORT: "8384"
   tasks:
   - name: Create group
     ansible.builtin.group:
@@ -28,45 +30,18 @@
       cmd: id {{ USERNAME }} -g
     register: GROUP_ID
 
-  - name: Print user id
-    ansible.builtin.debug:
-      var: USER_ID.stdout
-      verbosity: 0
-
-  - name: Print group id
-    ansible.builtin.debug:
-      var: GROUP_ID.stdout
-      verbosity: 0
-
-  - name: Create systemd file
-    template:
-      src: syncthing.service
-      dest: /etc/systemd/system/{{ USERNAME }}.service
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
   - name: Copy docker-compose.yml file
     template:
       src: docker-compose.yml
       dest: /home/{{ USERNAME }}/docker-compose.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-
-  - name: Stop syncthing service
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: stopped
-      enabled: false
-
-  - name: Remove syncthing container
-    community.docker.docker_container:
-      name: syncthing
-      state: absent
-      image: lscr.io/linuxserver/syncthing:latest
       
-  - name: Start syncthing service again
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: started
-      daemon_reload: true
-      enabled: true
+  - name: Tear down existing services
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}
+      state: absent
+      # Comment out to skip update
+      # remove_images: all
+
+  - name: Run `docker-compose up` again
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}

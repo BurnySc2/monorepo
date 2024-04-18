@@ -9,6 +9,7 @@ services:
     container_name: traefik
     networks:
     - '{{ secrets.TRAFIK_NETWORK }}'
+    restart: unless-stopped
     # Enables the web UI and tells Traefik to listen to docker
     command:
     - --api=true
@@ -44,17 +45,17 @@ services:
       # The HTTPS port
     - 443:443
       # The Web UI (enabled by --api.insecure=true), dont use in production!
-    - 8080:8080
+    # - 8080:8080
     volumes:
     - ./traefik:/etc/traefik
       # So that Traefik can listen to the Docker events
     - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
     - traefik.enable=true
-    - traefik.http.routers.api.rule=Host(`{{ secrets.TRAEFIK.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.routers.api.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
     - traefik.http.routers.api.entryPoints=web,websecure
     - traefik.http.routers.api.tls=true
     - traefik.http.routers.api.tls.certresolver=production
     - traefik.http.routers.api.service=api@internal
       #- 'traefik.http.routers.api.middlewares=authelia@docker'
-    - traefik.http.services.api.loadbalancer.server.port=8080
+    - traefik.http.services.api.loadbalancer.server.port={{ APPLICATION_PORT }}

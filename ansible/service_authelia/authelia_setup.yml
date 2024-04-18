@@ -20,26 +20,6 @@
           - docker
         shell: "{{ secrets.DEFAULT_SHELL }}"
 
-    # - name: Get user id
-    #   ansible.builtin.shell:
-    #     cmd: id {{ USERNAME }} -u
-    #   register: USER_ID
-
-    # - name: Get group id
-    #   ansible.builtin.shell:
-    #     cmd: id {{ USERNAME }} -g
-    #   register: GROUP_ID
-
-    # - name: Print user id
-    #   ansible.builtin.debug:
-    #     var: USER_ID.stdout
-    #     verbosity: 0
-
-    # - name: Print group id
-    #   ansible.builtin.debug:
-    #     var: GROUP_ID.stdout
-    #     verbosity: 0
-
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
