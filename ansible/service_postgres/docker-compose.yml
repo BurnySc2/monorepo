@@ -1,5 +1,3 @@
-version: '3.8'
-
 networks:
   '{{secrets.TRAFIK_NETWORK}}':
     external: true
@@ -33,7 +31,7 @@ services:
     labels:
     - traefik.enable=true
     - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.rule=Host(`{{ secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-    - traefik.http.services.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.loadbalancer.server.port=80
+    - traefik.http.services.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
     - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.tls.certresolver=production
     - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.middlewares=authelia@docker
@@ -54,13 +52,10 @@ services:
     labels:
     - traefik.enable=true
     - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.rule=Host(`{{ secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-    - traefik.http.services.{{ secrets.POSTGRES.NOCODB_USERNAME }}.loadbalancer.server.port=8080
+    - traefik.http.services.{{ secrets.POSTGRES.NOCODB_USERNAME }}.loadbalancer.server.port={{ APPLICATION2_PORT }}
     - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls.certresolver=production
     - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.middlewares=authelia@docker
     restart: unless-stopped
-    environment:
-      PUID: '{{ USER_ID.stdout }}'
-      PGID: '{{ GROUP_ID.stdout }}'
     volumes:
     - ./nocodb:/usr/app/data/

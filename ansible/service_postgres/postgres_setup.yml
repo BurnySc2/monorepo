@@ -2,10 +2,13 @@
 # https://www.nocodb.com/ 
 # Execute with
 # ansible-playbook postgres_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start postgres service
+- name: Create service
   hosts: my_servers
   vars:
-    USERNAME: '{{ secrets.POSTGRES.USERNAME }}'
+    USERNAME: "{{ secrets.POSTGRES.USERNAME }}"
+    SUBDOMAIN: "{{ secrets.POSTGRES.PGADMIN_USERNAME }}"
+    APPLICATION_PORT: "80"
+    APPLICATION2_PORT: "8080"
   tasks:
   - name: Create group
     ansible.builtin.group:
@@ -20,15 +23,15 @@
       - docker
       shell: '{{ secrets.DEFAULT_SHELL }}'
 
-  - name: Get user id
-    ansible.builtin.shell:
-      cmd: id {{ USERNAME }} -u
-    register: USER_ID
+  # - name: Get user id
+  #   ansible.builtin.shell:
+  #     cmd: id {{ USERNAME }} -u
+  #   register: USER_ID
 
-  - name: Get group id
-    ansible.builtin.shell:
-      cmd: id {{ USERNAME }} -g
-    register: GROUP_ID
+  # - name: Get group id
+  #   ansible.builtin.shell:
+  #     cmd: id {{ USERNAME }} -g
+  #   register: GROUP_ID
 
   - name: Get syncthing user id
     ansible.builtin.shell:
@@ -40,22 +43,15 @@
       cmd: id syncthing -g
     register: SYNCTHING_GROUP_ID
 
-  - name: Print user id
-    ansible.builtin.debug:
-      var: USER_ID.stdout
-      verbosity: 0
+  # - name: Print user id
+  #   ansible.builtin.debug:
+  #     var: USER_ID.stdout
+  #     verbosity: 0
 
-  - name: Print group id
-    ansible.builtin.debug:
-      var: GROUP_ID.stdout
-      verbosity: 0
-
-  - name: Create systemd file
-    template:
-      src: postgres.service
-      dest: /etc/systemd/system/{{ USERNAME }}.service
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
+  # - name: Print group id
+  #   ansible.builtin.debug:
+  #     var: GROUP_ID.stdout
+  #     verbosity: 0
 
   - name: Create directories
     file:
@@ -70,39 +66,17 @@
     template:
       src: docker-compose.yml
       dest: /home/{{ USERNAME }}/docker-compose.yml
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
-      
-  - name: Stop postgres service
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: stopped
-      enabled: false
 
-  - name: Remove postgres_postgres container
-    community.docker.docker_container:
-      name: postgres_postgres
+  - name: Tear down existing services
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}
       state: absent
-      image: postgres:15-alpine
+      # Comment out to skip update
+      # remove_images: all
 
-  - name: Remove postgres_pgadmin container
-    community.docker.docker_container:
-      name: postgres_pgadmin
-      state: absent
-      image: dpage/pgadmin4:7
-
-  - name: Remove postgres_nocodb container
-    community.docker.docker_container:
-      name: postgres_nocodb
-      state: absent
-      image: nocodb/nocodb:latest
-
-  - name: Start postgres service again
-    ansible.builtin.systemd_service:
-      name: '{{ USERNAME }}'
-      state: started
-      daemon_reload: true
-      enabled: true
+  - name: Run `docker-compose up` again
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}
 
   # BACKUP
   - name: Create directories
@@ -117,8 +91,8 @@
     template:
       src: backup_postgres.sh
       dest: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
-      owner: '{{ USER_ID.stdout }}'
-      group: '{{ GROUP_ID.stdout }}'
+      # owner: '{{ USER_ID.stdout }}'
+      # group: '{{ GROUP_ID.stdout }}'
 
   - name: Backup once per day as user 'root'
     ansible.builtin.cron:

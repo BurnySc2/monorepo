@@ -1,5 +1,3 @@
-version: "3"
-
 networks:
   '{{secrets.TRAFIK_NETWORK}}':
     external: true
@@ -25,8 +23,8 @@ services:
     - '{{ secrets.TRAFIK_NETWORK }}'
     labels:
     - traefik.enable=true
-    - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.rule=Host(`{{ secrets.PIHOLE.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-    - traefik.http.services.{{ secrets.PIHOLE.USERNAME }}.loadbalancer.server.port=80
+    - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ secrets.PIHOLE.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
     - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.tls=true
     - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.tls.certresolver=production
     - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.middlewares=authelia@docker
