@@ -1,0 +1,55 @@
+# Execute with
+# ansible-playbook astroneer_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start syncthing service
+  hosts: my_servers
+  vars:
+    USERNAME: "{{ secrets.ASTRONEER.USERNAME }}"
+    APPLICATION_PORT: "30877"
+  tasks:
+  - name: Create group
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Copy Dockerfile file
+    template:
+      src: Dockerfile
+      dest: /home/{{ USERNAME }}/Dockerfile
+
+  - name: Copy entrypoint.sh file
+    template:
+      src: entrypoint.sh
+      dest: /home/{{ USERNAME }}/entrypoint.sh
+
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+
+  - name: Tear down existing services
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}
+      state: absent
+
+  - name: Run `docker-compose up` again
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}
+      build: always
+
+  - name: Print reminder if connection issues
+    ansible.builtin.debug:
+      msg: 
+        - Each client will have to edit 'Engine.ini' file and add
+        - "[SystemSettings]"
+        - net.AllowEncryption=False
+        - to be able to connect
+        - https://gitlab.com/altercode/astroneer-linux/-/issues/1
+        - You may copy a savegame to ".../astroneer/Astro/Saved/SaveGames/SAVE_NAME_FROM_ENV"

@@ -1,0 +1,23 @@
+# https://gitlab.com/altercode/astroneer-linux
+services:
+  astroneer-server:
+    build:
+      context: .
+    container_name: astroneer
+    restart: unless-stopped
+    volumes:
+      - ./astroneer:/astroneer
+    ports:
+      - "{{ APPLICATION_PORT }}:{{ APPLICATION_PORT }}/tcp"
+      - "{{ APPLICATION_PORT }}:{{ APPLICATION_PORT }}/udp"
+    environment:
+      # Can be found through 'https://www.steamidfinder.com/'
+      - OWNER_NAME={{ secrets.ASTRONEER.STEAM_NAME }}
+      - OWNER_GUID={{ secrets.ASTRONEER.STEAM_GUID }}
+      # - SERVER_PASSWORD={{ secrets.ASTRONEER.SERVER_PASSWORD }}
+      - SAVE_NAME=SAVE_1
+    deploy:
+      resources:
+        limits:
+          # cpus: '0.5'
+          memory: 6000M
