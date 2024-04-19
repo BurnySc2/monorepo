@@ -1,0 +1,52 @@
+# Execute with
+# ansible-playbook spaceeng_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start syncthing service
+  hosts: my_servers
+  vars:
+    USERNAME: "{{ secrets.SPACE_ENGINEERS.USERNAME }}"
+    APPLICATION_PORT: "8384"
+  tasks:
+  - name: Create group
+    ansible.builtin.group:
+      name: '{{ USERNAME }}'
+      state: present
+
+  - name: Create user
+    ansible.builtin.user:
+      name: '{{ USERNAME }}'
+      groups:
+      - '{{ USERNAME }}'
+      - docker
+      shell: '{{ secrets.DEFAULT_SHELL }}'
+
+  - name: Create directories
+    file:
+      path: '/home/{{ USERNAME }}/instances/{{ secrets.SPACE_ENGINEERS.INSTANCE_NAME }}/Saves/World/'
+      recurse: true
+      state: directory
+
+  - name: Print reminder
+    ansible.builtin.debug:
+      msg:
+        - Copy your savegame (e.g. files with .vx2 ending) into the "Saves/World/" path
+
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+
+  - name: Copy SpaceEngineers-Dedicated.cfg file
+    template:
+      src: SpaceEngineers-Dedicated.cfg
+      dest: /home/{{ USERNAME }}/instances/{{ secrets.SPACE_ENGINEERS.INSTANCE_NAME }}/SpaceEngineers-Dedicated.cfg
+      
+  - name: Tear down existing services
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}
+      state: absent
+      # Comment out to skip update
+      # remove_images: all
+
+  - name: Run `docker-compose up` again
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}

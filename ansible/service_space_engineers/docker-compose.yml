@@ -1,0 +1,51 @@
+services:
+  se-server:
+    image: devidian/spaceengineers:latest
+    container_name: se
+    restart: unless-stopped
+    volumes:
+      # left side: your docker-host machine
+      # right side: the paths in the image (!!do not change!!)
+      - ./plugins:/appdata/space-engineers/plugins
+      - ./instances:/appdata/space-engineers/instances
+      - ./SpaceEngineersDedicated:/appdata/space-engineers/SpaceEngineersDedicated
+      - ./steamcmd:/root/.steam
+    # ports:
+    #   - "27016:27016/udp"
+    ports:
+      - target: 27016
+        published: 27016
+        protocol: udp
+        mode: host
+    environment:
+      - WINEDEBUG=-all
+      - INSTANCE_NAME={{ secrets.SPACE_ENGINEERS.SALT }}
+      - PUBLIC_IP={{ secrets.SPACE_ENGINEERS.PUBLIC_IP }}
+      # public ip required for healthcheck
+    deploy:
+      resources:
+        limits:
+          # cpus: '0.5'
+          memory: 6000M
+
+# Savegame found in:
+# .../SteamLibrary/steamapps/compatdata/244850/pfx/drive_c/users/steamuser/AppData/Roaming/SpaceEngineers/Saves
+
+# May lower "PhysicsIterations" to reduce cpu usage
+
+# Password hashing:
+# https://sepg.einarjegorov.com/
+
+# Project structure:
+
+# ├── docker-compose.yml
+# ├── instances
+# │   └── tromtrom
+# │       ├── cache
+# │       ├── Mods
+# │       ├── Saves
+# │       ├── SpaceEngineersDedicated_20240419_084309847.log
+# │       ├── SpaceEngineers-Dedicated.cfg
+# │       └── temp
+# ├── plugins
+# ├── SpaceEngineersDedicated

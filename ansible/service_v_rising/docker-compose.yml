@@ -21,3 +21,8 @@ services:
     volumes:
       - ./vrising_saves:/app/vrising
       - ./vrising_data:/steamcmd/vrising
+    deploy:
+      resources:
+        limits:
+          # cpus: '0.5'
+          memory: 6000M
