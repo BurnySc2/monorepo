@@ -67,7 +67,7 @@ def recurse_path(path: Path, depth: int = 0) -> Iterable[Path]:
     """
     Go through a given path recursively and return file paths
 
-    If depth == 0: only allow file path
+    If depth == 0: only return file path
     If depth == 1: if given a folder, return containing file paths
     Depth > 1 allow recursively to go through folders up to a given depth
     """
@@ -79,11 +79,14 @@ def recurse_path(path: Path, depth: int = 0) -> Iterable[Path]:
 
 
 def extract_with_ffmpeg(
-    input_file_str: str,
-    clip_out_path: Path,
-    clip_start_str: str,
-    clip_end_str: str,
+    input_file_str: str,  # The input file path from which to extract a clip.
+    clip_out_path: Path,  # The output file path where the extracted clip will be saved.
+    clip_start_str: str,  # The start time of the clip in seconds.
+    clip_end_str: str,  # The end time of the clip in seconds.
 ) -> None:
+    """
+    Extract a clip from the input video file using ffmpeg.
+    """
     # Extract .mp4 clip
     clip_out_path_str = str(clip_out_path.resolve())
     subprocess.check_call(
@@ -95,6 +98,11 @@ def extract_with_ffmpeg(
 
 
 def extract_info(_executor: ThreadPoolExecutor, input_file: Path) -> None:
+    """
+    Extract words and timestamps from a given video file.
+
+    This function extracts words and timestamps from a given video file. It first checks if the video file has already been processed. If not, it extracts .wav files in 5-minute chunks and transcribes them using the Whisper model. The extracted words and sentences are then stored in the respective database tables.
+    """  # noqa: E501
     global words_table, sentences_table
     input_file_str = str(input_file.resolve())
     done_extracting_table: dataset.Table = db["done_extracting"]
@@ -192,19 +200,23 @@ def extract_info(_executor: ThreadPoolExecutor, input_file: Path) -> None:
 
 
 def print_words_overview() -> None:
+    """
+    Prints a summary of the words found in the videos.
+
+    This function prints a summary of the words found in the videos. It retrieves the words from the database and counts their occurrences in each video. The function then prints the top 10 most common words for each video.
+    """  # noqa: E501
     global words_table
     results = words_table.find(video_relative_path={"like": r"%part_of_video%"}, order_by=["video_relative_path"])
     counters: dict[str, Counter] = {}
     for row in results:
-        video_relative_path = row["video_relative_path"]
-        word = row["word"]
+        video_relative_path, word = row["video_relative_path"], row["word"]
         if video_relative_path not in counters:
             counters[video_relative_path] = Counter()
         counters[video_relative_path][word] += 1
     counter: Counter
     for video_relative_path, counter in counters.items():
         logger.info(f"{video_relative_path} has words:")
-        print(counter.most_common())
+        print(counter.most_common(10))
     # pyre-fixme[6, 9]
     total_counter: Counter = sum(counters.values(), start=Counter())
     # Write total word count to file
@@ -219,14 +231,17 @@ def extract_matched_words(
     input_file: Path,
     words: list[str],
 ) -> None:
+    """
+    Extracts clips from the input video file for the given list of words.
+
+    This function extracts clips from the input video file for the given list of words. It retrieves the words from the database and finds the corresponding timestamps. For each word, it extracts a clip starting 3 seconds before the word and ending 3 seconds after the word. The extracted clips are saved in the output directory with a filename containing the input file name, start and end timestamps, and the word.
+    """  # noqa: E501
     global words_table
     assert len(words) >= 1
     input_file_str = str(input_file.resolve())
     results = words_table.find(video_relative_path=input_file_str, word=words, order_by=["word_start_timestamp"])
     for row in results:
-        start_time = row["word_start_timestamp"]
-        end_time = row["word_end_timestamp"]
-        word = row["word"]
+        start_time, end_time, word = row["word_start_timestamp"], row["word_end_timestamp"], row["word"]
         clip_start = max(0, start_time - CLIP_BUFFER)
         clip_end = end_time + CLIP_BUFFER
 
