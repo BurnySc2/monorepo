@@ -3,6 +3,8 @@
 *.srt
 *.txt
 *.db
+*.db-shm
+*.db-wal
 # Dont ignore files in test folder
 !test
 
@@ -14,3 +16,5 @@ messages.db-journal
 media_downloader.session
 media_downloader.session-journal
 unknown_errors.txt
+
+words.txt

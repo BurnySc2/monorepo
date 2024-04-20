@@ -3,6 +3,7 @@ name = "transcriber-backend"
 version = "0.1.0"
 description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.8, <3.11" # Pony doesnt support 3.11 yet
@@ -34,6 +35,7 @@ tgcrypto = "^1.2.5"
 deep-translator = "^1.11.1"
 # Owncloud client
 pyocclient = "^0.6"
+dataset = "^1.6.2"
 
 [tool.poetry.group.dev.dependencies]
 # Test library

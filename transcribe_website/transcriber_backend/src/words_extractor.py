@@ -3,13 +3,13 @@ Extract mp4 clips where someone in the video says a specific word from the list.
 """
 from __future__ import annotations
 
-import sqlite3
 import subprocess
-from collections import Counter
+from collections import Counter, OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Iterable
 
+import dataset  # pyre-fixme[21]
 from faster_whisper import WhisperModel  # pyre-fixme[21]
 from loguru import logger
 from tqdm import tqdm
@@ -29,37 +29,29 @@ BUFFER_SIZE = 10  # 10 extra seconds
 CLIP_BUFFER = 3
 
 db_path = Path(__file__).parent / "word_extract.db"
-conn = sqlite3.connect(str(db_path.resolve()))
+db_abs_path = str(db_path.resolve())
 
 # Create table
-conn.execute(
-    """
-CREATE TABLE IF NOT EXISTS words (
-    video_relative_path TEXT,
-    word_start_timestamp REAL,
-    word_end_timestamp REAL,
-    word TEXT
-);
-    """
-)
-conn.execute(
-    """
-CREATE TABLE IF NOT EXISTS sentences (
-    video_relative_path TEXT,
-    sentence_start_timestamp REAL,
-    sentence_end_timestamp REAL,
-    sentence TEXT
-);
-    """
-)
-conn.execute(
-    """
-CREATE TABLE IF NOT EXISTS done_extracting (
+# pyre-fixme[11]
+db: dataset.Database = dataset.connect(f"sqlite:///{db_abs_path}")
+# pyre-fixme[11]
+words_table: dataset.Table = db["words"]
+sentences_table: dataset.Table = db["sentences"]
+
+"""
+Schema 'words' table
     video_relative_path TEXT
-);
-    """
-)
-conn.commit()
+    word_start_timestamp REAL
+    word_end_timestamp REAL
+    word TEXT
+Schema 'sentences' table
+    video_relative_path TEXT
+    sentence_start_timestamp REAL
+    sentence_end_timestamp REAL
+    sentence TEXT
+Schema 'done_extracting' table
+    video_relative_path TEXT
+"""
 
 # https://github.com/openai/whisper#available-models-and-languages
 MODEL_SIZE = "small"
@@ -93,34 +85,20 @@ def extract_with_ffmpeg(
     clip_end_str: str,
 ) -> None:
     # Extract .mp4 clip
-    cmd = [
-        "ffmpeg",
-        "-ss",
-        f"{clip_start_str}",
-        "-to",
-        f"{clip_end_str}",
-        "-i",
-        input_file_str,
-        "-c",
-        "copy",
-        "-loglevel",
-        "error",
-        "-stats",
-        str(clip_out_path.resolve()),
-    ]
-    proc = subprocess.Popen(cmd)
-    proc.communicate()
+    clip_out_path_str = str(clip_out_path.resolve())
+    subprocess.check_call(
+        f'ffmpeg -ss {clip_start_str} -to {clip_end_str} -i "{input_file_str}" -c copy -loglevel error -stats "{clip_out_path_str}"',  # noqa: E501
+        shell=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
 
 
-def extract_info(executor: ThreadPoolExecutor, input_file: Path) -> None:
+def extract_info(_executor: ThreadPoolExecutor, input_file: Path) -> None:
+    global words_table, sentences_table
     input_file_str = str(input_file.resolve())
-    already_done = conn.execute(
-        """
-SELECT 1 FROM done_extracting
-WHERE video_relative_path = ?
-        """,
-        [input_file_str],
-    ).fetchone()
+    done_extracting_table: dataset.Table = db["done_extracting"]
+    already_done: OrderedDict | None = done_extracting_table.find_one(video_relative_path=input_file_str)
     if already_done:
         return
     video_length = 0
@@ -130,16 +108,8 @@ WHERE video_relative_path = ?
     # -of default=noprint_wrappers=1:nokey=1 input.mp4
     video_length = float(
         subprocess.check_output(
-            [
-                "ffprobe",
-                "-v",
-                "error",
-                "-show_entries",
-                "format=duration",
-                "-of",
-                "default=noprint_wrappers=1:nokey=1",
-                input_file_str,
-            ]
+            f'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "{input_file_str}"',
+            shell=True,
         ).decode()
     )
     logger.info(
@@ -147,34 +117,17 @@ WHERE video_relative_path = ?
     )
 
     # Continue where we left off
-    pick_up_time: float = (
-        conn.execute(
-            """
-SELECT max(word_end_timestamp) FROM words
-WHERE video_relative_path = ?
-""",
-            [input_file_str],
-        ).fetchone()[0]
-        or 0
+    pick_up_row: OrderedDict = (
+        words_table.find_one(video_relative_path=input_file_str, order_by=["-word_end_timestamp"]) or {}
     )
+    pick_up_time: float = pick_up_row.get("word_end_timestamp", 0)
 
     # Extract .wav files in 5 minutes chunks, because whisper seems to lose accuracy if the video is too long.
     chunk_start = pick_up_time - pick_up_time % CHUNK_SIZE
-    conn.execute(
-        """
-DELETE FROM words
-WHERE video_relative_path = ? AND ? < word_start_timestamp
-""",
-        [input_file_str, chunk_start],
-    )
-    conn.execute(
-        """
-DELETE FROM sentences
-WHERE video_relative_path = ? AND ? < sentence_start_timestamp
-""",
-        [input_file_str, chunk_start],
-    )
-    conn.commit()
+
+    # Delete entries to prevent duplicates and then parse from this chunk time again
+    words_table.delete(video_relative_path=input_file_str, word_start_timestamp={">": chunk_start})
+    sentences_table.delete(video_relative_path=input_file_str, word_start_timestamp={">": chunk_start})
 
     total_chunks_count = int(video_length - chunk_start) // CHUNK_SIZE + 1
     for chunk in tqdm(
@@ -189,20 +142,9 @@ WHERE video_relative_path = ? AND ? < sentence_start_timestamp
         chunk_wav_path_str = str(chunk_out_path.resolve())
         if not chunk_out_path.is_file():
             # Extract .wav chunk
-            subprocess.call(
-                [
-                    "ffmpeg",
-                    "-ss",
-                    f"{chunk}",
-                    "-to",
-                    f"{chunk + CHUNK_SIZE + BUFFER_SIZE}",
-                    "-i",
-                    input_file_str,
-                    "-loglevel",
-                    "error",
-                    "-stats",
-                    chunk_wav_path_str,
-                ],
+            subprocess.check_call(
+                f"ffmpeg -ss {chunk} -to {chunk + CHUNK_SIZE + BUFFER_SIZE} -i {input_file_str} -loglevel error -stats {chunk_wav_path_str}",  # noqa: E501
+                shell=True,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
@@ -221,61 +163,41 @@ WHERE video_relative_path = ? AND ? < sentence_start_timestamp
                 sentence.append(word)
                 # if not any(word.word.endswith(x) for x in ascii_letters + "."):
                 #     logger.info(f"Word not ending with End-Symbol: {word.word}")
-
-                conn.execute(
-                    """
-INSERT INTO words
-(video_relative_path, word_start_timestamp, word_end_timestamp, word)
-VALUES (?, ?, ?, ?);
-                    """,
-                    [
-                        input_file_str,
-                        word.start + chunk,
-                        word.end + chunk,
-                        word.word.strip().strip(SYMBOLS).lower(),
-                    ],
+                words_table.insert(
+                    {
+                        "video_relative_path": input_file_str,
+                        "word_start_timestamp": word.start + chunk,
+                        "word_end_timestamp": word.end + chunk,
+                        "word": word.word.strip().strip(SYMBOLS).lower(),
+                    }
                 )
-
                 if any(word.word.endswith(x) for x in SENTENCE_END_SYMBOLS):
-                    conn.execute(
-                        """
-INSERT INTO sentences
-(video_relative_path, sentence_start_timestamp, sentence_end_timestamp, sentence)
-VALUES (?, ?, ?, ?);
-                        """,
-                        [
-                            input_file_str,
-                            sentence[0].start + chunk,
-                            sentence[-1].end + chunk,
-                            "".join([w.word for w in sentence]),
-                        ],
+                    sentences_table.insert(
+                        {
+                            "video_relative_path": input_file_str,
+                            "sentence_start_timestamp": sentence[0].start + chunk,
+                            "sentence_end_timestamp": sentence[-1].end + chunk,
+                            "sentence": "".join([w.word for w in sentence]),
+                        }
                     )
                     sentence = []
-            conn.commit()
         # Delete .wav file after processing
         chunk_out_path.unlink()
-    conn.execute(
-        """
-INSERT INTO done_extracting
-(video_relative_path) VALUES (?)
-        """,
-        [input_file_str],
+    done_extracting_table.insert(
+        {
+            "video_relative_path": input_file_str,
+        }
     )
-    conn.commit()
     logger.info(f"Done extracting from {input_file.name}")
 
 
 def print_words_overview() -> None:
-    results = conn.execute(
-        """
-SELECT video_relative_path, word FROM words
-WHERE video_relative_path LIKE ?
-ORDER BY video_relative_path
-        """,
-        [r"%part_of_video%"],
-    ).fetchall()
+    global words_table
+    results = words_table.find(video_relative_path={"like": r"%part_of_video%"}, order_by=["video_relative_path"])
     counters: dict[str, Counter] = {}
-    for video_relative_path, word in results:
+    for row in results:
+        video_relative_path = row["video_relative_path"]
+        word = row["word"]
         if video_relative_path not in counters:
             counters[video_relative_path] = Counter()
         counters[video_relative_path][word] += 1
@@ -286,7 +208,8 @@ ORDER BY video_relative_path
     # pyre-fixme[6, 9]
     total_counter: Counter = sum(counters.values(), start=Counter())
     # Write total word count to file
-    with Path("words.txt").open("w") as f:
+    words_path = Path(__file__).parent / "words.txt"
+    with words_path.open("w") as f:
         for word, count in total_counter.most_common():
             f.write(f"{word}: {count}\n")
 
@@ -296,18 +219,14 @@ def extract_matched_words(
     input_file: Path,
     words: list[str],
 ) -> None:
+    global words_table
     assert len(words) >= 1
     input_file_str = str(input_file.resolve())
-    placeholder_list = ", ".join("?" for _ in words)
-    results = conn.execute(
-        f"""
-SELECT word_start_timestamp, word_end_timestamp, word FROM words
-WHERE video_relative_path = ? AND word IN ({placeholder_list});
-        """,
-        [input_file_str, *words],
-    )
-
-    for start_time, end_time, word in results:
+    results = words_table.find(video_relative_path=input_file_str, word=words, order_by=["word_start_timestamp"])
+    for row in results:
+        start_time = row["word_start_timestamp"]
+        end_time = row["word_end_timestamp"]
+        word = row["word"]
         clip_start = max(0, start_time - CLIP_BUFFER)
         clip_end = end_time + CLIP_BUFFER
 
