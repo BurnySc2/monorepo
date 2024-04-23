@@ -1,12 +1,17 @@
-# from __future__ import annotations
+from unittest.mock import patch
 
-# import contextlib
-# from collections.abc import Generator
+import pytest
+from litestar.testing import TestClient
 
-# import pytest
-# from fastapi.testclient import TestClient
+from app import app
 
-# from main import app
+
+@pytest.fixture
+def test_client():
+    # Disable startup functions because postgres is not available
+    with patch.object(app, "on_startup", []):  # noqa: SIM117
+        with TestClient(app=app) as client:
+            return client
 
 
 # class BaseTest:

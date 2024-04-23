@@ -56,7 +56,7 @@ pyre:
 
 pytest:
     FROM +install-dev
-    RUN poetry run pytest test
+    RUN poetry run python -m pytest test
 
 pre-commit:
     BUILD +format-check

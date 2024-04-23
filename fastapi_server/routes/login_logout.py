@@ -201,6 +201,7 @@ class MyLoginRoute(Controller):
             # User is already logged in
             return Redirect(
                 "/login",
+                # Does this have an effect?
                 status_code=HTTP_302_FOUND,  # pyre-fixme[6]
             )
         if code is None:
