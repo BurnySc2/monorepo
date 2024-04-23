@@ -5,7 +5,7 @@
     <button hx-delete="/htmxapi/detele_messages">DEBUG delete all messages</button>
     {% endif %}
     {% if logged_in %}
-    <a href="https://{{ server_url }}/logout">Log out</a>
+    <a href="/logout">Log out</a>
     {% endif %} {% if not logged_in %}
     <a href="https://github.com/login/oauth/authorize?client_id={{ client_id }}"
       >Log in with Github</a

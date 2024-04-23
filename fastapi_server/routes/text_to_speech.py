@@ -15,16 +15,13 @@ from dataclasses import dataclass
 from typing import Annotated, Literal
 
 from litestar import Controller, get, post
-from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.enums import RequestEncodingType
 from litestar.params import Body
 from litestar.response import Template
-from litestar.template.config import TemplateConfig
 
 from routes.tts.generate_tts import Voices, generate_tts
 
 WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:0.0.0.0:8000")
-template_config = TemplateConfig(engine=JinjaTemplateEngine, directory="templates")
 
 
 @dataclass

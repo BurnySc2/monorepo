@@ -15,7 +15,7 @@ services:
       - OWNER_NAME={{ secrets.ASTRONEER.STEAM_NAME }}
       - OWNER_GUID={{ secrets.ASTRONEER.STEAM_GUID }}
       # - SERVER_PASSWORD={{ secrets.ASTRONEER.SERVER_PASSWORD }}
-      - SAVE_NAME=SAVE_1
+      - SAVE_NAME=SAVE_3
     deploy:
       resources:
         limits:

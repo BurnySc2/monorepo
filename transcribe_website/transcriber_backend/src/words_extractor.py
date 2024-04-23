@@ -264,7 +264,7 @@ def extract_matched_words(
 if __name__ == "__main__":
     with ThreadPoolExecutor(max_workers=4) as exec:
         for my_file in recurse_path(input_directory, depth=2):
-            if my_file.suffix != (".mp4"):
+            if my_file.suffix not in [".mp4", ".webm"]:
                 continue
             extract_info(exec, my_file)
             extract_matched_words(

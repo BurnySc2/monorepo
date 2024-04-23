@@ -16,7 +16,7 @@
   <body id="parent-div" class="flex flex-col items-center h-screen">
     <header
       id="header"
-      hx-get="https://{{ server_url }}/htmxapi/chatheader"
+      hx-get="/chat/htmxapi/chatheader"
       hx-trigger="load"
       hx-swap="outerHTML"
     ></header>
