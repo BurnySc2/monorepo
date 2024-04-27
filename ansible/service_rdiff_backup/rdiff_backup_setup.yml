@@ -8,46 +8,54 @@
     BACKUP_SCRIPT_PATH: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/backup_script.sh"
     AMOUNT_OF_BACKUPS: 3
     backup_jobs:
-      - name: factorio
-        LOG_NAME: backup_factorio.log
-        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_FACTORIO }}"
-        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/factorio"
-      - name: uptime_kuma
-        LOG_NAME: backup_uptime_kuma.log
-        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_UPTIME_KUMA }}"
-        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/uptime_kuma"
-      # - name: syncthing
-      #   LOG_NAME: backup_syncthing.log
-      #   SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_SYNCTHING }}"
-      #   TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/syncthing"
-      - name: jellyfin
-        LOG_NAME: backup_jellyfin.log
-        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_JELLYFIN }}"
-        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/jellyfin"
-      - name: trillium
-        LOG_NAME: backup_trillium.log
-        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_TRILLIUM }}"
-        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/trillium"
       - name: audiobookshelf
         LOG_NAME: backup_audiobookshelf.log
         SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_AUDIOBOOKSHELF }}"
         TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/audiobookshelf"
-      - name: paperless
-        LOG_NAME: backup_paperless.log
-        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_PAPERLESS }}"
-        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/paperless"
       - name: bookshelf
         LOG_NAME: backup_bookshelf.log
-        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_BOOKSHELF }}"
-        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/bookshelf"
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_BOOKSTACK }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/bookstack"
+      - name: changedetection
+        LOG_NAME: backup_changedetection.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_CHANGEDETECTION }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/changedetection"
+      - name: factorio
+        LOG_NAME: backup_factorio.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_FACTORIO }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/factorio"
+      - name: jellyfin
+        LOG_NAME: backup_jellyfin.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_JELLYFIN }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/jellyfin"
       - name: navidrome
         LOG_NAME: backup_navidrome.log
         SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_NAVIDROME }}"
         TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/navidrome"
+      - name: uptime_kuma
+        LOG_NAME: backup_uptime_kuma.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_UPTIME_KUMA }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/uptime_kuma"
+      - name: paperless
+        LOG_NAME: backup_paperless.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_PAPERLESS }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/paperless"
+      # - name: syncthing
+      #   LOG_NAME: backup_syncthing.log
+      #   SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_SYNCTHING }}"
+      #   TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/syncthing"
       - name: reactive_resume
         LOG_NAME: backup_reactive_resume.log
         SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_REACTIVE_RESUME }}"
         TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/reactive_resume"
+      - name: trillium
+        LOG_NAME: backup_trillium.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_TRILLIUM }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/trillium"
+      - name: uptime_kuma
+        LOG_NAME: backup_uptime_kuma.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_UPTIME_KUMA }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/uptime_kuma"
   tasks:
     - name: Get syncthing user id
       ansible.builtin.shell:
@@ -82,6 +90,7 @@
         owner: "{{ SYNCTHING_USER_ID.stdout }}"
         group: "{{ SYNCTHING_GROUP_ID.stdout }}"
 
+    # TODO Add monthply or weekly backups
     - name: Add backups
       ansible.builtin.cron:
         name: "Run {{ item.name }} backup"

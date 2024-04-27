@@ -13,7 +13,6 @@
             "justMyCode": true,
             "env": {
                 "PYTHONPATH": "${workspaceFolder}",
-                "POSTGRES_CONNECTION_STRING": "postgresql://postgres:123@localhost:5432/postgres",
             }
         },
         {
@@ -26,7 +25,6 @@
             "justMyCode": true,
             "env": {
                 "PYDEVD_DISABLE_FILE_VALIDATION": "1",
-                "POSTGRES_CONNECTION_STRING": "postgresql://postgres:123@localhost:5432/postgres",
             }
         },
         {

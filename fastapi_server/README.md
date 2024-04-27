@@ -45,3 +45,11 @@ now run it with a `data` subfolder mounted which will be persistent
 ```
 docker run --rm --name fastapitest --publish 8000:8000 --env STAGE=PROD --mount type=bind,source="$(pwd)/data",destination=/root/fastapi_server/data burnysc2/fastapi_server:latest
 ```
+
+# Create postgres user and permissions to create tables
+
+```sql
+-- Create user
+CREATE USER litestar_server_dev WITH PASSWORD 'your_password';
+GRANT CREATE ON SCHEMA public TO litestar_server_dev;
+```

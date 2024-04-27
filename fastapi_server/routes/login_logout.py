@@ -48,6 +48,7 @@ class GithubUser:
 T = TypeVar("T", TwitchUser, GithubUser)
 
 
+# TODO Replace with MemoryStore https://docs.litestar.dev/2/usage/stores.html
 class UserCache(Generic[T]):
     def __init__(
         self,
@@ -126,7 +127,7 @@ async def logged_into_twitch_guard(
     """
     twitch_user = await get_twitch_user(connection.cookies.get(COOKIES["twitch"]))
     if twitch_user is None:
-        raise NotAuthorizedException()
+        raise NotAuthorizedException("You are not logged in to twitch.")
 
 
 async def get_github_user(

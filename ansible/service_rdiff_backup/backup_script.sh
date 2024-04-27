@@ -18,6 +18,7 @@ backup_function() {
     rdiff-backup backup \
         --exclude "**/data/transcodes/*" \
         --exclude "**/data/metadata/*" \
+        --exclude "**/backup/*" \
         --exclude "**/cache/*" \
         --exclude "**/log/*" \
         "$SOURCE_DIRECTORY" \

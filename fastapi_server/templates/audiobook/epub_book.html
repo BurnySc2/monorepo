@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTMX+Fastapi Todo App</title>
+    <script src="https://unpkg.com/htmx.org@1.9.5"
+        integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com/3.3.0"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
+    <style>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .htmx-indicator {
+            width: 32px;
+            animation: spin 2s linear infinite;
+        }
+    </style>
+</head>
+
+<div class="flex flex-col h-screen items-center bg-gray-200">
+    <div class="flex flex-col gap-4">
+        <div class="place-self-center">{{ book_name }}</div>
+        <div class="place-self-center">{{ book_author }}</div>
+        <div class="flex flex-col border-2 border-black">
+            <div class="place-self-center">Settings</div>
+            <div class="grid grid-cols-2">
+                <div>Voice</div>
+                <select name="" id="">
+                    {% for voice_name in available_voices %}
+                    <option value="{{ voice_name }}">{{ voice_name }}</option>
+                    {% endfor %}
+                </select>
+                <div>Rate</div>
+                <input type="number" value="0" />
+                <div>Volume</div>
+                <input type="number" value="0" />
+                <div>pitch</div>
+                <input type="number" value="0" />
+            </div>
+        </div>
+        <div class="flex gap-8">
+            <div>book</div>
+            <button class="border-4 border-black p-2">generate audio</button>
+            <!-- <button class="border-4 border-black p-2">download book as mp3</button> -->
+        </div>
+        <div class="flex flex-col border-2 border-black overflow-y-auto">
+            <div class="place-self-center">Table of contents</div>
+            <div class="grid grid-cols-2">
+                {% for chapter in chapters %}
+                <div class="">'{{ chapter.name }}' with {{ chapter.sentence_count }} sentences</div>
+
+                {% if not chapter.has_audio %}
+                <div id="chapter_audio_{{ chapter.chapter_number }}" class="flex gap-2 h-auto">
+                    <button class="flex border-4 border-black p-2"
+                        hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="innerHTML"
+                        hx-post="/twitch/audiobook/epub/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
+                        hx-trigger="click" hx-indicator="#spinner1_{{ chapter.chapter_number }}">Generate audio
+                        <img id="spinner1_{{ chapter.chapter_number }}" class="htmx-indicator"
+                            src="/static/spinner.svg" />
+                    </button>
+                </div>
+                {% endif %}
+
+                {% if chapter.has_audio %}
+                <div id="chapter_audio_{{ chapter.chapter_number }}" class="flex gap-2">
+                    <button class="flex border-4 border-black p-2"
+                        hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="innerHTML"
+                        hx-post="/twitch/audiobook/epub/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
+                        hx-indicator="#spinner2_{{ chapter.chapter_number }}">Load audio
+                        <img id="spinner2_{{ chapter.chapter_number }}" class="htmx-indicator"
+                            src="/static/spinner.svg" />
+                    </button>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

@@ -33,6 +33,12 @@ twitchio = "^2.8.2"
 soundfile = "^0.12.1"
 # Other
 numpy = "^1.26.3"
+dataset = "^1.6.2"
+psycopg2-binary = "^2.9.9"
+edge-tts = "^6.1.11"
+pymupdf = "^1.24.2" # fitz for pdf
+ebooklib = "^0.18" # epub parsing
+beautifulsoup4 = "^4.12.3" # xml parsing
 
 [tool.poetry.group.dev.dependencies]
 # Test library

@@ -6,8 +6,8 @@ from typing import Literal
 import asyncpg  # pyre-fixme[21]
 from asyncpg import Record
 
-assert os.getenv("STAGE", "DEV") in {"DEV", "PROD"}, os.getenv("STAGE")
-STAGE: Literal["DEV", "PROD"] = os.getenv("STAGE", "DEV")  # pyre-fixme[9]
+assert os.getenv("STAGE", "dev") in {"dev", "prod"}, os.getenv("STAGE")
+STAGE: Literal["dev", "prod"] = os.getenv("STAGE", "dev")  # pyre-fixme[9]
 
 TABLE_NAME = f"{STAGE}_chat_messages"
 
