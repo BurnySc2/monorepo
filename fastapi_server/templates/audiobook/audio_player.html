@@ -4,9 +4,11 @@
 </audio>
 <a download="{{ chapter_title }}.mp3"
   href="/twitch/audiobook/epub/download_chapter_mp3/?book_id={{ book_id }}&chapter_number={{ chapter_number }}">
-  <img class="h-auto" width="32" height="32" src="/static/download.svg" alt="Download">
+  <img class="h-auto" width="32" height="32" src="/static/download.svg" alt="Download audio">
 </a>
-<button>
+<button
+  hx-post="/twitch/audiobook/epub/delete_generated_audio/?book_id={{ book_id }}&chapter_number={{ chapter_number }}"
+  hx-target="#chapter_audio_{{ chapter_number }}" hx-swap="innerHTML">
   <!-- TODO After click, replace with "generate audio" button -->
-  <img width="32" height="32" src="/static/delete.svg" alt="Delete">
+  <img width="32" height="32" src="/static/delete.svg" alt="Delete audio">
 </button>

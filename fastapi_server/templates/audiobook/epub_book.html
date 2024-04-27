@@ -29,25 +29,29 @@
 </head>
 
 <div class="flex flex-col h-screen items-center bg-gray-200">
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-4 overflow-y-hidden">
         <div class="place-self-center">{{ book_name }}</div>
         <div class="place-self-center">{{ book_author }}</div>
         <div class="flex flex-col border-2 border-black">
             <div class="place-self-center">Settings</div>
-            <div class="grid grid-cols-2">
+            <form class="grid grid-cols-2" hx-post="/twitch/audiobook/epub/save_settings_to_cookies" hx-swap="none"
+                hx-include="#voice_name" hx-include="#voice_rate" hx-include="#voice_volume" hx-include="#voice_pitch"
+                hx-trigger="change delay:1s">
                 <div>Voice</div>
-                <select name="" id="">
+                <select name="voice_name">
                     {% for voice_name in available_voices %}
-                    <option value="{{ voice_name }}">{{ voice_name }}</option>
+                    <option value="{{ voice_name }}" {% if user_settings.voice_name==voice_name %} selected {% endif %}>
+                        {{
+                        voice_name }}</option>
                     {% endfor %}
                 </select>
                 <div>Rate</div>
-                <input type="number" value="0" />
+                <input name="voice_rate" type="number" min="0" value="{{ user_settings.voice_rate }}" />
                 <div>Volume</div>
-                <input type="number" value="0" />
+                <input name="voice_volume" type="number" min="0" value="{{ user_settings.voice_volume }}" />
                 <div>pitch</div>
-                <input type="number" value="0" />
-            </div>
+                <input name="voice_pitch" type="number" value="{{ user_settings.voice_pitch }}" />
+            </form>
         </div>
         <div class="flex gap-8">
             <div>book</div>

@@ -4,22 +4,24 @@ import asyncio
 import base64
 import datetime
 import io
+import json
 from collections import OrderedDict
 from typing import Annotated
 
-from litestar import Controller, MediaType, get, post
+from litestar import Controller, Response, get, post
 from litestar.connection import ASGIConnection
 from litestar.contrib.htmx.response import (
     ClientRedirect,
 )
-from litestar.datastructures import UploadFile
+from litestar.datastructures import Cookie, UploadFile
 from litestar.di import Provide
 from litestar.enums import MediaType, RequestEncodingType
 from litestar.exceptions import NotAuthorizedException
 from litestar.handlers.base import BaseRouteHandler
-from litestar.params import Body
+from litestar.params import Body, Parameter
 from litestar.response import Redirect, Stream, Template
 from loguru import logger
+from pydantic import BaseModel
 
 from routes.audiobook.schema import Book, Chapter, book_table, chapter_table, db
 from routes.audiobook.temp_generate_tts import generate_text_to_speech, get_supported_voices
@@ -29,6 +31,27 @@ from routes.audiobook.temp_read_epub import (
     extract_metadata,
 )
 from routes.login_logout import COOKIES, TwitchUser, get_twitch_user, logged_into_twitch_guard
+
+
+class AudioSettings(BaseModel):
+    voice_name: str | None = None
+    voice_rate: int
+    voice_volume: int
+    voice_pitch: int
+
+
+async def get_user_settings(
+    voice_name: Annotated[str | None, Parameter(cookie="voice_name")] = None,
+    voice_rate: Annotated[int | None, Parameter(cookie="voice_rate")] = None,
+    voice_volume: Annotated[int | None, Parameter(cookie="voice_volume")] = None,
+    voice_pitch: Annotated[int | None, Parameter(cookie="voice_pitch")] = None,
+) -> AudioSettings:
+    return AudioSettings(
+        voice_name=voice_name,
+        voice_rate=voice_rate or 0,
+        voice_volume=voice_volume or 0,
+        voice_pitch=voice_pitch or 0,
+    )
 
 
 def convert_mp3_to_base64_audio(mp3_data: io.BytesIO) -> str:
@@ -58,14 +81,20 @@ async def background_convert_function() -> None:
 
         # Get first book that is waiting to be converted
         logger.info("Converting text to audio...")
-        chapter = chapter_table.find_one(has_audio=False, queued={"!=": None}, order_by=["queued"])
+        chapter: OrderedDict = chapter_table.find_one(has_audio=False, queued={"!=": None}, order_by=["queued"])
+        audio_settings: AudioSettings = AudioSettings.model_validate(json.loads(chapter["audio_settings"]))
 
         # Generate tts from the book
         pages = chapter["content"]["content"]
         # Text still contains "\n" characters
-        chapter_text = " ".join(sentence.replace("\n", " ") for page in pages for sentence in page)
-        # TODO Why are only 1 second long clips generated?!
-        audio: io.BytesIO = await generate_text_to_speech(chapter_text, voice="en-GB-SoniaNeural")
+        chapter_text = " ".join(sentence for page in pages for sentence in page)
+        audio: io.BytesIO = await generate_text_to_speech(
+            chapter_text,
+            voice=audio_settings.voice_name,
+            rate=audio_settings.voice_rate,
+            volume=audio_settings.voice_volume,
+            pitch=audio_settings.voice_pitch,
+        )
 
         # Save result to database
         logger.info("Saving result to database")
@@ -167,17 +196,20 @@ class MyAudiobookEpubRoute(Controller):
                     sentence_count=chapter.sentence_count,
                     content={"content": chapter.content},
                     has_audio=False,
+                    audio_settings=json.dumps({}),
                 )
-                chapter_dict = my_chapter.model_dump(exclude=["id"])
+                chapter_dict = my_chapter.model_dump()
                 chapter_table.insert(chapter_dict)
+            chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.UTC))
         return ClientRedirect(
             f"/twitch/audiobook/epub/book/{entry_id}",
         )
 
-    @get("/book/{book_id: int}", guards=[owns_book_guard])
+    @get("/book/{book_id: int}", dependencies={"user_settings": Provide(get_user_settings)}, guards=[owns_book_guard])
     async def get_book_by_id(
         self,
         twitch_user: TwitchUser,
+        user_settings: AudioSettings,
         book_id: int,
     ) -> Template:
         entry_book_dict: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
@@ -187,6 +219,7 @@ class MyAudiobookEpubRoute(Controller):
         return Template(
             template_name="audiobook/epub_book.html",
             context={
+                "user_settings": user_settings,
                 "book_id": entry_book.id,
                 "book_name": entry_book.book_title,
                 "book_author": entry_book.book_author,
@@ -207,13 +240,18 @@ class MyAudiobookEpubRoute(Controller):
             },
         )
 
-    @post("/generate_audio", sync_to_thread=True, guards=[owns_book_guard])
+    @post(
+        "/generate_audio",
+        sync_to_thread=True,
+        dependencies={"user_settings": Provide(get_user_settings)},
+        guards=[owns_book_guard],
+    )
     def generate_audio(
         self,
         book_id: int,
         chapter_number: int,
+        user_settings: AudioSettings,
     ) -> Template:
-        # TODO Guard: user uploaded the book
         """
         Implementation of what happens when user clicks "generate audio" button
 
@@ -225,14 +263,18 @@ class MyAudiobookEpubRoute(Controller):
         # Then wait till the job is done before returning
 
         # Queue the chapter to the database
-        Chapter.queue_chapter_to_be_generated(book_id=book_id, chapter_number=chapter_number)
+        Chapter.queue_chapter_to_be_generated(
+            book_id=book_id,
+            chapter_number=chapter_number,
+            audio_settings=user_settings.model_dump(),
+        )
 
         Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
 
         # Audio has been generated
         entry: Chapter = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
+        # TODO Could return earli with a template and let htmx do the polling
 
-        # audio_data: bytes = Book.decode_data(entry.audio_data)
         return Template(
             template_name="audiobook/audio_player.html",
             context={
@@ -283,13 +325,32 @@ class MyAudiobookEpubRoute(Controller):
         """
         pass
 
+    @post("/save_settings_to_cookies")
+    async def save_settings_to_cookies(
+        self,
+        data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    ) -> Response:
+        """
+        If all chapters have generated audio:
+
+        create zip from all chapters, make download available to user
+        """
+        return Response(
+            content="",
+            cookies=[
+                Cookie(key="voice_name", value=data.voice_name, path="/"),
+                Cookie(key="voice_rate", value=str(data.voice_rate), path="/"),
+                Cookie(key="voice_volume", value=str(data.voice_volume), path="/"),
+                Cookie(key="voice_pitch", value=str(data.voice_pitch), path="/"),
+            ],
+        )
+
     @post("/delete_book", guards=[owns_book_guard])
     async def delete_book(
         self,
         twitch_user: TwitchUser,
         book_id: int,
     ) -> None:
-        # TODO Guard: user uploaded the book
         """
         remove book and all chapters from db
         """
@@ -298,12 +359,17 @@ class MyAudiobookEpubRoute(Controller):
     @post("/delete_generated_audio", guards=[owns_book_guard])
     async def delete_generated_audio(
         self,
-        twitch_user: TwitchUser,
         book_id: int,
         chapter_number: int,
-    ) -> None:
-        # TODO Guard: user uploaded the book
+    ) -> Template:
         """
         remove generated audio from db
         """
-        pass
+        Chapter.delete_audio(book_id=book_id, chapter_number=chapter_number)
+        return Template(
+            template_name="audiobook/generate_audio_button.html",
+            context={
+                "book_id": book_id,
+                "chapter_number": chapter_number,
+            },
+        )

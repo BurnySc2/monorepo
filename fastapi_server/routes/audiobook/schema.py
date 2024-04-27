@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import asyncio
 import base64
 import datetime
+import json
 import os
 import time
 from typing import Any
@@ -71,11 +71,15 @@ class Chapter(BaseModel):
     chapter_number: int
     word_count: int
     sentence_count: int
-    # key "content" contains the text content
-    content: dict
+    # key "content" contains the text content in this dictionary
+    content: dict = {}
     audio_data: str | None = None
     has_audio: bool = False
     queued: datetime.datetime | None = None
+    audio_settings: str = json.dumps({})
+
+    # TODO add cached property for audio settings
+    # TODO add cached property for text content
 
     @property
     def combined_text(self) -> str:
@@ -87,8 +91,8 @@ class Chapter(BaseModel):
 
     @classmethod
     def from_dict(cls, my_dict: dict[str, Any]) -> Chapter:
-        if "content" not in my_dict:
-            my_dict["content"] = {}
+        # if "content" not in my_dict:
+        #     my_dict["content"] = {}
         return cls(**my_dict)
 
     @classmethod
@@ -109,31 +113,51 @@ ORDER BY chapter_number
         return [Chapter.from_dict(result) for result in results]
 
     @classmethod
-    def queue_chapter_to_be_generated(cls, book_id: int, chapter_number: int) -> None:
-        # Already queued, don't queue again
-        done_count = chapter_table.count(book_id=book_id, chapter_number=chapter_number, queued={"!=": None})
-        if done_count > 0:
-            return
-
-        # Create column if doesn't exist
-        chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.UTC))
-
-        # Queue chapter to be generated
-        db.query(
-            f"""
-UPDATE {chapter_table_name}
-SET queued=:datetime_now
-WHERE book_id=:book_id AND chapter_number=:chapter_number
-            """,
-            {
-                "datetime_now": datetime.datetime.now(datetime.UTC),
-                "book_id": book_id,
-                "chapter_number": chapter_number,
-            },
-        )
+    def queue_chapter_to_be_generated(
+        cls,
+        book_id: int,
+        chapter_number: int,
+        audio_settings: dict[str, str | int],
+    ) -> None:
+        with db:
+            done_count = chapter_table.count(book_id=book_id, chapter_number=chapter_number, queued={"!=": None})
+            # Already queued, don't queue again
+            if done_count > 0:
+                return
+            # Queue chapter to be generated
+            db.query(
+                f"""
+    UPDATE {chapter_table_name}
+    SET queued=:datetime_now, audio_settings=:audio_settings
+    WHERE book_id=:book_id AND chapter_number=:chapter_number
+                """,
+                {
+                    "datetime_now": datetime.datetime.now(datetime.UTC),
+                    "book_id": book_id,
+                    "chapter_number": chapter_number,
+                    "audio_settings": json.dumps(audio_settings),
+                },
+            )
 
     @classmethod
-    async def wait_for_audio_to_be_generated(cls, book_id: int, chapter_number: int) -> None:
+    def delete_audio(cls, book_id: int, chapter_number: int) -> None:
+        exists_count: int = chapter_table.count(book_id=book_id, chapter_number=chapter_number, has_audio=True)
+        if exists_count > 0:
+            db.query(
+                f"""
+UPDATE {chapter_table_name}
+SET has_audio=False, audio_data=NULL, queued=NULL, audio_settings=:audio_settings
+WHERE book_id=:book_id AND chapter_number=:chapter_number
+""",
+                {
+                    "book_id": book_id,
+                    "chapter_number": chapter_number,
+                    "audio_settings": json.dumps({}),
+                },
+            )
+
+    @classmethod
+    def wait_for_audio_to_be_generated(cls, book_id: int, chapter_number: int) -> None:
         while 1:
             # Check if chapter has been generated
             done_count: int = chapter_table.count(book_id=book_id, chapter_number=chapter_number, has_audio=True)
