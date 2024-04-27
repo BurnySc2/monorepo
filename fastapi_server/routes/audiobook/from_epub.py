@@ -350,11 +350,14 @@ class MyAudiobookEpubRoute(Controller):
         self,
         twitch_user: TwitchUser,
         book_id: int,
-    ) -> None:
+    ) -> ClientRedirect:
         """
         remove book and all chapters from db
         """
-        pass
+        with db:
+            chapter_table.delete(book_id=book_id)
+            book_table.delete(id=book_id, uploaded_by=twitch_user.display_name)
+        return ClientRedirect("/twitch/audiobook/epub")
 
     @post("/delete_generated_audio", guards=[owns_book_guard])
     async def delete_generated_audio(
