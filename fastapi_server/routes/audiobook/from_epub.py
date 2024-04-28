@@ -46,7 +46,7 @@ def normalize_filename(filename: str) -> str:
 
 # pyre-fixme[13]
 class AudioSettings(BaseModel):
-    voice_name: str | None = None
+    voice_name: str
     voice_rate: int
     voice_volume: int
     voice_pitch: int
@@ -58,8 +58,9 @@ async def get_user_settings(
     voice_volume: Annotated[int | None, Parameter(cookie="voice_volume")] = None,
     voice_pitch: Annotated[int | None, Parameter(cookie="voice_pitch")] = None,
 ) -> AudioSettings:
+    available_voices: list[str] = await get_supported_voices()
     return AudioSettings(
-        voice_name=voice_name,
+        voice_name=voice_name or available_voices[0],
         voice_rate=voice_rate or 0,
         voice_volume=voice_volume or 0,
         voice_pitch=voice_pitch or 0,
@@ -96,7 +97,6 @@ async def background_convert_function() -> None:
         chapter_text = " ".join(sentence for page in pages for sentence in page)
         audio: io.BytesIO = await generate_text_to_speech(
             chapter_text,
-            # pyre-fixme[6]
             voice=audio_settings.voice_name,
             rate=audio_settings.voice_rate,
             volume=audio_settings.voice_volume,

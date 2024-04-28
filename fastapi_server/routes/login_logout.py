@@ -216,7 +216,6 @@ class MyLoginRoute(Controller):
             return Redirect(
                 # TODO encode URI
                 f"https://id.twitch.tv/oauth2/authorize?client_id={TWITCH_CLIENT_ID}&redirect_uri={BACKEND_SERVER_URL}/login/twitch&response_type=code&scope=user:read:email",
-                # f"https://id.twitch.tv/oauth2/authorize?client_id={TWITCH_CLIENT_ID}&redirect_uri=http://localhost:8000/login/twitch&response_type=code&scope=user%3Aread%3Aemail",
                 # pyre-fixme[6]
                 status_code=HTTP_302_FOUND,
             )

@@ -13,7 +13,7 @@ from routes.login_logout import COOKIES
 # connected_users: OrderedDict[str, list[WebSocket]] = OrderedDict()
 # user_is_typing: OrderedDict[str, str] = OrderedDict()
 
-BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
+# BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
 CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
 
 
