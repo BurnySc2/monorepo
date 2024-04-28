@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Annotated, Generic, TypeVar
 
 import aiohttp
+from dotenv import load_dotenv
 from litestar import Controller, Response, get
 from litestar.connection import ASGIConnection
 from litestar.datastructures import Cookie
@@ -16,6 +17,9 @@ from litestar.params import Parameter
 from litestar.response import Redirect, Template
 from litestar.status_codes import HTTP_302_FOUND, HTTP_409_CONFLICT, HTTP_503_SERVICE_UNAVAILABLE
 
+load_dotenv()
+
+
 # Github app for local development
 GITHUB_CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_APP_CLIENT_SECRET", "2aab3b1a609cb1a4126c7eec121bad2343332113")
@@ -23,6 +27,7 @@ GITHUB_CLIENT_SECRET = os.getenv("GITHUB_APP_CLIENT_SECRET", "2aab3b1a609cb1a412
 TWITCH_CLIENT_ID = os.getenv("TWITCH_APP_CLIENT_ID", "ddgeuklh32bi15odtfc0o7gu4g4ehn")
 TWITCH_CLIENT_SECRET = os.getenv("TWITCH_APP_CLIENT_SECRET", "mtu72a2v35p8x7f4fddwmzc2wwdruu")
 
+BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://localhost:8000")
 
 COOKIES = {
     # TODO Other login services like google etc
@@ -210,7 +215,7 @@ class MyLoginRoute(Controller):
         if code is None:
             return Redirect(
                 # TODO encode URI
-                f"https://id.twitch.tv/oauth2/authorize?client_id={TWITCH_CLIENT_ID}&redirect_uri=http://localhost:8000/login/twitch&response_type=code&scope=user:read:email",
+                f"https://id.twitch.tv/oauth2/authorize?client_id={TWITCH_CLIENT_ID}&redirect_uri={BACKEND_SERVER_URL}/login/twitch&response_type=code&scope=user:read:email",
                 # f"https://id.twitch.tv/oauth2/authorize?client_id={TWITCH_CLIENT_ID}&redirect_uri=http://localhost:8000/login/twitch&response_type=code&scope=user%3Aread%3Aemail",
                 # pyre-fixme[6]
                 status_code=HTTP_302_FOUND,
@@ -227,7 +232,7 @@ class MyLoginRoute(Controller):
                     "client_secret": TWITCH_CLIENT_SECRET,
                     "code": code,
                     "grant_type": "authorization_code",
-                    "redirect_uri": "http://localhost:8000/login/twitch",
+                    "redirect_uri": f"{BACKEND_SERVER_URL}/login/twitch",
                 },
             )
             if not post_response.ok:
