@@ -16,13 +16,16 @@ STAGE = os.getenv("STAGE", "dev")
 
 # pyre-fixme[11]
 db: dataset.Database = dataset.connect(os.getenv("POSTGRES_CONNECTION_STRING"))
-# TODO Use sqlite instead?
+# TODO Use sqlite instead
+
 
 # pyre-fixme[11]
 book_table_name = f"litestar_{STAGE}_audiobook_book"
 book_table: dataset.Table = db[book_table_name]
 chapter_table_name = f"litestar_{STAGE}_audiobook_chapter"
 chapter_table: dataset.Table = db[chapter_table_name]
+audio_table_name = f"litestar_{STAGE}_audiobook_audio"
+audio_table: dataset.Table = db[chapter_table_name]
 
 
 # Database schema
@@ -49,11 +52,6 @@ class Book(BaseModel):
         #     my_dict["data"] = Book.encode_data(my_dict["data"])
         return cls(**my_dict)
 
-    def to_dict(self) -> dict[str, Any]:
-        my_dict = self.model_dump(exclude="id")
-        # my_dict["data"] = Book.decode_data(self.data)
-        return my_dict
-
     @classmethod
     def encode_data(cls, data: bytes) -> str:
         return base64.b64encode(data).decode("utf-8")
@@ -76,7 +74,7 @@ class Chapter(BaseModel):
     audio_data: str | None = None
     has_audio: bool = False
     queued: datetime.datetime | None = None
-    audio_settings: str = json.dumps({})
+    audio_settings: str = "{}"
 
     # TODO add cached property for audio settings
     # TODO add cached property for text content
@@ -152,7 +150,7 @@ WHERE book_id=:book_id AND chapter_number=:chapter_number
                 {
                     "book_id": book_id,
                     "chapter_number": chapter_number,
-                    "audio_settings": json.dumps({}),
+                    "audio_settings": "{}",
                 },
             )
 

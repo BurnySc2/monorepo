@@ -55,8 +55,11 @@
         </div>
         <div class="flex gap-8">
             <div>book</div>
-            <!-- <button class="border-4 border-black p-2">generate audio</button> -->
             <!-- <button class="border-4 border-black p-2">download book as mp3</button> -->
+            <button hx-post="/twitch/audiobook/epub/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
+                hx-indicator="#spinner_book_{{ book_id }}" class="border-4 border-black p-2">Generate audio for all
+                chapters
+                <img id="spinner_book_{{ book_id }}" class="htmx-indicator" src="/static/spinner.svg" /></button>
             <button hx-post="/twitch/audiobook/epub/delete_book?book_id={{ book_id }}" hx-swap="none"
                 class="border-4 border-black p-2">Delete book</button>
         </div>

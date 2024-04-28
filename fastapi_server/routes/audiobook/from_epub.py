@@ -54,12 +54,6 @@ async def get_user_settings(
     )
 
 
-def convert_mp3_to_base64_audio(mp3_data: io.BytesIO) -> str:
-    """Base64 encode to allow usage in frontend audio players"""
-    b64encoded = base64.b64encode(mp3_data).decode("utf-8")
-    return b64encoded
-
-
 # TODO Background function that removes all books and chapters that are older than 1 week
 
 
@@ -150,8 +144,7 @@ class MyAudiobookEpubRoute(Controller):
         """
         # TODO disable upload if user has already uploaded too much
         # TODO limit file size
-        content: bytes = await data.read()
-        data = io.BytesIO(content)
+        data: io.BytesIO = io.BytesIO(await data.read())
 
         metadata: EpubMetadata = extract_metadata(data)
 
@@ -181,10 +174,8 @@ class MyAudiobookEpubRoute(Controller):
             # data=data.getvalue(),
             upload_date=datetime.datetime.now(datetime.UTC),
         )
-        my_dict = my_book.to_dict()
-
         with db:
-            entry_id = book_table.insert(my_dict)
+            entry_id = book_table.insert(my_book.model_dump(exclude=["id"]))
 
             # Parse and insert chapters
             for chapter in chapters:
@@ -196,9 +187,9 @@ class MyAudiobookEpubRoute(Controller):
                     sentence_count=chapter.sentence_count,
                     content={"content": chapter.content},
                     has_audio=False,
-                    audio_settings=json.dumps({}),
+                    audio_settings="{}",
                 )
-                chapter_dict = my_chapter.model_dump()
+                chapter_dict = my_chapter.model_dump(exclude=["id"])
                 chapter_table.insert(chapter_dict)
             chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.UTC))
         return ClientRedirect(
@@ -213,7 +204,7 @@ class MyAudiobookEpubRoute(Controller):
         book_id: int,
     ) -> Template:
         entry_book_dict: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
-        entry_book: Book = Book(**entry_book_dict)
+        entry_book: Book = Book.model_validate(entry_book_dict)
         chapters: list[Chapter] = Chapter.get_metadata(book_id=entry_book.id)
         available_voices = await get_supported_voices()
         return Template(
@@ -299,18 +290,30 @@ class MyAudiobookEpubRoute(Controller):
         byte_stream = io.BytesIO(data)
         return Stream(content=byte_stream)
 
-    @post("generate_audio_book", guards=[owns_book_guard])
-    async def generate_audio_book(
+    @post(
+        "generate_audio_book",
+        dependencies={"user_settings": Provide(get_user_settings)},
+        guards=[owns_book_guard],
+        sync_to_thread=True,
+    )
+    def generate_audio_book(
         self,
         twitch_user: TwitchUser,
         book_id: int,
-    ) -> None:
+        user_settings: AudioSettings,
+    ) -> ClientRedirect:
         """
-        If all chapters have generated audio:
-
-        create zip from all chapters, make download available to user
+        Generate audio for all chapters
         """
-        pass
+        book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
+        book = Book.model_validate(book_entry)
+        # TODO Use one query instead of for loop
+        for chapter_number in range(1, book.chapter_count + 1):
+            Chapter.queue_chapter_to_be_generated(book.id, chapter_number, audio_settings=user_settings.model_dump())
+        # TODO Use one query instead of for loop
+        for chapter_number in range(1, book.chapter_count + 1):
+            Chapter.wait_for_audio_to_be_generated(book.id, chapter_number)
+        return ClientRedirect(f"/twitch/audiobook/epub/book/{book.id}")
 
     @post("/download_book_zip", guards=[owns_book_guard])
     async def download_book_zip(
