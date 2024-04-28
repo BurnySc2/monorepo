@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python Examples: Run Current File",
+            "name": "burny_common: Run Current File",
             "type": "python",
             "request": "launch",
             "program": "${file}",
@@ -15,14 +15,5 @@
                 "PYTHONPATH": "${workspaceFolder}"
             }
         },
-        {
-            "name": "Python Examples: Run main.py",
-            "type": "python",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "program": "main.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        }
     ]
 }

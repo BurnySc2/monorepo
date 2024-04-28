@@ -39,7 +39,7 @@ def extract_sentences(text: str) -> list[str]:
 
 
 @dataclass
-class Chapter:
+class EpubChapter:
     chapter_title: str
     chapter_number: int
     word_count: int
@@ -52,7 +52,7 @@ class Chapter:
         return self.page_start + self.page_count
 
 
-def extract_chapters(data: io.BytesIO) -> list[Chapter]:
+def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
     c = EpubReader("")
     c.zf = zipfile.ZipFile(data)
     c._load_container()
@@ -91,7 +91,7 @@ def extract_chapters(data: io.BytesIO) -> list[Chapter]:
         combined_text = " ".join(row for paragraph in texts for row in paragraph)
         if combined_text != "" and combined_text != prev_text:
             chapters.append(
-                Chapter(
+                EpubChapter(
                     chapter_title=chapter.title,
                     chapter_number=chapter_number,
                     word_count=len(word_tokenize(combined_text)),

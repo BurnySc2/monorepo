@@ -57,9 +57,13 @@
             <div>book</div>
             <!-- <button class="border-4 border-black p-2">download book as mp3</button> -->
             <button hx-post="/twitch/audiobook/epub/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
-                hx-indicator="#spinner_book_{{ book_id }}" class="border-4 border-black p-2">Generate audio for all
+                hx-indicator="#spinner_book" class="border-4 border-black p-2">Generate audio for all
                 chapters
-                <img id="spinner_book_{{ book_id }}" class="htmx-indicator" src="/static/spinner.svg" /></button>
+                <img id="spinner_book" class="htmx-indicator" src="/static/spinner.svg" />
+            </button>
+            <a download="{{ book_name_zip }}.zip" href="/twitch/audiobook/epub/download_book_zip?book_id={{ book_id }}">
+                <img class="h-auto" width="32" height="32" src="/static/download.svg" alt="Download audio">
+            </a>
             <button hx-post="/twitch/audiobook/epub/delete_book?book_id={{ book_id }}" hx-swap="none"
                 class="border-4 border-black p-2">Delete book</button>
         </div>

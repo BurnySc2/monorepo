@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import asyncio
-import base64
 import datetime
 import io
 import json
+import re
+import zipfile
 from collections import OrderedDict
 from typing import Annotated
 
@@ -26,11 +27,21 @@ from pydantic import BaseModel
 from routes.audiobook.schema import Book, Chapter, book_table, chapter_table, db
 from routes.audiobook.temp_generate_tts import generate_text_to_speech, get_supported_voices
 from routes.audiobook.temp_read_epub import (
+    EpubChapter,
     EpubMetadata,
     extract_chapters,
     extract_metadata,
 )
 from routes.login_logout import COOKIES, TwitchUser, get_twitch_user, logged_into_twitch_guard
+
+
+def normalize_filename(filename: str) -> str:
+    # Replace any character that is not alphanumeric or underscore with an underscore
+    normalized_filename = re.sub(r"[^\w]", "_", filename)
+    # Replace two or more underscores with one underscore
+    normalized_filename = re.sub(r"_+", "_", normalized_filename)
+    # Remove underscores from the start and end
+    return normalized_filename.strip("_")
 
 
 class AudioSettings(BaseModel):
@@ -164,7 +175,7 @@ class MyAudiobookEpubRoute(Controller):
 
         # Act as transaction to only insert full book and chapters
 
-        chapters = extract_chapters(data)
+        chapters: list[EpubChapter] = extract_chapters(data)
         # Insert book
         my_book = Book(
             uploaded_by=twitch_user.display_name,
@@ -213,6 +224,7 @@ class MyAudiobookEpubRoute(Controller):
                 "user_settings": user_settings,
                 "book_id": entry_book.id,
                 "book_name": entry_book.book_title,
+                "book_name_zip": normalize_filename(entry_book.book_title),
                 "book_author": entry_book.book_author,
                 "available_voices": available_voices,
                 "chapters": [
@@ -222,7 +234,6 @@ class MyAudiobookEpubRoute(Controller):
                         "word_count": chapter.word_count,
                         "sentence_count": chapter.sentence_count,
                         "has_audio": chapter.has_audio,  # TODO
-                        # "has_audio": bool(random.randint(0, 1)),
                         # TODO If chapter has audio: add mp4_b64_data, see new_audio.html
                         # TODO Add "delete" audio button to generate again with another voice
                     }
@@ -315,18 +326,37 @@ class MyAudiobookEpubRoute(Controller):
             Chapter.wait_for_audio_to_be_generated(book.id, chapter_number)
         return ClientRedirect(f"/twitch/audiobook/epub/book/{book.id}")
 
-    @post("/download_book_zip", guards=[owns_book_guard])
-    async def download_book_zip(
+    @get("/download_book_zip", sync_to_thread=True, guards=[owns_book_guard])
+    def download_book_zip(
         self,
-        twitch_user: TwitchUser,
         book_id: int,
-    ) -> None:
+        twitch_user: TwitchUser,
+    ) -> Stream:
         """
         If all chapters have generated audio:
 
         create zip from all chapters, make download available to user
         """
-        pass
+        book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
+        book = Book.model_validate(book_entry)
+        for chapter_number in range(1, book.chapter_count + 1):
+            Chapter.wait_for_audio_to_be_generated(book.id, chapter_number)
+
+        audio_data = {}
+        for chapter_number in range(1, book.chapter_count + 1):
+            entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
+            entry["queued"] = None
+            chapter = Chapter.model_validate(entry)
+            normalized_chapter_name = normalize_filename(chapter.chapter_title)
+            audio_file_name = f"{chapter_number:04d}_{normalized_chapter_name}.mp3"
+            audio_data[audio_file_name] = Book.decode_data(chapter.audio_data)
+
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for file_name, content in audio_data.items():
+                zipf.writestr(file_name, content)
+        zip_buffer.seek(0)  # Required?
+        return Stream(content=zip_buffer)
 
     @post("/save_settings_to_cookies")
     async def save_settings_to_cookies(
