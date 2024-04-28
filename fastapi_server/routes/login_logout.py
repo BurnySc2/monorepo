@@ -61,14 +61,16 @@ class UserCache(Generic[T]):
 
     def __getitem__(self, access_token: str) -> T | None:
         cached_user, cache_expire_datetime = self.user_cache.get(access_token, (None, None))
-        if cache_expire_datetime is not None and cache_expire_datetime > datetime.datetime.now(tz=datetime.UTC):
+        if cache_expire_datetime is not None and cache_expire_datetime > datetime.datetime.now(
+            tz=datetime.timezone.utc
+        ):
             return cached_user
 
     def __setitem__(self, access_token: str, user: T) -> T:
         assert isinstance(user, self.user_class)
         self.user_cache[access_token] = (
             user,
-            datetime.datetime.now(tz=datetime.UTC) + datetime.timedelta(seconds=self.cache_duration_seconds),
+            datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=self.cache_duration_seconds),
         )
         return user
 

@@ -186,7 +186,7 @@ class MyAudiobookEpubRoute(Controller):
             book_author=metadata.author,
             chapter_count=len(chapters),
             # data=data.getvalue(),
-            upload_date=datetime.datetime.now(datetime.UTC),
+            upload_date=datetime.datetime.now(datetime.timezone.utc),
         )
         with db:
             # pyre-fixme[6]
@@ -207,7 +207,7 @@ class MyAudiobookEpubRoute(Controller):
                 # pyre-fixme[6]
                 chapter_dict = my_chapter.model_dump(exclude=["id"])
                 chapter_table.insert(chapter_dict)
-            chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.UTC))
+            chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.timezone.utc))
         return ClientRedirect(
             f"/twitch/audiobook/epub/book/{entry_id}",
         )

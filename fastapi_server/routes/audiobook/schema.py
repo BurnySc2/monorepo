@@ -125,7 +125,7 @@ ORDER BY chapter_number
     WHERE book_id=:book_id AND chapter_number=:chapter_number
                 """,
                 {
-                    "datetime_now": datetime.datetime.now(datetime.UTC),
+                    "datetime_now": datetime.datetime.now(datetime.timezone.utc),
                     "book_id": book_id,
                     "chapter_number": chapter_number,
                     "audio_settings": json.dumps(audio_settings),
