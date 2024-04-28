@@ -7,7 +7,7 @@ import os
 import time
 from typing import Any
 
-import dataset
+import dataset  # pyre-fixme[21]
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
@@ -16,17 +16,17 @@ STAGE = os.getenv("STAGE", "dev")
 
 # pyre-fixme[11]
 db: dataset.Database = dataset.connect(os.getenv("POSTGRES_CONNECTION_STRING"))
-# TODO Use sqlite instead
 
 
-# pyre-fixme[11]
 book_table_name = f"litestar_{STAGE}_audiobook_book"
+# pyre-fixme[11]
 book_table: dataset.Table = db[book_table_name]
 chapter_table_name = f"litestar_{STAGE}_audiobook_chapter"
 chapter_table: dataset.Table = db[chapter_table_name]
 
 
 # Database schema
+# pyre-fixme[13]
 class Book(BaseModel):
     id: int | None = None
     # Twitch user who uploaded the book
@@ -59,6 +59,7 @@ class Book(BaseModel):
         return base64.b64decode(data)
 
 
+# pyre-fixme[13]
 class Chapter(BaseModel):
     id: int | None = None
     # Related book to this chapter entry
@@ -80,10 +81,6 @@ class Chapter(BaseModel):
     @property
     def combined_text(self) -> str:
         return " ".join(row for paragraph in self.content["content"] for row in paragraph)
-
-    @property
-    def page_end(self) -> int:
-        return self.page_start + self.page_count
 
     @classmethod
     def from_dict(cls, my_dict: dict[str, Any]) -> Chapter:

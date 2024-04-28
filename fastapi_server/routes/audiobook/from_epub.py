@@ -20,7 +20,7 @@ from litestar.enums import MediaType, RequestEncodingType
 from litestar.exceptions import NotAuthorizedException
 from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Body, Parameter
-from litestar.response import Redirect, Stream, Template
+from litestar.response import Stream, Template
 from loguru import logger
 from pydantic import BaseModel
 
@@ -44,6 +44,7 @@ def normalize_filename(filename: str) -> str:
     return normalized_filename.strip("_")
 
 
+# pyre-fixme[13]
 class AudioSettings(BaseModel):
     voice_name: str | None = None
     voice_rate: int
@@ -95,6 +96,7 @@ async def background_convert_function() -> None:
         chapter_text = " ".join(sentence for page in pages for sentence in page)
         audio: io.BytesIO = await generate_text_to_speech(
             chapter_text,
+            # pyre-fixme[6]
             voice=audio_settings.voice_name,
             rate=audio_settings.voice_rate,
             volume=audio_settings.voice_volume,
@@ -117,10 +119,10 @@ async def background_convert_function() -> None:
 async def owns_book_guard(
     connection: ASGIConnection,
     _: BaseRouteHandler,
-    # twitch_user: TwitchUser | None,
 ) -> None:
     twitch_user = await get_twitch_user(connection.cookies.get(COOKIES["twitch"]))
     book_id = connection.path_params.get("book_id") or connection.query_params["book_id"]
+    # pyre-fixme[16]
     book_count = book_table.count(id=book_id, uploaded_by=twitch_user.display_name)
     if book_count == 0:
         raise NotAuthorizedException("You don't have access to this book.")
@@ -149,18 +151,19 @@ class MyAudiobookEpubRoute(Controller):
             UploadFile,
             Body(media_type=RequestEncodingType.MULTI_PART),
         ],
-    ) -> Redirect:
+    ) -> ClientRedirect:
         """
         This method is responsible for handling the file upload request for EPUB files.
         """
         # TODO disable upload if user has already uploaded too much
         # TODO limit file size
-        data: io.BytesIO = io.BytesIO(await data.read())
+        epub_data: io.BytesIO = io.BytesIO(await data.read())
 
-        metadata: EpubMetadata = extract_metadata(data)
+        metadata: EpubMetadata = extract_metadata(epub_data)
 
         # If not present in database, add book entry
         entry: OrderedDict | None = book_table.find_one(
+            # pyre-fixme[16]
             uploaded_by=twitch_user.display_name,
             book_title=metadata.title,
             book_author=metadata.author,
@@ -175,7 +178,7 @@ class MyAudiobookEpubRoute(Controller):
 
         # Act as transaction to only insert full book and chapters
 
-        chapters: list[EpubChapter] = extract_chapters(data)
+        chapters: list[EpubChapter] = extract_chapters(epub_data)
         # Insert book
         my_book = Book(
             uploaded_by=twitch_user.display_name,
@@ -186,6 +189,7 @@ class MyAudiobookEpubRoute(Controller):
             upload_date=datetime.datetime.now(datetime.UTC),
         )
         with db:
+            # pyre-fixme[6]
             entry_id = book_table.insert(my_book.model_dump(exclude=["id"]))
 
             # Parse and insert chapters
@@ -200,6 +204,7 @@ class MyAudiobookEpubRoute(Controller):
                     has_audio=False,
                     audio_settings="{}",
                 )
+                # pyre-fixme[6]
                 chapter_dict = my_chapter.model_dump(exclude=["id"])
                 chapter_table.insert(chapter_dict)
             chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.UTC))
@@ -216,6 +221,7 @@ class MyAudiobookEpubRoute(Controller):
     ) -> Template:
         entry_book_dict: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         entry_book: Book = Book.model_validate(entry_book_dict)
+        # pyre-fixme[6]
         chapters: list[Chapter] = Chapter.get_metadata(book_id=entry_book.id)
         available_voices = await get_supported_voices()
         return Template(
@@ -274,7 +280,7 @@ class MyAudiobookEpubRoute(Controller):
         Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
 
         # Audio has been generated
-        entry: Chapter = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
+        entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
         # TODO Could return earli with a template and let htmx do the polling
 
         return Template(
@@ -296,7 +302,7 @@ class MyAudiobookEpubRoute(Controller):
         """
         From db: fetch generated audio bytes, stream / download to user
         """
-        entry: Chapter = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
+        entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
         data = Book.decode_data(entry["audio_data"])
         byte_stream = io.BytesIO(data)
         return Stream(content=byte_stream)
@@ -320,9 +326,11 @@ class MyAudiobookEpubRoute(Controller):
         book = Book.model_validate(book_entry)
         # TODO Use one query instead of for loop
         for chapter_number in range(1, book.chapter_count + 1):
+            # pyre-fixme[6]
             Chapter.queue_chapter_to_be_generated(book.id, chapter_number, audio_settings=user_settings.model_dump())
         # TODO Use one query instead of for loop
         for chapter_number in range(1, book.chapter_count + 1):
+            # pyre-fixme[6]
             Chapter.wait_for_audio_to_be_generated(book.id, chapter_number)
         return ClientRedirect(f"/twitch/audiobook/epub/book/{book.id}")
 
@@ -340,6 +348,7 @@ class MyAudiobookEpubRoute(Controller):
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
         for chapter_number in range(1, book.chapter_count + 1):
+            # pyre-fixme[6]
             Chapter.wait_for_audio_to_be_generated(book.id, chapter_number)
 
         audio_data = {}
@@ -349,6 +358,7 @@ class MyAudiobookEpubRoute(Controller):
             chapter = Chapter.model_validate(entry)
             normalized_chapter_name = normalize_filename(chapter.chapter_title)
             audio_file_name = f"{chapter_number:04d}_{normalized_chapter_name}.mp3"
+            # pyre-fixme[6]
             audio_data[audio_file_name] = Book.decode_data(chapter.audio_data)
 
         zip_buffer = io.BytesIO()

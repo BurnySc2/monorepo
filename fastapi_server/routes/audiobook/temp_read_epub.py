@@ -3,12 +3,12 @@ import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
-import nltk
+import nltk  # pyre-fixme[21]
 from bs4 import BeautifulSoup
-from ebooklib import ITEM_DOCUMENT
-from ebooklib.epub import EpubHtml, EpubReader, Link
+from ebooklib import ITEM_DOCUMENT  # pyre-fixme[21]
+from ebooklib.epub import EpubHtml, EpubReader, Link  # pyre-fixme[21]
 from nltk import word_tokenize
-from nltk.tokenize import sent_tokenize
+from nltk.tokenize import sent_tokenize  # pyre-fixme[21]
 
 nltk.download("punkt")
 
@@ -47,10 +47,6 @@ class EpubChapter:
     content: list[list[str]]
     combined_text: str
 
-    @property
-    def page_end(self) -> int:
-        return self.page_start + self.page_count
-
 
 def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
     c = EpubReader("")
@@ -63,12 +59,13 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
     for chapter in c.book.toc:
         if not isinstance(chapter, Link):
             continue
-        c1: EpubHtml = c.book.get_item_with_href(chapter.href.split("#")[0])
-        if c1.get_type() != ITEM_DOCUMENT:
+        # pyre-fixme[11, 35]
+        epub_html: EpubHtml = c.book.get_item_with_href(chapter.href.split("#")[0])
+        if epub_html.get_type() != ITEM_DOCUMENT:
             continue
 
         # Parse the HTML content
-        soup = BeautifulSoup(c1.get_body_content(), "html.parser")
+        soup = BeautifulSoup(epub_html.get_body_content(), "html.parser")
 
         for span in soup.find_all("span"):
             # Seems to do the same as replace_with(span.text)
