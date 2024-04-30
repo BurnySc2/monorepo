@@ -26,6 +26,7 @@ load_dotenv()
 
 # Paths and folders of permanent data
 DATA_FOLDER = Path(__file__).parent / "data"
+DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 logger.add(DATA_FOLDER / "app.log")
 
 assert os.getenv("STAGE", "dev") in {"dev", "prod"}, os.getenv("STAGE")

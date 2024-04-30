@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import datetime
 import io
-import json
 import re
 import zipfile
 from collections import OrderedDict
@@ -22,9 +21,8 @@ from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Body, Parameter
 from litestar.response import Stream, Template
 from loguru import logger
-from pydantic import BaseModel
 
-from routes.audiobook.schema import Book, Chapter, book_table, chapter_table, db
+from routes.audiobook.schema import AudioSettings, Book, Chapter, book_table, chapter_table, db
 from routes.audiobook.temp_generate_tts import generate_text_to_speech, get_supported_voices
 from routes.audiobook.temp_read_epub import (
     EpubChapter,
@@ -42,14 +40,6 @@ def normalize_filename(filename: str) -> str:
     normalized_filename = re.sub(r"_+", "_", normalized_filename)
     # Remove underscores from the start and end
     return normalized_filename.strip("_")
-
-
-# pyre-fixme[13]
-class AudioSettings(BaseModel):
-    voice_name: str
-    voice_rate: int
-    voice_volume: int
-    voice_pitch: int
 
 
 async def get_user_settings(
@@ -77,43 +67,48 @@ async def background_convert_function() -> None:
     """
     await asyncio.sleep(5)
     logger.info("Background tts converter started!")
-    while 1:
-        # Check if queue empty
-        any_in_queue = chapter_table.count(has_audio=False, queued={"!=": None})
-        if any_in_queue == 0:
-            # Skip / wait
-            # TODO Change to 60?
-            await asyncio.sleep(10)
-            continue
 
+    async def convert_one():
         # Get first book that is waiting to be converted
         logger.info("Converting text to audio...")
-        chapter: OrderedDict = chapter_table.find_one(has_audio=False, queued={"!=": None}, order_by=["queued"])
-        audio_settings: AudioSettings = AudioSettings.model_validate(json.loads(chapter["audio_settings"]))
+        chapter_entry: OrderedDict = chapter_table.find_one(
+            audio_data=None, queued={"!=": None}, order_by=["queued", "chapter_number"]
+        )
+        chapter: Chapter = Chapter.model_validate(chapter_entry)
 
         # Generate tts from the book
-        pages = chapter["content"]["content"]
-        # Text still contains "\n" characters
-        chapter_text = " ".join(sentence for page in pages for sentence in page)
+        audio_settings: AudioSettings = chapter.audio_settings
         audio: io.BytesIO = await generate_text_to_speech(
-            chapter_text,
+            chapter.combined_text,
             voice=audio_settings.voice_name,
             rate=audio_settings.voice_rate,
             volume=audio_settings.voice_volume,
             pitch=audio_settings.voice_pitch,
         )
+        chapter.audio_data = audio.getvalue()
+        chapter.has_audio = True
 
         # Save result to database
         logger.info("Saving result to database")
         chapter_table.update(
-            chapter
-            | {
-                "audio_data": Book.encode_data(audio.getvalue()),
-                "has_audio": True,
-            },
+            chapter.model_dump(),
             keys=["id"],
         )
         logger.info("Done converting")
+
+    while 1:
+        # Check if queue empty
+        any_in_queue = chapter_table.count(audio_data=None, queued={"!=": None})
+        if any_in_queue == 0:
+            # Skip / wait
+            await asyncio.sleep(5)
+            continue
+
+        try:
+            await convert_one()
+        except Exception as e:
+            logger.exception(e)
+            raise
 
 
 async def owns_book_guard(
@@ -141,6 +136,7 @@ class MyAudiobookEpubRoute(Controller):
         twitch_user: TwitchUser | None,
     ) -> Template:
         # TODO The endpoint "/" should list all uploaded books by user, then be able to navigate to it
+        # TODO List all uploaded books
         return Template(template_name="audiobook/epub_upload.html")
 
     @post("/", media_type=MediaType.TEXT)
@@ -189,7 +185,6 @@ class MyAudiobookEpubRoute(Controller):
             upload_date=datetime.datetime.now(datetime.timezone.utc),
         )
         with db:
-            # pyre-fixme[6]
             entry_id = book_table.insert(my_book.model_dump(exclude=["id"]))
 
             # Parse and insert chapters
@@ -200,11 +195,8 @@ class MyAudiobookEpubRoute(Controller):
                     chapter_number=chapter.chapter_number,
                     word_count=chapter.word_count,
                     sentence_count=chapter.sentence_count,
-                    content={"content": chapter.content},
-                    has_audio=False,
-                    audio_settings="{}",
+                    content=chapter.content,
                 )
-                # pyre-fixme[6]
                 chapter_dict = my_chapter.model_dump(exclude=["id"])
                 chapter_table.insert(chapter_dict)
             chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.timezone.utc))
@@ -240,8 +232,6 @@ class MyAudiobookEpubRoute(Controller):
                         "word_count": chapter.word_count,
                         "sentence_count": chapter.sentence_count,
                         "has_audio": chapter.has_audio,  # TODO
-                        # TODO If chapter has audio: add mp4_b64_data, see new_audio.html
-                        # TODO Add "delete" audio button to generate again with another voice
                     }
                     for chapter in chapters
                 ],
@@ -274,7 +264,7 @@ class MyAudiobookEpubRoute(Controller):
         Chapter.queue_chapter_to_be_generated(
             book_id=book_id,
             chapter_number=chapter_number,
-            audio_settings=user_settings.model_dump(),
+            audio_settings=user_settings,
         )
 
         Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
@@ -324,14 +314,10 @@ class MyAudiobookEpubRoute(Controller):
         """
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
-        # TODO Use one query instead of for loop
-        for chapter_number in range(1, book.chapter_count + 1):
-            # pyre-fixme[6]
-            Chapter.queue_chapter_to_be_generated(book.id, chapter_number, audio_settings=user_settings.model_dump())
-        # TODO Use one query instead of for loop
-        for chapter_number in range(1, book.chapter_count + 1):
-            # pyre-fixme[6]
-            Chapter.wait_for_audio_to_be_generated(book.id, chapter_number)
+        # pyre-ignore[6]
+        Chapter.queue_chapter_to_be_generated(book.id, audio_settings=user_settings)
+        # pyre-ignore[6]
+        Chapter.wait_for_audio_to_be_generated(book_id=book.id)
         return ClientRedirect(f"/twitch/audiobook/epub/book/{book.id}")
 
     @get("/download_book_zip", sync_to_thread=True, guards=[owns_book_guard])
@@ -347,19 +333,16 @@ class MyAudiobookEpubRoute(Controller):
         """
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
-        for chapter_number in range(1, book.chapter_count + 1):
-            # pyre-fixme[6]
-            Chapter.wait_for_audio_to_be_generated(book.id, chapter_number)
+        # pyre-ignore[6]
+        Chapter.wait_for_audio_to_be_generated(book_id=book.id)
 
         audio_data = {}
         for chapter_number in range(1, book.chapter_count + 1):
             entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
-            entry["queued"] = None
-            chapter = Chapter.model_validate(entry)
+            chapter: Chapter = Chapter.model_validate(entry)
             normalized_chapter_name = normalize_filename(chapter.chapter_title)
             audio_file_name = f"{chapter_number:04d}_{normalized_chapter_name}.mp3"
-            # pyre-fixme[6]
-            audio_data[audio_file_name] = Book.decode_data(chapter.audio_data)
+            audio_data[audio_file_name] = chapter.audio_data
 
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:

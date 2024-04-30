@@ -3,6 +3,7 @@
 # https://play.google.com/store/apps/details?id=org.jellyfin.mobile&hl=de
 # Execute with
 # ansible-playbook jellyfin_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# TODO Convert to docker compose file
 - name: Create service
   hosts: my_servers
   vars:

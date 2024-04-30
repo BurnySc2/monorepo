@@ -6,6 +6,7 @@
 # https://castos.com/tools/find-podcast-rss-feed/
 # Execute with
 # ansible-playbook audiobookshelf_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# TODO Convert to docker compose file
 - name: Create service
   hosts: my_servers
   vars:
