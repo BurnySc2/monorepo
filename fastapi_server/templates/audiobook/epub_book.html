@@ -28,12 +28,12 @@
     </style>
 </head>
 
-<div class="flex flex-col h-screen items-center bg-gray-200">
-    <div class="flex flex-col gap-4 overflow-y-hidden">
-        <div class="place-self-center">{{ book_name }}</div>
-        <div class="place-self-center">{{ book_author }}</div>
-        <div class="flex flex-col border-2 border-black">
-            <div class="place-self-center">Settings</div>
+<div class="flex flex-col h-screen items-center bg-gray-300">
+    <div class="flex flex-col gap-2 overflow-y-hidden  m-4">
+        <div class="place-self-center text-4xl font-bold">{{ book_name }}</div>
+        <div class="place-self-center text-2xl font-semibold">{{ book_author }}</div>
+        <div class="flex flex-col border-2 border-black rounded p-2">
+            <div class="place-self-center text-2xl font-semibold underline">Settings</div>
             <form class="grid grid-cols-2" hx-post="/twitch/audiobook/epub/save_settings_to_cookies" hx-swap="none"
                 hx-include="#voice_name" hx-include="#voice_rate" hx-include="#voice_volume" hx-include="#voice_pitch"
                 hx-trigger="change delay:1s">
@@ -53,25 +53,36 @@
                 <input name="voice_pitch" type="number" value="{{ user_settings.voice_pitch }}" />
             </form>
         </div>
-        <div class="flex gap-8">
-            <div>book</div>
-            <!-- <button class="border-4 border-black p-2">download book as mp3</button> -->
-            <button hx-post="/twitch/audiobook/epub/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
-                hx-indicator="#spinner_book" class="border-4 border-black p-2">Generate audio for all
-                chapters
-                <img id="spinner_book" class="htmx-indicator" src="/static/spinner.svg" />
-            </button>
-            <a download="{{ book_name_zip }}.zip" href="/twitch/audiobook/epub/download_book_zip?book_id={{ book_id }}">
-                <img class="h-auto" width="32" height="32" src="/static/download.svg" alt="Download audio">
-            </a>
-            <button hx-post="/twitch/audiobook/epub/delete_book?book_id={{ book_id }}" hx-swap="none"
-                class="border-4 border-black p-2">Delete book</button>
+        <div class="flex flex-col border-2 border-black gap-8 rounded  p-2">
+            <div class="place-self-center text-2xl font-semibold underline">Book</div>
+            <div class="flex justify-center">
+                <button hx-post="/twitch/audiobook/epub/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
+                    hx-indicator="#spinner_book"
+                    class="border-2 border-black p-2 hover:bg-green-300 rounded-lg flex items-center">Generate
+                    audio for
+                    all
+                    chapters
+                    <img id="spinner_book" class="htmx-indicator" src="/static/spinner.svg" />
+                </button>
+                <a download href="/twitch/audiobook/epub/download_book_zip?book_id={{ book_id }}"
+                    class="rounded-xl hover:bg-green-300 self-center">
+                    <img class="h-auto" width="64" height="64" src="/static/download.svg" alt="Download audio">
+                </a>
+                <button hx-post="/twitch/audiobook/epub/delete_book?book_id={{ book_id }}" hx-swap="none"
+                    hx-confirm="Are you sure you wish to delete this book?"
+                    class="rounded-xl hover:bg-green-300 self-center">
+                    <img width="64" height="64" src="/static/delete.svg" alt="Delete book">
+                </button>
+            </div>
+
         </div>
-        <div class="flex flex-col border-2 border-black overflow-y-auto">
-            <div class="place-self-center">Table of contents</div>
-            <div class="grid grid-cols-2">
+        <div class="flex flex-col border-2 border-black overflow-y-auto rounded p-2">
+            <div class="place-self-center text-2xl font-semibold underline">Table of contents</div>
+            <div class="gap-2" style="display: grid;
+            grid-template-columns: auto auto;">
+                <!-- <div class="grid grid-cols-2"> -->
                 {% for chapter in chapters %}
-                <div class="">'{{ chapter.name }}' with {{ chapter.sentence_count }} sentences</div>
+                <div class="self-center">'{{ chapter.name }}' with {{ chapter.sentence_count }} sentences</div>
                 {% include "audiobook/epub_chapter.html" with context %}
                 {% endfor %}
             </div>

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import datetime
 import json
 import os
-import time
+import re
 from typing import Any
 
 import dataset  # pyre-fixme[21]
@@ -23,6 +24,15 @@ book_table_name = f"litestar_{STAGE}_audiobook_book"
 book_table: dataset.Table = db[book_table_name]
 chapter_table_name = f"litestar_{STAGE}_audiobook_chapter"
 chapter_table: dataset.Table = db[chapter_table_name]
+
+
+def normalize_filename(filename: str) -> str:
+    # Replace any character that is not alphanumeric or underscore with an underscore
+    normalized_filename = re.sub(r"[^\w]", "_", filename)
+    # Replace two or more underscores with one underscore
+    normalized_filename = re.sub(r"_+", "_", normalized_filename)
+    # Remove underscores from the start and end
+    return normalized_filename.strip("_")
 
 
 class AudioSettings(BaseModel):
@@ -59,6 +69,10 @@ class Book(BaseModel):
     def has_audio(self) -> bool:
         # Check db if all chapters have audio
         return chapter_table.count(book_id=self.id) == self.chapter_count
+
+    @property
+    def book_title_normalized(self) -> str:
+        return normalize_filename(self.book_title)
 
     @classmethod
     def encode_data(cls, data: bytes) -> str:
@@ -121,6 +135,10 @@ class Chapter(BaseModel):
     def combined_text(self) -> str:
         # Text still contains "\n" characters
         return " ".join(row for paragraph in self.content for row in paragraph)
+
+    @property
+    def chapter_title_normalized(self) -> str:
+        return normalize_filename(self.chapter_title)
 
     @classmethod
     def get_metadata(cls, book_id: int) -> list[Chapter]:
@@ -199,7 +217,7 @@ LIMIT 1
 
     @classmethod
     def delete_audio(cls, book_id: int, chapter_number: int) -> None:
-        exists_count: int = chapter_table.count(book_id=book_id, chapter_number=chapter_number, has_audio=True)
+        exists_count: int = chapter_table.count(book_id=book_id, chapter_number=chapter_number)
         if exists_count > 0:
             db.query(
                 f"""
@@ -215,7 +233,7 @@ WHERE book_id=:book_id AND chapter_number=:chapter_number
             )
 
     @classmethod
-    def wait_for_audio_to_be_generated(cls, book_id: int, chapter_number: int | None = None) -> None:
+    async def wait_for_audio_to_be_generated(cls, book_id: int, chapter_number: int | None = None) -> None:
         """
         If chapter number is given: Wait for the chapter to be generated.
         Otherwise: Wait for all chapters of the book to be generated.
@@ -233,4 +251,4 @@ WHERE book_id=:book_id AND chapter_number=:chapter_number
 
             if done_count >= total_count:
                 return
-            time.sleep(5)
+            await asyncio.sleep(5)

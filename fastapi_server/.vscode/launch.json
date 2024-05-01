@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Fastapi Server: Run Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
@@ -17,10 +17,11 @@
         },
         {
             "name": "Fastapi Server: Start LiteStar",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "program": "app.py",
+            "module": "litestar",
+            "args": ["run", "--reload", "--wc", "8"],
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
@@ -29,7 +30,7 @@
         },
         {
             "name": "Fastapi Server: Run Tests",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "module": "pytest",

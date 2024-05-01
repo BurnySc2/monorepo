@@ -3,16 +3,13 @@ from __future__ import annotations
 import asyncio
 import datetime
 import io
-import re
 import zipfile
 from collections import OrderedDict
 from typing import Annotated
 
 from litestar import Controller, Response, get, post
 from litestar.connection import ASGIConnection
-from litestar.contrib.htmx.response import (
-    ClientRedirect,
-)
+from litestar.contrib.htmx.response import ClientRedirect, ClientRefresh
 from litestar.datastructures import Cookie, UploadFile
 from litestar.di import Provide
 from litestar.enums import MediaType, RequestEncodingType
@@ -31,15 +28,6 @@ from routes.audiobook.temp_read_epub import (
     extract_metadata,
 )
 from routes.login_logout import COOKIES, TwitchUser, get_twitch_user, logged_into_twitch_guard
-
-
-def normalize_filename(filename: str) -> str:
-    # Replace any character that is not alphanumeric or underscore with an underscore
-    normalized_filename = re.sub(r"[^\w]", "_", filename)
-    # Replace two or more underscores with one underscore
-    normalized_filename = re.sub(r"_+", "_", normalized_filename)
-    # Remove underscores from the start and end
-    return normalized_filename.strip("_")
 
 
 async def get_user_settings(
@@ -85,10 +73,21 @@ async def background_convert_function() -> None:
             volume=audio_settings.voice_volume,
             pitch=audio_settings.voice_pitch,
         )
-        chapter.audio_data = audio.getvalue()
-        chapter.has_audio = True
+
+        # Get data from db, user may have clicked "delete" button on book or chapter
+        chapter_entry2: OrderedDict = chapter_table.find_one(id=chapter.id)
+        if chapter_entry2 is None:
+            # Book was deleted
+            return
+        chapter2: Chapter = Chapter.model_validate(chapter_entry2)
+        if chapter.audio_settings != chapter2.audio_settings:
+            # Audio was removed while conversion was in progress
+            logger.info("Audio settings mismatch, skipping")
+            return
 
         # Save result to database
+        chapter.audio_data = audio.getvalue()
+        chapter.has_audio = True
         logger.info("Saving result to database")
         chapter_table.update(
             chapter.model_dump(),
@@ -220,7 +219,6 @@ class MyAudiobookEpubRoute(Controller):
                 "user_settings": user_settings,
                 "book_id": entry_book.id,
                 "book_name": entry_book.book_title,
-                "book_name_zip": normalize_filename(entry_book.book_title),
                 "book_author": entry_book.book_author,
                 "available_voices": available_voices,
                 "chapters": [
@@ -240,11 +238,10 @@ class MyAudiobookEpubRoute(Controller):
 
     @post(
         "/generate_audio",
-        sync_to_thread=True,
         dependencies={"user_settings": Provide(get_user_settings)},
         guards=[owns_book_guard],
     )
-    def generate_audio(
+    async def generate_audio(
         self,
         book_id: int,
         chapter_number: int,
@@ -267,7 +264,7 @@ class MyAudiobookEpubRoute(Controller):
             audio_settings=user_settings,
         )
 
-        Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
+        # await Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
 
         # Dont load audio data or content from database
         # pyre-fixme[9]
@@ -287,15 +284,14 @@ class MyAudiobookEpubRoute(Controller):
 
     @post(
         "/load_generated_audio",
-        sync_to_thread=True,
         guards=[owns_book_guard],
     )
-    def load_generated_audio(
+    async def load_generated_audio(
         self,
         book_id: int,
         chapter_number: int,
     ) -> Template:
-        Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
+        await Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
         # Audio has been generated
         entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
         chapter = Chapter.model_validate(entry)
@@ -313,8 +309,8 @@ class MyAudiobookEpubRoute(Controller):
             },
         )
 
-    @get("/download_chapter_mp3", sync_to_thread=True, media_type=MediaType.TEXT, guards=[owns_book_guard])
-    def download_mp3(
+    @get("/download_chapter_mp3", guards=[owns_book_guard])
+    async def download_mp3(
         self,
         book_id: int,
         chapter_number: int,
@@ -323,36 +319,45 @@ class MyAudiobookEpubRoute(Controller):
         From db: fetch generated audio bytes, stream / download to user
         """
         entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
-        data = Book.decode_data(entry["audio_data"])
-        byte_stream = io.BytesIO(data)
-        return Stream(content=byte_stream)
+        chapter = Chapter.model_validate(entry)
+        # pyre-fixme[6]
+        byte_stream = io.BytesIO(chapter.audio_data)
+        return Stream(
+            content=byte_stream,
+            headers={
+                # Change file name
+                "Content-Disposition": f"attachment; filename={chapter.chapter_title_normalized}.mp3",
+                # No compression
+                "Accept-Encoding": "identity",
+            },
+            media_type="audio/mpeg",
+        )
 
     @post(
         "generate_audio_book",
         dependencies={"user_settings": Provide(get_user_settings)},
         guards=[owns_book_guard],
-        sync_to_thread=True,
     )
-    def generate_audio_book(
+    async def generate_audio_book(
         self,
         twitch_user: TwitchUser,
         book_id: int,
         user_settings: AudioSettings,
-    ) -> ClientRedirect:
+    ) -> ClientRefresh:
         """
         Generate audio for all chapters
         """
-        # TODO Return template from initial page load, or just client reload this site?
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
         # pyre-ignore[6]
         Chapter.queue_chapter_to_be_generated(book.id, audio_settings=user_settings)
         # pyre-ignore[6]
-        Chapter.wait_for_audio_to_be_generated(book_id=book.id)
-        return ClientRedirect(f"/twitch/audiobook/epub/book/{book.id}")
+        await Chapter.wait_for_audio_to_be_generated(book_id=book.id)
+        # return ClientRedirect(f"/twitch/audiobook/epub/book/{book.id}")
+        return ClientRefresh()
 
-    @get("/download_book_zip", sync_to_thread=True, guards=[owns_book_guard])
-    def download_book_zip(
+    @get("/download_book_zip", media_type=MediaType.TEXT, guards=[owns_book_guard])
+    async def download_book_zip(
         self,
         book_id: int,
         twitch_user: TwitchUser,
@@ -365,13 +370,13 @@ class MyAudiobookEpubRoute(Controller):
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
         # pyre-ignore[6]
-        Chapter.wait_for_audio_to_be_generated(book_id=book.id)
+        await Chapter.wait_for_audio_to_be_generated(book_id=book.id)
 
         audio_data = {}
         for chapter_number in range(1, book.chapter_count + 1):
             entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
             chapter: Chapter = Chapter.model_validate(entry)
-            normalized_chapter_name = normalize_filename(chapter.chapter_title)
+            normalized_chapter_name = chapter.chapter_title_normalized
             audio_file_name = f"{chapter_number:04d}_{normalized_chapter_name}.mp3"
             audio_data[audio_file_name] = chapter.audio_data
 
@@ -380,7 +385,17 @@ class MyAudiobookEpubRoute(Controller):
             for file_name, content in audio_data.items():
                 zipf.writestr(file_name, content)
         zip_buffer.seek(0)  # Required?
-        return Stream(content=zip_buffer)
+
+        return Stream(
+            content=zip_buffer,
+            # No compression
+            headers={
+                # Change file name
+                "Content-Disposition": f"attachment; filename={book.book_title_normalized}.zip",
+                # No compression
+                "Accept-Encoding": "identity",
+            },
+        )
 
     @post("/save_settings_to_cookies")
     async def save_settings_to_cookies(
