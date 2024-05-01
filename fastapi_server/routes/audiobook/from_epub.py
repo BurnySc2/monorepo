@@ -172,8 +172,6 @@ class MyAudiobookEpubRoute(Controller):
 
         # TODO If user uploaded X books in the last Y days, return error that too many books were uploaded
 
-        # Act as transaction to only insert full book and chapters
-
         chapters: list[EpubChapter] = extract_chapters(epub_data)
         # Insert book
         my_book = Book(
@@ -181,9 +179,9 @@ class MyAudiobookEpubRoute(Controller):
             book_title=metadata.title,
             book_author=metadata.author,
             chapter_count=len(chapters),
-            # data=data.getvalue(),
             upload_date=datetime.datetime.now(datetime.timezone.utc),
         )
+        # Act as transaction to only insert full book and chapters
         with db:
             entry_id = book_table.insert(my_book.model_dump(exclude=["id"]))
 
@@ -227,11 +225,13 @@ class MyAudiobookEpubRoute(Controller):
                 "available_voices": available_voices,
                 "chapters": [
                     {
+                        "chapter_title": chapter.chapter_title,
                         "chapter_number": chapter.chapter_number,
                         "name": chapter.chapter_title,
                         "word_count": chapter.word_count,
                         "sentence_count": chapter.sentence_count,
-                        "has_audio": chapter.has_audio,  # TODO
+                        "has_audio": chapter.has_audio,
+                        "queued": chapter.queued,
                     }
                     for chapter in chapters
                 ],
@@ -269,17 +269,47 @@ class MyAudiobookEpubRoute(Controller):
 
         Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
 
+        # Dont load audio data or content from database
+        # pyre-fixme[9]
+        chapter: Chapter = Chapter.get_chapter_without_audio_data(book_id=book_id, chapter_number=chapter_number)
+        return Template(
+            template_name="audiobook/epub_chapter.html",
+            context={
+                "book_id": book_id,
+                "chapter": {
+                    "chapter_title": chapter.chapter_title,
+                    "chapter_number": chapter_number,
+                    "has_audio": chapter.has_audio,
+                    "queued": chapter.queued,
+                },
+            },
+        )
+
+    @post(
+        "/load_generated_audio",
+        sync_to_thread=True,
+        guards=[owns_book_guard],
+    )
+    def load_generated_audio(
+        self,
+        book_id: int,
+        chapter_number: int,
+    ) -> Template:
+        Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
         # Audio has been generated
         entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
-        # TODO Could return earli with a template and let htmx do the polling
-
+        chapter = Chapter.model_validate(entry)
         return Template(
-            template_name="audiobook/audio_player.html",
+            template_name="audiobook/epub_chapter.html",
             context={
-                "mp3_b64_data": entry["audio_data"],
-                "chapter_title": entry["chapter_title"],
                 "book_id": book_id,
-                "chapter_number": chapter_number,
+                "chapter": {
+                    "mp3_b64_data": chapter.audio_data_b64,
+                    "chapter_title": chapter.chapter_title,
+                    "chapter_number": chapter_number,
+                    "has_audio": chapter.has_audio,
+                    "queued": chapter.queued,
+                },
             },
         )
 
@@ -312,6 +342,7 @@ class MyAudiobookEpubRoute(Controller):
         """
         Generate audio for all chapters
         """
+        # TODO Return template from initial page load, or just client reload this site?
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
         # pyre-ignore[6]
@@ -396,9 +427,11 @@ class MyAudiobookEpubRoute(Controller):
         """
         Chapter.delete_audio(book_id=book_id, chapter_number=chapter_number)
         return Template(
-            template_name="audiobook/generate_audio_button.html",
+            template_name="audiobook/epub_chapter.html",
             context={
                 "book_id": book_id,
-                "chapter_number": chapter_number,
+                "chapter": {
+                    "chapter_number": chapter_number,
+                },
             },
         )

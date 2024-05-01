@@ -126,7 +126,7 @@ class Chapter(BaseModel):
     def get_metadata(cls, book_id: int) -> list[Chapter]:
         data = db.query(
             f"""
-SELECT book_id, chapter_title, chapter_number, word_count, sentence_count, has_audio FROM {chapter_table_name}
+SELECT book_id, chapter_title, chapter_number, word_count, sentence_count, has_audio, queued FROM {chapter_table_name}
 WHERE book_id=:id
 ORDER BY chapter_number
             """,
@@ -138,6 +138,24 @@ ORDER BY chapter_number
         if len(results) == 0:
             return []
         return [Chapter.model_validate(result) for result in results]
+
+    @classmethod
+    def get_chapter_without_audio_data(cls, book_id: int, chapter_number: int) -> Chapter | None:
+        data = db.query(
+            f"""
+SELECT book_id, chapter_title, chapter_number, word_count, sentence_count, has_audio, queued FROM {chapter_table_name}
+WHERE book_id=:book_id AND chapter_number=:chapter_number
+LIMIT 1
+            """,
+            {
+                "book_id": book_id,
+                "chapter_number": chapter_number,
+            },
+        )
+        results = list(data)
+        if len(results) == 0:
+            return None
+        return Chapter.model_validate(results[0])
 
     @classmethod
     def queue_chapter_to_be_generated(
