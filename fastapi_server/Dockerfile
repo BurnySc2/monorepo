@@ -18,4 +18,4 @@ RUN poetry install --without dev
 
 COPY . /root/fastapi_server
 
-CMD ["poetry", "run", "litestar", "run"]
+CMD ["poetry", "run", "litestar", "run", "--host", "0.0.0.0", "--port", "8000"]

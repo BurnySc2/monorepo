@@ -264,8 +264,6 @@ class MyAudiobookEpubRoute(Controller):
             audio_settings=user_settings,
         )
 
-        # await Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
-
         # Dont load audio data or content from database
         # pyre-fixme[9]
         chapter: Chapter = Chapter.get_chapter_without_audio_data(book_id=book_id, chapter_number=chapter_number)
