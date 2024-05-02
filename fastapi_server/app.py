@@ -13,8 +13,9 @@ from loguru import logger
 
 from routes.audiobook.from_epub import MyAudiobookEpubRoute, background_convert_function
 from routes.hello_world import MyRootRoute
-from routes.htmx_chat import MyChatRoute
-from routes.htmx_todolist import MyTodoRoute
+
+# from routes.htmx_chat import MyChatRoute
+# from routes.htmx_todolist import MyTodoRoute
 from routes.login_logout import MyLoginRoute, MyLogoutRoute
 
 # from routes.similar_words import MyWordsRoute
@@ -69,11 +70,11 @@ app = Litestar(
         get_book,
         index,
         MyAudiobookEpubRoute,
-        MyChatRoute,
+        # MyChatRoute,
         MyLoginRoute,
         MyLogoutRoute,
         MyRootRoute,
-        MyTodoRoute,
+        # MyTodoRoute,
         MyTTSRoute,
         TTSWebsocketHandler,
         create_static_files_router(path="/static", directories=["assets"]),
