@@ -105,8 +105,9 @@ async def background_convert_function() -> None:
 
         try:
             await convert_one()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.exception(e)
+            await asyncio.sleep(1)
 
 
 async def owns_book_guard(
