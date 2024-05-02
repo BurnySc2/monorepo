@@ -107,7 +107,6 @@ async def background_convert_function() -> None:
             await convert_one()
         except Exception as e:
             logger.exception(e)
-            raise
 
 
 async def owns_book_guard(
@@ -238,14 +237,13 @@ class MyAudiobookEpubRoute(Controller):
 
     @post(
         "/generate_audio",
-        dependencies={"user_settings": Provide(get_user_settings)},
         guards=[owns_book_guard],
     )
     async def generate_audio(
         self,
         book_id: int,
         chapter_number: int,
-        user_settings: AudioSettings,
+        data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Template:
         """
         Implementation of what happens when user clicks "generate audio" button
@@ -261,7 +259,7 @@ class MyAudiobookEpubRoute(Controller):
         Chapter.queue_chapter_to_be_generated(
             book_id=book_id,
             chapter_number=chapter_number,
-            audio_settings=user_settings,
+            audio_settings=data,
         )
 
         # Dont load audio data or content from database
@@ -327,20 +325,20 @@ class MyAudiobookEpubRoute(Controller):
                 "Content-Disposition": f"attachment; filename={chapter.chapter_title_normalized}.mp3",
                 # No compression
                 "Accept-Encoding": "identity",
+                "Content-Length": f"{len(chapter.audio_data)}",
             },
             media_type="audio/mpeg",
         )
 
     @post(
         "generate_audio_book",
-        dependencies={"user_settings": Provide(get_user_settings)},
         guards=[owns_book_guard],
     )
     async def generate_audio_book(
         self,
         twitch_user: TwitchUser,
         book_id: int,
-        user_settings: AudioSettings,
+        data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> ClientRefresh:
         """
         Generate audio for all chapters
@@ -348,7 +346,7 @@ class MyAudiobookEpubRoute(Controller):
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
         # pyre-ignore[6]
-        Chapter.queue_chapter_to_be_generated(book.id, audio_settings=user_settings)
+        Chapter.queue_chapter_to_be_generated(book.id, audio_settings=data)
         # pyre-ignore[6]
         await Chapter.wait_for_audio_to_be_generated(book_id=book.id)
         # return ClientRedirect(f"/twitch/audiobook/epub/book/{book.id}")
@@ -392,27 +390,8 @@ class MyAudiobookEpubRoute(Controller):
                 "Content-Disposition": f"attachment; filename={book.book_title_normalized}.zip",
                 # No compression
                 "Accept-Encoding": "identity",
+                "Content-Length": f"{len(zip_buffer.getvalue())}",
             },
-        )
-
-    @post("/save_settings_to_cookies")
-    async def save_settings_to_cookies(
-        self,
-        data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
-    ) -> Response:
-        """
-        If all chapters have generated audio:
-
-        create zip from all chapters, make download available to user
-        """
-        return Response(
-            content="",
-            cookies=[
-                Cookie(key="voice_name", value=data.voice_name, path="/"),
-                Cookie(key="voice_rate", value=str(data.voice_rate), path="/"),
-                Cookie(key="voice_volume", value=str(data.voice_volume), path="/"),
-                Cookie(key="voice_pitch", value=str(data.voice_pitch), path="/"),
-            ],
         )
 
     @post("/delete_book", guards=[owns_book_guard])
@@ -447,4 +426,25 @@ class MyAudiobookEpubRoute(Controller):
                     "chapter_number": chapter_number,
                 },
             },
+        )
+
+    @post("/save_settings_to_cookies")
+    async def save_settings_to_cookies(
+        self,
+        data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    ) -> Response:
+        """
+        If all chapters have generated audio:
+
+        create zip from all chapters, make download available to user
+        """
+        # TODO Set cookie duration to infinite
+        return Response(
+            content="",
+            cookies=[
+                Cookie(key="voice_name", value=data.voice_name, path="/", expires=10**10),
+                Cookie(key="voice_rate", value=str(data.voice_rate), path="/", expires=10**10),
+                Cookie(key="voice_volume", value=str(data.voice_volume), path="/", expires=10**10),
+                Cookie(key="voice_pitch", value=str(data.voice_pitch), path="/", expires=10**10),
+            ],
         )

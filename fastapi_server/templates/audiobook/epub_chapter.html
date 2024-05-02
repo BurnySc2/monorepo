@@ -35,7 +35,8 @@ State4: audio generated, audio loaded
   <button class="flex border-4 border-black p-2 rounded-3xl hover:bg-green-300 items-center"
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/twitch/audiobook/epub/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
-    hx-trigger="click" hx-indicator="#spinner1_{{ chapter.chapter_number }}">Generate audio
+    hx-trigger="click" hx-indicator="#spinner1_{{ chapter.chapter_number }}"
+    hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch">Generate audio
     <img id="spinner1_{{ chapter.chapter_number }}" class="htmx-indicator" src="/static/spinner.svg" />
   </button>
   {% endif %}

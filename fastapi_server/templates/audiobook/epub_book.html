@@ -35,10 +35,9 @@
         <div class="flex flex-col border-2 border-black rounded p-2">
             <div class="place-self-center text-2xl font-semibold underline">Settings</div>
             <form class="grid grid-cols-2" hx-post="/twitch/audiobook/epub/save_settings_to_cookies" hx-swap="none"
-                hx-include="#voice_name" hx-include="#voice_rate" hx-include="#voice_volume" hx-include="#voice_pitch"
-                hx-trigger="change delay:1s">
+                hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-trigger="change delay:1s">
                 <div>Voice</div>
-                <select name="voice_name">
+                <select id="voice_name" name="voice_name">
                     {% for voice_name in available_voices %}
                     <option value="{{ voice_name }}" {% if user_settings.voice_name==voice_name %} selected {% endif %}>
                         {{
@@ -46,18 +45,19 @@
                     {% endfor %}
                 </select>
                 <div>Rate</div>
-                <input name="voice_rate" type="number" min="0" value="{{ user_settings.voice_rate }}" />
+                <input id="voice_rate" name="voice_rate" type="number" min="0" value="{{ user_settings.voice_rate }}" />
                 <div>Volume</div>
-                <input name="voice_volume" type="number" min="0" value="{{ user_settings.voice_volume }}" />
+                <input id="voice_volume" name="voice_volume" type="number" min="0"
+                    value="{{ user_settings.voice_volume }}" />
                 <div>pitch</div>
-                <input name="voice_pitch" type="number" value="{{ user_settings.voice_pitch }}" />
+                <input id="voice_pitch" name="voice_pitch" type="number" value="{{ user_settings.voice_pitch }}" />
             </form>
         </div>
         <div class="flex flex-col border-2 border-black gap-8 rounded  p-2">
             <div class="place-self-center text-2xl font-semibold underline">Book</div>
             <div class="flex justify-center">
                 <button hx-post="/twitch/audiobook/epub/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
-                    hx-indicator="#spinner_book"
+                    hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-indicator="#spinner_book"
                     class="border-2 border-black p-2 hover:bg-green-300 rounded-lg flex items-center">Generate
                     audio for
                     all
