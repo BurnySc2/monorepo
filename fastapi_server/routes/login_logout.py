@@ -211,11 +211,13 @@ class MyLoginRoute(Controller):
     ) -> Response | Redirect:
         if twitch_user is not None:
             # User is already logged in
+            # pyre-fixme[6]
             return Redirect("/login", status_code=HTTP_302_FOUND)
         if code is None:
             return Redirect(
                 # TODO encode URI
                 f"https://id.twitch.tv/oauth2/authorize?client_id={TWITCH_CLIENT_ID}&redirect_uri={BACKEND_SERVER_URL}/login/twitch&response_type=code&scope=user:read:email",
+                # pyre-fixme[6]
                 status_code=HTTP_302_FOUND,
             )
 
@@ -238,6 +240,7 @@ class MyLoginRoute(Controller):
             data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
+        # pyre-fixme[6]
         redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         redirect.set_cookie(
             Cookie(
@@ -260,6 +263,7 @@ class MyLoginRoute(Controller):
         """
         if github_user is not None:
             # User is already logged in
+            # pyre-fixme[6]
             return Redirect("/login", status_code=HTTP_302_FOUND)
         # If 'code' is not set as a param, redirect to github page
         # which redirects to this page again with 'code' parameter
@@ -286,7 +290,7 @@ class MyLoginRoute(Controller):
             data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
-
+        # pyre-fixme[6]
         redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         redirect.set_cookie(
             Cookie(
@@ -304,6 +308,7 @@ class MyLogoutRoute(Controller):
 
     @get("/")
     async def user_logout(self) -> Redirect:
+        # pyre-fixme[6]
         redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         for cookie_key in COOKIES.values():
             redirect.delete_cookie(cookie_key)

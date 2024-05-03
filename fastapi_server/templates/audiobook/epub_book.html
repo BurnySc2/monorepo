@@ -81,7 +81,7 @@
             grid-template-columns: auto auto;">
                 <!-- <div class="grid grid-cols-2"> -->
                 {% for chapter in chapters %}
-                <div class="self-center">'{{ chapter.name }}' with {{ chapter.sentence_count }} sentences</div>
+                <div class="self-center">'{{ chapter.chapter_title }}' with {{ chapter.sentence_count }} sentences</div>
                 {% include "audiobook/epub_chapter.html" with context %}
                 {% endfor %}
             </div>

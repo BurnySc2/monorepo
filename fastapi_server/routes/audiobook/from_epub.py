@@ -19,7 +19,16 @@ from litestar.params import Body, Parameter
 from litestar.response import Stream, Template
 from loguru import logger
 
-from routes.audiobook.schema import AudioSettings, Book, Chapter, book_table, chapter_table, db
+from routes.audiobook.schema import (
+    AudioSettings,
+    Book,
+    Chapter,
+    book_table,
+    chapter_table,
+    db,
+    normalize_filename,
+    normalize_title,
+)
 from routes.audiobook.temp_generate_tts import generate_text_to_speech, get_supported_voices
 from routes.audiobook.temp_read_epub import (
     EpubChapter,
@@ -223,14 +232,13 @@ class MyAudiobookEpubRoute(Controller):
             context={
                 "user_settings": user_settings,
                 "book_id": entry_book.id,
-                "book_name": entry_book.book_title,
+                "book_name": entry_book.book_title.title(),
                 "book_author": entry_book.book_author,
                 "available_voices": available_voices,
                 "chapters": [
                     {
-                        "chapter_title": chapter.chapter_title,
+                        "chapter_title": normalize_title(chapter.chapter_title),
                         "chapter_number": chapter.chapter_number,
-                        "name": chapter.chapter_title,
                         "word_count": chapter.word_count,
                         "sentence_count": chapter.sentence_count,
                         "has_audio": chapter.has_audio,
@@ -328,7 +336,7 @@ class MyAudiobookEpubRoute(Controller):
             content=byte_stream,
             headers={
                 # Change file name
-                "Content-Disposition": f"attachment; filename={chapter.chapter_title_normalized}.mp3",
+                "Content-Disposition": f"attachment; filename={normalize_filename(chapter.chapter_title)}.mp3",
                 # No compression
                 "Accept-Encoding": "identity",
                 "Content-Length": f"{len(chapter.audio_data)}",
@@ -375,7 +383,7 @@ class MyAudiobookEpubRoute(Controller):
         for chapter_number in range(1, book.chapter_count + 1):
             entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
             chapter: Chapter = Chapter.model_validate(entry)
-            normalized_chapter_name = chapter.chapter_title_normalized
+            normalized_chapter_name = normalize_filename(chapter.chapter_title)
             audio_file_name = f"{chapter_number:04d}_{normalized_chapter_name}.mp3"
             audio_data[audio_file_name] = chapter.audio_data
 
@@ -390,7 +398,7 @@ class MyAudiobookEpubRoute(Controller):
             # No compression
             headers={
                 # Change file name
-                "Content-Disposition": f"attachment; filename={book.book_title_normalized}.zip",
+                "Content-Disposition": f"attachment; filename={normalize_filename(book.book_title)} - {normalize_filename(book.book_author)}.zip",  # noqa: E501
                 # No compression
                 "Accept-Encoding": "identity",
                 "Content-Length": f"{len(zip_buffer.getvalue())}",

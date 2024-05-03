@@ -26,13 +26,18 @@ chapter_table_name = f"litestar_{STAGE}_audiobook_chapter"
 chapter_table: dataset.Table = db[chapter_table_name]
 
 
-def normalize_filename(filename: str) -> str:
-    # Replace any character that is not alphanumeric or underscore with an underscore
-    normalized_filename = re.sub(r"[^\w]", "_", filename)
-    # Replace two or more underscores with one underscore
-    normalized_filename = re.sub(r"_+", "_", normalized_filename)
-    # Remove underscores from the start and end
-    return normalized_filename.strip("_")
+def normalize_title(title: str) -> str:
+    normalized_title = title.capitalize()
+    # Replace any character that is not alphanumeric or underscore with a space
+    normalized_title = re.sub(r"[^\w]", " ", normalized_title)
+    # Replace two or more space with one space
+    normalized_title = re.sub(r" +", " ", normalized_title)
+    # Remove space from the start and end
+    return normalized_title.strip()
+
+
+def normalize_filename(text: str) -> str:
+    return re.sub(" ", "_", normalize_title(text))
 
 
 class AudioSettings(BaseModel):
@@ -69,10 +74,6 @@ class Book(BaseModel):
     def has_audio(self) -> bool:
         # Check db if all chapters have audio
         return chapter_table.count(book_id=self.id) == self.chapter_count
-
-    @property
-    def book_title_normalized(self) -> str:
-        return normalize_filename(self.book_title)
 
     @classmethod
     def encode_data(cls, data: bytes) -> str:
@@ -135,10 +136,6 @@ class Chapter(BaseModel):
     def combined_text(self) -> str:
         # Text still contains "\n" characters
         return " ".join(row for paragraph in self.content for row in paragraph)
-
-    @property
-    def chapter_title_normalized(self) -> str:
-        return normalize_filename(self.chapter_title)
 
     @classmethod
     def get_metadata(cls, book_id: int) -> list[Chapter]:

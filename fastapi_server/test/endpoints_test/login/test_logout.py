@@ -1,6 +1,5 @@
 from test.base_test import test_client  # noqa: F401
 
-from litestar.contrib.htmx._utils import HTMXHeaders
 from litestar.status_codes import HTTP_200_OK
 from litestar.testing import TestClient
 

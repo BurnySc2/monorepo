@@ -6,7 +6,8 @@ from pathlib import Path
 import nltk  # pyre-fixme[21]
 from bs4 import BeautifulSoup
 from ebooklib import ITEM_DOCUMENT  # pyre-fixme[21]
-from ebooklib.epub import EpubHtml, EpubReader, Link  # pyre-fixme[21]
+from ebooklib.epub import EpubHtml, EpubReader, Link, Section  # pyre-fixme[21]
+from loguru import logger
 from nltk import word_tokenize
 from nltk.tokenize import sent_tokenize  # pyre-fixme[21]
 
@@ -56,13 +57,23 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
     prev_text = ""
     chapters = []
     chapter_number = 1
-    for chapter in c.book.toc:
+
+    # pyre-fixme[11]
+    def follow_link(chapter: Link | Section):
+        nonlocal chapter_number, prev_text
+        if isinstance(chapter, list | tuple):
+            for section in chapter:
+                follow_link(section)
+            return
+        if isinstance(chapter, Section):
+            return
         if not isinstance(chapter, Link):
-            continue
-        # pyre-fixme[11, 35]
+            logger.info(f"Was type: {type(chapter)}")
+            return
+        # pyre-fixme[11]
         epub_html: EpubHtml = c.book.get_item_with_href(chapter.href.split("#")[0])
         if epub_html.get_type() != ITEM_DOCUMENT:
-            continue
+            return
 
         # Parse the HTML content
         soup = BeautifulSoup(epub_html.get_body_content(), "html.parser")
@@ -73,7 +84,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
             span.replace_with(span.text.strip().strip("\n"))
 
         texts = []
-        for p_element in soup.find_all("p"):
+        for p_element in soup.find_all():
             # Replace all capital letters at start of chapter
             for span in p_element.find_all("span"):
                 span.unwrap()
@@ -99,6 +110,9 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
             )
             chapter_number += 1
             prev_text = combined_text
+
+    for chapter in c.book.toc:
+        follow_link(chapter)
     return chapters
 
 
