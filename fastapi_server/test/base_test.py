@@ -1,13 +1,23 @@
 import pytest
 from litestar.testing import TestClient
+from pytest_httpx import HTTPXMock
 
 from app import app
+from routes.login_logout import COOKIES
 
 
 @pytest.fixture
 def test_client():
     with TestClient(app=app) as client:
         return client
+
+
+def log_in_with_twitch(test_client: TestClient, httpx_mock: HTTPXMock) -> None:
+    test_client.cookies[COOKIES["twitch"]] = "valid_access_token"
+    httpx_mock.add_response(
+        url="https://api.twitch.tv/helix/users",
+        json={"data": [{"id": "123", "login": "abc", "display_name": "Abc", "email": "abc@example.com"}]},
+    )
 
 
 # class BaseTest:

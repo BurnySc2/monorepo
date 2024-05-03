@@ -1,7 +1,8 @@
-from test.base_test import test_client  # noqa: F401
+from test.base_test import test_client  # noqa: F401  # noqa: F401
 from unittest.mock import Mock, patch
 
 import pytest
+from litestar.contrib.htmx._utils import HTMXHeaders
 from litestar.status_codes import HTTP_200_OK, HTTP_409_CONFLICT, HTTP_503_SERVICE_UNAVAILABLE
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
@@ -43,20 +44,19 @@ async def test_get_twitch_user_no_access_token():
     assert result is None
 
 
-@pytest.mark.asyncio
-async def test_route_twitch_login_already_logged_in(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+def test_route_twitch_login_already_logged_in(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
     # User needs to have the twitch cookie to be linked to an account
     test_client.cookies[COOKIES["twitch"]] = "valid_access_token"
     # Get request needs to return the user data
     response = test_client.get("/login/twitch")
     assert response.status_code == HTTP_200_OK
-    assert response.url.path == "/login"
+    assert response.headers.get(HTMXHeaders.REDIRECT) == "/login"
+    assert response.headers.get("location") is None
     # Make sure cookie remains unchanged
     assert test_client.cookies[COOKIES["twitch"]] == "valid_access_token"
 
 
-@pytest.mark.asyncio
-async def test_route_twitch_login_code_given_success(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+def test_route_twitch_login_code_given_success(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
     """
     This test case checks the behavior of the application when the Twitch API returns the access token
     successfully using a code.
@@ -66,23 +66,18 @@ async def test_route_twitch_login_code_given_success(test_client: TestClient, ht
         url="https://id.twitch.tv/oauth2/token",
         json={"access_token": "myaccesstoken"},
     )
-    # After returning access token, needs to retrieve the user
-    httpx_mock.add_response(
-        url="https://api.twitch.tv/helix/users",
-        json={"data": [{"id": "123", "login": "abc", "display_name": "Abc", "email": "abc@example.com"}]},
-    )
     # Make sure cookie was not set before
     assert COOKIES["twitch"] not in test_client.cookies
     # Twitch api returns a parameter "code=somevalue" which can be used to fetch the access token
     response = test_client.get("/login/twitch?code=mycode")
     assert response.status_code == HTTP_200_OK
-    assert response.url.path == "/login"
+    assert response.headers.get(HTMXHeaders.REDIRECT) == "/login"
+    assert response.headers.get("location") is None
     # Make sure cookie has been set
     assert test_client.cookies[COOKIES["twitch"]] == "myaccesstoken"
 
 
-@pytest.mark.asyncio
-async def test_route_twitch_login_code_given_but_service_down(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+def test_route_twitch_login_code_given_but_service_down(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
     """
     This test case checks the behavior of the application when the Twitch API is down
     while trying to fetch the access token using a code.
@@ -92,8 +87,7 @@ async def test_route_twitch_login_code_given_but_service_down(test_client: TestC
     assert response.status_code == HTTP_503_SERVICE_UNAVAILABLE
 
 
-@pytest.mark.asyncio
-async def test_route_twitch_login_code_given_but_error(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+def test_route_twitch_login_code_given_but_error(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
     """
     This test case checks the behavior of the application when the Twitch API returns an error
     while trying to fetch the access token using a code.
