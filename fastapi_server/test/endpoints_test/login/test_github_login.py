@@ -2,12 +2,17 @@ from test.base_test import test_client  # noqa: F401
 from unittest.mock import Mock, patch
 
 import pytest
-from litestar.contrib.htmx._utils import HTMXHeaders
-from litestar.status_codes import HTTP_200_OK, HTTP_409_CONFLICT, HTTP_503_SERVICE_UNAVAILABLE
+from litestar.status_codes import (
+    HTTP_200_OK,
+    HTTP_409_CONFLICT,
+    HTTP_503_SERVICE_UNAVAILABLE,
+)
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
 from routes.login_logout import COOKIES, GithubUser, UserCache, get_github_user
+
+_test_client = test_client
 
 
 @pytest.mark.asyncio
@@ -49,8 +54,7 @@ def test_route_github_login_already_logged_in(test_client: TestClient, httpx_moc
     )
     response = test_client.get("/login/github")
     assert response.status_code == HTTP_200_OK
-    assert response.headers.get(HTMXHeaders.REDIRECT) == "/login"
-    assert response.headers.get("location") is None
+    assert response.url.path == "/login"
     # Make sure cookie remains unchanged
     assert test_client.cookies[COOKIES["github"]] == "valid_access_token"
 
@@ -65,13 +69,17 @@ def test_route_github_login_code_given_success(test_client: TestClient, httpx_mo
         url="https://github.com/login/oauth/access_token",
         json={"access_token": "myaccesstoken"},
     )
+    # Make sure the user can log in with access token afterwards
+    httpx_mock.add_response(
+        url="https://api.github.com/user",
+        json={"id": 123, "login": "Abc"},
+    )
     # Make sure cookie was not set before
     assert COOKIES["github"] not in test_client.cookies
     # Github api returns a parameter "code=somevalue" which can be used to fetch the access token
     response = test_client.get("/login/github?code=mycode")
     assert response.status_code == HTTP_200_OK
-    assert response.headers.get(HTMXHeaders.REDIRECT) == "/login"
-    assert response.headers.get("location") is None
+    assert response.url.path == "/login"
     # Make sure cookie has been set
     assert test_client.cookies[COOKIES["github"]] == "myaccesstoken"
 

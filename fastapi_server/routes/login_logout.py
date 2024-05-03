@@ -9,14 +9,17 @@ import httpx
 from dotenv import load_dotenv
 from litestar import Controller, Response, get
 from litestar.connection import ASGIConnection
-from litestar.contrib.htmx.response import ClientRedirect
 from litestar.datastructures import Cookie
 from litestar.di import Provide
 from litestar.exceptions import NotAuthorizedException
 from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Parameter
 from litestar.response import Redirect, Template
-from litestar.status_codes import HTTP_302_FOUND, HTTP_409_CONFLICT, HTTP_503_SERVICE_UNAVAILABLE
+from litestar.status_codes import (
+    HTTP_302_FOUND,
+    HTTP_409_CONFLICT,
+    HTTP_503_SERVICE_UNAVAILABLE,
+)
 
 load_dotenv()
 
@@ -205,14 +208,15 @@ class MyLoginRoute(Controller):
         self,
         twitch_user: TwitchUser | None,
         code: str | None,
-    ) -> Response | ClientRedirect:
+    ) -> Response | Redirect:
         if twitch_user is not None:
             # User is already logged in
-            return ClientRedirect("/login")
+            return Redirect("/login", status_code=HTTP_302_FOUND)
         if code is None:
-            return ClientRedirect(
+            return Redirect(
                 # TODO encode URI
                 f"https://id.twitch.tv/oauth2/authorize?client_id={TWITCH_CLIENT_ID}&redirect_uri={BACKEND_SERVER_URL}/login/twitch&response_type=code&scope=user:read:email",
+                status_code=HTTP_302_FOUND,
             )
 
         # Code was given, get access token and set cookie
@@ -234,7 +238,7 @@ class MyLoginRoute(Controller):
             data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
-        redirect = ClientRedirect("/login")
+        redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         redirect.set_cookie(
             Cookie(
                 key=COOKIES["twitch"],
@@ -250,13 +254,13 @@ class MyLoginRoute(Controller):
         self,
         github_user: GithubUser | None,
         code: str | None,
-    ) -> Response | ClientRedirect:
+    ) -> Response | Redirect:
         """
         This is the /login/github endpoint to log the user into a github account.
         """
         if github_user is not None:
             # User is already logged in
-            return ClientRedirect("/login")
+            return Redirect("/login", status_code=HTTP_302_FOUND)
         # If 'code' is not set as a param, redirect to github page
         # which redirects to this page again with 'code' parameter
         if code is None:
@@ -283,7 +287,7 @@ class MyLoginRoute(Controller):
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
 
-        redirect = ClientRedirect("/login")
+        redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         redirect.set_cookie(
             Cookie(
                 key=COOKIES["github"],
@@ -298,9 +302,9 @@ class MyLoginRoute(Controller):
 class MyLogoutRoute(Controller):
     path = "/logout"
 
-    @get("/", status_code=HTTP_302_FOUND)
-    async def user_logout(self) -> ClientRedirect:
-        redirect = ClientRedirect("/login")
+    @get("/")
+    async def user_logout(self) -> Redirect:
+        redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         for cookie_key in COOKIES.values():
             redirect.delete_cookie(cookie_key)
         return redirect

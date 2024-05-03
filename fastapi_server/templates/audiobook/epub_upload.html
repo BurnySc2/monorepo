@@ -31,10 +31,11 @@
 <body id="body">
     <div class="flex flex-col h-screen justify-center items-center bg-gray-200">
         <img id="spinner" class="htmx-indicator" src="/static/spinner.svg" />
-        <form class="flex flex-col" enctype="multipart/form-data" hx-post="/twitch/audiobook/epub" hx-trigger="submit"
+        <form class="flex flex-col gap-4 items-center place-items-center justify-items-center text-center" enctype="multipart/form-data" hx-post="/twitch/audiobook/epub" hx-trigger="submit"
             hx-target="#body" hx-swap="innerHTML" hx-indicator="#spinner">
-            <input type="file" name="file">
-            <button type="submit">Upload</button>
+            <input class="self-center border-black border-2" type="file" name="file" accept=".epub">
+            <button type="submit"
+                class="flex border-4 border-black p-4 rounded-3xl hover:bg-green-300">Upload epub</button>
         </form>
     </div>
 </body>

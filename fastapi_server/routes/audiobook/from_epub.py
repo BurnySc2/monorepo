@@ -29,6 +29,11 @@ from routes.audiobook.temp_read_epub import (
 )
 from routes.login_logout import COOKIES, TwitchUser, get_twitch_user, logged_into_twitch_guard
 
+"""
+TODO:
+some epubs dont get read properly (none or only some chapters detected)
+"""
+
 
 async def get_user_settings(
     voice_name: Annotated[str | None, Parameter(cookie="voice_name")] = None,
@@ -348,8 +353,6 @@ class MyAudiobookEpubRoute(Controller):
         book = Book.model_validate(book_entry)
         # pyre-ignore[6]
         Chapter.queue_chapter_to_be_generated(book.id, audio_settings=data)
-        # pyre-ignore[6]
-        await Chapter.wait_for_audio_to_be_generated(book_id=book.id)
         return ClientRefresh()
 
     @get("/download_book_zip", media_type=MediaType.TEXT, guards=[owns_book_guard])

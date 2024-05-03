@@ -105,6 +105,5 @@ capitalisation_policy = "upper"
 
 [tool.pytest_env]
 # Env variables to be used while tests run
-POSTGRES_CONNECTION_STRING = "sqlite:///test.db"
-# POSTGRES_CONNECTION_STRING = "sqlite:///:memory:"
+POSTGRES_CONNECTION_STRING = "sqlite:///:memory:"
 STAGE = "dev"

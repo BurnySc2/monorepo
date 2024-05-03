@@ -24,7 +24,7 @@ State4: audio generated, audio loaded
     <img class="htmx-indicator" style="opacity: 1;" src="/static/spinner.svg" />
   </button>
   {% elif chapter.has_audio is defined and chapter.has_audio %}
-  <button class="flex border-4 border-black p-2 rounded-3xl text-right hover:bg-green-300 items-center"
+  <button class="flex border-4 border-black p-2 rounded-3xl hover:bg-green-300 items-center"
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/twitch/audiobook/epub/load_generated_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
     hx-indicator="#spinner2_{{ chapter.chapter_number }}">Load audio

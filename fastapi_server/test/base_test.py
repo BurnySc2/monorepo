@@ -1,26 +1,13 @@
-import os
-
 import pytest
-from dataset import Table  # pyre-fixme[21]
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
 from app import app
-from routes.audiobook.schema import db
 from routes.login_logout import COOKIES
 
 
 @pytest.fixture
 def test_client():
-    # Reset db
-    # TODO Doesn't seem to work in memory due to SQLAlchemy
-    assert os.getenv("POSTGRES_CONNECTION_STRING") == "sqlite:///test.db"
-    with db:
-        table_name: str
-        for table_name in db.tables:
-            table: Table = db[table_name]
-            table.drop()
-
     with TestClient(app=app) as client:
         yield client
 
