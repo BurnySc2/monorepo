@@ -8,7 +8,7 @@ from collections import OrderedDict
 from io import BytesIO
 from pathlib import Path
 
-import aiohttp
+import httpx
 import soundfile  # pyre-fixme[21]
 
 
@@ -117,14 +117,14 @@ async def generate_tts(voice: Voices, text: str) -> tuple[str, float]:
         generated_tts_cache[key] = generated_tts_cache.pop(key)
         return generated_tts_cache[key]
 
-    async with aiohttp.ClientSession() as s:
+    async with httpx.AsyncClient() as client:
         headers = {
             "User-Agent": "com.zhiliaoapp.musically/2022600030 (Linux; U; Android 7.1.2; es_ES; SM-G988N; Build/NRD90M;tt-ok/3.12.13.1)",  # noqa: E501
             "Cookie": f"sessionid={os.getenv('TIKTOK_SESSION_ID')}",
         }
         url = f"https://api16-normal-c-useast2a.tiktokv.com/media/api/text/speech/invoke/?text_speaker={voice.value}&req_text={text}&speaker_map_type=0&aid=1233"
-        r = await s.post(url, headers=headers)
-        data = await r.json()
+        response = await client.post(url, headers=headers)
+        data = response.json()
 
         status_code: int = data["status_code"]
         # message: str = data["message"]

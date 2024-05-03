@@ -5,7 +5,7 @@ import os
 from dataclasses import dataclass
 from typing import Annotated, Generic, TypeVar
 
-import aiohttp
+import httpx
 from dotenv import load_dotenv
 from litestar import Controller, Response, get
 from litestar.connection import ASGIConnection
@@ -99,19 +99,19 @@ async def get_twitch_user(
     if cached_user is not None:
         return cached_user
 
-    async with aiohttp.ClientSession() as session:
+    async with httpx.AsyncClient() as client:
         # https://dev.twitch.tv/docs/api/reference/#get-users
-        get_response = await session.get(
-            "https://api.twitch.tv/helix/users",
+        get_response = await client.get(
+            url="https://api.twitch.tv/helix/users",
             headers={
                 "Authorization": f"Bearer {twitch_access_token}",
                 "Client-Id": TWITCH_CLIENT_ID,
                 "Accept": "application/json",
             },
         )
-        if not get_response.ok:
+        if get_response.is_error:
             return None
-        data = (await get_response.json())["data"][0]
+        data = get_response.json()["data"][0]
     twitch_user = TwitchUser(
         id=int(data["id"]),
         login=data["login"],
@@ -149,9 +149,9 @@ async def get_github_user(
     if cached_user is not None:
         return cached_user
 
-    async with aiohttp.ClientSession() as session:
+    async with httpx.AsyncClient() as client:
         # https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
-        get_response = await session.get(
+        get_response = await client.get(
             "https://api.github.com/user",
             headers={
                 "Accept": "application/vnd.github+json",
@@ -159,9 +159,9 @@ async def get_github_user(
                 "Authorization": f"Bearer {github_access_token}",
             },
         )
-        if not get_response.ok:
+        if get_response.is_error:
             return None
-        data = await get_response.json()
+        data = get_response.json()
     github_user = GithubUser(
         id=data["id"],
         login=data["login"],
@@ -221,9 +221,9 @@ class MyLoginRoute(Controller):
             )
 
         # Code was given, get access token and set cookie
-        async with aiohttp.ClientSession() as session:
+        async with httpx.AsyncClient() as client:
             url = "https://id.twitch.tv/oauth2/token"
-            post_response = await session.post(
+            post_response = await client.post(
                 url,
                 headers={"Accept": "application/json"},
                 json={
@@ -234,9 +234,9 @@ class MyLoginRoute(Controller):
                     "redirect_uri": f"{BACKEND_SERVER_URL}/login/twitch",
                 },
             )
-            if not post_response.ok:
+            if post_response.is_error:
                 return Response("Twitch may be unavailable", status_code=HTTP_503_SERVICE_UNAVAILABLE)
-            data = await post_response.json()
+            data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
         redirect = Redirect(
@@ -277,9 +277,9 @@ class MyLoginRoute(Controller):
             )
 
         # Code was given, get access token and set cookie
-        async with aiohttp.ClientSession() as session:
+        async with httpx.AsyncClient() as client:
             url = "https://github.com/login/oauth/access_token"
-            post_response = await session.post(
+            post_response = await client.post(
                 url,
                 headers={"Accept": "application/json"},
                 json={
@@ -288,9 +288,9 @@ class MyLoginRoute(Controller):
                     "code": code,
                 },
             )
-            if not post_response.ok:
+            if post_response.is_error:
                 return Response("Github may be unavailable", status_code=HTTP_503_SERVICE_UNAVAILABLE)
-            data = await post_response.json()
+            data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
 

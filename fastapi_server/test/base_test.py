@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 import pytest
 from litestar.testing import TestClient
 
@@ -8,10 +6,8 @@ from app import app
 
 @pytest.fixture
 def test_client():
-    # Disable startup functions because postgres is not available
-    with patch.object(app, "on_startup", []):  # noqa: SIM117
-        with TestClient(app=app) as client:
-            return client
+    with TestClient(app=app) as client:
+        return client
 
 
 # class BaseTest:

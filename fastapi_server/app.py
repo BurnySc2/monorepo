@@ -50,14 +50,6 @@ async def startup_event():
     # Run websocket handler which handles tts
     asyncio.create_task(TTSQueue.start_irc_bot())
     asyncio.create_task(background_convert_function())
-
-    # asyncio.create_task(background_task_function('hello', other_text=' world!'))
-    try:
-        # await todo_create_tables()
-        # await chat_create_tables()
-        pass
-    except ConnectionRefusedError:
-        logger.error("Is postgres running?")
     logger.info("Started!")
 
 
