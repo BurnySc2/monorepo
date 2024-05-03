@@ -350,7 +350,6 @@ class MyAudiobookEpubRoute(Controller):
         Chapter.queue_chapter_to_be_generated(book.id, audio_settings=data)
         # pyre-ignore[6]
         await Chapter.wait_for_audio_to_be_generated(book_id=book.id)
-        # return ClientRedirect(f"/twitch/audiobook/epub/book/{book.id}")
         return ClientRefresh()
 
     @get("/download_book_zip", media_type=MediaType.TEXT, guards=[owns_book_guard])

@@ -3,3 +3,6 @@ deps.txt
 .env
 .env.server
 *.mp3
+
+# Test database because it seems in memory the tables do not get cleared or dropped properly
+test.db*
