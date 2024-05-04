@@ -384,20 +384,21 @@ class MyAudiobookEpubRoute(Controller):
             audio_data[audio_file_name] = chapter.audio_data
 
         zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zipf:
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_STORED) as zipf:
             for file_name, content in audio_data.items():
                 zipf.writestr(file_name, content)
         zip_buffer.seek(0)  # Required?
 
         return Stream(
             content=zip_buffer,
-            # No compression
             headers={
+                "Content-Transfer-Encoding": "Binary",
                 # Change file name
                 "Content-Disposition": f"attachment; filename={normalize_filename(book.book_title)} - {normalize_filename(book.book_author)}.zip",  # noqa: E501
                 # No compression
                 "Accept-Encoding": "identity",
-                "Content-Length": f"{len(zip_buffer.getvalue())}",
+                # Preview of file size
+                # "Content-Length": f"{len(zip_buffer.getvalue())}",
             },
         )
 
