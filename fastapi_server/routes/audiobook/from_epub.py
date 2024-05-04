@@ -114,8 +114,7 @@ async def background_convert_function() -> None:
             continue
 
         try:
-            # await convert_one()
-            await asyncio.sleep(5)
+            await convert_one()
         except Exception as e:  # noqa: BLE001
             logger.exception(e)
             await asyncio.sleep(1)
@@ -208,7 +207,9 @@ class MyAudiobookEpubRoute(Controller):
                 chapter_dict = my_chapter.model_dump(exclude=["id"])
                 chapter_table.insert(chapter_dict)
             chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.timezone.utc))
-            # TODO Create index on book_id
+            # Create index to speed up selects
+            book_table.create_index(["uploaded_by"])
+            chapter_table.create_index(["book_id", "chapter_number"])
         return ClientRedirect(
             f"/twitch/audiobook/epub/book/{entry_id}",
         )
