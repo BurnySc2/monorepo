@@ -1,4 +1,5 @@
 import io
+import re
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,7 +46,7 @@ class EpubChapter:
     chapter_number: int
     word_count: int
     sentence_count: int
-    content: list[list[str]]
+    content: list[str]
     combined_text: str
 
 
@@ -83,20 +84,12 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
             # span.unwrap()
             span.replace_with(span.text.strip().strip("\n"))
 
-        texts = []
-        for p_element in soup.find_all():
-            # Replace all capital letters at start of chapter
-            for span in p_element.find_all("span"):
-                span.unwrap()
-
-            # Extract text from paragraph
-            text = p_element.get_text(strip=True)
-            if text == "":
-                continue
-            texts.append(text.split("\n"))
+        chapter_text = soup.get_text()
+        texts = [row for row in chapter_text.split("\n") if row.strip() != ""]
 
         # Combine text for word count, sentence count
-        combined_text = " ".join(row for paragraph in texts for row in paragraph)
+        combined_text = " ".join(row for row in texts)
+        combined_text = re.sub(r"\s+", " ", combined_text)
         if combined_text != "" and combined_text != prev_text:
             chapters.append(
                 EpubChapter(

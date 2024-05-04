@@ -94,7 +94,7 @@ class Chapter(BaseModel):
     chapter_number: int
     word_count: int
     sentence_count: int
-    content: list[list[str]] = []
+    content: list[str] = []
     audio_data: bytes | None = None
     has_audio: bool = False
     queued: datetime.datetime | None = None
@@ -136,7 +136,8 @@ class Chapter(BaseModel):
     @property
     def combined_text(self) -> str:
         # Text still contains "\n" characters
-        return " ".join(row for paragraph in self.content for row in paragraph)
+        combined = " ".join(row for row in self.content)
+        return re.sub(r"\s+", " ", combined)
 
     @classmethod
     def get_metadata(cls, book_id: int) -> list[Chapter]:

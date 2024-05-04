@@ -384,6 +384,8 @@ class MyAudiobookEpubRoute(Controller):
         Chapter.wait_for_audio_to_be_generated(book_id=book.id)
 
         # Zip files via iterator to use the least amount of memory
+        # https://stream-zip.docs.trade.gov.uk/
+        # https://stream-zip.docs.trade.gov.uk/get-started/
         def member_files():
             modified_at = datetime.datetime.now(datetime.timezone.utc)
             mode = S_IFREG | 0o600
