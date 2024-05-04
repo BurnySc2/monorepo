@@ -396,9 +396,9 @@ class MyAudiobookEpubRoute(Controller):
                 # Change file name
                 "Content-Disposition": f"attachment; filename={normalize_filename(book.book_title)} - {normalize_filename(book.book_author)}.zip",  # noqa: E501
                 # No compression
-                "Accept-Encoding": "identity",
+                # "Accept-Encoding": "identity",
                 # Preview of file size
-                # "Content-Length": f"{len(zip_buffer.getvalue())}",
+                "Content-Length": f"{len(zip_buffer.getvalue())}",
             },
         )
 
