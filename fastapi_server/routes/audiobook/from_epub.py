@@ -38,11 +38,6 @@ from routes.audiobook.temp_read_epub import (
 )
 from routes.login_logout import COOKIES, TwitchUser, get_twitch_user, logged_into_twitch_guard
 
-"""
-TODO:
-some epubs dont get read properly (none or only some chapters detected)
-"""
-
 
 async def get_user_settings(
     voice_name: Annotated[str | None, Parameter(cookie="voice_name")] = None,
@@ -258,6 +253,7 @@ class MyAudiobookEpubRoute(Controller):
         book_id: int,
         chapter_number: int,
         data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
+        wait_time_for_next_poll: int = 10,
     ) -> Template:
         """
         Implementation of what happens when user clicks "generate audio" button
@@ -283,6 +279,7 @@ class MyAudiobookEpubRoute(Controller):
             template_name="audiobook/epub_chapter.html",
             context={
                 "book_id": book_id,
+                "wait_time_for_next_poll": wait_time_for_next_poll * 2,
                 "chapter": {
                     "chapter_title": chapter.chapter_title,
                     "chapter_number": chapter_number,
