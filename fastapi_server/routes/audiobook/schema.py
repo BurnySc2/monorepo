@@ -24,6 +24,7 @@ book_table_name = f"litestar_{STAGE}_audiobook_book"
 book_table: dataset.Table = db[book_table_name]
 chapter_table_name = f"litestar_{STAGE}_audiobook_chapter"
 chapter_table: dataset.Table = db[chapter_table_name]
+# TODO Separate table for audio data? Queries are slow once a lot of audio has been processed
 
 
 def normalize_title(title: str) -> str:

@@ -27,6 +27,7 @@ edge-tts = "^6.1.11"
 pymupdf = "^1.24.2"        # fitz for pdf
 ebooklib = "^0.18"         # epub parsing
 beautifulsoup4 = "^4.12.3" # xml parsing
+stream-zip = "^0.0.71"     # Zip files with low memory footprint
 
 [tool.poetry.group.dev.dependencies]
 # Test library

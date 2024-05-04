@@ -3,8 +3,8 @@ from __future__ import annotations
 import asyncio
 import datetime
 import io
-import zipfile
 from collections import OrderedDict
+from stat import S_IFREG
 from typing import Annotated
 
 from litestar import Controller, Response, get, post
@@ -18,6 +18,7 @@ from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Body, Parameter
 from litestar.response import Stream, Template
 from loguru import logger
+from stream_zip import ZIP_64, stream_zip  # pyre-fixme[21]
 
 from routes.audiobook.schema import (
     AudioSettings,
@@ -113,7 +114,8 @@ async def background_convert_function() -> None:
             continue
 
         try:
-            await convert_one()
+            # await convert_one()
+            await asyncio.sleep(5)
         except Exception as e:  # noqa: BLE001
             logger.exception(e)
             await asyncio.sleep(1)
@@ -206,6 +208,7 @@ class MyAudiobookEpubRoute(Controller):
                 chapter_dict = my_chapter.model_dump(exclude=["id"])
                 chapter_table.insert(chapter_dict)
             chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.timezone.utc))
+            # TODO Create index on book_id
         return ClientRedirect(
             f"/twitch/audiobook/epub/book/{entry_id}",
         )
@@ -379,33 +382,28 @@ class MyAudiobookEpubRoute(Controller):
         # pyre-ignore[6]
         Chapter.wait_for_audio_to_be_generated(book_id=book.id)
 
-        audio_data = {}
-        for chapter_number in range(1, book.chapter_count + 1):
-            entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
-            chapter: Chapter = Chapter.model_validate(entry)
-            normalized_chapter_name = normalize_filename(chapter.chapter_title)
-            audio_file_name = f"{chapter_number:04d}_{normalized_chapter_name}.mp3"
-            audio_data[audio_file_name] = chapter.audio_data
+        # Zip files via iterator to use the least amount of memory
+        def member_files():
+            modified_at = datetime.datetime.now(datetime.timezone.utc)
+            mode = S_IFREG | 0o600
+            for chapter_number in range(1, book.chapter_count + 1):
+                entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
+                chapter: Chapter = Chapter.model_validate(entry)
+                normalized_chapter_name = normalize_filename(chapter.chapter_title)
+                audio_file_name = f"{chapter_number:04d}_{normalized_chapter_name}.mp3"
+                yield (audio_file_name, modified_at, mode, ZIP_64, (chapter.audio_data,))
 
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_STORED) as zipf:
-            for file_name, content in audio_data.items():
-                zipf.writestr(file_name, content)
-        zip_buffer.seek(0)  # Required?
+        zipped_chunks = stream_zip(member_files(), chunk_size=2**20)
 
-        bytes_data = zip_buffer.getvalue()
-        del zip_buffer
         zip_file_name = f"{normalize_filename(book.book_title)} - {normalize_filename(book.book_author)}.zip"
-        stepsize = 2**20  # 1mb
-        content_iterator = (bytes_data[i : i + stepsize] for i in range(0, len(bytes_data), stepsize))
         return Stream(
-            content=content_iterator,
+            content=zipped_chunks,
             headers={
                 # Change file name
                 "Content-Disposition": f"attachment; filename={zip_file_name}",  # noqa: E501
                 "Content-Type": "application/zip",
                 # Preview of file size
-                "Content-Length": f"{len(bytes_data)}",
+                # "Content-Length": f"{len(bytes_data)}",
                 # Unsure what these are for
                 "Accept-Encoding": "identity",
                 "Content-Transfer-Encoding": "Binary",
