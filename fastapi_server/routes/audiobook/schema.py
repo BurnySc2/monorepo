@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import asyncio
 import base64
 import datetime
 import json
 import os
 import re
+import time
 from typing import Any
 
 import dataset  # pyre-fixme[21]
@@ -230,7 +230,7 @@ WHERE book_id=:book_id AND chapter_number=:chapter_number
             )
 
     @classmethod
-    async def wait_for_audio_to_be_generated(cls, book_id: int, chapter_number: int | None = None) -> None:
+    def wait_for_audio_to_be_generated(cls, book_id: int, chapter_number: int | None = None) -> None:
         """
         If chapter number is given: Wait for the chapter to be generated.
         Otherwise: Wait for all chapters of the book to be generated.
@@ -248,4 +248,4 @@ WHERE book_id=:book_id AND chapter_number=:chapter_number
 
             if done_count >= total_count:
                 return
-            await asyncio.sleep(5)
+            time.sleep(5)

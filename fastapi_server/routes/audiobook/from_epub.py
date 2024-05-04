@@ -298,7 +298,6 @@ class MyAudiobookEpubRoute(Controller):
         book_id: int,
         chapter_number: int,
     ) -> Template:
-        await Chapter.wait_for_audio_to_be_generated(book_id, chapter_number)
         # Audio has been generated
         entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
         chapter = Chapter.model_validate(entry)
@@ -360,8 +359,8 @@ class MyAudiobookEpubRoute(Controller):
         Chapter.queue_chapter_to_be_generated(book.id, audio_settings=data)
         return ClientRefresh()
 
-    @get("/download_book_zip", media_type=MediaType.TEXT, guards=[owns_book_guard])
-    async def download_book_zip(
+    @get("/download_book_zip", media_type=MediaType.TEXT, sync_to_thread=True, guards=[owns_book_guard])
+    def download_book_zip(
         self,
         book_id: int,
         twitch_user: TwitchUser,
@@ -374,7 +373,7 @@ class MyAudiobookEpubRoute(Controller):
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
         # pyre-ignore[6]
-        await Chapter.wait_for_audio_to_be_generated(book_id=book.id)
+        Chapter.wait_for_audio_to_be_generated(book_id=book.id)
 
         audio_data = {}
         for chapter_number in range(1, book.chapter_count + 1):
