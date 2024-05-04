@@ -217,9 +217,11 @@ class MyAudiobookEpubRoute(Controller):
         user_settings: AudioSettings,
         book_id: int,
     ) -> Template:
+        # TODO Why does this load so slowly sometimes? Long queries?
         entry_book_dict: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         entry_book: Book = Book.model_validate(entry_book_dict)
         # pyre-fixme[6]
+        # TODO Im assuming this query is long because of the binary data stored in the database
         chapters: list[Chapter] = Chapter.get_metadata(book_id=entry_book.id)
         available_voices = await get_supported_voices()
         return Template(
@@ -326,16 +328,18 @@ class MyAudiobookEpubRoute(Controller):
         """
         entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
         chapter = Chapter.model_validate(entry)
-        # pyre-fixme[6]
-        byte_stream = io.BytesIO(chapter.audio_data)
+        # pyre-fixme[9]
+        bytes_data: bytes = chapter.audio_data
+        stepsize = 2**20  # 1mb
+        content_iterator = (bytes_data[i : i + stepsize] for i in range(0, len(bytes_data), stepsize))
         return Stream(
-            content=byte_stream,
+            content=content_iterator,
             headers={
                 # Change file name
                 "Content-Disposition": f"attachment; filename={normalize_filename(chapter.chapter_title)}.mp3",
-                # No compression
-                "Accept-Encoding": "identity",
-                "Content-Length": f"{len(chapter.audio_data)}",
+                "Content-Type": "application/mp3",
+                # Preview of file size
+                "Content-Length": f"{len(bytes_data)}",
             },
             media_type="audio/mpeg",
         )
@@ -389,16 +393,22 @@ class MyAudiobookEpubRoute(Controller):
                 zipf.writestr(file_name, content)
         zip_buffer.seek(0)  # Required?
 
+        bytes_data = zip_buffer.getvalue()
+        del zip_buffer
+        zip_file_name = f"{normalize_filename(book.book_title)} - {normalize_filename(book.book_author)}.zip"
+        stepsize = 2**20  # 1mb
+        content_iterator = (bytes_data[i : i + stepsize] for i in range(0, len(bytes_data), stepsize))
         return Stream(
-            content=zip_buffer,
+            content=content_iterator,
             headers={
-                "Content-Transfer-Encoding": "Binary",
                 # Change file name
-                "Content-Disposition": f"attachment; filename={normalize_filename(book.book_title)} - {normalize_filename(book.book_author)}.zip",  # noqa: E501
-                # No compression
-                # "Accept-Encoding": "identity",
+                "Content-Disposition": f"attachment; filename={zip_file_name}",  # noqa: E501
+                "Content-Type": "application/zip",
                 # Preview of file size
-                "Content-Length": f"{len(zip_buffer.getvalue())}",
+                "Content-Length": f"{len(bytes_data)}",
+                # Unsure what these are for
+                "Accept-Encoding": "identity",
+                "Content-Transfer-Encoding": "Binary",
             },
         )
 
@@ -446,7 +456,6 @@ class MyAudiobookEpubRoute(Controller):
 
         create zip from all chapters, make download available to user
         """
-        # TODO Set cookie duration to infinite
         return Response(
             content="",
             cookies=[

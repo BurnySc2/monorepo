@@ -142,11 +142,11 @@ class Chapter(BaseModel):
         data = db.query(
             f"""
 SELECT book_id, chapter_title, chapter_number, word_count, sentence_count, has_audio, queued FROM {chapter_table_name}
-WHERE book_id=:id
+WHERE book_id=:book_id
 ORDER BY chapter_number
             """,
             {
-                "id": book_id,
+                "book_id": book_id,
             },
         )
         results = list(data)
