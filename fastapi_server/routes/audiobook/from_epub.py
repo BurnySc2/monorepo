@@ -389,11 +389,15 @@ class MyAudiobookEpubRoute(Controller):
         def member_files():
             modified_at = datetime.datetime.now(datetime.timezone.utc)
             mode = S_IFREG | 0o600
+            normalized_author = f"{normalize_title(book.book_author)}"
+            normalized_book_title = f"{normalize_title(book.book_title)}"
             for chapter_number in range(1, book.chapter_count + 1):
                 entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
                 chapter: Chapter = Chapter.model_validate(entry)
                 normalized_chapter_name = normalize_filename(chapter.chapter_title)
-                audio_file_name = f"{chapter_number:04d}_{normalized_chapter_name}.mp3"
+                audio_file_name = (
+                    f"{normalized_author}/{normalized_book_title}/{chapter_number:04d}_{normalized_chapter_name}.mp3"
+                )
                 yield (audio_file_name, modified_at, mode, ZIP_64, (chapter.audio_data,))
 
         zipped_chunks = stream_zip(member_files(), chunk_size=2**20)

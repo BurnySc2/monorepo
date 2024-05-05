@@ -28,7 +28,7 @@ chapter_table: dataset.Table = db[chapter_table_name]
 
 
 def normalize_title(title: str) -> str:
-    normalized_title = title.capitalize()
+    normalized_title = title.title()
     # Replace any character that is not alphanumeric or underscore with a space
     normalized_title = re.sub(r"[^\w]", " ", normalized_title)
     # Replace two or more space with one space
