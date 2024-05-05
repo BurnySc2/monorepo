@@ -398,7 +398,7 @@ class MyAudiobookEpubRoute(Controller):
 
         zipped_chunks = stream_zip(member_files(), chunk_size=2**20)
 
-        zip_file_name = f"{normalize_filename(book.book_title)} - {normalize_filename(book.book_author)}.zip"
+        zip_file_name = f"{normalize_title(book.book_title)} - {normalize_title(book.book_author)}.zip"
         return Stream(
             content=zipped_chunks,
             headers={
