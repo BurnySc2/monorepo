@@ -5,7 +5,8 @@ import datetime
 import json
 import os
 import re
-import time
+from functools import cached_property
+from pathlib import Path
 from typing import Any
 
 import dataset  # pyre-fixme[21]
@@ -71,11 +72,6 @@ class Book(BaseModel):
         data = super().model_dump(**kwargs)
         return data
 
-    @property
-    def has_audio(self) -> bool:
-        # Check db if all chapters have audio
-        return chapter_table.count(book_id=self.id) == self.chapter_count
-
     @classmethod
     def encode_data(cls, data: bytes) -> str:
         return base64.b64encode(data).decode("utf-8")
@@ -95,8 +91,7 @@ class Chapter(BaseModel):
     word_count: int
     sentence_count: int
     content: list[str] = []
-    audio_data: bytes | None = None
-    has_audio: bool = False
+    audio_data_absolute_path: str | None = None
     queued: datetime.datetime | None = None
     audio_settings: AudioSettings = AudioSettings()
 
@@ -104,9 +99,6 @@ class Chapter(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def convert_data(cls, data: Any) -> Any:
-        if "audio_data" in data and data["audio_data"] is not None:
-            # From database: this will be a string
-            data["audio_data"] = Book.decode_data(data["audio_data"])
         if "content" in data and isinstance(data["content"], str):
             # From database: this will be a string
             data["content"] = json.loads(data["content"])
@@ -123,131 +115,25 @@ class Chapter(BaseModel):
         """
         data = super().model_dump(**kwargs)
         data["content"] = json.dumps(data["content"])
-        if data["audio_data"] is not None:
-            # To database: needs to store a string instead of bytes
-            data["audio_data"] = Book.encode_data(data["audio_data"])
         return data
 
-    @property
+    @cached_property
+    def audio_data_path(self) -> Path:
+        assert isinstance(self.audio_data_absolute_path, str)
+        return Path(self.audio_data_absolute_path)
+
+    @cached_property
+    def audio_data(self) -> bytes:
+        assert isinstance(self.audio_data_absolute_path, str)
+        return self.audio_data_path.read_bytes()
+
+    @cached_property
     def audio_data_b64(self) -> str:
         assert isinstance(self.audio_data, bytes)
         return Book.encode_data(self.audio_data)
 
-    @property
+    @cached_property
     def combined_text(self) -> str:
         # Text still contains "\n" characters
         combined = " ".join(row for row in self.content)
         return re.sub(r"\s+", " ", combined)
-
-    @classmethod
-    def get_metadata(cls, book_id: int) -> list[Chapter]:
-        data = db.query(
-            f"""
-SELECT book_id, chapter_title, chapter_number, word_count, sentence_count, has_audio, queued FROM {chapter_table_name}
-WHERE book_id=:book_id
-ORDER BY chapter_number
-            """,
-            {
-                "book_id": book_id,
-            },
-        )
-        results = list(data)
-        if len(results) == 0:
-            return []
-        return [Chapter.model_validate(result) for result in results]
-
-    @classmethod
-    def get_chapter_without_audio_data(cls, book_id: int, chapter_number: int) -> Chapter | None:
-        data = db.query(
-            f"""
-SELECT book_id, chapter_title, chapter_number, word_count, sentence_count, has_audio, queued FROM {chapter_table_name}
-WHERE book_id=:book_id AND chapter_number=:chapter_number
-LIMIT 1
-            """,
-            {
-                "book_id": book_id,
-                "chapter_number": chapter_number,
-            },
-        )
-        results = list(data)
-        if len(results) == 0:
-            return None
-        return Chapter.model_validate(results[0])
-
-    @classmethod
-    def queue_chapter_to_be_generated(
-        cls,
-        book_id: int,
-        audio_settings: AudioSettings,
-        chapter_number: int | None = None,
-    ) -> None:
-        with db:
-            # Queue whole book to be generated
-            if chapter_number is None:
-                db.query(
-                    f"""
-        UPDATE {chapter_table_name}
-        SET queued=:datetime_now, audio_settings=:audio_settings
-        WHERE book_id=:book_id AND queued IS NULL
-                    """,
-                    {
-                        "datetime_now": datetime.datetime.now(datetime.timezone.utc),
-                        "audio_settings": audio_settings.model_dump_json(),
-                        "book_id": book_id,
-                    },
-                )
-                return
-
-            # Queue chapter to be generated
-            db.query(
-                f"""
-    UPDATE {chapter_table_name}
-    SET queued=:datetime_now, audio_settings=:audio_settings
-    WHERE book_id=:book_id AND chapter_number=:chapter_number AND queued IS NULL
-                """,
-                {
-                    "datetime_now": datetime.datetime.now(datetime.timezone.utc),
-                    "audio_settings": audio_settings.model_dump_json(),
-                    "book_id": book_id,
-                    "chapter_number": chapter_number,
-                },
-            )
-            1
-
-    @classmethod
-    def delete_audio(cls, book_id: int, chapter_number: int) -> None:
-        exists_count: int = chapter_table.count(book_id=book_id, chapter_number=chapter_number)
-        if exists_count > 0:
-            db.query(
-                f"""
-UPDATE {chapter_table_name}
-SET has_audio=False, audio_data=NULL, queued=NULL, audio_settings=:audio_settings
-WHERE book_id=:book_id AND chapter_number=:chapter_number
-""",
-                {
-                    "book_id": book_id,
-                    "chapter_number": chapter_number,
-                    "audio_settings": "{}",
-                },
-            )
-
-    @classmethod
-    def wait_for_audio_to_be_generated(cls, book_id: int, chapter_number: int | None = None) -> None:
-        """
-        If chapter number is given: Wait for the chapter to be generated.
-        Otherwise: Wait for all chapters of the book to be generated.
-        """
-        total_count: int = 1
-        if chapter_number is None:
-            total_count = chapter_table.count(book_id=book_id)
-        while 1:
-            if chapter_number is None:
-                # Check if all chapters has been generated
-                done_count: int = chapter_table.count(book_id=book_id, has_audio=True)
-            else:
-                # Check if chapter has been generated
-                done_count: int = chapter_table.count(book_id=book_id, chapter_number=chapter_number, has_audio=True)
-
-            if done_count >= total_count:
-                return
-            time.sleep(5)

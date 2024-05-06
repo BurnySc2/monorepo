@@ -3,7 +3,9 @@ from __future__ import annotations
 import asyncio
 import datetime
 import io
+import time
 from collections import OrderedDict
+from pathlib import Path
 from stat import S_IFREG
 from typing import Annotated
 
@@ -39,6 +41,8 @@ from routes.audiobook.temp_read_epub import (
 )
 from routes.login_logout import COOKIES, TwitchUser, get_twitch_user, logged_into_twitch_guard
 
+AUDIOBOOK_MP3_FOLDER = Path(__file__).parents[2] / "data/audiobook_mp3"
+
 
 async def get_user_settings(
     voice_name: Annotated[str | None, Parameter(cookie="voice_name")] = None,
@@ -70,7 +74,7 @@ async def background_convert_function() -> None:
         # Get first book that is waiting to be converted
         logger.info("Converting text to audio...")
         chapter_entry: OrderedDict = chapter_table.find_one(
-            audio_data=None, queued={"!=": None}, order_by=["queued", "chapter_number"]
+            audio_data_absolute_path=None, queued={"!=": None}, order_by=["queued", "chapter_number"]
         )
         chapter: Chapter = Chapter.model_validate(chapter_entry)
 
@@ -96,18 +100,21 @@ async def background_convert_function() -> None:
             return
 
         # Save result to database
-        chapter.audio_data = audio.getvalue()
-        chapter.has_audio = True
-        logger.info("Saving result to database")
-        chapter_table.update(
-            chapter.model_dump(),
-            keys=["id"],
-        )
+        with db:
+            audio_data_path = AUDIOBOOK_MP3_FOLDER / f"{chapter.id}_audio.mp3"
+            audio_data_path.parent.mkdir(parents=True, exist_ok=True)
+            audio_data_path.write_bytes(audio.getvalue())
+            chapter.audio_data_absolute_path = str(audio_data_path.absolute())
+            logger.info("Saving result to database")
+            chapter_table.update(
+                chapter.model_dump(),
+                keys=["id"],
+            )
         logger.info("Done converting")
 
     while 1:
         # Check if queue empty
-        any_in_queue = chapter_table.count(audio_data=None, queued={"!=": None})
+        any_in_queue = chapter_table.count(audio_data_absolute_path=None, queued={"!=": None})
         if any_in_queue == 0:
             # Skip / wait
             await asyncio.sleep(5)
@@ -206,6 +213,7 @@ class MyAudiobookEpubRoute(Controller):
                 )
                 chapter_dict = my_chapter.model_dump(exclude=["id"])
                 chapter_table.insert(chapter_dict)
+            chapter_table.create_column_by_example("audio_data_absolute_path", "some_path")
             chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.timezone.utc))
             # Create index to speed up selects
             book_table.create_index(["uploaded_by"])
@@ -224,9 +232,8 @@ class MyAudiobookEpubRoute(Controller):
         # TODO Why does this load so slowly sometimes? Long queries?
         entry_book_dict: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         entry_book: Book = Book.model_validate(entry_book_dict)
-        # pyre-fixme[6]
-        # TODO Im assuming this query is long because of the binary data stored in the database
-        chapters: list[Chapter] = Chapter.get_metadata(book_id=entry_book.id)
+        chapters_entries: list[OrderedDict] = chapter_table.find(book_id=entry_book.id, order_by=["chapter_number"])
+        chapters: list[Chapter] = [Chapter.model_validate(entry) for entry in chapters_entries]
         available_voices = await get_supported_voices()
         return Template(
             template_name="audiobook/epub_book.html",
@@ -242,7 +249,7 @@ class MyAudiobookEpubRoute(Controller):
                         "chapter_number": chapter.chapter_number,
                         "word_count": chapter.word_count,
                         "sentence_count": chapter.sentence_count,
-                        "has_audio": chapter.has_audio,
+                        "has_audio": bool(chapter.audio_data_absolute_path),
                         "queued": chapter.queued,
                     }
                     for chapter in chapters
@@ -272,15 +279,12 @@ class MyAudiobookEpubRoute(Controller):
         # Then wait till the job is done before returning
 
         # Queue the chapter to the database
-        Chapter.queue_chapter_to_be_generated(
-            book_id=book_id,
-            chapter_number=chapter_number,
-            audio_settings=data,
-        )
-
-        # Dont load audio data or content from database
-        # pyre-fixme[9]
-        chapter: Chapter = Chapter.get_chapter_without_audio_data(book_id=book_id, chapter_number=chapter_number)
+        entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
+        chapter: Chapter = Chapter.model_validate(entry)
+        if chapter.queued is None:
+            chapter.audio_settings = data
+            chapter.queued = datetime.datetime.now(datetime.timezone.utc)
+            chapter_table.update(chapter.model_dump(), keys=["id"])
         return Template(
             template_name="audiobook/epub_chapter.html",
             context={
@@ -289,7 +293,7 @@ class MyAudiobookEpubRoute(Controller):
                 "chapter": {
                     "chapter_title": chapter.chapter_title,
                     "chapter_number": chapter_number,
-                    "has_audio": chapter.has_audio,
+                    "has_audio": bool(chapter.audio_data_absolute_path),
                     "queued": chapter.queued,
                 },
             },
@@ -315,7 +319,7 @@ class MyAudiobookEpubRoute(Controller):
                     "mp3_b64_data": chapter.audio_data_b64,
                     "chapter_title": chapter.chapter_title,
                     "chapter_number": chapter_number,
-                    "has_audio": chapter.has_audio,
+                    "has_audio": bool(chapter.audio_data_absolute_path),
                     "queued": chapter.queued,
                 },
             },
@@ -332,7 +336,6 @@ class MyAudiobookEpubRoute(Controller):
         """
         entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
         chapter = Chapter.model_validate(entry)
-        # pyre-fixme[9]
         bytes_data: bytes = chapter.audio_data
         stepsize = 2**20  # 1mb
         content_iterator = (bytes_data[i : i + stepsize] for i in range(0, len(bytes_data), stepsize))
@@ -363,8 +366,11 @@ class MyAudiobookEpubRoute(Controller):
         """
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
-        # pyre-ignore[6]
-        Chapter.queue_chapter_to_be_generated(book.id, audio_settings=data)
+        for entry in chapter_table.find(book_id=book.id, queued=None):
+            chapter: Chapter = Chapter.model_validate(entry)
+            chapter.audio_settings = data
+            chapter.queued = datetime.datetime.now(datetime.timezone.utc)
+            chapter_table.update(chapter.model_dump(), keys=["id"])
         return ClientRefresh()
 
     @get("/download_book_zip", media_type=MediaType.TEXT, sync_to_thread=True, guards=[owns_book_guard])
@@ -380,8 +386,13 @@ class MyAudiobookEpubRoute(Controller):
         """
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
-        # pyre-ignore[6]
-        Chapter.wait_for_audio_to_be_generated(book_id=book.id)
+
+        total_count = chapter_table.count(book_id=book_id)
+        while 1:
+            done_count: int = chapter_table.count(book_id=book_id, audio_data_absolute_path={"!=": None})
+            if done_count >= total_count:
+                break
+            time.sleep(5)
 
         # Zip files via iterator to use the least amount of memory
         # https://stream-zip.docs.trade.gov.uk/
@@ -402,7 +413,7 @@ class MyAudiobookEpubRoute(Controller):
 
         zipped_chunks = stream_zip(member_files(), chunk_size=2**20)
 
-        zip_file_name = f"{normalize_title(book.book_title)} - {normalize_title(book.book_author)}.zip"
+        zip_file_name = f"{normalize_title(book.book_author)} - {normalize_title(book.book_title)}.zip"
         return Stream(
             content=zipped_chunks,
             headers={
@@ -427,6 +438,11 @@ class MyAudiobookEpubRoute(Controller):
         remove book and all chapters from db
         """
         with db:
+            entries = chapter_table.find(book_id=book_id)
+            for entry in entries:
+                chapter: Chapter = Chapter.model_validate(entry)
+                if chapter.audio_data_absolute_path is not None:
+                    chapter.audio_data_path.unlink(missing_ok=True)
             chapter_table.delete(book_id=book_id)
             book_table.delete(id=book_id, uploaded_by=twitch_user.display_name)
         return ClientRedirect("/twitch/audiobook/epub")
@@ -440,7 +456,14 @@ class MyAudiobookEpubRoute(Controller):
         """
         remove generated audio from db
         """
-        Chapter.delete_audio(book_id=book_id, chapter_number=chapter_number)
+        entry: OrderedDict = chapter_table.find_one(book_id=book_id, chapter_number=chapter_number)
+        chapter: Chapter = Chapter.model_validate(entry)
+        if chapter.audio_data_absolute_path is not None:
+            chapter.audio_data_path.unlink(missing_ok=True)
+            chapter.queued = None
+            chapter.audio_data_absolute_path = None
+            chapter.audio_settings = AudioSettings()
+            chapter_table.update(chapter.model_dump(), keys=["id"])
         return Template(
             template_name="audiobook/epub_chapter.html",
             context={
