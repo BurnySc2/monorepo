@@ -438,8 +438,7 @@ class MyAudiobookEpubRoute(Controller):
         remove book and all chapters from db
         """
         with db:
-            entries = chapter_table.find(book_id=book_id)
-            for entry in entries:
+            for entry in chapter_table.find(book_id=book_id):
                 chapter: Chapter = Chapter.model_validate(entry)
                 if chapter.audio_data_absolute_path is not None:
                     chapter.audio_data_path.unlink(missing_ok=True)
