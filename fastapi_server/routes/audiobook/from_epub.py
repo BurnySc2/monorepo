@@ -387,6 +387,7 @@ class MyAudiobookEpubRoute(Controller):
         book_entry: OrderedDict = book_table.find_one(id=book_id, uploaded_by=twitch_user.display_name)
         book = Book.model_validate(book_entry)
 
+        # Wait for book audio to be generated
         total_count = chapter_table.count(book_id=book_id)
         while 1:
             done_count: int = chapter_table.count(book_id=book_id, audio_data_absolute_path={"!=": None})
@@ -394,14 +395,16 @@ class MyAudiobookEpubRoute(Controller):
                 break
             time.sleep(5)
 
+        normalized_author = f"{normalize_title(book.book_author)}"[:50].strip()
+        normalized_book_title = f"{normalize_title(book.book_title)}"[:50].strip()
+
         # Zip files via iterator to use the least amount of memory
         # https://stream-zip.docs.trade.gov.uk/
         # https://stream-zip.docs.trade.gov.uk/get-started/
         def member_files():
+            nonlocal normalized_author, normalized_book_title
             modified_at = datetime.datetime.now(datetime.timezone.utc)
             mode = S_IFREG | 0o600
-            normalized_author = f"{normalize_title(book.book_author)}"[:50].strip()
-            normalized_book_title = f"{normalize_title(book.book_title)}"[:50].strip()
             for chapter_number in range(1, book.chapter_count + 1):
                 entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
                 chapter: Chapter = Chapter.model_validate(entry)
@@ -413,7 +416,7 @@ class MyAudiobookEpubRoute(Controller):
 
         zipped_chunks = stream_zip(member_files(), chunk_size=2**20)
 
-        zip_file_name = f"{normalize_title(book.book_author)} - {normalize_title(book.book_title)}.zip"
+        zip_file_name = f"{normalized_author} - {normalized_book_title}.zip"
         return Stream(
             content=zipped_chunks,
             headers={
