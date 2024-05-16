@@ -212,6 +212,7 @@ class MyAudiobookEpubRoute(Controller):
                     content=chapter.content,
                 )
                 chapter_dict = my_chapter.model_dump(exclude=["id"])
+                # TODO Use insert many instead
                 chapter_table.insert(chapter_dict)
             chapter_table.create_column_by_example("audio_data_absolute_path", "some_path")
             chapter_table.create_column_by_example("queued", datetime.datetime.now(datetime.timezone.utc))
@@ -370,6 +371,8 @@ class MyAudiobookEpubRoute(Controller):
             chapter: Chapter = Chapter.model_validate(entry)
             chapter.audio_settings = data
             chapter.queued = datetime.datetime.now(datetime.timezone.utc)
+            # TODO Try to use "update" only once
+            # chapter_table.update_many()
             chapter_table.update(chapter.model_dump(), keys=["id"])
         return ClientRefresh()
 
@@ -396,7 +399,7 @@ class MyAudiobookEpubRoute(Controller):
             time.sleep(5)
 
         normalized_author = f"{normalize_title(book.book_author)}"[:50].strip()
-        normalized_book_title = f"{normalize_title(book.book_title)}"[:50].strip()
+        normalized_book_title = f"{normalize_title(book.book_title)}"[:150].strip()
 
         # Zip files via iterator to use the least amount of memory
         # https://stream-zip.docs.trade.gov.uk/
@@ -408,7 +411,7 @@ class MyAudiobookEpubRoute(Controller):
             for chapter_number in range(1, book.chapter_count + 1):
                 entry: OrderedDict = chapter_table.find_one(book_id=book.id, chapter_number=chapter_number)
                 chapter: Chapter = Chapter.model_validate(entry)
-                normalized_chapter_name = normalize_filename(chapter.chapter_title)[:100].strip()
+                normalized_chapter_name = normalize_filename(chapter.chapter_title)[:200].strip()
                 audio_file_name = (
                     f"{normalized_author}/{normalized_book_title}/{chapter_number:04d}_{normalized_chapter_name}.mp3"
                 )

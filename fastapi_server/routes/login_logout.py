@@ -33,6 +33,10 @@ TWITCH_CLIENT_SECRET = os.getenv("TWITCH_APP_CLIENT_SECRET", "mtu72a2v35p8x7f4fd
 
 BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://localhost:8000")
 
+# TODO Add
+# - Login with google
+# - Login with facebook
+
 COOKIES = {
     # TODO Other login services like google etc
     "github": "github_access_token",

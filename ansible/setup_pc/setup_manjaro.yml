@@ -22,8 +22,6 @@
           - ServerAliveInterval 60
           - ======================
     
-    # TODO Set up Appearance: Style=Matcha-dark-sea Icons=Papirus-Dark-Maia
-
     - name: Run the equivalent of "pacman -Sy" as a separate step
       community.general.pacman:
         update_cache: true
@@ -35,7 +33,6 @@
     - name: Install pacman packages
       community.general.pacman:
         name:
-          # TODO add obsidian, rust
           # Package manager
           - yay
           - pacman-mirrors
@@ -51,6 +48,7 @@
           - ansible
           - ansible-lint
           - syncthing
+          - owncloud-client # file sharing client
           # Terminal
           - fish
           # Explorer
@@ -60,10 +58,15 @@
           - discord
           # Drawing and media viewer
           - xournalpp
-          - gimp
+          - krita # gimp alternative
           - vlc
+          - kdenlive # video editor
+          - obsidian # notes editor
+          # Music notes
+          - musescore
           # System & utility tools
-          - gnome-system-monitor
+          - brasero # dvd burner
+          - gnome-system-monitor # task manager
           - zip
           - pavucontrol
           - flameshot
@@ -77,6 +80,7 @@
           # Programming languages
           - make # For other pamac packages
           - gcc
+          - rust
           - rustup
           - python-pip
           - python-poetry
@@ -163,3 +167,5 @@
           - Set system clock, and sync clock 'time only' and format '%A %d %b %y, %T'
           - Never group windows in task bar
           - Set task bar to 2 rows and row size 20
+          - In XFCE, set 'appearence' style to 'Matcha-dark-sea', icons to 'Papirus-Dark-Maia'
+          - Edit ~/.profile and add lines 'export GTK_THEME=Matcha-dark-sea' and 'export color-scheme=prefer-dark' to set gnome apps to dark mode
