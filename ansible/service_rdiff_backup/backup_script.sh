@@ -3,36 +3,71 @@ set -e
 
 backup_function() {
     # Check if the correct number of parameters is provided
-    if [ "$#" -ne 3 ]; then
-        echo "Usage: backup_function <source> <target> <max_backups_to_keep>"
+    if [ "$#" -ne 4 ]; then
+        echo "Usage: backup_function <source> <target> <max_backups_to_keep> <password>" 
         exit 1
     fi
 
     SOURCE_DIRECTORY="$1"
     TARGET_DIRECTORY="$2"
     MAX_BACKUPS="$3"
+    PASSWORD="$4"
+
+    create_backup() {
+        ARCHIVE_NAME="backup_$1_$(date +%Y%m%d_%H%M%S).zip"
+        cd "$SOURCE_DIRECTORY"
+        zipargs=(
+            a
+            # Set archive type
+            -t7z
+            # Require password before seeing files: hide file structure
+            -mhe=on
+            # Max compression level
+            -mx9
+            # Set password
+            "-p$PASSWORD"
+
+            # Exclude files
+            "-x!**data/transcodes" # jelllyfin
+            "-x!**data/metadata" # jelllyfin
+            "-x!**data/files" # owncloud
+            # Exclude internal backups
+            "-x!**backup"
+            # Exclude temp and log files
+            "-x!**cache"
+            "-x!**log"
+
+            # Target zip path
+            "$TARGET_DIRECTORY/$ARCHIVE_NAME"
+            # Files to include
+            ./*
+        )
+        # Execute zip command
+        7z "${zipargs[@]}"
+
+        # Remove surplus backups
+        cd $TARGET_DIRECTORY
+        ls $TARGET_DIRECTORY | grep "_$1_" | head -n "-$MAX_BACKUPS" | xargs rm -f --
+    }
 
     mkdir -p "$TARGET_DIRECTORY"
 
-    # Perform rdiff-backup
-    rdiff-backup backup \
-        --exclude "**/data/transcodes/*" \
-        --exclude "**/data/metadata/*" \
-        --exclude "**/backup/*" \
-        --exclude "**/cache/*" \
-        --exclude "**/log/*" \
-        "$SOURCE_DIRECTORY" \
-        "$TARGET_DIRECTORY"
+    if [ "$(date +%d)" -eq 01 ]; then
+        # Monthly backup on the first day of the month
+        create_backup "MONTHLY"
+    elif [ "$(date +%u)" -eq 7 ]; then
+        # Create weekly backup on Sundays
+        create_backup "WEEKLY"
+    else
+        create_backup "DAILY"
+    fi
 
     # Change ownership to syncthing:syncthing
     chown -R syncthing:syncthing "$TARGET_DIRECTORY"
     # Only allow user syncthing to access directory
-    chmod 700 "$TARGET_DIRECTORY"
-
-    # Keep at most N backups (replace N with the provided amount)
-    rdiff-backup --force remove increments --older-than "${MAX_BACKUPS}"B "$TARGET_DIRECTORY"
+    chmod -R 700 "$TARGET_DIRECTORY"
 }
 
 # Call the function
-backup_function $1 $2 $3
-# Usage: sh backup_script.sh "/path/to/source" "/path/to/target" "amount of backups"
+backup_function $1 $2 $3 $4
+# Usage: sh backup_script.sh "/path/to/source" "/path/to/target" "amount of backups" "my_secure_password"

@@ -62,19 +62,25 @@
           - vlc
           - kdenlive # video editor
           - obsidian # notes editor
+          - arianna # epub reader
           # Music notes
           - musescore
           # System & utility tools
-          - brasero # dvd burner
-          - gnome-system-monitor # task manager
           - zip
           - pavucontrol
           - flameshot
           - ffmpeg
           - simple-scan
           - inxi # system information
+          - btop # monitor of system resources
+          - gdu # terminal disk usage stats viewer like qdirstat
+          - filelight # gui disk usage stats viewer like qdirstat
           - samba # share folders in local network
+          - gnome-system-monitor # task manager
+          - brasero # dvd burner
           - gnome-disk-utility # disk and usb stick management
+          - imagewriter # usb stick writer
+          - isoimagewriter # usb stick writer
           # Games
           - lutris
           # Programming languages
@@ -131,7 +137,7 @@
       with_items:
         - aur/visual-studio-code-bin
         - aur/earthly # development helper
-        - aur/qdirstat # disk space usage
+        # - aur/qdirstat # disk space usage
         - aur/xnviewmp # image viewer
         - aur/zoom
         - aur/anydesk-bin

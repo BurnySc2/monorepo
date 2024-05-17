@@ -1,0 +1,22 @@
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin
+    container_name: jellyfin
+    hostname: jellyfin
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    restart: unless-stopped
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ secrets.JELLYFIN.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+    - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.tls=true
+    - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.middlewares=authelia@docker
+    volumes:
+    - ./config:/config
+    - "{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media"

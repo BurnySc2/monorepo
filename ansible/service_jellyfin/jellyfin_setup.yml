@@ -3,39 +3,13 @@
 # https://play.google.com/store/apps/details?id=org.jellyfin.mobile&hl=de
 # Execute with
 # ansible-playbook jellyfin_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-# TODO Convert to docker compose file
 - name: Create service
   hosts: my_servers
   vars:
     USERNAME: "{{ secrets.JELLYFIN.USERNAME }}"
     SUBDOMAIN: "{{ secrets.JELLYFIN.SUBDOMAIN }}"
-    DOCKER_IMAGE: lscr.io/linuxserver/jellyfin
     APPLICATION_PORT: "8096"
   tasks:
-    # https://stackoverflow.com/a/64100593
-    - name: Create Traefik labels's dictionary
-      set_fact:
-        my_labels: "{{ my_labels | default({}) | combine ({ item.key : item.value }) }}"
-      with_items:
-        - { "key": "traefik.enable", "value": "true" }
-        - {
-            "key": "traefik.http.routers.{{ SUBDOMAIN }}.rule",
-            "value": "Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)",
-          }
-        - {
-            "key": "traefik.http.services.{{ SUBDOMAIN }}.loadbalancer.server.port",
-            "value": "{{ APPLICATION_PORT }}",
-          }
-        - { "key": "traefik.http.routers.{{ SUBDOMAIN }}.tls", "value": "true" }
-        - {
-            "key": "traefik.http.routers.{{ SUBDOMAIN }}.tls.certresolver",
-            "value": "production",
-          }
-        - {
-            "key": "traefik.http.routers.{{ SUBDOMAIN }}.middlewares",
-            "value": "authelia@docker",
-          }
-
     - name: Create group
       ansible.builtin.group:
         name: "{{ USERNAME }}"
@@ -49,36 +23,18 @@
           - docker
         shell: "{{ secrets.DEFAULT_SHELL }}"
 
-    - name: Stop container
-      community.docker.docker_container:
-        name: "{{ USERNAME }}"
-        image: "{{ DOCKER_IMAGE }}"
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+        
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
         state: absent
+        # Comment out to skip update
+        # remove_images: all
 
-    # Comment out to skip update
-    # - name: Remove image
-    #   community.docker.docker_image:
-    #     name: '{{ DOCKER_IMAGE }}'
-    #     state: absent
-
-    - name: Creates directory and change owner
-      ansible.builtin.file:
-        path: "/home/{{ USERNAME }}/config"
-        recurse: true
-        state: directory
-        owner: '911'
-        group: '911'
-
-    - name: Start container
-      community.docker.docker_container:
-        name: "{{ USERNAME }}"
-        image: "{{ DOCKER_IMAGE }}"
-        state: started
-        restart: yes
-        restart_policy: unless-stopped
-        volumes:
-          - "/home/{{ USERNAME }}/config:/config"
-          - "{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media"
-        networks:
-          - name: "{{ secrets.TRAFIK_NETWORK }}"
-        labels: "{{ my_labels }}"
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
