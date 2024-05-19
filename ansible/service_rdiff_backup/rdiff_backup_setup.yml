@@ -94,7 +94,7 @@
     - name: Add backups
       ansible.builtin.cron:
         name: "Run {{ item.name }} backup"
-        job: /bin/sh '{{ BACKUP_SCRIPT_PATH }}' '{{ item.SOURCE_DIRECTORY }}' '{{ item.TARGET_DIRECTORY }}' '{{ AMOUNT_OF_BACKUPS }}' '{{ BACKUP_PASSWORD }}' >> '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/{{ item.LOG_NAME }}'
+        job: /bin/bash '{{ BACKUP_SCRIPT_PATH }}' '{{ item.SOURCE_DIRECTORY }}' '{{ item.TARGET_DIRECTORY }}' '{{ AMOUNT_OF_BACKUPS }}' '{{ BACKUP_PASSWORD }}' >> '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/{{ item.LOG_NAME }}'
         special_time: daily
         user: "{{ USERNAME }}"
       with_items: "{{ backup_jobs }}"
