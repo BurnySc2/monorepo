@@ -37,7 +37,8 @@
           - yay
           - pacman-mirrors
           # Internet browser
-          - brave-browser
+          # - brave-browser
+          - vivaldi
           # Programming and server tools
           - base-devel
           - docker

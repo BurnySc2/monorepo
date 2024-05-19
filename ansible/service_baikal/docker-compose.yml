@@ -1,0 +1,21 @@
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+
+services:
+  baikal:
+    image: ckulka/baikal:nginx
+    restart: always
+    volumes:
+      - ./config:/var/www/baikal/config
+      - ./data:/var/www/baikal/Specific
+    networks:
+    - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+    - traefik.enable=true
+    - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+    - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+    - traefik.http.routers.{{ USERNAME }}.tls=true
+    - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production
+    - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker

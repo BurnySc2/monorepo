@@ -1,0 +1,37 @@
+# Execute with
+# ansible-playbook baikal_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service
+  hosts: my_servers
+  vars:
+    USERNAME: "{{ secrets.BAIKAL.USERNAME }}"
+    SUBDOMAIN: "{{ secrets.BAIKAL.SUBDOMAIN }}"
+    APPLICATION_PORT: "80"
+  tasks:
+    - name: Create group
+      ansible.builtin.group:
+        name: "{{ USERNAME }}"
+        state: present
+
+    - name: Create user
+      ansible.builtin.user:
+        name: "{{ USERNAME }}"
+        groups:
+          - "{{ USERNAME }}"
+          - docker
+        shell: "{{ secrets.DEFAULT_SHELL }}"
+
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+        
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: absent
+        # Comment out to skip update
+        # remove_images: all
+
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
