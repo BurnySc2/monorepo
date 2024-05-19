@@ -26,7 +26,7 @@ SYMBOLS = "!?.,"
 SENTENCE_END_SYMBOLS = "!?."
 CHUNK_SIZE = 300  # 5 minutes chunk size
 BUFFER_SIZE = 10  # 10 extra seconds
-CLIP_BUFFER = 3
+CLIP_BUFFER = 3  # How many seconds of context
 
 db_path = Path(__file__).parent / "word_extract.db"
 db_abs_path = str(db_path.resolve())
