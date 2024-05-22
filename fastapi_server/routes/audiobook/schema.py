@@ -50,7 +50,6 @@ class AudioSettings(BaseModel):
 
 
 # Database schema
-# pyre-fixme[13]
 class Book(BaseModel):
     id: int | None = None
     # Twitch user who uploaded the book
@@ -81,7 +80,6 @@ class Book(BaseModel):
         return base64.b64decode(data)
 
 
-# pyre-fixme[13]
 class Chapter(BaseModel):
     id: int | None = None
     # Related book to this chapter entry

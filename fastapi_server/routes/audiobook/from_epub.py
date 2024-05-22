@@ -155,8 +155,8 @@ class MyAudiobookEpubRoute(Controller):
         # TODO List all uploaded books
         return Template(template_name="audiobook/epub_upload.html")
 
-    @post("/", media_type=MediaType.TEXT)
-    async def file_upload(
+    @post("/", media_type=MediaType.TEXT, sync_to_thread=True)
+    def file_upload(
         self,
         twitch_user: TwitchUser | None,
         data: Annotated[
@@ -169,7 +169,7 @@ class MyAudiobookEpubRoute(Controller):
         """
         # TODO disable upload if user has already uploaded too much
         # TODO limit file size
-        epub_data: io.BytesIO = io.BytesIO(await data.read())
+        epub_data: io.BytesIO = io.BytesIO(data.file.read())
 
         metadata: EpubMetadata = extract_metadata(epub_data)
 

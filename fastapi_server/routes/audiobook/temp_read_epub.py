@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import nltk  # pyre-fixme[21]
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  # pyre-fixme[21]
 from ebooklib import ITEM_DOCUMENT  # pyre-fixme[21]
 from ebooklib.epub import EpubHtml, EpubReader, Link, Section  # pyre-fixme[21]
 from loguru import logger

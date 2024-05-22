@@ -6,7 +6,7 @@ authors = ["BuRny <gamingburny@gmail.com>"]
 
 [tool.poetry.dependencies]
 # Drop python <=3.9 support because syntax "var: int | None" is not supported 
-python = ">=3.10 <3.12"
+python = ">=3.10 <3.13"
 # Simple logger
 loguru = "^0.5"
 # Fastapi alternative https://docs.litestar.dev/latest/
