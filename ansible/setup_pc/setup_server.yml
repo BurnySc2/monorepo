@@ -1,4 +1,72 @@
-# install fish, docker, docker-compose, btop, ffmpeg, pip and poetry?
-# p7zip-full for backup
+# Execute with
+# ansible-playbook setup_server.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: After a fresh manjaro installation, install or upgrade all software
+  hosts: contabo
+  tasks:
+    - name: Install packages
+      ansible.builtin.apt:
+        name:
+        # Task manager
+        - btop
+        # Disk analyzer
+        - gdu
+        # Video downloader
+        - yt-dlp
+        # Terminal
+        - fish
+        # For backup
+        - p7zip-full
+        # Video conversion
+        - ffmpeg
+        # Other
+        - python3
+        - python3-pip
+        - python3-poetry
+        update_cache: true
+        state: latest
+        autoclean: true
+        autoremove: true
 
-# set up swap script
+    - name: Set default shell
+      ansible.builtin.user:
+        name: 'root'
+        groups:
+        - 'root'
+        shell: '/usr/bin/fish'
+
+    # https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-docker-on-ubuntu-20-04
+    - name: Add Docker GPG apt Key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      ansible.builtin.apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      ansible.builtin.apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    # Set up swap memory
+    # https://github.com/ansible/ansible/issues/5241#issuecomment-31438159
+    - name: Create swap file
+      ansible.builtin.shell: |
+        fallocate -l 10G /swapfile
+        chmod 600 /swapfile
+        mkswap /swapfile
+        swapon /swapfile
+      when: ansible_swaptotal_mb < 1
+
+    - name: Ensure swapfile is enabled on boot by editin /etc/fstab
+      ansible.builtin.mount:
+        name: swap
+        src: /swapfile
+        fstype: swap
+        opts: defaults
+        passno: 0
+        dump: 0
+        state: present

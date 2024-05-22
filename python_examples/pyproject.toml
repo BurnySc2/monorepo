@@ -76,6 +76,7 @@ aiofiles = "^23.0"
 burny-common = "^0.0.9"
 psycopg = {extras = ["binary"], version = "^3.1.17"}
 dataset = "^1.6.2"
+moviepy = "^1.0.3"
 
 [tool.poetry.group.dev.dependencies]
 # Test library

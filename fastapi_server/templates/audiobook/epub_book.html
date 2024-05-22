@@ -55,6 +55,8 @@
         </div>
         <div class="flex flex-col border-2 border-black gap-8 rounded  p-2">
             <div class="place-self-center text-2xl font-semibold underline">Book</div>
+            <!-- TODO Allow custom book name and author before downloading -->
+            <!-- Show info on how many Chapters, sentences, words this book contains -->
             <div class="flex justify-center">
                 <button hx-post="/twitch/audiobook/epub/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
                     hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-indicator="#spinner_book"

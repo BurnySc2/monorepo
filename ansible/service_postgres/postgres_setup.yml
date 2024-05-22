@@ -9,6 +9,7 @@
     SUBDOMAIN: "{{ secrets.POSTGRES.PGADMIN_USERNAME }}"
     APPLICATION_PORT: "80"
     APPLICATION2_PORT: "8080"
+    BACKUP_PASSWORD: "{{ secrets.RDIFF_BACKUP.BACKUP_PASSWORD }}"
   tasks:
   - name: Create group
     ansible.builtin.group:
@@ -78,7 +79,6 @@
     community.docker.docker_compose_v2:
       project_src: /home/{{ USERNAME }}
 
-  # BACKUP
   - name: Create directories
     file:
       path: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}' 
@@ -97,6 +97,7 @@
   - name: Backup once per day as user 'root'
     ansible.builtin.cron:
       name: Run postgres backup
-      job: /bin/sh '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.log'
-      special_time: daily
+      job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh' '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.log'
+      minute: "0"
+      hour: "3"
       user: root

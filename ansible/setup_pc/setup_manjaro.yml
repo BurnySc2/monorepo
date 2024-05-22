@@ -8,7 +8,7 @@
     - name: Print initial instructions
       ansible.builtin.debug:
         msg:
-          - On a fresh manjaro installation you will want to connect to wifi / internep asap.
+          - On a fresh manjaro installation you will want to connect to wifi / internet asap.
           - After install run in terminal 'sudo systemctl enable --now sshd'
           - To find out the local network ip, run 'nmcli device show | grep IP4.ADDRESS' on the remote device
           - Create a key pair with 'ssh-keygen -t rsa'
@@ -88,10 +88,10 @@
           - make # For other pamac packages
           - gcc
           - rust
-          - rustup
           - python-pip
           - python-poetry
         state: latest
+        extra_args: --noconfirm
 
     - name: Create group
       ansible.builtin.group:
@@ -116,6 +116,44 @@
         daemon_reload: true
         enabled: true
 
+    - name: Create directories
+      file:
+        path: "{{ item }}"
+        recurse: true
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+      loop:
+        - "~/syncthing"
+
+    - name: Enable sync clock
+      ansible.builtin.systemd_service:
+        name: ntpd
+        scope: system
+        state: started
+        daemon_reload: true
+        enabled: true
+
+    # Set up swap memory
+    # https://github.com/ansible/ansible/issues/5241#issuecomment-31438159
+    - name: Create swap file
+      ansible.builtin.shell: |
+        fallocate -l 10G /swapfile
+        chmod 600 /swapfile
+        mkswap /swapfile
+        swapon /swapfile
+      when: ansible_swaptotal_mb < 1
+
+    - name: Ensure swapfile is enabled on boot by editin /etc/fstab
+      ansible.builtin.mount:
+        name: swap
+        src: /swapfile
+        fstype: swap
+        opts: defaults
+        passno: 0
+        dump: 0
+        state: present
+    
     - name: Update AUR store
       community.general.pacman:
         executable: yay
@@ -137,29 +175,11 @@
       timeout: 600 # Max 600 seconds per installation
       with_items:
         - aur/visual-studio-code-bin
-        - aur/earthly # development helper
+        - aur/earthly-bin # development helper
         # - aur/qdirstat # disk space usage
         - aur/xnviewmp # image viewer
         - aur/zoom
         - aur/anydesk-bin
-
-    - name: Create directories
-      file:
-        path: "{{ item }}"
-        recurse: true
-        state: directory
-        owner: "{{ USERNAME }}"
-        group: "{{ USERNAME }}"
-      loop:
-        - "~/syncthing"
-
-    - name: Enable sync clock
-      ansible.builtin.systemd_service:
-        name: ntpd
-        scope: system
-        state: started
-        daemon_reload: true
-        enabled: true
 
     - name: Print reminder
       ansible.builtin.debug:
