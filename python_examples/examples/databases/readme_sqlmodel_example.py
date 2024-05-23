@@ -8,7 +8,6 @@ from sqlmodel.engine.result import ScalarResult
 from sqlmodel.sql.expression import SelectOfScalar
 
 
-# pyre-fixme[13]
 # pyre-fixme[28]
 class Author(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -16,7 +15,6 @@ class Author(SQLModel, table=True):
     birth_year: int
 
 
-# pyre-fixme[13]
 # pyre-fixme[28]
 class Publisher(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -24,7 +22,6 @@ class Publisher(SQLModel, table=True):
     founded_year: int
 
 
-# pyre-fixme[13]
 # pyre-fixme[28]
 class Book(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -36,7 +33,6 @@ class Book(SQLModel, table=True):
     publisher: Publisher = Relationship()
 
 
-# pyre-fixme[13]
 # pyre-fixme[28]
 class Library(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -46,7 +42,6 @@ class Library(SQLModel, table=True):
     books: list[BookInventory] = Relationship(back_populates="library")
 
 
-# pyre-fixme[13]
 # pyre-fixme[28]
 class BookInventory(SQLModel, table=True):
     book_id: int = Field(default=None, primary_key=True, foreign_key="book.id")

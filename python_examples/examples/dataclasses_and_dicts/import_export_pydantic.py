@@ -7,12 +7,10 @@ from hypothesis import strategies as st
 from pydantic import BaseModel, EmailStr, validator
 
 
-# pyre-fixme[13]
 class CreditCardModel(BaseModel):
     card_number: int
 
 
-# pyre-fixme[13]
 class PetModel(BaseModel):
     name: str
     type: str
@@ -36,7 +34,6 @@ class DogModel(PetModel):
         return v
 
 
-# pyre-fixme[13]
 class PersonModel(BaseModel):
     name: str
     email: EmailStr

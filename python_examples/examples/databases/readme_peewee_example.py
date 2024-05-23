@@ -1,9 +1,10 @@
 from loguru import logger
-from peewee import CharField, ForeignKeyField, IntegerField, Model, ModelSelect, SqliteDatabase
+from peewee import CharField, ForeignKeyField, IntegerField, Model, ModelSelect, SqliteDatabase  # pyre-fixme[21]
 
 db = SqliteDatabase("test.db")
 
 
+# pyre-fixme[11]
 class Author(Model):
     name = CharField()
     birth_year = IntegerField()

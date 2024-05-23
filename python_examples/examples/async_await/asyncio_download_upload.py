@@ -64,7 +64,7 @@ async def download_file(
             except PermissionError:
                 # The file might be open by another process
                 logger.info(f"Permissionerror: Unable to rename file from ({temp_file_path}) to ({file_path})")
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError:  # pyre-fixme[16]
             # The server might suddenly not respond
             logger.info(f"Received timeout error in url ({url}) in file path ({file_path})!")
     else:

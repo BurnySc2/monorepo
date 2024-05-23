@@ -38,7 +38,7 @@ async def do_stuff(session: ClientSession, url: str, retry: int, results: list) 
             response_json = await response.json()
             results.append(response_json)
         return True
-    except asyncio.TimeoutError:
+    except asyncio.TimeoutError:  # pyre-fixme[16]
         # Took too long to respond
         return False
 
