@@ -88,6 +88,10 @@ jobs:
       working-directory: ${{ env.SUBDIRECTORY }}
       run: poetry install --no-dev
 
+    - name: Set pypi token
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry config pypi-token.pypi ${{ secrets.pypi_burny_common_token }}
+
     - name: Build
       working-directory: ${{ env.SUBDIRECTORY }}
       run: poetry build
@@ -107,4 +111,4 @@ jobs:
       if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       working-directory: ${{ env.SUBDIRECTORY }}
       continue-on-error: true
-      run: poetry publish --username ${{ secrets.pypi_username }} --password ${{ secrets.pypi_password }}
+      run: poetry publish
