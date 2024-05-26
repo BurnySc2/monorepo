@@ -3,6 +3,7 @@ name = "fastapi_server"
 version = "0.1.0"
 description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
+package-mode = false
 
 [tool.poetry.dependencies]
 # Drop python <=3.9 support because syntax "var: int | None" is not supported 
@@ -51,7 +52,7 @@ pipdeptree = "^2.13.1"
 sqlfluff = "^2.3.5"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.2.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.yapf]

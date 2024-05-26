@@ -5,16 +5,9 @@
 # To run hooks:
 # poetry run pre-commit run --all-files --hook-stage push
 
-# This removes comments which is unwanted
-#- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-#  rev: v2.1.0
-#  hooks:
-#  - id: pretty-format-toml
-#    args: [--autofix]
-
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.2.0
+  rev: v4.6.0
   hooks:
   # Check yaml files like this one and github actions if they are valid
   - id: check-yaml
@@ -22,7 +15,7 @@ repos:
   - id: check-toml
 
 - repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.9.0
+  rev: v1.10.0
   hooks:
   # Check for bad code
   - id: python-no-eval
@@ -39,7 +32,7 @@ repos:
 
 # Check github action workflow files
 - repo: https://github.com/sirosen/check-jsonschema
-  rev: 0.18.4
+  rev: 0.28.4
   hooks:
   - id: check-github-workflows
 

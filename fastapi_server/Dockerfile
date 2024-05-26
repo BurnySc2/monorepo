@@ -7,7 +7,7 @@ FROM python:3.11-slim
 #     ffmpeg \
 #     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir poetry==1.5.1 \
+RUN pip install --no-cache-dir poetry==1.8 \
     && yes | poetry cache clear PyPI --all
 
 WORKDIR /root/fastapi_server

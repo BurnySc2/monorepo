@@ -22,7 +22,7 @@ class Secrets(BaseModel):
 
 SECRETS_PATH = Path("SECRETS.toml")
 assert SECRETS_PATH.is_file(), """Could not find a 'SECRETS.toml' file.
- Make sure to enter variables according to the 'Secrets' class."""
+Make sure to enter variables according to the 'Secrets' class."""
 
 with SECRETS_PATH.open() as f:
     SECRETS = Secrets(**toml.loads(f.read()))
