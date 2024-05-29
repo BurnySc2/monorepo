@@ -3,6 +3,7 @@ from pathlib import Path
 from test.base_test import log_in_with_twitch, test_client  # noqa: F401
 
 import dataset  # pyre-fixme[21]
+import pytest
 
 # import pytest
 from bs4 import BeautifulSoup  # pyre-fixme[21]
@@ -46,43 +47,42 @@ def test_index_route_has_upload_button(test_client: TestClient, httpx_mock: HTTP
 
 
 # Test post request to "/" can upload an epub
+@pytest.mark.skip(reason="Currently the database is not reset correctly, so this test fails")
+@pytest.mark.parametrize(
+    "book_relative_path,chapters_amount",
+    [
+        ("actual_books/frankenstein.epub", 31),
+        ("actual_books/romeo-and-juliet.epub", 28),
+        ("actual_books/the-war-of-the-worlds.epub", 29),
+    ],
+)
+def test_index_route_upload_epub(
+    book_relative_path: str, chapters_amount: int, test_client: TestClient, httpx_mock: HTTPXMock
+) -> None:  # noqa: F811
+    log_in_with_twitch(test_client, httpx_mock)
 
+    # # Make sure the book does not exist yet
+    # response = test_client.get("/twitch/audiobook/epub/book/1")
+    # assert response.status_code == HTTP_401_UNAUTHORIZED
 
-# @pytest.mark.parametrize(
-#     "book_relative_path,chapters_amount",
-#     [
-#         ("actual_books/frankenstein.epub", 31),
-#         ("actual_books/romeo-and-juliet.epub", 28),
-#         ("actual_books/the-war-of-the-worlds.epub", 29),
-#     ],
-# )
-# def test_index_route_upload_epub(
-#     book_relative_path: str, chapters_amount: int, test_client: TestClient, httpx_mock: HTTPXMock
-# ) -> None:  # noqa: F811
-#     log_in_with_twitch(test_client, httpx_mock)
+    # Upload book
+    book_path = Path(__file__).parent / book_relative_path
+    response = test_client.post("/twitch/audiobook/epub", files={"upload-file": book_path.open("rb")})
+    assert response.status_code == HTTP_201_CREATED
+    # Why is the database not empty?
+    # assert response.headers.get(HTMXHeaders.REDIRECT) == "/twitch/audiobook/epub/book/1"
+    # assert response.headers.get("location") is None
 
-#     # # Make sure the book does not exist yet
-#     # response = test_client.get("/twitch/audiobook/epub/book/1")
-#     # assert response.status_code == HTTP_401_UNAUTHORIZED
+    # Clean up responses to avoid assertion failure
+    httpx_mock.reset(assert_all_responses_were_requested=False)
 
-#     # Upload book
-#     book_path = Path(__file__).parent / book_relative_path
-#     response = test_client.post("/twitch/audiobook/epub", files={"upload-file": book_path.open("rb")})
-#     assert response.status_code == HTTP_201_CREATED
-#     # Why is the database not empty?
-#     # assert response.headers.get(HTMXHeaders.REDIRECT) == "/twitch/audiobook/epub/book/1"
-#     # assert response.headers.get("location") is None
-
-#     # Clean up responses to avoid assertion failure
-#     httpx_mock.reset(assert_all_responses_were_requested=False)
-
-#     # Make sure 29 chapters were detected
-#     # response = test_client.get("/twitch/audiobook/epub/book/1")
-#     response = test_client.get(response.headers.get(HTMXHeaders.REDIRECT))
-#     soup = BeautifulSoup(response.text, features="lxml")
-#     matching_divs = soup.find_all("div", id=lambda x: x is not None and x.startswith("chapter_audio_"))
-#     assert response.status_code == HTTP_200_OK
-#     assert len(matching_divs) == chapters_amount
+    # Make sure 29 chapters were detected
+    # response = test_client.get("/twitch/audiobook/epub/book/1")
+    response = test_client.get(response.headers.get(HTMXHeaders.REDIRECT))
+    soup = BeautifulSoup(response.text, features="lxml")
+    matching_divs = soup.find_all("div", id=lambda x: x is not None and x.startswith("chapter_audio_"))
+    assert response.status_code == HTTP_200_OK
+    assert len(matching_divs) == chapters_amount
 
 
 # Test post request to "/" book already exists
