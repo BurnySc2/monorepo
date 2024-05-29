@@ -4,7 +4,6 @@ name: test_fastapi_server
 on:
   push:
     paths:
-    - burny_common/**
     - fastapi_server/**
     - .github/workflows/test_fastapi_server.yml
   pull_request:

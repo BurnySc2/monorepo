@@ -8,6 +8,7 @@
 # Dont ignore files in test folder
 !test
 
+.env
 whisper_models
 result
 SECRETS.toml

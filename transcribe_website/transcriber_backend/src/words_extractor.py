@@ -3,6 +3,7 @@ Extract mp4 clips where someone in the video says a specific word from the list.
 """
 from __future__ import annotations
 
+import os
 import subprocess
 from collections import Counter, OrderedDict
 from concurrent.futures import ThreadPoolExecutor
@@ -10,16 +11,20 @@ from pathlib import Path
 from typing import Iterable
 
 import dataset  # pyre-fixme[21]
+from dotenv import load_dotenv
 from faster_whisper import WhisperModel  # pyre-fixme[21]
 from loguru import logger
 from tqdm import tqdm
 
-input_directory = Path("my_input_files")
+load_dotenv()
 
-looking_for_lower_case_words = ["words", "to", "look", "for"]
+# pyre-fixme[16]
+looking_for_lower_case_words: list[str] = os.getenv("WORDS_EXTRACTOR_WORDS").split(";")
 
-out_path = Path("OUTPUT_FOLGER_PATH")
-
+# pyre-fixme[6]
+input_path = Path(os.getenv("WORDS_EXTRACTOR_INPUT_DIRECTORY"))
+# pyre-fixme[6]
+out_path = Path(os.getenv("WORDS_EXTRACTOR_OUTPUT_DIRECTORY"))
 out_path.mkdir(parents=True, exist_ok=True)
 
 SYMBOLS = "!?.,"
@@ -263,7 +268,7 @@ def extract_matched_words(
 
 if __name__ == "__main__":
     with ThreadPoolExecutor(max_workers=4) as exec:
-        for my_file in recurse_path(input_directory, depth=2):
+        for my_file in recurse_path(input_path, depth=2):
             if my_file.suffix not in [".mp4", ".webm"]:
                 continue
             extract_info(exec, my_file)
