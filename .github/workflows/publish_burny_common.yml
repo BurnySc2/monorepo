@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11']
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -105,6 +105,7 @@ jobs:
           run_code_check_py3.9
           run_code_check_py3.10
           run_code_check_py3.11
+          run_code_check_py3.12
 
       # Publish package on pypi
     - name: Publish

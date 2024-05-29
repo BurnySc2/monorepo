@@ -13,18 +13,18 @@ graph LR;
 ## Audiobook
 ```mermaid
 ---
-title: Audiobook - file upload process
+title: Audiobook - User file upload
 ---
 graph LR;
     A[Upload epub]-->B[Parse epub];
-    B-->C[Store book \n content chapterwise];
+    B-->C[Store book-content \n chapterwise];
     D[TODO Upload pdf]-->E[TODO Parse pdf];
     E-->C;
 ```
 
 ```mermaid
 ---
-title: Audiobook - generate audio
+title: Audiobook - User interaction
 ---
 graph LR;
     A[Book]-->B[Change book title];

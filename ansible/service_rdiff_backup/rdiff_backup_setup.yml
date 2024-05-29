@@ -9,6 +9,10 @@
     AMOUNT_OF_BACKUPS: 3
     BACKUP_PASSWORD: "{{ secrets.RDIFF_BACKUP.BACKUP_PASSWORD }}"
     backup_jobs:
+      - name: baikal
+        LOG_NAME: backup_baikal.log
+        SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_BAIKAL }}"
+        TARGET_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/baikal"
       - name: audiobookshelf
         LOG_NAME: backup_audiobookshelf.log
         SOURCE_DIRECTORY: "{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_AUDIOBOOKSHELF }}"
