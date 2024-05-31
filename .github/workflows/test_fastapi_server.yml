@@ -110,6 +110,8 @@ jobs:
       USERNAME: fastapidev
 
     steps:
+    - uses: actions/checkout@v4
+
     - name: temp
       run: |
         ls -lah
