@@ -141,7 +141,7 @@ jobs:
         script: |
           cd /home/${{ env.USERNAME }}
           docker compose down
-          docker compose up
+          docker compose up -d
 
   deploy_backend_prod:
     if: github.ref == 'refs/heads/master'

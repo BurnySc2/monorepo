@@ -28,7 +28,7 @@ services:
   convert_audiobook_worker:
     image: burnysc2/fastapi_server:latest
     container_name: convert_audiobook_worker
-    command: poetry run python workers/convert_audiobook.py
+    command: poetry run python "workers/convert_audiobook.py"
     pull_policy: always
     # Has no volume because all files are temporary
     # If changes occur, they will be saved in postgres or minio
