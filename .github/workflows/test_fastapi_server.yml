@@ -110,6 +110,11 @@ jobs:
       USERNAME: fastapidev
 
     steps:
+    - name: temp
+      run: |
+        ls -lah
+        ls -lah fastapi_server
+
     - name: Update docker-compose.yml
       uses: appleboy/scp-action@v0.1.7
       with:
