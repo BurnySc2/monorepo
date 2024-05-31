@@ -1,19 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
+{% include "header.html" with context %}
+{% include "nav.html" with context %}
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HTMX+Fastapi Todo App</title>
-    <script src="https://unpkg.com/htmx.org@1.9.5"
-        integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.tailwindcss.com/3.3.0"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
-</head>
-
-
-<body class="flex flex-col items-center justify-center h-screen bg-gray-300 gap-4">
+<main class="flex flex-col items-center justify-center h-screen bg-gray-300 gap-4">
     {% if twitch_user == None and github_user == None %}
     <a href="/login/twitch" class="border-black rounded border-4 p-2">
         Login with twitch
@@ -40,4 +28,4 @@
         Log out from github
     </a>
     {% endif %}
-</body>
+</main>

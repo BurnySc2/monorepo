@@ -20,12 +20,11 @@ services:
       POSTGRES_USER: '{{ secrets.POSTGRES.POSTGRES_USER }}'
       POSTGRES_PASSWORD: '{{ secrets.POSTGRES.POSTGRES_PASSWORD }}'
     volumes:
-    # Do I need to mount a backup path?
     - ./postgres_data:/var/lib/postgresql/data
 
   pgadmin:
     container_name: postgres_pgadmin
-    image: dpage/pgadmin4:7
+    image: dpage/pgadmin4:8
     networks:
     - '{{ secrets.TRAFIK_NETWORK }}'
     labels:

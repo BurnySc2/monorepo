@@ -110,12 +110,19 @@ jobs:
       USERNAME: fastapidev
 
     steps:
-      # Requires the following 3 lines added to "visudo" on the server
-      # fastapidev ALL=(ALL) NOPASSWD: /bin/systemctl disable --now fastapidev
-      # fastapidev ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
-      # fastapidev ALL=(ALL) NOPASSWD: /bin/systemctl enable --now fastapidev
+    - name: Update docker-compose.yml
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERDEVKEY }}
+        passphrase: ''
+        source: docker-compose.yml
+        target: /home/${{ env.USERNAME }}/docker-compose.yml
+
     - name: Update docker image on server and restart server
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
         port: 22
@@ -123,11 +130,9 @@ jobs:
         key: ${{ secrets.FASTAPISERVERDEVKEY }}
         passphrase: ''
         script: |
-          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-          docker rm -f fastapidev
-          docker image prune -af
-          docker pull burnysc2/${{ env.IMAGENAME }}:latest_dev
-          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
+          cd /home/${{ env.USERNAME }}
+          docker compose down
+          docker compose up
 
   deploy_backend_prod:
     if: github.ref == 'refs/heads/master'
@@ -145,7 +150,7 @@ jobs:
       # fastapi ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
       # fastapi ALL=(ALL) NOPASSWD: /bin/systemctl enable --now fastapi
     - name: Update docker image on server and restart server
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
         port: 22

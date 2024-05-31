@@ -5,6 +5,7 @@ from litestar.testing import AsyncTestClient
 from app import app
 
 
+@pytest.mark.xfail(reason="Endpoind removed")
 @pytest.mark.asyncio
 async def test_health_check():
     async with AsyncTestClient(app=app) as client:

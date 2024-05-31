@@ -10,7 +10,7 @@ from litestar.status_codes import (
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
-from routes.login_logout import COOKIES, TwitchUser, UserCache, get_twitch_user
+from routes.cookies_and_guards import COOKIES, TwitchUser, UserCache, get_twitch_user
 
 _test_client = test_client
 

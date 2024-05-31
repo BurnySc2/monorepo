@@ -5,13 +5,15 @@ from typing import Literal
 
 import uvicorn
 from dotenv import load_dotenv
-from litestar import Litestar, MediaType, get
+from litestar import Litestar
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.static_files import create_static_files_router
 from litestar.template.config import TemplateConfig
 from loguru import logger
 
-from routes.audiobook.from_epub import MyAudiobookEpubRoute, background_convert_function
+from routes.audiobook.book import MyAudiobookBookRoute
+from routes.audiobook.epub_upload import MyAudiobookEpubRoute
+from routes.audiobook.index import MyAudiobookIndexRoute
 from routes.hello_world import MyRootRoute
 
 # from routes.htmx_chat import MyChatRoute
@@ -30,26 +32,15 @@ DATA_FOLDER = Path(__file__).parent / "data"
 DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 logger.add(DATA_FOLDER / "app.log")
 
-assert os.getenv("STAGE", "dev") in {"dev", "prod"}, os.getenv("STAGE")
-STAGE: Literal["dev", "prod"] = os.getenv("STAGE", "dev")  # pyre-fixme[9]
+assert os.getenv("STAGE", "dev") in {"dev", "prod", "test"}, os.getenv("STAGE")
+STAGE: Literal["dev", "prod", "test"] = os.getenv("STAGE", "dev")  # pyre-fixme[9]
 BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
 WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:0.0.0.0:8000")
-
-
-@get(path="/", media_type=MediaType.TEXT)
-async def index() -> str:
-    return "Hello, world!"
-
-
-@get("/books/{book_id:int}")
-async def get_book(book_id: int) -> dict[str, int]:
-    return {"book_id": book_id}
 
 
 async def startup_event():
     # Run websocket handler which handles tts
     asyncio.create_task(TTSQueue.start_irc_bot())
-    asyncio.create_task(background_convert_function())
     logger.info("Started!")
 
 
@@ -59,8 +50,8 @@ def shutdown_event():
 
 app = Litestar(
     route_handlers=[
-        get_book,
-        index,
+        MyAudiobookBookRoute,
+        MyAudiobookIndexRoute,
         MyAudiobookEpubRoute,
         # MyChatRoute,
         MyLoginRoute,

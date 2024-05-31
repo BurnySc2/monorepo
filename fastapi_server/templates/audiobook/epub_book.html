@@ -1,32 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HTMX+Fastapi Todo App</title>
-    <script src="https://unpkg.com/htmx.org@1.9.5"
-        integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.tailwindcss.com/3.3.0"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
-    <style>
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        .htmx-indicator {
-            width: 32px;
-            animation: spin 2s linear infinite;
-        }
-    </style>
-</head>
+{% include "header.html" with context %}
+{% include "nav.html" with context %}
 
 <div class="flex flex-col h-screen items-center bg-gray-300">
     <div class="flex flex-col gap-2 overflow-y-hidden  m-4">
@@ -34,7 +7,7 @@
         <div class="place-self-center text-2xl font-semibold">{{ book_author }}</div>
         <div class="flex flex-col border-2 border-black rounded p-2">
             <div class="place-self-center text-2xl font-semibold underline">Settings</div>
-            <form class="grid grid-cols-2" hx-post="/twitch/audiobook/epub/save_settings_to_cookies" hx-swap="none"
+            <form class="grid grid-cols-2" hx-post="/audiobook/save_settings_to_cookies" hx-swap="none"
                 hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-trigger="change delay:1s">
                 <div>Voice</div>
                 <select id="voice_name" name="voice_name">
@@ -58,7 +31,7 @@
             <!-- TODO Allow custom book name and author before downloading -->
             <!-- Show info on how many Chapters, sentences, words this book contains -->
             <div class="flex justify-center">
-                <button hx-post="/twitch/audiobook/epub/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
+                <button hx-post="/audiobook/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
                     hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-indicator="#spinner_book"
                     class="border-2 border-black p-2 hover:bg-green-300 rounded-lg flex items-center">Generate
                     audio for
@@ -66,11 +39,11 @@
                     chapters
                     <img id="spinner_book" class="htmx-indicator" src="/static/spinner.svg" />
                 </button>
-                <a download href="/twitch/audiobook/epub/download_book_zip?book_id={{ book_id }}"
+                <a download href="/audiobook/download_book_zip?book_id={{ book_id }}"
                     class="rounded-xl hover:bg-green-300 self-center">
                     <img class="h-auto" width="64" height="64" src="/static/download.svg" alt="Download audio">
                 </a>
-                <button hx-post="/twitch/audiobook/epub/delete_book?book_id={{ book_id }}" hx-swap="none"
+                <button hx-post="/audiobook/delete_book?book_id={{ book_id }}" hx-swap="none"
                     hx-confirm="Are you sure you wish to delete this book?"
                     class="rounded-xl hover:bg-green-300 self-center">
                     <img width="64" height="64" src="/static/delete.svg" alt="Delete book">

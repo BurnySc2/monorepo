@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "fastapi_server"
+name = "fastapi-server"
 version = "0.1.0"
 description = ""
 authors = ["BuRny <gamingburny@gmail.com>"]
@@ -9,7 +9,7 @@ package-mode = false
 # Drop python <=3.9 support because syntax "var: int | None" is not supported 
 python = ">=3.10 <3.13"
 # Simple logger
-loguru = "^0.5"
+loguru = "^0.7"
 # Fastapi alternative https://docs.litestar.dev/latest/
 litestar = { extras = ["standard"], version = "^2.5.1" }
 # Web requests (sync + async)
@@ -29,6 +29,7 @@ pymupdf = "^1.24.2"        # fitz for pdf
 ebooklib = "^0.18"         # epub parsing
 beautifulsoup4 = "^4.12.3" # xml parsing
 stream-zip = "^0.0.71"     # Zip files with low memory footprint
+minio = "^7.2.7"           # AWS S3
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -107,5 +108,7 @@ capitalisation_policy = "upper"
 
 [tool.pytest_env]
 # Env variables to be used while tests run
+# CAUTION: It can't be a memory db if the web server runs with threads
 POSTGRES_CONNECTION_STRING = "sqlite:///:memory:"
-STAGE = "dev"
+# POSTGRES_CONNECTION_STRING = "sqlite:///test.db"
+STAGE = "test"

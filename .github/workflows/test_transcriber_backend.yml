@@ -109,7 +109,7 @@ jobs:
       # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
       # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl enable --now transcribe
     - name: Update docker image on server and restart server
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
         port: 22

@@ -16,18 +16,26 @@ State4: audio generated, audio loaded
     <source src="data:audio/mpeg;base64, {{ chapter.mp3_b64_data }}" type="audio/mpeg" />
     Your browser does not support the audio element.
   </audio>
-  {% elif chapter.has_audio is defined and chapter.queued is defined and not chapter.has_audio and chapter.queued %}
-  <button class="flex border-4 border-black p-2 rounded-3xl items-center"
+  {% elif chapter.position_in_queue >= 0 %}
+  <div class="flex border-4 border-black p-2 rounded-3xl items-center"
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
-    hx-post="/twitch/audiobook/epub/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
-    hx-trigger="every:{{ wait_time_for_next_poll|default(10, true) }}s">Generating audio...
+    hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
+    hx-trigger="every {{ wait_time_for_next_poll|default(10, true) }}s">Queued ({{ chapter.position_in_queue }})...
     <!-- TODO Show number in queue (= user being able to estimate till it is done) -->
     <img class="htmx-indicator" style="opacity: 1;" src="/static/spinner.svg" />
-  </button>
+  </div>
+  {% elif chapter.has_audio is defined and chapter.queued is defined and not chapter.has_audio and chapter.queued %}
+  <div class="flex border-4 border-black p-2 rounded-3xl items-center"
+    hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
+    hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
+    hx-trigger="every {{ wait_time_for_next_poll|default(10, true) }}s">Generating audio...
+    <!-- TODO Show number in queue (= user being able to estimate till it is done) -->
+    <img class="htmx-indicator" style="opacity: 1;" src="/static/spinner.svg" />
+  </div>
   {% elif chapter.has_audio is defined and chapter.has_audio %}
   <button class="flex border-4 border-black p-2 rounded-3xl hover:bg-green-300 items-center"
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
-    hx-post="/twitch/audiobook/epub/load_generated_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
+    hx-post="/audiobook/load_generated_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
     hx-indicator="#spinner2_{{ chapter.chapter_number }}">Load audio
     <img id="spinner2_{{ chapter.chapter_number }}" class="htmx-indicator" src="/static/spinner.svg" />
   </button>
@@ -35,7 +43,7 @@ State4: audio generated, audio loaded
   {% else %}
   <button class="flex border-4 border-black p-2 rounded-3xl hover:bg-green-300 items-center"
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
-    hx-post="/twitch/audiobook/epub/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
+    hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
     hx-trigger="click" hx-indicator="#spinner1_{{ chapter.chapter_number }}"
     hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch">Generate audio
     <img id="spinner1_{{ chapter.chapter_number }}" class="htmx-indicator" src="/static/spinner.svg" />
@@ -44,7 +52,7 @@ State4: audio generated, audio loaded
 
   {# Download button #}
   {% if chapter.has_audio is defined and chapter.has_audio %}
-  <a href="/twitch/audiobook/epub/download_chapter_mp3/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
+  <a href="/audiobook/download_chapter_mp3/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
     download class="rounded-xl hover:bg-green-300 self-center">
     <img class="h-auto" width="32" height="32" src="/static/download.svg" alt="Download audio">
   </a>
@@ -53,7 +61,7 @@ State4: audio generated, audio loaded
   {# Delete button #}
   {% if chapter.queued is defined and chapter.queued %}
   <button
-    hx-post="/twitch/audiobook/epub/delete_generated_audio/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
+    hx-post="/audiobook/delete_generated_audio/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML" class="rounded-xl hover:bg-green-300">
     <img width="32" height="32" src="/static/delete.svg" alt="Delete audio">
   </button>

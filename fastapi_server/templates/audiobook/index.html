@@ -1,0 +1,11 @@
+{% include "header.html" with context %}
+{% include "nav.html" with context %}
+
+<main class="flex flex-col h-screen justify-center items-center bg-gray-300">
+    <a href="/audiobook/epub_upload">Upload an epub</a>
+    <!-- <a href="/audiobook/pdf_upload">TODO Upload a pdf</a> -->
+    <!-- <a href="/audiobook/website">TODOGenerate audio for a website</a> -->
+    <div hx-get="audiobook/list_books" hx-trigger="load">
+        Placeholder
+    </div>
+</main>

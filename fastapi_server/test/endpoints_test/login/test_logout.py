@@ -3,7 +3,7 @@ from test.base_test import test_client  # noqa: F401
 from litestar.status_codes import HTTP_200_OK
 from litestar.testing import TestClient
 
-from routes.login_logout import COOKIES
+from routes.cookies_and_guards import COOKIES
 
 _test_client = test_client
 
