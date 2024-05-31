@@ -127,6 +127,8 @@ jobs:
         passphrase: ''
         source: "fastapi_server/docker-compose.yml"
         target: /home/${{ env.USERNAME }}/
+        strip_components: 1
+        # overwrite: true
 
     - name: Update docker image on server and restart server
       uses: appleboy/ssh-action@v1.0.3
