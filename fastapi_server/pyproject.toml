@@ -20,11 +20,12 @@ pydantic = "^2"          # Dataclasses with type validation
 nltk = "^3.8.1"          # Language manipulation
 twitchio = "^2.8.2"      # Twitch chat bot
 soundfile = "^0.12.1"    # Analyse mp3 files in memory
-# Other
-numpy = "^1.26.3"
+# Database
 dataset = "^1.6.2"
 psycopg2-binary = "^2.9.9"
-edge-tts = "^6.1.11"
+# Other
+numpy = "^1.26.3"
+edge-tts = "^6.1.11"       # Audio generation
 pymupdf = "^1.24.2"        # fitz for pdf
 ebooklib = "^0.18"         # epub parsing
 beautifulsoup4 = "^4.12.3" # xml parsing
@@ -112,4 +113,4 @@ capitalisation_policy = "upper"
 POSTGRES_CONNECTION_STRING = "sqlite:///:memory:"
 # POSTGRES_CONNECTION_STRING = "sqlite:///test.db"
 STAGE = "test"
-MINIO_URL=""
+MINIO_URL = ""

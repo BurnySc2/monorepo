@@ -118,7 +118,7 @@ jobs:
         username: ${{ env.USERNAME }}
         key: ${{ secrets.FASTAPISERVERDEVKEY }}
         passphrase: ''
-        source: "docker-compose.yml"
+        source: "fastapi_server/docker-compose.yml"
         target: /home/${{ env.USERNAME }}/
 
     - name: Update docker image on server and restart server
