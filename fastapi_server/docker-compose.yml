@@ -26,7 +26,7 @@ services:
 
   # Responsible for converting texts to audio
   convert_audiobook_worker:
-    image: burnysc2/fastapi_server:latest
+    image: burnysc2/fastapi_server:latest_dev
     container_name: convert_audiobook_worker
     command: poetry run python "workers/convert_audiobook.py"
     pull_policy: always
@@ -45,8 +45,5 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    environment:
-      - DATABASE_URL=MYDBURL
-      - MINIO_URL=my minio api url
 
 # Background workers for transcription
