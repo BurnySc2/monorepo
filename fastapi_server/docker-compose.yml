@@ -41,6 +41,7 @@ services:
       restart_policy:
         # Wait 10s before restarting
         delay: 10s
+        condition: any
     restart: always
     env_file:
       - .env
