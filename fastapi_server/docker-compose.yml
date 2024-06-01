@@ -27,7 +27,6 @@ services:
   # Responsible for converting texts to audio
   convert_audiobook_worker:
     image: burnysc2/fastapi_server:latest_dev
-    container_name: convert_audiobook_worker
     command: poetry run python workers/convert_audiobook.py
     pull_policy: always
     # Has no volume because all files are temporary
