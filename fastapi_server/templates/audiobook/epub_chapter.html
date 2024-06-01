@@ -16,7 +16,7 @@ State4: audio generated, audio loaded
     <source src="data:audio/mpeg;base64, {{ chapter.mp3_b64_data }}" type="audio/mpeg" />
     Your browser does not support the audio element.
   </audio>
-  {% elif chapter.position_in_queue >= 0 %}
+  {% elif chapter.position_in_queue|default(-1, true) >= 0 %}
   <div class="flex border-4 border-black p-2 rounded-3xl items-center"
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
