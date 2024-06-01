@@ -28,21 +28,21 @@ services:
   convert_audiobook_worker:
     image: burnysc2/fastapi_server:latest_dev
     container_name: convert_audiobook_worker
-    command: poetry run python "workers/convert_audiobook.py"
+    command: poetry run python workers/convert_audiobook.py
     pull_policy: always
     # Has no volume because all files are temporary
     # If changes occur, they will be saved in postgres or minio
     deploy:
       # TODO change me
-      replicas: 1
+      replicas: 4
       resources:
         limits:
           cpus: "0.1"
           memory: 2048M
       restart_policy:
-        # Wait 60s before restarting
-        delay: 60s
-    restart: unless-stopped
+        # Wait 10s before restarting
+        delay: 10s
+    restart: always
     env_file:
       - .env
 
