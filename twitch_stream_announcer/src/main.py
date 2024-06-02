@@ -6,7 +6,7 @@ from collections import OrderedDict
 
 import aiohttp
 import arrow
-from discord import Embed, Webhook
+from discord import Embed, HTTPException, NotFound, Webhook
 from dotenv import load_dotenv
 from loguru import logger
 from model import get_streams_to_announce, set_stream_online, set_streams_offline  # pyre-fixme[21]
@@ -111,7 +111,12 @@ async def send_webhook(
         inline=False,
     )
     logger.info(f"Sending webhook to {discord_webhook_url} because stream {twitch_username} is online!")
-    await webhook.send(webhook_message, username="Stream Announcer Webhook", embed=webhook_embed)
+
+    # Webhook may be deleted
+    try:  # noqa: SIM105
+        await webhook.send(webhook_message, username="Stream Announcer Webhook", embed=webhook_embed)
+    except (NotFound, HTTPException):
+        pass
 
 
 async def main():
