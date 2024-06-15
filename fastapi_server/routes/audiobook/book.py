@@ -191,7 +191,7 @@ class MyAudiobookBookRoute(Controller):
                 "audio_settings": data.model_dump(),
                 "queued": datetime.datetime.now(datetime.timezone.utc),
             }
-            for c in chapter_table.find(book_id=book.id, queued=None)
+            for c in chapter_table.find(book_id=book.id, queued=None, order_by=["chapter_number"])
         ]
         if len(entries) > 0:
             chapter_table.update_many(entries, keys=["id"])

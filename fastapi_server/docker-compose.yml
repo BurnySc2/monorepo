@@ -39,8 +39,8 @@ services:
           cpus: "0.1"
           memory: 2048M
       restart_policy:
-        # Wait 10s before restarting
-        delay: 10s
+        # Wait 5s before restarting
+        delay: 5s
         condition: any
     restart: always
     env_file:

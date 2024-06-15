@@ -53,3 +53,16 @@ docker run --rm --name fastapitest --publish 8000:8000 --env STAGE=PROD --mount 
 CREATE USER litestar_server_dev WITH PASSWORD 'your_password';
 GRANT CREATE ON SCHEMA public TO litestar_server_dev;
 ```
+
+# Ideal structure of the project
+```mermaid
+---
+title: "Stages: dev, staging, prod, test"
+---
+mindmap
+  root((mindmap))
+    www.my_domain.com Stage: PROD, most stable release
+    staging.my_domain.com Stage: STAGING, experimental release
+    localhost, Stage: DEV, under development, uses local sqlite database
+    no domain, Stage: Test, under development, uses local sqlite or memory database
+```

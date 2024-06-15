@@ -2,6 +2,9 @@
 # ansible-playbook setup_manjaro.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: After a fresh manjaro installation, install or upgrade all software
   hosts: my_pcs
+  # To apply on local computer:
+  # hosts: 127.0.0.1
+  # connection: local
   vars:
     USERNAME: burny
   tasks:
@@ -126,13 +129,13 @@
       loop:
         - "~/syncthing"
 
-    - name: Enable sync clock
-      ansible.builtin.systemd_service:
-        name: ntpd
-        scope: system
-        state: started
-        daemon_reload: true
-        enabled: true
+    # - name: Enable sync clock
+    #   ansible.builtin.systemd_service:
+    #     name: ntpd
+    #     scope: system
+    #     state: started
+    #     daemon_reload: true
+    #     enabled: true
 
     # Set up swap memory
     # https://github.com/ansible/ansible/issues/5241#issuecomment-31438159
