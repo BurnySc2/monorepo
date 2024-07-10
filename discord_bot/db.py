@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Generator, Literal
 
 import arrow
-import toml
+import toml  # pyre-fixme[21]
 from arrow import Arrow
 from postgrest.base_request_builder import APIResponse  # pyre-fixme[21]
 from pydantic import BaseModel

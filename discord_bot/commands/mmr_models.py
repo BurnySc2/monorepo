@@ -14,7 +14,6 @@ class Partition(Enum):
     GLOBAL = "GLOBAL"
 
 
-# pyre-fixme[13]
 class Account(BaseModel):
     battle_tag: str = Field(..., alias="battleTag")
     id: int
@@ -28,7 +27,6 @@ class Region(Enum):
     US = "US"
 
 
-# pyre-fixme[13]
 class Character(BaseModel):
     realm: int
     name: str
@@ -38,7 +36,6 @@ class Character(BaseModel):
     battlenet_id: int = Field(..., alias="battlenetId")
 
 
-# pyre-fixme[13]
 class Clan(BaseModel):
     tag: str
     id: int
@@ -51,7 +48,6 @@ class Clan(BaseModel):
     games: Optional[int]
 
 
-# pyre-fixme[13]
 class Members(BaseModel):
     character: Character
     account: Account
@@ -62,7 +58,6 @@ class Members(BaseModel):
     random_games_played: int = Field(0, alias="randomGamesPlayed")
 
 
-# pyre-fixme[13]
 class PlayerData(BaseModel):
     league_max: int = Field(..., alias="leagueMax")
     rating_max: int = Field(..., alias="ratingMax")

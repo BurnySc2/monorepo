@@ -56,7 +56,6 @@ class Action(enum.Enum):
         raise ValueError(f"Doesn't exist: {action}")
 
 
-# pyre-fixme[13]
 class Condition(BaseModel):
     action: Action
     target_count: int
@@ -368,7 +367,6 @@ async def public_fetch_aoe4_bo(
 {collected_games_string}"""
 
 
-# pyre-fixme[13]
 class Social(BaseModel):
     twitch: Optional[str]
     twitter: Optional[str]
@@ -376,7 +374,6 @@ class Social(BaseModel):
     liquipedia: Optional[str]
 
 
-# pyre-fixme[13]
 class Leaderboard(BaseModel):
     rating: int
     max_rating: Optional[int]
@@ -404,7 +401,6 @@ class Leaderboards(BaseModel):
     rm_4v4_elo: Optional[Leaderboard] = None
 
 
-# pyre-fixme[13]
 class PlayerSearchResult(BaseModel):
     name: str
     profile_id: int
@@ -421,7 +417,6 @@ class PlayerSearchResult(BaseModel):
         return arrow.get(self.last_game_at)
 
 
-# pyre-fixme[13]
 class PlayerOfTeam(BaseModel):
     profile_id: Optional[int]
     name: Optional[str]
@@ -432,12 +427,10 @@ class PlayerOfTeam(BaseModel):
     rating_diff: Optional[int]
 
 
-# pyre-fixme[13]
 class PlayerOfTeamEntry(BaseModel):
     player: PlayerOfTeam
 
 
-# pyre-fixme[13]
 class GameResult(BaseModel):
     game_id: int
     started_at: str
@@ -463,7 +456,6 @@ class FinishedActions(BaseModel):
     # TODO More upgrades
 
 
-# pyre-fixme[13]
 class BuildOrderItem(BaseModel):
     id: Optional[Union[str, int]]
     icon: str
@@ -506,7 +498,6 @@ def format_time(timestamps: list[int]) -> str:
     return ", ".join(times_formatted)
 
 
-# pyre-fixme[13]
 class GamePlayerData(BaseModel):
     profile_id: Optional[int]
     name: Optional[str]
@@ -652,7 +643,6 @@ class GamePlayerData(BaseModel):
         return info_string
 
 
-# pyre-fixme[13]
 class CollectedBuildOrder(BaseModel):
     game_result: GameResult
     game_player_data: GamePlayerData

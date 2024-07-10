@@ -111,6 +111,7 @@ async def add_message_to_db(server_id: int, channel_id: int, message: Message) -
             )
             .execute()
         )
+    # pyre-fixme[66]
     except postgrest.exceptions.APIError:
         logger.error(f"Mesage already exists or could not insert message: {message.id}")
 
@@ -249,6 +250,7 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                             )
                             .execute()
                         )
+                    # pyre-fixme[66]
                     except postgrest.exceptions.APIError as e:
                         if (
                             e.message
