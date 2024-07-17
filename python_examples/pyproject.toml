@@ -6,9 +6,9 @@ authors = ["BuRny <gamingburny@gmail.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.9, <3.13"
+python = ">=3.11, <3.13"
 # Numeric python
-numpy = "^1.21"
+numpy = "^2"
 # Write and read classes to/from json
 dataclasses-json = "^0.5"
 # Write and read classes to/from json with validator
@@ -26,9 +26,9 @@ atomicwrites = "^1.3"
 contextvars = "^2.4"
 win32-setctime = "^1.0"
 # Image library
-pillow = "^9.1"
+pillow = "^10"
 # Better / easier datetime library
-pendulum = "^2.1"
+pendulum = "^3"
 # Easier nested dictionary manipulation
 dpath = "^2.0"
 # File watcher
@@ -44,7 +44,7 @@ lorem-text = "^2.1"
 # https://github.com/tiangolo/sqlmodel
 sqlmodel = "^0.0.8"
 # Geometry manipulation
-Shapely = "^1.8"
+Shapely = "^2"
 # Info about the system
 psutil = "^5.8"
 # Execute command on server via SSH, or push files via SFTP
@@ -64,7 +64,7 @@ alembic = "^1.7"
 # Load environment variables from .env file
 python-dotenv = "^1.0"
 # Data science and plotting
-pandas = "^1.4.2"
+pandas = "^2"
 # Plotting
 seaborn = "^0.11.2"
 # Plotting
@@ -92,7 +92,7 @@ hypothesis = "^6.34"
 # Function profiler, checks how often functions get called
 snakeviz = "^2.1"
 # Line profiler
-scalene = "^1.3.16"
+# scalene = "^1" # Installation errors
 toml = "^0.10.2"
 # Linter
 ruff = "^0.1.14"
