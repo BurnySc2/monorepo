@@ -63,8 +63,8 @@ def get_from_file_ids_cache(channel_id: str, message_id: int) -> str | None:
 
 
 @dataclass
-# pyre-fixme[13]
 class DownloadWorker:
+    # pyre-fixme[13]
     client: ClassVar[Client]  # set after client has been created
 
     worker_id: int = 0

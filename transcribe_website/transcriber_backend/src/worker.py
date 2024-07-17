@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from io import BytesIO
 from typing import ClassVar, Literal
 
-import av  # pyre-fixme[21]
+import av
 import humanize
 
 # pyre-fixme[21]

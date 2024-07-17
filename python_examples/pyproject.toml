@@ -12,7 +12,7 @@ numpy = "^2"
 # Write and read classes to/from json
 dataclasses-json = "^0.5"
 # Write and read classes to/from json with validator
-pydantic = {extras = ["email"], version = "^1.10.2"}
+pydantic = {extras = ["email"], version = "^1"}
 # Network access
 aiohttp = "^3.7"
 requests = "^2.26"
@@ -34,7 +34,7 @@ dpath = "^2.0"
 # File watcher
 watchgod = "^0.8"
 # Database with ORM
-SQLAlchemy = "^1.4"
+SQLAlchemy = "^1"
 # Simple database that operates on dictionaries
 tinydb = "^4.5"
 # New popular database mongodb
@@ -42,7 +42,7 @@ pymongo = "^3.12"
 # Generate text
 lorem-text = "^2.1"
 # https://github.com/tiangolo/sqlmodel
-sqlmodel = "^0.0.8"
+sqlmodel = "^0"
 # Geometry manipulation
 Shapely = "^2"
 # Info about the system
@@ -66,11 +66,11 @@ python-dotenv = "^1.0"
 # Data science and plotting
 pandas = "^2"
 # Plotting
-seaborn = "^0.11.2"
+seaborn = "^0.13.0"
 # Plotting
 matplotlib = "^3.5.2"
 # Plotting
-bokeh = "^2.0"
+bokeh = "^3.0"
 # Animation
 #manim = "^0.15.2"
 aiofiles = "^23.0"

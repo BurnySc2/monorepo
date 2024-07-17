@@ -3,11 +3,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd  # pyre-fixme[21]
-from bokeh.io import output_file, save  # pyre-fixme[21]
-from bokeh.palettes import Category20c  # pyre-fixme[21]
-from bokeh.plotting import figure  # pyre-fixme[21]
-from bokeh.transform import cumsum, linear_cmap  # pyre-fixme[21]
-from bokeh.util.hex import axial_to_cartesian, hexbin  # pyre-fixme[21]
+from bokeh.io import output_file, save
+from bokeh.palettes import Category20c
+from bokeh.plotting import figure
+from bokeh.transform import cumsum, linear_cmap
+from bokeh.util.hex import axial_to_cartesian, hexbin
 
 CURRENT_DIRECTORY = Path(__file__).parent
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Literal
 
 import owncloud  # pyre-fixme[21]
-import toml
+import toml  # pyre-fixme[21]
 from pydantic import BaseModel
 
 
@@ -77,8 +77,11 @@ class TextSearcherSecrets(BaseModel):
 
 
 class Secrets(BaseModel):
+    # pyre-fixme[20]
     TelegramDownloader: TelegramDownloaderSecrets = TelegramDownloaderSecrets()
+    # pyre-fixme[20]
     Transcriber: TranscriberSecrets = TranscriberSecrets()
+    # pyre-fixme[20]
     TextSearcher: TextSearcherSecrets = TextSearcherSecrets()
 
 
