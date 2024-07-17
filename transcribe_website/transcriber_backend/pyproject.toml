@@ -49,7 +49,7 @@ ruff = "^0.1.14"
 # Type checker
 pyre-check = "^0.9.18"
 # Cpu and memory profiler
-scalene = "^1"
+# scalene = "^1" # Installation errors with python 3.12
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

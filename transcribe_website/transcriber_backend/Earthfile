@@ -1,12 +1,13 @@
 VERSION 0.6
-# earthly +all --PYTHONVERSION=3.11 --NODEVERSION=19
-ARG PYTHONVERSION=3.10
+# earthly +all --PYTHONVERSION=3.12 --NODEVERSION=19
+ARG PYTHONVERSION=3.12
 ARG NODEVERSION=19 # 14, 16, 18, 19
 FROM python:${PYTHONVERSION}-slim
 WORKDIR /root/transcriber_backend
 
 install-dev:
     RUN pip install poetry --no-cache-dir
+    RUN apt update && apt install -y gcc # Required by tgcrypto
     COPY poetry.lock pyproject.toml ./
     RUN poetry install
     COPY . /root/transcriber_backend
