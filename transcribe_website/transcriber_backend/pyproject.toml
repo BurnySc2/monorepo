@@ -6,11 +6,11 @@ authors = ["BuRny <gamingburny@gmail.com>"]
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.8, <3.11" # Pony doesnt support 3.11 yet
+python = ">=3.9, <3.13" # Pony doesnt support 3.11 yet
 # Argparse with dataclass
 simple-parsing = "^0.1"
 # Better dataclasses
-pydantic = "^1.10.5"
+pydantic = "^2"
 # Logging
 loguru = "^0.7.0"
 # Read config files
@@ -32,15 +32,16 @@ pyrogram = "^2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel do
 # Required by pyrogram
 tgcrypto = "^1.2.5"
 # Translator
-deep-translator = "^1.11.1"
+# deep-translator = "^1.11.1"
 # Owncloud client
 pyocclient = "^0.6"
 dataset = "^1.6.2"
 python-dotenv = "^1.0.1"
+numpy = "^1.24.5"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
-hypothesis = "^6.8.5"
+hypothesis = "^6"
 pytest = "^7.0.0"
 pytest-asyncio = "^0.15.1"
 # Linter
@@ -48,7 +49,7 @@ ruff = "^0.1.14"
 # Type checker
 pyre-check = "^0.9.18"
 # Cpu and memory profiler
-scalene = "^1.5.21.4"
+scalene = "^1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

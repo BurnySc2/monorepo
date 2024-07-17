@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -83,9 +83,10 @@ jobs:
       with:
         gh-token: ${{ secrets.GITHUB_TOKEN }}
         jobs: |
-          test_backend_py3.8
           test_backend_py3.9
           test_backend_py3.10
+          test_backend_py3.11
+          test_backend_py3.12
 
     - name: Upload docker image
       if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
