@@ -3,13 +3,13 @@ This script displays how to cancel the whole executor if just one thread errors.
 """
 
 import time
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import FIRST_EXCEPTION, Future, ThreadPoolExecutor, wait
 
 from loguru import logger
 
 
 def task(number: int):
-    if number == 5:
+    if number == 4:
         raise TimeoutError()
     time.sleep(1)
     logger.info(number)
@@ -17,18 +17,25 @@ def task(number: int):
 
 
 if __name__ == "__main__":
-    numbers = [1, 2, 3, 4, 5]
-    with ThreadPoolExecutor() as executor:
-        results = executor.map(
-            task,
-            numbers,
-        )
-        # Required if errors should be caught
-        for result in results:
-            pass
+    numbers = list(range(1, 100))
+    # with ThreadPoolExecutor(max_workers=4) as executor:
+    #     results = executor.map(
+    #         task,
+    #         numbers,
+    #     )
+    #     # Required if errors should be caught. Shuts down after current running task ends
+    #     for result in results:
+    #         pass
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=4) as executor:
         futures: list[Future] = [executor.submit(task, number) for number in numbers]
         # Required if errors should be caught
-        for future in futures:
-            future.result()
+        results = wait(futures, return_when=FIRST_EXCEPTION)
+        done, not_done = results.done, results.not_done
+        for future in done:
+            exc = future.exception()
+            if exc is not None:
+                # Either one works and shuts down when the last currently running task ends
+                # executor.shutdown(wait=False, cancel_futures=True)
+                executor.shutdown(cancel_futures=True)
+                raise exc
