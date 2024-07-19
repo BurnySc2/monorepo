@@ -2,6 +2,22 @@ networks:
   '{{secrets.TRAFIK_NETWORK}}':
     external: true
 
+# Upgrade postgres:
+#   Dump db data to file
+#     docker compose exec postgres pg_dumpall -U postgres > dump.sql
+
+#   Shut down db
+#     docker compose down
+#   Delete postgres folder
+#     mv postgres_data postgres_data_bak
+
+#   Update postgres major version in docker compose file
+#     docker compose up -d
+#     cp dump.sql postgres_data/dump.sql
+#   Restore data
+#     docker compose exec postgres bash
+#     psql -U postgres -f dump.sql
+
 services:
   postgres:
     container_name: postgres_postgres
@@ -10,7 +26,7 @@ services:
     # nocodb:
     # postgresql://{ POSTGRES_USER }:{ POSTGRES_PASSWORD }@postgres_postgres:5432/{ POSTGRES_DATABASE }
     hostname: postgres_postgres
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     networks:
     - '{{ secrets.TRAFIK_NETWORK }}'
     restart: unless-stopped

@@ -73,7 +73,7 @@
       project_src: /home/{{ USERNAME }}
       state: absent
       # Comment out to skip update
-      # remove_images: all
+      remove_images: all
 
   - name: Run `docker-compose up` again
     community.docker.docker_compose_v2:
