@@ -22,8 +22,8 @@ backup_function() {
             -t7z
             # Require password before seeing files: hide file structure
             -mhe=on
-            # Max compression level
-            -mx9
+            # Compression level 0-9 where 5 is default and 0 is no compression
+            -mx7
             # Set password
             "-p$PASSWORD"
 
