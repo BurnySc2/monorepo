@@ -15,11 +15,11 @@ Assume database is empty. Insert only works when constraints are met.
 
 import asyncio
 
-from prisma import Prisma
-from prisma.models import Author
+from prisma import Prisma  # pyre-fixme[21]
 
 
 async def main() -> None:
+    # pyre-fixme[16]
     db = Prisma(auto_register=True, log_queries=True)
     db.connect()
 
@@ -93,7 +93,7 @@ async def main() -> None:
     )
 
     # Book 4
-    book4 = db.book.create(
+    _book4 = db.book.create(
         {
             "name": "This book was not written",
             "pages": 4,
@@ -121,7 +121,7 @@ async def main() -> None:
             "amount": 40,
         },
     )
-    library_inventory_2 = db.bookinventory.create(
+    _library_inventory_2 = db.bookinventory.create(
         {
             "book_id": book2.id,
             # Library1 already created by library_inventory_1
@@ -141,7 +141,7 @@ async def main() -> None:
             "amount": 25,
         },
     )
-    library_inventory_4 = db.bookinventory.create(
+    _library_inventory_4 = db.bookinventory.create(
         {
             "book_id": book2.id,
             # Library2 already created by library_inventory_3
