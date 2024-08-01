@@ -1,0 +1,57 @@
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = "5"
+  interface            = "sync"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:database.db"
+}
+
+model Library {
+  id      Int             @id @default(autoincrement())
+  name    String
+  address String          @unique
+  books   BookInventory[]
+}
+
+model BookInventory {
+  id         Int     @id @default(autoincrement())
+  book_id    Int
+  book       Book    @relation(fields: [book_id], references: [id], onDelete: Cascade)
+  library_id Int
+  library    Library @relation(fields: [library_id], references: [id], onDelete: Cascade)
+  amount     Int
+
+  // Each library may only contain the same book once, but with a different amount
+  @@unique([library_id, book_id])
+}
+
+model Book {
+  id            Int             @id @default(autoincrement())
+  name          String
+  pages         Int
+  release_year  Int
+  author_id     Int
+  author        Author          @relation(fields: [author_id], references: [id])
+  publisher_id  Int
+  publisher     Publisher       @relation(fields: [publisher_id], references: [id])
+  BookInventory BookInventory[]
+
+  @@unique([name, author_id])
+}
+
+model Author {
+  id         Int    @id @default(autoincrement())
+  name       String @unique
+  birth_year Int
+  books      Book[]
+}
+
+model Publisher {
+  id           Int    @id @default(autoincrement())
+  name         String @unique
+  founded_year Int
+  books        Book[]
+}

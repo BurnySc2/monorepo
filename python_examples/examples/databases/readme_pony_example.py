@@ -100,8 +100,8 @@ def run_database_with_pony_readme_example():
         )
 
         library_1 = Library(name="New York Public Library", address="224 East 125th Street")
-        library_inventory_2 = BookInventory(book=book_2, library=library_1, amount=15)
         library_inventory_1 = BookInventory(book=book_3, library=library_1, amount=40)
+        library_inventory_2 = BookInventory(book=book_2, library=library_1, amount=15)
         library_1.books = [library_inventory_1, library_inventory_2]
 
         library_2 = Library(name="California State Library", address="900 N Street")

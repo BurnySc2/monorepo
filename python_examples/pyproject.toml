@@ -78,6 +78,7 @@ burny-common = "^0.0.12"
 psycopg = {extras = ["binary"], version = "^3.1.17"}
 dataset = "^1.6.2"
 moviepy = "^1.0.3"
+prisma = "^0.13.1"
 
 [tool.poetry.group.dev.dependencies]
 # Test library

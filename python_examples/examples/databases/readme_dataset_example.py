@@ -115,7 +115,6 @@ def run_database_with_dataset_readme_example():
     assert book_table.count() == 3
 
     # 6) Get data from other tables
-
     for row in db.query(
         """
 SELECT book.id, book.name, book.release_year, author_id, publisher_id,

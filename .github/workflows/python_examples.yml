@@ -135,3 +135,31 @@ jobs:
     - name: Run main.py
       working-directory: ${{ env.SUBDIRECTORY }}
       run: poetry run python main.py
+
+    - name: Run database readme example - dataset
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run python examples/databases/readme_dataset_example.py
+
+    - name: Run database readme example - peewee
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run python examples/databases/readme_peewee_example.py
+
+    - name: Set up prisma db
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run prisma db push --schema examples/databases/prisma/schema.prisma
+      
+    - name: Run database readme example - prisma
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run python examples/databases/readme_prisma_example.py
+
+    - name: Run database readme example - sqlalchemy
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run python examples/databases/readme_sqlalchemy_example.py
+
+    - name: Run database readme example - sqlite
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run python examples/databases/readme_sqlite_example.py
+
+    - name: Run database readme example - tinydb
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry run python examples/databases/readme_tinydb_example.py
