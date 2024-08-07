@@ -32,8 +32,8 @@ DATA_FOLDER = Path(__file__).parent / "data"
 DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 logger.add(DATA_FOLDER / "app.log")
 
-assert os.getenv("STAGE", "dev") in {"dev", "prod", "test"}, os.getenv("STAGE")
-STAGE: Literal["dev", "prod", "test"] = os.getenv("STAGE", "dev")  # pyre-fixme[9]
+assert os.getenv("STAGE", "dev") in {"local_dev", "dev", "prod", "test"}, os.getenv("STAGE")
+STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE", "local_dev")  # pyre-fixme[9]
 BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
 WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:0.0.0.0:8000")
 

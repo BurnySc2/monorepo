@@ -14,7 +14,7 @@ from minio import Minio
 from pydantic import BaseModel, model_validator
 
 load_dotenv()
-STAGE = os.getenv("STAGE", "dev")
+STAGE = os.getenv("STAGE", "local_dev")
 
 # pyre-fixme[11]
 db: dataset.Database = dataset.connect(os.getenv("POSTGRES_CONNECTION_STRING"))
@@ -31,6 +31,7 @@ minio_client = Minio(
     os.getenv("MINIO_URL"),
     os.getenv("MINIO_ACCESS_TOKEN"),
     os.getenv("MINIO_SECRET_KEY"),
+    secure=os.getenv("STAGE") != "local_dev",
 )
 
 
@@ -101,6 +102,7 @@ class Chapter(BaseModel):
     queued: datetime.datetime | None = None
     # Contains datetime if a worker is running. The datetime is the estimated target time
     converting: datetime.datetime | None = None
+    # pyre-fixme[20]
     audio_settings: AudioSettings = AudioSettings()
 
     # pyre-fixme[56]

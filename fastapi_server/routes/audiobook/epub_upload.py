@@ -86,6 +86,7 @@ class MyAudiobookEpubRoute(Controller):
 
         chapters: list[EpubChapter] = extract_chapters(epub_data)
         # Insert book
+        # pyre-fixme[20]
         my_book = Book(
             uploaded_by=twitch_user.display_name,
             book_title=metadata.title,
@@ -103,6 +104,7 @@ class MyAudiobookEpubRoute(Controller):
 
             # Parse and insert chapters
             for chapter in chapters:
+                # pyre-fixme[20]
                 my_chapter: Chapter = Chapter(
                     book_id=entry_id,
                     chapter_title=chapter.chapter_title,

@@ -1,6 +1,5 @@
 data
 deps.txt
-.env
 .env.server
 *.mp3
 

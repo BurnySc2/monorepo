@@ -68,7 +68,7 @@ class MyTTSRoute(Controller):
     # http://0.0.0.0:8000/tts/twitch/STREAMER_NAME?read_name_lang=none&volume=100
     # https://URL/tts/twitch/STREAMER_NAME?read_name_lang=none&volume=100
     @get("/twitch/{stream_name: str}")
-    async def tts_with_name_en(
+    async def tts_overlay(
         self,
         stream_name: str,
         # Only allows these for 'read_name_lang'
@@ -89,8 +89,3 @@ class MyTTSRoute(Controller):
                 "volume": volume / 100,
             },
         )
-
-    # @get("/pdf")
-    # async def tts_from_pdf(self) -> str:
-    #     # TODO Upload file, read chapters, select which chapters to extract as .mp3
-    #     return "Hello world!"

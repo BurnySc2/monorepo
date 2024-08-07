@@ -59,10 +59,10 @@
         state: absent
 
     # Comment out to skip update
-    # - name: Remove image
-    #   community.docker.docker_image:
-    #     name: '{{ DOCKER_IMAGE }}'
-    #     state: absent
+    - name: Remove image
+      community.docker.docker_image:
+        name: '{{ DOCKER_IMAGE }}'
+        state: absent
 
     - name: Start container
       community.docker.docker_container:

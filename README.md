@@ -12,6 +12,7 @@ My monorepo for various tools and showcases
 - [Python](https://www.python.org/downloads)
     - [Poetry](https://python-poetry.org/docs/)
 - [Earthly](https://earthly.dev)
+    - [Docker](https://www.docker.com)
 
 ## VScode
 Run VScode task called `Install requirements` or alternatively run `sh .vscode/install_requirements.sh` or alternatively run `poetry install` in the python projects or `npm install` in the frontend projects.

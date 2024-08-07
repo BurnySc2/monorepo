@@ -14,7 +14,7 @@ on:
 env:
   SUBDIRECTORY: fastapi_server
   IMAGENAME: fastapi_server
-  VERSION_NUMBER: 1.1.0
+  VERSION_NUMBER: 1.1.1
 
 jobs:
   test_backend:
@@ -99,7 +99,7 @@ jobs:
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       run: docker push burnysc2/${{ env.IMAGENAME }}:latest
 
-  deploy_backend_dev:
+  deploy_backend_staging:
     if: github.ref == 'refs/heads/develop'
     needs: [build_and_deploy_docker_image]
     strategy:
@@ -140,8 +140,8 @@ jobs:
         passphrase: ''
         script: |
           cd /home/${{ env.USERNAME }}
-          docker compose down
-          docker compose up -d
+          docker compose --profile staging down
+          docker compose --profile staging up -d
 
   deploy_backend_prod:
     if: github.ref == 'refs/heads/master'
@@ -167,8 +167,6 @@ jobs:
         key: ${{ secrets.FASTAPISERVERKEY }}
         passphrase: ''
         script: |
-          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-          docker rm -f fastapi
-          docker image prune -af
-          docker pull burnysc2/${{ env.IMAGENAME }}:latest
-          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
+          cd /home/${{ env.USERNAME }}
+          docker compose --profile prod down
+          docker compose --profile prod up -d

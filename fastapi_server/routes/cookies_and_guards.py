@@ -195,6 +195,7 @@ async def get_user_settings(
     voice_pitch: Annotated[int | None, Parameter(cookie="voice_pitch")] = None,
 ) -> AudioSettings:
     available_voices: list[str] = await get_supported_voices()
+    # pyre-fixme[20]
     return AudioSettings(
         voice_name=voice_name or available_voices[0],
         voice_rate=voice_rate or 0,

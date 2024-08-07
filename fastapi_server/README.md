@@ -2,62 +2,30 @@
 
 ## Requirements
 
-Python >=3.8.1 <3.13
-Local postgres db via
-
-```sh
-docker run --rm --name postgres \
-    -e POSTGRES_USER=postgres\
-    -e POSTGRES_PASSWORD=123 \
-    -p 5432:5432 \
-    -v postgres_data:/var/lib/postgresql/data \
-    postgres:15-alpine
-```
+- Python >=3.8.1 <3.13 with `poetry` installed
+- Docker with docker compose installed
 
 ## Launch local dev server
 
+Start database (postgres) and minio
 ```
-POSTGRES_CONNECTION_STRING="postgresql://postgres:123@localhost:5432/postgres" poetry run uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Now you can go to `https://0.0.0.0:8000` or `https://0.0.0.0:8000/docs` to check out the documentation to all endpoints
-
-During development, the backend server is used to serve the frontend.
-
-## Deploy
-
-- Requiement: docker
-
-On the server, either build the docker image via
-
-```
-docker build -t burnysc2/fastapi_server:latest .
+docker compose --profile dev up
 ```
 
-or pull the latest image
+Go to http://minioadmin.localhost with login 'root' password 'rootroot and set up api key and add the credentials to the .env file.
 
-```
-docker pull burnysc2/fastapi_server:latest
-```
+Install dependencies with `poetry install`
 
-now run it with a `data` subfolder mounted which will be persistent
+Start webserver with `poetry run python app.py` or via the vscode debug config `Start LiteStar`.
 
-```
-docker run --rm --name fastapitest --publish 8000:8000 --env STAGE=PROD --mount type=bind,source="$(pwd)/data",destination=/root/fastapi_server/data burnysc2/fastapi_server:latest
-```
+Now you can go to http://0.0.0.0:8000 or http://0.0.0.0:8000/schema to check out the documentation to all endpoints.
 
-# Create postgres user and permissions to create tables
-
-```sql
--- Create user
-CREATE USER litestar_server_dev WITH PASSWORD 'your_password';
-GRANT CREATE ON SCHEMA public TO litestar_server_dev;
-```
+Under http://pgadmin.localhost you can `register` the postgres instance with host name `fastapi_dev_postgres`, port `5432`, username `root` and password `root` and keep database as `postgres` and now click on `save`. You will now be able to browse the database tables and data.
 
 # Ideal structure of the project
 ```mermaid
 ---
-title: "Stages: dev, staging, prod, test"
+title: "Stages: local_dev, dev, staging, prod, test"
 ---
 mindmap
   root((mindmap))
@@ -65,4 +33,13 @@ mindmap
     staging.my_domain.com Stage: STAGING, experimental release
     localhost, Stage: DEV, under development, uses local sqlite database
     no domain, Stage: Test, under development, uses local sqlite or memory database
+```
+
+# Create postgres user and permissions to create tables
+
+```sql
+-- Create user
+CREATE USER litestar_server_dev WITH PASSWORD 'your_password';
+-- Allow user to create tables
+GRANT CREATE ON SCHEMA public TO litestar_server_dev;
 ```

@@ -31,6 +31,7 @@ ebooklib = "^0.18"         # epub parsing
 beautifulsoup4 = "^4.12.3" # xml parsing
 stream-zip = "^0.0.71"     # Zip files with low memory footprint
 minio = "^7.2.7"           # AWS S3
+prisma = "^0.13.1"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -50,8 +51,6 @@ ruff = "^0.1.14"
 pyre-check = "^0.9.18"
 # Analyze depenencies
 pipdeptree = "^2.13.1"
-# SQL formatting and validating
-sqlfluff = "^2.3.5"
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]
@@ -89,23 +88,6 @@ select = [
 [tool.ruff.pep8-naming]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.
 classmethod-decorators = ["pydantic.validator", "classmethod"]
-
-[tool.sqlfluff.core]
-# https://docs.sqlfluff.com/en/stable/configuration.html#configuration-files
-templater = "placeholder"
-sql_file_exts = ".sql"
-dialect = "postgres"
-max_line_length = 120
-
-[tool.sqlfluff]
-indent_unit = "space"
-
-[tool.sqlfluff.templater.placeholder]
-# https://docs.sqlfluff.com/en/stable/configuration.html#placeholder-templater
-param_style = "percent"
-
-[tool.sqlfluff.rules.capitalisation.keywords]
-capitalisation_policy = "upper"
 
 [tool.pytest_env]
 # Env variables to be used while tests run

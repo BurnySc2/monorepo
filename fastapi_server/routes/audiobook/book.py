@@ -297,6 +297,7 @@ class MyAudiobookBookRoute(Controller):
                 chapter.minio_object_name = None
             chapter.queued = None
             chapter.converting = None
+            # pyre-fixme[20]
             chapter.audio_settings = AudioSettings()
             chapter_table.update(chapter.model_dump(), keys=["id"])
         return Template(

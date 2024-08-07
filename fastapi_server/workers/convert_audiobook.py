@@ -5,10 +5,11 @@ import datetime
 import io
 import os
 from collections import OrderedDict
+from contextlib import suppress
 
 from dotenv import load_dotenv
 from loguru import logger
-from minio import Minio
+from minio import Minio, S3Error
 
 from routes.audiobook.schema import (
     AudioSettings,
@@ -24,6 +25,7 @@ ESTIMATE_FACTOR = 0.1
 
 
 async def convert_one():
+    # TODO Run in for loop and only exit when there are no remaining
     datetime_now = datetime.datetime.now(datetime.timezone.utc)
 
     # Reset those that have failed to convert in time
@@ -46,7 +48,11 @@ async def convert_one():
         os.getenv("MINIO_URL"),
         os.getenv("MINIO_ACCESS_TOKEN"),
         os.getenv("MINIO_SECRET_KEY"),
+        secure=os.getenv("STAGE") != "local_dev",
     )
+    # Create bucket if it doesn't exist
+    with suppress(S3Error):
+        client.make_bucket(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
 
     # Get first book that is waiting to be converted
     with db:
