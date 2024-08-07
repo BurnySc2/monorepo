@@ -23,7 +23,6 @@ services:
 
   # Responsible for converting texts to audio
   convert_audiobook_worker:
-    container_name: convert_audiobook_worker
     image: burnysc2/fastapi_server:latest_dev
     command: poetry run python workers/convert_audiobook.py
     pull_policy: always
@@ -62,7 +61,7 @@ services:
     profiles: [dev]
 
   local_dev_convert_audiobook_worker:
-    container_name: convert_audiobook_worker
+    container_name: local_dev_convert_audiobook_worker
     build: .
     command: poetry run python workers/convert_audiobook.py
     pull_policy: build
