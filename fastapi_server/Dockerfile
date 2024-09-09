@@ -1,14 +1,12 @@
-FROM python:3.12-slim
+FROM python:3.12-alpine
 
 # Install ffmpeg
-# RUN export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -qq update \
-#     && apt-get -qq install --no-install-recommends \
-#     ffmpeg \
-#     && rm -rf /var/lib/apt/lists/*
+RUN apk update \
+    && apk upgrade \
+    && apk add --no-cache ffmpeg
 
-RUN pip install --no-cache-dir poetry==1.8 \
-    && yes | poetry cache clear PyPI --all
+# Install poetry
+RUN pip install --no-cache-dir poetry==1.8
 
 WORKDIR /root/fastapi_server
 

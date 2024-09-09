@@ -14,7 +14,13 @@ docker compose --profile dev up
 
 Go to http://minioadmin.localhost with login 'root' password 'rootroot and set up api key and add the credentials to the .env file.
 
-Install dependencies with `poetry install`
+Install dependencies with 
+```sh
+poetry env use python3
+poetry install
+```
+
+Open a Python file in the `fastapi_server` folder and select the correct python environment in the bottom right of vscode.
 
 Start webserver with `poetry run python app.py` or via the vscode debug config `Start LiteStar`.
 
