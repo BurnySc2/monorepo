@@ -30,7 +30,7 @@ backupargs=(
     # User
     -U postgres
     # Format
-    -F t
+    # -F t
     # ?
     postgres
 )
@@ -42,7 +42,7 @@ zipargs=(
     # Require password before seeing files: hide file structure
     -mhe=on
     # Max compression level
-    -mx9
+    -mx7
     # Set password
     "-p$PASSWORD"
     # Input from stdin to be able to pipe

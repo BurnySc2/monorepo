@@ -2,6 +2,13 @@ networks:
   '{{secrets.TRAFIK_NETWORK}}':
     external: true
 
+# Remote dump:
+# pg_dump CONNECTION_STRING -U postgres > dump.sql
+
+# Remote restore specific table:
+# pg_restore -d CONNECTION_STRING -U postgres -t TABLE_NAME dump.sql
+
+
 # Upgrade postgres:
 #   Dump db data to file
 #     docker compose exec postgres pg_dumpall -U postgres > dump.sql
