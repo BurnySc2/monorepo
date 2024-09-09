@@ -19,7 +19,7 @@ python-dotenv = "^1.0.0" # Load .env files easily
 pydantic = "^2"          # Dataclasses with type validation
 nltk = "^3.8.1"          # Language manipulation
 twitchio = "^2.8.2"      # Twitch chat bot
-soundfile = "^0.12.1"    # Analyse mp3 files in memory
+mutagen = "^1.47.0"      # Analyse mp3 files in memory
 # Database
 prisma = "^0.13.1"
 # Other

@@ -9,7 +9,7 @@ from io import BytesIO
 from pathlib import Path
 
 import httpx
-import soundfile  # pyre-fixme[21]
+from mutagen.mp3 import MP3
 
 
 # https://github.com/oscie57/tiktok-voice/issues/1
@@ -136,14 +136,11 @@ async def generate_tts(voice: Voices, text: str) -> tuple[str, float]:
             generated_tts_cache.popitem(last=False)
 
         # Calculate the real duration
-        # https://pypi.org/project/soundfile
         b64data = data["data"]["v_str"]
         b64data_decoded = base64.b64decode(b64data)
         data = BytesIO(b64data_decoded)
-        numpy_array, samplerate = soundfile.read(data)
-        real_duration_seconds = numpy_array.shape[0] / samplerate
-        # duration: str = data["data"]["duration"]
-        # calc_duration: float = int(duration) / 60
+        mp3_info = MP3(data)
+        real_duration_seconds = mp3_info.info.length
         # logger.info(f"Data was off by: {real_duration_seconds - calc_duration}")
 
         generated_tts_cache[key] = b64data, real_duration_seconds
