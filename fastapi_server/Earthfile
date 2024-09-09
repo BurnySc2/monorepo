@@ -1,6 +1,6 @@
 VERSION 0.6
 # earthly +all --PYTHONVERSION=3.11
-ARG PYTHONVERSION=3.11
+ARG PYTHONVERSION=3.12
 FROM python:${PYTHONVERSION}-slim
 WORKDIR /root/fastapi_server
 
@@ -11,16 +11,17 @@ start-dev:
     RUN sh run.sh
 
 install-dev:
-    # Required for video conversion
     # RUN export DEBIAN_FRONTEND=noninteractive \
     #     && apt-get -qq update \
     #     && apt-get -qq install --no-install-recommends \
-    #     ffmpeg \
+    #     npm \
     #     && rm -rf /var/lib/apt/lists/*
     RUN pip install --no-cache-dir poetry==1.8 \
     && yes | poetry cache clear PyPI --all
     COPY poetry.lock pyproject.toml ./
     RUN poetry install
+    COPY prisma/schema.prisma /root/fastapi_server/prisma/schema.prisma
+    RUN poetry run prisma generate
     COPY . /root/fastapi_server
 
 format:

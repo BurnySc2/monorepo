@@ -1,0 +1,92 @@
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = "5"
+  interface            = "asyncio"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_CONNECTION_STRING")
+}
+
+model AudiobookBook {
+  id                 Int                @id @default(autoincrement())
+  uploaded_by        String
+  book_title         String
+  book_author        String
+  chapter_count      Int
+  upload_date        DateTime           @default(now())
+  custom_book_title  String?
+  custom_book_author String?
+  AudiobookChapter   AudiobookChapter[]
+
+  @@index([uploaded_by])
+  @@map("litestar_audiobook_book")
+}
+
+model AudiobookChapter {
+  id                 Int           @id @default(autoincrement())
+  book               AudiobookBook @relation(fields: [book_id], references: [id], onDelete: Cascade)
+  book_id            Int
+  queued             DateTime?
+  started_converting DateTime?
+  chapter_title      String
+  chapter_number     Int
+  word_count         Int
+  sentence_count     Int
+  content            String
+  minio_object_name  String?
+  audio_settings     Json?
+
+  @@index([book_id, chapter_number])
+  @@map("litestar_audiobook_chapter")
+}
+
+model ladder_announcer_accounts {
+  id                             Int                              @id @default(autoincrement())
+  account                        String
+  webhook_url                    String
+  battlenet_ingame_link          String
+  enabled                        Boolean                          @default(true)
+  ladder_announcer_announce_info ladder_announcer_announce_info[]
+  ladder_announcer_characters    ladder_announcer_characters[]
+}
+
+model ladder_announcer_announce_info {
+  id                          Int                         @id @default(autoincrement())
+  account_id                  Int
+  character_id                Int
+  ladder_id                   Int
+  race_1v1                    String
+  last_checked                DateTime
+  last_announced              DateTime
+  wins                        Int
+  losses                      Int
+  mmr                         Int
+  ladder_announcer_accounts   ladder_announcer_accounts   @relation(fields: [account_id], references: [id], onDelete: Cascade)
+  ladder_announcer_characters ladder_announcer_characters @relation(fields: [character_id], references: [id], onDelete: Cascade)
+}
+
+model ladder_announcer_characters {
+  id                             Int                              @id @default(autoincrement())
+  account_id                     Int
+  character_bnet_id              Int
+  region_name                    String
+  region                         Int
+  realm                          Int
+  name                           String
+  ladder_announcer_announce_info ladder_announcer_announce_info[]
+  ladder_announcer_accounts      ladder_announcer_accounts        @relation(fields: [account_id], references: [id], onDelete: Cascade)
+}
+
+model stream_announcer_streams {
+  id               BigInt    @id(map: "stream_announcer_streams_rows_csv_pkey")
+  created_at       DateTime? @db.Timestamp(6)
+  enabled          Boolean?  @default(false)
+  twitch_name      String?   @db.VarChar
+  discord_webhook  String?   @db.VarChar
+  announce_message String?   @db.VarChar
+  announced_at     DateTime? @db.Timestamp(6)
+  status           String?
+  updated_at       DateTime? @default(now()) @db.Timestamp(6)
+}

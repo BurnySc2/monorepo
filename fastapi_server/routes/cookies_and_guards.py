@@ -12,9 +12,9 @@ from litestar.exceptions import NotAuthorizedException
 from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Parameter
 
+from prisma import Prisma
 from routes.audiobook.schema import (
     AudioSettings,
-    book_table,
 )
 from routes.audiobook.temp_generate_tts import get_supported_voices
 
@@ -168,10 +168,18 @@ async def owns_book_guard(
     _: BaseRouteHandler,
 ) -> None:
     twitch_user = await get_twitch_user(connection.cookies.get(COOKIES["twitch"]))
-    book_id = connection.path_params.get("book_id") or connection.query_params["book_id"]
-    # pyre-fixme[16]
-    book_count = book_table.count(id=book_id, uploaded_by=twitch_user.display_name)
-    if book_count == 0:
+    book_id: int = connection.path_params.get("book_id") or int(connection.query_params["book_id"])
+    async with Prisma() as db:
+        assert isinstance(book_id, int), book_id
+        # pyre-fixme[16]
+        assert isinstance(twitch_user.display_name, str), twitch_user.display_name
+        book = await db.audiobookbook.find_first(
+            where={
+                "id": book_id,
+                "uploaded_by": twitch_user.display_name,
+            }
+        )
+    if book is None:
         raise NotAuthorizedException("You don't have access to this book.")
 
 
@@ -195,7 +203,6 @@ async def get_user_settings(
     voice_pitch: Annotated[int | None, Parameter(cookie="voice_pitch")] = None,
 ) -> AudioSettings:
     available_voices: list[str] = await get_supported_voices()
-    # pyre-fixme[20]
     return AudioSettings(
         voice_name=voice_name or available_voices[0],
         voice_rate=voice_rate or 0,

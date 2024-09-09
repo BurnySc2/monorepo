@@ -97,6 +97,7 @@ def convert_clip(
     clip: VideoFileClip = VideoFileClip(str(video_path.absolute())).subclip(timestamp_start, timestamp_end)
 
     # Display text counter
+    # TODO If no text given: don't add count to overlay
     # pyre-fixme[11]
     text: TextClip = TextClip(f"{text_description}{word_count}", fontsize=70, color="white")
     text = text.set_position((360, clip.size[1] - text.size[1] - 10))

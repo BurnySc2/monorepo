@@ -18,11 +18,17 @@ Install dependencies with
 ```sh
 poetry env use python3
 poetry install
+poetry run prisma generate # To generate the models
 ```
 
 Open a Python file in the `fastapi_server` folder and select the correct python environment in the bottom right of vscode.
 
 Start webserver with `poetry run python app.py` or via the vscode debug config `Start LiteStar`.
+
+If you run it for the first time, the database schema needs to be pushed
+```sh
+poetry run prisma db push
+```
 
 Now you can go to http://0.0.0.0:8000 or http://0.0.0.0:8000/schema to check out the documentation to all endpoints.
 
@@ -39,13 +45,4 @@ mindmap
     staging.my_domain.com Stage: STAGING, experimental release
     localhost, Stage: DEV, under development, uses local sqlite database
     no domain, Stage: Test, under development, uses local sqlite or memory database
-```
-
-# Create postgres user and permissions to create tables
-
-```sql
--- Create user
-CREATE USER litestar_server_dev WITH PASSWORD 'your_password';
--- Allow user to create tables
-GRANT CREATE ON SCHEMA public TO litestar_server_dev;
 ```

@@ -21,8 +21,7 @@ nltk = "^3.8.1"          # Language manipulation
 twitchio = "^2.8.2"      # Twitch chat bot
 soundfile = "^0.12.1"    # Analyse mp3 files in memory
 # Database
-dataset = "^1.6.2"
-psycopg2-binary = "^2.9.9"
+prisma = "^0.13.1"
 # Other
 numpy = "^1.26.3"
 edge-tts = "^6.1.11"       # Audio generation
@@ -31,7 +30,6 @@ ebooklib = "^0.18"         # epub parsing
 beautifulsoup4 = "^4.12.3" # xml parsing
 stream-zip = "^0.0.71"     # Zip files with low memory footprint
 minio = "^7.2.7"           # AWS S3
-prisma = "^0.13.1"
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -92,7 +90,7 @@ classmethod-decorators = ["pydantic.validator", "classmethod"]
 [tool.pytest_env]
 # Env variables to be used while tests run
 # CAUTION: It can't be a memory db if the web server runs with threads
-POSTGRES_CONNECTION_STRING = "sqlite:///:memory:"
+# POSTGRES_CONNECTION_STRING = "sqlite:///:memory:"
 # POSTGRES_CONNECTION_STRING = "sqlite:///test.db"
 STAGE = "test"
 MINIO_URL = ""

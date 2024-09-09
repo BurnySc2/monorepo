@@ -12,7 +12,7 @@ from loguru import logger
 from nltk import word_tokenize
 from nltk.tokenize import sent_tokenize  # pyre-fixme[21]
 
-nltk.download("punkt")
+nltk.download("punkt_tab")
 
 
 def extract_sentences(text: str) -> list[str]:
