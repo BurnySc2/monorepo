@@ -8,8 +8,9 @@ Cuts video and stores it as a separate file
 TODO Then finaally all cut videos are merged together with ffmpeg
 """
 
+import gc
 import os
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Iterable
 
@@ -49,14 +50,27 @@ def get_timestamps_from_file(my_file: Path) -> list[tuple[float, float]]:
         if "-" not in line:
             continue
         start, end = line.strip().split("-")
-        start_sec, start_ms = start.split(".")
-        end_sec, end_ms = end.split(".")
+        # 01-04, 06
+        # start_sec, start_ms = start.split(".")
+        # end_sec, end_ms = end.split(".")
+        # timestamps.append(
+        #     (
+        #         # Divide through 60 if timestamp is in seconds instead of frames
+        #         float(start_sec) + float(start_ms) / 60,
+        #         float(end_sec) + float(end_ms) / 60,
+        #     ),
+        # )
+
+        # 07 and onward
+        # Extract if time in frames are given
         timestamps.append(
             (
-                float(start_sec) + float(start_ms) / 60,
-                float(end_sec) + float(end_ms) / 60,
-            )
+                # Start and end is listed in frames but we need seconds
+                float(start) / 60,
+                float(end) / 60,
+            ),
         )
+
     return timestamps
 
 
@@ -96,18 +110,20 @@ def convert_clip(
     # https://moviepy.readthedocs.io/en/latest/ref/videotools.html?highlight=write_videofile#moviepy.video.tools.credits.CreditsClip.write_videofile
     print(video_path.name, timestamp_start, timestamp_end)
     clip.write_videofile(
-        # transitioned_clips.write_videofile(
         str(clip_out_path.absolute()),
         codec="libx264",
         # codec="libx265",
         preset="faster",
         ffmpeg_params=["-crf", "20", "-c:a", "copy"],
     )
+    # Force release memory
+    clip.close()
+    gc.collect()
 
 
-clip_number = 0
-word_count = 0
-with ProcessPoolExecutor(max_workers=4) as executor:
+clip_number = int(os.getenv("CLIP_NUMBER_START"))
+word_count = int(os.getenv("WORD_NUMBER_START"))
+with ThreadPoolExecutor(max_workers=4) as executor:
     for video_folder_path in videos_folder_path:
         video_file_paths = list(recurse_path(video_folder_path, depth=1))
 
@@ -120,7 +136,6 @@ with ProcessPoolExecutor(max_workers=4) as executor:
             clip_number += 1
             if timestamp_start == timestamp_end:
                 continue
-            word_count += 1
             # Add context, half transition duration
             timestamp_start = timestamp_start - CLIP_CONTEXT
             timestamp_end = timestamp_end + CLIP_CONTEXT
@@ -130,7 +145,7 @@ with ProcessPoolExecutor(max_workers=4) as executor:
                 out_folder_path,
                 timestamp_start,
                 timestamp_end,
-                clip_number,
+                clip_number - 1,
                 word_count,
             )
-    # TODO from all extracted clips in out_folder_path, create one concatenated video
+            word_count += 1
