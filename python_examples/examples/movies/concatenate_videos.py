@@ -10,10 +10,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+# pyre-fixme[16]
 INPUT_FOLDERS: list[str] = os.getenv("CONCATENATE_FOLDERS").split(";")
 for folder in INPUT_FOLDERS:
     assert Path(folder).is_dir(), folder
+# pyre-fixme[6]
 OUTPUT_FILE = Path(os.getenv("CONCATENATE_OUTPUT_FILE"))
 OUTPUT_FILE.parent.mkdir(exist_ok=True, parents=True)
 
