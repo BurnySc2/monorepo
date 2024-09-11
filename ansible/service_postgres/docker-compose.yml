@@ -8,6 +8,8 @@ networks:
 # Remote restore specific table:
 # pg_restore -d CONNECTION_STRING -U postgres -t TABLE_NAME dump.sql
 
+# Or:
+# psql CONNECTION_STRING -f dump.sql -F t
 
 # Upgrade postgres:
 #   Dump db data to file
