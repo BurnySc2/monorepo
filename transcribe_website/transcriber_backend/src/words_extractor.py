@@ -93,9 +93,9 @@ def extract_with_ffmpeg(
     Extract a clip from the input video file using ffmpeg.
     """
     # Extract .mp4 clip
-    clip_out_path_str = str(clip_out_path.resolve())
+    logger.info(f"Extracting: {clip_out_path.as_posix()}")
     subprocess.check_call(
-        f'ffmpeg -ss {clip_start_str} -to {clip_end_str} -i "{input_file_str}" -c copy -loglevel error -stats "{clip_out_path_str}"',  # noqa: E501
+        f'ffmpeg -ss {clip_start_str} -to {clip_end_str} -i "{input_file_str}" -c copy -loglevel error -stats "{clip_out_path.as_posix()}"',  # noqa: E501
         shell=True,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -211,7 +211,7 @@ def print_words_overview() -> None:
     This function prints a summary of the words found in the videos. It retrieves the words from the database and counts their occurrences in each video. The function then prints the top 10 most common words for each video.
     """  # noqa: E501
     global words_table
-    results = words_table.find(video_relative_path={"like": r"%part_of_video%"}, order_by=["video_relative_path"])
+    results = words_table.find(video_relative_path={"like": f"{input_path}%"}, order_by=["video_relative_path"])
     counters: dict[str, Counter] = {}
     for row in results:
         video_relative_path, word = row["video_relative_path"], row["word"]
@@ -267,7 +267,7 @@ def extract_matched_words(
 
 
 if __name__ == "__main__":
-    with ThreadPoolExecutor(max_workers=4) as exec:
+    with ThreadPoolExecutor(max_workers=8) as exec:
         for my_file in recurse_path(input_path, depth=2):
             if my_file.suffix not in [".mp4", ".webm"]:
                 continue
