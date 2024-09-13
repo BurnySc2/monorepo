@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import datetime
 import os
 from dataclasses import dataclass
-from typing import Annotated, Generic, Literal, TypeVar
+from typing import Annotated, Literal
 
 import httpx
 from dotenv import load_dotenv
@@ -11,6 +10,7 @@ from litestar.connection import ASGIConnection
 from litestar.exceptions import NotAuthorizedException
 from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Parameter
+from litestar.stores.memory import MemoryStore
 
 from prisma import Prisma
 from routes.audiobook.schema import (
@@ -67,38 +67,9 @@ class LoggedInUser:
         return f"{self.name}{separator}{self.service}"
 
 
-T = TypeVar("T", TwitchUser, GithubUser)
-
-
-# TODO Replace with MemoryStore https://docs.litestar.dev/2/usage/stores.html
-class UserCache(Generic[T]):
-    def __init__(
-        self,
-        user_class: type[T],
-        cache_duration_seconds: int,
-    ):
-        self.user_class = user_class
-        self.cache_duration_seconds = cache_duration_seconds
-        self.user_cache: dict[str, tuple[T, datetime.datetime]] = {}
-
-    def __getitem__(self, access_token: str) -> T | None:
-        cached_user, cache_expire_datetime = self.user_cache.get(access_token, (None, None))
-        if cache_expire_datetime is not None and cache_expire_datetime > datetime.datetime.now(
-            tz=datetime.timezone.utc
-        ):
-            return cached_user
-
-    def __setitem__(self, access_token: str, user: T) -> T:
-        assert isinstance(user, self.user_class)
-        self.user_cache[access_token] = (
-            user,
-            datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(seconds=self.cache_duration_seconds),
-        )
-        return user
-
-
-twitch_cache = UserCache(user_class=TwitchUser, cache_duration_seconds=60)
-github_cache = UserCache(user_class=GithubUser, cache_duration_seconds=60)
+# MemoryStore https://docs.litestar.dev/2/usage/stores.html
+twitch_cache = MemoryStore()
+github_cache = MemoryStore()
 
 
 async def provide_twitch_user(
@@ -112,7 +83,8 @@ async def provide_twitch_user(
         return None
 
     # Grab cached user information to reduce amount of requests to twitch api
-    cached_user = twitch_cache[twitch_access_token]
+    # pyre-fixme[9]
+    cached_user: TwitchUser | None = await twitch_cache.get(twitch_access_token)
     if cached_user is not None:
         return cached_user
 
@@ -137,7 +109,8 @@ async def provide_twitch_user(
         # email=response_json["email"],
     )
 
-    twitch_cache[twitch_access_token] = twitch_user
+    # pyre-fixme[6]
+    await twitch_cache.set(twitch_access_token, twitch_user, expires_in=60)
     return twitch_user
 
 
@@ -149,7 +122,8 @@ async def provide_github_user(
         return None
 
     # Grab cached user information to reduce amount of requests to twitch api
-    cached_user = github_cache[github_access_token]
+    # pyre-fixme[9]
+    cached_user: GithubUser | None = await github_cache.get(github_access_token)
     if cached_user is not None:
         return cached_user
 
@@ -171,7 +145,8 @@ async def provide_github_user(
         login=data["login"],
     )
 
-    github_cache[github_access_token] = github_user
+    # pyre-fixme[6]
+    await github_cache.set(github_access_token, github_user, expires_in=60)
     return github_user
 
 

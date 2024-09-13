@@ -1,5 +1,5 @@
 from test.base_test import test_client  # noqa: F401
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from litestar.status_codes import (
@@ -7,10 +7,11 @@ from litestar.status_codes import (
     HTTP_409_CONFLICT,
     HTTP_503_SERVICE_UNAVAILABLE,
 )
+from litestar.stores.memory import MemoryStore
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
-from routes.cookies_and_guards import COOKIES, TwitchUser, UserCache, provide_twitch_user
+from routes.cookies_and_guards import COOKIES, TwitchUser, provide_twitch_user
 
 _test_client = test_client
 
@@ -32,8 +33,8 @@ async def test_get_twitch_user_success(httpx_mock: HTTPXMock):
 @pytest.mark.asyncio
 async def test_get_twitch_user_from_cache():
     mock_user = TwitchUser(id=123, login="abc", display_name="Abc", email="")
-    mock_get = Mock(return_value=mock_user)
-    with patch.object(UserCache, "__getitem__", mock_get):
+    mock_get = AsyncMock(return_value=mock_user)
+    with patch.object(MemoryStore, "get", mock_get):
         result = await provide_twitch_user("test_access_token")
         assert result.id == 123
         assert result.login == "abc"
