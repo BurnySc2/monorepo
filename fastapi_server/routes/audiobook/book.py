@@ -26,21 +26,26 @@ from routes.audiobook.schema import (
     normalize_title,
 )
 from routes.audiobook.temp_generate_tts import get_supported_voices
-from routes.cookies_and_guards import get_user_settings, owns_book_guard
-from routes.login_logout import TwitchUser, get_twitch_user, logged_into_twitch_guard
+from routes.cookies_and_guards import (
+    LoggedInUser,
+    get_user_settings,
+    is_logged_in_guard,
+    owns_book_guard,
+    provide_logged_in_user,
+)
 
 
 class MyAudiobookBookRoute(Controller):
     path = "/audiobook"
-    guards = [logged_into_twitch_guard]
+    guards = [is_logged_in_guard]
     dependencies = {
-        "twitch_user": Provide(get_twitch_user),
+        "logged_in_user": Provide(provide_logged_in_user),
     }
 
     @get("/book/{book_id: int}", dependencies={"user_settings": Provide(get_user_settings)}, guards=[owns_book_guard])
     async def get_book_by_id(
         self,
-        twitch_user: TwitchUser,
+        logged_in_user: LoggedInUser,
         user_settings: AudioSettings,
         book_id: int,
     ) -> Template:
@@ -50,7 +55,7 @@ class MyAudiobookBookRoute(Controller):
             book = await db.audiobookbook.find_first_or_raise(
                 where={
                     "id": book_id,
-                    "uploaded_by": twitch_user.display_name,
+                    "uploaded_by": logged_in_user.db_name,
                 },
                 # pyre-fixme[55]
                 include={"AudiobookChapter": {"order_by": {"chapter_number": "asc"}}},
@@ -196,7 +201,7 @@ class MyAudiobookBookRoute(Controller):
     )
     async def generate_audio_book(
         self,
-        twitch_user: TwitchUser,
+        logged_in_user: LoggedInUser,
         book_id: int,
         data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> ClientRefresh:
@@ -208,7 +213,7 @@ class MyAudiobookBookRoute(Controller):
                 where={
                     "book_id": book_id,
                     # pyre-fixme[55]
-                    "book": {"uploaded_by": twitch_user.display_name},
+                    "book": {"uploaded_by": logged_in_user.db_name},
                     "queued": None,
                 },
                 order=[{"chapter_number": "asc"}],
@@ -231,7 +236,7 @@ class MyAudiobookBookRoute(Controller):
     async def download_book_zip(
         self,
         book_id: int,
-        twitch_user: TwitchUser,
+        logged_in_user: LoggedInUser,
     ) -> Stream:
         """
         If all chapters have generated audio:
@@ -242,7 +247,7 @@ class MyAudiobookBookRoute(Controller):
             book = await db.audiobookbook.find_first_or_raise(
                 where={
                     "id": book_id,
-                    "uploaded_by": twitch_user.display_name,
+                    "uploaded_by": logged_in_user.db_name,
                 }
             )
 
@@ -270,7 +275,7 @@ class MyAudiobookBookRoute(Controller):
             book = await db.audiobookbook.find_first_or_raise(
                 where={
                     "id": book_id,
-                    "uploaded_by": twitch_user.display_name,
+                    "uploaded_by": logged_in_user.db_name,
                 },
                 include={"AudiobookChapter": {"order_by": [{"chapter_number": "asc"}]}},
             )
@@ -308,7 +313,7 @@ class MyAudiobookBookRoute(Controller):
     @post("/delete_book", guards=[owns_book_guard])
     async def delete_book(
         self,
-        twitch_user: TwitchUser,
+        logged_in_user: LoggedInUser,
         book_id: int,
     ) -> ClientRedirect:
         """
@@ -320,7 +325,7 @@ class MyAudiobookBookRoute(Controller):
             for chapter in chapters:
                 # pyre-fixme[6]
                 minio_client.remove_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), chapter.minio_object_name)
-            await db.audiobookbook.delete_many(where={"id": book_id, "uploaded_by": twitch_user.display_name})
+            await db.audiobookbook.delete_many(where={"id": book_id, "uploaded_by": logged_in_user.db_name})
         return ClientRedirect("/audiobook")
 
     @post("/delete_generated_audio", guards=[owns_book_guard])

@@ -10,7 +10,7 @@ from litestar.status_codes import (
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
-from routes.cookies_and_guards import COOKIES, TwitchUser, UserCache, get_twitch_user
+from routes.cookies_and_guards import COOKIES, TwitchUser, UserCache, provide_twitch_user
 
 _test_client = test_client
 
@@ -21,7 +21,7 @@ async def test_get_twitch_user_success(httpx_mock: HTTPXMock):
         url="https://api.twitch.tv/helix/users",
         json={"data": [{"id": "123", "login": "abc", "display_name": "Abc", "email": "abc@example.com"}]},
     )
-    result = await get_twitch_user("test_access_token")
+    result = await provide_twitch_user("test_access_token")
     assert result is not None
     assert result.id == 123
     assert result.login == "abc"
@@ -34,7 +34,7 @@ async def test_get_twitch_user_from_cache():
     mock_user = TwitchUser(id=123, login="abc", display_name="Abc", email="")
     mock_get = Mock(return_value=mock_user)
     with patch.object(UserCache, "__getitem__", mock_get):
-        result = await get_twitch_user("test_access_token")
+        result = await provide_twitch_user("test_access_token")
         assert result.id == 123
         assert result.login == "abc"
         assert result.display_name == "Abc"
@@ -43,7 +43,7 @@ async def test_get_twitch_user_from_cache():
 
 @pytest.mark.asyncio
 async def test_get_twitch_user_no_access_token():
-    result = await get_twitch_user()
+    result = await provide_twitch_user()
     assert result is None
 
 

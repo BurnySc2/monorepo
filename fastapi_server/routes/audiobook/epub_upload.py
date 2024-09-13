@@ -19,7 +19,7 @@ from routes.audiobook.temp_read_epub import (
     extract_chapters,
     extract_metadata,
 )
-from routes.login_logout import TwitchUser, get_twitch_user, logged_into_twitch_guard
+from routes.cookies_and_guards import LoggedInUser, is_logged_in_guard, provide_logged_in_user
 
 # TODO Background function that removes all books and chapters that are older than 1 week
 
@@ -28,15 +28,15 @@ load_dotenv()
 
 class MyAudiobookEpubRoute(Controller):
     path = "/audiobook"
-    guards = [logged_into_twitch_guard]
+    guards = [is_logged_in_guard]
     dependencies = {
-        "twitch_user": Provide(get_twitch_user),
+        "logged_in_user": Provide(provide_logged_in_user),
     }
 
     @get("/epub_upload")
     async def index(
         self,
-        twitch_user: TwitchUser,
+        logged_in_user: LoggedInUser,
     ) -> Template:
         # TODO The endpoint "/" should list all uploaded books by user, then be able to navigate to it
         # TODO List all uploaded books
@@ -45,7 +45,7 @@ class MyAudiobookEpubRoute(Controller):
     @post("/epub_upload", media_type=MediaType.TEXT)
     async def file_upload(
         self,
-        twitch_user: TwitchUser,
+        logged_in_user: LoggedInUser,
         data: Annotated[
             UploadFile,
             Body(media_type=RequestEncodingType.MULTI_PART),
@@ -64,7 +64,7 @@ class MyAudiobookEpubRoute(Controller):
         async with Prisma() as db:
             book = await db.audiobookbook.find_first(
                 where={
-                    "uploaded_by": twitch_user.display_name,
+                    "uploaded_by": logged_in_user.db_name,
                     "book_title": metadata.title,
                     "book_author": metadata.author,
                 }
@@ -82,7 +82,7 @@ class MyAudiobookEpubRoute(Controller):
         async with Prisma() as db:
             book = await db.audiobookbook.create(
                 {
-                    "uploaded_by": twitch_user.display_name,
+                    "uploaded_by": logged_in_user.db_name,
                     "book_title": metadata.title,
                     "book_author": metadata.author,
                     "chapter_count": len(chapters),

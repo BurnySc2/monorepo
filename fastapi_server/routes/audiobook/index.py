@@ -4,14 +4,14 @@ from litestar import Controller, get
 from litestar.di import Provide
 from litestar.response import Template
 
-from routes.login_logout import TwitchUser, get_twitch_user
+from routes.login_logout import TwitchUser, provide_twitch_user
 
 
 class MyAudiobookIndexRoute(Controller):
     path = "/audiobook"
     # TODO Guard: Logged in to some service
     dependencies = {
-        "twitch_user": Provide(get_twitch_user),
+        "twitch_user": Provide(provide_twitch_user),
     }
 
     @get("/")

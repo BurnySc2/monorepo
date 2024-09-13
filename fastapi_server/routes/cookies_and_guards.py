@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import os
 from dataclasses import dataclass
-from typing import Annotated, Generic, TypeVar
+from typing import Annotated, Generic, Literal, TypeVar
 
 import httpx
 from dotenv import load_dotenv
@@ -55,6 +55,18 @@ class GithubUser:
     login: str
 
 
+@dataclass
+class LoggedInUser:
+    id: int
+    name: str
+    service: Literal["twitch", "github", "facebook", "google"]
+
+    @property
+    def db_name(self) -> str:
+        separator = " "  # TODO change if with facebook or google account, space in name is allowed
+        return f"{self.name}{separator}{self.service}"
+
+
 T = TypeVar("T", TwitchUser, GithubUser)
 
 
@@ -89,7 +101,7 @@ twitch_cache = UserCache(user_class=TwitchUser, cache_duration_seconds=60)
 github_cache = UserCache(user_class=GithubUser, cache_duration_seconds=60)
 
 
-async def get_twitch_user(
+async def provide_twitch_user(
     twitch_access_token: Annotated[str | None, Parameter(cookie=COOKIES["twitch"])] = None,
 ) -> TwitchUser | None:
     """
@@ -129,7 +141,7 @@ async def get_twitch_user(
     return twitch_user
 
 
-async def get_github_user(
+async def provide_github_user(
     github_access_token: Annotated[str | None, Parameter(cookie=COOKIES["github"])] = None,
 ) -> GithubUser | None:
     global github_cache
@@ -163,27 +175,43 @@ async def get_github_user(
     return github_user
 
 
+async def provide_logged_in_user(
+    twitch_access_token: Annotated[str | None, Parameter(cookie=COOKIES["twitch"])] = None,
+    github_access_token: Annotated[str | None, Parameter(cookie=COOKIES["github"])] = None,
+) -> LoggedInUser | None:
+    twitch_user = await provide_twitch_user(twitch_access_token)
+    if twitch_user is not None:
+        return LoggedInUser(id=twitch_user.id, name=twitch_user.display_name, service="twitch")
+    github_user = await provide_github_user(github_access_token)
+    if github_user is not None:
+        return LoggedInUser(id=github_user.id, name=github_user.login, service="github")
+    return None
+
+
 async def owns_book_guard(
     connection: ASGIConnection,
     _: BaseRouteHandler,
 ) -> None:
-    twitch_user = await get_twitch_user(connection.cookies.get(COOKIES["twitch"]))
+    logged_in_user: LoggedInUser | None = await provide_logged_in_user(
+        connection.cookies.get(COOKIES["twitch"]),
+        connection.cookies.get(COOKIES["github"]),
+    )
     book_id: int = connection.path_params.get("book_id") or int(connection.query_params["book_id"])
     async with Prisma() as db:
         assert isinstance(book_id, int), book_id
-        # pyre-fixme[16]
-        assert isinstance(twitch_user.display_name, str), twitch_user.display_name
+        assert logged_in_user is not None
+        assert isinstance(logged_in_user.name, str), logged_in_user.name
         book = await db.audiobookbook.find_first(
             where={
                 "id": book_id,
-                "uploaded_by": twitch_user.display_name,
+                "uploaded_by": logged_in_user.db_name,
             }
         )
     if book is None:
         raise NotAuthorizedException("You don't have access to this book.")
 
 
-async def logged_into_twitch_guard(
+async def is_logged_into_twitch_guard(
     connection: ASGIConnection,
     _: BaseRouteHandler,
 ) -> None:
@@ -191,9 +219,25 @@ async def logged_into_twitch_guard(
     Can be used as a guard to make sure the user is logged into twitch
     https://docs.litestar.dev/2/usage/security/guards.html
     """
-    twitch_user = await get_twitch_user(connection.cookies.get(COOKIES["twitch"]))
+    twitch_user = await provide_twitch_user(connection.cookies.get(COOKIES["twitch"]))
     if twitch_user is None:
         raise NotAuthorizedException("You are not logged in to twitch.")
+
+
+async def is_logged_in_guard(
+    connection: ASGIConnection,
+    _: BaseRouteHandler,
+) -> None:
+    """
+    Can be used as a guard to make sure the user is logged into twitch
+    https://docs.litestar.dev/2/usage/security/guards.html
+    """
+    logged_in_user = await provide_logged_in_user(
+        connection.cookies.get(COOKIES["twitch"]),
+        connection.cookies.get(COOKIES["github"]),
+    )
+    if logged_in_user is None:
+        raise NotAuthorizedException("You are not logged in to twitch, github, facebook or google.")
 
 
 async def get_user_settings(

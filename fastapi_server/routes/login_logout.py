@@ -20,9 +20,9 @@ from routes.cookies_and_guards import (
     TWITCH_CLIENT_SECRET,
     GithubUser,
     TwitchUser,
-    get_github_user,
-    get_twitch_user,
-    logged_into_twitch_guard,
+    is_logged_into_twitch_guard,
+    provide_github_user,
+    provide_twitch_user,
 )
 
 
@@ -30,8 +30,8 @@ class MyLoginRoute(Controller):
     path = "/login"
     # https://docs.litestar.dev/2/usage/dependency-injection.html
     dependencies = {
-        "twitch_user": Provide(get_twitch_user),
-        "github_user": Provide(get_github_user),
+        "twitch_user": Provide(provide_twitch_user),
+        "github_user": Provide(provide_github_user),
     }
 
     @get("/")
@@ -75,7 +75,7 @@ class MyLoginRoute(Controller):
     #         return github_user.login
     #     return "Login"
 
-    @get("/twitchtest", guards=[logged_into_twitch_guard])
+    @get("/twitchtest", guards=[is_logged_into_twitch_guard])
     async def requires_twitch_logged_in(
         self,
     ) -> str:

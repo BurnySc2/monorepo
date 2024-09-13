@@ -10,7 +10,7 @@ from litestar.status_codes import (
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
-from routes.cookies_and_guards import COOKIES, GithubUser, UserCache, get_github_user
+from routes.cookies_and_guards import COOKIES, GithubUser, UserCache, provide_github_user
 
 _test_client = test_client
 
@@ -21,7 +21,7 @@ async def test_get_github_user_success(httpx_mock: HTTPXMock):
         url="https://api.github.com/user",
         json={"id": 123, "login": "Abc"},
     )
-    result = await get_github_user("test_access_token")
+    result = await provide_github_user("test_access_token")
     assert result is not None
     assert result.id == 123
     assert result.login == "Abc"
@@ -32,7 +32,7 @@ async def test_get_github_user_from_cache():
     mock_user = GithubUser(id=123, login="Abc")
     mock_get = Mock(return_value=mock_user)
     with patch.object(UserCache, "__getitem__", mock_get):
-        result = await get_github_user("test_access_token")
+        result = await provide_github_user("test_access_token")
         assert result is not None
         assert result.id == 123
         assert result.login == "Abc"
@@ -40,7 +40,7 @@ async def test_get_github_user_from_cache():
 
 @pytest.mark.asyncio
 async def test_get_github_user_no_access_token():
-    result = await get_github_user()
+    result = await provide_github_user()
     assert result is None
 
 
