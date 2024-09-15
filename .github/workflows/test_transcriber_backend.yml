@@ -94,35 +94,35 @@ jobs:
         docker push burnysc2/${{ env.IMAGENAME }}:latest
         docker push burnysc2/${{ env.IMAGENAME }}:${{ env.VERSION_NUMBER}}
 
-  deploy_transcribe_worker:
-    if: github.ref == 'refs/heads/develop'
-    needs: [build_and_deploy_docker_image]
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
-    env:
-      USERNAME: transcribe
+  # deploy_transcribe_worker:
+  #   if: github.ref == 'refs/heads/develop'
+  #   needs: [build_and_deploy_docker_image]
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   env:
+  #     USERNAME: transcribe
 
-    steps:
-      # Requires the following 3 lines added to "visudo" on the server
-      # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl disable --now transcribe
-      # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
-      # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl enable --now transcribe
-    - name: Update docker image on server and restart server
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.HOST }}
-        port: 22
-        username: ${{ env.USERNAME }}
-        key: ${{ secrets.TRANSCRIBEWORKERKEY }}
-        passphrase: ''
-        script: |
-          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-          docker rm -f transcribe_worker
-          docker rm -f telegram_downloader
-          docker rm -f enqueue_worker
-          docker image prune -af
-          docker pull burnysc2/${{ env.IMAGENAME }}:latest
-          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
+  #   steps:
+  #     # Requires the following 3 lines added to "visudo" on the server
+  #     # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl disable --now transcribe
+  #     # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
+  #     # transcribe ALL=(ALL) NOPASSWD: /bin/systemctl enable --now transcribe
+  #   - name: Update docker image on server and restart server
+  #     uses: appleboy/ssh-action@v1.0.3
+  #     with:
+  #       host: ${{ secrets.HOST }}
+  #       port: 22
+  #       username: ${{ env.USERNAME }}
+  #       key: ${{ secrets.TRANSCRIBEWORKERKEY }}
+  #       passphrase: ''
+  #       script: |
+  #         sudo /bin/systemctl disable --now ${{ env.USERNAME }}
+  #         docker rm -f transcribe_worker
+  #         docker rm -f telegram_downloader
+  #         docker rm -f enqueue_worker
+  #         docker image prune -af
+  #         docker pull burnysc2/${{ env.IMAGENAME }}:latest
+  #         sudo /bin/systemctl enable --now ${{ env.USERNAME }}
 
