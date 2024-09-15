@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import typing
 from dataclasses import dataclass
 from typing import Annotated, Literal
 
@@ -55,16 +56,23 @@ class GithubUser:
     login: str
 
 
+AVAILABLE_SERVICES_TYPE = Literal["twitch", "github", "facebook", "google"]
+VALID_SERVICES: tuple[AVAILABLE_SERVICES_TYPE, ...] = typing.get_args(AVAILABLE_SERVICES_TYPE)
+
+
 @dataclass
 class LoggedInUser:
     id: int
     name: str
-    service: Literal["twitch", "github", "facebook", "google"]
+    service: AVAILABLE_SERVICES_TYPE
 
     @property
     def db_name(self) -> str:
         separator = " "  # TODO change if with facebook or google account, space in name is allowed
         return f"{self.name}{separator}{self.service}"
+
+    def __post_init__(self):
+        assert self.service in VALID_SERVICES, self.service
 
 
 # MemoryStore https://docs.litestar.dev/2/usage/stores.html
