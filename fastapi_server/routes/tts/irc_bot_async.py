@@ -27,7 +27,7 @@ class AsyncIrcBot:
     username: str = "justinfan12345"
     host: str = "wss://irc-ws.chat.twitch.tv:443"
     ws: AsyncWebSocketSession | None = None  # Set in connect()
-    tts_queue: type[TTSQueue] | None = None
+    tts_queue: type["TTSQueue"] | None = None
 
     async def connect(self):
         async with aconnect_ws(self.host) as ws:
