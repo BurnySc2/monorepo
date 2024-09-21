@@ -110,6 +110,25 @@ CACHE_LIMIT = 1000
 generated_tts_cache: OrderedDict[tuple[Voices, str], tuple[str, float]] = OrderedDict()
 
 
+API_DOMAINS = [
+    "https://api16-normal-c-useast1a.tiktokv.com",
+    "https://api16-normal-c-useast1a.tiktokv.com",
+    "https://api16-core-c-useast1a.tiktokv.com",
+    "https://api16-normal-useast5.us.tiktokv.com",
+    "https://api16-core.tiktokv.com",
+    "https://api16-core-useast5.us.tiktokv.com",
+    "https://api19-core-c-useast1a.tiktokv.com",
+    "https://api-core.tiktokv.com",
+    "https://api-normal.tiktokv.com",
+    "https://api19-normal-c-useast1a.tiktokv.com",
+    "https://api16-core-c-alisg.tiktokv.com",
+    "https://api16-normal-c-alisg.tiktokv.com",
+    "https://api22-core-c-alisg.tiktokv.com",
+    "https://api16-normal-c-useast2a.tiktokv.com",
+]
+API_PATH = "/media/api/text/speech/invoke/"
+
+
 async def generate_tts(voice: Voices, text: str) -> tuple[str, float]:
     key = (voice, text)
     if key in generated_tts_cache:
@@ -122,14 +141,23 @@ async def generate_tts(voice: Voices, text: str) -> tuple[str, float]:
             "User-Agent": "com.zhiliaoapp.musically/2022600030 (Linux; U; Android 7.1.2; es_ES; SM-G988N; Build/NRD90M;tt-ok/3.12.13.1)",  # noqa: E501
             "Cookie": f"sessionid={os.getenv('TIKTOK_SESSION_ID')}",
         }
-        url = f"https://api16-normal-c-useast2a.tiktokv.com/media/api/text/speech/invoke/?text_speaker={voice.value}&req_text={text}&speaker_map_type=0&aid=1233"
-        response = await client.post(url, headers=headers)
-        data = response.json()
 
-        status_code: int = data["status_code"]
-        # message: str = data["message"]
-        # status_msg: str = data["status_msg"]
-        assert status_code == 0, f"{status_code=}"
+        data = {}
+        status_code = 1
+        for domain in API_DOMAINS:
+            url = f"{domain}{API_PATH}?text_speaker={voice.value}&req_text={text}&speaker_map_type=0&aid=1233"
+            response = await client.post(url, headers=headers)
+            if response.is_error:
+                continue
+            data = response.json()
+
+            status_code: int = data["status_code"]
+            # message: str = data["message"]
+            # status_msg: str = data["status_msg"]
+            if status_code == 0:
+                break
+
+        assert status_code == 0, f"{data=}"
 
         if len(generated_tts_cache) > CACHE_LIMIT:
             # FIFO removal

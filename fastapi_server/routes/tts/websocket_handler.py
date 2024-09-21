@@ -1,5 +1,4 @@
 import asyncio
-import os
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import ClassVar, Literal
@@ -9,81 +8,12 @@ from litestar import WebSocket
 from litestar.exceptions.websocket_exceptions import WebSocketDisconnect
 from litestar.handlers import WebsocketListener
 from loguru import logger
-from twitchio import Message  # pyre-fixme[21]
-from twitchio.ext import commands  # pyre-fixme[21]
 from websockets import ConnectionClosedError, ConnectionClosedOK
 
 from routes.tts.generate_tts import Voices, generate_tts
-
-ALLOWED_NAME_LANGUAGES: dict[str, tuple[Voices | None, str | None]] = {
-    # {str: (Voice, suffix 'says')}
-    "none": (None, None),
-    "en": (Voices.STORY_TELLER, "says"),
-    "de": (Voices.GERMAN_FEMALE, "sagt"),
-}
+from routes.tts.irc_bot_async import ALLOWED_NAME_LANGUAGES, AsyncIrcBot
 
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
-
-
-class TwitchIrcBot(commands.Bot):  # pyre-fixme[11]
-    def __init__(self, loop):
-        super().__init__(
-            token=os.getenv("TWITCH_OAUTH_TOKEN"),
-            prefix="!",
-            initial_channels=["burnysc2"],
-            loop=loop,
-        )
-
-    async def event_ready(self):
-        logger.info(f"IRC Bot ready: {self.nick=}")
-
-    async def event_message(self, message: Message):  # pyre-fixme[11]
-        if message.echo:
-            return
-        text: str = message.content
-        if ":" not in text:
-            return
-        # Remove unicode character
-        if text.endswith("\U000e0000"):
-            text = text[:-1].strip()
-
-        # author: Chatter = message.author
-        display_name: str = message.author.display_name
-        # name: str = message.author.name  # Lower case
-        # channel: Channel = message.channel
-        channel_name: str = message.channel.name
-
-        # If channel not connected: leave twitch channel because no websockets are connected
-        if not TTSQueue.is_connected(channel_name):
-            await self.part_channels(channel_name)  # pyre-fixme[16]
-            return
-
-        # Find voice in list of voices
-        voice_from_chat = text.lower().split(":")[0].strip()
-        if voice_from_chat not in VOICE_NAMES_LOWERCASE:
-            return
-        selected_voice: Voices | None = None
-        for voice in Voices:
-            if voice.name.lower() == voice_from_chat:
-                selected_voice = voice
-                break
-        # Voice could not be found
-        if selected_voice is None:
-            return
-
-        text_from_chat_list = text.split(":")[1:]
-        text_from_chat = ":".join(text_from_chat_list).strip()
-
-        for read_name_lang, (voice, name_suffix) in ALLOWED_NAME_LANGUAGES.items():
-            if TTSQueue.is_connected(channel_name, read_name_lang):
-                if voice is not None:
-                    # Put "burnysc2 says:"
-                    # logger.info(f"{read_name_lang} {voice} {name_suffix}")
-                    await TTSQueue.add_text_queue(channel_name, read_name_lang, voice, f"{display_name} {name_suffix}:")
-
-                # Put text into queue
-                logger.info(f"{channel_name}: {read_name_lang} says: {text_from_chat}")
-                await TTSQueue.add_text_queue(channel_name, read_name_lang, selected_voice, text_from_chat)
 
 
 @dataclass
@@ -93,7 +23,7 @@ class TTSQueue:
     # {stream_name: {read_name_lang: list[Websocket]}}
     connected_websockets: ClassVar[dict[tuple[str, str], list[WebSocket]]] = {}
     joined_twitch_channels: ClassVar[set[str]] = set()
-    twitch_irc_bot: ClassVar[TwitchIrcBot] = None  # pyre-fixme[8]
+    twitch_irc_bot: ClassVar[AsyncIrcBot | None] = None
 
     @classmethod
     def add_websocket(cls, stream_name: str, read_name_lang: str, socket: WebSocket) -> None:
@@ -153,13 +83,13 @@ class TTSQueue:
         if not cls.is_connected(stream_name):
             logger.info(f"Disconnecting from irc channel: {stream_name}")
             cls.joined_twitch_channels.discard(stream_name)
-            await TTSQueue.twitch_irc_bot.part_channels([stream_name])  # pyre-fixme[16]
+            assert TTSQueue.twitch_irc_bot is not None
+            await TTSQueue.twitch_irc_bot.part([f"#{stream_name}"])
 
     @classmethod
     async def start_irc_bot(cls) -> None:
-        loop = asyncio.get_running_loop()
-        cls.twitch_irc_bot = TwitchIrcBot(loop=loop)
-        asyncio.create_task(cls.twitch_irc_bot.connect())  # pyre-fixme[16]
+        cls.twitch_irc_bot = AsyncIrcBot(tts_queue=TTSQueue)
+        await cls.twitch_irc_bot.connect()
 
 
 @dataclass
@@ -209,9 +139,11 @@ class TTSQueueRunner:
 
             # Generate audio from text
             try:
+                # TODO Intercept: tiktok session key api thing missing
                 mp3_b64_data, duration = await generate_tts(voice, text)
-                # logger.info(f"{duration}s: {text}")
-            except AssertionError:
+            # logger.info(f"{duration}s: {text}")
+            except AssertionError as e:
+                logger.error(e)
                 continue
             logger.info(f"Sending generated tts to clients: {self.stream_name}: ({voice}) {text}")
             self.text_queue.task_done()
@@ -268,10 +200,12 @@ class TTSWebsocketHandler(WebsocketListener):
             asyncio.create_task(TTSQueueRunner(stream_name, read_name_lang).run())
 
         # Join twitch channel
-        await TTSQueue.twitch_irc_bot.wait_for_ready()  # pyre-fixme[16]
+        assert TTSQueue.twitch_irc_bot is not None
+        await TTSQueue.twitch_irc_bot.wait_till_ready()
         if stream_name not in TTSQueue.joined_twitch_channels:
             logger.info(f"Connecting to irc channel: {stream_name}")
-            await TTSQueue.twitch_irc_bot.join_channels([stream_name])  # pyre-fixme[16]
+            assert TTSQueue.twitch_irc_bot is not None
+            await TTSQueue.twitch_irc_bot.join([f"#{stream_name}"])
             TTSQueue.joined_twitch_channels.add(stream_name)
 
     async def on_disconnect(
