@@ -29,7 +29,7 @@ ebooklib = "^0.18"         # epub parsing
 beautifulsoup4 = "^4.12.3" # xml parsing
 stream-zip = "^0.0.71"     # Zip files with low memory footprint
 minio = "^7.2.7"           # AWS S3
-httpx-ws = "^0.6.0"
+httpx-ws = "^0.6.0"        # Websockets for httpx
 
 [tool.poetry.group.dev.dependencies]
 # Test library

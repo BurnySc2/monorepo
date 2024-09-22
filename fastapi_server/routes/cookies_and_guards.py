@@ -21,6 +21,7 @@ from routes.audiobook.temp_generate_tts import get_supported_voices
 
 load_dotenv()
 
+BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://localhost:8000")
 
 # Github app for local development
 GITHUB_CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
@@ -34,16 +35,18 @@ TWITCH_CLIENT_SECRET = os.getenv("TWITCH_APP_CLIENT_SECRET", "mtu72a2v35p8x7f4fd
 FACEBOOK_CLIENT_ID = os.getenv("FACEBOOK_APP_CLIENT_ID", "1668878523656479")
 FACEBOOK_CLIENT_SECRET = os.getenv("FACEBOOK_APP_CLIENT_SECRET", "dcd070e77fab0aabf1d468fe1d586e28")
 
-BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://localhost:8000")
+# Google app for local development
+GOOGLE_CLIENT_ID = os.getenv(
+    "GOOGLE_APP_CLIENT_ID", "359432605842-cm653in48c8itjpk40j6vjcottc7541i.apps.googleusercontent.com"
+)  # noqa: E501
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_APP_CLIENT_SECRET", "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")
+
 COOKIES = {
     "facebook": "facebook_access_token",
     "github": "github_access_token",
     "google": "google_access_token",
     "twitch": "twitch_access_token",
 }
-
-# TODO Add
-# - Login with google
 
 
 @dataclass
@@ -66,6 +69,18 @@ class FacebookUser:
     display_name: str
 
 
+@dataclass
+class GoogleUser:
+    id: int
+    display_name: str
+
+
+# MemoryStore https://docs.litestar.dev/2/usage/stores.html
+twitch_cache = MemoryStore()
+github_cache = MemoryStore()
+facebook_cache = MemoryStore()
+google_cache = MemoryStore()
+
 AVAILABLE_SERVICES_TYPE = Literal["twitch", "github", "facebook", "google"]
 VALID_SERVICES: tuple[AVAILABLE_SERVICES_TYPE, ...] = typing.get_args(AVAILABLE_SERVICES_TYPE)
 
@@ -83,12 +98,6 @@ class LoggedInUser:
 
     def __post_init__(self):
         assert self.service in VALID_SERVICES, self.service
-
-
-# MemoryStore https://docs.litestar.dev/2/usage/stores.html
-twitch_cache = MemoryStore()
-github_cache = MemoryStore()
-facebook_cache = MemoryStore()
 
 
 async def provide_twitch_user(
@@ -163,6 +172,39 @@ async def provide_github_user(
     return github_user
 
 
+async def provide_google_user(
+    google_access_token: Annotated[str | None, Parameter(cookie=COOKIES["google"])] = None,
+) -> GoogleUser | None:
+    global google_cache
+    if google_access_token is None:
+        return None
+    # Grab cached user information to reduce amount of requests to google api
+    # pyre-fixme[9]
+    cached_user: GoogleUser | None = await google_cache.get(google_access_token)
+    if cached_user is not None:
+        return cached_user
+    async with httpx.AsyncClient() as client:
+        # https://developers.google.com/identity/protocols/oauth2/scopes
+        get_response = await client.get(
+            # "https://www.googleapis.com/oauth2/v2/userinfo",
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {google_access_token}",
+            },
+        )
+        if get_response.is_error:
+            return None
+        data = get_response.json()
+    google_user = GoogleUser(
+        id=data["sub"],
+        display_name=data["email"],
+    )
+    # pyre-fixme[6]
+    await google_cache.set(google_access_token, google_user, expires_in=60)
+    return google_user
+
+
 async def provide_facebook_user(
     facebook_access_token: Annotated[str | None, Parameter(cookie=COOKIES["facebook"])] = None,
 ) -> FacebookUser | None:
@@ -201,6 +243,7 @@ async def provide_logged_in_user(
     twitch_access_token: Annotated[str | None, Parameter(cookie=COOKIES["twitch"])] = None,
     github_access_token: Annotated[str | None, Parameter(cookie=COOKIES["github"])] = None,
     facebook_access_token: Annotated[str | None, Parameter(cookie=COOKIES["facebook"])] = None,
+    google_access_token: Annotated[str | None, Parameter(cookie=COOKIES["google"])] = None,
 ) -> LoggedInUser | None:
     # Twitch
     twitch_user = await provide_twitch_user(twitch_access_token)
@@ -226,7 +269,14 @@ async def provide_logged_in_user(
             name=facebook_user.display_name,
             service="facebook",
         )
-    # TODO Google
+    # Google
+    google_user = await provide_google_user(google_access_token)
+    if google_user is not None:
+        return LoggedInUser(
+            id=google_user.id,
+            name=google_user.display_name,
+            service="google",
+        )
     return None
 
 
@@ -278,6 +328,7 @@ async def is_logged_in_guard(
         connection.cookies.get(COOKIES["twitch"]),
         connection.cookies.get(COOKIES["github"]),
         connection.cookies.get(COOKIES["facebook"]),
+        connection.cookies.get(COOKIES["google"]),
     )
     if logged_in_user is None:
         raise NotAuthorizedException("You are not logged in to twitch, github, facebook or google.")
@@ -296,6 +347,3 @@ async def get_user_settings(
         voice_volume=voice_volume or 0,
         voice_pitch=voice_pitch or 0,
     )
-
-
-# TODO get logged in username from cookies

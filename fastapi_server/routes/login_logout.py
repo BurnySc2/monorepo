@@ -18,14 +18,18 @@ from routes.cookies_and_guards import (
     FACEBOOK_CLIENT_SECRET,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
     TWITCH_CLIENT_ID,
     TWITCH_CLIENT_SECRET,
     FacebookUser,
     GithubUser,
+    GoogleUser,
     TwitchUser,
     is_logged_into_twitch_guard,
     provide_facebook_user,
     provide_github_user,
+    provide_google_user,
     provide_twitch_user,
 )
 
@@ -37,6 +41,7 @@ class MyLoginRoute(Controller):
         "twitch_user": Provide(provide_twitch_user),
         "github_user": Provide(provide_github_user),
         "facebook_user": Provide(provide_facebook_user),
+        "google_user": Provide(provide_google_user),
     }
 
     @get("/")
@@ -45,6 +50,7 @@ class MyLoginRoute(Controller):
         twitch_user: TwitchUser | None,
         github_user: GithubUser | None,
         facebook_user: FacebookUser | None,
+        google_user: GoogleUser | None,
     ) -> Template:
         return Template(
             template_name="login/index.html",
@@ -52,6 +58,7 @@ class MyLoginRoute(Controller):
                 "twitch_user": twitch_user,
                 "github_user": github_user,
                 "facebook_user": facebook_user,
+                "google_user": google_user,
             },
         )
 
@@ -61,6 +68,7 @@ class MyLoginRoute(Controller):
         twitch_user: TwitchUser | None,
         github_user: GithubUser | None,
         facebook_user: FacebookUser | None,
+        google_user: GoogleUser | None,
     ) -> str:
         """Provides the current user name if logged in for the nav bar."""
         if twitch_user is not None:
@@ -69,6 +77,8 @@ class MyLoginRoute(Controller):
             return github_user.login
         if facebook_user is not None:
             return facebook_user.display_name
+        if google_user is not None:
+            return google_user.display_name
         return "Login"
 
     @get("/twitchtest", guards=[is_logged_into_twitch_guard])
@@ -219,6 +229,61 @@ class MyLoginRoute(Controller):
         redirect.set_cookie(
             Cookie(
                 key=COOKIES["facebook"],
+                value=data["access_token"],
+                # Is this required?
+                # secure=True,
+            )
+        )
+        return redirect
+
+    @get("/google")
+    async def google_login(
+        self,
+        google_user: GoogleUser | None,
+        code: str | None,
+    ) -> Response | Redirect:
+        """
+        https://developers.google.com/identity/protocols/oauth2/web-server
+        This is the /login/google endpoint to log the user into a google account.
+        """
+        if google_user is not None:
+            # User is already logged in
+            # pyre-fixme[6]
+            return Redirect("/login", status_code=HTTP_302_FOUND)
+        # If 'code' is not set as a param, redirect to google page
+        # which redirects to this page again with 'code' parameter
+        if code is None:
+            return Redirect(
+                f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&response_type=code&scope=https://www.googleapis.com/auth/userinfo.email&redirect_uri={BACKEND_SERVER_URL}/login/google&state=1",
+                status_code=HTTP_302_FOUND,  # pyre-fixme[6]
+            )
+        # Code was given, get access token and set cookie
+        async with httpx.AsyncClient() as client:
+            url = "https://oauth2.googleapis.com/token"
+            post_response = await client.post(
+                url,
+                headers={
+                    "Accept": "application/json",
+                    # "Content-Type": "application/x-www-form-urlencoded",
+                },
+                json={
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "code": code,
+                    "redirect_uri": f"{BACKEND_SERVER_URL}/login/google",
+                    "grant_type": "authorization_code",  # Required?
+                },
+            )
+            if post_response.is_error:
+                return Response("Google may be unavailable", status_code=HTTP_503_SERVICE_UNAVAILABLE)
+            data = post_response.json()
+        if "error" in data:
+            return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
+        # pyre-fixme[6]
+        redirect = Redirect("/login", status_code=HTTP_302_FOUND)
+        redirect.set_cookie(
+            Cookie(
+                key=COOKIES["google"],
                 value=data["access_token"],
                 # Is this required?
                 # secure=True,
