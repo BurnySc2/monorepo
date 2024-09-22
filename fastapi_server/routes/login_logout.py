@@ -14,13 +14,17 @@ from litestar.status_codes import (
 from routes.cookies_and_guards import (
     BACKEND_SERVER_URL,
     COOKIES,
+    FACEBOOK_CLIENT_ID,
+    FACEBOOK_CLIENT_SECRET,
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
     TWITCH_CLIENT_ID,
     TWITCH_CLIENT_SECRET,
+    FacebookUser,
     GithubUser,
     TwitchUser,
     is_logged_into_twitch_guard,
+    provide_facebook_user,
     provide_github_user,
     provide_twitch_user,
 )
@@ -32,6 +36,7 @@ class MyLoginRoute(Controller):
     dependencies = {
         "twitch_user": Provide(provide_twitch_user),
         "github_user": Provide(provide_github_user),
+        "facebook_user": Provide(provide_facebook_user),
     }
 
     @get("/")
@@ -39,12 +44,14 @@ class MyLoginRoute(Controller):
         self,
         twitch_user: TwitchUser | None,
         github_user: GithubUser | None,
+        facebook_user: FacebookUser | None,
     ) -> Template:
         return Template(
             template_name="login/index.html",
             context={
                 "twitch_user": twitch_user,
                 "github_user": github_user,
+                "facebook_user": facebook_user,
             },
         )
 
@@ -53,27 +60,16 @@ class MyLoginRoute(Controller):
         self,
         twitch_user: TwitchUser | None,
         github_user: GithubUser | None,
+        facebook_user: FacebookUser | None,
     ) -> str:
         """Provides the current user name if logged in for the nav bar."""
         if twitch_user is not None:
             return twitch_user.display_name
         if github_user is not None:
             return github_user.login
+        if facebook_user is not None:
+            return facebook_user.display_name
         return "Login"
-
-    # @get("/name_with_badge")
-    # async def nav_name_with_badge(
-    #     self,
-    #     twitch_user: TwitchUser | None,
-    #     github_user: GithubUser | None,
-    # ) -> str:
-    #     """Provides the current user name with icon if logged in for the nav bar."""
-    #     # TODO show facebook/google/twitch/github icon next to name?
-    #     if twitch_user is not None:
-    #         return twitch_user.display_name
-    #     if github_user is not None:
-    #         return github_user.login
-    #     return "Login"
 
     @get("/twitchtest", guards=[is_logged_into_twitch_guard])
     async def requires_twitch_logged_in(
@@ -173,6 +169,56 @@ class MyLoginRoute(Controller):
         redirect.set_cookie(
             Cookie(
                 key=COOKIES["github"],
+                value=data["access_token"],
+                # Is this required?
+                # secure=True,
+            )
+        )
+        return redirect
+
+    @get("/facebook")
+    async def facebook_login(
+        self,
+        facebook_user: FacebookUser | None,
+        code: str | None,
+    ) -> Response | Redirect:
+        """
+        This is the /login/facebook endpoint to log the user into a facebook account.
+        """
+        if facebook_user is not None:
+            # User is already logged in
+            # pyre-fixme[6]
+            return Redirect("/login", status_code=HTTP_302_FOUND)
+        # If 'code' is not set as a param, redirect to facebook page
+        # which redirects to this page again with 'code' parameter
+        if code is None:
+            return Redirect(
+                f"https://www.facebook.com/v20.0/dialog/oauth?client_id={FACEBOOK_CLIENT_ID}&redirect_uri={BACKEND_SERVER_URL}/login/facebook&state=1",
+                status_code=HTTP_302_FOUND,  # pyre-fixme[6]
+            )
+        # Code was given, get access token and set cookie
+        async with httpx.AsyncClient() as client:
+            url = "https://graph.facebook.com/v20.0/oauth/access_token"
+            post_response = await client.post(
+                url,
+                headers={"Accept": "application/json"},
+                json={
+                    "client_id": FACEBOOK_CLIENT_ID,
+                    "client_secret": FACEBOOK_CLIENT_SECRET,
+                    "code": code,
+                    "redirect_uri": f"{BACKEND_SERVER_URL}/login/facebook",
+                },
+            )
+            if post_response.is_error:
+                return Response("Facebook may be unavailable", status_code=HTTP_503_SERVICE_UNAVAILABLE)
+            data = post_response.json()
+        if "error" in data:
+            return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
+        # pyre-fixme[6]
+        redirect = Redirect("/login", status_code=HTTP_302_FOUND)
+        redirect.set_cookie(
+            Cookie(
+                key=COOKIES["facebook"],
                 value=data["access_token"],
                 # Is this required?
                 # secure=True,

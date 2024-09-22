@@ -110,7 +110,6 @@ class AsyncIrcBot:
         text_from_chat = ":".join(text_from_chat_list).strip()
 
         # Put voice and text into queue
-
         for read_name_lang, (voice, name_suffix) in ALLOWED_NAME_LANGUAGES.items():
             assert self.tts_queue is not None
             if self.tts_queue.is_connected(channel_name, read_name_lang):

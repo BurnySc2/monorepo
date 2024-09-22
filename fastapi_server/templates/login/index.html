@@ -2,12 +2,15 @@
 {% include "nav.html" with context %}
 
 <main class="flex flex-col items-center justify-center h-screen bg-gray-300 gap-4">
-    {% if twitch_user == None and github_user == None %}
+    {% if twitch_user == None and github_user == None and facebook_user == None %}
     <a href="/login/twitch" class="border-black rounded border-4 p-2">
         Login with twitch
     </a>
     <a href="/login/github" class="border-black rounded border-4 p-2">
         Login with github
+    </a>
+    <a href="/login/facebook" class="border-black rounded border-4 p-2">
+        Login with facebook
     </a>
     {% endif %}
 
@@ -26,6 +29,15 @@
     </div>
     <a href="/logout" class="border-black rounded border-4 p-2">
         Log out from github
+    </a>
+    {% endif %}
+
+    {% if facebook_user != None %}
+    <div class="border-black rounded border-4 p-2">
+        Logged in to facebook as user '{{ facebook_user.display_name }}'
+    </div>
+    <a href="/logout" class="border-black rounded border-4 p-2">
+        Log out from facebook
     </a>
     {% endif %}
 </main>
