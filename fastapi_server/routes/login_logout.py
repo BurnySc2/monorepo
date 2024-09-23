@@ -254,7 +254,7 @@ class MyLoginRoute(Controller):
         # which redirects to this page again with 'code' parameter
         if code is None:
             return Redirect(
-                f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&response_type=code&scope=https://www.googleapis.com/auth/userinfo.email&redirect_uri={BACKEND_SERVER_URL}/login/google&state=1",
+                f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&response_type=code&scope=https://www.googleapis.com/auth/userinfo.email&redirect_uri=https://{BACKEND_SERVER_URL}/login/google&state=1",
                 status_code=HTTP_302_FOUND,  # pyre-fixme[6]
             )
         # Code was given, get access token and set cookie
@@ -264,13 +264,12 @@ class MyLoginRoute(Controller):
                 url,
                 headers={
                     "Accept": "application/json",
-                    # "Content-Type": "application/x-www-form-urlencoded",
                 },
                 json={
                     "client_id": GOOGLE_CLIENT_ID,
                     "client_secret": GOOGLE_CLIENT_SECRET,
                     "code": code,
-                    "redirect_uri": f"{BACKEND_SERVER_URL}/login/google",
+                    "redirect_uri": f"https://{BACKEND_SERVER_URL}/login/google",
                     "grant_type": "authorization_code",  # Required?
                 },
             )
