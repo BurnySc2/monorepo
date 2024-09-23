@@ -111,20 +111,22 @@ generated_tts_cache: OrderedDict[tuple[Voices, str], tuple[str, float]] = Ordere
 
 
 API_DOMAINS = [
-    "https://api16-normal-c-useast1a.tiktokv.com",
-    "https://api16-normal-c-useast1a.tiktokv.com",
-    "https://api16-core-c-useast1a.tiktokv.com",
-    "https://api16-normal-useast5.us.tiktokv.com",
-    "https://api16-core.tiktokv.com",
-    "https://api16-core-useast5.us.tiktokv.com",
-    "https://api19-core-c-useast1a.tiktokv.com",
-    "https://api-core.tiktokv.com",
-    "https://api-normal.tiktokv.com",
-    "https://api19-normal-c-useast1a.tiktokv.com",
-    "https://api16-core-c-alisg.tiktokv.com",
-    "https://api16-normal-c-alisg.tiktokv.com",
-    "https://api22-core-c-alisg.tiktokv.com",
     "https://api16-normal-c-useast2a.tiktokv.com",
+    # The following don't seem to be working
+    # "https://api16-normal-v6.tiktokv.com",
+    # "https://api16-normal-c-useast1a.tiktokv.com",
+    # "https://api16-normal-c-useast1a.tiktokv.com",
+    # "https://api16-core-c-useast1a.tiktokv.com",
+    # "https://api16-normal-useast5.us.tiktokv.com",
+    # "https://api16-core.tiktokv.com",
+    # "https://api16-core-useast5.us.tiktokv.com",
+    # "https://api19-core-c-useast1a.tiktokv.com",
+    # "https://api-core.tiktokv.com",
+    # "https://api-normal.tiktokv.com",
+    # "https://api19-normal-c-useast1a.tiktokv.com",
+    # "https://api16-core-c-alisg.tiktokv.com",
+    # "https://api16-normal-c-alisg.tiktokv.com",
+    # "https://api22-core-c-alisg.tiktokv.com",
 ]
 API_PATH = "/media/api/text/speech/invoke/"
 
