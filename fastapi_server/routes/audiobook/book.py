@@ -50,8 +50,6 @@ class MyAudiobookBookRoute(Controller):
         book_id: int,
     ) -> Template:
         async with Prisma() as db:
-            # async with db:
-            # TODO Why does this load so slowly sometimes? Long queries?
             book = await db.audiobookbook.find_first_or_raise(
                 where={
                     "id": book_id,
@@ -60,6 +58,21 @@ class MyAudiobookBookRoute(Controller):
                 # pyre-fixme[55]
                 include={"AudiobookChapter": {"order_by": {"chapter_number": "asc"}}},
             )
+            chapters_in_queue: list = await db.query_raw(
+                """
+SELECT
+	ROW_NUMBER() OVER (ORDER BY queued) - 1 AS row_number,
+	id AS chapter_id
+FROM
+	litestar_audiobook_chapter
+WHERE
+	litestar_audiobook_chapter.minio_object_name IS NULL
+	AND litestar_audiobook_chapter.queued IS NOT NULL
+                """
+            )
+            chapter_id_to_queued_index: dict[int, int] = {
+                row["chapter_id"]: row["row_number"] for row in chapters_in_queue
+            }
         available_voices = await get_supported_voices()
         return Template(
             template_name="audiobook/epub_book.html",
@@ -77,8 +90,7 @@ class MyAudiobookBookRoute(Controller):
                         "sentence_count": chapter.sentence_count,
                         "has_audio": bool(chapter.minio_object_name),
                         "queued": chapter.queued,
-                        # TODO This generates a query for each chapter, how to load the data beforehand?
-                        "position_in_queue": await get_chapter_position_in_queue(chapter),
+                        "position_in_queue": chapter_id_to_queued_index.get(chapter.id, -1),
                     }
                     for chapter in book.AudiobookChapter
                 ],
@@ -97,11 +109,7 @@ class MyAudiobookBookRoute(Controller):
         wait_time_for_next_poll: int = 10,
     ) -> Template:
         """
-        Implementation of what happens when user clicks "generate audio" button
-
-        Display spinner for user?
-        in backend: add task to generate audio
-        once audio has been generated: function returns audio as mp3_b64_data
+        Implementation of what happens when user clicks "generate audio" button.
         """
         # Queue chapter to be parsed and generate audio for it
         # Then wait till the job is done before returning
