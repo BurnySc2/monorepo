@@ -1,0 +1,33 @@
+<table style="margin: 3rem; border: 1px solid black; border-collapse: collapse;">
+    <tr style="border: 1px solid black;">
+        <th style="border: 1px solid black;">Upload Date</th>
+        <th style="border: 1px solid black;">Book Title</th>
+        <th style="border: 1px solid black;">Book Author</th>
+        <th style="border: 1px solid black;">Chapters</th>
+        <th style="border: 1px solid black;">Remove Book</th>
+    </tr>
+    {% for book in books %}
+    <tr id="bookrow{{ book.id }}" style="cursor: pointer;" hx-push-url="/audiobook/book/{{ book.id }}"
+        hx-get="/audiobook/book/{{ book.id }}" hx-swap="innerHTML" hx-target="body">
+        <td style="border-right: 1px dashed black; border-bottom: 1px dotted black; border-collapse: collapse;">{{
+            book.upload_date.strftime("%Y-%m-%d")
+            }}
+        </td>
+        <td style="border-right: 1px dashed black; border-bottom: 1px dotted black; border-collapse: collapse;">{{
+            book.custom_book_title or book.book_title }}
+        </td>
+        <td style="border-right: 1px dashed black; border-bottom: 1px dotted black; border-collapse: collapse;">{{
+            book.custom_book_author or book.book_author
+            }}</td>
+        <td style="border-right: 1px dashed black; border-bottom: 1px dotted black; border-collapse: collapse;">{{
+            book.chapter_count }}</td>
+        <td style="border-right: 1px dashed black; border-bottom: 1px dotted black; border-collapse: collapse;"
+            hx-post="/audiobook/delete_book?book_id={{ book.id }}" hx-swap="delete" hx-target="#bookrow{{ book.id }}"
+            hx-confirm="Are you sure you wish to delete this book?" {# Do not trigger the get request from the tr
+            element #} hx-trigger="click consume">
+
+            <img width="32" height="32" style="margin: auto;" src="/static/delete.svg" alt="Delete book">
+        </td>
+    </tr>
+    {% endfor %}
+</table>

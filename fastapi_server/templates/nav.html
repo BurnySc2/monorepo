@@ -1,10 +1,11 @@
+{#
 <!-- https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/Document_and_website_structure -->
+#}
 <nav class="flex justify-between">
     <div class="flex justify-center grow">
         <a href="/audiobook">Audio-Converter</a>
-        <!-- <a href="">TODO Transcribe</a> -->
     </div>
     <a hx-get="/login/name" hx-trigger="load" hx-indicator="#spinner_login" href="/login">
-        <img id="spinner_login" class="htmx-indicator" src="/static/spinner.svg" />
+        <img id="spinner_login" class="htmx-indicator htmx-spinner" src="/static/spinner.svg" />
     </a>
 </nav>

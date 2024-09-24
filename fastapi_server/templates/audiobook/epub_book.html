@@ -28,17 +28,18 @@
         </div>
         <div class="flex flex-col border-2 border-black gap-8 rounded  p-2">
             <div class="place-self-center text-2xl font-semibold underline">Book</div>
+            {#
             <!-- TODO Allow custom book name and author before downloading -->
             <!-- Show info on how many Chapters, sentences, words this book contains -->
+            #}
             <div class="flex justify-center">
                 <button hx-post="/audiobook/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
                     hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-indicator="#spinner_book"
-                    class="border-2 border-black p-2 hover:bg-green-300 rounded-lg flex items-center">Generate
-                    audio for
-                    all
-                    chapters
-                    <img id="spinner_book" class="htmx-indicator" src="/static/spinner.svg" />
+                    class="border-2 border-black p-2 hover:bg-green-300 rounded-lg flex items-center">Generate audio for
+                    all chapters
+                    <img id="spinner_book" class="htmx-indicator htmx-spinner" src="/static/spinner.svg" />
                 </button>
+                {# TODO Only show download-zip-button if audio for all chapters have been generated #}
                 <a download href="/audiobook/download_book_zip?book_id={{ book_id }}"
                     class="rounded-xl hover:bg-green-300 self-center">
                     <img class="h-auto" width="64" height="64" src="/static/download.svg" alt="Download audio">
@@ -55,7 +56,6 @@
             <div class="place-self-center text-2xl font-semibold underline">Table of contents</div>
             <div class="gap-2" style="display: grid;
             grid-template-columns: auto auto;">
-                <!-- <div class="grid grid-cols-2"> -->
                 {% for chapter in chapters %}
                 <div class="self-center">'{{ chapter.chapter_title }}' with {{ chapter.sentence_count }} sentences</div>
                 {% include "audiobook/epub_chapter.html" with context %}

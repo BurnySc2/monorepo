@@ -17,8 +17,8 @@ STAGE = os.getenv("STAGE", "local_dev")
 minio_client = Minio(
     # pyre-fixme[6]
     os.getenv("MINIO_URL"),
-    os.getenv("MINIO_ACCESS_TOKEN"),
-    os.getenv("MINIO_SECRET_KEY"),
+    access_key=os.getenv("MINIO_ACCESS_TOKEN"),
+    secret_key=os.getenv("MINIO_SECRET_KEY"),
     secure=os.getenv("STAGE") != "local_dev",
 )
 

@@ -6,7 +6,7 @@ import os
 from stat import S_IFREG
 from typing import Annotated
 
-from litestar import Controller, Response, get, post
+from litestar import Controller, Request, Response, get, post
 from litestar.contrib.htmx.response import ClientRedirect, ClientRefresh
 from litestar.datastructures import Cookie
 from litestar.di import Provide
@@ -118,6 +118,8 @@ class MyAudiobookBookRoute(Controller):
                         "queued": datetime.datetime.now(datetime.timezone.utc),
                     },
                 )
+                # This only updates the attribute locally to render the template correctly
+                chapter.queued = datetime.datetime.now(datetime.timezone.utc)
         return Template(
             template_name="audiobook/epub_chapter.html",
             context={
@@ -237,7 +239,7 @@ class MyAudiobookBookRoute(Controller):
         self,
         book_id: int,
         logged_in_user: LoggedInUser,
-    ) -> Stream:
+    ) -> Stream | None:
         """
         If all chapters have generated audio:
 
@@ -253,7 +255,7 @@ class MyAudiobookBookRoute(Controller):
 
         # Wait for book audio to be generated
         total_count = book.chapter_count
-        while 1:
+        for _ in range(60):
             async with Prisma() as db:
                 done_count: int = await db.audiobookchapter.count(
                     # pyre-fixme[55]
@@ -267,6 +269,9 @@ class MyAudiobookBookRoute(Controller):
             if done_count >= total_count:
                 break
             await asyncio.sleep(5)
+        else:
+            # No "break" has been encountered, which means the audio has not been successfully generated
+            return None
 
         normalized_author = f"{normalize_title(book.book_author)}"[:50].strip()
         normalized_book_title = f"{normalize_title(book.book_title)}"[:150].strip()
@@ -313,9 +318,10 @@ class MyAudiobookBookRoute(Controller):
     @post("/delete_book", guards=[owns_book_guard])
     async def delete_book(
         self,
+        request: Request,
         logged_in_user: LoggedInUser,
         book_id: int,
-    ) -> ClientRedirect:
+    ) -> None | ClientRedirect:
         """
         Remove book and all chapters from db and .mp3s from minio
         """
@@ -326,6 +332,10 @@ class MyAudiobookBookRoute(Controller):
                 # pyre-fixme[6]
                 minio_client.remove_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), chapter.minio_object_name)
             await db.audiobookbook.delete_many(where={"id": book_id, "uploaded_by": logged_in_user.db_name})
+        # hx-remove table row if origin path is overview of uploaded books
+        # pyre-fixme[16]
+        if isinstance(request.headers.get("referer"), str) and request.headers.get("referer").endswith("/audiobook"):
+            return None
         return ClientRedirect("/audiobook")
 
     @post("/delete_generated_audio", guards=[owns_book_guard])

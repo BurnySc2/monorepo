@@ -1,4 +1,6 @@
+{#
 <!-- https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/Document_and_website_structure -->
+#}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -24,6 +26,25 @@
         }
 
         .htmx-indicator {
+            opacity: 0;
+        }
+
+        /* Slowly become visible */
+        @keyframes initially-hidden {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .htmx-indicator.htmx-request {
+            animation: initially-hidden 2s cubic-bezier();
+        }
+
+        .htmx-spinner {
             width: 32px;
             animation: spin 2s linear infinite;
         }
