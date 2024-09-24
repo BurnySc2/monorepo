@@ -34,8 +34,8 @@ logger.add(DATA_FOLDER / "app.log")
 
 assert os.getenv("STAGE", "dev") in {"local_dev", "dev", "prod", "test"}, os.getenv("STAGE")
 STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")  # pyre-fixme[9]
-BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "0.0.0.0:8000")
-WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:0.0.0.0:8000")
+BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://0.0.0.0:8000")
+WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:http://0.0.0.0:8000")
 
 
 async def startup_event():
@@ -68,7 +68,7 @@ app = Litestar(
         directory=Path("templates"),
         engine=JinjaTemplateEngine,
     ),
-    debug=BACKEND_SERVER_URL == "0.0.0.0:8000",
+    debug=BACKEND_SERVER_URL == "http://0.0.0.0:8000",
 )
 
 if __name__ == "__main__":
@@ -77,5 +77,5 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload_delay=5,
-        reload=BACKEND_SERVER_URL == "0.0.0.0:8000",
+        reload=BACKEND_SERVER_URL == "http://0.0.0.0:8000",
     )
