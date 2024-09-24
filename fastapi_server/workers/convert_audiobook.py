@@ -47,7 +47,7 @@ async def convert_one():
     if any_in_queue == 0:
         return
 
-    client = Minio(
+    minio_client = Minio(
         os.getenv("MINIO_URL"),
         os.getenv("MINIO_ACCESS_TOKEN"),
         os.getenv("MINIO_SECRET_KEY"),
@@ -55,7 +55,7 @@ async def convert_one():
     )
     # Create bucket if it doesn't exist
     with suppress(S3Error):
-        client.make_bucket(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
+        minio_client.make_bucket(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
 
     # Get first book that is waiting to be converted
     async with Prisma() as db:
@@ -104,7 +104,9 @@ async def convert_one():
 
         # Save result to database
         object_name = f"{chapter.id}_audio.mp3"
-        client.put_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3", audio, len(audio.getvalue()))
+        minio_client.put_object(
+            os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3", audio, len(audio.getvalue())
+        )
         logger.info("Saving result to database")
         await db.audiobookchapter.update_many(
             data={

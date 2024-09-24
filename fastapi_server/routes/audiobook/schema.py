@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import base64
 import os
 import re
@@ -52,9 +53,14 @@ def base64_decode_data(data: str) -> bytes:
     return base64.b64decode(data)
 
 
-def minio_get_audio_of_chapter(chapter: models.AudiobookChapter) -> bytes:
+def _minio_get_audio_of_chapter_sync(chapter: models.AudiobookChapter) -> bytes:
     # pyre-fixme[6]
     return minio_client.get_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3").data
+
+
+async def minio_get_audio_of_chapter(chapter: models.AudiobookChapter) -> bytes:
+    # Turn the minio API to be non-blocking by running it in a coroutine
+    return await asyncio.to_thread(_minio_get_audio_of_chapter_sync, chapter)
 
 
 def get_chapter_combined_text(chapter: models.AudiobookChapter) -> str:

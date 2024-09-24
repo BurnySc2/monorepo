@@ -13,9 +13,9 @@ from litestar.di import Provide
 from litestar.enums import MediaType, RequestEncodingType
 from litestar.params import Body
 from litestar.response import Stream, Template
-from stream_zip import ZIP_64, stream_zip  # pyre-fixme[21]
+from stream_zip import ZIP_64, async_stream_zip  # pyre-fixme[21]
 
-from prisma import Prisma
+from prisma import Prisma, models
 from routes.audiobook.schema import (
     AudioSettings,
     base64_encode_data,
@@ -77,6 +77,7 @@ class MyAudiobookBookRoute(Controller):
                         "sentence_count": chapter.sentence_count,
                         "has_audio": bool(chapter.minio_object_name),
                         "queued": chapter.queued,
+                        # TODO This generates a query for each chapter, how to load the data beforehand?
                         "position_in_queue": await get_chapter_position_in_queue(chapter),
                     }
                     for chapter in book.AudiobookChapter
@@ -157,7 +158,7 @@ class MyAudiobookBookRoute(Controller):
             context={
                 "book_id": book_id,
                 "chapter": {
-                    "mp3_b64_data": base64_encode_data(minio_get_audio_of_chapter(chapter)),
+                    "mp3_b64_data": base64_encode_data(await minio_get_audio_of_chapter(chapter)),
                     "chapter_title": chapter.chapter_title,
                     "chapter_number": chapter_number,
                     "has_audio": bool(chapter.minio_object_name),
@@ -182,7 +183,7 @@ class MyAudiobookBookRoute(Controller):
                     "chapter_number": chapter_number,
                 }
             )
-        bytes_data: bytes = minio_get_audio_of_chapter(chapter)
+        bytes_data: bytes = await minio_get_audio_of_chapter(chapter)
         stepsize = 2**20  # 1mb
         content_iterator = (bytes_data[i : i + stepsize] for i in range(0, len(bytes_data), stepsize))
         return Stream(
@@ -288,17 +289,26 @@ class MyAudiobookBookRoute(Controller):
         # Zip files via iterator to use the least amount of memory
         # https://stream-zip.docs.trade.gov.uk/
         # https://stream-zip.docs.trade.gov.uk/get-started/
-        def member_files():
+        # https://stream-zip.docs.trade.gov.uk/async-interface/
+        async def async_data(chapter: models.AudiobookChapter):
+            yield await minio_get_audio_of_chapter(chapter)
+
+        async def member_files():
             nonlocal normalized_author, normalized_book_title
             modified_at = datetime.datetime.now(datetime.timezone.utc)
             mode = S_IFREG | 0o600
             for chapter in book.AudiobookChapter:
                 normalized_chapter_name = normalize_filename(chapter.chapter_title)[:200].strip()
                 audio_file_name = f"{normalized_author}/{normalized_book_title}/{chapter.chapter_number:04d}_{normalized_chapter_name}.mp3"  # noqa: E501
-                audio_data = minio_get_audio_of_chapter(chapter)
-                yield (audio_file_name, modified_at, mode, ZIP_64, (audio_data,))
+                yield (
+                    audio_file_name,
+                    modified_at,
+                    mode,
+                    ZIP_64,
+                    async_data(chapter),
+                )
 
-        zipped_chunks = stream_zip(member_files(), chunk_size=2**20)
+        zipped_chunks = async_stream_zip(member_files(), chunk_size=2**20)
 
         zip_file_name = f"{normalized_author} - {normalized_book_title}.zip"
         return Stream(
@@ -307,7 +317,7 @@ class MyAudiobookBookRoute(Controller):
                 # Change file name
                 "Content-Disposition": f"attachment; filename={zip_file_name}",  # noqa: E501
                 "Content-Type": "application/zip",
-                # Preview of file size
+                # Preview of file size, not calculateable when generating zip on the fly
                 # "Content-Length": f"{len(bytes_data)}",
                 # Unsure what these are for
                 "Accept-Encoding": "identity",
