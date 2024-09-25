@@ -21,7 +21,6 @@ State4: audio generated, audio loaded
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
     hx-trigger="every {{ wait_time_for_next_poll|default(10, true) }}s">Queued ({{ chapter.position_in_queue }})...
-    {# TODO Show number in queue (= user being able to estimate till it is done) #}
     <img class="htmx-indicator htmx-spinner" style="opacity: 1;" src="/static/spinner.svg" />
   </div>
   {% elif chapter.has_audio is defined and chapter.queued is defined and not chapter.has_audio and chapter.queued %}
@@ -29,7 +28,6 @@ State4: audio generated, audio loaded
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
     hx-trigger="every {{ wait_time_for_next_poll|default(10, true) }}s">Generating audio...
-    {# TODO Show number in queue (= user being able to estimate till it is done) #}
     <img class="htmx-indicator htmx-spinner" style="opacity: 1;" src="/static/spinner.svg" />
   </div>
   {% elif chapter.has_audio is defined and chapter.has_audio %}

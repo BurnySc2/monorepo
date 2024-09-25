@@ -14,7 +14,6 @@ from routes.cookies_and_guards import (
 
 class MyAudiobookIndexRoute(Controller):
     path = "/audiobook"
-    # TODO Guard: Logged in to some service
     dependencies = {
         "logged_in_user": Provide(provide_logged_in_user),
     }
@@ -29,7 +28,6 @@ class MyAudiobookIndexRoute(Controller):
     async def list_books(
         self,
         logged_in_user: LoggedInUser,
-        # TODO Add "logged in" guard
     ) -> Template | str:
         # Book Title, Book Author, chapters, Uploaded Date, delete button
 
