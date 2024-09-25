@@ -43,6 +43,60 @@ model AudiobookChapter {
   @@map("litestar_audiobook_chapter")
 }
 
+model TelegramChannel {
+  id                Int               @id @default(autoincrement())
+  channel_id        Int
+  channel_title     String // Custom name of channel
+  channel_username  String? // Lower case, fixed name, may be None
+  date              DateTime // Creation date
+  participants      Int? // Amount of users / subscribers
+  latest_message_id Int? // Parsing messages from first message
+  TelegramMessage   TelegramMessage[]
+
+  @@map("litestar_telegram_channel")
+}
+
+enum Status {
+  NoFile
+  HasFile
+  Queued
+  Downloading
+  Downloaded
+}
+
+model TelegramMessage {
+  id                    Int             @id @default(autoincrement())
+  channel               TelegramChannel @relation(fields: [channel_id], references: [id], onDelete: Cascade)
+  channel_id            Int
+  message_id            Int
+  message_date          DateTime
+  link                  String // Can be generated from {prefix}/channel_username
+  // Total um of reactions to a message
+  amount_of_reactions   Int             @default(0)
+  // Sum of comments
+  amount_of_comments    Int             @default(0)
+  // Only filled if message has attachments
+  status                Status          @default(NoFile)
+  media_type            String? // TODO Video, Audio, Image, Other
+  // Messages with the same attachments tend to have same unique ids
+  file_unique_id        String?
+  file_size_bytes       BigInt?
+  file_duration_seconds Int? // Filled for video and audio
+  file_height           Int? // Filled for video and image
+  file_width            Int? // Filled for video and image
+  // Filled if media has been downloaded
+  minio_object_name     String?
+
+  @@index([channel_id, message_id])
+  // Potential indexes for filtering messages
+  // @@index([message_date])
+  // @@index([amount_of_reactions])
+  // @@index([amount_of_comments])
+  // @@index([file_size_bytes])
+  // @@index([file_duration_seconds])
+  @@map("litestar_telegram_message")
+}
+
 model ladder_announcer_accounts {
 
   @@ignore
