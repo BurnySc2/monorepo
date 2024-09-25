@@ -129,6 +129,11 @@ WHERE
                 )
                 # This only updates the attribute locally to render the template correctly
                 chapter.queued = datetime.datetime.now(datetime.timezone.utc)
+
+        # TODO Instead of polling on each chapter, have one global poller which updates all chapters with one query
+        # and oob-swaps instead.
+        # It needs to have a state of ids that need to be polled.
+        # Remove global poller when there is nothing left to poll
         return Template(
             template_name="audiobook/epub_chapter.html",
             context={
@@ -339,7 +344,7 @@ WHERE
         request: Request,
         logged_in_user: LoggedInUser,
         book_id: int,
-    ) -> None | ClientRedirect:
+    ) -> ClientRedirect | None:
         """
         Remove book and all chapters from db and .mp3s from minio
         """

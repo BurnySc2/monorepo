@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import typing
-from dataclasses import dataclass
 from typing import Annotated, Literal
 
 import httpx
@@ -12,6 +11,7 @@ from litestar.exceptions import NotAuthorizedException
 from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Parameter
 from litestar.stores.memory import MemoryStore
+from pydantic import BaseModel
 
 from prisma import Prisma
 from routes.audiobook.schema import (
@@ -49,28 +49,24 @@ COOKIES = {
 }
 
 
-@dataclass
-class TwitchUser:
+class TwitchUser(BaseModel):
     id: int
     login: str
     display_name: str
     email: str
 
 
-@dataclass
-class GithubUser:
+class GithubUser(BaseModel):
     id: int
     login: str
 
 
-@dataclass
-class FacebookUser:
+class FacebookUser(BaseModel):
     id: int
     display_name: str
 
 
-@dataclass
-class GoogleUser:
+class GoogleUser(BaseModel):
     id: int
     display_name: str
 
@@ -85,8 +81,7 @@ AVAILABLE_SERVICES_TYPE = Literal["twitch", "github", "facebook", "google"]
 VALID_SERVICES: tuple[AVAILABLE_SERVICES_TYPE, ...] = typing.get_args(AVAILABLE_SERVICES_TYPE)
 
 
-@dataclass
-class LoggedInUser:
+class LoggedInUser(BaseModel):
     id: int
     name: str
     service: AVAILABLE_SERVICES_TYPE

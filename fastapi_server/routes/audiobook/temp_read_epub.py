@@ -1,7 +1,6 @@
 import io
 import re
 import zipfile
-from dataclasses import dataclass
 from pathlib import Path
 
 import nltk  # pyre-fixme[21]
@@ -11,6 +10,7 @@ from ebooklib.epub import EpubHtml, EpubReader, Link, Section  # pyre-fixme[21]
 from loguru import logger
 from nltk import word_tokenize
 from nltk.tokenize import sent_tokenize  # pyre-fixme[21]
+from pydantic import BaseModel
 
 nltk.download("punkt_tab")
 
@@ -20,8 +20,7 @@ def extract_sentences(text: str) -> list[str]:
     return sentences
 
 
-@dataclass
-class EpubChapter:
+class EpubChapter(BaseModel):
     chapter_title: str
     chapter_number: int
     word_count: int
@@ -107,8 +106,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
     return chapters
 
 
-@dataclass
-class EpubMetadata:
+class EpubMetadata(BaseModel):
     title: str
     language: str
     author: str
