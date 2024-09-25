@@ -1,15 +1,17 @@
 {% include "header.html" with context %}
-{% include "nav.html" with context %}
 
-<main class="flex flex-col h-screen justify-center items-center bg-gray-300">
-    <a class="flex border-4 border-black p-2 rounded-3xl hover:bg-green-300 items-center"
-        href="/audiobook/epub_upload">Upload an epub</a>
-    {#
-    <!-- <a href="/audiobook/pdf_upload">TODO Upload a pdf</a> -->
-    <!-- <a href="/audiobook/website">TODOGenerate audio for a website</a> -->
-    #}
-    <div class="m-4" hx-get="audiobook/list_books" hx-trigger="load" hx-swap="outerHTML">
-        {# Hide while loading #}
-        You are not logged in.
-    </div>
-</main>
+<body class="h-screen flex flex-col">
+    {% include "nav.html" with context %}
+    <main class="flex flex-col h-full justify-center items-center bg-gray-300">
+        <a class="flex border-4 border-black p-2 rounded-3xl hover:bg-green-300 items-center"
+            href="/audiobook/epub_upload">Upload an epub</a>
+        {#
+        <!-- <a href="/audiobook/pdf_upload">TODO Upload a pdf</a> -->
+        <!-- <a href="/audiobook/website">TODOGenerate audio for a website</a> -->
+        #}
+        <div class="m-4" hx-get="audiobook/list_books" hx-trigger="load" hx-swap="outerHTML">
+            {# Hide while loading #}
+            You are not logged in.
+        </div>
+    </main>
+</body>

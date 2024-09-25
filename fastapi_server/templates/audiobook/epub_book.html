@@ -1,66 +1,73 @@
 {% include "header.html" with context %}
-{% include "nav.html" with context %}
 
-<div class="flex flex-col h-screen items-center bg-gray-300">
-    <div class="flex flex-col gap-2 overflow-y-hidden  m-4">
-        <div class="place-self-center text-4xl font-bold">{{ book_name }}</div>
-        <div class="place-self-center text-2xl font-semibold">{{ book_author }}</div>
-        <div class="flex flex-col border-2 border-black rounded p-2">
-            <div class="place-self-center text-2xl font-semibold underline">Settings</div>
-            <form class="grid grid-cols-2" hx-post="/audiobook/save_settings_to_cookies" hx-swap="none"
-                hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-trigger="change delay:1s">
-                <div>Voice</div>
-                <select id="voice_name" name="voice_name">
-                    {% for voice_name in available_voices %}
-                    <option value="{{ voice_name }}" {% if user_settings.voice_name==voice_name %} selected {% endif %}>
-                        {{
-                        voice_name }}</option>
+<body class="h-screen flex flex-col">
+    {% include "nav.html" with context %}
+    {# TODO With a book with a lot of chapters, there is a scroll bar which covers the height of the nav bar #}
+    <main class="flex flex-col h-full items-center bg-gray-300">
+        <div class="flex flex-col gap-2 overflow-y-hidden m-4">
+            <div class="place-self-center text-4xl font-bold">{{ book_name }}</div>
+            <div class="place-self-center text-2xl font-semibold">{{ book_author }}</div>
+            <div class="flex flex-col border-2 border-black rounded p-2">
+                <div class="place-self-center text-2xl font-semibold underline">Settings</div>
+                <form class="grid grid-cols-2" hx-post="/audiobook/save_settings_to_cookies" hx-swap="none"
+                    hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-trigger="change delay:1s">
+                    <div>Voice</div>
+                    <select id="voice_name" name="voice_name">
+                        {% for voice_name in available_voices %}
+                        <option value="{{ voice_name }}" {% if user_settings.voice_name==voice_name %} selected {% endif
+                            %}>
+                            {{
+                            voice_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div>Rate</div>
+                    <input id="voice_rate" name="voice_rate" type="number" min="0"
+                        value="{{ user_settings.voice_rate }}" />
+                    <div>Volume</div>
+                    <input id="voice_volume" name="voice_volume" type="number" min="0"
+                        value="{{ user_settings.voice_volume }}" />
+                    <div>pitch</div>
+                    <input id="voice_pitch" name="voice_pitch" type="number" value="{{ user_settings.voice_pitch }}" />
+                </form>
+            </div>
+            <div class="flex flex-col border-2 border-black gap-8 rounded  p-2">
+                <div class="place-self-center text-2xl font-semibold underline">Book</div>
+                {#
+                <!-- TODO Allow custom book name and author before downloading -->
+                <!-- Show info on how many Chapters, sentences, words this book contains -->
+                #}
+                <div class="flex justify-center">
+                    <button hx-post="/audiobook/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
+                        hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-indicator="#spinner_book"
+                        class="border-2 border-black p-2 hover:bg-green-300 rounded-lg flex items-center">Generate audio
+                        for
+                        all chapters
+                        <img id="spinner_book" class="htmx-indicator htmx-spinner" src="/static/spinner.svg" />
+                    </button>
+                    {# TODO Only show download-zip-button if audio for all chapters have been generated #}
+                    <a download href="/audiobook/download_book_zip?book_id={{ book_id }}"
+                        class="rounded-xl hover:bg-green-300 self-center">
+                        <img width="64" height="64" src="/static/download.svg" alt="Download audio">
+                    </a>
+                    <button hx-post="/audiobook/delete_book?book_id={{ book_id }}" hx-swap="none"
+                        hx-confirm="Are you sure you wish to delete this book?"
+                        class="rounded-xl hover:bg-green-300 self-center">
+                        <img width="64" height="64" src="/static/delete.svg" alt="Delete book">
+                    </button>
+                </div>
+
+            </div>
+            <div class="flex flex-col border-2 border-black overflow-y-auto rounded p-2">
+                <div class="place-self-center text-2xl font-semibold underline">Table of contents</div>
+                <div class="gap-2" style="display: grid;
+                grid-template-columns: auto auto;">
+                    {% for chapter in chapters %}
+                    <div class="self-center">'{{ chapter.chapter_title }}' with {{ chapter.sentence_count }} sentences
+                    </div>
+                    {% include "audiobook/epub_chapter.html" with context %}
                     {% endfor %}
-                </select>
-                <div>Rate</div>
-                <input id="voice_rate" name="voice_rate" type="number" min="0" value="{{ user_settings.voice_rate }}" />
-                <div>Volume</div>
-                <input id="voice_volume" name="voice_volume" type="number" min="0"
-                    value="{{ user_settings.voice_volume }}" />
-                <div>pitch</div>
-                <input id="voice_pitch" name="voice_pitch" type="number" value="{{ user_settings.voice_pitch }}" />
-            </form>
-        </div>
-        <div class="flex flex-col border-2 border-black gap-8 rounded  p-2">
-            <div class="place-self-center text-2xl font-semibold underline">Book</div>
-            {#
-            <!-- TODO Allow custom book name and author before downloading -->
-            <!-- Show info on how many Chapters, sentences, words this book contains -->
-            #}
-            <div class="flex justify-center">
-                <button hx-post="/audiobook/generate_audio_book?book_id={{ book_id }}" hx-swap="none"
-                    hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch" hx-indicator="#spinner_book"
-                    class="border-2 border-black p-2 hover:bg-green-300 rounded-lg flex items-center">Generate audio for
-                    all chapters
-                    <img id="spinner_book" class="htmx-indicator htmx-spinner" src="/static/spinner.svg" />
-                </button>
-                {# TODO Only show download-zip-button if audio for all chapters have been generated #}
-                <a download href="/audiobook/download_book_zip?book_id={{ book_id }}"
-                    class="rounded-xl hover:bg-green-300 self-center">
-                    <img class="h-auto" width="64" height="64" src="/static/download.svg" alt="Download audio">
-                </a>
-                <button hx-post="/audiobook/delete_book?book_id={{ book_id }}" hx-swap="none"
-                    hx-confirm="Are you sure you wish to delete this book?"
-                    class="rounded-xl hover:bg-green-300 self-center">
-                    <img width="64" height="64" src="/static/delete.svg" alt="Delete book">
-                </button>
-            </div>
-
-        </div>
-        <div class="flex flex-col border-2 border-black overflow-y-auto rounded p-2">
-            <div class="place-self-center text-2xl font-semibold underline">Table of contents</div>
-            <div class="gap-2" style="display: grid;
-            grid-template-columns: auto auto;">
-                {% for chapter in chapters %}
-                <div class="self-center">'{{ chapter.chapter_title }}' with {{ chapter.sentence_count }} sentences</div>
-                {% include "audiobook/epub_chapter.html" with context %}
-                {% endfor %}
+                </div>
             </div>
         </div>
-    </div>
-</div>
+    </main>
+</body>

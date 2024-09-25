@@ -1,19 +1,30 @@
 {% include "header.html" with context %}
-{% include "nav.html" with context %}
 
-{# TODO Add progress https://htmx.org/examples/file-upload/ #}
-<body id="body">
-    <div class="flex flex-col h-screen justify-center items-center bg-gray-300">
-        <div id="spinner" class="htmx-indicator flex">
-            <img class="htmx-spinner" src="/static/spinner.svg" />
-            <span>Uploading...</span>
+<body class="h-screen flex flex-col">
+    {% include "nav.html" with context %}
+    <main id="main" class="h-full">
+        <div class="flex flex-col h-full justify-center items-center bg-gray-300">
+            <div id="spinner" class="htmx-indicator flex flex-col" style="margin: 1rem;">
+                <div class="flex">
+                    <img class="htmx-spinner" src="/static/spinner.svg" />
+                    <span>Uploading...</span>
+                </div>
+                <progress id='progress' class="progress" value='0' max='100'></progress>
+            </div>
+            <form id="form" class="flex flex-col gap-4 items-center place-items-center justify-items-center text-center"
+                enctype="multipart/form-data" hx-post="/audiobook/epub_upload" hx-trigger="submit" hx-target="#main"
+                hx-swap="innerHTML" hx-indicator="#spinner">
+                <input class="self-center border-black border-2" type="file" name="file" accept=".epub">
+                <button type="submit" class="flex border-4 border-black p-4 rounded-3xl hover:bg-green-300">Upload
+                    epub</button>
+            </form>
         </div>
-        <form class="flex flex-col gap-4 items-center place-items-center justify-items-center text-center"
-            enctype="multipart/form-data" hx-post="/audiobook/epub_upload" hx-trigger="submit" hx-target="#body"
-            hx-swap="innerHTML" hx-indicator="#spinner">
-            <input class="self-center border-black border-2" type="file" name="file" accept=".epub">
-            <button type="submit" class="flex border-4 border-black p-4 rounded-3xl hover:bg-green-300">Upload
-                epub</button>
-        </form>
-    </div>
+    </main>
 </body>
+
+{# Progress bar https://htmx.org/examples/file-upload/ #}
+<script>
+    htmx.on('#form', 'htmx:xhr:progress', function (evt) {
+        htmx.find('#progress').setAttribute('value', evt.detail.loaded / evt.detail.total * 100)
+    });
+</script>
