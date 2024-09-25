@@ -51,7 +51,7 @@ async def convert_one():
         os.getenv("MINIO_URL"),
         os.getenv("MINIO_ACCESS_TOKEN"),
         os.getenv("MINIO_SECRET_KEY"),
-        secure=os.getenv("STAGE") != "local_dev",
+        secure=os.getenv("MINIO_URL") != "0.0.0.0:9000",
     )
     # Create bucket if it doesn't exist
     with suppress(S3Error):
@@ -98,7 +98,7 @@ async def convert_one():
             # Book was deleted
             return
         if chapter.audio_settings != chapter2.audio_settings:
-            # Audio was removed while conversion was in progress
+            # Audio was removed while conversion was in progress, and a new one was queued
             logger.info("Audio settings mismatch, skipping")
             return
 

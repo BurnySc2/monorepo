@@ -21,8 +21,6 @@ from routes.audiobook.temp_read_epub import (
 )
 from routes.cookies_and_guards import LoggedInUser, is_logged_in_guard, provide_logged_in_user
 
-# TODO Background function that removes all books and chapters that are older than 1 week
-
 load_dotenv()
 
 
@@ -38,8 +36,6 @@ class MyAudiobookEpubRoute(Controller):
         self,
         logged_in_user: LoggedInUser,
     ) -> Template:
-        # TODO The endpoint "/" should list all uploaded books by user, then be able to navigate to it
-        # TODO List all uploaded books
         return Template(template_name="audiobook/epub_upload.html")
 
     @post("/epub_upload", media_type=MediaType.TEXT)

@@ -348,13 +348,23 @@ WHERE
         """
         Remove book and all chapters from db and .mp3s from minio
         """
+
+        def delete_minio_objects(object_names: list[str]) -> None:
+            # pyre-fixme[9]
+            bucket_name: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
+            # minio_client.remove_objects does not work
+            for minio_object_name in object_names:
+                minio_client.remove_object(bucket_name, minio_object_name)
+
         async with Prisma() as db:
             # pyre-fixme[55]
             chapters = await db.audiobookchapter.find_many(where={"minio_object_name": {"not": None}})
-            for chapter in chapters:
-                # pyre-fixme[6]
-                minio_client.remove_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), chapter.minio_object_name)
+            chapter_objects_to_remove = [
+                chapter.minio_object_name for chapter in chapters if chapter.minio_object_name is not None
+            ]
+            await asyncio.to_thread(delete_minio_objects, chapter_objects_to_remove)
             await db.audiobookbook.delete_many(where={"id": book_id, "uploaded_by": logged_in_user.db_name})
+
         # hx-remove table row if origin path is overview of uploaded books
         # pyre-fixme[16]
         if isinstance(request.headers.get("referer"), str) and request.headers.get("referer").endswith("/audiobook"):

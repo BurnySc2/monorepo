@@ -23,6 +23,7 @@ from routes.login_logout import MyLoginRoute, MyLogoutRoute
 # from routes.similar_words import MyWordsRoute
 from routes.text_to_speech import MyTTSRoute
 from routes.tts.websocket_handler import TTSQueue, TTSWebsocketHandler
+from workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_audiobook_bucket
 
 load_dotenv()
 
@@ -41,6 +42,8 @@ WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:http://0.0.0.0:80
 async def startup_event():
     # Run websocket handler which handles tts
     asyncio.create_task(TTSQueue.start_irc_bot())
+    # Remove books and minio objects if minio bucket is overflowing
+    asyncio.create_task(prevent_overflowing_audiobook_bucket())
     logger.info("Started!")
 
 
