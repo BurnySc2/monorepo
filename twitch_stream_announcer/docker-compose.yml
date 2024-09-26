@@ -1,0 +1,18 @@
+services:
+  stream_announcer:
+    image: burnysc2/twitch_stream_announcer:latest
+    command: poetry run python src/main.py
+    pull_policy: always
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 2048M
+      restart_policy:
+        # Wait 1m before restarting
+        delay: 1m
+        condition: any
+    restart: always
+    env_file:
+      - .env

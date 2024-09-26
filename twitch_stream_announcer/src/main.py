@@ -14,13 +14,14 @@ from twitchAPI.twitch import Stream, Twitch
 
 load_dotenv()
 
-# pyre-fixme[6]
-OFFLINE_GRACE_TIME = int(os.getenv("OFFLINE_GRACE_TIME"))
+# pyre-fixme[9]
+OFFLINE_GRACE_TIME_STR: str = os.getenv("OFFLINE_GRACE_TIME")
+OFFLINE_GRACE_TIME: int = int(OFFLINE_GRACE_TIME_STR)
 assert OFFLINE_GRACE_TIME > 0
 
 
 def group_my_rows(data: list[OrderedDict]) -> dict[str, list[OrderedDict]]:
-    grouped = {}
+    grouped: dict[str, list] = {}
     for row in data:
         twitch_name = row["twitch_name"]
         if twitch_name not in grouped:

@@ -13,7 +13,7 @@ on:
 env:
   SUBDIRECTORY: twitch_stream_announcer
   IMAGENAME: twitch_stream_announcer
-  VERSION_NUMBER: 1.0.0
+  VERSION_NUMBER: 1.0.1
 
 jobs:
   test_stream_announcer:
@@ -82,20 +82,30 @@ jobs:
       USERNAME: announcer
 
     steps:
-      # Requires the following 3 lines added to "visudo" on the server
-      # announcer ALL=(ALL) NOPASSWD: /bin/systemctl disable --now announcer
-      # announcer ALL=(ALL) NOPASSWD: /bin/systemctl daemon-reload
-      # announcer ALL=(ALL) NOPASSWD: /bin/systemctl enable --now announcer
-    - name: Update docker image on server and restart server
+    - uses: actions/checkout@v4
+
+    - name: Update docker-compose.yml
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.HOST }}
+        port: 22
+        username: ${{ env.USERNAME }}
+        key: ${{ secrets.FASTAPISERVERDEVKEY }}
+        passphrase: ''
+        source: "twitch_stream_announcer/docker-compose.yml"
+        target: /home/${{ env.USERNAME }}/
+        strip_components: 1
+        # overwrite: true
+
+    - name: Update docker image on server and restart service
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
         port: 22
         username: ${{ env.USERNAME }}
-        key: ${{ secrets.STREAM_ANNOUNCER_SSH_KEY }}
+        key: ${{ secrets.FASTAPISERVERDEVKEY }}
         passphrase: ''
         script: |
-          sudo /bin/systemctl disable --now ${{ env.USERNAME }}
-          docker image prune -af
-          docker pull burnysc2/${{ env.IMAGENAME }}:latest
-          sudo /bin/systemctl enable --now ${{ env.USERNAME }}
+          cd /home/${{ env.USERNAME }}
+          docker compose down
+          docker compose up -d
