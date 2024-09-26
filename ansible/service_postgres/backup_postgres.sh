@@ -41,8 +41,8 @@ zipargs=(
     -t7z
     # Require password before seeing files: hide file structure
     -mhe=on
-    # Max compression level
-    -mx7
+    # Compression level
+    -mx4
     # Set password
     "-p$PASSWORD"
     # Input from stdin to be able to pipe

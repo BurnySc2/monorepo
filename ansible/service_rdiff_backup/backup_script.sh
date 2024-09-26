@@ -23,10 +23,19 @@ backup_function() {
             # Require password before seeing files: hide file structure
             -mhe=on
             # Compression level 0-9 where 5 is default and 0 is no compression
-            -mx7
+            -mx4
+            # mx0: 5sec 1gb
+            # mx1: 45sec 196mb
+            # mx2: 83sec 187mb
+            # mx3: 140sec 177mb
+            # mx4: 160sec 175mb
+            # mx5: 576sec 135mb
+            # mx6: 544sec 135mb
+            # mx7: 638sec 127mb
+            # mx8: 549sec 126mb
+            # mx9: 551sec 126mb
             # Set password
             "-p$PASSWORD"
-
             # Exclude files
             "-x!**data/transcodes" # jelllyfin
             "-x!**data/metadata" # jelllyfin

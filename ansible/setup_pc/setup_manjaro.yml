@@ -67,13 +67,15 @@
           - kdenlive # video editor
           - obsidian # notes editor
           - arianna # epub reader
+          - gwenview # image viewer
           # Music notes
           - musescore
           # System & utility tools
           - zip
           - pavucontrol
           - flameshot
-          - ffmpeg
+          - ffmpeg # CLI video converter
+          - gifski # CLI gif converter
           - simple-scan
           - inxi # system information
           - btop # monitor of system resources
