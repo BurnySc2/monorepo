@@ -94,3 +94,4 @@ classmethod-decorators = ["pydantic.validator", "classmethod"]
 # POSTGRES_CONNECTION_STRING = "sqlite:///test.db"
 STAGE = "test"
 MINIO_URL = ""
+MINIO_AUDIOBOOK_BUCKET = "some-bucket-name"

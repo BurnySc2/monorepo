@@ -25,7 +25,7 @@ load_dotenv()
 # pyre-fixme[9]
 MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
 assert MINIO_AUDIOBOOK_BUCKET is not None
-assert re.match(_BUCKET_NAME_REGEX, _BUCKET_NAME_REGEX) is not None
+assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
 
 
 ESTIMATE_FACTOR = 0.1
