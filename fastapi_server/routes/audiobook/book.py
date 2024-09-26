@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import datetime
 import os
+import re
 from stat import S_IFREG
 from typing import Annotated
 
@@ -13,6 +14,7 @@ from litestar.di import Provide
 from litestar.enums import MediaType, RequestEncodingType
 from litestar.params import Body
 from litestar.response import Stream, Template
+from minio.helpers import _BUCKET_NAME_REGEX
 from stream_zip import ZIP_64, async_stream_zip  # pyre-fixme[21]
 
 from prisma import Prisma, models
@@ -33,6 +35,11 @@ from routes.cookies_and_guards import (
     owns_book_guard,
     provide_logged_in_user,
 )
+
+# pyre-fixme[9]
+MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
+assert MINIO_AUDIOBOOK_BUCKET is not None
+assert re.match(_BUCKET_NAME_REGEX, _BUCKET_NAME_REGEX) is not None
 
 
 class MyAudiobookBookRoute(Controller):
@@ -349,9 +356,7 @@ WHERE
         Remove book and all chapters from db and .mp3s from minio
         """
 
-        def delete_minio_objects(object_names: list[str]) -> None:
-            # pyre-fixme[9]
-            bucket_name: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
+        def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
             # minio_client.remove_objects does not work
             for minio_object_name in object_names:
                 minio_client.remove_object(bucket_name, minio_object_name)
@@ -362,7 +367,7 @@ WHERE
             chapter_objects_to_remove = [
                 chapter.minio_object_name for chapter in chapters if chapter.minio_object_name is not None
             ]
-            await asyncio.to_thread(delete_minio_objects, chapter_objects_to_remove)
+            await asyncio.to_thread(delete_minio_objects, MINIO_AUDIOBOOK_BUCKET, chapter_objects_to_remove)
             await db.audiobookbook.delete_many(where={"id": book_id, "uploaded_by": logged_in_user.db_name})
 
         # hx-remove table row if origin path is overview of uploaded books
@@ -385,8 +390,7 @@ WHERE
                 where={"book_id": book_id, "chapter_number": chapter_number}
             )
             if chapter.minio_object_name is not None:
-                # pyre-fixme[6]
-                minio_client.remove_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), chapter.minio_object_name)
+                minio_client.remove_object(MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name)
             await db.audiobookchapter.update_many(
                 where={"id": chapter.id},
                 data={

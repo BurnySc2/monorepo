@@ -2,14 +2,21 @@ from __future__ import annotations
 
 import asyncio
 import os
+import re
 from contextlib import suppress
 
 from minio import S3Error
+from minio.helpers import _BUCKET_NAME_REGEX
 
 from prisma import Prisma, models
 from routes.audiobook.schema import (
     minio_client,
 )
+
+# pyre-fixme[9]
+MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
+assert MINIO_AUDIOBOOK_BUCKET is not None
+assert re.match(_BUCKET_NAME_REGEX, _BUCKET_NAME_REGEX) is not None
 
 
 async def minio_get_bucket_size_in_mb(bucket_name: str) -> float:
@@ -35,15 +42,13 @@ async def delete_book_return_bytes(book: models.AudiobookBook) -> int:
 
     total_size_freed = 0
     chapter_objects_to_remove: list[str] = []
-    # pyre-fixme[9]
-    bucket_name: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
     chapter: models.AudiobookChapter
     for chapter in book.AudiobookChapter:
         if chapter.minio_object_name is None:
             continue
         chapter_object = await asyncio.to_thread(
             minio_client.stat_object,
-            bucket_name,
+            MINIO_AUDIOBOOK_BUCKET,
             chapter.minio_object_name,
         )
         chapter_objects_to_remove.append(chapter.minio_object_name)
@@ -52,7 +57,7 @@ async def delete_book_return_bytes(book: models.AudiobookBook) -> int:
         total_size_freed += chapter_object.size
     await asyncio.to_thread(
         delete_minio_objects,
-        bucket_name,
+        MINIO_AUDIOBOOK_BUCKET,
         chapter_objects_to_remove,
     )
     async with Prisma() as db:
@@ -65,12 +70,10 @@ async def prevent_overflowing_audiobook_bucket() -> None:
     # pyre-fixme[9]
     minio_audiobook_max_size_mb_str: str = os.getenv("MINIO_AUDIOBOOK_MAX_SIZE_MB")
     minio_audiobook_max_size_mb: int = int(minio_audiobook_max_size_mb_str)
-    # pyre-fixme[9]
-    bucket_name: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
     while 1:
         with suppress(S3Error):
-            minio_client.make_bucket(bucket_name)
-        minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(bucket_name)
+            minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
+        minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(MINIO_AUDIOBOOK_BUCKET)
         while minio_audiobooks_size_used_mb > minio_audiobook_max_size_mb:
             # Delete book and minio data
             async with Prisma() as db:

@@ -4,12 +4,14 @@ import asyncio
 import datetime
 import io
 import os
+import re
 import time
 from contextlib import suppress
 
 from dotenv import load_dotenv
 from loguru import logger
 from minio import Minio, S3Error
+from minio.helpers import _BUCKET_NAME_REGEX
 
 from prisma import Prisma
 from routes.audiobook.schema import (
@@ -19,6 +21,12 @@ from routes.audiobook.schema import (
 from routes.audiobook.temp_generate_tts import generate_text_to_speech
 
 load_dotenv()
+
+# pyre-fixme[9]
+MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
+assert MINIO_AUDIOBOOK_BUCKET is not None
+assert re.match(_BUCKET_NAME_REGEX, _BUCKET_NAME_REGEX) is not None
+
 
 ESTIMATE_FACTOR = 0.1
 
@@ -55,7 +63,7 @@ async def convert_one():
     )
     # Create bucket if it doesn't exist
     with suppress(S3Error):
-        minio_client.make_bucket(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
+        minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
 
     # Get first book that is waiting to be converted
     async with Prisma() as db:
@@ -104,9 +112,7 @@ async def convert_one():
 
         # Save result to database
         object_name = f"{chapter.id}_audio.mp3"
-        minio_client.put_object(
-            os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3", audio, len(audio.getvalue())
-        )
+        minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, f"{chapter.id}_audio.mp3", audio, len(audio.getvalue()))
         logger.info("Saving result to database")
         await db.audiobookchapter.update_many(
             data={
