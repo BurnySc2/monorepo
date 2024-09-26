@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import os
+from contextlib import suppress
+
+from minio import S3Error
 
 from prisma import Prisma, models
 from routes.audiobook.schema import (
@@ -65,20 +68,21 @@ async def prevent_overflowing_audiobook_bucket() -> None:
     # pyre-fixme[9]
     bucket_name: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
     while 1:
-        if minio_client.bucket_exists(bucket_name):
-            minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(bucket_name)
-            while minio_audiobooks_size_used_mb > minio_audiobook_max_size_mb:
-                # Delete book and minio data
-                async with Prisma() as db:
-                    oldest_book = await db.audiobookbook.find_first(
-                        where={},
-                        include={"AudiobookChapter": True},
-                        order=[{"upload_date": "asc"}],
-                    )
-                if oldest_book is None:
-                    break
-                size_freed: int = await delete_book_return_bytes(oldest_book)
-                minio_audiobooks_size_used_mb -= size_freed / 2**20
+        with suppress(S3Error):
+            minio_client.make_bucket(bucket_name)
+        minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(bucket_name)
+        while minio_audiobooks_size_used_mb > minio_audiobook_max_size_mb:
+            # Delete book and minio data
+            async with Prisma() as db:
+                oldest_book = await db.audiobookbook.find_first(
+                    where={},
+                    include={"AudiobookChapter": True},
+                    order=[{"upload_date": "asc"}],
+                )
+            if oldest_book is None:
+                break
+            size_freed: int = await delete_book_return_bytes(oldest_book)
+            minio_audiobooks_size_used_mb -= size_freed / 2**20
 
         # Repeat every hour
         await asyncio.sleep(3600)
