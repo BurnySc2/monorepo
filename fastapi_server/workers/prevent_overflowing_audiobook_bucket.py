@@ -59,7 +59,9 @@ async def delete_book_return_bytes(book: models.AudiobookBook) -> int:
 
 async def prevent_overflowing_audiobook_bucket() -> None:
     """Keep minio bucket size below a maximum by removing oldest uploaded books and minio data."""
-    minio_audiobook_max_size_mb = int(os.getenv("MINIO_AUDIOBOOK_MAX_SIZE_MB"))
+    # pyre-fixme[9]
+    minio_audiobook_max_size_mb_str: str = os.getenv("MINIO_AUDIOBOOK_MAX_SIZE_MB")
+    minio_audiobook_max_size_mb: int = int(minio_audiobook_max_size_mb_str)
     # pyre-fixme[9]
     bucket_name: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
     while 1:
