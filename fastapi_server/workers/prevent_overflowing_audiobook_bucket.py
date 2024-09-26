@@ -72,7 +72,7 @@ async def prevent_overflowing_audiobook_bucket() -> None:
     minio_audiobook_max_size_mb: int = int(minio_audiobook_max_size_mb_str)
     while 1:
         with suppress(S3Error):
-            minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
+            await asyncio.to_thread(minio_client.make_bucket, MINIO_AUDIOBOOK_BUCKET)
         minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(MINIO_AUDIOBOOK_BUCKET)
         while minio_audiobooks_size_used_mb > minio_audiobook_max_size_mb:
             # Delete book and minio data
