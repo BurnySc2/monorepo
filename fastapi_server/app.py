@@ -28,11 +28,6 @@ from workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_aud
 load_dotenv()
 
 
-# Paths and folders of permanent data
-DATA_FOLDER = Path(__file__).parent / "data"
-DATA_FOLDER.mkdir(parents=True, exist_ok=True)
-logger.add(DATA_FOLDER / "app.log")
-
 assert os.getenv("STAGE", "dev") in {"local_dev", "dev", "prod", "test"}, os.getenv("STAGE")
 STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")  # pyre-fixme[9]
 BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://0.0.0.0:8000")

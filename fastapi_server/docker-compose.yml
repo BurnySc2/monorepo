@@ -11,14 +11,6 @@ services:
       - traefiknet
     env_file:
       - .env
-    volumes:
-      - ./data:/root/fastapi_server/data
-    healthcheck:
-      test: "curl --fail ${BACKEND_SERVER_URL}/health-check || exit 1"
-      interval: 60s
-      retries: 5
-      start_period: 20s
-      timeout: 10s
     labels:
       - traefik.enable=true
       - traefik.http.routers.fastapi.rule=Host(`apidev.burnysc2.xyz`)
@@ -35,7 +27,6 @@ services:
     # Has no volume because all files are temporary
     # If changes occur, they will be saved in postgres or minio
     deploy:
-      # TODO change me
       replicas: 4
       resources:
         limits:
