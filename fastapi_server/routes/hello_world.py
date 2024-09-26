@@ -8,8 +8,12 @@ class MyRootRoute(Controller):
     path = "/"
 
     @get("/test")
-    async def index(self) -> dict[str, str]:
-        return {"Hello": "World"}
+    async def index(self) -> str:
+        return "Hello, world!"
+
+    @get("/health-check")
+    async def health_check(self) -> dict[str, str]:
+        return {"hello": "world"}
 
 
 async def background_task_function(my_text: str, other_text: str = " something!"):
