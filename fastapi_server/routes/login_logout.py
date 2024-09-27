@@ -85,7 +85,7 @@ class MyLoginRoute(Controller):
     async def requires_twitch_logged_in(
         self,
     ) -> str:
-        return "This route is only available for logged in users"
+        return "This route is only available for logged in twitch users."
 
     @get("/twitch")
     async def twitch_login(
@@ -99,17 +99,25 @@ class MyLoginRoute(Controller):
             return Redirect("/login", status_code=HTTP_302_FOUND)
         if code is None:
             return Redirect(
-                # TODO encode URI
-                f"https://id.twitch.tv/oauth2/authorize?client_id={TWITCH_CLIENT_ID}&redirect_uri={BACKEND_SERVER_URL}/login/twitch&response_type=code&scope=user:read:email",
+                str(
+                    httpx.URL(
+                        "https://id.twitch.tv/oauth2/authorize",
+                        params={
+                            "client_id": TWITCH_CLIENT_ID,
+                            "redirect_uri": f"{BACKEND_SERVER_URL}/login/twitch",
+                            "response_type": "code",
+                            "scope": "user:read:email",
+                        },
+                    )
+                ),
                 # pyre-fixme[6]
                 status_code=HTTP_302_FOUND,
             )
 
         # Code was given, get access token and set cookie
         async with httpx.AsyncClient() as client:
-            url = "https://id.twitch.tv/oauth2/token"
             post_response = await client.post(
-                url,
+                "https://id.twitch.tv/oauth2/token",
                 headers={"Accept": "application/json"},
                 json={
                     "client_id": TWITCH_CLIENT_ID,
@@ -153,15 +161,22 @@ class MyLoginRoute(Controller):
         # which redirects to this page again with 'code' parameter
         if code is None:
             return Redirect(
-                f"https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}&scope=read:user",
+                str(
+                    httpx.URL(
+                        "https://github.com/login/oauth/authorize",
+                        params={
+                            "client_id": GITHUB_CLIENT_ID,
+                            "scope": "read:user",
+                        },
+                    )
+                ),
                 status_code=HTTP_302_FOUND,  # pyre-fixme[6]
             )
 
         # Code was given, get access token and set cookie
         async with httpx.AsyncClient() as client:
-            url = "https://github.com/login/oauth/access_token"
             post_response = await client.post(
-                url,
+                "https://github.com/login/oauth/access_token",
                 headers={"Accept": "application/json"},
                 json={
                     "client_id": GITHUB_CLIENT_ID,
@@ -203,14 +218,22 @@ class MyLoginRoute(Controller):
         # which redirects to this page again with 'code' parameter
         if code is None:
             return Redirect(
-                f"https://www.facebook.com/v20.0/dialog/oauth?client_id={FACEBOOK_CLIENT_ID}&redirect_uri={BACKEND_SERVER_URL}/login/facebook&state=1",
+                str(
+                    httpx.URL(
+                        "https://www.facebook.com/v20.0/dialog/oauth",
+                        params={
+                            "client_id": FACEBOOK_CLIENT_ID,
+                            "redirect_uri": f"{BACKEND_SERVER_URL}/login/facebook",
+                            "state": 1,
+                        },
+                    )
+                ),
                 status_code=HTTP_302_FOUND,  # pyre-fixme[6]
             )
         # Code was given, get access token and set cookie
         async with httpx.AsyncClient() as client:
-            url = "https://graph.facebook.com/v20.0/oauth/access_token"
             post_response = await client.post(
-                url,
+                "https://graph.facebook.com/v20.0/oauth/access_token",
                 headers={"Accept": "application/json"},
                 json={
                     "client_id": FACEBOOK_CLIENT_ID,
@@ -254,14 +277,24 @@ class MyLoginRoute(Controller):
         # which redirects to this page again with 'code' parameter
         if code is None:
             return Redirect(
-                f"https://accounts.google.com/o/oauth2/v2/auth?client_id={GOOGLE_CLIENT_ID}&response_type=code&scope=https://www.googleapis.com/auth/userinfo.email&redirect_uri={BACKEND_SERVER_URL}/login/google&state=1",
+                str(
+                    httpx.URL(
+                        "https://accounts.google.com/o/oauth2/v2/auth",
+                        params={
+                            "client_id": GOOGLE_CLIENT_ID,
+                            "redirect_uri": f"{BACKEND_SERVER_URL}/login/google",
+                            "response_type": "code",
+                            "scope": "https://www.googleapis.com/auth/userinfo.email",
+                            "state": 1,
+                        },
+                    )
+                ),
                 status_code=HTTP_302_FOUND,  # pyre-fixme[6]
             )
         # Code was given, get access token and set cookie
         async with httpx.AsyncClient() as client:
-            url = "https://oauth2.googleapis.com/token"
             post_response = await client.post(
-                url,
+                "https://oauth2.googleapis.com/token",
                 headers={
                     "Accept": "application/json",
                 },
