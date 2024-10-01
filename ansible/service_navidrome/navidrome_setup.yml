@@ -8,68 +8,33 @@
   vars:
     USERNAME: "{{ secrets.NAVIDROME.USERNAME }}"
     SUBDOMAIN: "{{ secrets.NAVIDROME.SUBDOMAIN }}"
-    DOCKER_IMAGE: deluan/navidrome
     APPLICATION_PORT: "4533"
   tasks:
-    # https://stackoverflow.com/a/64100593
-    - name: Create Traefik labels's dictionary
-      set_fact:
-        my_labels: "{{ my_labels | default({}) | combine ({ item.key : item.value }) }}"
-      with_items:
-        - { "key": "traefik.enable", "value": "true" }
-        - {
-            "key": "traefik.http.routers.{{ SUBDOMAIN }}.rule",
-            "value": "Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)",
-          }
-        - {
-            "key": "traefik.http.services.{{ SUBDOMAIN }}.loadbalancer.server.port",
-            "value": "{{ APPLICATION_PORT }}",
-          }
-        - { "key": "traefik.http.routers.{{ SUBDOMAIN }}.tls", "value": "true" }
-        - {
-            "key": "traefik.http.routers.{{ SUBDOMAIN }}.tls.certresolver",
-            "value": "production",
-          }
-        - {
-            "key": "traefik.http.routers.{{ SUBDOMAIN }}.middlewares",
-            "value": "authelia@docker",
-          }
+  - name: Create group
+    ansible.builtin.group:
+      name: "{{ USERNAME }}"
+      state: present
 
-    - name: Create group
-      ansible.builtin.group:
-        name: "{{ USERNAME }}"
-        state: present
+  - name: Create user
+    ansible.builtin.user:
+      name: "{{ USERNAME }}"
+      groups:
+        - "{{ USERNAME }}"
+        - docker
+      shell: "{{ secrets.DEFAULT_SHELL }}"
 
-    - name: Create user
-      ansible.builtin.user:
-        name: "{{ USERNAME }}"
-        groups:
-          - "{{ USERNAME }}"
-          - docker
-        shell: "{{ secrets.DEFAULT_SHELL }}"
+  - name: Copy docker-compose.yml file
+    template:
+      src: docker-compose.yml
+      dest: /home/{{ USERNAME }}/docker-compose.yml
+      
+  - name: Tear down existing services
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}
+      state: absent
+      # Comment out to skip update
+      remove_images: all
 
-    - name: Stop container
-      community.docker.docker_container:
-        name: "{{ USERNAME }}"
-        image: "{{ DOCKER_IMAGE }}"
-        state: absent
-
-    # Comment out to skip update
-    # - name: Remove image
-    #   community.docker.docker_image:
-    #     name: '{{ DOCKER_IMAGE }}'
-    #     state: absent
-
-    - name: Start container
-      community.docker.docker_container:
-        name: "{{ USERNAME }}"
-        image: "{{ DOCKER_IMAGE }}"
-        state: started
-        restart: yes
-        restart_policy: unless-stopped
-        volumes:
-          - "/home/{{ USERNAME }}/data:/data"
-          - "{{ secrets.NAVIDROME.MEDIA_FOLDER }}:/music:ro"
-        networks:
-          - name: "{{ secrets.TRAFIK_NETWORK }}"
-        labels: "{{ my_labels }}"
+  - name: Run `docker-compose up` again
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}

@@ -1,0 +1,22 @@
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+services:
+  navidrome:
+    container_name: navidrome
+    hostname: navidrome
+    image: deluan/navidrome
+    restart: unless-stopped
+    networks:
+      - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ SUBDOMAIN }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ SUBDOMAIN }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ SUBDOMAIN }}.tls=true
+      - traefik.http.routers.{{ SUBDOMAIN }}.tls.certresolver=production
+      - traefik.http.routers.{{ SUBDOMAIN }}.middlewares=authelia@docker
+    volumes:
+      - "/home/{{ USERNAME }}/data:/data"
+      - "{{ secrets.NAVIDROME.MEDIA_FOLDER }}:/music:ro"
