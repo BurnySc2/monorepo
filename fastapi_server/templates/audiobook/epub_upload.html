@@ -7,6 +7,7 @@
             <div id="spinner" class="htmx-indicator flex flex-col" style="margin: 1rem;">
                 <div class="flex">
                     <img class="htmx-spinner" src="/static/spinner.svg" />
+                    {# When done uploading, show: processing #}
                     <span>Uploading...</span>
                 </div>
                 <progress id='progress' class="progress" value='0' max='100'></progress>

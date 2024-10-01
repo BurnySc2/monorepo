@@ -1,0 +1,26 @@
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+version: '3.3'
+services:
+  stirling-pdf:
+    image: frooodle/s-pdf:latest
+    networks:
+      - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ SUBDOMAIN }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ SUBDOMAIN }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ SUBDOMAIN }}.tls=true
+      - traefik.http.routers.{{ SUBDOMAIN }}.tls.certresolver=production
+      - traefik.http.routers.{{ SUBDOMAIN }}.middlewares=authelia@docker
+    volumes:
+      - ./trainingData:/usr/share/tessdata #Required for extra OCR languages
+      - ./extraConfigs:/configs
+#      - ./customFiles:/customFiles/
+#      - ./logs:/logs/
+    environment:
+      - DOCKER_ENABLE_SECURITY=false
+      - INSTALL_BOOK_AND_ADVANCED_HTML_OPS=true
+      - LANGS=en_GB
