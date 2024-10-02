@@ -19,11 +19,16 @@ services:
       - traefik.http.routers.fastapi.tls.certresolver=production
     profiles: [staging]
 
-  # Responsible for converting texts to audio
+  # Responsible for converting text to audio
   convert_audiobook_worker:
     image: burnysc2/fastapi_server:latest_dev
     command: poetry run python workers/convert_audiobook.py
     pull_policy: always
+    restart: always
+    networks:
+      - traefiknet
+    env_file:
+      - .env
     # Has no volume because all files are temporary
     # If changes occur, they will be saved in postgres or minio
     deploy:
@@ -36,9 +41,6 @@ services:
         # Wait 5s before restarting
         delay: 5s
         condition: any
-    restart: always
-    env_file:
-      - .env
     profiles: [staging]
 
   traefik:
