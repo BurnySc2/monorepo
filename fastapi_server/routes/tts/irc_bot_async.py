@@ -1,6 +1,7 @@
 import asyncio
 import re
-from dataclasses import dataclass
+import time
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
@@ -28,22 +29,38 @@ class AsyncIrcBot:
     host: str = "wss://irc-ws.chat.twitch.tv:443"
     ws: AsyncWebSocketSession | None = None  # Set in connect()
     tts_queue: type["TTSQueue"] | None = None
+    # Required to rejoin after disconnect
+    joined_channels: set[str] = field(default_factory=set)
+    last_ping_received: float = field(default_factory=time.time)
 
-    async def connect(self):
+    async def connect(self) -> None:
         async with aconnect_ws(self.host) as ws:
             self.ws = ws
             await self.ws.send_text(f"USER {self.username} :This is a fun bot!")
             await self.ws.send_text(f"NICK {self.username}")  # sets nick
             await self.ws.send_text("PRIVMSG nickserv :iNOOPE")  # auth
+            asyncio.create_task(self.auto_rejoin())
             task = asyncio.create_task(self.receive())
             self.is_ready = True
+            # From here on: blocking
             await asyncio.gather(task)
 
-    async def wait_till_ready(self):
+    async def wait_till_ready(self) -> None:
         while not self.is_ready:
             await asyncio.sleep(0.1)
 
-    async def receive(self):
+    async def auto_rejoin(self) -> None:
+        while 1:
+            # Auto rejoin if no ping in 10 minutes
+            if time.time() - self.last_ping_received > 600:
+                logger.info("Attempting to auto-rejoin IRC.")
+                await self.ws.send_text(f"USER {self.username} :This is a fun bot!")
+                await self.ws.send_text(f"NICK {self.username}")  # sets nick
+                await self.ws.send_text("PRIVMSG nickserv :iNOOPE")  # auth
+                await self.join(self.joined_channels)
+            await asyncio.sleep(60)
+
+    async def receive(self) -> None:
         while 1:
             messages = await self.ws.receive_text()
             logger.info(messages)
@@ -57,25 +74,28 @@ class AsyncIrcBot:
                     await self.handle_message(message)
             await asyncio.sleep(0.01)
 
-    async def join(self, channel_names: list[str]):
+    async def join(self, channel_names: list[str] | set[str]) -> None:
         """May be called multiple times."""
         assert all(channel.startswith("#") for channel in channel_names), channel_names
+        self.joined_channels = self.joined_channels | channel_names
         channels_str = ",".join(channel_names)
         assert self.ws is not None
         await self.ws.send_text(f"JOIN {channels_str}")
 
-    async def part(self, channel_names: list[str]):
+    async def part(self, channel_names: list[str] | set[str]) -> None:
         assert all(channel.startswith("#") for channel in channel_names), channel_names
+        self.joined_channels = self.joined_channels - channel_names
         channels_str = ",".join(channel_names)
         assert self.ws is not None
         await self.ws.send_text(f"PART {channels_str}")
 
-    async def handle_ping(self, message: str):
+    async def handle_ping(self, message: str) -> None:
         if message == "PING :tmi.twitch.tv":
             assert self.ws is not None
+            self.last_ping_received = time.time()
             await self.ws.send_text("PONG :tmi.twitch.tv")
 
-    async def handle_message(self, message: str):
+    async def handle_message(self, message: str) -> None:
         # Example message:
         # :burnysc2!burnysc2@burnysc2.tmi.twitch.tv PRIVMSG #burnysc2 :PING
         regex_display_name = ":(.+)!.*"
