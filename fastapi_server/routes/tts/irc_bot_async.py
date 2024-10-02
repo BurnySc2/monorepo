@@ -36,6 +36,7 @@ class AsyncIrcBot:
     async def connect(self) -> None:
         async with aconnect_ws(self.host) as ws:
             self.ws = ws
+            assert isinstance(self.ws, AsyncWebSocketSession)
             await self.ws.send_text(f"USER {self.username} :This is a fun bot!")
             await self.ws.send_text(f"NICK {self.username}")  # sets nick
             await self.ws.send_text("PRIVMSG nickserv :iNOOPE")  # auth
@@ -54,7 +55,9 @@ class AsyncIrcBot:
             # Auto rejoin if no ping in 10 minutes
             if time.time() - self.last_ping_received > 600:
                 logger.info("Attempting to auto-rejoin IRC.")
+                assert isinstance(self.ws, AsyncWebSocketSession)
                 await self.ws.send_text(f"USER {self.username} :This is a fun bot!")
+                # pyre-fixme[16]
                 await self.ws.send_text(f"NICK {self.username}")  # sets nick
                 await self.ws.send_text("PRIVMSG nickserv :iNOOPE")  # auth
                 await self.join(self.joined_channels)
@@ -62,6 +65,7 @@ class AsyncIrcBot:
 
     async def receive(self) -> None:
         while 1:
+            assert isinstance(self.ws, AsyncWebSocketSession)
             messages = await self.ws.receive_text()
             logger.info(messages)
             message: str
@@ -77,22 +81,22 @@ class AsyncIrcBot:
     async def join(self, channel_names: list[str] | set[str]) -> None:
         """May be called multiple times."""
         assert all(channel.startswith("#") for channel in channel_names), channel_names
-        self.joined_channels = self.joined_channels | channel_names
+        self.joined_channels = self.joined_channels | set(channel_names)
         channels_str = ",".join(channel_names)
-        assert self.ws is not None
+        assert isinstance(self.ws, AsyncWebSocketSession)
         await self.ws.send_text(f"JOIN {channels_str}")
 
     async def part(self, channel_names: list[str] | set[str]) -> None:
         assert all(channel.startswith("#") for channel in channel_names), channel_names
-        self.joined_channels = self.joined_channels - channel_names
+        self.joined_channels = self.joined_channels - set(channel_names)
         channels_str = ",".join(channel_names)
-        assert self.ws is not None
+        assert isinstance(self.ws, AsyncWebSocketSession)
         await self.ws.send_text(f"PART {channels_str}")
 
     async def handle_ping(self, message: str) -> None:
         if message == "PING :tmi.twitch.tv":
-            assert self.ws is not None
             self.last_ping_received = time.time()
+            assert isinstance(self.ws, AsyncWebSocketSession)
             await self.ws.send_text("PONG :tmi.twitch.tv")
 
     async def handle_message(self, message: str) -> None:
