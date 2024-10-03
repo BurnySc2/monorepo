@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
 import io
 import os
 import re
 import time
 from contextlib import suppress
 
+import arrow
 from dotenv import load_dotenv
 from loguru import logger
 from minio import Minio, S3Error
@@ -32,13 +32,11 @@ ESTIMATE_FACTOR = 0.1
 
 
 async def convert_one():
-    datetime_now = datetime.datetime.now(datetime.timezone.utc)
-
     # Reset those that have failed to convert in time
     async with Prisma() as db:
         await db.audiobookchapter.update_many(
             where={
-                "started_converting": {"lt": datetime_now},
+                "started_converting": {"lt": arrow.utcnow().datetime},
             },
             data={"started_converting": None},
         )
@@ -84,8 +82,9 @@ async def convert_one():
         # Datetime is the estimation when it should be done converting based on text length
         await db.audiobookchapter.update_many(
             data={
-                "started_converting": datetime_now
-                + datetime.timedelta(seconds=len(get_chapter_combined_text(chapter)) * ESTIMATE_FACTOR)
+                "started_converting": arrow.utcnow()
+                .shift(seconds=len(get_chapter_combined_text(chapter)) * ESTIMATE_FACTOR)
+                .datetime
             },
             where={"id": chapter.id},
         )

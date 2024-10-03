@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import datetime
 import os
 from collections import OrderedDict
 
+import arrow
 import dataset  # pyre-fixme[21]
 from dotenv import load_dotenv
 
@@ -32,7 +32,7 @@ async def set_stream_online(twitch_name: str) -> None:
             WHERE twitch_name = :twitch_name""",
         {
             "new_status": "online",
-            "current_timestamp": datetime.datetime.now(datetime.timezone.utc),
+            "current_timestamp": arrow.utcnow().datetime,
             "twitch_name": twitch_name,
         },
     )

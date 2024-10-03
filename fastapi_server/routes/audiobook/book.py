@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-import datetime
 import os
 import re
 from stat import S_IFREG
 from typing import Annotated
 
+import arrow
 from litestar import Controller, Request, Response, get, post
 from litestar.contrib.htmx.response import ClientRedirect, ClientRefresh
 from litestar.datastructures import Cookie
@@ -131,11 +131,11 @@ WHERE
                     where={"id": chapter.id},
                     data={
                         "audio_settings": data.model_dump_json(),
-                        "queued": datetime.datetime.now(datetime.timezone.utc),
+                        "queued": arrow.utcnow().datetime,
                     },
                 )
                 # This only updates the attribute locally to render the template correctly
-                chapter.queued = datetime.datetime.now(datetime.timezone.utc)
+                chapter.queued = arrow.utcnow().datetime
 
         # TODO Instead of polling on each chapter, have one global poller which updates all chapters with one query
         # and oob-swaps instead.
@@ -245,7 +245,7 @@ WHERE
                 await db.audiobookchapter.update_many(
                     data={
                         "audio_settings": data.model_dump_json(),
-                        "queued": datetime.datetime.now(datetime.timezone.utc),
+                        "queued": arrow.utcnow().datetime,
                     },
                     where={"id": chapter.id},
                 )
@@ -315,7 +315,7 @@ WHERE
 
         async def member_files():
             nonlocal normalized_author, normalized_book_title
-            modified_at = datetime.datetime.now(datetime.timezone.utc)
+            modified_at = arrow.utcnow().datetime
             mode = S_IFREG | 0o600
             for chapter in book.AudiobookChapter:
                 normalized_chapter_name = normalize_filename(chapter.chapter_title)[:200].strip()
