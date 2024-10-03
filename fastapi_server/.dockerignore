@@ -1,4 +1,11 @@
-data
-*test*/*
-
+.benchmarks/*
 .env*
+.pyre/*
+.pytest_cache/*
+.ruff_cache/*
+.vscode/*
+*__pycache__*
+
+*test*/*
+data
+*.mp3

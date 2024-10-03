@@ -22,9 +22,8 @@ mutagen = "^1.47.0"      # Analyse mp3 files in memory
 # Database
 prisma = "^0.13.1"
 # Other
-numpy = "^1.26.3"
-edge-tts = "^6.1.11"       # Audio generation
-pymupdf = "^1.24.2"        # fitz for pdf
+edge-tts = "^6.1.11" # Audio generation
+# pymupdf = "^1.24.2"        # fitz for pdf
 ebooklib = "^0.18"         # epub parsing
 beautifulsoup4 = "^4.12.3" # xml parsing
 stream-zip = "^0.0.71"     # Zip files with low memory footprint

@@ -57,22 +57,42 @@ services:
       - "8080:8080" # Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    profiles: [dev]
+    profiles: [dev, local_dev]
+
+  webserver_dev:
+    container_name: local_dev_litestar_server
+    build: .
+    pull_policy: build
+    image: burnysc2/fastapi_server:latest_dev
+    command: poetry run litestar run --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+    depends_on:
+      - traefik
+      - local_dev_minio
+      - local_dev_postgres
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.fastapi.rule=Host(`localhost`)
+      - traefik.http.services.fastapi.loadbalancer.server.port=8000
+    profiles: [local_dev]
 
   local_dev_convert_audiobook_worker:
     container_name: local_dev_convert_audiobook_worker
     build: .
-    command: poetry run python workers/convert_audiobook.py
     pull_policy: build
+    command: poetry run python workers/convert_audiobook.py
     depends_on:
       - local_dev_minio
       - local_dev_postgres
       - traefik
     network_mode: host
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.notused.rule=Host(`notused.localhost`)"
-      - "traefik.http.services.notused.loadbalancer.server.port=12345"
+      - traefik.enable=true
+      - traefik.http.routers.notused.rule=Host(`notused.localhost`)
+      - traefik.http.services.notused.loadbalancer.server.port=12345
     # Has no volume because all files are temporary
     # If changes occur, they will be saved in postgres or minio
     deploy:
@@ -89,7 +109,7 @@ services:
     restart: always
     env_file:
       - .env
-    profiles: [dev]
+    profiles: [dev, local_dev]
 
   local_dev_minio:
     container_name: fastapi_dev_minio
@@ -116,7 +136,7 @@ services:
     environment:
       - MINIO_ROOT_USER=root
       - MINIO_ROOT_PASSWORD=rootroot
-    profiles: [dev]
+    profiles: [dev, local_dev]
 
   local_dev_postgres:
     container_name: fastapi_dev_postgres
@@ -136,7 +156,7 @@ services:
       - 5432:5432
     volumes:
       - dev_postgres_data:/var/lib/postgresql/data
-    profiles: [dev]
+    profiles: [dev, local_dev]
 
   local_dev_pgadmin:
     # Connect via:
@@ -160,7 +180,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     volumes:
       - dev_pgadmin_data:/var/lib/pgadmin
-    profiles: [dev]
+    profiles: [dev, local_dev]
 
 # TODO Background workers for transcription
 
