@@ -25,7 +25,7 @@ psycopg2-binary = "^2.9.6"
 # Display sizes in human readable format
 humanize = "^4.6.0"
 # Transcribing
-faster-whisper = "^1.0.1"
+# faster-whisper = "^1.0.1"
 # Progress bar
 tqdm = "^4.65.0"
 pyrogram = "^2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel downloads
@@ -38,6 +38,7 @@ pyocclient = "^0.6"
 dataset = "^1.6.2"
 python-dotenv = "^1.0.1"
 numpy = "^1.24.5"
+whisperx = "^3.1.5"
 
 [tool.poetry.group.dev.dependencies]
 # Test library

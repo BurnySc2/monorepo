@@ -11,28 +11,12 @@ from faster_whisper import format_timestamp  # pyre-fixme[21]
 from pony import orm  # pyre-fixme[21]
 
 from src.models import db
-from src.models.telegram_model import Status, TelegramChannel, TelegramMessage
-from src.models.transcribe_model import (
-    JobStatus,
-    ModelSize,
-    Task,
-    TranscriptionJob,
-    TranscriptionResult,
-)
 from src.secrets_loader import SECRETS as SECRETS_FULL
 from src.secrets_loader import oc
 
 SECRETS = SECRETS_FULL.Transcriber
 
 __all__ = [
-    TelegramChannel,
-    TelegramMessage,
-    Status,
-    TranscriptionJob,
-    TranscriptionResult,
-    JobStatus,
-    ModelSize,
-    Task,
     oc,
 ]
 
