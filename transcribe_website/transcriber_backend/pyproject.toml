@@ -39,6 +39,9 @@ dataset = "^1.6.2"
 python-dotenv = "^1.0.1"
 numpy = "^1.24.5"
 whisperx = "^3.1.5"
+# https://stackoverflow.com/a/76359919/10882657
+torch = { version = "^2.4.1+cpu", source = "pytorch_cpu" }
+torchaudio = {version = "^2.4.1+cpu", source = "pytorch_cpu"}
 
 [tool.poetry.group.dev.dependencies]
 # Test library
@@ -51,6 +54,11 @@ ruff = "^0.1.14"
 pyre-check = "^0.9.18"
 # Cpu and memory profiler
 # scalene = "^1" # Installation errors with python 3.12
+
+[[tool.poetry.source]]
+name = "pytorch_cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
