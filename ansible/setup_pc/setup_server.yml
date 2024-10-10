@@ -70,3 +70,9 @@
         passno: 0
         dump: 0
         state: present
+
+    # Disable ssh login with password by modifying
+    # nano /etc/ssh/sshd_config
+    # Setting the following to "no"
+    # PasswordAuthentication no
+    # systemctl reload ssh

@@ -29,12 +29,8 @@ humanize = "^4.6.0"
 # Progress bar
 tqdm = "^4.65.0"
 pyrogram = "^2.0.93" # Since version 2.0.94 it doesn't seem to allow parallel downloads
-# Required by pyrogram
-tgcrypto = "^1.2.5"
 # Translator
 # deep-translator = "^1.11.1"
-# Owncloud client
-pyocclient = "^0.6"
 dataset = "^1.6.2"
 python-dotenv = "^1.0.1"
 numpy = "^1.24.5"
@@ -44,16 +40,10 @@ torch = { version = "^2.4.1+cpu", source = "pytorch_cpu" }
 torchaudio = {version = "^2.4.1+cpu", source = "pytorch_cpu"}
 
 [tool.poetry.group.dev.dependencies]
-# Test library
-hypothesis = "^6"
-pytest = "^7.0.0"
-pytest-asyncio = "^0.15.1"
 # Linter
 ruff = "^0.1.14"
 # Type checker
 pyre-check = "^0.9.18"
-# Cpu and memory profiler
-# scalene = "^1" # Installation errors with python 3.12
 
 [[tool.poetry.source]]
 name = "pytorch_cpu"

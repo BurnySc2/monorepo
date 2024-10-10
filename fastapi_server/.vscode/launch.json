@@ -21,7 +21,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "module": "litestar",
-            "args": ["run", "--reload", "--wc", "8"],
+            "args": ["run", "--reload", "--host", "0.0.0.0", "--wc", "1"],
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
