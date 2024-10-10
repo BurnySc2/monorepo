@@ -3,10 +3,10 @@
 <body class="h-screen flex flex-col">
     {% include "nav.html" with context %}
     {# TODO With a book with a lot of chapters, there is a scroll bar which covers the height of the nav bar #}
-    <main class="flex flex-col h-full items-center bg-gray-300">
-        <div class="flex flex-col gap-2 overflow-y-hidden m-4">
-            <div class="place-self-center text-4xl font-bold">{{ book_name }}</div>
-            <div class="place-self-center text-2xl font-semibold">{{ book_author }}</div>
+    <main class="flex flex-col items-center bg-gray-300 p-4 lg:h-full lg:overflow-y-auto">
+        <div class="flex flex-col lg:h-full lg:overflow-y-auto lg:w-3/4 gap-2 lg:m-4">
+            <div class="text-center text-4xl font-bold">{{ book_name }}</div>
+            <div class="text-center text-2xl font-semibold">{{ book_author }}</div>
             <div class="flex flex-col border-2 border-black rounded p-2">
                 <div class="place-self-center text-2xl font-semibold underline">Settings</div>
                 <form class="grid grid-cols-2" hx-post="/audiobook/save_settings_to_cookies" hx-swap="none"
@@ -57,7 +57,7 @@
                 </div>
 
             </div>
-            <div class="flex flex-col border-2 border-black overflow-y-auto rounded p-2">
+            <div class="flex flex-col border-2 border-black lg:overflow-y-auto lg:grow rounded p-2">
                 <div class="place-self-center text-2xl font-semibold underline">Table of contents</div>
                 <div class="gap-2" style="display: grid;
                 grid-template-columns: auto auto;">
