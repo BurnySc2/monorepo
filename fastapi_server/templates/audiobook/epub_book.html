@@ -3,7 +3,7 @@
 <body class="h-screen flex flex-col">
     {% include "nav.html" with context %}
     {# TODO With a book with a lot of chapters, there is a scroll bar which covers the height of the nav bar #}
-    <main class="flex flex-col items-center bg-gray-300 p-4 lg:h-full lg:overflow-y-auto">
+    <main class="flex flex-col items-center bg-gray-300 p-4 grow lg:overflow-y-auto">
         <div class="flex flex-col lg:h-full lg:overflow-y-auto lg:w-3/4 gap-2 lg:m-4">
             <div class="text-center text-4xl font-bold">{{ book_name }}</div>
             <div class="text-center text-2xl font-semibold">{{ book_author }}</div>
