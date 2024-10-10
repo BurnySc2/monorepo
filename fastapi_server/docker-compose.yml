@@ -5,7 +5,7 @@ services:
     hostname: litestar_server
     pull_policy: always
     image: burnysc2/fastapi_server:latest_dev
-    command: poetry run litestar run --wc 8 --host 0.0.0.0 --port 8000
+    command: poetry run litestar run --wc 1 --host 0.0.0.0 --port 8000
     restart: unless-stopped
     networks:
       - traefiknet
@@ -13,10 +13,27 @@ services:
       - .env
     labels:
       - traefik.enable=true
-      - traefik.http.routers.fastapi.rule=Host(`www.burnysc2.xyz`)
+      # Main router for burnysc2.xyz
+      - traefik.http.routers.fastapi.rule=Host(`burnysc2.xyz`)
       - traefik.http.services.fastapi.loadbalancer.server.port=8000
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.routers.fastapi.tls.certresolver=production
+      # Redirect for www.burnysc2.xyz to burnysc2.xyz
+      - traefik.http.routers.www-fastapi.rule=Host(`www.burnysc2.xyz`)
+      - traefik.http.routers.www-fastapi.middlewares=redirect-to-non-www
+      - traefik.http.routers.www-fastapi.tls=true
+      - traefik.http.routers.www-fastapi.tls.certresolver=production
+      - traefik.http.middlewares.redirect-to-non-www.redirectregex.regex=^https?://www\.burnysc2\.xyz/(.*)
+      - traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=https://burnysc2.xyz/$${1}
+      - traefik.http.middlewares.redirect-to-non-www.redirectregex.permanent=true
+      # Redirect for apidev.burnysc2.xyz to burnysc2.xyz
+      - traefik.http.routers.apidev-fastapi.rule=Host(`apidev.burnysc2.xyz`)
+      - traefik.http.routers.apidev-fastapi.middlewares=redirect-to-non-apidev
+      - traefik.http.routers.apidev-fastapi.tls=true
+      - traefik.http.routers.apidev-fastapi.tls.certresolver=production
+      - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.regex=^https?://apidev\.burnysc2\.xyz/(.*)
+      - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.replacement=https://burnysc2.xyz/$${1}
+      - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.permanent=true
     profiles: [staging]
 
   # Responsible for converting text to audio
