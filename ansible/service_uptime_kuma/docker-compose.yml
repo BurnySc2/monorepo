@@ -1,0 +1,22 @@
+networks:
+  '{{secrets.TRAFIK_NETWORK}}':
+    external: true
+
+services:
+  uptime-kuma:
+    container_name: uptime-kuma
+    hostname: uptime-kuma
+    image: louislam/uptime-kuma:1
+    restart: unless-stopped
+    networks:
+      - '{{ secrets.TRAFIK_NETWORK }}'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ secrets.UPTIME_KUMA.USERNAME }}.rule=Host(`{{ secrets.UPTIME_KUMA.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ secrets.UPTIME_KUMA.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ secrets.UPTIME_KUMA.USERNAME }}.tls=true
+      - traefik.http.routers.{{ secrets.UPTIME_KUMA.USERNAME }}.tls.certresolver=production
+      - traefik.http.routers.{{ secrets.UPTIME_KUMA.USERNAME }}.middlewares=authelia@docker
+    volumes:
+      - './uptime-kuma:/app/data'
+      - '/var/run/docker.sock:/var/run/docker.sock'
