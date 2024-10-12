@@ -24,6 +24,7 @@ from workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_aud
 
 load_dotenv()
 
+# TODO Move everything into a `src` subfolder
 
 assert os.getenv("STAGE", "dev") in {"local_dev", "dev", "prod", "test"}, os.getenv("STAGE")
 STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")  # pyre-fixme[9]

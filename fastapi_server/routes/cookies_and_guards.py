@@ -282,6 +282,8 @@ async def owns_book_guard(
     logged_in_user: LoggedInUser | None = await provide_logged_in_user(
         connection.cookies.get(COOKIES["twitch"]),
         connection.cookies.get(COOKIES["github"]),
+        connection.cookies.get(COOKIES["facebook"]),
+        connection.cookies.get(COOKIES["google"]),
     )
     book_id: int = connection.path_params.get("book_id") or int(connection.query_params["book_id"])
     async with Prisma() as db:
