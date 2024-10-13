@@ -11,4 +11,6 @@ RUN poetry install --without dev
 
 COPY src /root/stream_announcer/src
 
+ENV PYTHONPATH=$PYTHONPATH:/root/stream_announcer
+
 CMD ["poetry", "run", "python", "src/stream_announcer.py"]

@@ -9,11 +9,12 @@
             "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "program": "src/stream_announcer.py",
+            "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
                 "PONY_DEBUG": "False",
+                "PYTHONPATH": "${workspaceFolder}",
             }
         },
     ]
