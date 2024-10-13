@@ -9,7 +9,7 @@ install-dev:
     RUN pip install poetry --no-cache-dir
     COPY poetry.lock pyproject.toml ./
     RUN poetry install
-    COPY . /root/stream_announcer
+    COPY src /root/stream_announcer/src
 
 format:
     # Run on host system instead of inside a container
@@ -40,6 +40,7 @@ lint:
 # Ignore errors via "# pyre-fixme[11]"
 pyre:
     FROM +install-dev
+    COPY .pyre_configuration /root/stream_announcer/.pyre_configuration
     RUN poetry run pyre
 
 # pytest:

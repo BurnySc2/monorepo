@@ -11,6 +11,10 @@ networks:
 # Or:
 # psql CONNECTION_STRING -f dump.sql -F t
 
+# Copy table(s) from one database to another on same postgres instance
+# docker exec -i postgres_postgres \
+#    bash -c "pg_dump -U postgres -t <table_name> <old_database_name> | psql -U postgres <new_database_name>"
+
 # Upgrade postgres:
 #   Dump db data to file
 #     docker compose exec postgres pg_dumpall -U postgres > dump.sql
