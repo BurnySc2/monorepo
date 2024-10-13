@@ -6,14 +6,13 @@
     "configurations": [
         {
             "name": "Announcer Webhook: Run Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "program": "src/stream_announcer.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
-                "PYTHONPATH": "${workspaceFolder}",
                 "PONY_DEBUG": "False",
             }
         },

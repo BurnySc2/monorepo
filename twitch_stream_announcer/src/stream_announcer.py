@@ -9,8 +9,9 @@ import arrow
 from discord import Embed, HTTPException, NotFound, Webhook
 from dotenv import load_dotenv
 from loguru import logger
-from model import get_streams_to_announce, set_stream_online, set_streams_offline  # pyre-fixme[21]
 from twitchAPI.twitch import Stream, Twitch
+
+from src.model import get_streams_to_announce, set_stream_online, set_streams_offline
 
 load_dotenv()
 
