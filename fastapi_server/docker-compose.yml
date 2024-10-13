@@ -1,16 +1,40 @@
-services:
-  # Web server with server side rendering
-  webserver:
+x-services-fragments:
+  webserver: &webserver
     container_name: litestar_server
     hostname: litestar_server
     pull_policy: always
+    restart: unless-stopped
     image: burnysc2/fastapi_server:latest_dev
     command: poetry run litestar --app-dir src run --wc 1 --host 0.0.0.0 --port 8000
-    restart: unless-stopped
-    networks:
-      - traefiknet
     env_file:
       - .env
+
+  convert_audiobook_worker: &convert_audiobook_worker
+    image: burnysc2/fastapi_server:latest_dev
+    command: poetry run python src/workers/convert_audiobook.py
+    pull_policy: always
+    restart: always
+    env_file:
+      - .env
+    # Has no volume because all files are temporary
+    # If changes occur, they will be saved in postgres or minio
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 2048M
+      restart_policy:
+        # Wait 5s before restarting
+        delay: 5s
+        condition: any
+
+services:
+  # === PROD SETUP
+  webserver:
+    <<: *webserver
+    networks:
+      - traefiknet
     labels:
       - traefik.enable=true
       # Main router for burnysc2.xyz
@@ -38,28 +62,14 @@ services:
 
   # Responsible for converting text to audio
   convert_audiobook_worker:
-    image: burnysc2/fastapi_server:latest_dev
-    command: poetry run python src/workers/convert_audiobook.py
-    pull_policy: always
-    restart: always
+    <<: *convert_audiobook_worker
     networks:
       - traefiknet
-    env_file:
-      - .env
-    # Has no volume because all files are temporary
-    # If changes occur, they will be saved in postgres or minio
     deploy:
       replicas: 4
-      resources:
-        limits:
-          cpus: "0.1"
-          memory: 2048M
-      restart_policy:
-        # Wait 5s before restarting
-        delay: 5s
-        condition: any
     profiles: [prod]
 
+  # === DEV SETUP
   traefik:
     image: traefik:v2.4
     container_name: traefik
@@ -77,15 +87,10 @@ services:
     profiles: [dev, local_dev]
 
   webserver_dev:
-    container_name: local_dev_litestar_server
+    <<: *webserver
     build: .
     pull_policy: build
-    image: burnysc2/fastapi_server:latest_dev
-    command: poetry run litestar --app-dir src run --host 0.0.0.0 --port 8000
-    restart: unless-stopped
     network_mode: host
-    env_file:
-      - .env
     depends_on:
       - traefik
       - local_dev_minio
@@ -97,35 +102,14 @@ services:
     profiles: [local_dev]
 
   local_dev_convert_audiobook_worker:
-    container_name: local_dev_convert_audiobook_worker
+    <<: *convert_audiobook_worker
     build: .
     pull_policy: build
-    command: poetry run python src/workers/convert_audiobook.py
     depends_on:
       - local_dev_minio
       - local_dev_postgres
       - traefik
     network_mode: host
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.notused.rule=Host(`notused.localhost`)
-      - traefik.http.services.notused.loadbalancer.server.port=12345
-    # Has no volume because all files are temporary
-    # If changes occur, they will be saved in postgres or minio
-    deploy:
-      # TODO change me
-      replicas: 1
-      resources:
-        limits:
-          cpus: "0.1"
-          memory: 2048M
-      restart_policy:
-        # Wait 60s before restarting
-        delay: 60s
-        condition: any
-    restart: always
-    env_file:
-      - .env
     profiles: [dev, local_dev]
 
   local_dev_minio:
@@ -146,8 +130,6 @@ services:
       - "traefik.http.services.minioadmin.loadbalancer.server.port=9001"
     ports:
       - 9000:9000
-    networks:
-      - fastapi_dev
     volumes:
       - dev_minio_data:/data
     environment:
