@@ -107,5 +107,6 @@ jobs:
         passphrase: ''
         script: |
           cd /home/${{ env.USERNAME }}
+          docker compose pull
           docker compose down
           docker compose up -d

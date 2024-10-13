@@ -136,5 +136,6 @@ jobs:
         passphrase: ''
         script: |
           cd /home/${{ env.USERNAME }}
+          docker compose --profile prod pull
           docker compose --profile "*" down
           docker compose --profile prod up -d
