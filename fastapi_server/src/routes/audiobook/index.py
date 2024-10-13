@@ -5,7 +5,7 @@ from litestar.di import Provide
 from litestar.response import Template
 
 from prisma import Prisma
-from routes.cookies_and_guards import (
+from src.routes.cookies_and_guards import (
     LoggedInUser,
     is_logged_in_guard,
     provide_logged_in_user,

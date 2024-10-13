@@ -11,7 +11,7 @@ from litestar.stores.memory import MemoryStore
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
-from routes.cookies_and_guards import COOKIES, TwitchUser, provide_twitch_user
+from src.routes.cookies_and_guards import COOKIES, TwitchUser, provide_twitch_user
 
 _test_client = test_client
 

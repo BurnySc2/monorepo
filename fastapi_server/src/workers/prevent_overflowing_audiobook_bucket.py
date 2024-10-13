@@ -9,7 +9,7 @@ from minio import S3Error
 from minio.helpers import _BUCKET_NAME_REGEX
 
 from prisma import Prisma, models
-from routes.audiobook.schema import (
+from src.routes.audiobook.schema import (
     minio_client,
 )
 

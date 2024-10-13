@@ -17,7 +17,7 @@ RUN poetry install --no-cache --without dev
 COPY prisma/schema.prisma /root/fastapi_server/prisma/schema.prisma
 RUN poetry run prisma generate
 
-COPY . /root/fastapi_server
+COPY src /root/fastapi_server/src
 
 RUN rm -r \
     /usr/bin/node \
@@ -35,4 +35,4 @@ FROM scratch
 COPY --from=base / /
 WORKDIR /root/fastapi_server
 ENV PYTHONPATH=$PYTHONPATH:/root/fastapi_server
-CMD ["poetry", "run", "litestar", "run", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "litestar", "--app-dir", "src", "run", "--host", "0.0.0.0", "--port", "8000"]

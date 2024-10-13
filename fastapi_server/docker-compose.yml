@@ -5,7 +5,7 @@ services:
     hostname: litestar_server
     pull_policy: always
     image: burnysc2/fastapi_server:latest_dev
-    command: poetry run litestar run --wc 1 --host 0.0.0.0 --port 8000
+    command: poetry run litestar --app-dir src run --wc 1 --host 0.0.0.0 --port 8000
     restart: unless-stopped
     networks:
       - traefiknet
@@ -39,7 +39,7 @@ services:
   # Responsible for converting text to audio
   convert_audiobook_worker:
     image: burnysc2/fastapi_server:latest_dev
-    command: poetry run python workers/convert_audiobook.py
+    command: poetry run python src/workers/convert_audiobook.py
     pull_policy: always
     restart: always
     networks:
@@ -81,7 +81,7 @@ services:
     build: .
     pull_policy: build
     image: burnysc2/fastapi_server:latest_dev
-    command: poetry run litestar run --host 0.0.0.0 --port 8000
+    command: poetry run litestar --app-dir src run --host 0.0.0.0 --port 8000
     restart: unless-stopped
     network_mode: host
     env_file:
@@ -100,7 +100,7 @@ services:
     container_name: local_dev_convert_audiobook_worker
     build: .
     pull_policy: build
-    command: poetry run python workers/convert_audiobook.py
+    command: poetry run python src/workers/convert_audiobook.py
     depends_on:
       - local_dev_minio
       - local_dev_postgres

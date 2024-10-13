@@ -2,8 +2,8 @@ import pytest
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
-from app import app
-from routes.login_logout import COOKIES
+from src.app import app
+from src.routes.login_logout import COOKIES
 
 
 @pytest.fixture

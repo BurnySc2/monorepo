@@ -14,11 +14,11 @@ from minio import Minio, S3Error
 from minio.helpers import _BUCKET_NAME_REGEX
 
 from prisma import Prisma
-from routes.audiobook.schema import (
+from src.routes.audiobook.schema import (
     AudioSettings,
     get_chapter_combined_text,
 )
-from routes.audiobook.temp_generate_tts import generate_text_to_speech
+from src.routes.audiobook.temp_generate_tts import generate_text_to_speech
 
 load_dotenv()
 

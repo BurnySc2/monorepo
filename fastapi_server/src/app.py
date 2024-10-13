@@ -13,14 +13,14 @@ from litestar.static_files import create_static_files_router
 from litestar.template.config import TemplateConfig
 from loguru import logger
 
-from routes.audiobook.book import MyAudiobookBookRoute
-from routes.audiobook.epub_upload import MyAudiobookEpubRoute
-from routes.audiobook.index import MyAudiobookIndexRoute
-from routes.hello_world import MyRootRoute
-from routes.login_logout import MyLoginRoute, MyLogoutRoute
-from routes.text_to_speech import MyTTSRoute
-from routes.tts.websocket_handler import TTSQueue, TTSWebsocketHandler
-from workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_audiobook_bucket
+from src.routes.audiobook.book import MyAudiobookBookRoute
+from src.routes.audiobook.epub_upload import MyAudiobookEpubRoute
+from src.routes.audiobook.index import MyAudiobookIndexRoute
+from src.routes.hello_world import MyRootRoute
+from src.routes.login_logout import MyLoginRoute, MyLogoutRoute
+from src.routes.text_to_speech import MyTTSRoute
+from src.routes.tts.websocket_handler import TTSQueue, TTSWebsocketHandler
+from src.workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_audiobook_bucket
 
 load_dotenv()
 
@@ -59,12 +59,12 @@ app = Litestar(
         # MyTodoRoute,
         MyTTSRoute,
         TTSWebsocketHandler,
-        create_static_files_router(path="/static", directories=["assets"]),
+        create_static_files_router(path="/static", directories=["src/assets"]),
     ],
     on_startup=[startup_event],
     on_shutdown=[shutdown_event],
     template_config=TemplateConfig(
-        directory=Path("templates"),
+        directory=Path("src/templates"),
         engine=JinjaTemplateEngine,
     ),
     debug=BACKEND_SERVER_URL == "http://0.0.0.0:8000",

@@ -13,13 +13,13 @@ from litestar.params import Body
 from litestar.response import Template
 
 from prisma import Prisma
-from routes.audiobook.temp_read_epub import (
+from src.routes.audiobook.temp_read_epub import (
     EpubChapter,
     EpubMetadata,
     extract_chapters,
     extract_metadata,
 )
-from routes.cookies_and_guards import LoggedInUser, is_logged_in_guard, provide_logged_in_user
+from src.routes.cookies_and_guards import LoggedInUser, is_logged_in_guard, provide_logged_in_user
 
 load_dotenv()
 

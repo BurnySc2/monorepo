@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 from httpx_ws import AsyncWebSocketSession, aconnect_ws
 from loguru import logger
 
-from routes.tts.generate_tts import Voices
+from src.routes.tts.generate_tts import Voices
 
 if TYPE_CHECKING:
-    from routes.tts.websocket_handler import TTSQueue
+    from src.routes.tts.websocket_handler import TTSQueue
 
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
 

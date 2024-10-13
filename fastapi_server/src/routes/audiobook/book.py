@@ -18,7 +18,7 @@ from minio.helpers import _BUCKET_NAME_REGEX
 from stream_zip import ZIP_64, async_stream_zip  # pyre-fixme[21]
 
 from prisma import Prisma, models
-from routes.audiobook.schema import (
+from src.routes.audiobook.schema import (
     AudioSettings,
     base64_encode_data,
     get_chapter_position_in_queue,
@@ -27,8 +27,8 @@ from routes.audiobook.schema import (
     normalize_filename,
     normalize_title,
 )
-from routes.audiobook.temp_generate_tts import get_supported_voices
-from routes.cookies_and_guards import (
+from src.routes.audiobook.temp_generate_tts import get_supported_voices
+from src.routes.cookies_and_guards import (
     LoggedInUser,
     get_user_settings,
     is_logged_in_guard,

@@ -14,10 +14,10 @@ from litestar.stores.memory import MemoryStore
 from pydantic import BaseModel
 
 from prisma import Prisma
-from routes.audiobook.schema import (
+from src.routes.audiobook.schema import (
     AudioSettings,
 )
-from routes.audiobook.temp_generate_tts import get_supported_voices
+from src.routes.audiobook.temp_generate_tts import get_supported_voices
 
 load_dotenv()
 
