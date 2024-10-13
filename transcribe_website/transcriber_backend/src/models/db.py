@@ -3,36 +3,10 @@ Import all models from this file to ensure that they are registered with PonyORM
 """
 from __future__ import annotations
 
-import os
 import zipfile
 from io import BytesIO
 
 from faster_whisper import format_timestamp  # pyre-fixme[21]
-from pony import orm  # pyre-fixme[21]
-
-from src.models import db
-from src.secrets_loader import SECRETS as SECRETS_FULL
-from src.secrets_loader import oc
-
-SECRETS = SECRETS_FULL.Transcriber
-
-__all__ = [
-    oc,
-]
-
-db.bind(
-    provider=SECRETS.postgres_provider,
-    user=SECRETS.postgres_user,
-    database=SECRETS.postgres_database,
-    password=SECRETS.postgres_password,
-    host=SECRETS.postgres_host,
-    port=SECRETS.postgres_port,
-)
-
-# Enable debug mode to see the queries sent
-orm.set_sql_debug(os.getenv("PONY_DEBUG") == "True")
-
-db.generate_mapping(create_tables=True)
 
 
 def generate_txt_data(transcribed_data: list[tuple[float, float, str]]) -> str:
@@ -73,11 +47,3 @@ def decompress_files(zip_file: BytesIO) -> dict[str, str]:
             with zip_file.open(file_name, mode="r") as file:
                 decompressed[file_name] = file.read().decode()
     return decompressed
-
-
-if __name__ == "__main__":
-    with orm.db_session():
-        # pyre-fixme[16]
-        print(orm.select(j for j in TranscriptionJob).get_sql())
-        for job in orm.select(j for j in TranscriptionJob):
-            print(job.id)

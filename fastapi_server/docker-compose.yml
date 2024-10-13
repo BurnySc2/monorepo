@@ -1,18 +1,18 @@
 x-services-fragments:
   webserver: &webserver
+    image: burnysc2/fastapi_server:latest_dev
+    pull_policy: always
+    command: poetry run litestar --app-dir src run --wc 1 --host 0.0.0.0 --port 8000
+    restart: unless-stopped
     container_name: litestar_server
     hostname: litestar_server
-    pull_policy: always
-    restart: unless-stopped
-    image: burnysc2/fastapi_server:latest_dev
-    command: poetry run litestar --app-dir src run --wc 1 --host 0.0.0.0 --port 8000
     env_file:
       - .env
 
   convert_audiobook_worker: &convert_audiobook_worker
     image: burnysc2/fastapi_server:latest_dev
-    command: poetry run python src/workers/convert_audiobook.py
     pull_policy: always
+    command: poetry run python src/workers/convert_audiobook.py
     restart: always
     env_file:
       - .env
