@@ -34,7 +34,7 @@ services:
       - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.regex=^https?://apidev\.burnysc2\.xyz/(.*)
       - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.replacement=https://burnysc2.xyz/$${1}
       - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.permanent=true
-    profiles: [staging]
+    profiles: [prod]
 
   # Responsible for converting text to audio
   convert_audiobook_worker:
@@ -58,7 +58,7 @@ services:
         # Wait 5s before restarting
         delay: 5s
         condition: any
-    profiles: [staging]
+    profiles: [prod]
 
   traefik:
     image: traefik:v2.4
