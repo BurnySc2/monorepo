@@ -11,4 +11,4 @@ RUN poetry install --without dev
 
 COPY src /announcer/src
 
-CMD ["poetry", "run", "python", "src/main.py"]
+CMD ["poetry", "run", "python", "src/stream_announcer.py"]

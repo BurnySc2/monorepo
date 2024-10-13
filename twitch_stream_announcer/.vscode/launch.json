@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "program": "src/main.py",
+            "program": "src/stream_announcer.py",
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {

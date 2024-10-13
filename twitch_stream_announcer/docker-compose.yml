@@ -1,7 +1,7 @@
 services:
   stream_announcer:
     image: burnysc2/twitch_stream_announcer:latest
-    command: poetry run python src/main.py
+    command: poetry run python src/stream_announcer.py
     pull_policy: always
     deploy:
       replicas: 1
