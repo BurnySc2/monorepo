@@ -12,6 +12,6 @@ ADD . /root/discord_bot
 # Allow imports like 'from discord_bot.commands.public_remind import Remind'
 ENV PYTHONPATH "${PYTHONPATH}:/root"
 
-CMD ["poetry", "run", "python", "main.py"]
+CMD ["poetry", "run", "python", "discord_bot.py"]
 
 # See run.sh

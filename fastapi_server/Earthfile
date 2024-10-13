@@ -58,6 +58,7 @@ pyre:
 pytest:
     FROM +install-dev
     RUN poetry run python -m pytest test
+    # TODO Use postgres instance but different database name, e.g. "/testdb" instead of "/postgres"
 
 pre-commit:
     BUILD +format-check

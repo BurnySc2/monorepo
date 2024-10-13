@@ -20,7 +20,7 @@
             "type": "python",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "program": "main.py",
+            "program": "discord_bot.py",
             "console": "integratedTerminal",
             "justMyCode": true,
         },
