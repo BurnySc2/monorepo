@@ -25,8 +25,8 @@ x-services-fragments:
           cpus: "0.1"
           memory: 2048M
       restart_policy:
-        # Wait 5s before restarting
-        delay: 5s
+        # Wait 1m before restarting
+        delay: 1m
         condition: any
 
 services:
