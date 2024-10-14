@@ -96,23 +96,3 @@ model TelegramMessage {
   // @@index([file_duration_seconds])
   @@map("litestar_telegram_message")
 }
-
-model ladder_announcer_accounts {
-
-  @@ignore
-}
-
-model ladder_announcer_announce_info {
-
-  @@ignore
-}
-
-model ladder_announcer_characters {
-
-  @@ignore
-}
-
-model stream_announcer_streams {
-
-  @@ignore
-}

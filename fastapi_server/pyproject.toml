@@ -14,21 +14,23 @@ loguru = "^0.7"
 litestar = { extras = ["standard"], version = "^2.5.1" }
 # Web requests (sync + async)
 httpx = "^0.27.0"
+httpx-ws = "^0.6.0"      # Websockets for httpx
 arrow = "^1.2.3"         # Time management
 python-dotenv = "^1.0.0" # Load .env files easily
 pydantic = "^2"          # Dataclasses with type validation
 nltk = "^3.8.1"          # Language manipulation
 mutagen = "^1.47.0"      # Analyse mp3 files in memory
 # Database
-prisma = "^0.13.1"
-# Other
-edge-tts = "^6.1.11" # Audio generation
-# pymupdf = "^1.24.2"        # fitz for pdf
+prisma = "^0"
+# PDF Parsing
+pymupdf = "^1.24.2"
+# Epub Parsing
 ebooklib = "^0.18"         # epub parsing
 beautifulsoup4 = "^4.12.3" # xml parsing
-stream-zip = "^0.0.71"     # Zip files with low memory footprint
-minio = "^7.2.7"           # AWS S3
-httpx-ws = "^0.6.0"        # Websockets for httpx
+# Other
+edge-tts = "^6.1.11"   # Audio generation
+stream-zip = "^0.0.71" # Zip files with low memory footprint
+minio = "^7.2.7"       # AWS S3
 
 [tool.poetry.group.dev.dependencies]
 # Test library

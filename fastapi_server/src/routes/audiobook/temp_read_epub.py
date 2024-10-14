@@ -17,6 +17,12 @@ def extract_sentences(text: str) -> list[str]:
     return sentences
 
 
+def combine_text(text_as_list: list[str]) -> str:
+    combined_text = " ".join(row for row in text_as_list)
+    combined_text = re.sub(r"\s+", " ", combined_text)
+    return combined_text
+
+
 class EpubChapter(BaseModel):
     chapter_title: str
     chapter_number: int
@@ -75,8 +81,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
         texts = [row for row in chapter_text.split("\n") if row.strip() != ""]
 
         # Combine text for word count, sentence count
-        combined_text = " ".join(row for row in texts)
-        combined_text = re.sub(r"\s+", " ", combined_text)
+        combined_text = combine_text(texts)
         if combined_text != "" and combined_text != prev_text:
             chapters.append(
                 EpubChapter(
@@ -105,11 +110,11 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
 
 class EpubMetadata(BaseModel):
     title: str
-    language: str
     author: str
-    date: str
-    # Publisher?
-    identifier: str
+    # language: str
+    # date: str
+    # # Publisher?
+    # identifier: str
 
 
 def extract_metadata(data: io.BytesIO) -> EpubMetadata:
@@ -118,29 +123,26 @@ def extract_metadata(data: io.BytesIO) -> EpubMetadata:
     c._load_container()
     c._load_opf_file()  # load title and toc etc
     title = c.book.get_metadata("DC", "title")[0][0]
-    creator = c.book.get_metadata("DC", "creator")[0][0]
-    identifier = c.book.get_metadata("DC", "identifier")[0][0]
+    author = c.book.get_metadata("DC", "creator")[0][0]
+    # identifier = c.book.get_metadata("DC", "identifier")[0][0]
     # Some books seem to have no date set
-    date = ""
-    if c.book.get_metadata("DC", "date") != []:
-        date = c.book.get_metadata("DC", "date")[0][0]
-    language = c.book.get_metadata("DC", "language")[0][0]
+    # date = ""
+    # if c.book.get_metadata("DC", "date") != []:
+    #     date = c.book.get_metadata("DC", "date")[0][0]
+    # language = c.book.get_metadata("DC", "language")[0][0]
     return EpubMetadata(
         title=title,
-        language=language,
-        author=creator,
-        # Date seems to be upload date?
-        date=date,
-        identifier=identifier,
+        author=author,
+        # language=language,
+        # # Date seems to be upload date?
+        # date=date,
+        # identifier=identifier,
     )
 
 
 if __name__ == "__main__":
     # Extract metadata
     path = Path("/home/burny/Downloads/pg67979-images-3.epub")
-    with path.open("rb") as f:
-        data = f.read()
-        data = io.BytesIO(data)
-
+    data = io.BytesIO(path.read_bytes())
     meta = extract_metadata(data)
     info = extract_chapters(data)

@@ -1,8 +1,10 @@
 # https://github.com/m-bain/whisperX
+import sys
 import time
 
-import whisperx
+import whisperx  # pyre-fixme[21]
 from loguru import logger
+from whisperx.utils import WriteJSON, WriteSRT  # pyre-fixme[21]
 
 device = "cpu"
 audio_file = "test/Eclypxe_-_Black_Roses_ft_Annamarie_Rosanio_Copyright_Free_Music.mp3"
@@ -18,8 +20,9 @@ model = whisperx.load_model("medium", device, compute_type=compute_type, downloa
 
 audio = whisperx.load_audio(audio_file)
 t0 = time.time()
-result = model.transcribe(audio, batch_size=batch_size)
-# result = model.transcribe(audio, batch_size=batch_size, language="en")
+# result = model.transcribe(audio, batch_size=batch_size)
+result = model.transcribe(audio, batch_size=batch_size, language="en")
+# result = model.transcribe(audio, batch_size=batch_size, language="de")
 logger.info(result["segments"])  # before alignment
 
 # delete model if low on GPU resources
@@ -35,4 +38,18 @@ t3 = time.time()
 logger.info(f"Transcribing took {t1-t0:.2f}\nLoading align model took {t2-t1:.2f}\nAlignin took {t3-t2:.2f}")
 
 logger.info(result["segments"])  # after alignment
-1
+result2["language"] = "de"
+
+for method in [WriteJSON, WriteSRT]:
+    # pyre-fixme[11]
+    inst: WriteSRT = method(output_dir="asd")
+    logger.info(inst.__class__.__name__)
+    inst.write_result(
+        result2,
+        sys.stdout,
+        options={
+            "max_line_width": 1000,
+            "max_line_count": 1000,
+            "highlight_words": False,
+        },
+    )

@@ -52,6 +52,8 @@ class MyAudiobookEpubRoute(Controller):
         """
         # TODO disable upload if user has already uploaded too much
         # TODO limit file size
+        # TODO Enable pdf upload with "from_pdf.py" - how to detect if uploaded file is in .pdf or .epub format?
+        # Raise error on other file formats
         epub_data: io.BytesIO = io.BytesIO(data.file.read())
 
         metadata: EpubMetadata = extract_metadata(epub_data)
