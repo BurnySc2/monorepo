@@ -41,13 +41,7 @@
         src: /home/burny/syncthing/secrets/ansible_secrets/authelia/users_database.yml
         dest: /home/{{ USERNAME }}/authelia/users_database.yml
         
-    - name: Tear down existing services
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        state: absent
-        # Comment out to skip update
-        # remove_images: all
-
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
+        pull: always

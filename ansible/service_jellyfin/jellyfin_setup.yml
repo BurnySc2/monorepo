@@ -27,14 +27,8 @@
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
-        
-    - name: Tear down existing services
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        state: absent
-        # Comment out to skip update
-        remove_images: all
 
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
+        pull: always

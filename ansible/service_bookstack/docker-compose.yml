@@ -29,7 +29,7 @@ services:
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.middlewares=authelia@docker
 
   bookstack_db:
-    image: lscr.io/linuxserver/mariadb:latest
+    image: lscr.io/linuxserver/mariadb:10.11
     container_name: bookstack_db
     networks:
       - "{{ secrets.TRAFIK_NETWORK }}"
