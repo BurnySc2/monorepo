@@ -12,8 +12,12 @@ x-services-fragments:
   convert_audiobook_worker: &convert_audiobook_worker
     image: burnysc2/fastapi_server:latest_dev
     pull_policy: always
-    command: poetry run python src/workers/convert_audiobook.py
-    restart: always
+    command:
+      [
+        "sh",
+        "-c",
+        "poetry run python src/workers/convert_audiobook.py && sleep 10m",
+      ]
     env_file:
       - .env
     # Has no volume because all files are temporary
@@ -24,10 +28,7 @@ x-services-fragments:
         limits:
           cpus: "0.1"
           memory: 2048M
-      restart_policy:
-        # Wait 1m before restarting
-        delay: 1m
-        condition: any
+    restart: always
 
 services:
   # === PROD SETUP
