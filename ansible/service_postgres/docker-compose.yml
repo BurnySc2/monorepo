@@ -2,6 +2,17 @@ networks:
   '{{secrets.TRAFIK_NETWORK}}':
     external: true
 
+# Open postgresql console to enter queries
+# docker exec -it postgres_postgres psql -U postgres -d postgres
+
+
+# Dump from docker container:
+# docker exec postgres_postgres pg_dump -U postgres -d postgres -F c --compress=zstd:9 > temp_zstd_9.dump
+
+# Restore to docker container:
+# cat temp_zstd_9.dump | docker exec -i postgres_postgres pg_restore -U postgres -d postgres
+
+
 # Remote dump:
 # pg_dump CONNECTION_STRING -U postgres > dump.sql
 
@@ -11,9 +22,11 @@ networks:
 # Or:
 # psql CONNECTION_STRING -f dump.sql -F t
 
+
 # Copy table(s) from one database to another on same postgres instance
 # docker exec -i postgres_postgres \
 #    bash -c "pg_dump -U postgres -t <table_name> <old_database_name> | psql -U postgres <new_database_name>"
+
 
 # Upgrade postgres:
 #   Dump db data to file
@@ -52,6 +65,7 @@ services:
     - ./postgres_data:/var/lib/postgresql/data
 
   pgadmin:
+    # TODO Add default connection if possible
     container_name: postgres_pgadmin
     image: dpage/pgadmin4:8
     networks:
@@ -72,7 +86,7 @@ services:
     - ./pgadmindata:/var/lib/pgadmin
 
   nocodb:
-    # TODO Add default connection
+    # TODO Add default connection if possible
     container_name: postgres_nocodb
     image: nocodb/nocodb:latest
     networks:

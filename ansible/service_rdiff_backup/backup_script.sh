@@ -16,6 +16,7 @@ backup_function() {
     create_backup() {
         ARCHIVE_NAME="backup_$1_$(date +%Y%m%d_%H%M%S).zip"
         cd "$SOURCE_DIRECTORY"
+        # TODO Find a way to use zstd instead of 7z
         zipargs=(
             a
             # Set archive type

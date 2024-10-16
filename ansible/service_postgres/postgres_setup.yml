@@ -24,16 +24,6 @@
       - docker
       shell: '{{ secrets.DEFAULT_SHELL }}'
 
-  # - name: Get user id
-  #   ansible.builtin.shell:
-  #     cmd: id {{ USERNAME }} -u
-  #   register: USER_ID
-
-  # - name: Get group id
-  #   ansible.builtin.shell:
-  #     cmd: id {{ USERNAME }} -g
-  #   register: GROUP_ID
-
   - name: Get syncthing user id
     ansible.builtin.shell:
       cmd: id syncthing -u
@@ -43,16 +33,6 @@
     ansible.builtin.shell:
       cmd: id syncthing -g
     register: SYNCTHING_GROUP_ID
-
-  # - name: Print user id
-  #   ansible.builtin.debug:
-  #     var: USER_ID.stdout
-  #     verbosity: 0
-
-  # - name: Print group id
-  #   ansible.builtin.debug:
-  #     var: GROUP_ID.stdout
-  #     verbosity: 0
 
   - name: Create directories
     file:
@@ -88,10 +68,26 @@
       # owner: '{{ USER_ID.stdout }}'
       # group: '{{ GROUP_ID.stdout }}'
 
-  - name: Backup once per day as user 'root'
+  - name: Create cron job for database 'postgres'
     ansible.builtin.cron:
-      name: Run postgres backup
-      job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh' '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.log'
+      name: Run postgres backup database 'postgres'
+      job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh' postgres '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres_postgres.log'
+      minute: "0"
+      hour: "3"
+      user: root
+
+  - name: Create cron job for database 'stream_announcer'
+    ansible.builtin.cron:
+      name: Run postgres backup database 'stream_announcer'
+      job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh' stream_announcer '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres_stream_announcer.log'
+      minute: "0"
+      hour: "3"
+      user: root
+
+  - name: Create cron job for database 'ladder_announcer'
+    ansible.builtin.cron:
+      name: Run postgres backup database 'ladder_announcer'
+      job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh' ladder_announcer '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres_ladder_announcer.log'
       minute: "0"
       hour: "3"
       user: root
