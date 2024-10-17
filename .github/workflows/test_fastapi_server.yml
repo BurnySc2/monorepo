@@ -82,10 +82,17 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install poetry and packages
-      working-directory: ${{ env.SUBDIRECTORY }}
+    - name: Install poetry
       run: |
         pip install poetry==1.8 --no-cache-dir
+
+    - name: Make poetry use local .venv folder
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: poetry config virtualenvs.in-project true
+
+    - name: Install packages
+      working-directory: ${{ env.SUBDIRECTORY }}
+      run: |
         poetry install
 
     - name: Generate prisma types
