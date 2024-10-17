@@ -83,7 +83,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install poetry
-      run: pip install poetry --no-cache-dir
+      run: pip install poetry --no-cache-dir poetry==1.8
 
     - name: Make poetry use local .venv folder
       run: poetry config virtualenvs.in-project true
