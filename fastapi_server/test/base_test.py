@@ -1,4 +1,7 @@
+from collections.abc import Iterator
+
 import pytest
+from litestar import Litestar
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
@@ -6,9 +9,9 @@ from src.app import app
 from src.routes.login_logout import COOKIES
 
 
-@pytest.fixture
-def test_client():
-    with TestClient(app=app) as client:
+@pytest.fixture(scope="function")
+def test_client() -> Iterator[TestClient[Litestar]]:
+    with TestClient(app=app, raise_server_exceptions=True) as client:
         yield client
 
 
@@ -19,6 +22,8 @@ def log_in_with_twitch(test_client: TestClient, httpx_mock: HTTPXMock) -> None:
         json={"data": [{"id": "123", "login": "abc", "display_name": "Abc", "email": "abc@example.com"}]},
     )
 
+
+# TODO Login with github and google
 
 # class BaseTest:
 #     method_client: TestClient = None

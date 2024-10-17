@@ -36,7 +36,9 @@ t0 = time.time()
 async def startup_event():
     # Be able to parse epub books correctly
     asyncio.create_task(asyncio.to_thread(nltk.download, "punkt_tab"))
-    # # Run websocket handler which handles tts
+    if STAGE == "test":
+        return
+    # Run websocket handler which handles tts
     asyncio.create_task(TTSQueue.start_irc_bot())
     # Remove books and minio objects if minio bucket is overflowing
     asyncio.create_task(prevent_overflowing_audiobook_bucket())

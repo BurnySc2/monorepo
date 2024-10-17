@@ -1,4 +1,4 @@
-from test.base_test import test_client  # noqa: F401
+from test.base_test import log_in_with_twitch, test_client  # noqa: F401
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -11,7 +11,12 @@ from litestar.stores.memory import MemoryStore
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
-from src.routes.cookies_and_guards import COOKIES, TwitchUser, provide_twitch_user
+from src.routes.cookies_and_guards import (
+    COOKIES,
+    TwitchUser,
+    provide_twitch_user,
+    twitch_cache,
+)
 
 _test_client = test_client
 
@@ -48,9 +53,10 @@ async def test_get_twitch_user_no_access_token():
     assert result is None
 
 
-def test_route_twitch_login_already_logged_in(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
-    # User needs to have the twitch cookie to be linked to an account
-    test_client.cookies[COOKIES["twitch"]] = "valid_access_token"
+@pytest.mark.asyncio
+async def test_route_twitch_login_already_logged_in(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+    await twitch_cache.delete_all()
+    log_in_with_twitch(test_client, httpx_mock)
     # Get request needs to return the user data
     response = test_client.get("/login/twitch")
     assert response.status_code == HTTP_200_OK

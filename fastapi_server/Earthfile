@@ -4,12 +4,6 @@ ARG PYTHONVERSION=3.12
 FROM python:${PYTHONVERSION}-slim
 WORKDIR /root/fastapi_server
 
-# Start server locally for development
-start-dev:
-    # Run on host system instead of inside a container
-    LOCALLY
-    RUN sh run.sh
-
 install-dev:
     # RUN export DEBIAN_FRONTEND=noninteractive \
     #     && apt-get -qq update \
@@ -56,11 +50,11 @@ pyre:
     COPY .pyre_configuration /root/fastapi_server/.pyre_configuration
     RUN poetry run pyre
 
-pytest:
-    FROM +install-dev
-    COPY test /root/fastapi_server/test
-    RUN poetry run python -m pytest test
-    # TODO Use postgres instance but different database name, e.g. "/testdb" instead of "/postgres"
+# Doesn't work anymore because it requires a separate postgres container now!
+# pytest:
+#     FROM +install-dev
+#     COPY test /root/fastapi_server/test
+#     RUN poetry run python -m pytest test
 
 pre-commit:
     BUILD +format-check
@@ -69,4 +63,4 @@ pre-commit:
 
 all:
     BUILD +pre-commit
-    BUILD +pytest
+    # BUILD +pytest
