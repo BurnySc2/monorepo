@@ -83,32 +83,22 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install poetry
-      run: |
-        pip install poetry==1.8 --no-cache-dir
+      run: pip install poetry --no-cache-dir
 
     - name: Make poetry use local .venv folder
-      working-directory: ${{ env.SUBDIRECTORY }}
       run: poetry config virtualenvs.in-project true
 
     - name: Install packages
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry install
+      run: poetry install
 
     - name: Generate prisma types
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry run prisma generate
-
-    # - name: Set up python env
-    #   working-directory: ${{ env.SUBDIRECTORY }}
-    #   run: |
-    #     echo "PYTHONPATH=$PYTHONPATH:$(pwd):$(pwd)/src" >> $GITHUB_ENV
+      run: poetry run prisma generate
 
     - name: Run pytest
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: |
-        poetry run python -m pytest test
+      run: poetry run python -m pytest
 
   build_and_deploy_docker_image:
     strategy:
