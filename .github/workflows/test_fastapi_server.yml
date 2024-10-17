@@ -96,7 +96,7 @@ jobs:
     - name: Set up python env
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
-        echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
+        echo "PYTHONPATH=$PYTHONPATH:$(pwd):$(pwd)/src" >> $GITHUB_ENV
 
     - name: Run pytest
       working-directory: ${{ env.SUBDIRECTORY }}
