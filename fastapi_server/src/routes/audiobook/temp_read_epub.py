@@ -3,13 +3,16 @@ import re
 import zipfile
 from pathlib import Path
 
+import nltk  # pyre-fixme[21]
 from bs4 import BeautifulSoup  # pyre-fixme[21]
 from ebooklib import ITEM_DOCUMENT  # pyre-fixme[21]
 from ebooklib.epub import EpubHtml, EpubReader, Link, Section  # pyre-fixme[21]
 from loguru import logger
-from nltk import word_tokenize  # pyre-fixme[21]
+from nltk import word_tokenize
 from nltk.tokenize import sent_tokenize  # pyre-fixme[21]
 from pydantic import BaseModel
+
+nltk.download("punkt_tab")
 
 
 def extract_sentences(text: str) -> list[str]:

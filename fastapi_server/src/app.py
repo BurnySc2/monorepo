@@ -4,7 +4,6 @@ import time
 from pathlib import Path
 from typing import Literal
 
-import nltk  # pyre-fixme[21]
 import uvicorn
 from dotenv import load_dotenv
 from litestar import Litestar
@@ -34,8 +33,6 @@ t0 = time.time()
 
 
 async def startup_event():
-    # Be able to parse epub books correctly
-    asyncio.create_task(asyncio.to_thread(nltk.download, "punkt_tab"))
     if STAGE == "test":
         return
     # Run websocket handler which handles tts
