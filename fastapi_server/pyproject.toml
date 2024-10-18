@@ -91,7 +91,7 @@ classmethod-decorators = ["pydantic.validator", "classmethod"]
 [tool.pytest_env]
 # Env variables to be used while tests run
 STAGE = "test"
-POSTGRES_CONNECTION_STRING = "postgresql://root:root@localhost:5432/postgres_test"
+POSTGRES_CONNECTION_STRING = "postgresql://test:test@localhost:5433/test"
 BACKEND_SERVER_URL = "http://0.0.0.0:8000"
 MINIO_URL = "0.0.0.0:9000"
 MINIO_AUDIOBOOK_BUCKET = "audiobooks-test"

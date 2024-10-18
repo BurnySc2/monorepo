@@ -41,6 +41,6 @@ mindmap
   root((mindmap))
     www.my_domain.com Stage: PROD, most stable release
     staging.my_domain.com Stage: STAGING, experimental release
-    localhost, Stage: DEV, under development, uses local sqlite database
-    no domain, Stage: Test, under development, uses local sqlite or memory database
+    localhost, Stage: DEV, under development, uses postgres dev instance
+    no domain, Stage: Test, under development, uses local second postgres instance
 ```

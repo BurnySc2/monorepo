@@ -144,7 +144,7 @@ services:
     environment:
       - MINIO_ROOT_USER=root
       - MINIO_ROOT_PASSWORD=rootroot
-    profiles: [dev, local_dev]
+    profiles: [dev, local_dev, test]
 
   local_dev_postgres:
     container_name: fastapi_dev_postgres
@@ -160,11 +160,25 @@ services:
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
+      POSTGRES_DB: postgres
     ports:
       - 5432:5432
     volumes:
       - dev_postgres_data:/var/lib/postgresql/data
     profiles: [dev, local_dev]
+
+  local_dev_postgres_test:
+    # This container is only used for running tests
+    hostname: fastapi_dev_postgres_test
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    ports:
+      - 5433:5432
+    profiles: [dev, test]
 
   local_dev_pgadmin:
     # Connect via:
