@@ -117,7 +117,14 @@ services:
     container_name: fastapi_dev_minio
     hostname: fastapi_dev_minio
     image: quay.io/minio/minio
-    command: server --console-address ":9001" "data"
+    # Start minio server, then after 10 seconds create access key
+    entrypoint: ["bash", "-c"]
+    command: >
+      "/usr/bin/docker-entrypoint.sh minio server --console-address ':9001' 'data' &
+      sleep 10 &&
+      mc alias set myminio http://localhost:9000 root rootroot &&
+      mc admin user svcacct add --access-key "mylocaldevkey" --secret-key "mylocaldevpassword" myminio root &&
+      wait"
     restart: unless-stopped
     labels:
       - "traefik.enable=true"
@@ -131,6 +138,7 @@ services:
       - "traefik.http.services.minioadmin.loadbalancer.server.port=9001"
     ports:
       - 9000:9000
+      - 9001:9001
     volumes:
       - dev_minio_data:/data
     environment:
