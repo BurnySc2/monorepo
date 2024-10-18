@@ -5,12 +5,21 @@ from litestar import Litestar
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
+from prisma.cli import prisma
 from src.app import app
 from src.routes.login_logout import COOKIES
 
 
+# TODO Use one fixture that resets db and another that doesnt
 @pytest.fixture(scope="function")
 def test_client() -> Iterator[TestClient[Litestar]]:
+    with TestClient(app=app, raise_server_exceptions=True) as client:
+        yield client
+
+
+@pytest.fixture(scope="function")
+def test_client_db_reset() -> Iterator[TestClient[Litestar]]:
+    prisma.run(["db", "push", "--force-reset"], check=True)
     with TestClient(app=app, raise_server_exceptions=True) as client:
         yield client
 

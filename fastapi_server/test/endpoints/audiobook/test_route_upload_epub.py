@@ -1,5 +1,5 @@
 from pathlib import Path
-from test.base_test import log_in_with_twitch, test_client  # noqa: F401
+from test.base_test import log_in_with_twitch, test_client, test_client_db_reset  # noqa: F401
 
 import pytest
 from bs4 import BeautifulSoup  # pyre-fixme[21]
@@ -8,14 +8,10 @@ from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTH
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
+from src.routes.cookies_and_guards import twitch_cache
+
 _test_client = test_client
-
-
-def setup_function(function):
-    # prisma.run(["db", "push", "--force-reset"], check=True)
-    pass
-    # TODO Can't access db directly from test functions, but the server seems to handle it correctly
-    # Perhaps adding a test-endpoint to verify that data is in the database?
+_test_client_db_reset = test_client_db_reset
 
 
 def test_index_route_inaccessable_when_not_logged_in(test_client: TestClient) -> None:  # noqa: F811
@@ -24,9 +20,9 @@ def test_index_route_inaccessable_when_not_logged_in(test_client: TestClient) ->
 
 
 # Test "/" has upload button
-def test_index_route_has_upload_button(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
-    log_in_with_twitch(test_client, httpx_mock)
-    response = test_client.get("/audiobook/epub_upload")
+def test_index_route_has_upload_button(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+    log_in_with_twitch(test_client_db_reset, httpx_mock)
+    response = test_client_db_reset.get("/audiobook/epub_upload")
     assert response.status_code == HTTP_200_OK
     # assert button exists with text "Upload"
     soup = BeautifulSoup(response.text, features="lxml")
@@ -34,37 +30,36 @@ def test_index_route_has_upload_button(test_client: TestClient, httpx_mock: HTTP
 
 
 # Test post request to "/" can upload an epub
-@pytest.mark.skip(reason="broke when switched to Prisma")
 @pytest.mark.parametrize(
     "book_relative_path, book_id, chapters_amount",
     [
         ("actual_books/frankenstein.epub", 1, 31),
-        ("actual_books/romeo-and-juliet.epub", 2, 28),
-        ("actual_books/the-war-of-the-worlds.epub", 3, 29),
+        ("actual_books/romeo-and-juliet.epub", 1, 28),
+        ("actual_books/the-war-of-the-worlds.epub", 1, 29),
     ],
 )
-def test_index_route_upload_epub(
-    book_relative_path: str, book_id: int, chapters_amount: int, test_client: TestClient, httpx_mock: HTTPXMock
+@pytest.mark.httpx_mock(non_mocked_hosts=["localhost"])
+@pytest.mark.asyncio
+async def test_index_route_upload_epub(
+    book_relative_path: str, book_id: int, chapters_amount: int, test_client_db_reset: TestClient, httpx_mock: HTTPXMock
 ) -> None:  # noqa: F811
-    log_in_with_twitch(test_client, httpx_mock)
+    await twitch_cache.delete_all()
+    log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     # Make sure the book does not exist yet
-    response = test_client.get(f"/audiobook/book/{book_id}")
+    response = test_client_db_reset.get(f"/audiobook/book/{book_id}")
     assert response.status_code == HTTP_401_UNAUTHORIZED
 
     # Upload book
     book_path = Path(__file__).parent / book_relative_path
-    response = test_client.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
+    response = test_client_db_reset.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
     assert response.status_code == HTTP_201_CREATED
     # Why is the database not empty?
     assert response.headers.get(HTMXHeaders.REDIRECT) == f"/audiobook/book/{book_id}"
     assert response.headers.get("location") is None
 
-    # Clean up responses to avoid assertion failure
-    httpx_mock.reset(assert_all_responses_were_requested=False)
-
     # Make sure N chapters were detected
-    response2 = test_client.get(response.headers.get(HTMXHeaders.REDIRECT))
+    response2 = test_client_db_reset.get(response.headers.get(HTMXHeaders.REDIRECT))
     soup = BeautifulSoup(response2.text, features="lxml")
     matching_divs = soup.find_all("div", id=lambda x: x is not None and x.startswith("chapter_audio_"))
     assert response2.status_code == HTTP_200_OK
@@ -72,31 +67,29 @@ def test_index_route_upload_epub(
 
 
 # Test post request to "/" book already exists
-@pytest.mark.skip(reason="broke when switched to Prisma")
-def test_index_route_upload_epub_twice(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
-    log_in_with_twitch(test_client, httpx_mock)
+@pytest.mark.httpx_mock(non_mocked_hosts=["localhost"])
+@pytest.mark.asyncio
+async def test_index_route_upload_epub_twice(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+    await twitch_cache.delete_all()
+    log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     # Make sure the book does not exist yet
-    response = test_client.get("/audiobook/book/1")
-    # Why is this not 401?
-    assert response.status_code == HTTP_200_OK
+    response = test_client_db_reset.get("/audiobook/book/1")
+    assert response.status_code == HTTP_401_UNAUTHORIZED
 
     # Upload book the first time
     book_path = Path(__file__).parent / "actual_books/frankenstein.epub"
-    response2 = test_client.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
+    response2 = test_client_db_reset.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
     assert response2.status_code == HTTP_201_CREATED
     assert response2.headers.get(HTMXHeaders.REDIRECT) == "/audiobook/book/1"
     assert response2.headers.get("location") is None
 
     # Upload a second time
-    response3 = test_client.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
+    response3 = test_client_db_reset.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
     assert response2.status_code == HTTP_201_CREATED
     # Make sure it points to the same book
     assert response3.headers.get(HTMXHeaders.REDIRECT) == "/audiobook/book/1"
     assert response3.headers.get("location") is None
-
-    # Clean up responses to avoid assertion failure
-    httpx_mock.reset(assert_all_responses_were_requested=False)
 
 
 # Test "/book/book_id" does not have an uploaded book

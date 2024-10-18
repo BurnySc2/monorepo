@@ -20,7 +20,7 @@ def extract_sentences(text: str) -> list[str]:
 def combine_text(text_as_list: list[str]) -> str:
     combined_text = " ".join(row for row in text_as_list)
     combined_text = re.sub(r"\s+", " ", combined_text)
-    return combined_text
+    return combined_text.strip()
 
 
 class EpubChapter(BaseModel):
