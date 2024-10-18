@@ -20,7 +20,7 @@ minio_client = Minio(
     os.getenv("MINIO_URL"),
     access_key=os.getenv("MINIO_ACCESS_TOKEN"),
     secret_key=os.getenv("MINIO_SECRET_KEY"),
-    secure=os.getenv("STAGE") != "local_dev",
+    secure=os.getenv("STAGE") in {"prod"},
 )
 
 
