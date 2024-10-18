@@ -98,6 +98,59 @@ async def test_index_route_upload_epub_twice(test_client_db_reset: TestClient, h
     assert response3.headers.get("location") is None
 
 
+# Test "/delete_book" can remove book
+@pytest.mark.httpx_mock(non_mocked_hosts=["localhost"])
+@pytest.mark.asyncio
+async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+    await twitch_cache.delete_all()
+    log_in_with_twitch(test_client_db_reset, httpx_mock)
+
+    book_before_upload_response = test_client_db_reset.get("/audiobook/book/1")
+    assert book_before_upload_response.status_code == HTTP_401_UNAUTHORIZED
+
+    # Pre condition: no book uploaded
+    async with Prisma() as db:
+        uploaded_books_pre_upload = await db.audiobookbook.count(where={})
+        assert uploaded_books_pre_upload == 0
+        uploaded_chapters_pre_upload = await db.audiobookchapter.count(where={})
+        assert uploaded_chapters_pre_upload == 0
+
+    # Upload book
+    expected_chapter_count = 31
+    book_path = Path(__file__).parent / "actual_books/frankenstein.epub"
+    upload_book_response = test_client_db_reset.post(
+        "/audiobook/epub_upload", files={"upload-file": book_path.open("rb")}
+    )
+    assert upload_book_response.status_code == HTTP_201_CREATED
+    # TODO Check redirect content
+
+    # Condition: book was successfully entered
+    async with Prisma() as db:
+        uploaded_books_post_upload = await db.audiobookbook.count(where={})
+        assert uploaded_books_post_upload == 1
+        uploaded_chapters_post_upload = await db.audiobookchapter.count(where={})
+        assert uploaded_chapters_post_upload == expected_chapter_count
+
+    book_after_upload_response = test_client_db_reset.get("/audiobook/book/1")
+    assert book_after_upload_response.status_code == HTTP_200_OK
+
+    # Delete book
+    delete_book_response = test_client_db_reset.post(
+        "/audiobook/delete_book",
+        params={"book_id": 1},
+    )
+    assert delete_book_response.status_code == HTTP_201_CREATED
+
+    # Post condition: book has been deleted, no book in db
+    async with Prisma() as db:
+        uploaded_books_post_upload = await db.audiobookbook.count(where={})
+        assert uploaded_books_post_upload == 0
+        uploaded_chapters_post_upload = await db.audiobookchapter.count(where={})
+        assert uploaded_chapters_post_upload == 0
+
+    # Book has been deleted
+    book_after_delete_response = test_client_db_reset.get("/audiobook/book/1")
+    assert book_after_delete_response.status_code == HTTP_401_UNAUTHORIZED
 
 
 # Test "/generate_audio" can generate audio for a chapter
@@ -239,5 +292,4 @@ async def test_generate_audio_for_chapter(test_client_db_reset: TestClient, http
 
 # Test "/generate_audio_book" queues the full book to be converted
 # Test "/download_book_zip" downloads a zip file
-# Test "/delete_book" deletes the book and all chapters
 # Test "/save_settings_to_cookies" sets cookies
