@@ -52,26 +52,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
 
-    # services:
-    #   postgres:
-    #     image: postgres:16-alpine
-    #     ports:
-    #       - 5433:5432
-    #     env:
-    #       POSTGRES_USER: test
-    #       POSTGRES_PASSWORD: test
-    #       POSTGRES_DB: test
-    #     # Set health checks to wait until postgres has started
-    #     options: >-
-    #       --health-cmd pg_isready
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
-
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up minio
+    - name: Set up postgres and minio test instances
       working-directory: ${{ env.SUBDIRECTORY }}
       run: |
         docker compose --profile test up -d
