@@ -8,6 +8,7 @@ TTS for twitch streamers
     - check if tts is playing
     - if empty, check for item in queue, process it, and play it
 """
+
 from __future__ import annotations
 
 import os

@@ -2,7 +2,6 @@ import io
 import os
 import re
 from pathlib import Path
-from test.base_test import log_in_with_twitch, test_client, test_client_db_reset, test_minio_client  # noqa: F401
 from unittest.mock import AsyncMock, patch
 from zipfile import ZipFile
 
@@ -18,6 +17,7 @@ from prisma import Prisma
 from src.routes.cookies_and_guards import twitch_cache
 from src.workers import convert_audiobook
 from src.workers.convert_audiobook import convert_one
+from test.base_test import log_in_with_twitch, test_client, test_client_db_reset, test_minio_client  # noqa: F401
 
 _test_client = test_client
 _test_client_db_reset = test_client_db_reset
@@ -304,6 +304,7 @@ async def test_generate_audio_for_chapter(
     assert len(generate_audio_buttons_after_delete_audio) == expected_chapter_count
 
 
+# TODO Mark test as slow?
 # Test "/generate_audio_book" requests audio for all chapters
 # and "/download_book_zip" generates zip file with audio files of all chapters
 @pytest.mark.httpx_mock(non_mocked_hosts=["localhost"])

@@ -15,7 +15,7 @@ from litestar.enums import MediaType, RequestEncodingType
 from litestar.params import Body
 from litestar.response import Stream, Template
 from minio.helpers import _BUCKET_NAME_REGEX
-from stream_zip import ZIP_64, async_stream_zip  # pyre-fixme[21]
+from stream_zip import ZIP_64, async_stream_zip
 
 from prisma import Prisma, models
 from src.routes.audiobook.schema import (

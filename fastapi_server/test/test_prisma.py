@@ -1,6 +1,3 @@
-import os
-from test.base_test import test_client  # noqa: F401
-
 import pytest
 from litestar import Litestar
 from litestar.status_codes import HTTP_200_OK
@@ -9,6 +6,7 @@ from pytest_httpx import HTTPXMock
 
 from prisma import Prisma
 from prisma.cli import prisma
+from test.base_test import test_client  # noqa: F401
 
 _test_client = test_client
 
