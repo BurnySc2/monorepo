@@ -1,14 +1,17 @@
 import io
+import os
 import re
 from pathlib import Path
-from test.base_test import log_in_with_twitch, test_client, test_client_db_reset  # noqa: F401
+from test.base_test import log_in_with_twitch, test_client, test_client_db_reset, test_minio_client  # noqa: F401
 from unittest.mock import AsyncMock, patch
+from zipfile import ZipFile
 
 import pytest
 from bs4 import BeautifulSoup  # pyre-fixme[21]
 from litestar.contrib.htmx._utils import HTMXHeaders
 from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTHORIZED
 from litestar.testing import TestClient
+from minio import Minio, S3Error
 from pytest_httpx import HTTPXMock
 
 from prisma import Prisma
@@ -18,6 +21,7 @@ from src.workers.convert_audiobook import convert_one
 
 _test_client = test_client
 _test_client_db_reset = test_client_db_reset
+_test_minio_client = test_minio_client
 
 
 def test_index_route_inaccessable_when_not_logged_in(test_client: TestClient) -> None:  # noqa: F811
@@ -156,7 +160,9 @@ async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: H
 # Test "/generate_audio" can generate audio for a chapter
 @pytest.mark.httpx_mock(non_mocked_hosts=["localhost"])
 @pytest.mark.asyncio
-async def test_generate_audio_for_chapter(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+async def test_generate_audio_for_chapter(
+    test_client_db_reset: TestClient, test_minio_client: Minio, httpx_mock: HTTPXMock
+) -> None:  # noqa: F811
     await twitch_cache.delete_all()
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
@@ -213,6 +219,10 @@ async def test_generate_audio_for_chapter(test_client_db_reset: TestClient, http
     ):
         # Convert one chapter to audio, save it in db and in minio
         await convert_one()
+
+    # Make sure generated audio was saved in minio
+    assert test_minio_client.bucket_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
+    assert test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
 
     # Audio has been generated, a different HTML element will be returned which allows loading audio
     load_audio_response = test_client_db_reset.post(
@@ -277,6 +287,10 @@ async def test_generate_audio_for_chapter(test_client_db_reset: TestClient, http
     assert delete_audio_response.status_code == HTTP_200_OK
     delete_audio_response_soup = BeautifulSoup(delete_audio_response.text, features="lxml")
     assert "Generate audio" in delete_audio_response_soup.text
+    # Make sure the audio was deleted in minio too
+    with pytest.raises(S3Error):
+        # Raises error if object does not exist
+        test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
 
     # Make sure the amount of buttons with "Generate audio" is the same as on after upload
     load_book_afterwards_response = test_client_db_reset.get("/audiobook/book/1")
@@ -290,6 +304,72 @@ async def test_generate_audio_for_chapter(test_client_db_reset: TestClient, http
     assert len(generate_audio_buttons_after_delete_audio) == expected_chapter_count
 
 
-# Test "/generate_audio_book" queues the full book to be converted
-# Test "/download_book_zip" downloads a zip file
+# Test "/generate_audio_book" requests audio for all chapters
+# and "/download_book_zip" generates zip file with audio files of all chapters
+@pytest.mark.httpx_mock(non_mocked_hosts=["localhost"])
+@pytest.mark.asyncio
+async def test_generate_audio_for_entire_book(
+    test_client_db_reset: TestClient, test_minio_client: Minio, httpx_mock: HTTPXMock
+) -> None:  # noqa: F811
+    await twitch_cache.delete_all()
+    log_in_with_twitch(test_client_db_reset, httpx_mock)
+
+    # Upload book
+    expected_chapter_count = 31
+    book_path = Path(__file__).parent / "actual_books/frankenstein.epub"
+    upload_book_response = test_client_db_reset.post(
+        "/audiobook/epub_upload", files={"upload-file": book_path.open("rb")}
+    )
+    assert upload_book_response.status_code == HTTP_201_CREATED
+
+    request_generate_audio_for_book_response = test_client_db_reset.post(
+        "/audiobook/generate_audio_book", params={"book_id": 1}
+    )
+    assert request_generate_audio_for_book_response.status_code == HTTP_201_CREATED
+
+    # Generate audio for each chapter
+    for i in range(expected_chapter_count):
+        with patch.object(
+            convert_audiobook,
+            "generate_text_to_speech",
+            new=AsyncMock(
+                return_value=io.BytesIO(f"bytes for audio {i+1}".encode()),
+            ),
+        ):
+            await convert_one()
+
+        # Make sure it was saved in database and in minio
+        async with Prisma() as db:
+            audio_chapter_generated = await db.audiobookchapter.count(where={"minio_object_name": f"{i+1}_audio.mp3"})
+            assert audio_chapter_generated == 1
+        assert test_minio_client.bucket_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
+        assert test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{i+1}_audio.mp3")
+
+    # Test download-zip works (only if audio for all chapters are generated)
+    download_zip_response = test_client_db_reset.get("/audiobook/download_book_zip", params={"book_id": 1})
+    assert download_zip_response.status_code == HTTP_200_OK
+    zip_file = ZipFile(io.BytesIO(download_zip_response.content))
+    assert len(zip_file.filelist) == expected_chapter_count
+    for index, mp3_file in enumerate(zip_file.filelist, start=1):
+        assert mp3_file.filename.startswith(
+            f"Mary Wollstonecraft Shelley/Frankenstein Or The Modern Prometheus/{index:04d}_"
+        )
+        assert mp3_file.filename.endswith(".mp3")
+
+    delete_book_response = test_client_db_reset.post("/audiobook/delete_book", params={"book_id": 1})
+    assert delete_book_response.status_code == HTTP_201_CREATED
+    # Test deletion of book deletes database entries
+    async with Prisma() as db:
+        uploaded_books_post_delete = await db.audiobookbook.count(where={})
+        assert uploaded_books_post_delete == 0
+        uploaded_chapters_post_delete = await db.audiobookchapter.count(where={})
+        assert uploaded_chapters_post_delete == 0
+
+    # Test deletion of book deletes minio entries
+    for i in range(expected_chapter_count):
+        with pytest.raises(S3Error):
+            # Raises error if object does not exist
+            test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{i+1}_audio.mp3")
+
+
 # Test "/save_settings_to_cookies" sets cookies
