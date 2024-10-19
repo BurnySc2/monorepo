@@ -57,7 +57,7 @@ async def convert_one():
         os.getenv("MINIO_URL"),
         os.getenv("MINIO_ACCESS_TOKEN"),
         os.getenv("MINIO_SECRET_KEY"),
-        secure=os.getenv("MINIO_URL") != "0.0.0.0:9000",
+        secure=os.getenv("STAGE") in {"prod"},
     )
     # Create bucket if it doesn't exist
     with suppress(S3Error):

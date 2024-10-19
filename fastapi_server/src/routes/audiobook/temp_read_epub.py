@@ -3,13 +3,16 @@ import re
 import zipfile
 from pathlib import Path
 
+import nltk  # pyre-fixme[21]
 from bs4 import BeautifulSoup  # pyre-fixme[21]
 from ebooklib import ITEM_DOCUMENT  # pyre-fixme[21]
 from ebooklib.epub import EpubHtml, EpubReader, Link, Section  # pyre-fixme[21]
 from loguru import logger
-from nltk import word_tokenize  # pyre-fixme[21]
+from nltk import word_tokenize
 from nltk.tokenize import sent_tokenize  # pyre-fixme[21]
 from pydantic import BaseModel
+
+nltk.download("punkt_tab")
 
 
 def extract_sentences(text: str) -> list[str]:
@@ -20,7 +23,7 @@ def extract_sentences(text: str) -> list[str]:
 def combine_text(text_as_list: list[str]) -> str:
     combined_text = " ".join(row for row in text_as_list)
     combined_text = re.sub(r"\s+", " ", combined_text)
-    return combined_text
+    return combined_text.strip()
 
 
 class EpubChapter(BaseModel):

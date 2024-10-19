@@ -16,7 +16,7 @@ x-services-fragments:
       [
         "sh",
         "-c",
-        "poetry run python src/workers/convert_audiobook.py && sleep 10m",
+        "poetry run python src/workers/convert_audiobook.py && sleep 1m",
       ]
     env_file:
       - .env
@@ -169,6 +169,7 @@ services:
 
   local_dev_postgres_test:
     # This container is only used for running tests
+    container_name: fastapi_dev_postgres_test
     hostname: fastapi_dev_postgres_test
     image: postgres:16-alpine
     restart: unless-stopped

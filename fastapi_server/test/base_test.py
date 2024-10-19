@@ -1,18 +1,41 @@
+import os
 from collections.abc import Iterator
 
 import pytest
 from litestar import Litestar
 from litestar.testing import TestClient
+from minio import Minio
 from pytest_httpx import HTTPXMock
 
+from prisma.cli import prisma
 from src.app import app
 from src.routes.login_logout import COOKIES
 
 
 @pytest.fixture(scope="function")
 def test_client() -> Iterator[TestClient[Litestar]]:
+    # Use this client only if the test does not access the test-database
     with TestClient(app=app, raise_server_exceptions=True) as client:
         yield client
+
+
+@pytest.fixture(scope="function")
+def test_client_db_reset() -> Iterator[TestClient[Litestar]]:
+    # Use this client if the test accesses and modifies the test-database
+    prisma.run(["db", "push", "--force-reset"], check=True)
+    with TestClient(app=app, raise_server_exceptions=True) as client:
+        yield client
+
+
+@pytest.fixture(scope="function")
+def test_minio_client() -> Iterator[Minio]:
+    minio_client = Minio(
+        os.getenv("MINIO_URL"),
+        os.getenv("MINIO_ACCESS_TOKEN"),
+        os.getenv("MINIO_SECRET_KEY"),
+        secure=False,
+    )
+    yield minio_client
 
 
 def log_in_with_twitch(test_client: TestClient, httpx_mock: HTTPXMock) -> None:
@@ -22,6 +45,8 @@ def log_in_with_twitch(test_client: TestClient, httpx_mock: HTTPXMock) -> None:
         json={"data": [{"id": "123", "login": "abc", "display_name": "Abc", "email": "abc@example.com"}]},
     )
 
+
+# TODO Add Logout function and test?
 
 # TODO Login with github and google
 

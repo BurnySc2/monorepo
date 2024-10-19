@@ -1,4 +1,3 @@
-from test.base_test import log_in_with_twitch, test_client  # noqa: F401
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -17,6 +16,7 @@ from src.routes.cookies_and_guards import (
     provide_twitch_user,
     twitch_cache,
 )
+from test.base_test import log_in_with_twitch, test_client  # noqa: F401
 
 _test_client = test_client
 

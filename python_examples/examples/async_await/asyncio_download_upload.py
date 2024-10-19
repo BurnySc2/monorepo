@@ -36,7 +36,7 @@ async def download_file(
     # Check if file exists
     if not file_path.exists():
         try:
-            async with session.get(url) as response:
+            async with session.get(url) as response:  # pyre-fixme[16]
                 # Assume everything went well with the response, no connection or server errors
                 assert response.status == 200
                 # Open file in binary write mode
@@ -75,7 +75,7 @@ async def download_file(
 
 
 async def download_site(session: aiohttp.ClientSession, url: str) -> aiohttp.ClientResponse:
-    async with session.get(url) as response:
+    async with session.get(url) as response:  # pyre-fixme[16]
         return response
 
 

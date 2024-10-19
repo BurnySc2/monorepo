@@ -1,4 +1,3 @@
-from test.base_test import test_client  # noqa: F401
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -17,6 +16,7 @@ from src.routes.cookies_and_guards import (
     github_cache,
     provide_github_user,
 )
+from test.base_test import test_client  # noqa: F401
 
 _test_client = test_client
 
