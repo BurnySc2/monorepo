@@ -1,0 +1,125 @@
+{% include "header.html" with context %}
+
+
+<body class="h-screen flex flex-col">
+    {% include "nav.html" with context %}
+    <main class="flex flex-col h-full items-center bg-gray-300">
+        <div class="flex flex-col gap-4 h-full m-2 lg:m-8">
+            {# Search, filter and sort control, search button #}
+            <div id="search-bar" class="grid grid-cols-1 gap-2">
+                <button class="border-2 border-black h-full p-2  hover:bg-green-400" hx-target="#search-result"
+                    hx-post="/telegram-browser/search"
+                    hx-include="#comments_min, #comments_max, #reactions_min, #reactions_max, #datetime_min, #datetime_max, #search_text, #channel_name, #must_have_file, #file_extension, #file_duration_min, #file_duration_max, #file_size_min, #file_size_max, #file_image_width_min, #file_image_width_max, #file_image_height_min, #file_image_height_max">Search</button>
+
+                <div class=" flex flex-col">
+                    <input class="border-2 border-black h-full" type="search" name="search_text" id="search_text"
+                        placeholder="Must contain this text">
+                </div>
+
+                <div class="flex flex-col">
+                    {# TODO Give hints which channels exist #}
+                    <input class="border-2 border-black h-full" list="channel-names" type="search" name="channel_name"
+                        id="channel_name" placeholder="Must be from this channel">
+                </div>
+
+                <fieldset class="flex border border-black h-full justify-start items-center gap-2">
+                    <legend class="text-center">Date range</legend>
+                    <input class="grow" type="datetime-local" name="datetime_min" id="datetime_min">
+                    <div>to</div>
+                    <input class="grow" type="datetime-local" name="datetime_max" id="datetime_max">
+                </fieldset>
+
+                <fieldset class="flex border border-black gap-2">
+                    <legend class="text-center">Amount of reactions</legend>
+                    <input class="w-8 grow" type="number" name="reactions_min" id="reactions_min" min="0">
+                    <div>to</div>
+                    <input class="w-8 grow" type="number" name="reactions_max" id="reactions_max" min="0">
+                </fieldset>
+
+                <fieldset class="flex border border-black gap-2">
+                    <legend class="text-center">Amount of comments</legend>
+                    <input class="w-8 grow" type="number" name="comments_min" id="comments_min" min="0">
+                    <div>to</div>
+                    <input class="w-8 grow" type="number" name="comments_max" id="comments_max" min="0">
+                </fieldset>
+
+                <fieldset class="border-2 border-black h-full p-2">
+                    <legend class="text-center">Attachment</legend>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+
+                        <fieldset class="flex gap-2 border border-black justify-center items-center">
+                            <legend class="text-center">Must have file</legend>
+                            <input type="checkbox" name="must_have_file" id="must_have_file">
+                        </fieldset>
+
+                        <fieldset class="flex flex-col border border-black ">
+                            <legend class="text-center">File type</legend>
+                            <input type="search" list="file-extensions" name="file_extension" id="file_extension"
+                                placeholder="File type">
+                        </fieldset>
+
+                        <fieldset class="flex flex-col border border-black ">
+                            <legend class="text-center">Duration range</legend>
+                            <div class="flex gap-2">
+                                <input class="grow" type="time" name="file_duration_min" id="file_duration_min" step="2"
+                                    value="00:00:00">
+                                <div>to</div>
+                                <input class="grow" type="time" name="file_duration_max" id="file_duration_max" step="2"
+                                    value="00:00:00">
+                            </div>
+                            <button class="h-full hover:bg-blue-300" onclick="
+                                document.querySelector('#file_duration_min').value = '00:00:00';
+                                document.querySelector('#file_duration_max').value = '00:00:00';     
+                            ">Reset</button>
+                        </fieldset>
+
+                        <fieldset class="flex gap-2 border border-black items-center">
+                            <legend class="text-center">File size range (megabytes)</legend>
+                            <input class="w-16 grow" type="number" name="file_size_min" id="file_size_min" min="0">
+                            <div>to</div>
+                            <input class="w-16 grow" type="number" name="file_size_max" id="file_size_max" min="0">
+                        </fieldset>
+
+                        <fieldset class="flex flex-col gap-2 border border-black ">
+                            <legend class="text-center">Image size (pixels)</legend>
+
+                            <fieldset class="flex gap-2 border border-black grow">
+                                <legend class="text-center">Width</legend>
+                                <input class="w-8 grow" type="number" name="file_image_width_min" id="file_image_width_min" min="0">
+                                <div>to</div>
+                                <input class="w-8 grow" type="number" name="file_image_width_max" id="file_image_width_max" min="0">
+                            </fieldset>
+
+                            <fieldset class="flex gap-2 border border-black grow">
+                                <legend class="text-center">Height</legend>
+                                <input class="w-8 grow" type="number" name="file_image_height_min" id="file_image_height_min" min="0">
+                                <div>to</div>
+                                <input class="w-8 grow" type="number" name="file_image_height_max" id="file_image_height_max" min="0">
+                            </fieldset>
+                        </fieldset>
+                    </div>
+                </fieldset>
+            </div>
+
+            <div id="search-result" class="flex grow border border-black">
+                The results will appear here ...
+            </div>
+            {# Result list with spinner (infinite-scroll or pagination?) #}
+        </div>
+
+
+
+    </main>
+</body>
+
+<datalist id="channel-names">
+    {% for name in channel_names %}
+    <option>{{ name }}</option>
+    {% endfor %}
+</datalist>
+
+<datalist id="file-extensions">
+    {% for extension in file_extensions %}
+    <option>{{ extension }}</option>
+    {% endfor %}
+</datalist>

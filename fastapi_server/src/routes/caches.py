@@ -30,7 +30,7 @@ async def get_db() -> AsyncGenerator[Prisma, None]:
     yield _db
 
 
-# TODO Fix me, can't seem to keep the connection open
+# TODO Fix me, can't seem to keep the connection open (event loop closed)
 if os.getenv("STAGE") == "test":
 
     @asynccontextmanager
