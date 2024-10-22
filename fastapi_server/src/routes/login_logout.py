@@ -27,7 +27,6 @@ from src.routes.cookies_and_guards import (
     GoogleUser,
     TwitchUser,
     is_logged_into_twitch_guard,
-    provide_facebook_user,
     provide_github_user,
     provide_google_user,
     provide_twitch_user,
@@ -40,8 +39,9 @@ class MyLoginRoute(Controller):
     dependencies = {
         "twitch_user": Provide(provide_twitch_user),
         "github_user": Provide(provide_github_user),
-        "facebook_user": Provide(provide_facebook_user),
         "google_user": Provide(provide_google_user),
+        # Not used
+        # "facebook_user": Provide(provide_facebook_user),
     }
 
     @get("/")

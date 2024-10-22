@@ -35,10 +35,11 @@ minio = "^7"      # AWS S3
 [tool.poetry.group.dev.dependencies]
 # Test library
 pytest = "^8"
-pytest-asyncio = "^0"
+pytest-asyncio = "^0"          # Async await support
 pytest-benchmark = "^4"
-pytest-httpx = "^0"
-pytest-env = "^1"
+pytest-httpx = "^0"            # Mock requests
+pytest-env = "^1"              # Set different env while testing
+pytest-random-order = "^1.1.1"
 # Property based testing
 hypothesis = "^6"
 # Info about the system
@@ -92,6 +93,6 @@ classmethod-decorators = ["pydantic.validator", "classmethod"]
 # Env variables to be used while tests run
 STAGE = "test"
 POSTGRES_CONNECTION_STRING = "postgresql://test:test@localhost:5433/test"
-BACKEND_SERVER_URL = "http://0.0.0.0:8000"
-MINIO_URL = "0.0.0.0:9000"
+BACKEND_SERVER_URL = "http://localhost:8000"
+MINIO_URL = "localhost:9000"
 MINIO_AUDIOBOOK_BUCKET = "audiobooks-test"

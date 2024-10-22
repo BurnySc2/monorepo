@@ -14,7 +14,7 @@ from minio import Minio, S3Error
 from pytest_httpx import HTTPXMock
 
 from prisma import Prisma
-from src.routes.cookies_and_guards import twitch_cache
+from src.routes.caches import global_cache
 from src.workers import convert_audiobook
 from src.workers.convert_audiobook import convert_one
 from test.base_test import log_in_with_twitch, test_client, test_client_db_reset, test_minio_client  # noqa: F401
@@ -29,8 +29,10 @@ def test_index_route_inaccessable_when_not_logged_in(test_client: TestClient) ->
     assert response.status_code == HTTP_401_UNAUTHORIZED
 
 
-# Test "/" has upload button
-def test_index_route_has_upload_button(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+# Test "/audiobook/epub_upload" has upload button
+@pytest.mark.asyncio
+async def test_index_route_has_upload_button(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+    await global_cache.delete_all()
     log_in_with_twitch(test_client_db_reset, httpx_mock)
     response = test_client_db_reset.get("/audiobook/epub_upload")
     assert response.status_code == HTTP_200_OK
@@ -39,7 +41,7 @@ def test_index_route_has_upload_button(test_client_db_reset: TestClient, httpx_m
     assert len(soup.find_all("button", type="submit")) == 1
 
 
-# Test post request to "/" can upload an epub
+# Test post request to "/audiobook/epub_upload" can upload an epub
 @pytest.mark.parametrize(
     "book_relative_path, book_id, chapters_amount",
     [
@@ -53,9 +55,13 @@ def test_index_route_has_upload_button(test_client_db_reset: TestClient, httpx_m
 async def test_index_route_upload_epub(
     book_relative_path: str, book_id: int, chapters_amount: int, test_client_db_reset: TestClient, httpx_mock: HTTPXMock
 ) -> None:  # noqa: F811
-    await twitch_cache.delete_all()
+    await global_cache.delete_all()
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
+    # Sanity check
+    async with Prisma() as db:
+        count = await db.audiobookbook.count()
+        assert count == 0
     # Make sure the book does not exist yet
     response = test_client_db_reset.get(f"/audiobook/book/{book_id}")
     assert response.status_code == HTTP_401_UNAUTHORIZED
@@ -80,7 +86,7 @@ async def test_index_route_upload_epub(
 @pytest.mark.httpx_mock(non_mocked_hosts=["localhost"])
 @pytest.mark.asyncio
 async def test_index_route_upload_epub_twice(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
-    await twitch_cache.delete_all()
+    await global_cache.delete_all()
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     # Make sure the book does not exist yet
@@ -106,7 +112,7 @@ async def test_index_route_upload_epub_twice(test_client_db_reset: TestClient, h
 @pytest.mark.httpx_mock(non_mocked_hosts=["localhost"])
 @pytest.mark.asyncio
 async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
-    await twitch_cache.delete_all()
+    await global_cache.delete_all()
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     book_before_upload_response = test_client_db_reset.get("/audiobook/book/1")
@@ -163,7 +169,7 @@ async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: H
 async def test_generate_audio_for_chapter(
     test_client_db_reset: TestClient, test_minio_client: Minio, httpx_mock: HTTPXMock
 ) -> None:  # noqa: F811
-    await twitch_cache.delete_all()
+    await global_cache.delete_all()
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     # Upload book
@@ -312,7 +318,7 @@ async def test_generate_audio_for_chapter(
 async def test_generate_audio_for_entire_book(
     test_client_db_reset: TestClient, test_minio_client: Minio, httpx_mock: HTTPXMock
 ) -> None:  # noqa: F811
-    await twitch_cache.delete_all()
+    await global_cache.delete_all()
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     # Upload book

@@ -12,7 +12,7 @@ _test_client = test_client
 
 
 def setup_function(function):
-    prisma.run(["db", "push", "--force-reset"], check=True)
+    prisma.run(["migrate", "reset", "--force", "--skip-generate"], check=True)
 
 
 @pytest.mark.asyncio

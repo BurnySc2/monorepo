@@ -86,7 +86,7 @@ jobs:
 
     - name: Run pytest
       working-directory: ${{ env.SUBDIRECTORY }}
-      run: poetry run python -m pytest
+      run: poetry run python -m pytest test --random-order
 
   build_and_deploy_docker_image:
     strategy:

@@ -8,10 +8,11 @@ from contextlib import suppress
 from minio import S3Error
 from minio.helpers import _BUCKET_NAME_REGEX
 
-from prisma import Prisma, models
+from prisma import models
 from src.routes.audiobook.schema import (
     minio_client,
 )
+from src.routes.caches import get_db
 
 # pyre-fixme[9]
 MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
@@ -60,7 +61,7 @@ async def delete_book_return_bytes(book: models.AudiobookBook) -> int:
         MINIO_AUDIOBOOK_BUCKET,
         chapter_objects_to_remove,
     )
-    async with Prisma() as db:
+    async with get_db() as db:
         await db.audiobookbook.delete_many(where={"id": book.id})
     return total_size_freed
 
@@ -76,7 +77,7 @@ async def prevent_overflowing_audiobook_bucket() -> None:
         minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(MINIO_AUDIOBOOK_BUCKET)
         while minio_audiobooks_size_used_mb > minio_audiobook_max_size_mb:
             # Delete book and minio data
-            async with Prisma() as db:
+            async with get_db() as db:
                 oldest_book = await db.audiobookbook.find_first(
                     where={},
                     include={"AudiobookChapter": True},

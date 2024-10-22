@@ -10,10 +10,10 @@ from litestar.stores.memory import MemoryStore
 from litestar.testing import TestClient
 from pytest_httpx import HTTPXMock
 
+from src.routes.caches import global_cache
 from src.routes.cookies_and_guards import (
     COOKIES,
     GithubUser,
-    github_cache,
     provide_github_user,
 )
 from test.base_test import test_client  # noqa: F401
@@ -52,7 +52,7 @@ async def test_get_github_user_no_access_token():
 
 @pytest.mark.asyncio
 async def test_route_github_login_already_logged_in(test_client: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
-    await github_cache.delete_all()
+    await global_cache.delete_all()
     # User needs to have the github cookie to be linked to an account
     test_client.cookies[COOKIES["github"]] = "valid_access_token"
     # Get request needs to return the user data
