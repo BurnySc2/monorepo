@@ -41,7 +41,7 @@ if os.getenv("STAGE") == "test":
 
 async def cache_coroutine_result(
     key: str,
-    coroutine: Coroutine[Any, None, None],
+    coroutine: Coroutine[None, None, Any],
     expires_in: int | None = None,
     renew_for: int | None = None,
 ) -> Any:

@@ -1,26 +1,43 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 from datetime import timedelta
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 import arrow
 import humanize
 from litestar import Controller, Response, get, post
 from litestar.contrib.htmx.request import HTMXRequest
-from litestar.contrib.htmx.response import HTMXTemplate
+from litestar.contrib.htmx.response import ClientRedirect, HTMXTemplate
 from litestar.datastructures import Cookie
 from litestar.enums import RequestEncodingType
 from litestar.params import Body, Parameter
 from litestar.response import Template
 from litestar.stores.memory import MemoryStore
 from loguru import logger
+from minio import Minio
+from minio.helpers import _BUCKET_NAME_REGEX
 from pydantic import BaseModel, PositiveInt
 
 from prisma import models
 from prisma.enums import Status
-from src.routes.caches import get_db
+from src.routes.caches import cache_coroutine_result, get_db
 from src.routes.telegram_browser.cookies_and_guards import is_logged_in_allowed_accounts_guard
+
+minio_client = Minio(
+    # pyre-fixme[6]
+    os.getenv("MINIO_URL"),
+    os.getenv("MINIO_ACCESS_TOKEN"),
+    os.getenv("MINIO_SECRET_KEY"),
+    secure=os.getenv("STAGE") in {"prod"},
+)
+
+BUCKET_NAME = os.getenv("MINIO_TELEGRAM_FILES_BUCKET")
+assert BUCKET_NAME is not None
+assert re.match(_BUCKET_NAME_REGEX, BUCKET_NAME) is not None
+
 
 telegram_store = MemoryStore()
 
@@ -40,38 +57,36 @@ RESULT_COLUMNS = {
 
 
 async def all_channels_cache() -> list[models.TelegramChannel]:
-    # TODO Use helper-function from caches.py
-    all_channels = await telegram_store.get("all_channels")
-    if all_channels is None:
-        async with get_db() as db:
-            all_channels = await db.telegramchannel.find_many(
-                # pyre-fixme[55]
-                where={"channel_username": {"not": None}},
-                order={
-                    "channel_username": "asc",
-                },
-            )
-        # pyre-fixme[6]
-        await telegram_store.set("all_channels", all_channels, expires_in=300)  # 5 Minutes
-    # pyre-fixme[7]
-    return await telegram_store.get("all_channels")
+    async with get_db() as db:
+        all_channels_query = db.telegramchannel.find_many(
+            # pyre-fixme[55]
+            where={"channel_username": {"not": None}},
+            order={"channel_username": "asc"},
+        )
+        return await cache_coroutine_result(
+            "all_telegram_channels",
+            all_channels_query,
+            # Cache for 5 minutes
+            expires_in=5 * 60,
+        )
 
 
-async def all_file_formats_cache() -> list[models.TelegramChannel]:
-    # TODO Use helper-function from caches.py
-    all_file_formats: list[dict] = await telegram_store.get("all_file_formats")
-    if all_file_formats is None:
-        async with get_db() as db:
-            all_file_formats = await db.query_raw(
-                """
+async def all_file_formats_cache() -> list[dict]:
+    async with get_db() as db:
+        all_file_formats_query = db.query_raw(
+            """
 SELECT DISTINCT LOWER(file_extension) AS file_extension_lower
 FROM public.litestar_telegram_message
 WHERE file_extension IS NOT NULL
 ORDER BY file_extension_lower;
-                """
-            )
-        await telegram_store.set("all_file_formats", all_file_formats, expires_in=300)  # 5 Minutes
-    return await telegram_store.get("all_file_formats")
+            """
+        )
+        return await cache_coroutine_result(
+            "all_telegram_file_formats",
+            all_file_formats_query,
+            # Cache for 1 hour
+            expires_in=60 * 60,
+        )
 
 
 class SearchInput(BaseModel):
@@ -113,7 +128,7 @@ def seconds_to_string(duration: float) -> str:
     return f"{minutes}:{seconds:02d}"
 
 
-def get_actived_and_disabled_columns(active_columns_str: str | None) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+def get_actived_and_disabled_columns(active_columns_str: str | None) -> tuple[dict[str, str], dict[str, str]]:
     if active_columns_str is None:
         return RESULT_COLUMNS, {}
     active_columns_list: list[str] = json.loads(active_columns_str)
@@ -159,6 +174,7 @@ class MyTelegramBrowserRoute(Controller):
         async with get_db() as db:
             results = await db.telegrammessage.find_many(
                 # If "{}" then the filter will be ignored
+                # pyre-fixme[55]
                 where={
                     "AND": [
                         # SEARCH TEXT
@@ -216,6 +232,7 @@ class MyTelegramBrowserRoute(Controller):
             )
         results_as_dict: list[dict] = [
             {
+                # Data displayed in the columns
                 "message_link": f"https://t.me/{row.channel.channel_username.lower()}/{row.message_id}",
                 "message_date": arrow.get(row.message_date).strftime("%Y-%m-%d %H:%M:%S"),
                 "message_text": row.message_text if row.message_text is not None else "",
@@ -228,55 +245,119 @@ class MyTelegramBrowserRoute(Controller):
                 "file_duration_seconds": seconds_to_string(row.file_duration_seconds)
                 if row.file_duration_seconds is not None
                 else "-",
+                # Metadata required for view, download, delete
+                "metadata": {
+                    "id": row.id,
+                    "status": row.status,
+                },
             }
             for row in results
         ]
         if len(results_as_dict) > 0:
-            assert set(active_columns_dict) | set(disabled_columns_dict) == set(results_as_dict[0])
+            assert set(active_columns_dict) | set(disabled_columns_dict) <= set(results_as_dict[0])
         return HTMXTemplate(
             template_name="telegram_browser/search_results.html",
             context={
                 "table_headers": active_columns_dict,
-                "results": [{col_key: row[col_key] for col_key in active_columns_dict} for row in results_as_dict],
+                "results": [
+                    # Sort the keys by column order from cookies
+                    {col_key: row[col_key] for col_key in active_columns_dict | {"metadata": None}}
+                    for row in results_as_dict
+                ],
             },
             # TODO Change url to represent search params
             # push_url="/asd",
         )
 
-    @post("/queue-file")
+    @post("/queue-file/{message_id: int}")
     async def queue_download_file(
         self,
+        message_id: int,
     ) -> None:
-        "In database, set file to queued"
+        """In database, set file to queued"""
+        async with get_db() as db:
+            await db.telegrammessage.update(
+                data={
+                    "status": Status.Queued,
+                },
+                where={"id": message_id},
+            )
 
-    @post("/delete-file")
-    async def delete_file(
-        self,
-    ) -> None:
-        "Delete file in database and in minio"
-
-    @get("/view-file")
+    @get("/view-file/{message_id: int}")
     async def view_file(
         self,
-    ) -> None:
+        message_id: int,
+    ) -> Template | None:
         """
         Allow the user to view the file in browser
         Return <video> element for videos, <audio> for audio, <img> for image
+        Return <object> or <embed> for other mime types
         """
+        async with get_db() as db:
+            message = await db.telegrammessage.find_unique(
+                where={"id": message_id},
+            )
+        if message is None or message.minio_object_name is None:
+            return
+        minio_url = minio_client.presigned_get_object(
+            BUCKET_NAME,
+            message.minio_object_name,
+            expires=timedelta(seconds=(message.file_duration_seconds or 0) + 300),
+        )
+        # TODO Wrap in async?
+        return HTMXTemplate(
+            template_name="telegram_browser/view_media_dialog.html",
+            context={
+                "mime_type": message.mime_type,
+                "minio_url": minio_url,
+            },
+        )
 
-    @get("/download-file")
+    @get("/download-file/{message_id: int}")
     async def download_file(
         self,
+        message_id: int,
+    ) -> ClientRedirect | None:
+        """Allow the user to download the file to file system"""
+        async with get_db() as db:
+            message = await db.telegrammessage.find_unique(where={"id": message_id})
+            if message is None or message.minio_object_name is None:
+                return
+        # TODO Wrap in async?
+        minio_url = minio_client.presigned_get_object(
+            BUCKET_NAME, message.minio_object_name, expires=timedelta(hours=1)
+        )
+        return ClientRedirect(redirect_to=minio_url)
+
+    @post("/delete-file/{message_id: int}")
+    async def delete_file(
+        self,
+        message_id: int,
     ) -> None:
-        "Allow the user to download the file to file system"
+        """Delete file in database and in minio"""
+        async with get_db() as db:
+            message = await db.telegrammessage.find_unique(where={"id": message_id})
+            assert message is not None
+            if message.minio_object_name is not None:
+                # TODO Wrap in async?
+                minio_client.remove_object(BUCKET_NAME, message.minio_object_name)
+            await db.telegrammessage.update_many(
+                data={
+                    "status": Status.HasFile,
+                    "downloading_retry_attempt": 0,
+                    "downloading_start_time": None,
+                    "minio_object_name": None,
+                },
+                # pyre-fixme[55]
+                where={"id": message_id, "status": {"not": Status.NoFile}},
+            )
 
     @post("/save-active-columns")
     async def save_active_columns(
         self,
         data: Annotated[dict, Body(media_type=RequestEncodingType.URL_ENCODED)],
-    ) -> Response[str]:
+    ) -> Response[Literal[""]]:
         "Allow the user to download the file to file system"
-
         column_order = data["columns-order"].split(";")
         return Response(
             content="",
@@ -289,3 +370,13 @@ class MyTelegramBrowserRoute(Controller):
                 ),
             ],
         )
+
+    @get("/all-channel-names")
+    async def get_all_channel_names(self) -> str:
+        all_channels = await all_channels_cache()
+        return "".join(f"<option>{channel.channel_username}</option>" for channel in all_channels)
+
+    @get("/all-file-extensions")
+    async def all_file_formats_cache(self) -> str:
+        all_file_formats = await all_file_formats_cache()
+        return "".join(f"<option>{query_result['file_extension_lower']}</option>" for query_result in all_file_formats)

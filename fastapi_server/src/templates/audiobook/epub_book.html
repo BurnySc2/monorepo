@@ -42,7 +42,7 @@
                         class="border-2 border-black p-2 hover:bg-green-300 rounded-lg flex items-center">Generate audio
                         for
                         all chapters
-                        <img id="spinner_book" class="htmx-indicator htmx-spinner" src="/static/spinner.svg" />
+                        <img id="spinner_book" class="htmx-indicator animate-spin w-8" src="/static/spinner.svg" />
                     </button>
                     {# TODO Only show download-zip-button if audio for all chapters have been generated #}
                     <a download href="/audiobook/download_book_zip?book_id={{ book_id }}"

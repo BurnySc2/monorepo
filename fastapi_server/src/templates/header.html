@@ -14,17 +14,6 @@
     <script src="https://cdn.tailwindcss.com/3.3.0"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
     <style>
-        /* Spinners, loading icons */
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
         .htmx-indicator {
             opacity: 0;
         }
@@ -42,11 +31,6 @@
 
         .htmx-indicator.htmx-request {
             animation: initially-hidden 2s cubic-bezier();
-        }
-
-        .htmx-spinner {
-            width: 32px;
-            animation: spin 2s linear infinite;
         }
     </style>
 </head>

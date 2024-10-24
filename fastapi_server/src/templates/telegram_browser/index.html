@@ -3,7 +3,7 @@
 <body class="h-screen flex flex-col">
     {% include "nav.html" with context %}
     <main class="flex flex-col h-full items-center bg-gray-300">
-        <div class="flex flex-col gap-4 h-full lg:w-11/12 m-2 lg:m-4">
+        <div class="flex flex-col gap-4 h-full lg:w-9/12 m-2 lg:m-4">
             {# Search, filter and sort control, search button #}
             <details open>
                 <summary class="select-none pb-2">Search section</summary>
@@ -26,7 +26,6 @@
                     </div>
 
                     <div class="flex flex-col">
-                        {# TODO Give hints which channels exist #}
                         <input class="border-2 border-black h-full" list="channel-names" type="search"
                             name="channel_name" id="channel_name" placeholder="Must be from this channel">
                     </div>
@@ -115,14 +114,10 @@
                 </div>
             </details>
 
-            {# See https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding #}
-            {# TODO load <audio /> and <video /> elements by using minio presigned urls with expire duration of 1h #}
-            {# Embed other mime types with <object /> or <embed /> #}
-
             <div id="search-result" class="flex grow border border-black">
                 The results will appear here ...
             </div>
-            {# Result list with spinner (infinite-scroll or pagination?) #}
+            {# TODO Result list with spinner (infinite-scroll or pagination?) #}
         </div>
 
     </main>
@@ -136,18 +131,16 @@
         hx-post="/telegram-browser/save-active-columns" hx-include="#active-columns" hx-swap="none">
         <div class="flex gap-4 justify-between">
             {# Active columns with order, filled from cookie #}
-            {# TODO Reorder with drag and drop #}
             <div id="active-columns"
                 class="flex flex-col droppable-container border border-black p-2 min-w-8 gap-2 grow">
                 {% for col_key, col_name in active_columns.items() %}
-                <div id="{{ col_key }}" class="draggable-item" draggable="true">{{ col_name }}</div>
+                <div id="{{ col_key }}" class="draggable-item hover:bg-yellow-200" draggable="true">{{ col_name }}</div>
                 {% endfor %}
             </div>
-            {# TODO disabled columns from cookie #}
             <div id="disabled-columns"
                 class="flex flex-col droppable-container border border-black p-2 min-w-8 gap-2 grow">
                 {% for col_key, col_name in disabled_columns.items() %}
-                <div id="{{ col_key }}" class="draggable-item" draggable="true">{{ col_name }}</div>
+                <div id="{{ col_key }}" class="draggable-item hover:bg-yellow-200" draggable="true">{{ col_name }}</div>
                 {% endfor %}
             </div>
         </div>
@@ -168,8 +161,6 @@
         const container = document.getElementById('active-columns');
         const items = Array.from(container.getElementsByClassName('draggable-item'));
         event.detail.parameters['columns-order'] = items.map(item => item.id).join(';');
-        console.log(items);
-
     });
     // After request is sent, close dialog window normally
     document.addEventListener('htmx:afterRequest', (event) => {
@@ -227,16 +218,27 @@
 
 
 
-{# TODO Request this datalist #}
-<datalist id="channel-names">
-    {% for name in channel_names %}
-    <option>{{ name }}</option>
-    {% endfor %}
+<dialog id="view-media-dialog" class="backdrop:backdrop-brightness-50 bg-neutral-800 h-full w-full" show>
+</dialog>
+<script>
+    document.addEventListener('htmx:afterRequest', (event) => {
+        if (event.target.classList.contains("open-view-media-dialog") && event.detail.successful) {
+            document.getElementById('view-media-dialog').showModal();
+        }
+    });
+    // Remove media when pressing escape (closing dialog) which results in stop playing video and audio
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== "Escape") return
+        video = document.querySelector("video");
+        if (video) video.pause();
+        audio = document.querySelector("audio");
+        if (audio) audio.pause();
+        document.getElementById('view-media-dialog').replaceChildren();
+    });
+</script>
+
+<datalist id="channel-names" hx-get="/telegram-browser/all-channel-names" hx-trigger="load">
 </datalist>
 
-{# TODO Request this datalist #}
-<datalist id="file-extensions">
-    {% for extension in file_extensions %}
-    <option>{{ extension }}</option>
-    {% endfor %}
+<datalist id="file-extensions" hx-get="/telegram-browser/all-file-extensions" hx-trigger="load">
 </datalist>

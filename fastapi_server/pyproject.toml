@@ -28,9 +28,9 @@ pymupdf = "^1"
 ebooklib = "^0"       # epub parsing
 beautifulsoup4 = "^4" # xml parsing
 # Other
-edge-tts = "^6"   # Audio generation
-stream-zip = "^0" # Zip files with low memory footprint
-minio = "^7"      # AWS S3
+edge-tts = "^6"      # Audio generation
+stream-zip = "^0"    # Zip files with low memory footprint
+minio = "^7"         # AWS S3
 humanize = "^4.11.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -96,4 +96,6 @@ STAGE = "test"
 POSTGRES_CONNECTION_STRING = "postgresql://test:test@localhost:5433/test"
 BACKEND_SERVER_URL = "http://localhost:8000"
 MINIO_URL = "localhost:9000"
+MINIO_ACCESS_TOKEN = "mylocaldevkey"
+MINIO_SECRET_KEY = "mylocaldevpassword"
 MINIO_AUDIOBOOK_BUCKET = "audiobooks-test"
