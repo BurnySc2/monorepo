@@ -32,6 +32,8 @@ State4: audio generated, audio loaded
   </div>
   {% elif chapter.has_audio is defined and chapter.has_audio %}
   <button class="flex border-4 border-black p-2 rounded-3xl hover:bg-green-300 items-center"
+  {% TODO Load audio directly with 'src' attribute but only load metadata, not the full audio %}
+  {% TODO The src may be another server endpoints or a minio presigned url with expire duration of 1h %}
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/audiobook/load_generated_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
     hx-indicator="#spinner2_{{ chapter.chapter_number }}">Load audio

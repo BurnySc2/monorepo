@@ -11,7 +11,7 @@ from src.routes.cookies_and_guards import COOKIES, provide_logged_in_user
 
 load_dotenv()
 
-
+# pyre-fixme[16]
 ALLOWED_LIST_OF_TWITCH_USERS = set(os.getenv("ALLOWED_TWITCH_USERS_FOR_TELEGRAM_BROWSER").lower().split(";"))
 
 

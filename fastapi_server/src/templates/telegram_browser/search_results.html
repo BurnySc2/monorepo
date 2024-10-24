@@ -1,12 +1,24 @@
-<table>
+<table class="border-collapse w-full">
     <tr>
-        <th>test1</th>
-        <th>test2</th>
+        {% for col_key, col_header_name in table_headers.items() %}
+        <th class="whitespace-nowrap">{{ col_header_name }}</th>
+        {% endfor %}
     </tr>
-    {% for entry in results %}
+    {% for row in results %}
     <tr>
-        <td>test3</td>
-        <td>test4</td>
+        {% for col_key, col_data in row.items() %}
+        {% if col_key == "message_link" %}
+        <td><a href="{{ col_data }}" target="_blank" class="truncate text-purple-600">Link</a></td>
+        {% elif col_key in ["message_date", "amount_of_reactions", "amount_of_comments", "file_extension",
+        "file_size_bytes",
+        "file_duration_seconds"] %}
+        <td class="truncate text-center">{{ col_data }}</td>
+        {% else %}
+        <td class="break-all line-clamp-2">
+            {{ col_data }}
+        </td>
+        {% endif %}
+        {% endfor %}
     </tr>
     {% endfor %}
 </table>
