@@ -1,0 +1,63 @@
+<table class="border-collapse w-full">
+    <tr>
+        {% for col_key, col_header_name in table_headers.items() %}
+        <th class="whitespace-nowrap">{{ col_header_name }}</th>
+        {% endfor %}
+    </tr>
+    {% for row in results %}
+    <tr>
+        {% for col_key, col_data in row.items() %}
+        {% if col_key == "metadata" %}
+        {% elif col_key == "file_extension" %}
+        <td class="flex items-center text-center">
+            <div> {{ col_data }} </div>
+            {% if row.metadata.status == "HasFile" %}
+            {# REQUEST FILE TO DOWNLOAD #}
+            {# TODO Convert into 'queued' symbol #}
+            <div class="cursor-copy w-8 hover:bg-yellow-300" hx-post="/telegram-browser/queue-file/{{ row.metadata.id }}" hx-swap="none">
+                <img src="/static/queue.svg" alt="">
+            </div>
+            {% elif row.metadata.status in ["Queued", "Downloading"] %}
+            {# WAITING FOR FILE TO BE DOWNLOADED #}
+            <div class="w-8">
+                {# TODO poll data? #}
+                <img src="/static/spinner.svg" class="animate-spin" alt="">
+            </div>
+            <div class="w-8 hover:bg-red-500">
+                {# DELETE FILE #}
+                <img class="cursor-no-drop" src="/static/delete.svg" alt="" hx-post="/telegram-browser/delete-file/{{ row.metadata.id }}">
+            </div>
+            {% elif row.metadata.status == "Downloaded" %}
+            {# FILE HAS BEEN DOWNLOADED #}
+            <div class="w-8 hover:bg-green-300">
+                {# TODO VIEW FILE #}
+                <img id="" class="open-view-media-dialog cursor-pointer" src="/static/play.svg" alt="" hx-get="/telegram-browser/view-file/{{ row.metadata.id }}" hx-target="#view-media-dialog">
+            </div>
+            <div class="w-8 hover:bg-green-300">
+                {# DOWNLOAD FILE #}
+                <img class="cursor-pointer" src="/static/download.svg" alt="" hx-get="/telegram-browser/download-file/{{ row.metadata.id }}">
+            </div>
+            <div class="w-8 hover:bg-red-500">
+                {# DELETE FILE #}
+                <img class="cursor-no-drop" src="/static/delete.svg" alt="" hx-post="/telegram-browser/delete-file/{{ row.metadata.id }}">
+            </div>
+            {# TODO Error case, if the file could not be downloaded #}
+            {% endif %}
+        </td>
+        {% elif col_key == "message_link" %}
+        <td><a href="{{ col_data }}" target="_blank" class="truncate text-purple-600">Link</a>
+
+        </td>
+        {% elif col_key in ["message_date", "amount_of_reactions", "amount_of_comments",
+        "file_size_bytes",
+        "file_duration_seconds"] %}
+        <td class="truncate text-center">{{ col_data }}</td>
+        {% else %}
+        <td class="break-all line-clamp-2">
+            {{ col_data }}
+        </td>
+        {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>

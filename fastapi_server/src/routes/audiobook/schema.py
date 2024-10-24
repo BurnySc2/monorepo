@@ -9,7 +9,8 @@ from dotenv import load_dotenv
 from minio import Minio
 from pydantic import BaseModel
 
-from prisma import Prisma, models
+from prisma import models
+from src.routes.caches import get_db
 
 load_dotenv()
 STAGE = os.getenv("STAGE", "local_dev")
@@ -72,7 +73,7 @@ def get_chapter_combined_text(chapter: models.AudiobookChapter) -> str:
 async def get_chapter_position_in_queue(chapter: models.AudiobookChapter) -> int:
     if not chapter.queued or chapter.minio_object_name:
         return -1
-    async with Prisma() as db:
+    async with get_db() as db:
         return await db.audiobookchapter.count(
             # pyre-fixme[55]
             where={

@@ -17,7 +17,7 @@ from litestar.response import Stream, Template
 from minio.helpers import _BUCKET_NAME_REGEX
 from stream_zip import ZIP_64, async_stream_zip
 
-from prisma import Prisma, models
+from prisma import models
 from src.routes.audiobook.schema import (
     AudioSettings,
     base64_encode_data,
@@ -28,6 +28,7 @@ from src.routes.audiobook.schema import (
     normalize_title,
 )
 from src.routes.audiobook.temp_generate_tts import get_supported_voices
+from src.routes.caches import get_db
 from src.routes.cookies_and_guards import (
     LoggedInUser,
     get_user_settings,
@@ -52,11 +53,11 @@ class MyAudiobookBookRoute(Controller):
     @get("/book/{book_id: int}", dependencies={"user_settings": Provide(get_user_settings)}, guards=[owns_book_guard])
     async def get_book_by_id(
         self,
-        logged_in_user: LoggedInUser,
         user_settings: AudioSettings,
         book_id: int,
+        logged_in_user: LoggedInUser,
     ) -> Template:
-        async with Prisma() as db:
+        async with get_db() as db:
             book = await db.audiobookbook.find_first_or_raise(
                 where={
                     "id": book_id,
@@ -65,7 +66,7 @@ class MyAudiobookBookRoute(Controller):
                 # pyre-fixme[55]
                 include={"AudiobookChapter": {"order_by": {"chapter_number": "asc"}}},
             )
-            chapters_in_queue: list = await db.query_raw(
+            chapters_in_queue: list[dict] = await db.query_raw(
                 """
 SELECT
 	ROW_NUMBER() OVER (ORDER BY queued) - 1 AS row_number,
@@ -77,9 +78,7 @@ WHERE
 	AND litestar_audiobook_chapter.queued IS NOT NULL
                 """
             )
-            chapter_id_to_queued_index: dict[int, int] = {
-                row["chapter_id"]: row["row_number"] for row in chapters_in_queue
-            }
+        chapter_id_to_queued_index: dict[int, int] = {row["chapter_id"]: row["row_number"] for row in chapters_in_queue}
         available_voices = await get_supported_voices()
         return Template(
             template_name="audiobook/epub_book.html",
@@ -122,7 +121,7 @@ WHERE
         # Then wait till the job is done before returning
 
         # Queue the chapter to the database
-        async with Prisma() as db:
+        async with get_db() as db:
             chapter = await db.audiobookchapter.find_first_or_raise(
                 where={"book_id": book_id, "chapter_number": chapter_number}
             )
@@ -166,7 +165,7 @@ WHERE
         chapter_number: int,
     ) -> Template:
         # Audio has been generated
-        async with Prisma() as db:
+        async with get_db() as db:
             chapter = await db.audiobookchapter.find_first_or_raise(
                 where={
                     "book_id": book_id,
@@ -196,7 +195,7 @@ WHERE
         """
         From db: fetch generated audio bytes, stream / download to user
         """
-        async with Prisma() as db:
+        async with get_db() as db:
             chapter = await db.audiobookchapter.find_first_or_raise(
                 where={
                     "book_id": book_id,
@@ -231,7 +230,7 @@ WHERE
         """
         Generate audio for all chapters
         """
-        async with Prisma() as db:
+        async with get_db() as db:
             chapters = await db.audiobookchapter.find_many(
                 where={
                     "book_id": book_id,
@@ -241,14 +240,19 @@ WHERE
                 },
                 order=[{"chapter_number": "asc"}],
             )
-            for chapter in chapters:
-                await db.audiobookchapter.update_many(
-                    data={
-                        "audio_settings": data.model_dump_json(),
-                        "queued": arrow.utcnow().datetime,
-                    },
-                    where={"id": chapter.id},
-                )
+            async with db.batch_() as batcher:
+                for chapter in chapters:
+                    batcher.audiobookchapter.update(
+                        where={"id": chapter.id},
+                        data={
+                            "audio_settings": data.model_dump_json(),
+                            "queued": arrow.utcnow().datetime,
+                        },
+                    )
+                    # await db.audiobookchapter.update_many(
+                    #     where={"id": chapter.id},
+                    # )
+                await batcher.commit()
         return ClientRefresh()
 
     @get(
@@ -266,7 +270,7 @@ WHERE
 
         create zip from all chapters, make download available to user
         """
-        async with Prisma() as db:
+        async with get_db() as db:
             book = await db.audiobookbook.find_first_or_raise(
                 where={
                     "id": book_id,
@@ -277,7 +281,7 @@ WHERE
         # Wait for book audio to be generated
         total_count = book.chapter_count
         for _ in range(60):
-            async with Prisma() as db:
+            async with get_db() as db:
                 done_count: int = await db.audiobookchapter.count(
                     # pyre-fixme[55]
                     where={
@@ -297,7 +301,7 @@ WHERE
         normalized_author = f"{normalize_title(book.book_author)}"[:50].strip()
         normalized_book_title = f"{normalize_title(book.book_title)}"[:150].strip()
 
-        async with Prisma() as db:
+        async with get_db() as db:
             book = await db.audiobookbook.find_first_or_raise(
                 where={
                     "id": book_id,
@@ -361,7 +365,7 @@ WHERE
             for minio_object_name in object_names:
                 minio_client.remove_object(bucket_name, minio_object_name)
 
-        async with Prisma() as db:
+        async with get_db() as db:
             # pyre-fixme[55]
             chapters = await db.audiobookchapter.find_many(where={"minio_object_name": {"not": None}})
             chapter_objects_to_remove = [
@@ -385,7 +389,7 @@ WHERE
         """
         Remove generated audio from db and .mp3 from minio
         """
-        async with Prisma() as db:
+        async with get_db() as db:
             chapter = await db.audiobookchapter.find_first_or_raise(
                 where={"book_id": book_id, "chapter_number": chapter_number}
             )

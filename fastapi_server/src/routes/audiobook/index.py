@@ -4,7 +4,7 @@ from litestar import Controller, get
 from litestar.di import Provide
 from litestar.response import Template
 
-from prisma import Prisma
+from src.routes.caches import get_db
 from src.routes.cookies_and_guards import (
     LoggedInUser,
     is_logged_in_guard,
@@ -30,15 +30,13 @@ class MyAudiobookIndexRoute(Controller):
         logged_in_user: LoggedInUser,
     ) -> Template | str:
         # Book Title, Book Author, chapters, Uploaded Date, delete button
-
-        async with Prisma() as db:
+        async with get_db() as db:
             books = await db.audiobookbook.find_many(
                 where={
                     "uploaded_by": logged_in_user.db_name,
                 },
                 order=[{"upload_date": "desc"}],
             )
-
         if len(books) == 0:
             return "You don't have any books uploaded."
         return Template(

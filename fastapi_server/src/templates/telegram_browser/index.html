@@ -1,0 +1,244 @@
+{% include "header.html" with context %}
+
+<body class="h-screen flex flex-col">
+    {% include "nav.html" with context %}
+    <main class="flex flex-col h-full items-center bg-gray-300">
+        <div class="flex flex-col gap-4 h-full lg:w-9/12 m-2 lg:m-4">
+            {# Search, filter and sort control, search button #}
+            <details open>
+                <summary class="select-none pb-2">Search section</summary>
+
+                <div id="search-section" class="grid grid-cols-1 gap-2">
+                    <div class="flex gap-2">
+                        <button class="border-2 border-black h-full p-2  hover:bg-green-400 grow"
+                            hx-target="#search-result" hx-post="/telegram-browser/search"
+                            hx-include="#comments_min, #comments_max, #reactions_min, #reactions_max, #datetime_min, #datetime_max, #search_text, #channel_name, #must_have_file, #file_extension, #file_duration_min, #file_duration_max, #file_size_min, #file_size_max, #file_image_width_min, #file_image_width_max, #file_image_height_min, #file_image_height_max">Search</button>
+                        <button class="border-2 border-black h-full p-2  hover:bg-yellow-400 grow" type="button">Row
+                            order</button>
+                        <button class="border-2 border-black h-full p-2  hover:bg-yellow-400 grow" type="button"
+                            onclick="document.getElementById('columns-reorder-dialog').showModal()">Column
+                            order</button>
+                    </div>
+
+                    <div class=" flex flex-col">
+                        <input class="border-2 border-black h-full" type="search" name="search_text" id="search_text"
+                            placeholder="Must contain this text">
+                    </div>
+
+                    <div class="flex flex-col">
+                        <input class="border-2 border-black h-full" list="channel-names" type="search"
+                            name="channel_name" id="channel_name" placeholder="Must be from this channel">
+                    </div>
+
+                    <fieldset class="flex border border-black h-full justify-start items-center gap-2">
+                        <legend class="text-center">Date range</legend>
+                        <input class="text-center grow" type="datetime-local" name="datetime_min" id="datetime_min">
+                        <div>to</div>
+                        <input class="text-center grow" type="datetime-local" name="datetime_max" id="datetime_max">
+                    </fieldset>
+
+                    <fieldset class="flex border border-black gap-2">
+                        <legend class="text-center">Amount of reactions</legend>
+                        <input class="w-8 grow" type="number" name="reactions_min" id="reactions_min" min="0">
+                        <div>to</div>
+                        <input class="w-8 grow" type="number" name="reactions_max" id="reactions_max" min="0">
+                    </fieldset>
+
+                    <fieldset class="flex border border-black gap-2">
+                        <legend class="text-center">Amount of comments</legend>
+                        <input class="w-8 grow" type="number" name="comments_min" id="comments_min" min="0">
+                        <div>to</div>
+                        <input class="w-8 grow" type="number" name="comments_max" id="comments_max" min="0">
+                    </fieldset>
+
+                    <fieldset class="border-2 border-black h-full p-2">
+                        <legend class="text-center">Attachment</legend>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-2">
+
+                            <fieldset class="flex gap-2 border border-black justify-center items-center">
+                                <legend class="text-center">Must have file</legend>
+                                <input type="checkbox" name="must_have_file" id="must_have_file">
+                            </fieldset>
+
+                            <fieldset class="flex flex-col border border-black ">
+                                <legend class="text-center">File extension</legend>
+                                <input type="search" list="file-extensions" name="file_extension" id="file_extension"
+                                    class="text-center" placeholder="File extension">
+                            </fieldset>
+
+                            <fieldset class="flex flex-col border border-black ">
+                                <legend class="text-center">Duration range</legend>
+                                <div class="flex gap-2">
+                                    <input class="text-center grow" type="time" name="file_duration_min"
+                                        id="file_duration_min" step="2" value="00:00:00">
+                                    <div>to</div>
+                                    <input class="text-center grow" type="time" name="file_duration_max"
+                                        id="file_duration_max" step="2" value="00:00:00">
+                                </div>
+                                <button class="h-full hover:bg-blue-300" onclick="
+                                document.querySelector('#file_duration_min').value = '00:00:00';
+                                document.querySelector('#file_duration_max').value = '00:00:00';     
+                            ">Reset</button>
+                            </fieldset>
+
+                            <fieldset class="flex gap-2 border border-black items-center">
+                                <legend class="text-center">File size range (megabytes)</legend>
+                                <input class="w-16 grow" type="number" name="file_size_min" id="file_size_min" min="0">
+                                <div>to</div>
+                                <input class="w-16 grow" type="number" name="file_size_max" id="file_size_max" min="0">
+                            </fieldset>
+
+                            <fieldset class="flex flex-col gap-2 border border-black ">
+                                <legend class="text-center">Image size (pixels)</legend>
+
+                                <fieldset class="flex gap-2 border border-black grow">
+                                    <legend class="text-center">Width</legend>
+                                    <input class="w-8 grow" type="number" name="file_image_width_min"
+                                        id="file_image_width_min" min="0">
+                                    <div>to</div>
+                                    <input class="w-8 grow" type="number" name="file_image_width_max"
+                                        id="file_image_width_max" min="0">
+                                </fieldset>
+
+                                <fieldset class="flex gap-2 border border-black grow">
+                                    <legend class="text-center">Height</legend>
+                                    <input class="w-8 grow" type="number" name="file_image_height_min"
+                                        id="file_image_height_min" min="0">
+                                    <div>to</div>
+                                    <input class="w-8 grow" type="number" name="file_image_height_max"
+                                        id="file_image_height_max" min="0">
+                                </fieldset>
+                            </fieldset>
+                        </div>
+                    </fieldset>
+                </div>
+            </details>
+
+            <div id="search-result" class="flex grow border border-black">
+                The results will appear here ...
+            </div>
+            {# TODO Result list with spinner (infinite-scroll or pagination?) #}
+        </div>
+
+    </main>
+</body>
+
+
+
+{# Pop up modal to be able to re-order and enable/disable columns in the search result #}
+<dialog id="columns-reorder-dialog" class="backdrop:backdrop-brightness-50 p-8" show>
+    <form id="save-active-columns-form" class="flex flex-col gap-4" method="dialog"
+        hx-post="/telegram-browser/save-active-columns" hx-include="#active-columns" hx-swap="none">
+        <div class="flex gap-4 justify-between">
+            {# Active columns with order, filled from cookie #}
+            <div id="active-columns"
+                class="flex flex-col droppable-container border border-black p-2 min-w-8 gap-2 grow">
+                {% for col_key, col_name in active_columns.items() %}
+                <div id="{{ col_key }}" class="draggable-item hover:bg-yellow-200" draggable="true">{{ col_name }}</div>
+                {% endfor %}
+            </div>
+            <div id="disabled-columns"
+                class="flex flex-col droppable-container border border-black p-2 min-w-8 gap-2 grow">
+                {% for col_key, col_name in disabled_columns.items() %}
+                <div id="{{ col_key }}" class="draggable-item hover:bg-yellow-200" draggable="true">{{ col_name }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="flex gap-4">
+            <button type="submit" class="border-2 border-black p-2 hover:bg-green-400 grow">Save changes</button>
+            <button type="button" class="border-2 border-black p-2 hover:bg-red-400 grow"
+                onclick="document.getElementById('columns-reorder-dialog').close();">Cancel</button>
+        </div>
+    </form>
+</dialog>
+<script>
+    // Add columns order from active-columns childrens
+    document.addEventListener('htmx:configRequest', (event) => {
+        // https://htmx.org/events/#htmx:configRequest
+        if (event.target.id !== "save-active-columns-form") {
+            return
+        }
+        const container = document.getElementById('active-columns');
+        const items = Array.from(container.getElementsByClassName('draggable-item'));
+        event.detail.parameters['columns-order'] = items.map(item => item.id).join(';');
+    });
+    // After request is sent, close dialog window normally
+    document.addEventListener('htmx:afterRequest', (event) => {
+        if (event.target.id === "save-active-columns-form" && event.detail.successful) {
+            document.getElementById('columns-reorder-dialog').close();
+        }
+    });
+    // Drag and drop functionality https://www.youtube.com/watch?v=jfYWwQrtzzY
+    const draggables = document.querySelectorAll('.draggable-item');
+    const containers = document.querySelectorAll('.droppable-container');
+    draggables.forEach(draggable => {
+        draggable.addEventListener('dragstart', () => {
+            draggable.classList.add('dragging')
+        })
+        draggable.addEventListener('dragend', () => {
+            draggable.classList.remove('dragging')
+        })
+    });
+    containers.forEach(container => {
+        container.addEventListener('dragover', e => {
+            e.preventDefault()
+            const afterElement = getDragAfterElement(container, e.clientY)
+            const draggable = document.querySelector('.dragging')
+            if (afterElement == null) {
+                container.appendChild(draggable)
+            } else {
+                container.insertBefore(draggable, afterElement)
+            }
+        })
+    })
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.draggable-item:not(.dragging)')]
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect()
+            const offset = y - box.top - box.height / 2
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child }
+            } else {
+                return closest
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element
+    }
+</script>
+<style>
+    .draggable-item {
+        padding: 1rem;
+        border: 1px solid black;
+        cursor: move;
+    }
+
+    .draggable-item.dragging {
+        opacity: .5;
+    }
+</style>
+
+
+
+<dialog id="view-media-dialog" class="backdrop:backdrop-brightness-50 bg-neutral-800 h-full w-full" show>
+</dialog>
+<script>
+    document.addEventListener('htmx:afterRequest', (event) => {
+        if (event.target.classList.contains("open-view-media-dialog") && event.detail.successful) {
+            document.getElementById('view-media-dialog').showModal();
+        }
+    });
+    // Remove media when pressing escape (closing dialog) which results in stop playing video and audio
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== "Escape") return
+        video = document.querySelector("video");
+        if (video) video.pause();
+        audio = document.querySelector("audio");
+        if (audio) audio.pause();
+        document.getElementById('view-media-dialog').replaceChildren();
+    });
+</script>
+
+<datalist id="channel-names" hx-get="/telegram-browser/all-channel-names" hx-trigger="load">
+</datalist>
+
+<datalist id="file-extensions" hx-get="/telegram-browser/all-file-extensions" hx-trigger="load">
+</datalist>

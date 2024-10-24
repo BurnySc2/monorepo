@@ -21,21 +21,23 @@ State4: audio generated, audio loaded
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
     hx-trigger="every {{ wait_time_for_next_poll|default(10, true) }}s">Queued ({{ chapter.position_in_queue }})...
-    <img class="htmx-indicator htmx-spinner" style="opacity: 1;" src="/static/spinner.svg" />
+    <img class="htmx-indicator animate-spin w-8" style="opacity: 1;" src="/static/spinner.svg" />
   </div>
   {% elif chapter.has_audio is defined and chapter.queued is defined and not chapter.has_audio and chapter.queued %}
   <div class="flex border-4 border-black p-2 rounded-3xl items-center"
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
     hx-trigger="every {{ wait_time_for_next_poll|default(10, true) }}s">Generating audio...
-    <img class="htmx-indicator htmx-spinner" style="opacity: 1;" src="/static/spinner.svg" />
+    <img class="htmx-indicator animate-spin w-8" style="opacity: 1;" src="/static/spinner.svg" />
   </div>
   {% elif chapter.has_audio is defined and chapter.has_audio %}
   <button class="flex border-4 border-black p-2 rounded-3xl hover:bg-green-300 items-center"
+  {# TODO Load audio directly with 'src' attribute but only load metadata, not the full audio #}
+  {# TODO The src may be another server endpoint or a minio presigned url with expire duration of 1h #}
     hx-target="#chapter_audio_{{ chapter.chapter_number }}" hx-swap="outerHTML"
     hx-post="/audiobook/load_generated_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
     hx-indicator="#spinner2_{{ chapter.chapter_number }}">Load audio
-    <img id="spinner2_{{ chapter.chapter_number }}" class="htmx-indicator htmx-spinner" src="/static/spinner.svg" />
+    <img id="spinner2_{{ chapter.chapter_number }}" class="htmx-indicator animate-spin w-8" src="/static/spinner.svg" />
   </button>
   {# State1: no audio generated and not queued #}
   {% else %}
@@ -44,7 +46,7 @@ State4: audio generated, audio loaded
     hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
     hx-trigger="click" hx-indicator="#spinner1_{{ chapter.chapter_number }}"
     hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch">Generate audio
-    <img id="spinner1_{{ chapter.chapter_number }}" class="htmx-indicator htmx-spinner" src="/static/spinner.svg" />
+    <img id="spinner1_{{ chapter.chapter_number }}" class="htmx-indicator animate-spin w-8" src="/static/spinner.svg" />
   </button>
   {% endif %}
 

@@ -10,14 +10,13 @@ from litestar.connection import ASGIConnection
 from litestar.exceptions import NotAuthorizedException
 from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Parameter
-from litestar.stores.memory import MemoryStore
 from pydantic import BaseModel
 
-from prisma import Prisma
 from src.routes.audiobook.schema import (
     AudioSettings,
 )
 from src.routes.audiobook.temp_generate_tts import get_supported_voices
+from src.routes.caches import get_db, global_cache
 
 load_dotenv()
 
@@ -71,12 +70,6 @@ class GoogleUser(BaseModel):
     display_name: str
 
 
-# MemoryStore https://docs.litestar.dev/2/usage/stores.html
-twitch_cache = MemoryStore()
-github_cache = MemoryStore()
-facebook_cache = MemoryStore()
-google_cache = MemoryStore()
-
 AVAILABLE_SERVICES_TYPE = Literal["twitch", "github", "facebook", "google"]
 VALID_SERVICES: tuple[AVAILABLE_SERVICES_TYPE, ...] = typing.get_args(AVAILABLE_SERVICES_TYPE)
 
@@ -101,12 +94,12 @@ async def provide_twitch_user(
     """
     Retrieves the user information from Twitch using the provided access token.
     """
-    global twitch_cache
+    global global_cache
     if twitch_access_token is None:
         return None
     # Grab cached user information to reduce amount of requests to twitch api
     # pyre-fixme[9]
-    cached_user: TwitchUser | None = await twitch_cache.get(twitch_access_token)
+    cached_user: TwitchUser | None = await global_cache.get(f"twitch_access_token {twitch_access_token}")
     if cached_user is not None:
         return cached_user
     async with httpx.AsyncClient() as client:
@@ -130,19 +123,19 @@ async def provide_twitch_user(
         # email=response_json["email"],
     )
     # pyre-fixme[6]
-    await twitch_cache.set(twitch_access_token, twitch_user, expires_in=60)
+    await global_cache.set(f"twitch_access_token {twitch_access_token}", twitch_user, expires_in=60)
     return twitch_user
 
 
 async def provide_github_user(
     github_access_token: Annotated[str | None, Parameter(cookie=COOKIES["github"])] = None,
 ) -> GithubUser | None:
-    global github_cache
+    global global_cache
     if github_access_token is None:
         return None
     # Grab cached user information to reduce amount of requests to github api
     # pyre-fixme[9]
-    cached_user: GithubUser | None = await github_cache.get(github_access_token)
+    cached_user: GithubUser | None = await global_cache.get(f"github_access_token {github_access_token}")
     if cached_user is not None:
         return cached_user
     async with httpx.AsyncClient() as client:
@@ -163,19 +156,19 @@ async def provide_github_user(
         login=data["login"],
     )
     # pyre-fixme[6]
-    await github_cache.set(github_access_token, github_user, expires_in=60)
+    await global_cache.set(f"github_access_token {github_access_token}", github_user, expires_in=60)
     return github_user
 
 
 async def provide_google_user(
     google_access_token: Annotated[str | None, Parameter(cookie=COOKIES["google"])] = None,
 ) -> GoogleUser | None:
-    global google_cache
+    global global_cache
     if google_access_token is None:
         return None
     # Grab cached user information to reduce amount of requests to google api
     # pyre-fixme[9]
-    cached_user: GoogleUser | None = await google_cache.get(google_access_token)
+    cached_user: GoogleUser | None = await global_cache.get(f"google_access_token {google_access_token}")
     if cached_user is not None:
         return cached_user
     async with httpx.AsyncClient() as client:
@@ -196,42 +189,40 @@ async def provide_google_user(
         display_name=data["email"],
     )
     # pyre-fixme[6]
-    await google_cache.set(google_access_token, google_user, expires_in=60)
+    await global_cache.set(f"google_access_token {google_access_token}", google_user, expires_in=60)
     return google_user
 
 
-async def provide_facebook_user(
-    facebook_access_token: Annotated[str | None, Parameter(cookie=COOKIES["facebook"])] = None,
-) -> FacebookUser | None:
-    global facebook_cache
-    if facebook_access_token is None:
-        return None
-    # Grab cached user information to reduce amount of requests to facebook api
-    # pyre-fixme[9]
-    cached_user: FacebookUser | None = await facebook_cache.get(facebook_access_token)
-    if cached_user is not None:
-        return cached_user
-    async with httpx.AsyncClient() as client:
-        # https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow/
-        get_response = await client.get(
-            "https://graph.facebook.com/me",
-            headers={
-                "Accept": "application/json",
-            },
-            params={
-                "access_token": f"{facebook_access_token}",
-            },
-        )
-        if get_response.is_error:
-            return None
-        data = get_response.json()
-    facebook_user = FacebookUser(
-        id=data["id"],
-        display_name=data["name"],
-    )
-    # pyre-fixme[6]
-    await facebook_cache.set(facebook_access_token, facebook_user, expires_in=60)
-    return facebook_user
+# async def provide_facebook_user(
+#     facebook_access_token: Annotated[str | None, Parameter(cookie=COOKIES["facebook"])] = None,
+# ) -> FacebookUser | None:
+#     global global_cache
+#     if facebook_access_token is None:
+#         return None
+#     # Grab cached user information to reduce amount of requests to facebook api
+#     cached_user: FacebookUser | None = await global_cache.get(f"facebook_access_token {facebook_access_token}")
+#     if cached_user is not None:
+#         return cached_user
+#     async with httpx.AsyncClient() as client:
+#         # https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow/
+#         get_response = await client.get(
+#             "https://graph.facebook.com/me",
+#             headers={
+#                 "Accept": "application/json",
+#             },
+#             params={
+#                 "access_token": f"{facebook_access_token}",
+#             },
+#         )
+#         if get_response.is_error:
+#             return None
+#         data = get_response.json()
+#     facebook_user = FacebookUser(
+#         id=data["id"],
+#         display_name=data["name"],
+#     )
+#     await global_cache.set(f"facebook_access_token {facebook_access_token}", facebook_user, expires_in=60)
+#     return facebook_user
 
 
 async def provide_logged_in_user(
@@ -256,14 +247,14 @@ async def provide_logged_in_user(
             name=github_user.login,
             service="github",
         )
-    # Facebook
-    facebook_user = await provide_facebook_user(facebook_access_token)
-    if facebook_user is not None:
-        return LoggedInUser(
-            id=facebook_user.id,
-            name=facebook_user.display_name,
-            service="facebook",
-        )
+    # Facebook - not used
+    # facebook_user = await provide_facebook_user(facebook_access_token)
+    # if facebook_user is not None:
+    #     return LoggedInUser(
+    #         id=facebook_user.id,
+    #         name=facebook_user.display_name,
+    #         service="facebook",
+    #     )
     # Google
     google_user = await provide_google_user(google_access_token)
     if google_user is not None:
@@ -282,14 +273,14 @@ async def owns_book_guard(
     logged_in_user: LoggedInUser | None = await provide_logged_in_user(
         connection.cookies.get(COOKIES["twitch"]),
         connection.cookies.get(COOKIES["github"]),
-        connection.cookies.get(COOKIES["facebook"]),
+        # connection.cookies.get(COOKIES["facebook"]),
         connection.cookies.get(COOKIES["google"]),
     )
+    assert logged_in_user is not None
+    assert isinstance(logged_in_user.name, str), logged_in_user.name
     book_id: int = connection.path_params.get("book_id") or int(connection.query_params["book_id"])
-    async with Prisma() as db:
-        assert isinstance(book_id, int), book_id
-        assert logged_in_user is not None
-        assert isinstance(logged_in_user.name, str), logged_in_user.name
+    assert isinstance(book_id, int), book_id
+    async with get_db() as db:
         book = await db.audiobookbook.find_first(
             where={
                 "id": book_id,

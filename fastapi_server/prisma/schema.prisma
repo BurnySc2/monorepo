@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
-  recursive_type_depth = "5"
   interface            = "asyncio"
+  recursive_type_depth = "5"
 }
 
 datasource db {
@@ -27,7 +27,6 @@ model AudiobookBook {
 
 model AudiobookChapter {
   id                 Int           @id @default(autoincrement())
-  book               AudiobookBook @relation(fields: [book_id], references: [id], onDelete: Cascade)
   book_id            Int
   queued             DateTime?
   started_converting DateTime?
@@ -38,22 +37,66 @@ model AudiobookChapter {
   content            String
   minio_object_name  String?
   audio_settings     Json?
+  book               AudiobookBook @relation(fields: [book_id], references: [id], onDelete: Cascade)
 
   @@index([book_id, chapter_number])
   @@map("litestar_audiobook_chapter")
 }
 
 model TelegramChannel {
-  id                Int               @id @default(autoincrement())
-  channel_id        Int
-  channel_title     String // Custom name of channel
-  channel_username  String? // Lower case, fixed name, may be None
-  date              DateTime // Creation date
-  participants      Int? // Amount of users / subscribers
-  latest_message_id Int? // Parsing messages from first message
-  TelegramMessage   TelegramMessage[]
+  id               Int               @id @default(autoincrement())
+  channel_id       BigInt            @unique
+  channel_title    String
+  channel_username String?
+  creation_date    DateTime
+  participants     BigInt
+  last_parsed      DateTime          @default(dbgenerated("'2000-01-01 00:00:00'::timestamp without time zone"))
+  TelegramMessage  TelegramMessage[]
 
+  @@index([channel_id])
+  @@index([channel_title])
+  @@index([channel_username])
   @@map("litestar_telegram_channel")
+}
+
+model TelegramMessage {
+  id                               Int             @id @default(autoincrement())
+  channel_id                       BigInt
+  message_id                       BigInt
+  message_date                     DateTime
+  message_text                     String?
+  amount_of_reactions              BigInt          @default(0)
+  amount_of_comments               BigInt          @default(0)
+  status                           Status          @default(NoFile)
+  file_downloadinfo_id             BigInt?
+  file_downloadinfo_access_hash    BigInt?
+  file_downloadinfo_file_reference Bytes?
+  downloading_start_time           DateTime?
+  mime_type                        String?
+  file_extension                   String?
+  file_size_bytes                  BigInt?
+  file_duration_seconds            Float?
+  file_height                      Int?
+  file_width                       Int?
+  minio_object_name                String?
+  downloading_retry_attempt        Int             @default(0)
+  channel                          TelegramChannel @relation(fields: [channel_id], references: [channel_id], onDelete: Cascade)
+
+  @@index([channel_id, message_id])
+  @@index([amount_of_comments(sort: Desc)])
+  @@index([amount_of_reactions(sort: Desc)])
+  @@index([channel_id])
+  @@index([file_duration_seconds])
+  @@index([file_extension])
+  @@index([file_height])
+  @@index([file_size_bytes])
+  @@index([file_width])
+  @@index([message_date(sort: Desc)])
+  @@index([message_id])
+  @@index([message_text(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([mime_type])
+  @@index([status])
+  @@map("litestar_telegram_message")
 }
 
 enum Status {
@@ -62,37 +105,4 @@ enum Status {
   Queued
   Downloading
   Downloaded
-}
-
-model TelegramMessage {
-  id                    Int             @id @default(autoincrement())
-  channel               TelegramChannel @relation(fields: [channel_id], references: [id], onDelete: Cascade)
-  channel_id            Int
-  message_id            Int
-  message_date          DateTime
-  link                  String // Can be generated from {prefix}/channel_username
-  // Total um of reactions to a message
-  amount_of_reactions   Int             @default(0)
-  // Sum of comments
-  amount_of_comments    Int             @default(0)
-  // Only filled if message has attachments
-  status                Status          @default(NoFile)
-  media_type            String? // TODO Video, Audio, Image, Other
-  // Messages with the same attachments tend to have same unique ids
-  file_unique_id        String?
-  file_size_bytes       BigInt?
-  file_duration_seconds Int? // Filled for video and audio
-  file_height           Int? // Filled for video and image
-  file_width            Int? // Filled for video and image
-  // Filled if media has been downloaded
-  minio_object_name     String?
-
-  @@index([channel_id, message_id])
-  // Potential indexes for filtering messages
-  // @@index([message_date])
-  // @@index([amount_of_reactions])
-  // @@index([amount_of_comments])
-  // @@index([file_size_bytes])
-  // @@index([file_duration_seconds])
-  @@map("litestar_telegram_message")
 }

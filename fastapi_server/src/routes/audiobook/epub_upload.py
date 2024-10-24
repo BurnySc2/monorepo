@@ -12,13 +12,13 @@ from litestar.enums import MediaType, RequestEncodingType
 from litestar.params import Body
 from litestar.response import Template
 
-from prisma import Prisma
 from src.routes.audiobook.temp_read_epub import (
     EpubChapter,
     EpubMetadata,
     extract_chapters,
     extract_metadata,
 )
+from src.routes.caches import get_db
 from src.routes.cookies_and_guards import LoggedInUser, is_logged_in_guard, provide_logged_in_user
 
 load_dotenv()
@@ -34,7 +34,6 @@ class MyAudiobookEpubRoute(Controller):
     @get("/epub_upload")
     async def index(
         self,
-        logged_in_user: LoggedInUser,
     ) -> Template:
         return Template(template_name="audiobook/epub_upload.html")
 
@@ -59,7 +58,7 @@ class MyAudiobookEpubRoute(Controller):
         metadata: EpubMetadata = extract_metadata(epub_data)
 
         # If not present in database, add book entry
-        async with Prisma() as db:
+        async with get_db() as db:
             book = await db.audiobookbook.find_first(
                 where={
                     "uploaded_by": logged_in_user.db_name,
@@ -77,7 +76,7 @@ class MyAudiobookEpubRoute(Controller):
 
         chapters: list[EpubChapter] = extract_chapters(epub_data)
         # Insert book
-        async with Prisma() as db:
+        async with get_db() as db:
             book = await db.audiobookbook.create(
                 {
                     "uploaded_by": logged_in_user.db_name,

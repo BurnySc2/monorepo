@@ -2,8 +2,9 @@
 <!-- https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/Document_and_website_structure -->
 #}
 <nav class="flex justify-between">
-    <div class="flex justify-center grow">
+    <div class="flex justify-center gap-2 grow">
         <a href="/audiobook">Audio-Converter</a>
+        <a href="/telegram-browser">Telegram-Browser</a>
     </div>
     <a hx-get="/login/name" hx-trigger="load" hx-indicator="#spinner_login" href="/login" style="overflow: hidden;">
         <img id="spinner_login" class="htmx-indicator htmx-spinner" src="/static/spinner.svg" />
