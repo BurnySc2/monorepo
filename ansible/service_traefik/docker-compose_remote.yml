@@ -27,6 +27,7 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--entryPoints.websecure.address=:443"
       - "--entrypoints.pgsql.address=:5432"
+      - "--entrypoints.mariadb.address=:3306"
       # Disable challenge while A-recosd is still pending to not spam letsencrypt
       - "--certificatesresolvers.production.acme.email={{ secrets.TRAEFIK.MY_EMAIL }}"
       - "--certificatesresolvers.production.acme.storage=/etc/traefik/acme.json"

@@ -45,6 +45,7 @@
       - cloc
       - jq # JSON processor
       - openssh
+      - cloudflared
       #- ansible
       - git
       - lazygit # git gui for terminal

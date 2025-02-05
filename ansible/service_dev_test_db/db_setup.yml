@@ -1,5 +1,5 @@
 # Execute with
-# ansible-playbook db_setup.yml.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook db_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: server_group4
   vars:

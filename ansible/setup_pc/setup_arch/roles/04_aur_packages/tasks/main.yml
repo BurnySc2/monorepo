@@ -13,6 +13,7 @@
       - choosenim # nim installer
       - jdownloader2
       - ttf-symbola # required by discord? https://wiki.archlinux.org/title/Discord#Emojis_are_not_rendered_correctly
+      - nodejs-emmet-ls # emmet language server for helix
       # - opera
       # - lazydocker-bin # docker gui in terminal
     state: present

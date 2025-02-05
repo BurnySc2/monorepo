@@ -59,7 +59,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.routers.maria_dev.rule=HostSNI(`{{ secrets.DATABASES_DEV.MARIA_DEV_SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
-      - "traefik.tcp.routers.maria_dev.entrypoints=pgsql"
+      - "traefik.tcp.routers.maria_dev.entrypoints=mariadb"
       - "traefik.tcp.routers.maria_dev.tls=true"
       - "traefik.tcp.routers.maria_dev.tls.certresolver=production"
       # Optional:
@@ -77,7 +77,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.tcp.routers.maria_test.rule=HostSNI(`{{ secrets.DATABASES_DEV.MARIA_TEST_SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
-      - "traefik.tcp.routers.maria_test.entrypoints=pgsql"
+      - "traefik.tcp.routers.maria_test.entrypoints=mariadb"
       - "traefik.tcp.routers.maria_test.tls=true"
       - "traefik.tcp.routers.maria_test.tls.certresolver=production"
       # Optional:
