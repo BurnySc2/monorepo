@@ -21,6 +21,7 @@
     mkswap /swapfile
     swapon /swapfile
   when: ansible_swaptotal_mb < 1
+  become: true
 
 - name: Ensure swapfile is enabled on boot by editing /etc/fstab
   ansible.builtin.mount:
@@ -31,3 +32,40 @@
     passno: 0
     dump: 0
     state: present
+  become: true
+
+  # Automount other hard drives
+  # Commands:
+  # lsblk
+  # lsblk -f
+  # ls -lah /dev/disk/by-uuid
+  # cat /etc/fstab
+  # Validate fstab without reboot by running:
+  # mount -a
+
+- name: Mount 240gb ssd
+  ansible.posix.mount:
+    path: /media/ssd240
+    src: UUID=8e51b97d-25d7-4a27-b0b7-b5f48c1df7ca
+    fstype: ext4
+    opts: noatime
+    state: mounted
+  become: true
+
+- name: Mount 250gb ssd
+  ansible.posix.mount:
+    path: /media/ssd250
+    src: UUID=65320794-cac4-47c9-bfba-d51f87688ee8
+    fstype: ext4
+    opts: noatime
+    state: mounted
+  become: true
+
+- name: Mount 4tb hdd
+  ansible.posix.mount:
+    path: /media/hdd4tb
+    src: UUID=6da098ee-4d00-42d1-a07d-04b97316dad3
+    fstype: ext4
+    opts: noatime
+    state: mounted
+  become: true
