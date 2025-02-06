@@ -54,16 +54,19 @@ services:
     environment:
       MARIADB_ROOT_PASSWORD: "{{ secrets.DATABASES_DEV.MARIA_DEV_PASSWORD }}"
       MARIADB_DATABASE: maria
+    ports:
+      - 3307:3306
     volumes:
       - maria_data_dev:/var/lib/mysql
-    labels:
-      - "traefik.enable=true"
-      - "traefik.tcp.routers.maria_dev.rule=HostSNI(`{{ secrets.DATABASES_DEV.MARIA_DEV_SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
-      - "traefik.tcp.routers.maria_dev.entrypoints=mariadb"
-      - "traefik.tcp.routers.maria_dev.tls=true"
-      - "traefik.tcp.routers.maria_dev.tls.certresolver=production"
-      # Optional:
-      - "traefik.tcp.services.maria_dev.loadBalancer.server.port=3306"
+    # HostSNI doesn't seem to work for mariadb
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.tcp.routers.maria_dev.rule=HostSNI(`{{ secrets.DATABASES_DEV.MARIA_DEV_SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
+    #   - "traefik.tcp.routers.maria_dev.entrypoints=mariadb"
+    # - "traefik.tcp.routers.maria_dev.tls=true"
+    # - "traefik.tcp.routers.maria_dev.tls.certresolver=production"
+    #   # Optional:
+    #   - "traefik.tcp.services.maria_dev.loadBalancer.server.port=3306"
 
   maria_test:
     hostname: maria_test
@@ -72,13 +75,7 @@ services:
       - "{{ secrets.TRAEFIK_NETWORK }}"
     restart: unless-stopped
     environment:
-      MARIADB_ROOT_PASSWORD: "{{ secrets.DATABASES_DEV.MARIA_DEV_PASSWORD }}"
+      MARIADB_ROOT_PASSWORD: "{{ secrets.DATABASES_DEV.MARIA_TEST_PASSWORD }}"
       MARIADB_DATABASE: maria
-    labels:
-      - "traefik.enable=true"
-      - "traefik.tcp.routers.maria_test.rule=HostSNI(`{{ secrets.DATABASES_DEV.MARIA_TEST_SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
-      - "traefik.tcp.routers.maria_test.entrypoints=mariadb"
-      - "traefik.tcp.routers.maria_test.tls=true"
-      - "traefik.tcp.routers.maria_test.tls.certresolver=production"
-      # Optional:
-      - "traefik.tcp.services.maria_test.loadBalancer.server.port=3306"
+    ports:
+      - 3308:3306

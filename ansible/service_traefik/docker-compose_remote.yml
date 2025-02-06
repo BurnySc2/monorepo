@@ -15,8 +15,9 @@ services:
       - 80:80
         # The HTTPS port
       - 443:443
-        # The TCP port
+        # The TCP port (postgres: 5432, mariadb: 3306)
       - 5432:5432
+      - 3306:3306
     command:
       - "--api.insecure=false"
       - "--providers.docker=true"
