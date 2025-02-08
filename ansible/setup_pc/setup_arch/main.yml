@@ -1,6 +1,8 @@
 ---
 - name: Main play
   hosts: all
+  vars:
+    USERNAME: burny
   roles:
     - { role: 01_host_info }
     - { role: 02_basics }

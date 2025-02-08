@@ -1,0 +1,14 @@
+# mkdir -p ~/.config/systemd/user
+# nano ~/.config/systemd/user/audiosh.service
+# systemctl --user daemon-reload
+# systemctl --user enable audiosh.service
+[Unit]
+Description=Run audiosh script after user login
+After=default.target
+
+[Service]
+ExecStart=/bin/bash /home/{{ USERNAME }}/.config/systemd/user/audiosh.sh
+Restart=no
+
+[Install]
+WantedBy=default.target

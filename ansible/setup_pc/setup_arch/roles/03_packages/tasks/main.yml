@@ -60,6 +60,7 @@
       - git
       - lazygit # git gui for terminal
       - helix
+      - xsel # enables helix to use system clipboard with space+y
       # Advanced programming tools, languages
       - make # For AUR packages
       - python-pip
@@ -132,6 +133,7 @@
     daemon_reload: true
     enabled: true
   become: true
+  when: not ansible_check_mode
 
 - name: Create user and set default shell
   ansible.builtin.user:
@@ -151,12 +153,40 @@
     state: started
     daemon_reload: true
     enabled: true
-# - name: Create directories
+  when: not ansible_check_mode
+
+# - name: Create syncthing directories
 #   file:
 #     path: "{{ item }}"
 #     recurse: true
 #     state: directory
-#     owner: burny
-#     group: burny
 #   loop:
 #     - "~/syncthing"
+
+- name: Create user systemd directory
+  file:
+    path: "{{ item }}"
+    recurse: true
+    state: directory
+  loop:
+    - "~/.config/systemd/user"
+
+- name: Copy shell script
+  ansible.builtin.template:
+    src: audio.sh
+    dest: ~/.config/systemd/user/audiosh.sh
+
+- name: Copy service file
+  ansible.builtin.template:
+    src: audiosh.service
+    dest: ~/.config/systemd/user/audiosh.service
+
+- name: Start twitch audio sinks service for user
+  become_user: "{{ USERNAME }}"
+  ansible.builtin.systemd_service:
+    name: audiosh.service
+    scope: user
+    state: started
+    daemon_reload: true
+    enabled: true
+  when: not ansible_check_mode
