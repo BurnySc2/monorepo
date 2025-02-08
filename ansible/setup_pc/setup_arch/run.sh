@@ -9,8 +9,10 @@ ansible-playbook main.yml -i hosts --ask-become-pass --check
 
 ansible-playbook main.yml -i hosts --ask-become-pass --diff
 
-# If using brave browser, set up sync
 # If using syncthing, set it up. Set GUI to dark mode and default folder to '~/syncthing'
+# Open xfce settings editor and adjust power settings on AC https://docs.xfce.org/xfce/xfce4-settings/editor
+ 
+# If using brave browser, set up sync
 # Power manager, turn off display power management when plugged in
 # Set up terminal to have solid background
 # Set keyboard repeat rate to 40 and delay to 250

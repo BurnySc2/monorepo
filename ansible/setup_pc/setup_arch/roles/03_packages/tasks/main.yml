@@ -96,7 +96,8 @@
       - ffmpeg # CLI video converter
       - gifski # CLI gif converter
       - kdenlive # video editor
-      # - yt-dlp
+      - qbittorrent
+      - yt-dlp
       # - samba # share folders in local network
       - krita # gimp alternative
       - firefox
@@ -123,6 +124,14 @@
   ansible.builtin.group:
     name: docker
     state: present
+
+- name: Start docker service for user
+  ansible.builtin.systemd_service:
+    name: docker.service
+    state: started
+    daemon_reload: true
+    enabled: true
+  become: true
 
 - name: Create user and set default shell
   ansible.builtin.user:
