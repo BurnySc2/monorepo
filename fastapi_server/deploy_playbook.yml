@@ -1,10 +1,9 @@
 # Execute with
 # ansible-playbook deploy_playbook.yml -i ../ansible/hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
-  hosts: server_group2
+  hosts: server_group4
   vars:
     USERNAME: litestar_server
-  # TODO Deploy webserver to server_group2 but converter to server_group4 for better internet traffic
   tasks:
     - name: Create group
       ansible.builtin.group:
