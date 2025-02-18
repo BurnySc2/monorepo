@@ -1,3 +1,7 @@
+# Rescan all files (for example when uploading file manually) with:
+# https://doc.owncloud.com/server/next/admin_manual/configuration/server/occ_command.html#the-filesscan-command
+# docker compose exec owncloud occ files:scan --all
+# Dont forget to change owner to owncloud user
 networks:
   '{{secrets.TRAEFIK_NETWORK}}':
     external: true
