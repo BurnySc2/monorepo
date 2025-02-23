@@ -1,0 +1,26 @@
+networks:
+  '{{secrets.TRAEFIK_NETWORK}}':
+    external: true
+
+services:
+  pinchflat:
+    container_name: pinchflat
+    restart: unless-stopped
+    image: ghcr.io/kieraneglin/pinchflat:latest
+    user: "0:{{ SYNCTHING_GROUP_ID.stdout }}"
+    volumes:
+      - ./config:/config
+      - /home/syncthing/data1/media-pinchflat:/downloads
+    environment:
+      - YT_DLP_WORKER_CONCURRENCY=1
+      - LOG_LEVEL=info
+    networks:
+      - "{{ secrets.TRAEFIK_NETWORK }}"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.entryPoints=web,websecure
+      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ secrets.PINCHFLAT.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.tls=true
+      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.tls.certresolver=production
+      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.middlewares=authelia@docker

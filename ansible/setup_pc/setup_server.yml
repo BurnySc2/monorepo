@@ -72,6 +72,16 @@
         dump: 0
         state: present
 
+    - name: Mount 480gb ssd
+      ansible.posix.mount:
+        path: /home/syncthing/data1/media-pinchflat
+        src: UUID=cdc98894-8eb6-4239-a639-424fa9009b9f
+        fstype: ext4
+        opts: noatime
+        state: mounted
+      become: true
+      when: "'server_group1' in group_names"
+
     # Disable ssh login with password by modifying
     # nano /etc/ssh/sshd_config
     # Setting the following to "no"

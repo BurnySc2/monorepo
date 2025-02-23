@@ -68,6 +68,12 @@
                   originServerName: sync1.burnysc2.xyz
                   noTLSVerify: true
                   http2Origin: true
+              - hostname: pinchflat.burnysc2.xyz
+                service: https://traefik
+                originRequest:
+                  originServerName: pinchflat.burnysc2.xyz
+                  noTLSVerify: true
+                  http2Origin: true
               - service: http_status:404
         status_code: 200
       when: "'server_group1' in group_names"
@@ -78,6 +84,7 @@
         - hostname: traefik1.burnysc2.xyz
         - hostname: auth1.burnysc2.xyz
         - hostname: sync1.burnysc2.xyz
+        - hostname: pinchflat.burnysc2.xyz
       loop_control:
         loop_var: item
       when: "'server_group1' in group_names"
@@ -107,24 +114,24 @@
                   originServerName: sync2.burnysc2.xyz
                   noTLSVerify: true
                   http2Origin: true
-              - hostname: "burnysc2.xyz"
-                service: https://traefik
-                originRequest:
-                  originServerName: burnysc2.xyz
-                  noTLSVerify: true
-                  http2Origin: true
-              - hostname: www.burnysc2.xyz
-                service: https://traefik
-                originRequest:
-                  originServerName: www.burnysc2.xyz
-                  noTLSVerify: true
-                  http2Origin: true
-              - hostname: apidev.burnysc2.xyz
-                service: https://traefik
-                originRequest:
-                  originServerName: apidev.burnysc2.xyz
-                  noTLSVerify: true
-                  http2Origin: true
+              # - hostname: "burnysc2.xyz"
+              #   service: https://traefik
+              #   originRequest:
+              #     originServerName: burnysc2.xyz
+              #     noTLSVerify: true
+              #     http2Origin: true
+              # - hostname: www.burnysc2.xyz
+              #   service: https://traefik
+              #   originRequest:
+              #     originServerName: www.burnysc2.xyz
+              #     noTLSVerify: true
+              #     http2Origin: true
+              # - hostname: apidev.burnysc2.xyz
+              #   service: https://traefik
+              #   originRequest:
+              #     originServerName: apidev.burnysc2.xyz
+              #     noTLSVerify: true
+              #     http2Origin: true
               - hostname: lissen.burnysc2.xyz
                 service: https://traefik
                 originRequest:
@@ -159,9 +166,9 @@
         - hostname: traefik2.burnysc2.xyz
         - hostname: auth2.burnysc2.xyz
         - hostname: sync2.burnysc2.xyz
-        - hostname: burnysc2.xyz
-        - hostname: www.burnysc2.xyz
-        - hostname: apidev.burnysc2.xyz
+        # - hostname: burnysc2.xyz
+        # - hostname: www.burnysc2.xyz
+        # - hostname: apidev.burnysc2.xyz
         - hostname: lissen.burnysc2.xyz
         - hostname: vodching.burnysc2.xyz
         - hostname: baikal.burnysc2.xyz

@@ -28,6 +28,7 @@
       # Media viewer and editors
       - xournalpp
       - obsidian # notes editor
+      - libreoffice-still # openoffice
       ## Images
       - gwenview # image viewer and simple editor
       - viewnior # image viewer
