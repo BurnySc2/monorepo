@@ -1,3 +1,4 @@
+{# TODO Problem: overflowing amount of books make the "upload book" button disappear #}
 <table style="margin: 3rem; border: 1px solid black; border-collapse: collapse;">
     <tr style="border: 1px solid black;">
         <th style="border: 1px solid black;">Upload Date</th>
@@ -33,6 +34,7 @@
             hx-post="/audiobook/delete_book?book_id={{ book.id }}"
             hx-swap="delete"
             hx-target="#bookrow{{ book.id }}"
+            {# TODO disable djlint for autoformatting #}
             hx-confirm="Are you sure you wish to delete this book?"
             {#
             Do

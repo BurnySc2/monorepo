@@ -57,6 +57,15 @@ class MyAudiobookBookRoute(Controller):
         book_id: int,
         logged_in_user: LoggedInUser,
     ) -> Template:
+        # TODO Use the 'get_chapters.sql' query
+        # TODO Strategy: Initial page load needs to be fast
+        # Then with followup request uses oob-swap to update the info of
+        # Title, Author
+        # If all chapters have been generated: allow book download button
+        # If at least one chapter has been generated: allow "delete all generations" button
+        # If at least one chapter has no audio, is not generating or is not queued: allow "generate audio for all chapters" button
+        # oob-swap: fill out the chapter information (chapter title, audio-queued/generating/generated)
+        # Poll chapters: audio-queued/generating
         async with get_db() as db:
             book = await db.audiobookbook.find_first_or_raise(
                 where={
@@ -120,6 +129,9 @@ WHERE
         # Queue chapter to be parsed and generate audio for it
         # Then wait till the job is done before returning
 
+        # TODO Instead of refreshing per chapter, use oob-swap and refresh all chapters in one request, using 'get_chapters.sql'
+        # TODO Use fix poll request every 10-30 seconds
+
         # Queue the chapter to the database
         async with get_db() as db:
             chapter = await db.audiobookchapter.find_first_or_raise(
@@ -166,6 +178,8 @@ WHERE
         chapter_number: int,
     ) -> Template:
         # Audio has been generated
+
+        # TODO Generate presigned url to minio instead of loading the entire audio from minio
         async with get_db() as db:
             chapter = await db.audiobookchapter.find_first_or_raise(
                 where={
@@ -196,6 +210,7 @@ WHERE
         """
         From db: fetch generated audio bytes, stream / download to user
         """
+        # TODO Instead of loading the audio from minio through the webserver, redirect to a minio presigned url
         async with get_db() as db:
             chapter = await db.audiobookchapter.find_first_or_raise(
                 where={
@@ -360,6 +375,7 @@ WHERE
         """
         Remove book and all chapters from db and .mp3s from minio
         """
+        # TODO Mark book as deleted instead (soft-delete) and delete from minio in seperate process
 
         def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
             # minio_client.remove_objects does not work
@@ -394,6 +410,7 @@ WHERE
                 where={"book_id": book_id, "chapter_number": chapter_number}
             )
             if chapter.minio_object_name is not None:
+                # TODO Verify that it has been deleted, what errors may occur in minio?
                 await asyncio.to_thread(minio_client.remove_object, MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name)
             await db.audiobookchapter.update_many(
                 where={"id": chapter.id},
