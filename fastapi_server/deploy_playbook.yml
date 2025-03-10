@@ -39,14 +39,9 @@
         src: "./"
         dest: "/home/{{ USERNAME }}/dockerfiles/"
         rsync_opts:
+          - "--filter=':- .gitignore'"
           - "--exclude=.env*"
-          - "--exclude=__pycache__"
-          - "--exclude=.benchmarks"
           - "--exclude=.git"
-          - "--exclude=.pyre"
-          - "--exclude=.pytest_cache"
-          - "--exclude=.ruff_cache"
-          - "--exclude=.venv"
           - "--exclude=.vscode"
           - "--exclude=test"
 
