@@ -57,6 +57,7 @@
       - cloc
       - jq # JSON processor
       - openssh
+      - sshpass # Allow ssh/ansible to login with password
       - ansible
       - git
       - lazygit # git gui for terminal
