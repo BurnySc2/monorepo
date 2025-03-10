@@ -27,6 +27,12 @@ format:
     # Format code
     RUN uv run ruff format .
 
+formatsql:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Format queries
+    RUN uv run sqlfluff fix src/queries
+
 # Check if files are correctly formatted
 format-check:
     FROM +install-dev
@@ -47,6 +53,10 @@ pyre:
     COPY .pyre_configuration /root/fastapi_server/.pyre_configuration
     RUN uv run pyre
 
+lintsql:
+    LOCALLY
+    RUN uv run sqlfluff lint src/queries
+
 # Doesn't work anymore because it requires a separate postgres container now!
 # pytest:
 #     FROM +install-dev
@@ -56,6 +66,7 @@ pyre:
 pre-commit:
     BUILD +format-check
     BUILD +lint
+    BUILD +lintsql
     BUILD +pyre
 
 all:

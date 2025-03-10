@@ -57,6 +57,7 @@ dev-dependencies = [
     "pytest-random-order>=1.1.1",
     # Linter and autoformat
     "ruff>=0.7.3",
+    "sqlfluff>=3.3.1",
     "toml>=0.10.2",
 ]
 
@@ -92,6 +93,30 @@ select = [
 ]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.
 pep8-naming.classmethod-decorators = ["pydantic.validator", "classmethod"]
+
+[tool.sqlfluff.core]
+dialect = "postgres"
+max_line_length = 120
+templater = "placeholder"
+sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+exclude_rules = "CP02,AL09,RF04"
+
+[tool.sqlfluff.templater.placeholder]
+param_style = "question_mark"
+
+[tool.sqlfluff.indentation]
+indented_joins = false
+indented_using_on = true
+template_blocks_indent = false
+
+[tool.sqlfluff.templater]
+unwrap_wrapped_queries = true
+
+[tool.sqlfluff.templater.jinja]
+apply_dbt_builtins = true
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"
 
 [tool.pytest.ini_options]
 pythonpath = "src"

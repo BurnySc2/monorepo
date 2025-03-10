@@ -1,7 +1,7 @@
 generator client {
   provider             = "prisma-client-py"
   interface            = "asyncio"
-  recursive_type_depth = "5"
+  recursive_type_depth = "2"
 }
 
 datasource db {
@@ -11,6 +11,8 @@ datasource db {
 
 model AudiobookBook {
   id                 Int                @id @default(autoincrement())
+  // TODO Add soft-delete flag
+  // deleted Boolean
   uploaded_by        String
   book_title         String
   book_author        String
@@ -39,6 +41,7 @@ model AudiobookChapter {
   audio_settings     Json?
   book               AudiobookBook @relation(fields: [book_id], references: [id], onDelete: Cascade)
 
+  @@index([book_id])
   @@index([book_id, chapter_number])
   @@map("litestar_audiobook_chapter")
 }
