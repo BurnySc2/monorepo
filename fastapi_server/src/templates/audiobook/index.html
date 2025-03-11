@@ -1,24 +1,20 @@
 {% include "header.html" with context %}
-
-<body class="flex h-screen flex-col">
+<body class="flex h-screen flex-col bg-gray-300">
     {% include "nav.html" with context %}
-    <main class="flex h-full flex-col items-center justify-center bg-gray-300">
-        <a
-            class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-300"
-            href="/audiobook/epub_upload"
-        >Upload an epub</a>
+    <main class="flex flex-col items-center justify-center grow py-4">
+        <a class="border-black border-4 rounded-3xl p-2 hover:bg-green-500 bg-green-400"
+           href="/audiobook/epub_upload">Upload epub</a>
         {#
         <!-- <a href="/audiobook/pdf_upload">TODO Upload a pdf</a> -->
         <!-- <a href="/audiobook/website">TODOGenerate audio for a website</a> -->
         #}
-        <div
-            class="m-4"
-            hx-get="/audiobook/list_books"
-            hx-trigger="load"
-            hx-swap="outerHTML"
-        >
-            {# TODO Show spinner while loading #}
-            {# Hide while loading #}
+        <img class="loading-spinner htmx-indicator w-8 animate-spin overflow-hidden"
+             src="/static/spinner.svg" />
+        <div class="m-4 htmx-indicator"
+             hx-get="/audiobook/list_books"
+             hx-trigger="load"
+             hx-swap="outerHTML"
+             hx-indicator=".loading-spinner">
             You are not logged in.
         </div>
     </main>

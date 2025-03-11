@@ -9,6 +9,7 @@
         "bradlc.vscode-tailwindcss",
         "samuelcolvin.jinjahtml",
         "otovo-oss.htmx-tags",
-        "prisma.prisma"
+        "prisma.prisma",
+        "bierner.markdown-mermaid"
     ]
 }

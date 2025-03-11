@@ -1,129 +1,115 @@
 {% include "header.html" with context %}
-
 <body class="flex h-screen flex-col">
     {% include "nav.html" with context %}
     {# TODO With a book with a lot of chapters, there is a scroll bar which covers the height of the nav bar #}
     <main class="flex grow flex-col items-center bg-gray-300 p-4 lg:overflow-y-auto">
         <div class="flex flex-col gap-2 lg:m-4 lg:h-full lg:w-3/4 lg:overflow-y-auto">
-            <div class="text-center text-4xl font-bold">{{ book_name }}</div>
-            <div class="text-center text-2xl font-semibold">{{ book_author }}</div>
+            <div class="text-center text-4xl font-bold">
+                {{ book_name }}
+            </div>
+            <div class="text-center text-2xl font-semibold">
+                {{ book_author }}
+            </div>
             <div class="flex flex-col rounded border-2 border-black p-2">
-                <div class="place-self-center text-2xl font-semibold underline">Settings</div>
-                <form
-                    class="grid grid-cols-2"
-                    hx-post="/audiobook/save_settings_to_cookies"
-                    hx-swap="none"
-                    hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch"
-                    hx-trigger="change delay:1s"
-                >
-                    <div>Voice</div>
-                    <select
-                        id="voice_name"
-                        name="voice_name"
-                    >
+                <div class="place-self-center text-2xl font-semibold underline">
+                    Settings
+                </div>
+                <form class="grid grid-cols-2"
+                      hx-post="/audiobook/save_settings_to_cookies"
+                      hx-swap="none"
+                      hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch"
+                      hx-trigger="change delay:1s">
+                    <div>
+                        Voice
+                    </div>
+                    <select id="voice_name" name="voice_name">
                         {% for voice_name in available_voices %}
-                        <option
-                            value="{{ voice_name }}"
-                            {%
-                            if
-                            user_settings.voice_name==voice_name
-                            %}
-                            selected
-                            {%
-                            endif
-                            %}
-                        >
-                            {{
-                            voice_name }}</option>
+                            {#- djlint:off -#}
+                            <option value="{{ voice_name }}"
+                                    {% if user_settings.voice_name==voice_name %} selected {% endif %}>
+                                {#- djlint:on -#}
+                                {{ voice_name }}
+                            </option>
                         {% endfor %}
                     </select>
-                    <div>Rate</div>
-                    <input
-                        id="voice_rate"
-                        name="voice_rate"
-                        type="number"
-                        min="0"
-                        value="{{ user_settings.voice_rate }}"
-                    />
-                    <div>Volume</div>
-                    <input
-                        id="voice_volume"
-                        name="voice_volume"
-                        type="number"
-                        min="0"
-                        value="{{ user_settings.voice_volume }}"
-                    />
-                    <div>pitch</div>
-                    <input
-                        id="voice_pitch"
-                        name="voice_pitch"
-                        type="number"
-                        value="{{ user_settings.voice_pitch }}"
-                    />
+                    <div>
+                        Rate
+                    </div>
+                    <input id="voice_rate"
+                           name="voice_rate"
+                           type="number"
+                           min="0"
+                           value="{{ user_settings.voice_rate }}" />
+                    <div>
+                        Volume
+                    </div>
+                    <input id="voice_volume"
+                           name="voice_volume"
+                           type="number"
+                           min="0"
+                           value="{{ user_settings.voice_volume }}" />
+                    <div>
+                        pitch
+                    </div>
+                    <input id="voice_pitch"
+                           name="voice_pitch"
+                           type="number"
+                           value="{{ user_settings.voice_pitch }}" />
                 </form>
             </div>
             <div class="flex flex-col rounded border-2 border-black p-2">
-                <div class="place-self-center text-2xl font-semibold underline">Book</div>
+                <div class="place-self-center text-2xl font-semibold underline">
+                    Book
+                </div>
                 {#
                 <!-- TODO Allow custom book name and author before downloading -->
                 <!-- Show info on how many Chapters, sentences, words this book contains -->
                 #}
                 <div class="flex justify-center">
-                    <button
-                        hx-post="/audiobook/generate_audio_book?book_id={{ book_id }}"
-                        hx-swap="none"
-                        hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch"
-                        hx-indicator="#spinner_book"
-                        class="flex items-center rounded-lg border-2 border-black p-2 hover:bg-green-300"
-                    >Generate audio
+                    <button hx-post="/audiobook/generate_audio_book?book_id={{ book_id }}"
+                            hx-swap="none"
+                            hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch"
+                            hx-indicator="#spinner_book"
+                            class="flex items-center rounded-lg border-2 border-black p-2 hover:bg-green-300">
+                        Generate audio
                         for
                         all chapters
-                        <img
-                            id="spinner_book"
-                            class="htmx-indicator w-8 animate-spin"
-                            src="/static/spinner.svg"
-                        />
+                        <img id="spinner_book"
+                             class="htmx-indicator w-8 animate-spin"
+                             src="/static/spinner.svg" />
                     </button>
                     {# TODO Only show download-zip-button if audio for all chapters have been generated #}
-                    <a
-                        download
-                        href="/audiobook/download_book_zip?book_id={{ book_id }}"
-                        class="self-center rounded-xl hover:bg-green-300"
-                    >
-                        <img
-                            width="64"
-                            height="64"
-                            src="/static/download.svg"
-                            alt="Download audio"
-                        >
+                    <a download
+                       href="/audiobook/download_book_zip?book_id={{ book_id }}"
+                       class="self-center rounded-xl hover:bg-green-300">
+                        <img width="64"
+                             height="64"
+                             src="/static/download.svg"
+                             alt="Download audio">
                     </a>
-                    <button
-                        hx-post="/audiobook/delete_book?book_id={{ book_id }}"
-                        hx-swap="none"
-                        hx-confirm="Are you sure you wish to delete this book?"
-                        class="self-center rounded-xl hover:bg-green-300"
-                    >
-                        <img
-                            width="64"
-                            height="64"
-                            src="/static/delete.svg"
-                            alt="Delete book"
-                        >
+                    <button hx-post="/audiobook/delete_book?book_id={{ book_id }}"
+                            hx-swap="none"
+                            hx-confirm="Are you sure you wish to delete this book?"
+                            class="self-center rounded-xl hover:bg-green-300">
+                        <img width="64"
+                             height="64"
+                             src="/static/delete.svg"
+                             alt="Delete book">
                     </button>
                 </div>
-
             </div>
             <div class="flex flex-col rounded border-2 border-black p-2 lg:grow lg:overflow-y-auto">
-                <div class="place-self-center text-2xl font-semibold underline">Table of contents</div>
-                <div
-                    class="gap-2"
-                    style="display: grid;
-                grid-template-columns: auto auto;"
-                >
+                <div class="place-self-center text-2xl font-semibold underline">
+                    Table of contents
+                </div>
+                <div class="gap-2"
+                     style="display: grid;
+                            grid-template-columns: auto auto">
                     {% for chapter in chapters %}
-                    <div class="self-center">'{{ chapter.chapter_title }}' with {{ chapter.sentence_count }} sentences
-                    </div>
-                    {% include "audiobook/epub_chapter.html" with context %}
+                        <div class="self-center">
+                            '{{ chapter.chapter_title }}' with {{ chapter.sentence_count }} sentences
+                        </div>
+                        {% include "audiobook/epub_chapter.html" with context %}
                     {% endfor %}
                 </div>
             </div>
