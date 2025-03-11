@@ -9,7 +9,7 @@
 
 Start database (postgres) and minio
 ```
-docker compose --profile dev up
+docker compose up
 ```
 
 Install dependencies with 

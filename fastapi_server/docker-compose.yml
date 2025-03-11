@@ -88,7 +88,7 @@ services:
       - "8080:8080" # Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    profiles: [dev, local_dev]
+    profiles: ["", local_dev]
 
   webserver_dev:
     <<: *webserver
@@ -114,7 +114,7 @@ services:
       - local_dev_postgres
       - traefik
     network_mode: host
-    profiles: [dev, local_dev]
+    profiles: [local_dev]
 
   local_dev_minio:
     container_name: fastapi_dev_minio
@@ -148,7 +148,7 @@ services:
     environment:
       - MINIO_ROOT_USER=root
       - MINIO_ROOT_PASSWORD=rootroot
-    profiles: [dev, local_dev, test]
+    profiles: ["", local_dev, test]
 
   local_dev_postgres:
     container_name: fastapi_dev_postgres
@@ -169,7 +169,7 @@ services:
       - 5432:5432
     volumes:
       - dev_postgres_data:/var/lib/postgresql/data
-    profiles: [dev, local_dev]
+    profiles: ["", local_dev]
 
   local_dev_postgres_test:
     # This container is only used for running tests
@@ -183,7 +183,7 @@ services:
       POSTGRES_DB: test
     ports:
       - 5433:5432
-    profiles: [dev, test]
+    profiles: ["", test]
 
   local_dev_pgadmin:
     # Connect via:
@@ -207,7 +207,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     volumes:
       - dev_pgadmin_data:/var/lib/pgadmin
-    profiles: [dev, local_dev]
+    profiles: ["", local_dev]
 
 # TODO Background workers for transcription
 

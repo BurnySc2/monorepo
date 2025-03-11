@@ -11,8 +11,6 @@ datasource db {
 
 model AudiobookBook {
   id                 Int                @id @default(autoincrement())
-  // TODO Add soft-delete flag
-  // deleted Boolean
   uploaded_by        String
   book_title         String
   book_author        String
@@ -20,6 +18,8 @@ model AudiobookBook {
   upload_date        DateTime           @default(now())
   custom_book_title  String?
   custom_book_author String?
+  // soft-delete flag
+  deleted            Boolean            @default(false)
   AudiobookChapter   AudiobookChapter[]
 
   @@index([id, uploaded_by])
