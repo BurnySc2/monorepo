@@ -19,7 +19,7 @@
                       hx-swap="none"
                       hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch"
                       hx-trigger="change delay:1s">
-                    <div>
+                    <div class="text-right px-2">
                         Voice
                     </div>
                     <select id="voice_name" name="voice_name">
@@ -32,7 +32,7 @@
                             </option>
                         {% endfor %}
                     </select>
-                    <div>
+                    <div class="text-right px-2">
                         Rate
                     </div>
                     <input id="voice_rate"
@@ -40,7 +40,7 @@
                            type="number"
                            min="0"
                            value="{{ user_settings.voice_rate }}" />
-                    <div>
+                    <div class="text-right px-2">
                         Volume
                     </div>
                     <input id="voice_volume"
@@ -48,8 +48,8 @@
                            type="number"
                            min="0"
                            value="{{ user_settings.voice_volume }}" />
-                    <div>
-                        pitch
+                    <div class="text-right px-2">
+                        Pitch
                     </div>
                     <input id="voice_pitch"
                            name="voice_pitch"
@@ -65,7 +65,7 @@
                 <!-- TODO Allow custom book name and author before downloading -->
                 <!-- Show info on how many Chapters, sentences, words this book contains -->
                 #}
-                <div class="flex justify-center">
+                <div class="flex justify-center space-x-4">
                     <button hx-post="/audiobook/generate_audio_book?book_id={{ book_id }}"
                             hx-swap="none"
                             hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch"
