@@ -1,4 +1,14 @@
 ---
+# Less popups and interactivity when installing AUR packages through yay
+# https://unix.stackexchange.com/a/669602/673587
+# yay --save --answerdiff None --answerclean None --removemake
+
+- name: Update AUR packages
+  kewlfft.aur.aur:
+    update_cache: true
+    upgrade: true
+    state: latest
+
 - name: Install AUR packages
   kewlfft.aur.aur:
     name:
