@@ -43,7 +43,7 @@ State4: audio generated, audio loaded
     {% elif chapter.has_audio is defined and chapter.has_audio %}
         {#- djlint:off -#}
         <button
-            class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-300"
+            class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-500"
             {# TODO Load audio directly with 'src' attribute but only load metadata, not the full audio #}
             {# TODO The src may be another server endpoint or a minio presigned url with expire duration of 1h #}
             hx-target="#chapter_audio_{{ chapter.chapter_number }}"
@@ -59,7 +59,7 @@ State4: audio generated, audio loaded
         </button>
         {# State1: no audio generated and not queued #}
     {% else %}
-        <button class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-300"
+        <button class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-500"
                 hx-target="#chapter_audio_{{ chapter.chapter_number }}"
                 hx-swap="outerHTML"
                 hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
@@ -76,7 +76,7 @@ State4: audio generated, audio loaded
     {% if chapter.has_audio is defined and chapter.has_audio %}
         <a href="/audiobook/download_chapter_mp3/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
            download
-           class="self-center rounded-xl hover:bg-green-300">
+           class="self-center rounded-3xl hover:bg-yellow-500">
             <img class="h-auto"
                  width="32"
                  height="32"
@@ -89,7 +89,7 @@ State4: audio generated, audio loaded
         <button hx-post="/audiobook/delete_generated_audio/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
                 hx-target="#chapter_audio_{{ chapter.chapter_number }}"
                 hx-swap="outerHTML"
-                class="rounded-xl hover:bg-green-300">
+                class="rounded-3xl hover:bg-red-500">
             <img width="32"
                  height="32"
                  src="/static/delete.svg"

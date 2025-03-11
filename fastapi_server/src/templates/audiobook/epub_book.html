@@ -70,10 +70,8 @@
                             hx-swap="none"
                             hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch"
                             hx-indicator="#spinner_book"
-                            class="flex items-center rounded-lg border-2 border-black p-2 hover:bg-green-300">
-                        Generate audio
-                        for
-                        all chapters
+                            class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-500">
+                        Generate audio for all chapters
                         <img id="spinner_book"
                              class="htmx-indicator w-8 animate-spin"
                              src="/static/spinner.svg" />
@@ -81,7 +79,7 @@
                     {# TODO Only show download-zip-button if audio for all chapters have been generated #}
                     <a download
                        href="/audiobook/download_book_zip?book_id={{ book_id }}"
-                       class="self-center rounded-xl hover:bg-green-300">
+                       class="self-center rounded-3xl hover:bg-yellow-500">
                         <img width="64"
                              height="64"
                              src="/static/download.svg"
@@ -90,7 +88,7 @@
                     <button hx-post="/audiobook/delete_book?book_id={{ book_id }}"
                             hx-swap="none"
                             hx-confirm="Are you sure you wish to delete this book?"
-                            class="self-center rounded-xl hover:bg-green-300">
+                            class="self-center rounded-3xl hover:bg-red-500">
                         <img width="64"
                              height="64"
                              src="/static/delete.svg"
