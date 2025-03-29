@@ -18,9 +18,6 @@ services:
       - "{{ secrets.TRAEFIK_NETWORK }}"
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.entryPoints=web,websecure
+      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.entryPoints=web
       - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
       - traefik.http.services.{{ secrets.PINCHFLAT.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.tls=true
-      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.tls.certresolver=production
-      - traefik.http.routers.{{ secrets.PINCHFLAT.USERNAME }}.middlewares=authelia@docker

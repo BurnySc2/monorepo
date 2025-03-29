@@ -33,6 +33,13 @@
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
+      when: "'local_servers' in group_names"
+
+    - name: Copy docker-compose_remote.yml file
+      template:
+        src: docker-compose_remote.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+      when: "'server_group4' in group_names"
 
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:

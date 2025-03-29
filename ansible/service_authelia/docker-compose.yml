@@ -13,6 +13,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.authelia.rule=Host(`{{ AUTHELIA_URL }}`)
+      - traefik.http.services.authelia.loadbalancer.server.port=9091
       - traefik.http.routers.authelia.entrypoints=web,websecure
       - traefik.http.routers.authelia.tls=true
       - traefik.http.routers.authelia.tls.certresolver=production

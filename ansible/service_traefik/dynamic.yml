@@ -1,0 +1,158 @@
+http:
+  # ======== ROUTERS
+  routers:
+    # Example for a local service in dynamic.yml file
+    cloud:
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`cloud.burnysc2.xyz`)"
+      service: cloud
+      tls:
+        certResolver: production
+    # Services connected via wireguard clients
+    # Server2
+    # Jellyfin
+    "{{ secrets.JELLYFIN.USERNAME }}":
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`{{ secrets.JELLYFIN.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
+      service: "{{ secrets.JELLYFIN.USERNAME }}"
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    # Audiobookshelf
+    "{{ secrets.AUDIOBOOKSHELF.USERNAME }}":
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`{{ secrets.AUDIOBOOKSHELF.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
+      service: "{{ secrets.AUDIOBOOKSHELF.USERNAME }}"
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    # Baikal
+    "{{ secrets.BAIKAL.USERNAME }}":
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`{{ secrets.BAIKAL.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
+      service: "{{ secrets.BAIKAL.USERNAME }}"
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    # Trillium
+    "{{ secrets.TRILLIUM.USERNAME }}":
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`{{ secrets.TRILLIUM.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
+      service: "{{ secrets.TRILLIUM.USERNAME }}"
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    # Syncthing
+    sync2:
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`sync2.{{ secrets.MY_DOMAIN }}`)"
+      service: sync2
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    # Traefik
+    traefik2:
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`traefik2.{{ secrets.MY_DOMAIN }}`)"
+      service: traefik2
+      tls:
+        certResolver: production
+    # Server1
+    # Pinchflat
+    "{{ secrets.PINCHFLAT.USERNAME }}":
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`{{ secrets.PINCHFLAT.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)"
+      service: "{{ secrets.PINCHFLAT.USERNAME }}"
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    # Syncthing
+    sync1:
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`sync1.{{ secrets.MY_DOMAIN }}`)"
+      service: sync1
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    # Traefik
+    traefik1:
+      entryPoints:
+        - web
+        - websecure
+      rule: "Host(`traefik1.{{ secrets.MY_DOMAIN }}`)"
+      service: traefik1
+      tls:
+        certResolver: production
+  # ======== SERVICES
+  services:
+    # Example for a local service in dynamic.yml file
+    cloud:
+      loadBalancer:
+        servers:
+          # Both works! service name or host_name
+          - url: "http://owncloud_server:8080"
+    # Services connected via wireguard clients
+    # Jellyfin
+    "{{ secrets.JELLYFIN.USERNAME }}":
+      loadBalancer:
+        servers:
+          # Wireguard client ip and service exposed port to traefik
+          - url: "http://10.0.0.2:80"
+    # Audiobookshelf
+    "{{ secrets.AUDIOBOOKSHELF.USERNAME }}":
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.2:80"
+    # Baikal
+    "{{ secrets.BAIKAL.USERNAME }}":
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.2:80"
+    # Trillium
+    "{{ secrets.TRILLIUM.USERNAME }}":
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.2:80"
+    # Syncthing
+    sync2:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.2:80"
+    # Traefik
+    traefik2:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.2:80"
+    # Pinchflat
+    "{{ secrets.PINCHFLAT.USERNAME }}":
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.3:80"
+    # Syncthing
+    sync1:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.3:80"
+    # Traefik
+    traefik1:
+      loadBalancer:
+        servers:
+          - url: "http://10.0.0.3:80"

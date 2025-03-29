@@ -37,20 +37,53 @@
     template:
       src: docker-compose_remote.yml
       dest: /home/{{ USERNAME }}/docker-compose.yml
-    when: "'remote_servers' in group_names"
+    when: "'server_group4' in group_names"
 
   - include_tasks: ../setup_cloudflare_a_record.yml
     loop:
       - hostname: "{{ TRAEFIK_URL }}"
     loop_control:
       loop_var: item
-    when: "'remote_servers' in group_names"
+    when: "'server_group4' in group_names"
 
-  - name: Create directories
+  # - name: docker-compose stop
+  #   community.docker.docker_compose_v2:
+  #     project_src: /home/{{ USERNAME }}
+  #     # Reload config files for wireguard and traefik
+  #     state: stopped
+  #     services:
+  #       - wireguard
+  #   ignore_errors: true
+
+  - name: Create directories traefik
     file:
       path: /home/{{ USERNAME }}/traefik
       recurse: true
       state: directory
+    when: "'server_group4' in group_names"
+
+  - name: Copy traefik.yml
+    template:
+      src: traefik.yml
+      dest: /home/{{ USERNAME }}/traefik/traefik.yml
+    when: "'server_group4' in group_names"
+    register: traefik_config_changed
+
+  - name: docker-compose stop
+    community.docker.docker_compose_v2:
+      project_src: /home/{{ USERNAME }}
+      # Reload config files for wireguard and traefik
+      state: stopped
+      services:
+        - traefik
+    when: "traefik_config_changed is changed"
+    ignore_errors: true
+
+  - name: Copy dynamic.yml
+    template:
+      src: dynamic.yml
+      dest: /home/{{ USERNAME }}/traefik/dynamic.yml
+    when: "'server_group4' in group_names"
 
   - name: Run `docker-compose up` again
     community.docker.docker_compose_v2:

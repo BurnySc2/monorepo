@@ -41,9 +41,9 @@ services:
       # Main router for burnysc2.xyz
       - traefik.http.routers.fastapi.rule=Host(`burnysc2.xyz`)
       - traefik.http.services.fastapi.loadbalancer.server.port=8000
+      - traefik.http.routers.fastapi.entryPoints=web,websecure
       - traefik.http.routers.fastapi.tls=true
       - traefik.http.routers.fastapi.tls.certresolver=production
-      - traefik.http.routers.fastapi.entryPoints=web,websecure
       # Redirect for www.burnysc2.xyz to burnysc2.xyz
       - traefik.http.routers.www-fastapi.rule=Host(`www.burnysc2.xyz`)
       - traefik.http.routers.www-fastapi.middlewares=redirect-to-non-www

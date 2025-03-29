@@ -3,13 +3,22 @@ networks:
     external: true
 
 services:
-  traefik:
-    image: "traefik:v3.2"
-    container_name: "traefik"
-    hostname: "traefik"
+  wireguard:
+    # Wireguard host on first run will create keys in './wireguard/peerX/peerX.conf'
+    # Copy .conf files to clients under './wireguard/wg_confs/wg0.conf'
+    # Change last line to (remove ip6)
+    # AllowedIPs = 10.0.0.0/24
+    # Add following line to re-establish connection every 25s
+    # PersistentKeepalive = 25
+    # Verify by pinging clients:
+    # docker exec -it wireguard ping 10.0.0.1 to 10.0.0.3
+    # docker exec -it wireguard nc -u -z MY_IP MY_PORT
+    container_name: wireguard
+    hostname: wireguard
+    image: linuxserver/wireguard:latest
     restart: unless-stopped
     networks:
-      - "{{ secrets.TRAEFIK_NETWORK }}"
+    - '{{ secrets.TRAEFIK_NETWORK }}'
     ports:
       # The HTTP port
       - 80:80
@@ -18,21 +27,31 @@ services:
         # The TCP port (postgres: 5432, mariadb: 3306)
       - 5432:5432
       - 3306:3306
-    command:
-      - "--api.insecure=false"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network={{ secrets.TRAEFIK_NETWORK }}"
-      - "--entryPoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entryPoints.websecure.address=:443"
-      - "--entrypoints.pgsql.address=:5432"
-      - "--entrypoints.mariadb.address=:3306"
-      # Disable challenge while A-recosd is still pending to not spam letsencrypt
-      - "--certificatesresolvers.production.acme.email={{ secrets.TRAEFIK.MY_EMAIL }}"
-      - "--certificatesresolvers.production.acme.storage=/etc/traefik/acme.json"
-      - "--certificatesresolvers.production.acme.httpchallenge.entrypoint=web"
+        # Expose WireGuard port
+      - "51820:51820/udp"
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - SERVERURL=84.46.240.161  # Public host address
+      - SERVERPORT=51820
+      - PEERS=8                # Number of clients
+      - INTERNAL_SUBNET=10.0.0.0
+      - ALLOWED_IP=10.0.0.0/24 # Restrict to IPv4
+    volumes:
+      - ./wireguard:/config  # Persist WireGuard config
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+
+  traefik:
+    image: traefik:3.3.4
+    container_name: traefik
+    # hostname: traefik
+    restart: unless-stopped
+    network_mode: service:wireguard
     volumes:
       # Store ssl entries in acme.json
       - ./traefik:/etc/traefik
