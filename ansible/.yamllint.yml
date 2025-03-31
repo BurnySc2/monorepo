@@ -1,0 +1,7 @@
+---
+extends: default
+yaml-files: ['*.yaml', '*.yml']
+rules:
+  line-length: disable
+ignore: |-
+  .venv

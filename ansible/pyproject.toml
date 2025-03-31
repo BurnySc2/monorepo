@@ -1,5 +1,5 @@
 [project]
-name = "python_template"
+name = "ansible_scripts"
 version = "0.1.0"
 requires-python = ">=3.10, <3.13"
 

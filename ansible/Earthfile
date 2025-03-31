@@ -1,0 +1,11 @@
+VERSION 0.6
+
+format:
+    LOCALLY
+    # Format all yml and yaml files
+    RUN uv run yamlfix . --exclude .venv
+
+lint:
+    LOCALLY
+    # Check yaml/yml files
+    RUN uv run yamllint --format parsable .

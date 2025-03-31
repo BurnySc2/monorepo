@@ -29,3 +29,6 @@ server_group3:
 server_group4:
   hosts:
     contabo2:
+traefik_front:
+  hosts:
+    contabo2:

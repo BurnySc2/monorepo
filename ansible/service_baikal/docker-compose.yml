@@ -10,9 +10,9 @@ services:
       - ./config:/var/www/baikal/config
       - ./data:/var/www/baikal/Specific
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     labels:
-    - traefik.enable=true
-    - traefik.http.routers.{{ SUBDOMAIN }}.entrypoints=web
-    - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-    - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.enable=true
+      - traefik.http.routers.{{ SUBDOMAIN }}.entrypoints=web
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}

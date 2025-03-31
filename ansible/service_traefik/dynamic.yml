@@ -115,44 +115,44 @@ http:
       loadBalancer:
         servers:
           # Wireguard client ip and service exposed port to traefik
-          - url: "http://10.0.0.2:80"
+          - url: "{{ WIREGUARD_URL_BURNYLAPTOPD }}"
     # Audiobookshelf
     "{{ secrets.AUDIOBOOKSHELF.USERNAME }}":
       loadBalancer:
         servers:
-          - url: "http://10.0.0.2:80"
+          - url: "{{ WIREGUARD_URL_BURNYLAPTOPD }}"
     # Baikal
     "{{ secrets.BAIKAL.USERNAME }}":
       loadBalancer:
         servers:
-          - url: "http://10.0.0.2:80"
+          - url: "{{ WIREGUARD_URL_BURNYLAPTOPD }}"
     # Trillium
     "{{ secrets.TRILLIUM.USERNAME }}":
       loadBalancer:
         servers:
-          - url: "http://10.0.0.2:80"
+          - url: "{{ WIREGUARD_URL_BURNYLAPTOPD }}"
     # Syncthing
     sync2:
       loadBalancer:
         servers:
-          - url: "http://10.0.0.2:80"
+          - url: "{{ WIREGUARD_URL_BURNYLAPTOPD }}"
     # Traefik
     traefik2:
       loadBalancer:
         servers:
-          - url: "http://10.0.0.2:80"
+          - url: "{{ WIREGUARD_URL_BURNYLAPTOPD }}"
     # Pinchflat
     "{{ secrets.PINCHFLAT.USERNAME }}":
       loadBalancer:
         servers:
-          - url: "http://10.0.0.3:80"
+          - url: "{{ WIREGUARD_URL_PRODESK }}"
     # Syncthing
     sync1:
       loadBalancer:
         servers:
-          - url: "http://10.0.0.3:80"
+          - url: "{{ WIREGUARD_URL_PRODESK }}"
     # Traefik
     traefik1:
       loadBalancer:
         servers:
-          - url: "http://10.0.0.3:80"
+          - url: "{{ WIREGUARD_URL_PRODESK }}"
