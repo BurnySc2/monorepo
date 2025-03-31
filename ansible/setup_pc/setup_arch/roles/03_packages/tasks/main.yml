@@ -204,3 +204,20 @@
     dump: 0
     state: present
   become: true
+- name: Ensure local directory exists
+  ansible.builtin.file:
+    path: /home/burny/remote_drives/prodesk
+    state: directory
+    owner: burny
+    group: burny
+    mode: '0755'
+- name: Mount prodesk:/home
+  ansible.builtin.mount:
+    name: /home/burny/remote_drives/prodesk
+    src: prodesk:/home
+    fstype: fuse.sshfs
+    opts: 'auto,reconnect'
+    passno: 0
+    dump: 0
+    state: present
+  become: true
