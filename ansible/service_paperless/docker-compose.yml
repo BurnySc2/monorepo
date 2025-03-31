@@ -1,7 +1,7 @@
+---
 networks:
   '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 services:
   broker:
     container_name: paperless-broker
@@ -9,41 +9,49 @@ services:
     image: docker.io/library/redis:7
     restart: unless-stopped
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     volumes:
-    - redisdata:/data
-
+      - redisdata:/data
   webserver:
     container_name: paperless-webserver
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     restart: unless-stopped
     depends_on:
-    - broker
+      - broker
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     labels:
-    - traefik.enable=true
-    - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-    - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-    - traefik.http.routers.{{ USERNAME }}.tls=true
-    - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production
-    - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
+      - traefik.enable=true
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN
+        }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
+        }}
+      - traefik.http.routers.{{ USERNAME }}.tls=true
+      - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production
+      - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
     healthcheck:
-      test: [CMD, curl, -fs, -S, --max-time, '2', 'http://localhost:8000']
+      test:
+        - CMD
+        - curl
+        - -fs
+        - -S
+        - --max-time
+        - '2'
+        - http://localhost:8000
       interval: 30s
       timeout: 10s
       retries: 5
     volumes:
-    - ./data:/usr/src/paperless/data
-    - ./media:/usr/src/paperless/media
-    - ./export:/usr/src/paperless/export
-    - ./consume:/usr/src/paperless/consume
+      - ./data:/usr/src/paperless/data
+      - ./media:/usr/src/paperless/media
+      - ./export:/usr/src/paperless/export
+      - ./consume:/usr/src/paperless/consume
     env_file: docker-compose.env
     environment:
       PAPERLESS_REDIS: redis://paperless-broker:6379
       PAPERLESS_URL: https://{{ USERNAME }}.{{ secrets.MY_DOMAIN }}
-      PAPERLESS_CSRF_TRUSTED_ORIGINS: https://{{ USERNAME }}.{{ secrets.MY_DOMAIN }}
+      PAPERLESS_CSRF_TRUSTED_ORIGINS: https://{{ USERNAME }}.{{ secrets.MY_DOMAIN
+        }}
       PAPERLESS_CORS_ALLOWED_HOSTS: https://{{ USERNAME }}.{{ secrets.MY_DOMAIN }}
-
 volumes:
-  redisdata:
+  redisdata: null

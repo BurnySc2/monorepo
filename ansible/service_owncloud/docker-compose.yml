@@ -1,3 +1,4 @@
+---
 # Rescan all files (for example when uploading file manually) with:
 # https://doc.owncloud.com/server/next/admin_manual/configuration/server/occ_command.html#the-filesscan-command
 # docker compose exec owncloud occ files:scan --all
@@ -5,14 +6,13 @@
 networks:
   '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 services:
   owncloud:
     image: owncloud/server:latest
     container_name: owncloud_server
     hostname: owncloud_server
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     restart: unless-stopped
     # labels:
     # - traefik.enable=true
@@ -23,45 +23,55 @@ services:
     # - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.tls.certresolver=production
     # - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.middlewares=authelia@docker
     depends_on:
-    - mariadb
+      - mariadb
     environment:
-    - OWNCLOUD_DOMAIN={{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
-    - OWNCLOUD_TRUSTED_DOMAINS="localhost,{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
-    - OWNCLOUD_DB_TYPE=mysql
-    - OWNCLOUD_DB_NAME={{ secrets.OWNCLOUD.MYSQL_DATABASE }}
-    - OWNCLOUD_DB_USERNAME={{ secrets.OWNCLOUD.MYSQL_USER }}
-    - OWNCLOUD_DB_PASSWORD={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}
-    - OWNCLOUD_DB_HOST=owncloud_mariadb
-    - OWNCLOUD_ADMIN_USERNAME={{ secrets.OWNCLOUD.ADMIN_USERNAME }}
-    - OWNCLOUD_ADMIN_PASSWORD={{ secrets.OWNCLOUD.ADMIN_PASSWORD }}
-    - OWNCLOUD_MYSQL_UTF8MB4=true
-    - OWNCLOUD_REDIS_ENABLED=false
-    - OWNCLOUD_REDIS_HOST=owncloud_redis
+      - OWNCLOUD_DOMAIN={{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
+      - OWNCLOUD_TRUSTED_DOMAINS="localhost,{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN
+        }}
+      - OWNCLOUD_DB_TYPE=mysql
+      - OWNCLOUD_DB_NAME={{ secrets.OWNCLOUD.MYSQL_DATABASE }}
+      - OWNCLOUD_DB_USERNAME={{ secrets.OWNCLOUD.MYSQL_USER }}
+      - OWNCLOUD_DB_PASSWORD={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}
+      - OWNCLOUD_DB_HOST=owncloud_mariadb
+      - OWNCLOUD_ADMIN_USERNAME={{ secrets.OWNCLOUD.ADMIN_USERNAME }}
+      - OWNCLOUD_ADMIN_PASSWORD={{ secrets.OWNCLOUD.ADMIN_PASSWORD }}
+      - OWNCLOUD_MYSQL_UTF8MB4=true
+      - OWNCLOUD_REDIS_ENABLED=false
+      - OWNCLOUD_REDIS_HOST=owncloud_redis
     healthcheck:
-      test: [CMD, /usr/bin/healthcheck]
+      test:
+        - CMD
+        - /usr/bin/healthcheck
       interval: 30s
       timeout: 10s
       retries: 5
     volumes:
-    - ./data:/mnt/data
-
+      - ./data:/mnt/data
   mariadb:
-    image: mariadb:10.11 # minimum required ownCloud version is 10.9
+    image: mariadb:10.11  # minimum required ownCloud version is 10.9
     container_name: owncloud_mariadb
     hostname: owncloud_mariadb
     restart: unless-stopped
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     environment:
-    - MYSQL_ROOT_PASSWORD={{ secrets.OWNCLOUD.MYSQL_ROOT_PASSWORD }}
-    - MYSQL_USER={{ secrets.OWNCLOUD.MYSQL_USER }}
-    - MYSQL_PASSWORD={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}
-    - MYSQL_DATABASE={{ secrets.OWNCLOUD.MYSQL_DATABASE }}
-    command: [--max-allowed-packet=128M, --innodb-log-file-size=64M]
+      - MYSQL_ROOT_PASSWORD={{ secrets.OWNCLOUD.MYSQL_ROOT_PASSWORD }}
+      - MYSQL_USER={{ secrets.OWNCLOUD.MYSQL_USER }}
+      - MYSQL_PASSWORD={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}
+      - MYSQL_DATABASE={{ secrets.OWNCLOUD.MYSQL_DATABASE }}
+    command:
+      - --max-allowed-packet=128M
+      - --innodb-log-file-size=64M
     healthcheck:
-      test: [CMD, mysqladmin, ping, -u, root, '--password={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}']
+      test:
+        - CMD
+        - mysqladmin
+        - ping
+        - -u
+        - root
+        - --password={{ secrets.OWNCLOUD.MYSQL_PASSWORD }}
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
-    - ./mysql:/var/lib/mysql
+      - ./mysql:/var/lib/mysql

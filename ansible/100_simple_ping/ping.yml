@@ -1,27 +1,23 @@
+---
 # Execute with
 # ansible-playbook ping.yml -i ../hosts
 - name: Ping all
   hosts: my_servers
   gather_facts: false
-
   tasks:
-  - name: ping
-    ping:
-
-  - name: debug print host vars
-    ansible.builtin.debug:
-      msg: "{{ hostvar }}"
-
-  - name: debug print group vars
-    ansible.builtin.debug:
-      msg: "{{ groupvar }}"
-
-  - name: debug specific host
-    ansible.builtin.debug:
-      msg: "I will only get printed by 'contabo2' host"
-    when: inventory_hostname in ["contabo2"]
-
-  - name: debug specific group
-    ansible.builtin.debug:
-      msg: "I will only get printed by 'remote_servers' group"
-    when: "'remote_servers' in group_names"
+    - name: ping
+      ping: null
+    - name: debug print host vars
+      ansible.builtin.debug:
+        msg: '{{ hostvar }}'
+    - name: debug print group vars
+      ansible.builtin.debug:
+        msg: '{{ groupvar }}'
+    - name: debug specific host
+      ansible.builtin.debug:
+        msg: I will only get printed by 'contabo2' host
+      when: inventory_hostname in ["contabo2"]
+    - name: debug specific group
+      ansible.builtin.debug:
+        msg: I will only get printed by 'remote_servers' group
+      when: "'remote_servers' in group_names"

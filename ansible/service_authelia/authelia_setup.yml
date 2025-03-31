@@ -1,52 +1,46 @@
+---
 # https://www.authelia.com/integration/proxies/traefik/
 # Execute with
 # ansible-playbook authelia_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: contabo2
   vars:
-    USERNAME: "{{ secrets.AUTHELIA.USERNAME }}"
+    USERNAME: '{{ secrets.AUTHELIA.USERNAME }}'
   tasks:
     - name: Create group
       ansible.builtin.group:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         state: present
-
     - name: Create user
       ansible.builtin.user:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         groups:
-          - "{{ USERNAME }}"
+          - '{{ USERNAME }}'
           - docker
-        shell: "{{ secrets.DEFAULT_SHELL }}"
-
+        shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
-
     - name: Create directories
       file:
         path: /home/{{ USERNAME }}/authelia
         recurse: true
         state: directory
-        
     - name: Copy authelia config file
       template:
         src: /home/burny/syncthing/secrets/ansible_secrets/authelia/configuration.yml
         dest: /home/{{ USERNAME }}/authelia/configuration.yml
-        
     - name: Copy users database file
       template:
         src: /home/burny/syncthing/secrets/ansible_secrets/authelia/users_database.yml
         dest: /home/{{ USERNAME }}/authelia/users_database.yml
-        
     - name: docker-compose stop
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
         # Reload config files
         state: stopped
       ignore_errors: true
-        
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

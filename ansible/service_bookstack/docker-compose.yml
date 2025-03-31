@@ -1,13 +1,13 @@
+---
 networks:
-  "{{secrets.TRAEFIK_NETWORK}}":
+  '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 services:
   bookstack:
     image: lscr.io/linuxserver/bookstack:latest
     container_name: bookstack
     networks:
-      - "{{ secrets.TRAEFIK_NETWORK }}"
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     environment:
       - APP_URL=https://{{ secrets.BOOKSTACK.USERNAME }}.{{ secrets.MY_DOMAIN }}
       - DB_HOST=bookstack_db
@@ -22,17 +22,18 @@ services:
       - bookstack_db
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.rule=Host(`{{ secrets.BOOKSTACK.USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ secrets.BOOKSTACK.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.rule=Host(`{{ secrets.BOOKSTACK.USERNAME
+        }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ secrets.BOOKSTACK.USERNAME }}.loadbalancer.server.port={{
+        APPLICATION_PORT }}
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.tls=true
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.tls.certresolver=production
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.middlewares=authelia@docker
-
   bookstack_db:
     image: mariadb:10
     container_name: bookstack_db
     networks:
-      - "{{ secrets.TRAEFIK_NETWORK }}"
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     environment:
       - MYSQL_ROOT_PASSWORD={{ secrets.BOOKSTACK.DB_PASS }}
       - TZ=Europe/London

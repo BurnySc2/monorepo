@@ -1,32 +1,30 @@
+---
 # https://github.com/Stirling-Tools/Stirling-PDF
 # Execute with
 # ansible-playbook stirling_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: my_servers
   vars:
-    USERNAME: "{{ secrets.STIRLING.USERNAME }}"
-    SUBDOMAIN: "{{ secrets.STIRLING.SUBDOMAIN }}"
-    APPLICATION_PORT: "8080"
+    USERNAME: '{{ secrets.STIRLING.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.STIRLING.SUBDOMAIN }}'
+    APPLICATION_PORT: '8080'
   tasks:
-  - name: Create group
-    ansible.builtin.group:
-      name: "{{ USERNAME }}"
-      state: present
-
-  - name: Create user
-    ansible.builtin.user:
-      name: "{{ USERNAME }}"
-      groups:
-        - "{{ USERNAME }}"
-        - docker
-      shell: "{{ secrets.DEFAULT_SHELL }}"
-
-  - name: Copy docker-compose.yml file
-    template:
-      src: docker-compose.yml
-      dest: /home/{{ USERNAME }}/docker-compose.yml
-    
-  - name: Run `docker-compose up` again
-    community.docker.docker_compose_v2:
-      project_src: /home/{{ USERNAME }}
-      pull: always
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        pull: always

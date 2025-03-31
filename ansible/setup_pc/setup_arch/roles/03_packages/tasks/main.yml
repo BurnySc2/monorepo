@@ -7,14 +7,14 @@
       - i3status
       - i3blocks
       - i3exit
-      - rofi # dmenu alternative
-      - alacritty # terminal emulator
-      - xautolock # autolock after time
-      - i3lock # lock screen / screensaver
-      - xorg-xsetroot # set background image
+      - rofi  # dmenu alternative
+      - alacritty  # terminal emulator
+      - xautolock  # autolock after time
+      - i3lock  # lock screen / screensaver
+      - xorg-xsetroot  # set background image
       # --- end of i3wm ---
       - syncthing
-      - owncloud-client # file sharing client
+      - owncloud-client  # file sharing client
       - rsync
       # Internet browser
       - vivaldi
@@ -27,47 +27,47 @@
       - discord
       # Media viewer and editors
       - xournalpp
-      - obsidian # notes editor
-      - libreoffice-still # openoffice
+      - obsidian  # notes editor
+      - libreoffice-still  # openoffice
       ## Images
-      - gwenview # image viewer and simple editor
-      - viewnior # image viewer
+      - gwenview  # image viewer and simple editor
+      - viewnior  # image viewer
       ## Video
-      - mpv # video player
+      - mpv  # video player
       # System & utility tools
       # - zip
-      - p7zip # better zip alternative
-      - pavucontrol # audio manager, switch between earphones and speakers
-      - flameshot # screenshotting tool
+      - p7zip  # better zip alternative
+      - pavucontrol  # audio manager, switch between earphones and speakers
+      - flameshot  # screenshotting tool
       - simple-scan
-      # - tree # tree view of folder structure
-      - inxi # system information
-      - btop # monitor of system resources
-      - gdu # terminal disk usage stats viewer like qdirstat
-      # - filelight # gui disk usage stats viewer like qdirstat
-      - gnome-system-monitor # task manager
-      - brasero # dvd burner
-      - gnome-disk-utility # disk and usb stick management
-      - imagewriter # usb stick writer
-      - isoimagewriter # usb stick writer
+      # - tree  # tree view of folder structure
+      - inxi  # system information
+      - btop  # monitor of system resources
+      - gdu  # terminal disk usage stats viewer like qdirstat
+      # - filelight  # gui disk usage stats viewer like qdirstat
+      - gnome-system-monitor  # task manager
+      - brasero  # dvd burner
+      - gnome-disk-utility  # disk and usb stick management
+      - imagewriter  # usb stick writer
+      - isoimagewriter  # usb stick writer
       # Basic programming and server tools
       - base-devel
       - curl
       - wget
       - cloc
-      - jq # JSON processor
+      - jq  # JSON processor
       - openssh
-      - sshpass # Allow ssh/ansible to login with password
+      - sshpass  # Allow ssh/ansible to login with password
       - ansible
       - git
-      - lazygit # git gui for terminal
+      - lazygit  # git gui for terminal
       - helix
-      - xsel # enables helix to use system clipboard with space+y
+      - xsel  # enables helix to use system clipboard with space+y
       # Advanced programming tools, languages
-      - make # For AUR packages
+      - make  # For AUR packages
       - python-pip
-      - python-uv # python package manager like poetry and pipenv
-      - prettier # formatter for yaml, json, css, markdown
+      - python-uv  # python package manager like poetry and pipenv
+      - prettier  # formatter for yaml, json, css, markdown
       # Helix language servers
       # Use uv packages for format / lint: pyre, pyright, ruff, djlint for html/jinja
       - ansible-lint
@@ -77,12 +77,11 @@
       - yaml-language-server
       ## html
       - vscode-html-languageserver
-      - tailwindcss-language-server # tailwindcss support in html
+      - tailwindcss-language-server  # tailwindcss support in html
       ## toml
       - taplo-cli
     state: present
   become: true
-
 - name: Install bigger packages (>10mb)
   community.general.pacman:
     name:
@@ -90,21 +89,21 @@
       - gcc
       - rust
       - jre11-openjdk
-      - postgresql # postgres shell, psql
-      - dbeaver # database inspector gui
+      - postgresql  # postgres shell, psql
+      - dbeaver  # database inspector gui
       - docker
       - docker-compose
-      - filezilla # ftp file transfer
-      - audacity # audio editor
-      - ffmpeg # CLI video converter
-      - gifski # CLI gif converter
-      - kdenlive # video editor
+      - filezilla  # ftp file transfer
+      - audacity  # audio editor
+      - ffmpeg  # CLI video converter
+      - gifski  # CLI gif converter
+      - kdenlive  # video editor
       - qbittorrent
       - yt-dlp
-      # - samba # share folders in local network
-      - krita # gimp alternative
+      # - samba  # share folders in local network
+      - krita  # gimp alternative
       - firefox
-      - calibre # epub reader
+      - calibre  # epub reader
       # Communication
       - thunderbird
       - signal-desktop
@@ -122,12 +121,10 @@
       - noto-fonts-emoji
     state: present
   become: true
-
 - name: Create docker group
   ansible.builtin.group:
     name: docker
     state: present
-
 - name: Start docker service for user
   ansible.builtin.systemd_service:
     name: docker.service
@@ -136,17 +133,15 @@
     enabled: true
   become: true
   when: not ansible_check_mode
-
 - name: Create user and set default shell
   ansible.builtin.user:
     name: burny
     groups:
       - burny
       - docker
-      - wheel # sudo rights
+      - wheel  # sudo rights
     shell: /usr/bin/fish
   become: true
-
 - name: Start syncthing service for user
   become_user: burny
   ansible.builtin.systemd_service:
@@ -164,27 +159,23 @@
 #     state: directory
 #   loop:
 #     - "~/syncthing"
-
 - name: Create user systemd directory
   file:
-    path: "{{ item }}"
+    path: '{{ item }}'
     recurse: true
     state: directory
   loop:
-    - "~/.config/systemd/user"
-
+    - ~/.config/systemd/user
 - name: Copy shell script
   ansible.builtin.template:
     src: audio.sh
     dest: ~/.config/systemd/user/audiosh.sh
-
 - name: Copy service file
   ansible.builtin.template:
     src: audiosh.service
     dest: ~/.config/systemd/user/audiosh.service
-
 - name: Start twitch audio sinks service for user
-  become_user: "{{ USERNAME }}"
+  become_user: '{{ USERNAME }}'
   ansible.builtin.systemd_service:
     name: audiosh.service
     scope: user

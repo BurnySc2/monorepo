@@ -1,38 +1,35 @@
+---
 # Static configuration
 log:
   # level: DEBUG
   level: INFO
-
 entryPoints:
   web:
-    address: ":80"
+    address: :80
     http:
       redirections:
         entryPoint:
           to: websecure
           scheme: https
   websecure:
-    address: ":443"
+    address: :443
   pgsql:
-    address: ":5432"
+    address: :5432
   mariadb:
-    address: ":3306"
-
+    address: :3306
 certificatesResolvers:
   production:
     acme:
-      email: "{{ secrets.TRAEFIK.MY_EMAIL }}"
-      storage: "/etc/traefik/acme.json"
+      email: '{{ secrets.TRAEFIK.MY_EMAIL }}'
+      storage: /etc/traefik/acme.json
       tlsChallenge: {}
-
 providers:
   docker:
     exposedbydefault: false
-    endpoint: "unix:///var/run/docker.sock"
-    network: "{{ secrets.TRAEFIK_NETWORK }}"
+    endpoint: unix:///var/run/docker.sock
+    network: '{{ secrets.TRAEFIK_NETWORK }}'
   file:
-    filename: "/etc/traefik/dynamic.yml"
-
+    filename: /etc/traefik/dynamic.yml
 api:
   dashboard: true
   insecure: false

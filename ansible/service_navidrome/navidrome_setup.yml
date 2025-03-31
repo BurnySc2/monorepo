@@ -1,3 +1,4 @@
+---
 # https://github.com/navidrome/navidrome
 # https://www.navidrome.org/docs/installation/docker/
 # https://www.navidrome.org/docs/overview/#apps
@@ -6,35 +7,31 @@
 - name: Create service
   hosts: server_group4
   vars:
-    USERNAME: "{{ secrets.NAVIDROME.USERNAME }}"
-    SUBDOMAIN: "{{ secrets.NAVIDROME.SUBDOMAIN }}"
-    APPLICATION_PORT: "4533"
+    USERNAME: '{{ secrets.NAVIDROME.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.NAVIDROME.SUBDOMAIN }}'
+    APPLICATION_PORT: '4533'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: "{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}"
+        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
       loop_control:
         loop_var: item
       when: "'remote_servers' in group_names"
-
     - name: Create group
       ansible.builtin.group:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         state: present
-
     - name: Create user
       ansible.builtin.user:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         groups:
-          - "{{ USERNAME }}"
+          - '{{ USERNAME }}'
           - docker
-        shell: "{{ secrets.DEFAULT_SHELL }}"
-
+        shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
-
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

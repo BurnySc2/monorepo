@@ -3,58 +3,29 @@
   community.general.pacman:
     name:
       - syncthing
-      #- owncloud-client # file sharing client
-      #- rsync
-      # Internet browser
-      #- vivaldi
       # Terminal
       - fish
-      # Explorer
-      #- thunar
-      # Communication
-      #- thunderbird
-      #- discord
-      # Media viewer and editors
-      #- xournalpp
-      #- obsidian # notes editor
-      ## Images
-      #- gwenview # image viewer and simple editor
-      #- viewnior # image viewer
-      ## Video
-      #- mpv # video player
       # System & utility tools
-      # - zip
-      - p7zip # better zip alternative
-      #- pavucontrol # audio manager, switch between earphones and speakers
-      #- flameshot # screenshotting tool
-      #- simple-scan
-      # - tree # tree view of folder structure
-      - inxi # system information
-      - btop # monitor of system resources
-      - gdu # terminal disk usage stats viewer like qdirstat
-      # - filelight # gui disk usage stats viewer like qdirstat
-      #- gnome-system-monitor # task manager
-      #- brasero # dvd burner
-      #- gnome-disk-utility # disk and usb stick management
-      #- imagewriter # usb stick writer
-      #- isoimagewriter # usb stick writer
+      - p7zip  # better zip alternative
+      - inxi  # system information
+      - btop  # monitor of system resources
+      - gdu  # terminal disk usage stats viewer like qdirstat
       # Basic programming and server tools
       - base-devel
       - curl
       - wget
       - cloc
-      - jq # JSON processor
+      - jq  # JSON processor
       - openssh
       - cloudflared
-      #- ansible
       - git
-      - lazygit # git gui for terminal
+      - lazygit  # git gui for terminal
       - helix
       # Advanced programming tools, languages
-      - make # For AUR packages
+      - make  # For AUR packages
       - python-pip
-      - python-uv # python package manager like poetry and pipenv
-      - prettier # formatter for yaml, json, css, markdown
+      - python-uv  # python package manager like poetry and pipenv
+      - prettier  # formatter for yaml, json, css, markdown
       # Helix language servers
       # Use uv packages for format / lint: pyre, pyright, ruff, djlint for html/jinja
       - ansible-lint
@@ -62,66 +33,18 @@
       - yaml-language-server
       ## html
       - vscode-html-languageserver
-      - tailwindcss-language-server # tailwindcss support in html
+      - tailwindcss-language-server  # tailwindcss support in html
       ## toml
       - taplo-cli
     state: present
   become: true
-
 - name: Install bigger packages (>10mb)
   community.general.pacman:
     name:
-      #- vlc
       - gcc
-      #- rust
-      #- jre11-openjdk
-      - postgresql # postgres shell, psql
-      # TODO install dbeaver over yay
-      #- dbeaver # database inspector gui
-      #- docker
-      #- docker-compose
-      #- filezilla # ftp file transfer
-      #- audacity # audio editor
-      #- ffmpeg # CLI video converter
-      #- gifski # CLI gif converter
-      #- kdenlive # video editor
-      # - yt-dlp
-      # - samba # share folders in local network
-      #- krita # gimp alternative
-      #- firefox
-      #- calibre # epub reader
-      # Communication
-      #- thunderbird
-      #- signal-desktop
-      #- telegram-desktop
-      # Games
-      #- steam
-      #- lutris
-      #- wine
-      # Sheet music editor
-      #- musescore
-      # Markdown support for helix editor
-      #- marksman
-      # Discord fonts
-      #- noto-fonts-cjk
-      #- noto-fonts-emoji
+      - postgresql  # postgres shell, psql
     state: present
   become: true
-
-# - name: Create docker group
-#   ansible.builtin.group:
-#     name: docker
-#     state: present
-
-# - name: Create user and set default shell
-#   ansible.builtin.user:
-#     name: burny
-#     groups:
-#       - burny
-#       - docker
-#       - wheel # sudo rights
-#     shell: /usr/bin/fish
-
 - name: Start syncthing service for user
   become_user: burny
   ansible.builtin.systemd_service:
@@ -130,12 +53,3 @@
     state: started
     daemon_reload: true
     enabled: true
-# - name: Create directories
-#   file:
-#     path: "{{ item }}"
-#     recurse: true
-#     state: directory
-#     owner: burny
-#     group: burny
-#   loop:
-#     - "~/syncthing"

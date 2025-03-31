@@ -1,7 +1,7 @@
+---
 networks:
-  "{{secrets.TRAEFIK_NETWORK}}":
+  '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 services:
   authelia:
     image: authelia/authelia:4.38.17
@@ -9,7 +9,7 @@ services:
     volumes:
       - ./authelia:/config
     networks:
-      - "{{ secrets.TRAEFIK_NETWORK }}"
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     labels:
       - traefik.enable=true
       - traefik.http.routers.authelia.rule=Host(`{{ AUTHELIA_URL }}`)
@@ -17,13 +17,13 @@ services:
       - traefik.http.routers.authelia.entrypoints=web,websecure
       - traefik.http.routers.authelia.tls=true
       - traefik.http.routers.authelia.tls.certresolver=production
-      - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/authz/forward-auth'
+      - traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/authz/forward-auth
       ## The following commented line is for configuring the Authelia URL in the proxy. We strongly suggest this is
       ## configured in the Session Cookies section of the Authelia configuration.
-      - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/authz/forward-auth?authelia_url=https%3A%2F%2F{{ AUTHELIA_URL }}%2F'
+      - traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/authz/forward-auth?authelia_url=https%3A%2F%2F{{ AUTHELIA_URL }}%2F
       # - 'traefik.http.middlewares.authelia.forwardAuth.address=http://authelia:9091/api/authz/forward-auth?authelia_url=https%3A%2F%2Fauth4.burnysc2.xyz%2F'
-      - 'traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader=true'
-      - 'traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Email,Remote-Name'
+      - traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader=true
+      - traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Email,Remote-Name
     restart: unless-stopped
     healthcheck:
       ## In production the healthcheck section should be commented.

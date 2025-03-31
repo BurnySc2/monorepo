@@ -1,3 +1,4 @@
+---
 # https://gitlab.com/altercode/astroneer-linux
 services:
   astroneer-server:
@@ -8,8 +9,8 @@ services:
     volumes:
       - ./astroneer:/astroneer
     ports:
-      - "{{ APPLICATION_PORT }}:{{ APPLICATION_PORT }}/tcp"
-      - "{{ APPLICATION_PORT }}:{{ APPLICATION_PORT }}/udp"
+      - '{{ APPLICATION_PORT }}:{{ APPLICATION_PORT }}/tcp'
+      - '{{ APPLICATION_PORT }}:{{ APPLICATION_PORT }}/udp'
     environment:
       # Can be found through 'https://www.steamidfinder.com/'
       - OWNER_NAME={{ secrets.ASTRONEER.STEAM_NAME }}

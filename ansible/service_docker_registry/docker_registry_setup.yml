@@ -1,34 +1,31 @@
+---
 # Execute with
 # ansible-playbook docker_registry_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start docker-registry service
   hosts: server_group4
   vars:
-    SUBDOMAIN: "{{ secrets.DOCKER_REGISTRY.SUBDOMAIN }}"
-    APPLICATION_PORT: "5000"
+    SUBDOMAIN: '{{ secrets.DOCKER_REGISTRY.SUBDOMAIN }}'
+    APPLICATION_PORT: '5000'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: "{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}"
+        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
       loop_control:
         loop_var: item
       when: "'remote_servers' in group_names"
-
     - name: Create directories
       file:
         path: ~/{{ SUBDOMAIN }}/auth
         recurse: true
         state: directory
-
     - name: Copy auth file
       template:
         src: htpasswd
         dest: ~/{{ SUBDOMAIN }}/auth/htpasswd
-
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: ~/{{ SUBDOMAIN }}/docker-compose.yml
-
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: ~/{{ SUBDOMAIN }}
@@ -37,4 +34,3 @@
 # echo 'my_password' | docker login -u my_username --password-stdin SUBDOMAIN.MY_DOMAIN
 # Push with
 # docker push SUBDOMAIN.MY_DOMAIN/IMAGE_NAME:TAG
-

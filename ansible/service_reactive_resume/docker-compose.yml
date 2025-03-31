@@ -1,11 +1,10 @@
+---
 # In this Docker Compose example, it assumes that you maintain a reverse proxy externally (or chose not to).
 # The only two exposed ports here are from minio (:9000) and the app itself (:3000).
 # If these ports are changed, ensure that the env vars passed to the app are also changed accordingly.
-
 networks:
   '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 services:
   # Database (Postgres)
   postgres:
@@ -13,7 +12,7 @@ services:
     container_name: reactive_resume_postgres
     hostname: reactive_resume_postgres
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     restart: unless-stopped
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
@@ -22,7 +21,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: '{{ secrets.REACTIVE_RESUME.POSTGRES_PASSWORD }}'
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres -d postgres
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,7 +34,7 @@ services:
     container_name: reactive_resume_minio
     hostname: reactive_resume_minio
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     restart: unless-stopped
     command: server /data
     volumes:
@@ -48,7 +49,7 @@ services:
     container_name: reactive_resume_chrome
     hostname: reactive_resume_chrome
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     restart: unless-stopped
     environment:
       TOKEN: chrome_token
@@ -61,16 +62,15 @@ services:
     container_name: reactive_resume_redis
     hostname: reactive_resume_redis
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     restart: unless-stopped
     command: redis-server --requirepass password
-
   app:
     image: amruthpillai/reactive-resume:latest
     container_name: reactive_resume_app
     hostname: reactive_resume_app
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     restart: unless-stopped
     depends_on:
       - postgres
@@ -99,12 +99,12 @@ services:
 
       # -- Emails --
       MAIL_FROM: noreply@localhost
-      # SMTP_URL: smtp://user:pass@smtp:587 # Optional
+      # SMTP_URL: smtp://user:pass@smtp:587  # Optional
 
       # -- Storage (Minio) --
       STORAGE_ENDPOINT: minio
       STORAGE_PORT: 9000
-      STORAGE_REGION: us-east-1 # Optional
+      STORAGE_REGION: us-east-1  # Optional
       STORAGE_BUCKET: default
       STORAGE_ACCESS_KEY: '{{ secrets.REACTIVE_RESUME.STORAGE_ACCESS_KEY }}'
       STORAGE_SECRET_KEY: '{{ secrets.REACTIVE_RESUME.STORAGE_SECRET_KEY }}'
@@ -114,7 +114,7 @@ services:
       REDIS_URL: redis://default:password@reactive_resume_redis:6379
 
       # -- Sentry --
-      # VITE_SENTRY_DSN: https://id.sentry.io # Optional
+      # VITE_SENTRY_DSN: https://id.sentry.io  # Optional
 
       # -- Crowdin (Optional) --
       # CROWDIN_PROJECT_ID:
@@ -135,8 +135,10 @@ services:
       # GOOGLE_CALLBACK_URL: http://localhost:3000/api/auth/google/callback
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN
+        }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
+        }}
       - traefik.http.routers.{{ USERNAME }}.tls=true
       - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production
       - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker

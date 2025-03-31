@@ -1,7 +1,7 @@
+---
 networks:
   '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 services:
   baikal:
     image: ckulka/baikal:nginx
@@ -14,5 +14,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ SUBDOMAIN }}.entrypoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN
+        }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
+        }}

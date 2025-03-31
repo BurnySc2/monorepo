@@ -1,7 +1,7 @@
+---
 networks:
-  "{{ secrets.TRAEFIK_NETWORK }}":
+  '{{ secrets.TRAEFIK_NETWORK }}':
     external: true
-
 services:
   jellyfin:
     image: lscr.io/linuxserver/jellyfin
@@ -15,14 +15,16 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.entrypoints=web
-      - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ secrets.JELLYFIN.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.rule=Host(`{{ SUBDOMAIN
+        }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ secrets.JELLYFIN.USERNAME }}.loadbalancer.server.port={{
+        APPLICATION_PORT }}
     volumes:
       - ./config:/config
-      - "{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media"
+      - '{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media'
     deploy:
       replicas: 1
       resources:
         limits:
-          cpus: "3"
+          cpus: '3'
           memory: 2048M

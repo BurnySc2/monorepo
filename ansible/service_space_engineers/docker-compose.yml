@@ -1,3 +1,4 @@
+---
 services:
   se-server:
     image: devidian/spaceengineers:latest
@@ -27,17 +28,14 @@ services:
         limits:
           # cpus: '0.5'
           memory: 6000M
-
 # Savegame found in:
 # .../SteamLibrary/steamapps/compatdata/244850/pfx/drive_c/users/steamuser/AppData/Roaming/SpaceEngineers/Saves
 
 # May lower "PhysicsIterations" to reduce cpu usage
-
 # Password hashing:
 # https://sepg.einarjegorov.com/
 
 # Project structure:
-
 # ├── docker-compose.yml
 # ├── instances
 # │   └── tromtrom

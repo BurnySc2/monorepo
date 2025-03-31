@@ -8,3 +8,9 @@ dev = [
     "yamlfix>=1.17.0",
     "yamllint>=1.37.0",
 ]
+
+[tool.yamlfix]
+allow_duplicate_keys = true
+line_length = 80
+none_representation = "null"
+sequence_style = "block_style"

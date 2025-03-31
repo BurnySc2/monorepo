@@ -1,30 +1,31 @@
-- name: "Check if 'CNAME-record' exists for {{ item.hostname }}"
+---
+- name: Check if 'CNAME-record' exists for {{ item.hostname }}
   ansible.builtin.uri:
-    url: "https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records?name={{ item.hostname }}&type=CNAME"
+    url: https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records?name={{
+      item.hostname }}&type=CNAME
     method: GET
     headers:
       Content-Type: application/json
-      Authorization: "Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}"
+      Authorization: Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}
     status_code: 200
   register: dns_record_response
   delegate_to: 127.0.0.1
 
 # TODO If tunnel does not match, update with `PATCH` request
-
-- name: "Create 'CNAME-record' for tunnel for {{ item.hostname }}"
+- name: Create 'CNAME-record' for tunnel for {{ item.hostname }}
   ansible.builtin.uri:
-    url: "https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records"
+    url: https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records
     method: POST
     headers:
       Content-Type: application/json
-      Authorization: "Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}"
+      Authorization: Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}
     body_format: json
     body:
-      name: "{{ item.hostname }}"
-      content: "{{ tunnel_response.json.result[0].id }}.cfargotunnel.com"
-      type: "CNAME"
+      name: '{{ item.hostname }}'
+      content: '{{ tunnel_response.json.result[0].id }}.cfargotunnel.com'
+      type: CNAME
       proxied: true
     status_code: 200
   changed_when: dns_record_response.json.result_info.count == 0
-  when: "dns_record_response.json.result_info.count == 0"
+  when: dns_record_response.json.result_info.count == 0
   delegate_to: 127.0.0.1

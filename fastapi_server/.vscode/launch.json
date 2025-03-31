@@ -21,7 +21,7 @@
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "module": "litestar",
-            "args": ["--app-dir", "src", "run", "--reload", "--host", "0.0.0.0", "--wc", "1"],
+            "args": ["--app-dir", "src", "run", "--reload", "--host", "0.0.0.0", "--wc", "1", "--reload-include", "*.sql"],
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {

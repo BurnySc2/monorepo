@@ -1,3 +1,4 @@
+---
 # https://jellyfin.org/
 # https://jellyfin.org/docs/general/installation/container/
 # https://play.google.com/store/apps/details?id=org.jellyfin.mobile&hl=de
@@ -6,28 +7,25 @@
 - name: Create service
   hosts: server_group2
   vars:
-    USERNAME: "{{ secrets.JELLYFIN.USERNAME }}"
-    SUBDOMAIN: "{{ secrets.JELLYFIN.SUBDOMAIN }}"
-    APPLICATION_PORT: "8096"
+    USERNAME: '{{ secrets.JELLYFIN.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.JELLYFIN.SUBDOMAIN }}'
+    APPLICATION_PORT: '8096'
   tasks:
     - name: Create group
       ansible.builtin.group:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         state: present
-
     - name: Create user
       ansible.builtin.user:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         groups:
-          - "{{ USERNAME }}"
+          - '{{ USERNAME }}'
           - docker
-        shell: "{{ secrets.DEFAULT_SHELL }}"
-
+        shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
-
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

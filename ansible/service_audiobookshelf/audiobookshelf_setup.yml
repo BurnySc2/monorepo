@@ -1,3 +1,4 @@
+---
 # https://www.audiobookshelf.org/
 # https://www.audiobookshelf.org/docs#docker-install
 # https://play.google.com/store/apps/details?id=com.audiobookshelf.app
@@ -9,28 +10,25 @@
 - name: Create service
   hosts: server_group2
   vars:
-    USERNAME: "{{ secrets.AUDIOBOOKSHELF.USERNAME }}"
-    SUBDOMAIN: "{{ secrets.AUDIOBOOKSHELF.SUBDOMAIN }}"
-    APPLICATION_PORT: "80"
+    USERNAME: '{{ secrets.AUDIOBOOKSHELF.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.AUDIOBOOKSHELF.SUBDOMAIN }}'
+    APPLICATION_PORT: '80'
   tasks:
     - name: Create group
       ansible.builtin.group:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         state: present
-
     - name: Create user
       ansible.builtin.user:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         groups:
-          - "{{ USERNAME }}"
+          - '{{ USERNAME }}'
           - docker
-        shell: "{{ secrets.DEFAULT_SHELL }}"
-
+        shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
-
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

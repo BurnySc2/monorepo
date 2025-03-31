@@ -5,11 +5,10 @@
       - yay
     state: present
   become: true
-
 - name: Upgrade system
   community.general.pacman:
-    update_cache: yes
-    upgrade: yes
+    update_cache: true
+    upgrade: true
   become: true
 
 # Set up swap memory
@@ -21,7 +20,6 @@
     mkswap /swapfile
     swapon /swapfile
   when: ansible_swaptotal_mb < 1
-
 - name: Ensure swapfile is enabled on boot by editing /etc/fstab
   ansible.builtin.mount:
     name: swap

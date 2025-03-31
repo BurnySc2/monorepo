@@ -1,7 +1,7 @@
+---
 networks:
-  "{{ secrets.TRAEFIK_NETWORK }}":
+  '{{ secrets.TRAEFIK_NETWORK }}':
     external: true
-
 services:
   wireguard:
     # Wireguard host on first run will create keys in './wireguard/peerX/peerX.conf'
@@ -26,7 +26,6 @@ services:
       - TZ=Etc/UTC
     volumes:
       - ./wireguard:/config
-
   traefik:
     # Traefik on wireguard client
     image: traefik:3.3.4
@@ -40,12 +39,12 @@ services:
       - ./traefik:/etc/traefik
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
-      - "--api.insecure=true"
-      - "--api.dashboard=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
       # - "--providers.docker.network={{ secrets.TRAEFIK_NETWORK }}"
-      - "--entryPoints.web.address=:80"
+      - --entryPoints.web.address=:80
     labels:
       - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`{{ TRAEFIK_URL }}`)

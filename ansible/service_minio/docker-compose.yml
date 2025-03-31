@@ -1,7 +1,7 @@
+---
 networks:
-  "{{secrets.TRAEFIK_NETWORK}}":
+  '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 services:
   minio:
     container_name: minio
@@ -10,25 +10,29 @@ services:
     command: server --console-address ":9001" "data"
     restart: unless-stopped
     networks:
-      - "{{ secrets.TRAEFIK_NETWORK }}"
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     labels:
       - traefik.enable=true
       # API
       - traefik.http.routers.{{ USERNAME }}.entrypoints=web,websecure
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ secrets.MINIO.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT_API }}
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ secrets.MINIO.SUBDOMAIN
+        }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT_API
+        }}
       - traefik.http.routers.{{ USERNAME }}.service={{ USERNAME }}
       - traefik.http.routers.{{ USERNAME }}.tls=true
       - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production
       # ADMIN LOGIN
       - traefik.http.routers.{{ USERNAME }}admin.entrypoints=web,websecure
-      - traefik.http.routers.{{ USERNAME }}admin.rule=Host(`{{ secrets.MINIO.ADMINSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}admin.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ USERNAME }}admin.rule=Host(`{{ secrets.MINIO.ADMINSUBDOMAIN
+        }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ USERNAME }}admin.loadbalancer.server.port={{ APPLICATION_PORT
+        }}
       - traefik.http.routers.{{ USERNAME }}admin.service={{ USERNAME }}admin
       - traefik.http.routers.{{ USERNAME }}admin.tls=true
       - traefik.http.routers.{{ USERNAME }}admin.tls.certresolver=production
     volumes:
-      - "./minio_data:/data"
+      - ./minio_data:/data
     environment:
       - MINIO_ROOT_USER={{ secrets.MINIO.MINIO_ROOT_USERNAME }}
       - MINIO_ROOT_PASSWORD={{ secrets.MINIO.MINIO_ROOT_PASSWORD }}

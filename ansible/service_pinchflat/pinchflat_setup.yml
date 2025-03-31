@@ -1,3 +1,4 @@
+---
 # https://github.com/kieraneglin/pinchflat
 # Execute with
 # ansible-playbook pinchflat_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
@@ -5,38 +6,33 @@
 - name: Create service
   hosts: server_group1
   vars:
-    USERNAME: "{{ secrets.PINCHFLAT.USERNAME }}"
-    SUBDOMAIN: "{{ secrets.PINCHFLAT.SUBDOMAIN }}"
-    APPLICATION_PORT: "8945"
+    USERNAME: '{{ secrets.PINCHFLAT.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.PINCHFLAT.SUBDOMAIN }}'
+    APPLICATION_PORT: '8945'
   tasks:
     - name: Get syncthing user id
       ansible.builtin.shell:
         cmd: id syncthing -u
       register: SYNCTHING_USER_ID
-
     - name: Get syncthing group id
       ansible.builtin.shell:
         cmd: id syncthing -g
       register: SYNCTHING_GROUP_ID
-
     - name: Create group
       ansible.builtin.group:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         state: present
-
     - name: Create user
       ansible.builtin.user:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         groups:
-          - "{{ USERNAME }}"
+          - '{{ USERNAME }}'
           - docker
-        shell: "{{ secrets.DEFAULT_SHELL }}"
-
+        shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
-        
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

@@ -1,90 +1,82 @@
+---
 # Execute with
 # ansible-playbook traefik_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: my_servers
   vars:
-    USERNAME: "{{ secrets.TRAEFIK.USERNAME }}"
-    APPLICATION_PORT: "8080"
+    USERNAME: '{{ secrets.TRAEFIK.USERNAME }}'
+    APPLICATION_PORT: '8080'
   tasks:
-  - name: Create group
-    ansible.builtin.group:
-      name: '{{ USERNAME }}'
-      state: present
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
 
-  - name: Create user
-    ansible.builtin.user:
-      name: '{{ USERNAME }}'
-      groups:
-      - '{{ USERNAME }}'
-      - docker
-      shell: '{{ secrets.DEFAULT_SHELL }}'
+    # https://hollo.me/devops/routing-to-multiple-docker-compose-development-setups-with-traefik.html
+    - name: Create docker external network
+      docker_network:
+        name: '{{ secrets.TRAEFIK_NETWORK }}'
+        internal: false
+        attachable: true
+        driver: bridge
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+      when: "'local_servers' in group_names"
+    - name: Copy docker-compose_remote.yml file
+      template:
+        src: docker-compose_remote.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+      when: "'server_group4' in group_names"
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ TRAEFIK_URL }}'
+      loop_control:
+        loop_var: item
+      when: "'server_group4' in group_names"
 
-  # https://hollo.me/devops/routing-to-multiple-docker-compose-development-setups-with-traefik.html
-  - name: Create docker external network
-    docker_network:
-      name: '{{ secrets.TRAEFIK_NETWORK }}'
-      internal: false
-      attachable: true
-      driver: bridge
-
-  - name: Copy docker-compose.yml file
-    template:
-      src: docker-compose.yml
-      dest: /home/{{ USERNAME }}/docker-compose.yml
-    when: "'local_servers' in group_names"
-
-  - name: Copy docker-compose_remote.yml file
-    template:
-      src: docker-compose_remote.yml
-      dest: /home/{{ USERNAME }}/docker-compose.yml
-    when: "'server_group4' in group_names"
-
-  - include_tasks: ../setup_cloudflare_a_record.yml
-    loop:
-      - hostname: "{{ TRAEFIK_URL }}"
-    loop_control:
-      loop_var: item
-    when: "'server_group4' in group_names"
-
-  # - name: docker-compose stop
-  #   community.docker.docker_compose_v2:
-  #     project_src: /home/{{ USERNAME }}
-  #     # Reload config files for wireguard and traefik
-  #     state: stopped
-  #     services:
-  #       - wireguard
-  #   ignore_errors: true
-
-  - name: Create directories traefik
-    file:
-      path: /home/{{ USERNAME }}/traefik
-      recurse: true
-      state: directory
-    when: "'server_group4' in group_names"
-
-  - name: Copy traefik.yml
-    template:
-      src: traefik.yml
-      dest: /home/{{ USERNAME }}/traefik/traefik.yml
-    when: "'server_group4' in group_names"
-    register: traefik_config_changed
-
-  - name: docker-compose stop
-    community.docker.docker_compose_v2:
-      project_src: /home/{{ USERNAME }}
-      # Reload config files for wireguard and traefik
-      state: stopped
-      services:
-        - traefik
-    when: "traefik_config_changed is changed"
-    ignore_errors: true
-
-  - name: Copy dynamic.yml
-    template:
-      src: dynamic.yml
-      dest: /home/{{ USERNAME }}/traefik/dynamic.yml
-    when: "'server_group4' in group_names"
-
-  - name: Run `docker-compose up` again
-    community.docker.docker_compose_v2:
-      project_src: /home/{{ USERNAME }}
+    # - name: docker-compose stop
+    #   community.docker.docker_compose_v2:
+    #     project_src: /home/{{ USERNAME }}
+    #  # Reload config files for wireguard and traefik
+    #     state: stopped
+    #     services:
+    #       - wireguard
+    #   ignore_errors: true
+    - name: Create directories traefik
+      file:
+        path: /home/{{ USERNAME }}/traefik
+        recurse: true
+        state: directory
+      when: "'server_group4' in group_names"
+    - name: Copy traefik.yml
+      template:
+        src: traefik.yml
+        dest: /home/{{ USERNAME }}/traefik/traefik.yml
+      when: "'server_group4' in group_names"
+      register: traefik_config_changed
+    - name: docker-compose stop
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        # Reload config files for wireguard and traefik
+        state: stopped
+        services:
+          - traefik
+      when: traefik_config_changed is changed
+      ignore_errors: true
+    - name: Copy dynamic.yml
+      template:
+        src: dynamic.yml
+        dest: /home/{{ USERNAME }}/traefik/dynamic.yml
+      when: "'server_group4' in group_names"
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}

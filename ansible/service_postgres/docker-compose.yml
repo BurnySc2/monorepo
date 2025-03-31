@@ -1,7 +1,7 @@
+---
 networks:
-  "{{secrets.TRAEFIK_NETWORK}}":
+  '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 # Open postgresql console to enter queries
 # docker exec -it postgres_postgres psql -U postgres -d postgres
 
@@ -19,30 +19,29 @@ networks:
 
 # Remote restore specific table:
 # pg_restore -d CONNECTION_STRING -U postgres -t TABLE_NAME dump.sql
-
+###############################################################################
 # Or:
 # psql CONNECTION_STRING -f dump.sql -F t
-
+###############################################################################
 # Copy table(s) from one database to another on same postgres instance
 # docker exec -i postgres_postgres \
 #    bash -c "pg_dump -U postgres -t <table_name> <old_database_name> | psql -U postgres <new_database_name>"
-
+###############################################################################
 # Upgrade postgres:
 #   Dump db data to file
 #     docker compose exec postgres pg_dumpall -U postgres > dump.sql
-
+###############################################################################
 #   Shut down db
 #     docker compose down
 #   Delete postgres folder
 #     mv postgres_data postgres_data_bak
-
+###############################################################################
 #   Update postgres major version in docker compose file
 #     docker compose up -d
 #     cp dump.sql postgres_data/dump.sql
 #   Restore data
 #     docker compose exec postgres bash
 #     psql -U postgres -f dump.sql
-
 services:
   postgres:
     container_name: postgres_postgres
@@ -53,60 +52,63 @@ services:
     hostname: postgres_postgres
     image: postgres:16-alpine
     networks:
-      - "{{ secrets.TRAEFIK_NETWORK }}"
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     restart: unless-stopped
     environment:
-      POSTGRES_USER: "{{ secrets.POSTGRES.POSTGRES_USER }}"
-      POSTGRES_PASSWORD: "{{ secrets.POSTGRES.POSTGRES_PASSWORD }}"
+      POSTGRES_USER: '{{ secrets.POSTGRES.POSTGRES_USER }}'
+      POSTGRES_PASSWORD: '{{ secrets.POSTGRES.POSTGRES_PASSWORD }}'
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     labels:
-      - "traefik.enable=true"
-      - "traefik.tcp.routers.pg.rule=HostSNI(`{{ secrets.POSTGRES.POSTGRES_USER }}.{{ secrets.MY_DOMAIN }}`)"
-      - "traefik.tcp.routers.pg.entrypoints=pgsql"
-      - "traefik.tcp.routers.pg.tls=true"
-      - "traefik.tcp.routers.pg.tls.certresolver=production"
+      - traefik.enable=true
+      - traefik.tcp.routers.pg.rule=HostSNI(`{{ secrets.POSTGRES.POSTGRES_USER }}.{{
+        secrets.MY_DOMAIN }}`)
+      - traefik.tcp.routers.pg.entrypoints=pgsql
+      - traefik.tcp.routers.pg.tls=true
+      - traefik.tcp.routers.pg.tls.certresolver=production
       # Optional:
-      - "traefik.tcp.services.pg.loadBalancer.server.port=5432"
-
+      - traefik.tcp.services.pg.loadBalancer.server.port=5432
   pgadmin:
     # TODO Add default connection if possible
     container_name: postgres_pgadmin
     image: dpage/pgadmin4:8
     networks:
-      - "{{ secrets.TRAEFIK_NETWORK }}"
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.entrypoints=web,websecure
-      - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.rule=Host(`{{ secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.rule=Host(`{{
+        secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
       - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.tls=true
       - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.tls.certresolver=production
-      - traefik.http.services.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.services.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.loadbalancer.server.port={{
+        APPLICATION_PORT }}
       - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.middlewares=authelia@docker
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: "{{ secrets.POSTGRES.PGADMIN_USER }}"
-      PGADMIN_DEFAULT_PASSWORD: "{{ secrets.POSTGRES.PGADMIN_PASSWORD }}"
+      PGADMIN_DEFAULT_EMAIL: '{{ secrets.POSTGRES.PGADMIN_USER }}'
+      PGADMIN_DEFAULT_PASSWORD: '{{ secrets.POSTGRES.PGADMIN_PASSWORD }}'
       # PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT: 'False'
       # PGADMIN_CONFIG_WTF_CSRF_ENABLED: 'False'
     volumes:
       # - pgadmindata:/var/lib/pgadmin
       # pgadmindata folder needs to be owned by user id '5050'
       - ./pgadmindata:/var/lib/pgadmin
-
   nocodb:
     # TODO Add default connection if possible
     container_name: postgres_nocodb
     image: nocodb/nocodb:latest
     networks:
-      - "{{ secrets.TRAEFIK_NETWORK }}"
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.entrypoints=web,websecure
-      - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.rule=Host(`{{ secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.rule=Host(`{{
+        secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
       - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls=true
       - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls.certresolver=production
-      - traefik.http.services.{{ secrets.POSTGRES.NOCODB_USERNAME }}.loadbalancer.server.port={{ APPLICATION2_PORT }}
+      - traefik.http.services.{{ secrets.POSTGRES.NOCODB_USERNAME }}.loadbalancer.server.port={{
+        APPLICATION2_PORT }}
       - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.middlewares=authelia@docker
     restart: unless-stopped
     volumes:

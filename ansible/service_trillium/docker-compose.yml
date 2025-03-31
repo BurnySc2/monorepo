@@ -1,18 +1,19 @@
+---
 networks:
   '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-
 services:
   trillium:
     container_name: trillium
     image: zadam/trilium
     restart: unless-stopped
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     volumes:
-    - ./data:/home/node/trilium-data
+      - ./data:/home/node/trilium-data
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ USERNAME }}.entryPoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN
+        }}`)
       - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port=8080

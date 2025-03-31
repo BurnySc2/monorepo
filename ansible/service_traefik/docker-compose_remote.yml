@@ -1,7 +1,7 @@
+---
 networks:
-  "{{ secrets.TRAEFIK_NETWORK }}":
+  '{{ secrets.TRAEFIK_NETWORK }}':
     external: true
-
 services:
   wireguard:
     # Wireguard host on first run will create keys in './wireguard/peerX/peerX.conf'
@@ -18,17 +18,17 @@ services:
     image: linuxserver/wireguard:latest
     restart: unless-stopped
     networks:
-    - '{{ secrets.TRAEFIK_NETWORK }}'
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     ports:
       # The HTTP port
       - 80:80
-        # The HTTPS port
+      # The HTTPS port
       - 443:443
-        # The TCP port (postgres: 5432, mariadb: 3306)
+      # The TCP port (postgres: 5432, mariadb: 3306)
       - 5432:5432
       - 3306:3306
-        # Expose WireGuard port
-      - "51820:51820/udp"
+      # Expose WireGuard port
+      - 51820:51820/udp
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
@@ -38,14 +38,13 @@ services:
       - TZ=Etc/UTC
       - SERVERURL=84.46.240.161  # Public host address
       - SERVERPORT=51820
-      - PEERS=8                # Number of clients
+      - PEERS=8  # Number of clients
       - INTERNAL_SUBNET=10.0.0.0
-      - ALLOWED_IP=10.0.0.0/24 # Restrict to IPv4
+      - ALLOWED_IP=10.0.0.0/24  # Restrict to IPv4
     volumes:
       - ./wireguard:/config  # Persist WireGuard config
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
-
   traefik:
     image: traefik:3.3.4
     container_name: traefik

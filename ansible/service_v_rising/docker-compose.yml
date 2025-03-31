@@ -1,3 +1,4 @@
+---
 # https://github.com/Didstopia/vrising-server
 services:
   vrising:
@@ -7,17 +8,17 @@ services:
     restart: unless-stopped
     environment:
       # Configure the server
-      V_RISING_SERVER_PERSISTENT_DATA_PATH: "/app/vrising"
-      V_RISING_SERVER_BRANCH: "public"
-      # V_RISING_SERVER_START_MODE: "0" # Install/update and start server
-      # V_RISING_SERVER_START_MODE: "1" # Install/update and exit
-      V_RISING_SERVER_START_MODE: "2" # Install, skip update check and start server
-      V_RISING_SERVER_UPDATE_MODE: "1" # Enable update checking
+      V_RISING_SERVER_PERSISTENT_DATA_PATH: /app/vrising
+      V_RISING_SERVER_BRANCH: public
+      # V_RISING_SERVER_START_MODE: "0"  # Install/update and start server
+      # V_RISING_SERVER_START_MODE: "1"  # Install/update and exit
+      V_RISING_SERVER_START_MODE: '2'  # Install, skip update check and start server
+      V_RISING_SERVER_UPDATE_MODE: '1'  # Enable update checking
       V_RISING_SERVER_DEFAULT_HOST_SETTINGS: false
     ports:
-      - "9876:9876/udp"
-      - "9877:9877/udp"
-      - "9878:9878/tcp"
+      - 9876:9876/udp
+      - 9877:9877/udp
+      - 9878:9878/tcp
     volumes:
       - ./vrising_saves:/app/vrising
       - ./vrising_data:/steamcmd/vrising

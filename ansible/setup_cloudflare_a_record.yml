@@ -1,41 +1,44 @@
+---
 - name: Check if "A-record" exists for {{ item.hostname }}
   ansible.builtin.uri:
-    url: "https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records?name={{ item.hostname }}&type=A"
+    url: https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records?name={{
+      item.hostname }}&type=A
     method: GET
     headers:
       Content-Type: application/json
-      Authorization: "Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}"
+      Authorization: Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}
     status_code: 200
   register: dns_record_response
   delegate_to: 127.0.0.1
-
 - name: Update A-Record as it does not match target
   ansible.builtin.uri:
-    url: "https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records/{{ dns_record_response.json.result[0].id }}"
+    url: https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records/{{
+      dns_record_response.json.result[0].id }}
     method: PATCH
     headers:
       Content-Type: application/json
-      Authorization: "Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}"
+      Authorization: Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}
     body_format: json
     body:
-      content: "{{ IPv4 }}"
+      content: '{{ IPv4 }}'
     status_code: 200
-  changed_when: dns_record_response.json.result_info.count == 1 and dns_record_response.json.result[0].content != "{{ IPv4 }}"
-  when: dns_record_response.json.result_info.count == 1 and dns_record_response.json.result[0].content != "{{ IPv4 }}"
+  changed_when: dns_record_response.json.result_info.count == 1 and dns_record_response.json.result[0].content
+    != "{{ IPv4 }}"
+  when: dns_record_response.json.result_info.count == 1 and dns_record_response.json.result[0].content
+    != "{{ IPv4 }}"
   delegate_to: 127.0.0.1
-
 - name: Create "A-record" for {{ item.hostname }}
   ansible.builtin.uri:
-    url: "https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records"
+    url: https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records
     method: POST
     headers:
       Content-Type: application/json
-      Authorization: "Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}"
+      Authorization: Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}
     body_format: json
     body:
-      name: "{{ item.hostname }}"
-      content: "{{ IPv4 }}"
-      type: "A"
+      name: '{{ item.hostname }}'
+      content: '{{ IPv4 }}'
+      type: A
       proxied: false
     status_code: 200
   changed_when: dns_record_response.json.result_info.count == 0

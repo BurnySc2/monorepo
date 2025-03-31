@@ -60,6 +60,8 @@ dev-dependencies = [
     "ruff>=0.7.3",
     "sqlfluff>=3.3.1",
     "toml>=0.10.2",
+    "yamllint>=1.37.0",
+    "yamlfix>=1.17.0",
 ]
 
 [tool.yapf]
@@ -118,6 +120,12 @@ apply_dbt_builtins = true
 
 [tool.sqlfluff.rules.capitalisation.keywords]
 capitalisation_policy = "upper"
+
+[tool.yamlfix]
+allow_duplicate_keys = true
+line_length = 80
+none_representation = "null"
+sequence_style = "block_style"
 
 [tool.pytest.ini_options]
 pythonpath = "src"

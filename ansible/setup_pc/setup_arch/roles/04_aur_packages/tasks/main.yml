@@ -2,29 +2,27 @@
 # Less popups and interactivity when installing AUR packages through yay
 # https://unix.stackexchange.com/a/669602/673587
 # yay --save --answerdiff None --answerclean None --removemake
-
 - name: Update AUR packages
   kewlfft.aur.aur:
     update_cache: true
     upgrade: true
     state: latest
-
 - name: Install AUR packages
   kewlfft.aur.aur:
     name:
-      - xq # html content extractor
+      - xq  # html content extractor
       - zoom
       - visual-studio-code-bin
       - spotify
       - spotify-adblock
-      - anydesk-bin # remote maintenance
-      - earthly-bin # development helper
-      - docker-slim-bin # slimify docker images by stripping them to files that are required
-      - choosenim # nim installer
+      - anydesk-bin  # remote maintenance
+      - earthly-bin  # development helper
+      - docker-slim-bin  # slimify docker images by stripping them to files that are required
+      - choosenim  # nim installer
       - jdownloader2
-      - ttf-symbola # required by discord? https://wiki.archlinux.org/title/Discord#Emojis_are_not_rendered_correctly
-      - nodejs-emmet-ls # emmet language server for helix
+      - ttf-symbola  # required by discord? https://wiki.archlinux.org/title/Discord#Emojis_are_not_rendered_correctly
+      - nodejs-emmet-ls  # emmet language server for helix
       # - opera
-      # - lazydocker-bin # docker gui in terminal
+      # - lazydocker-bin  # docker gui in terminal
     state: present
-    update_cache: yes
+    update_cache: true
