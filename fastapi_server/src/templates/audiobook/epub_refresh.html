@@ -1,0 +1,30 @@
+{# 'value' of input will have comma separated ids of chapters. If empty, all have been converted #}
+<input class="invisible"
+    type="text"
+    name="hidden_refresh_queue"
+    id="hidden_refresh_queue"
+    value="{{ chapters_for_input_as_string }}"
+    hx-swap-oob="outerHTML"
+    hx-post="/audiobook/refresh_chapters?book_id={{ book_id }}"
+    {# djlint:off #}
+        {%- if book_name is defined -%}
+            hx-trigger="load"
+        {%- elif chapters_for_input_as_string is defined
+            and chapters_for_input_as_string|length == 0 -%}
+        {%- else -%}
+            hx-trigger="every 10s"
+        {%- endif -%}
+    {# djlint:on #}
+    >
+    {# Update chapters text #}
+    {%- for chapter in chapters -%}
+        <div id="chapter_{{ chapter.chapter_number }}"
+             hx-swap-oob="outerHTML"
+             class="self-center">
+            {{ chapter.chapter_title }} with {{ chapter.sentence_count }} sentences
+        </div>
+    {%- endfor -%}
+    {# Update chapters audio #}
+    {%- for chapter in chapters -%}
+        {% include "audiobook/epub_chapter.html" with context %}
+    {%- endfor -%}

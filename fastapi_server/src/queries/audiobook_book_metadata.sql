@@ -10,7 +10,7 @@ WITH chapters_may_have_audio AS (
     SELECT COUNT(*) AS count
     FROM litestar_audiobook_chapter AS c
     WHERE
-        c.book_id = ?
+        c.book_id = $1
         AND
         (
             c.queued IS NOT NULL
@@ -24,7 +24,7 @@ chapters_have_audio_generated AS (
     SELECT COUNT(*) AS count
     FROM litestar_audiobook_chapter AS c
     WHERE
-        c.book_id = ?
+        c.book_id = $1
         AND c.minio_object_name IS NOT NULL
 )
 
@@ -32,11 +32,13 @@ SELECT
     b.id AS book_id,
     b.book_title,
     b.book_author,
-    cmha.count <> b.chapter_count AS should_display_generate_all_audio_button,
-    0 < cmha.count AS should_display_delete_all_generated_audio_button,
-    chag.count = b.chapter_count AS should_display_download_book_button
+    b.chapter_count,
+    cmha.count <> b.chapter_count AS show_button_generate_all_audio,
+    0 < cmha.count AS show_button_delete_all_audio,
+    chag.count = b.chapter_count AS show_button_download_book
 FROM
     litestar_audiobook_book AS b
 CROSS JOIN chapters_may_have_audio AS cmha
 CROSS JOIN chapters_have_audio_generated AS chag
-WHERE b.id = ?
+WHERE b.id = $1 AND b.deleted = FALSE
+LIMIT 1

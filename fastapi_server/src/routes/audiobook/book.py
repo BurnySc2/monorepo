@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 import os
 import re
+from datetime import timedelta
+from pathlib import Path
 from stat import S_IFREG
 from typing import Annotated
 
@@ -15,12 +17,12 @@ from litestar.enums import MediaType, RequestEncodingType
 from litestar.params import Body
 from litestar.response import Stream, Template
 from minio.helpers import _BUCKET_NAME_REGEX
+from pydantic import BaseModel
 from stream_zip import ZIP_64, async_stream_zip
 
 from prisma import models
 from routes.audiobook.schema import (
     AudioSettings,
-    base64_encode_data,
     get_chapter_position_in_queue,
     minio_client,
     minio_get_audio_of_chapter,
@@ -41,6 +43,81 @@ from routes.cookies_and_guards import (
 MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
 assert MINIO_AUDIOBOOK_BUCKET is not None
 assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
+
+queries_directory = Path(__file__).parents[2] / "queries"
+query_get_book = (queries_directory / "audiobook_book_metadata.sql").read_text()
+query_get_chapters = (queries_directory / "audiobook_get_chapters.sql").read_text()
+query_queue_all_chapters = (queries_directory / "audiobook_queue_all.sql").read_text()
+
+
+class BookContext(BaseModel):
+    # Context Model for get_book_by_id
+    book_id: int
+    book_name: str
+    book_author: str
+    chapter_count: int
+    chapters_for_input_as_string: str
+    user_settings: AudioSettings
+    available_voices: list[str]
+    show_button_generate_all_audio: bool
+    show_button_download_book: bool
+    show_button_delete_all_audio: bool
+
+
+class ChapterAudioGenerateContext(BaseModel):
+    # Context Model for generate_audio
+    pass
+
+
+class ChapterAudioLoadContext(BaseModel):
+    # Context Model for load_generated_audio
+    pass
+
+
+class ChapterAudioDeleteContext(BaseModel):
+    # Context Model for delete_generated_audio
+    pass
+
+
+class AudiobookBookMetadataQuery(BaseModel):
+    # Context Model for delete_generated_audio
+    book_id: int
+    book_title: str
+    book_author: str
+    chapter_count: int
+    show_button_generate_all_audio: bool
+    show_button_download_book: bool
+    show_button_delete_all_audio: bool
+
+    @property
+    def chapters_for_input_as_string(self) -> str:
+        return ",".join(map(str, range(1, self.chapter_count + 1)))
+
+
+class AudiobookChapterQuery(BaseModel):
+    # Class used in other contexts
+    id: int
+    book_id: int
+    number_in_queue: int | None  # 'None' if converting or not queued
+    is_converting: bool
+    has_audio: bool
+    chapter_title: str
+    chapter_number: int
+    # word_count: int
+    sentence_count: int
+    minio_object_name: str | None
+    # Filled after query
+    minio_presigned_url: str = ""
+
+
+async def minio_presigned_get_object(object_name: str) -> str:
+    url = await asyncio.to_thread(
+        minio_client.presigned_get_object,
+        bucket_name=MINIO_AUDIOBOOK_BUCKET,
+        object_name=object_name,
+        expires=timedelta(hours=24),
+    )
+    return url
 
 
 class MyAudiobookBookRoute(Controller):
@@ -65,51 +142,30 @@ class MyAudiobookBookRoute(Controller):
         # If at least one chapter has been generated: allow "delete all generations" button
         # If at least one chapter has no audio, is not generating or is not queued: allow "generate audio for all chapters" button
         # oob-swap: fill out the chapter information (chapter title, audio-queued/generating/generated)
-        # Poll chapters: audio-queued/generating
         async with get_db() as db:
-            book = await db.audiobookbook.find_first_or_raise(
-                where={
-                    "id": book_id,
-                    "uploaded_by": logged_in_user.db_name,
-                },
-                include={"AudiobookChapter": {"order_by": {"chapter_number": "asc"}}},
+            book_metadata: AudiobookBookMetadataQuery | None = await db.query_first(
+                query_get_book,
+                book_id,
+                model=AudiobookBookMetadataQuery,
             )
-            chapters_in_queue: list[dict] = await db.query_raw(
-                """
-SELECT
-	ROW_NUMBER() OVER (ORDER BY queued) - 1 AS row_number,
-	id AS chapter_id
-FROM
-	litestar_audiobook_chapter
-WHERE
-	litestar_audiobook_chapter.minio_object_name IS NULL
-	AND litestar_audiobook_chapter.queued IS NOT NULL
-                """
-            )
-        chapter_id_to_queued_index: dict[int, int] = {row["chapter_id"]: row["row_number"] for row in chapters_in_queue}
+        if book_metadata is None:
+            # TODO Book does not belong to this person, is deleted or does not exist
+            raise IndexError()
         available_voices = await get_supported_voices()
         return Template(
             template_name="audiobook/epub_book.html",
-            context={
-                "user_settings": user_settings,
-                "book_id": book.id,
-                "book_name": book.book_title.title(),
-                "book_author": book.book_author,
-                "available_voices": available_voices,
-                "chapters": [
-                    {
-                        "chapter_title": normalize_title(chapter.chapter_title),
-                        "chapter_number": chapter.chapter_number,
-                        "word_count": chapter.word_count,
-                        "sentence_count": chapter.sentence_count,
-                        "has_audio": bool(chapter.minio_object_name),
-                        "queued": chapter.queued,
-                        "position_in_queue": chapter_id_to_queued_index.get(chapter.id, -1),
-                    }
-                    # pyre-fixme[16]
-                    for chapter in book.AudiobookChapter
-                ],
-            },
+            context=BookContext(
+                book_id=book_metadata.book_id,
+                book_name=book_metadata.book_title.title(),
+                book_author=book_metadata.book_author,
+                chapter_count=book_metadata.chapter_count,
+                chapters_for_input_as_string=book_metadata.chapters_for_input_as_string,
+                show_button_generate_all_audio=book_metadata.show_button_generate_all_audio,
+                show_button_download_book=book_metadata.show_button_download_book,
+                show_button_delete_all_audio=book_metadata.show_button_delete_all_audio,
+                user_settings=user_settings,
+                available_voices=available_voices,
+            ).model_dump(),
         )
 
     @post(
@@ -138,7 +194,7 @@ WHERE
                 where={"book_id": book_id, "chapter_number": chapter_number}
             )
             if chapter.queued is None:
-                await db.audiobookchapter.update_many(
+                chapter = await db.audiobookchapter.update(
                     where={"id": chapter.id},
                     # pyre-fixme[55]
                     data={
@@ -146,8 +202,6 @@ WHERE
                         "queued": arrow.utcnow().datetime,
                     },
                 )
-                # This only updates the attribute locally to render the template correctly
-                chapter.queued = arrow.utcnow().datetime
 
         # TODO Instead of polling on each chapter, have one global poller which updates all chapters with one query
         # and oob-swaps instead.
@@ -169,108 +223,68 @@ WHERE
         )
 
     @post(
-        "/load_generated_audio",
+        "/refresh_chapters",
         guards=[owns_book_guard],
     )
-    async def load_generated_audio(
+    async def refresh_chapters(
         self,
         book_id: int,
-        chapter_number: int,
+        data: Annotated[dict, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Template:
-        # Audio has been generated
+        """
+        An endpoint for the input:text element to poll information
+        if the queued audio chapters have finished generating.
+        """
+        chapters_as_list = data["hidden_refresh_queue"].split(",")
 
-        # TODO Generate presigned url to minio instead of loading the entire audio from minio
         async with get_db() as db:
-            chapter = await db.audiobookchapter.find_first_or_raise(
-                where={
-                    "book_id": book_id,
-                    "chapter_number": chapter_number,
-                }
+            chapters_info = await db.query_raw(
+                query_get_chapters,
+                book_id,
+                chapters_as_list,
+                model=AudiobookChapterQuery,
             )
+        for chapter in chapters_info:
+            if chapter.minio_object_name is not None:
+                # TODO Use async gather to request in parallel?
+                presigned_url = await minio_presigned_get_object(chapter.minio_object_name)
+                chapter.minio_presigned_url = presigned_url
+
+        chapters_for_input_as_string = ",".join(
+            str(c.chapter_number) for c in chapters_info if c.number_in_queue is not None
+        )
         return Template(
-            template_name="audiobook/epub_chapter.html",
+            template_name="audiobook/epub_refresh.html",
             context={
                 "book_id": book_id,
-                "chapter": {
-                    "mp3_b64_data": base64_encode_data(await minio_get_audio_of_chapter(chapter)),
-                    "chapter_title": chapter.chapter_title,
-                    "chapter_number": chapter_number,
-                    "has_audio": bool(chapter.minio_object_name),
-                    "queued": chapter.queued,
-                },
+                "chapters_for_input_as_string": chapters_for_input_as_string,
+                "chapters": chapters_info,
             },
-        )
-
-    @get("/download_chapter_mp3", guards=[owns_book_guard])
-    async def download_mp3(
-        self,
-        book_id: int,
-        chapter_number: int,
-    ) -> Stream:
-        """
-        From db: fetch generated audio bytes, stream / download to user
-        """
-        # TODO Instead of loading the audio from minio through the webserver, redirect to a minio presigned url
-        async with get_db() as db:
-            chapter = await db.audiobookchapter.find_first_or_raise(
-                where={
-                    "book_id": book_id,
-                    "chapter_number": chapter_number,
-                }
-            )
-        bytes_data: bytes = await minio_get_audio_of_chapter(chapter)
-        stepsize = 2**20  # 1mb
-        content_iterator = (bytes_data[i : i + stepsize] for i in range(0, len(bytes_data), stepsize))
-        return Stream(
-            content=content_iterator,
-            headers={
-                # Change file name
-                "Content-Disposition": f"attachment; filename={normalize_filename(chapter.chapter_title)}.mp3",
-                "Content-Type": "application/mp3",
-                # Preview of file size
-                "Content-Length": f"{len(bytes_data)}",
-            },
-            media_type="audio/mpeg",
         )
 
     @post(
-        "generate_audio_book",
+        "generate_audio_for_book",
         guards=[owns_book_guard],
     )
-    async def generate_audio_book(
+    async def generate_audio_for_book(
         self,
         logged_in_user: LoggedInUser,
         book_id: int,
         data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> ClientRefresh:
         """
-        Generate audio for all chapters
+        Queue all chapters to generate audio that are not currently queued or generated.
         """
         async with get_db() as db:
-            chapters = await db.audiobookchapter.find_many(
-                where={
-                    "book_id": book_id,
-                    # pyre-fixme[55]
-                    "book": {"uploaded_by": logged_in_user.db_name},
-                    "queued": None,
-                },
-                order=[{"chapter_number": "asc"}],
-            )
-            async with db.batch_() as batcher:
-                for chapter in chapters:
-                    batcher.audiobookchapter.update(
-                        where={"id": chapter.id},
-                        # pyre-fixme[55]
-                        data={
-                            "audio_settings": data.model_dump_json(),
-                            "queued": arrow.utcnow().datetime,
-                        },
-                    )
-                    # await db.audiobookchapter.update_many(
-                    #     where={"id": chapter.id},
-                    # )
-                await batcher.commit()
-        return ClientRefresh()
+            query_result = await db.query_raw(query_queue_all_chapters, book_id, data.model_dump_json())
+        chapters_for_input_as_string = ",".join(str(c["chapter_number"]) for c in query_result)
+        return Template(
+            template_name="audiobook/epub_refresh.html",
+            context={
+                "book_id": book_id,
+                "chapters_for_input_as_string": chapters_for_input_as_string,
+            },
+        )
 
     @get(
         "/download_book_zip",

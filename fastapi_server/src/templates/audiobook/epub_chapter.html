@@ -1,62 +1,36 @@
 {#
 State1: no audio generated, not queued
 State2: no audio generated, queued
-State3: audio generated, audio not loaded
-State4: audio generated, audio loaded
+State3: audio generated, audio loaded
 
 1->2 click 'queue audio' button
 2->3 waiting for audio to be generated
-3->4 click 'load audio' button
 2->1 and 3->1 and 4->1 click 'delete audio' button
 #}
 <div id="chapter_audio_{{ chapter.chapter_number }}"
+     hx-swap-oob="outerHTML"
      class="flex gap-2">
     {# State4: audio generated and loaded #}
-    {% if chapter.mp3_b64_data is defined and chapter.mp3_b64_data %}
+    {% if chapter.minio_presigned_url %}
         <audio controls id="audio">
-            <source src="data:audio/mpeg;base64, {{ chapter.mp3_b64_data }}"
+            <source src="{{ chapter.minio_presigned_url }}"
                     type="audio/mpeg" />
             Your browser does not support the audio element.
         </audio>
-    {% elif chapter.position_in_queue|default(-1, true) >= 0 %}
-        <div class="flex items-center rounded-3xl border-4 border-black p-2"
-             hx-target="#chapter_audio_{{ chapter.chapter_number }}"
-             hx-swap="outerHTML"
-             hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
-             hx-trigger="every {{ wait_time_for_next_poll|default(10, true) }}s">
-            Queued ({{ chapter.position_in_queue }})...
+    {% elif chapter.number_in_queue|default(-1, true) >= 0 %}
+        <div class="flex items-center rounded-3xl border-4 border-black p-2">
+            Queued ({{ chapter.number_in_queue }})...
             <img class="w-8 animate-spin"
                  style="opacity: 1"
                  src="/static/spinner.svg" />
         </div>
-    {% elif chapter.has_audio is defined and chapter.queued is defined and not chapter.has_audio and chapter.queued %}
-        <div class="flex items-center rounded-3xl border-4 border-black p-2"
-             hx-target="#chapter_audio_{{ chapter.chapter_number }}"
-             hx-swap="outerHTML"
-             hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}&wait_time_for_next_poll={{ wait_time_for_next_poll|default(10, true) }}"
-             hx-trigger="every {{ wait_time_for_next_poll|default(10, true) }}s">
+    {% elif chapter.is_converting %}
+        <div class="flex items-center rounded-3xl border-4 border-black p-2">
             Generating audio...
             <img class="w-8 animate-spin"
                  style="opacity: 1"
                  src="/static/spinner.svg" />
         </div>
-    {% elif chapter.has_audio is defined and chapter.has_audio %}
-        {#- djlint:off -#}
-        <button
-            class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-500"
-            {# TODO Load audio directly with 'src' attribute but only load metadata, not the full audio #}
-            {# TODO The src may be another server endpoint or a minio presigned url with expire duration of 1h #}
-            hx-target="#chapter_audio_{{ chapter.chapter_number }}"
-            hx-swap="outerHTML"
-            hx-post="/audiobook/load_generated_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
-            hx-indicator="#spinner_load_audio_{{ chapter.chapter_number }}"
-            >
-            {#- djlint:off -#}
-            Load audio
-            <img id="spinner_load_audio_{{ chapter.chapter_number }}"
-                 class="htmx-indicator w-8 animate-spin"
-                 src="/static/spinner.svg" />
-        </button>
         {# State1: no audio generated and not queued #}
     {% else %}
         <button class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-500"
@@ -73,8 +47,8 @@ State4: audio generated, audio loaded
         </button>
     {% endif %}
     {# Download button #}
-    {% if chapter.has_audio is defined and chapter.has_audio %}
-        <a href="/audiobook/download_chapter_mp3/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
+    {% if chapter.minio_presigned_url %}
+        <a href="{{ chapter.minio_presigned_url }}"
            download
            class="self-center rounded-3xl hover:bg-yellow-500">
             <img class="h-auto"
@@ -85,7 +59,7 @@ State4: audio generated, audio loaded
         </a>
     {% endif %}
     {# Delete button #}
-    {% if chapter.queued is defined and chapter.queued %}
+    {% if chapter.has_audio or chapter.is_converting or chapter.number_in_queue != None %}
         <button hx-post="/audiobook/delete_generated_audio/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
                 hx-target="#chapter_audio_{{ chapter.chapter_number }}"
                 hx-swap="outerHTML"

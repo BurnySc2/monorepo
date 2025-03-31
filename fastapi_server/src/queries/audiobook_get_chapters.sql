@@ -6,17 +6,17 @@
 -- Retrieve all chapters that are queued and conversion hasn't started
 WITH all_queued AS (
     SELECT
-        litestar_audiobook_chapter.id,
+        c.id,
         -- TODO Verify this number starts with 1
         ROW_NUMBER() OVER (
-            ORDER BY litestar_audiobook_chapter.queued ASC
+            ORDER BY c.queued ASC, c.chapter_number ASC 
         ) AS number_in_queue
     FROM
-        litestar_audiobook_chapter
+        litestar_audiobook_chapter c
     WHERE
-        litestar_audiobook_chapter.queued IS NOT NULL
-        AND litestar_audiobook_chapter.started_converting IS NULL
-        AND litestar_audiobook_chapter.minio_object_name IS NULL
+        c.queued IS NOT NULL
+        AND c.started_converting IS NULL
+        AND c.minio_object_name IS NULL
 )
 
 -- Then filter out those chapters that do not belong to the book while keeping the number_in_queued information
@@ -24,7 +24,7 @@ SELECT
     c.id,
     c.book_id,
     -- Will be either a number if queued, or NULL if not yet queued, started converting or done converting
-    q.number_in_queued,
+    q.number_in_queue,
     c.chapter_title,
     c.chapter_number,
     c.word_count,
@@ -42,7 +42,7 @@ LEFT JOIN all_queued AS q
 LEFT JOIN litestar_audiobook_book AS b
     ON c.book_id = b.id
 WHERE
-    c.book_id = ?
-    AND b.deleted = TRUE
-ORDER BY
-    c.chapter_number ASC
+    c.book_id = $1
+    AND c.chapter_number = ANY(CAST($2 AS INTEGER []))
+    -- AND c.chapter_number = ANY($2::INTEGER[])
+    AND b.deleted = FALSE

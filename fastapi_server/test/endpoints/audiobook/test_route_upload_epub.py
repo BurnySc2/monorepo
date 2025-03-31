@@ -311,7 +311,7 @@ async def test_generate_audio_for_chapter(
 
 
 # TODO Mark test as slow?
-# Test "/generate_audio_book" requests audio for all chapters
+# Test "/generate_audio_for_book" requests audio for all chapters
 # and "/download_book_zip" generates zip file with audio files of all chapters
 @pytest.mark.httpx_mock(should_mock=lambda request: request.url.host not in ["localhost"])
 @pytest.mark.asyncio
@@ -330,7 +330,7 @@ async def test_generate_audio_for_entire_book(
     assert upload_book_response.status_code == HTTP_201_CREATED
 
     request_generate_audio_for_book_response = test_client_db_reset.post(
-        "/audiobook/generate_audio_book", params={"book_id": 1}
+        "/audiobook/generate_audio_for_book", params={"book_id": 1}
     )
     assert request_generate_audio_for_book_response.status_code == HTTP_201_CREATED
 
@@ -340,17 +340,17 @@ async def test_generate_audio_for_entire_book(
             convert_audiobook,
             "generate_text_to_speech",
             new=AsyncMock(
-                return_value=io.BytesIO(f"bytes for audio {i+1}".encode()),
+                return_value=io.BytesIO(f"bytes for audio {i + 1}".encode()),
             ),
         ):
             await convert_one()
 
         # Make sure it was saved in database and in minio
         async with Prisma() as db:
-            audio_chapter_generated = await db.audiobookchapter.count(where={"minio_object_name": f"{i+1}_audio.mp3"})
+            audio_chapter_generated = await db.audiobookchapter.count(where={"minio_object_name": f"{i + 1}_audio.mp3"})
             assert audio_chapter_generated == 1
         assert test_minio_client.bucket_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
-        assert test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{i+1}_audio.mp3")
+        assert test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{i + 1}_audio.mp3")
 
     # Test download-zip works (only if audio for all chapters are generated)
     download_zip_response = test_client_db_reset.get("/audiobook/download_book_zip", params={"book_id": 1})
@@ -376,7 +376,7 @@ async def test_generate_audio_for_entire_book(
     for i in range(expected_chapter_count):
         with pytest.raises(S3Error):
             # Raises error if object does not exist
-            test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{i+1}_audio.mp3")
+            test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{i + 1}_audio.mp3")
 
 
 # Test "/save_settings_to_cookies" sets cookies

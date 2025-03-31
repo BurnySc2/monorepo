@@ -154,7 +154,7 @@ class TTSQueueRunner:
                         f"""
                     <div hx-swap-oob="innerHTML:#content">
                         <audio controls autoplay id="audio">
-                            <source src="data:audio/mpeg;base64, { mp3_b64_data }" type="audio/mpeg" />
+                            <source src="data:audio/mpeg;base64, {mp3_b64_data}" type="audio/mpeg" />
                             Your browser does not support the audio element.
                         </audio>
                     </div>
