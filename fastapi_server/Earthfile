@@ -11,6 +11,17 @@ install-dev:
     RUN uv run --frozen prisma generate
     COPY src /root/fastapi_server/src
 
+formatsql:
+    # Run on host system instead of inside a container
+    LOCALLY
+    # Format queries
+    RUN uv run sqlfluff fix src/queries
+
+formatyml:
+    LOCALLY
+    # Format all yml and yaml files
+    RUN uv run yamlfix . --exclude .venv
+
 format:
     # Run on host system instead of inside a container
     LOCALLY
@@ -26,12 +37,7 @@ format:
     RUN uv run ruff check . --select I --fix
     # Format code
     RUN uv run ruff format .
-
-formatsql:
-    # Run on host system instead of inside a container
-    LOCALLY
-    # Format queries
-    RUN uv run sqlfluff fix src/queries
+    # TODO Add auto format sql, html, y(a)ml and other meta-code files
 
 # Check if files are correctly formatted
 format-check:
@@ -41,7 +47,11 @@ format-check:
 # Ignore errors via "# noqa: F841"
 lint:
     FROM +install-dev
+    # Check python files
     RUN uv run ruff check .
+    # TODO Check sql files
+    # Check yaml/yml files
+    RUN uv run yamllint --format parsable .
 
 # Ignore errors via "# pyre-fixme[11]"
 # Use the following to generate fixme's automatically

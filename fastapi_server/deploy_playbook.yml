@@ -1,3 +1,4 @@
+---
 # Execute with
 # ansible-playbook deploy_playbook.yml -i ../ansible/hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
@@ -7,44 +8,38 @@
   tasks:
     - name: Create group
       ansible.builtin.group:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         state: present
-
     - name: Create user
       ansible.builtin.user:
-        name: "{{ USERNAME }}"
+        name: '{{ USERNAME }}'
         groups:
-          - "{{ USERNAME }}"
+          - '{{ USERNAME }}'
           - docker
-        shell: "/bin/fish"
-
+        shell: /bin/fish
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
-
     - name: Copy .env file
       template:
         src: .env.server
         dest: /home/{{ USERNAME }}/.env
-
     - name: Ensure destination directory exists
       file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: directory
-        mode: "0755"
-
+        mode: '0755'
     - name: Copy files except .env to the destination directory
       ansible.posix.synchronize:
-        src: "./"
-        dest: "/home/{{ USERNAME }}/dockerfiles/"
+        src: ./
+        dest: /home/{{ USERNAME }}/dockerfiles/
         rsync_opts:
-          - "--filter=':- .gitignore'"
-          - "--exclude=.env*"
-          - "--exclude=.git"
-          - "--exclude=.vscode"
-          - "--exclude=test"
-
+          - --filter=':- .gitignore'
+          - --exclude=.env*
+          - --exclude=.git
+          - --exclude=.vscode
+          - --exclude=test
     - name: Build the Docker image
       community.docker.docker_image:
         name: burnysc2/litestar_server:latest_dev
@@ -54,13 +49,12 @@
         source: build
         # Force building even if image already exists
         force_source: true
-
     - name: Delete all build-files
       file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: absent
-
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
-        profiles: [prod]
+        profiles:
+          - prod

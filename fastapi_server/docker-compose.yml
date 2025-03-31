@@ -1,3 +1,4 @@
+---
 x-services-fragments:
   webserver: &webserver
     image: burnysc2/litestar_server:latest_dev
@@ -8,16 +9,13 @@ x-services-fragments:
     hostname: litestar_server
     env_file:
       - .env
-
   convert_audiobook_worker: &convert_audiobook_worker
     image: burnysc2/litestar_server:latest_dev
     pull_policy: never
     command:
-      [
-        "sh",
-        "-c",
-        "python src/workers/convert_audiobook.py && sleep 1m",
-      ]
+      - sh
+      - -c
+      - python src/workers/convert_audiobook.py && sleep 1m
     env_file:
       - .env
     # Has no volume because all files are temporary
@@ -26,10 +24,9 @@ x-services-fragments:
       replicas: 1
       resources:
         limits:
-          cpus: "0.1"
+          cpus: '0.1'
           memory: 2048M
     restart: always
-
 services:
   # === PROD SETUP
   webserver:
@@ -62,7 +59,8 @@ services:
       - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.regex=^https?://apidev\.burnysc2\.xyz/(.*)
       - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.replacement=https://burnysc2.xyz/$${1}
       - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.permanent=true
-    profiles: [prod]
+    profiles:
+      - prod
 
   # Responsible for converting text to audio
   convert_audiobook_worker:
@@ -71,7 +69,8 @@ services:
       - traefiknet
     deploy:
       replicas: 4
-    profiles: [prod]
+    profiles:
+      - prod
 
   # === DEV SETUP
   traefik:
@@ -80,16 +79,17 @@ services:
     networks:
       - fastapi_dev
     command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
+      - --api.insecure=true
+      - --providers.docker=true
+      - --entrypoints.web.address=:80
     ports:
-      - "80:80"
-      - "8080:8080" # Dashboard
+      - 80:80
+      - 8080:8080  # Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    profiles: ["", local_dev]
-
+    profiles:
+      - ''
+      - local_dev
   webserver_dev:
     <<: *webserver
     build: .
@@ -103,8 +103,8 @@ services:
       - traefik.enable=true
       - traefik.http.routers.fastapi.rule=Host(`localhost`)
       - traefik.http.services.fastapi.loadbalancer.server.port=8000
-    profiles: [local_dev]
-
+    profiles:
+      - local_dev
   local_dev_convert_audiobook_worker:
     <<: *convert_audiobook_worker
     build: .
@@ -114,32 +114,36 @@ services:
       - local_dev_postgres
       - traefik
     network_mode: host
-    profiles: [local_dev]
-
+    profiles:
+      - local_dev
   local_dev_minio:
     container_name: fastapi_dev_minio
     hostname: fastapi_dev_minio
     image: quay.io/minio/minio
     pull_policy: always
     # Start minio server, then after 10 seconds create access key
-    entrypoint: ["bash", "-c"]
+    entrypoint:
+      - bash
+      - -c
     command: >
-      "/usr/bin/docker-entrypoint.sh minio server --console-address ':9001' 'data' &
+      "/usr/bin/docker-entrypoint.sh minio server --console-address ':9001' 'data'
+      &
       sleep 10 &&
       mc alias set myminio http://localhost:9000 root rootroot &&
-      mc admin user svcacct add --access-key "mylocaldevkey" --secret-key "mylocaldevpassword" myminio root &&
+      mc admin user svcacct add --access-key "mylocaldevkey" --secret-key "mylocaldevpassword"
+      myminio root;
       wait"
     restart: unless-stopped
     labels:
-      - "traefik.enable=true"
+      - traefik.enable=true
       # API
-      - "traefik.http.routers.minio.rule=Host(`minio.localhost`)"
-      - "traefik.http.routers.minio.service=minio"
-      - "traefik.http.services.minio.loadbalancer.server.port=9000"
+      - traefik.http.routers.minio.rule=Host(`minio.localhost`)
+      - traefik.http.routers.minio.service=minio
+      - traefik.http.services.minio.loadbalancer.server.port=9000
       # ADMIN LOGIN
-      - "traefik.http.routers.minioadmin.rule=Host(`minioadmin.localhost`)"
-      - "traefik.http.routers.minioadmin.service=minioadmin"
-      - "traefik.http.services.minioadmin.loadbalancer.server.port=9001"
+      - traefik.http.routers.minioadmin.rule=Host(`minioadmin.localhost`)
+      - traefik.http.routers.minioadmin.service=minioadmin
+      - traefik.http.services.minioadmin.loadbalancer.server.port=9001
     ports:
       - 9000:9000
       - 9001:9001
@@ -148,17 +152,19 @@ services:
     environment:
       - MINIO_ROOT_USER=root
       - MINIO_ROOT_PASSWORD=rootroot
-    profiles: ["", local_dev, test]
-
+    profiles:
+      - ''
+      - local_dev
+      - test
   local_dev_postgres:
     container_name: fastapi_dev_postgres
     hostname: fastapi_dev_postgres
     image: postgres:16-alpine
     restart: unless-stopped
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.postgres.rule=Host(`postgres.localhost`)"
-      - "traefik.http.services.postgres.loadbalancer.server.port=5432"
+      - traefik.enable=true
+      - traefik.http.routers.postgres.rule=Host(`postgres.localhost`)
+      - traefik.http.services.postgres.loadbalancer.server.port=5432
     networks:
       - fastapi_dev
     environment:
@@ -169,8 +175,9 @@ services:
       - 5432:5432
     volumes:
       - dev_postgres_data:/var/lib/postgresql/data
-    profiles: ["", local_dev]
-
+    profiles:
+      - ''
+      - local_dev
   local_dev_postgres_test:
     # This container is only used for running tests
     container_name: fastapi_dev_postgres_test
@@ -183,8 +190,9 @@ services:
       POSTGRES_DB: test
     ports:
       - 5433:5432
-    profiles: ["", test]
-
+    profiles:
+      - ''
+      - test
   local_dev_pgadmin:
     # Connect via:
     # Address: fastapi_dev_postgres
@@ -197,9 +205,9 @@ services:
     depends_on:
       - local_dev_postgres
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.localhost`)"
-      - "traefik.http.services.pgadmin.loadbalancer.server.port=80"
+      - traefik.enable=true
+      - traefik.http.routers.pgadmin.rule=Host(`pgadmin.localhost`)
+      - traefik.http.services.pgadmin.loadbalancer.server.port=80
     networks:
       - fastapi_dev
     environment:
@@ -207,17 +215,16 @@ services:
       PGADMIN_DEFAULT_PASSWORD: root
     volumes:
       - dev_pgadmin_data:/var/lib/pgadmin
-    profiles: ["", local_dev]
-
+    profiles:
+      - ''
+      - local_dev
 # TODO Background workers for transcription
-
 networks:
   fastapi_dev:
     driver: bridge
   traefiknet:
     external: true
-
 volumes:
-  dev_minio_data:
-  dev_postgres_data:
-  dev_pgadmin_data:
+  dev_minio_data: null
+  dev_postgres_data: null
+  dev_pgadmin_data: null
