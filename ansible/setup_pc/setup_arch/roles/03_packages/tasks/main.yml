@@ -25,6 +25,10 @@
       # Communication
       - thunderbird
       - discord
+      # Remote hard drive mounting
+      # sshfs remote:/remote/directory /my/local/directory
+      - fuse
+      - sshfs
       # Media viewer and editors
       - xournalpp
       - obsidian  # notes editor
@@ -183,3 +187,20 @@
     daemon_reload: true
     enabled: true
   when: not ansible_check_mode
+- name: Ensure local directory exists
+  ansible.builtin.file:
+    path: /home/burny/remote_drives/burnylaptopd
+    state: directory
+    owner: burny
+    group: burny
+    mode: '0755'
+- name: Mount burnylaptopd:/home
+  ansible.builtin.mount:
+    name: /home/burny/remote_drives/burnylaptopd
+    src: burnylaptopd:/home
+    fstype: fuse.sshfs
+    opts: 'auto,reconnect'
+    passno: 0
+    dump: 0
+    state: present
+  become: true
