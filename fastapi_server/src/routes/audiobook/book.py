@@ -6,11 +6,11 @@ import re
 from datetime import timedelta
 from pathlib import Path
 from stat import S_IFREG
-from typing import Annotated
+from typing import Annotated, Literal
 
 import arrow
 from litestar import Controller, Request, Response, get, post
-from litestar.contrib.htmx.response import ClientRedirect, ClientRefresh
+from litestar.contrib.htmx.response import ClientRedirect
 from litestar.datastructures import Cookie
 from litestar.di import Provide
 from litestar.enums import MediaType, RequestEncodingType
@@ -23,7 +23,6 @@ from stream_zip import ZIP_64, async_stream_zip
 from prisma import models
 from routes.audiobook.schema import (
     AudioSettings,
-    get_chapter_position_in_queue,
     minio_client,
     minio_get_audio_of_chapter,
     normalize_filename,
@@ -110,6 +109,17 @@ class AudiobookChapterQuery(BaseModel):
     minio_presigned_url: str = ""
 
 
+def update_refresh_queue(
+    current_queue: str,
+    new_chapters: set[int] | set[str],
+) -> str:
+    refresh_queue = set(current_queue.split(","))
+    refresh_queue.discard("")
+    refresh_queue |= {str(i) for i in new_chapters}
+    new_refresh_queue = ",".join(refresh_queue)
+    return new_refresh_queue
+
+
 async def minio_presigned_get_object(object_name: str) -> str:
     url = await asyncio.to_thread(
         minio_client.presigned_get_object,
@@ -134,14 +144,6 @@ class MyAudiobookBookRoute(Controller):
         book_id: int,
         logged_in_user: LoggedInUser,
     ) -> Template:
-        # TODO Use the 'get_chapters.sql' query
-        # TODO Strategy: Initial page load needs to be fast
-        # Then with followup request uses oob-swap to update the info of
-        # Title, Author
-        # If all chapters have been generated: allow book download button
-        # If at least one chapter has been generated: allow "delete all generations" button
-        # If at least one chapter has no audio, is not generating or is not queued: allow "generate audio for all chapters" button
-        # oob-swap: fill out the chapter information (chapter title, audio-queued/generating/generated)
         async with get_db() as db:
             book_metadata: AudiobookBookMetadataQuery | None = await db.query_first(
                 query_get_book,
@@ -176,17 +178,19 @@ class MyAudiobookBookRoute(Controller):
         self,
         book_id: int,
         chapter_number: int,
-        data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
+        data: Annotated[dict, Body(media_type=RequestEncodingType.URL_ENCODED)],
         wait_time_for_next_poll: int = 10,
     ) -> Template:
         """
         Implementation of what happens when user clicks "generate audio" button.
         """
-        # Queue chapter to be parsed and generate audio for it
-        # Then wait till the job is done before returning
-
-        # TODO Instead of refreshing per chapter, use oob-swap and refresh all chapters in one request, using 'get_chapters.sql'
-        # TODO Use fix poll request every 10-30 seconds
+        audio_settings = AudioSettings(
+            voice_name=data["voice_name"],
+            voice_rate=data["voice_rate"],
+            voice_pitch=data["voice_pitch"],
+            voice_volume=data["voice_volume"],
+        )
+        chapters_for_input_as_string = update_refresh_queue(data["hidden_refresh_queue"], {chapter_number})
 
         # Queue the chapter to the database
         async with get_db() as db:
@@ -198,27 +202,22 @@ class MyAudiobookBookRoute(Controller):
                     where={"id": chapter.id},
                     # pyre-fixme[55]
                     data={
-                        "audio_settings": data.model_dump_json(),
+                        "audio_settings": audio_settings.model_dump_json(),
                         "queued": arrow.utcnow().datetime,
                     },
                 )
-
-        # TODO Instead of polling on each chapter, have one global poller which updates all chapters with one query
-        # and oob-swaps instead.
-        # It needs to have a state of ids that need to be polled.
-        # Remove global poller when there is nothing left to poll
         return Template(
-            template_name="audiobook/epub_chapter.html",
+            template_name="audiobook/epub_refresh.html",
             context={
                 "book_id": book_id,
-                "wait_time_for_next_poll": wait_time_for_next_poll * 2,
-                "chapter": {
-                    "chapter_title": chapter.chapter_title,
-                    "chapter_number": chapter_number,
-                    "has_audio": bool(chapter.minio_object_name),
-                    "queued": chapter.queued,
-                    "position_in_queue": await get_chapter_position_in_queue(chapter),
-                },
+                "chapters_for_input_as_string": chapters_for_input_as_string,
+                "chapters": [
+                    {
+                        "chapter_number": chapter_number,
+                        # Will be updated on next refresh
+                        "number_in_queue": 0,
+                    },
+                ],
             },
         )
 
@@ -235,7 +234,9 @@ class MyAudiobookBookRoute(Controller):
         An endpoint for the input:text element to poll information
         if the queued audio chapters have finished generating.
         """
-        chapters_as_list = data["hidden_refresh_queue"].split(",")
+        chapters_as_list: list[str] = data["hidden_refresh_queue"].split(",")
+        if "" in chapters_as_list:
+            chapters_as_list.remove("")
 
         async with get_db() as db:
             chapters_info = await db.query_raw(
@@ -250,8 +251,9 @@ class MyAudiobookBookRoute(Controller):
                 presigned_url = await minio_presigned_get_object(chapter.minio_object_name)
                 chapter.minio_presigned_url = presigned_url
 
-        chapters_for_input_as_string = ",".join(
-            str(c.chapter_number) for c in chapters_info if c.number_in_queue is not None
+        chapters_for_input_as_string = update_refresh_queue(
+            "",
+            {c.chapter_number for c in chapters_info if c.number_in_queue is not None},
         )
         return Template(
             template_name="audiobook/epub_refresh.html",
@@ -270,19 +272,38 @@ class MyAudiobookBookRoute(Controller):
         self,
         logged_in_user: LoggedInUser,
         book_id: int,
-        data: Annotated[AudioSettings, Body(media_type=RequestEncodingType.URL_ENCODED)],
-    ) -> ClientRefresh:
+        data: Annotated[dict, Body(media_type=RequestEncodingType.URL_ENCODED)],
+    ) -> Template:
         """
         Queue all chapters to generate audio that are not currently queued or generated.
         """
+        audio_settings = AudioSettings(
+            voice_name=data["voice_name"],
+            voice_rate=data["voice_rate"],
+            voice_pitch=data["voice_pitch"],
+            voice_volume=data["voice_volume"],
+        )
         async with get_db() as db:
-            query_result = await db.query_raw(query_queue_all_chapters, book_id, data.model_dump_json())
-        chapters_for_input_as_string = ",".join(str(c["chapter_number"]) for c in query_result)
+            query_result = await db.query_raw(query_queue_all_chapters, book_id, audio_settings.model_dump_json())
+
+        chapters_for_input_as_string = update_refresh_queue(
+            data["hidden_refresh_queue"],
+            {c["chapter_number"] for c in query_result},
+        )
+
         return Template(
             template_name="audiobook/epub_refresh.html",
             context={
                 "book_id": book_id,
                 "chapters_for_input_as_string": chapters_for_input_as_string,
+                "chapters": [
+                    {
+                        "chapter_number": c["chapter_number"],
+                        # Will be updated on next refresh
+                        "number_in_queue": 0,
+                    }
+                    for c in query_result
+                ],
             },
         )
 

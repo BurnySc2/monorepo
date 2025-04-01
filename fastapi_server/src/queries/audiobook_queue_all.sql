@@ -5,4 +5,5 @@ SET
 WHERE
     book_id = $1
     AND queued IS NULL
+    AND minio_object_name IS NULL
 RETURNING chapter_number;

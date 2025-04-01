@@ -18,11 +18,13 @@
     >
     {# Update chapters text #}
     {%- for chapter in chapters -%}
-        <div id="chapter_{{ chapter.chapter_number }}"
-             hx-swap-oob="outerHTML"
-             class="self-center">
-            {{ chapter.chapter_title }} with {{ chapter.sentence_count }} sentences
-        </div>
+        {% if chapter.chapter_title is defined and chapter.sentence_count is defined %}
+            <div id="chapter_{{ chapter.chapter_number }}"
+                 class="self-center"
+                 hx-swap-oob="outerHTML">
+                {{ chapter.chapter_title }} with {{ chapter.sentence_count }} sentences
+            </div>
+        {% endif %}
     {%- endfor -%}
     {# Update chapters audio #}
     {%- for chapter in chapters -%}

@@ -9,10 +9,10 @@ WITH all_queued AS (
         c.id,
         -- TODO Verify this number starts with 1
         ROW_NUMBER() OVER (
-            ORDER BY c.queued ASC, c.chapter_number ASC 
+            ORDER BY c.queued ASC, c.chapter_number ASC
         ) AS number_in_queue
     FROM
-        litestar_audiobook_chapter c
+        litestar_audiobook_chapter AS c
     WHERE
         c.queued IS NOT NULL
         AND c.started_converting IS NULL

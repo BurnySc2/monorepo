@@ -67,7 +67,7 @@
                 <div class="flex justify-center space-x-4">
                     <button hx-post="/audiobook/generate_audio_for_book?book_id={{ book_id }}"
                             hx-swap="none"
-                            hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch"
+                            hx-include="#voice_name, #voice_rate, #voice_volume, #voice_pitch, #hidden_refresh_queue"
                             hx-indicator="#spinner_book"
                             class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-500">
                         Generate audio for all chapters
