@@ -63,10 +63,10 @@ async def convert_one() -> None:
 
     minio_client = Minio(
         # pyre-fixme[6]
-        os.getenv("MINIO_INTERNAL_URL"),
+        os.getenv("MINIO_URL"),
         access_key=os.getenv("MINIO_ACCESS_TOKEN"),
         secret_key=os.getenv("MINIO_SECRET_KEY"),
-        secure=False,
+        secure=os.getenv("MINIO_SECURE") == "TRUE",
     )
     # Create bucket if it doesn't exist
     with suppress(S3Error):

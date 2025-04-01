@@ -15,16 +15,9 @@ from routes.caches import get_db
 load_dotenv()
 
 
-minio_client_internal = Minio(
+minio_client = Minio(
     # pyre-fixme[6]
-    os.getenv("MINIO_INTERNAL_URL"),
-    access_key=os.getenv("MINIO_ACCESS_TOKEN"),
-    secret_key=os.getenv("MINIO_SECRET_KEY"),
-    secure=False,
-)
-minio_client_external = Minio(
-    # pyre-fixme[6]
-    os.getenv("MINIO_EXTERNAL_URL"),
+    os.getenv("MINIO_URL"),
     access_key=os.getenv("MINIO_ACCESS_TOKEN"),
     secret_key=os.getenv("MINIO_SECRET_KEY"),
     secure=os.getenv("MINIO_SECURE") == "TRUE",
@@ -34,7 +27,7 @@ minio_client_external = Minio(
 async def minio_check_if_object_exists(bucket_name: str, object_name: str) -> bool:
     try:
         # Attempt to get object metadata
-        minio_client_internal.stat_object(bucket_name, object_name)
+        minio_client.stat_object(bucket_name, object_name)
         return True
     except S3Error as err:
         # If object doesn't exist, MinIO returns a "NoSuchKey" error
@@ -75,7 +68,7 @@ def base64_decode_data(data: str) -> bytes:
 
 def _minio_get_audio_of_chapter_sync(chapter: models.AudiobookChapter) -> bytes:
     # pyre-fixme[6]
-    return minio_client_internal.get_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3").data
+    return minio_client.get_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3").data
 
 
 async def minio_get_audio_of_chapter(chapter: models.AudiobookChapter) -> bytes:

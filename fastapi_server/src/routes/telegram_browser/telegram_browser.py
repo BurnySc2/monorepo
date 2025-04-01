@@ -31,7 +31,7 @@ from routes.telegram_browser.cookies_and_guards import is_logged_in_allowed_acco
 
 minio_client = Minio(
     # pyre-fixme[6]
-    os.getenv("MINIO_EXTERNAL_URL"),
+    os.getenv("MINIO_URL"),
     os.getenv("MINIO_ACCESS_TOKEN"),
     os.getenv("MINIO_SECRET_KEY"),
     secure=os.getenv("STAGE") in {"prod"},

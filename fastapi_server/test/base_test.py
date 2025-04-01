@@ -30,7 +30,7 @@ def test_client_db_reset() -> Iterator[TestClient[Litestar]]:
 @pytest.fixture(scope="function")
 def test_minio_client() -> Iterator[Minio]:
     minio_client = Minio(
-        os.getenv("MINIO_INTERNAL_URL"),
+        os.getenv("MINIO_URL"),
         os.getenv("MINIO_ACCESS_TOKEN"),
         os.getenv("MINIO_SECRET_KEY"),
         secure=False,
