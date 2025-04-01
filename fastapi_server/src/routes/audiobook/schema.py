@@ -6,14 +6,13 @@ import os
 import re
 
 from dotenv import load_dotenv
-from minio import Minio
+from minio import Minio, S3Error
 from pydantic import BaseModel
 
 from prisma import models
 from routes.caches import get_db
 
 load_dotenv()
-STAGE = os.getenv("STAGE", "local_dev")
 
 
 minio_client_internal = Minio(
@@ -30,6 +29,19 @@ minio_client_external = Minio(
     secret_key=os.getenv("MINIO_SECRET_KEY"),
     secure=os.getenv("MINIO_SECURE") == "TRUE",
 )
+
+
+async def minio_check_if_object_exists(bucket_name: str, object_name: str) -> bool:
+    try:
+        # Attempt to get object metadata
+        minio_client_internal.stat_object(bucket_name, object_name)
+        return True
+    except S3Error as err:
+        # If object doesn't exist, MinIO returns a "NoSuchKey" error
+        if err.code == "NoSuchKey":
+            return False
+        # Raise other errors (like connection issues)
+        raise
 
 
 def normalize_title(title: str) -> str:

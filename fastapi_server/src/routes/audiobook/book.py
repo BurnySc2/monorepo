@@ -23,6 +23,7 @@ from stream_zip import ZIP_64, async_stream_zip
 from prisma import models
 from routes.audiobook.schema import (
     AudioSettings,
+    minio_check_if_object_exists,
     minio_client_external,
     minio_client_internal,
     minio_get_audio_of_chapter,
@@ -446,10 +447,11 @@ class MyAudiobookBookRoute(Controller):
                 where={"book_id": book_id, "chapter_number": chapter_number}
             )
             if chapter.minio_object_name is not None:
-                # TODO Verify that it has been deleted, what errors may occur in minio?
-                await asyncio.to_thread(
-                    minio_client_internal.remove_object, MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name
-                )
+                object_exists = await minio_check_if_object_exists(MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+                if object_exists:
+                    await asyncio.to_thread(
+                        minio_client_internal.remove_object, MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name
+                    )
             await db.audiobookchapter.update_many(
                 where={"id": chapter.id},
                 # pyre-fixme[55]
