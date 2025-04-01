@@ -11,7 +11,7 @@ from minio.helpers import _BUCKET_NAME_REGEX
 
 from prisma import models
 from routes.audiobook.schema import (
-    minio_client,
+    minio_client_internal,
 )
 from routes.caches import get_db
 
@@ -26,7 +26,7 @@ async def minio_get_bucket_size_in_mb(bucket_name: str) -> float:
 
     def _minio_get_bucket_size_in_mb_sync(bucket_name: str) -> float:
         bucket_size_used_in_mb = 0
-        for object in minio_client.list_objects(bucket_name, recursive=True):
+        for object in minio_client_internal.list_objects(bucket_name, recursive=True):
             object_size_in_mb = object.size / 2**20
             bucket_size_used_in_mb += object_size_in_mb
         return bucket_size_used_in_mb
@@ -40,7 +40,7 @@ async def delete_book_return_bytes(book: models.AudiobookBook) -> int:
     def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
         # minio_client.remove_objects does not work
         for minio_object_name in object_names:
-            minio_client.remove_object(bucket_name, minio_object_name)
+            minio_client_internal.remove_object(bucket_name, minio_object_name)
 
     total_size_freed = 0
     chapter_objects_to_remove: list[str] = []
@@ -50,7 +50,7 @@ async def delete_book_return_bytes(book: models.AudiobookBook) -> int:
         if chapter.minio_object_name is None:
             continue
         chapter_object = await asyncio.to_thread(
-            minio_client.stat_object,
+            minio_client_internal.stat_object,
             MINIO_AUDIOBOOK_BUCKET,
             chapter.minio_object_name,
         )
@@ -75,7 +75,7 @@ async def prevent_overflowing_audiobook_bucket() -> None:
     minio_audiobook_max_size_mb: int = int(minio_audiobook_max_size_mb_str)
     while 1:
         with suppress(S3Error):
-            await asyncio.to_thread(minio_client.make_bucket, MINIO_AUDIOBOOK_BUCKET)
+            await asyncio.to_thread(minio_client_internal.make_bucket, MINIO_AUDIOBOOK_BUCKET)
         minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(MINIO_AUDIOBOOK_BUCKET)
         while minio_audiobooks_size_used_mb > minio_audiobook_max_size_mb:
             # Delete book and minio data

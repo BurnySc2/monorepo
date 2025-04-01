@@ -6,7 +6,7 @@ import re
 from datetime import timedelta
 from pathlib import Path
 from stat import S_IFREG
-from typing import Annotated, Literal
+from typing import Annotated
 
 import arrow
 from litestar import Controller, Request, Response, get, post
@@ -23,7 +23,8 @@ from stream_zip import ZIP_64, async_stream_zip
 from prisma import models
 from routes.audiobook.schema import (
     AudioSettings,
-    minio_client,
+    minio_client_external,
+    minio_client_internal,
     minio_get_audio_of_chapter,
     normalize_filename,
     normalize_title,
@@ -122,7 +123,7 @@ def update_refresh_queue(
 
 async def minio_presigned_get_object(object_name: str) -> str:
     url = await asyncio.to_thread(
-        minio_client.presigned_get_object,
+        minio_client_external.presigned_get_object,
         bucket_name=MINIO_AUDIOBOOK_BUCKET,
         object_name=object_name,
         expires=timedelta(hours=24),
@@ -415,7 +416,7 @@ class MyAudiobookBookRoute(Controller):
         def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
             # minio_client.remove_objects does not work
             for minio_object_name in object_names:
-                minio_client.remove_object(bucket_name, minio_object_name)
+                minio_client_internal.remove_object(bucket_name, minio_object_name)
 
         async with get_db() as db:
             chapters = await db.audiobookchapter.find_many(where={"minio_object_name": {"not": None}})
@@ -446,7 +447,9 @@ class MyAudiobookBookRoute(Controller):
             )
             if chapter.minio_object_name is not None:
                 # TODO Verify that it has been deleted, what errors may occur in minio?
-                await asyncio.to_thread(minio_client.remove_object, MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+                await asyncio.to_thread(
+                    minio_client_internal.remove_object, MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name
+                )
             await db.audiobookchapter.update_many(
                 where={"id": chapter.id},
                 # pyre-fixme[55]

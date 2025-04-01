@@ -16,9 +16,16 @@ load_dotenv()
 STAGE = os.getenv("STAGE", "local_dev")
 
 
-minio_client = Minio(
+minio_client_internal = Minio(
     # pyre-fixme[6]
-    os.getenv("MINIO_URL"),
+    os.getenv("MINIO_INTERNAL_URL"),
+    access_key=os.getenv("MINIO_ACCESS_TOKEN"),
+    secret_key=os.getenv("MINIO_SECRET_KEY"),
+    secure=False,
+)
+minio_client_external = Minio(
+    # pyre-fixme[6]
+    os.getenv("MINIO_EXTERNAL_URL"),
     access_key=os.getenv("MINIO_ACCESS_TOKEN"),
     secret_key=os.getenv("MINIO_SECRET_KEY"),
     secure=os.getenv("MINIO_SECURE") == "TRUE",
@@ -56,7 +63,7 @@ def base64_decode_data(data: str) -> bytes:
 
 def _minio_get_audio_of_chapter_sync(chapter: models.AudiobookChapter) -> bytes:
     # pyre-fixme[6]
-    return minio_client.get_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3").data
+    return minio_client_internal.get_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3").data
 
 
 async def minio_get_audio_of_chapter(chapter: models.AudiobookChapter) -> bytes:
