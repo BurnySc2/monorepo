@@ -34,7 +34,8 @@ dependencies = [
     # Zip files with low memory footprint
     "stream-zip>=0.0.83",
     # AWS S3
-    "minio>=7.2.10",
+    # InvalidAccessKeyId error in version 7.2.14 and 7.2.15
+    "minio==7.2.13",
     "humanize>=4.11.0",
 ]
 

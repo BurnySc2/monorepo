@@ -58,3 +58,4 @@
         project_src: /home/{{ USERNAME }}
         profiles:
           - prod
+        remove_orphans: true

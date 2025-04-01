@@ -39,7 +39,7 @@ assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
 ESTIMATE_FACTOR = 0.3
 
 
-async def convert_one():
+async def convert_one() -> None:
     # Reset those that have failed to convert in time
     async with Prisma() as db:
         await db.audiobookchapter.update_many(
@@ -62,10 +62,11 @@ async def convert_one():
         return
 
     minio_client = Minio(
-        os.getenv("MINIO_URL"),
-        os.getenv("MINIO_ACCESS_TOKEN"),
-        os.getenv("MINIO_SECRET_KEY"),
-        secure=os.getenv("STAGE") in {"prod"},
+        # pyre-fixme[6]
+        os.getenv("MINIO_INTERNAL_URL"),
+        access_key=os.getenv("MINIO_ACCESS_TOKEN"),
+        secret_key=os.getenv("MINIO_SECRET_KEY"),
+        secure=False,
     )
     # Create bucket if it doesn't exist
     with suppress(S3Error):
@@ -84,18 +85,21 @@ async def convert_one():
                 {"chapter_number": "asc"},
             ],
         )
+        if chapter is None:
+            return
         logger.info(f"Converting text to audio {chapter.id}...")
 
         # Mark chapter as "in_progress" converting
         # Datetime is the estimation when it should be done converting based on text length
-        await db.audiobookchapter.update_many(
+        updated_count = await db.audiobookchapter.update_many(
+            where={"id": chapter.id},
             data={
                 "started_converting": arrow.utcnow()
                 .shift(seconds=len(get_chapter_combined_text(chapter)) * ESTIMATE_FACTOR)
                 .datetime
             },
-            where={"id": chapter.id},
         )
+        assert updated_count == 1
     # Generate tts from the book
     audio_settings: AudioSettings = AudioSettings.model_validate(chapter.audio_settings)
     audio: io.BytesIO = await generate_text_to_speech(
