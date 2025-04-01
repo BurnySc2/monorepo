@@ -12,7 +12,7 @@ State3: audio generated, audio loaded
      class="flex gap-2">
     {# State4: audio generated and loaded #}
     {% if chapter.minio_presigned_url is defined and chapter.minio_presigned_url != "" %}
-        <audio controls id="audio" class="grow">
+        <audio controls preload="metadata" id="audio" class="grow">
             <source src="{{ chapter.minio_presigned_url }}"
                     type="audio/mpeg" />
             Your browser does not support the audio element.

@@ -254,7 +254,7 @@ class MyAudiobookBookRoute(Controller):
 
         chapters_for_input_as_string = update_refresh_queue(
             "",
-            {c.chapter_number for c in chapters_info if c.number_in_queue is not None},
+            {c.chapter_number for c in chapters_info if c.number_in_queue is not None or c.is_converting is True},
         )
         return Template(
             template_name="audiobook/epub_refresh.html",
