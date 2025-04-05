@@ -63,6 +63,15 @@ http:
       tls:
         certResolver: production
       middlewares: authelia@docker
+    # Mealie
+    mealie:
+      entryPoints:
+        - web
+        - websecure
+      rule: Host(`{{ secrets.MEALIE.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      service: mealie
+      tls:
+        certResolver: production
     # Traefik
     traefik2:
       entryPoints:
@@ -139,6 +148,11 @@ http:
           - url: '{{ WIREGUARD_URL_BURNYLAPTOPD }}'
     # Traefik
     traefik2:
+      loadBalancer:
+        servers:
+          - url: '{{ WIREGUARD_URL_BURNYLAPTOPD }}'
+    # Mealie
+    mealie:
       loadBalancer:
         servers:
           - url: '{{ WIREGUARD_URL_BURNYLAPTOPD }}'

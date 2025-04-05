@@ -20,12 +20,12 @@
       Authorization: Bearer {{ secrets.CLOUDFLARE.DNS_API_TOKEN }}
     body_format: json
     body:
-      content: '{{ IPv4 }}'
+      content: '{{ secrets.IPv4 }}'
     status_code: 200
   changed_when: dns_record_response.json.result_info.count == 1 and dns_record_response.json.result[0].content
-    != "{{ IPv4 }}"
+    != "{{ secrets.IPv4 }}"
   when: dns_record_response.json.result_info.count == 1 and dns_record_response.json.result[0].content
-    != "{{ IPv4 }}"
+    != "{{ secrets.IPv4 }}"
   delegate_to: 127.0.0.1
 - name: Create "A-record" for {{ item.hostname }}
   ansible.builtin.uri:
@@ -37,7 +37,7 @@
     body_format: json
     body:
       name: '{{ item.hostname }}'
-      content: '{{ IPv4 }}'
+      content: '{{ secrets.IPv4 }}'
       type: A
       proxied: false
     status_code: 200

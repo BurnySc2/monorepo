@@ -4,19 +4,16 @@ networks:
     external: true
 # Open postgresql console to enter queries
 # docker exec -it postgres_postgres psql -U postgres -d postgres
-
 # Dump from docker container:
 # docker exec postgres_postgres pg_dump -U postgres -d postgres -F c --compress=zstd:9 > temp_zstd_9.dump
-
 # Create database before restoring:
 # docker exec -i postgres_postgres psql -U postgres -c "CREATE DATABASE litestar_server;"
 # Restore to docker container:
 # cat temp_zstd_9.dump | docker exec -i postgres_postgres pg_restore -U postgres -d postgres
 # --clean argument resets database before restoring data
-
 # Remote dump:
 # pg_dump CONNECTION_STRING -U postgres > dump.sql
-
+###############################################################################
 # Remote restore specific table:
 # pg_restore -d CONNECTION_STRING -U postgres -t TABLE_NAME dump.sql
 ###############################################################################

@@ -199,7 +199,7 @@
     name: /home/burny/remote_drives/burnylaptopd
     src: burnylaptopd:/home
     fstype: fuse.sshfs
-    opts: 'auto,reconnect'
+    opts: auto,reconnect
     passno: 0
     dump: 0
     state: present
@@ -216,7 +216,7 @@
     name: /home/burny/remote_drives/prodesk
     src: prodesk:/home
     fstype: fuse.sshfs
-    opts: 'auto,reconnect'
+    opts: auto,reconnect
     passno: 0
     dump: 0
     state: present

@@ -1,0 +1,25 @@
+---
+# https://docs.mealie.io
+networks:
+  '{{secrets.TRAEFIK_NETWORK}}':
+    external: true
+services:
+  mealie:
+    container_name: mealie
+    image: hkotel/mealie:latest
+    restart: unless-stopped
+    volumes:
+      - ./mealie-data:/app/data/
+    networks:
+      - '{{ secrets.TRAEFIK_NETWORK }}'
+    environment:
+      ALLOW_SIGNUP: 'false'
+      LOG_LEVEL: DEBUG
+      DB_ENGINE: sqlite # Optional: 'sqlite', 'postgres'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ USERNAME }}.entrypoints=web
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN
+        }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
+        }}
