@@ -1,3 +1,6 @@
+"""
+An example of how to swap multiple elements (1 to 1 ratio) in one request.
+"""
 from __future__ import annotations
 
 import random
