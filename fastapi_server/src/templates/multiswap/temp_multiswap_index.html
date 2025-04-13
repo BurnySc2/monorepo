@@ -1,24 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <script src="https://unpkg.com/htmx.org@2.0.3"
-        integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.tailwindcss.com/3.4.14"></script>
-</head>
-
-<body class="flex flex-col items-start gap-2">
-    <input type="text" name="refresher" id="refresher" value="" placeholder="Nothing to do!" readonly>
-    {% for item in items %}
-    <button id="{{ item.id }}" class="border border-black hover:bg-yellow-500"
-        hx-post="/multi-swap-test/update-refresher?add_refresh={{ item.id }}" hx-select="#{{ item.id }}"
-        hx-select-oob="#refresher" hx-include="#refresher" hx-swap="outerHTML">{{ item.text
-        }}</button>
-    {% endfor %}
-</body>
-
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <script src="https://unpkg.com/htmx.org@2.0.3"
+                integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq"
+                crossorigin="anonymous"></script>
+        <script src="https://cdn.tailwindcss.com/3.4.14"></script>
+    </head>
+    <body class="flex flex-col items-start gap-2">
+        <input type="text"
+               name="refresher"
+               id="refresher"
+               hx-swap-oob="outerHTML"
+               value=""
+               placeholder="Nothing to do!"
+               readonly>
+        {% for item in items %}
+            <button id="{{ item.id }}"
+                    class="border border-black hover:bg-yellow-500"
+                    hx-post="/multi-swap-test/update-refresher?add_refresh={{ item.id }}"
+                    hx-include="#refresher"
+                    hx-swap="outerHTML">
+                {{ item.text
+                }}
+            </button>
+        {% endfor %}
+    </body>
 </html>
