@@ -16,7 +16,8 @@
 {% endif %}
 {% for item in items %}
     <div id="{{ item.id }}"
-         hx-swap-oob="outerHTML">
+        {# hx-swap-oob only required on the new element #}
+        hx-swap-oob="outerHTML">
         {{ item.text }}
     </div>
 {% endfor %}

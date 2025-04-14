@@ -14,7 +14,6 @@
         <input type="text"
                name="refresher"
                id="refresher"
-               hx-swap-oob="outerHTML"
                value=""
                placeholder="Nothing to do!"
                readonly>
@@ -22,8 +21,7 @@
             <button id="{{ item.id }}"
                     class="border border-black hover:bg-yellow-500"
                     hx-post="/multi-swap-test/update-refresher?add_refresh={{ item.id }}"
-                    hx-include="#refresher"
-                    hx-swap="outerHTML">
+                    hx-include="#refresher">
                 {{ item.text
                 }}
             </button>

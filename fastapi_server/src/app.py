@@ -19,6 +19,7 @@ from routes.hello_world import MyRootRoute
 from routes.login_logout import MyLoginRoute, MyLogoutRoute
 from routes.telegram_browser.telegram_browser import MyTelegramBrowserRoute
 from routes.temp_multiswap import MyMultiswapRoute
+from routes.temp_swap_multiple import MySwapMultipleRoute
 from routes.text_to_speech import MyTTSRoute
 from routes.tts.websocket_handler import TTSWebsocketHandler
 from workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_audiobook_bucket
@@ -57,6 +58,7 @@ app = Litestar(
         MyLoginRoute,
         MyLogoutRoute,
         MyMultiswapRoute,
+        MySwapMultipleRoute,
         MyRootRoute,
         MyTelegramBrowserRoute,
         # MyTodoRoute,
