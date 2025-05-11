@@ -89,6 +89,7 @@
 - name: Install bigger packages (>10mb)
   community.general.pacman:
     name:
+      # TODO Add Devbox and Nix
       - vlc
       - gcc
       - rust

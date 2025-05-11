@@ -8,7 +8,7 @@ dependencies = [
     # Translator
     "deep-translator>=1.11.4",
     "deepmultilingualpunctuation>=1.0.1",
-    "faster-whisper==1.0.1",
+    "faster-whisper==1.1.1",
     # Display sizes in human readable format
     "humanize>=4.11.0",
     "langdetect>=1.0.9",
@@ -17,7 +17,7 @@ dependencies = [
     # Logging
     "loguru>=0.7.2",
     "numba>=0.60.0",
-    "numpy<2",
+    "numpy>=2",
     # Database interaction
     "prisma>=0.15.0",
     # Better dataclasses
@@ -30,7 +30,7 @@ dependencies = [
     "torchaudio>=2.4.0",
     # Progress bar
     "tqdm>=4.67.1",
-    "whisperx>=3.1.6",
+    "whisperx>=3.3.4",
 ]
 
 [tool.uv]

@@ -22,6 +22,10 @@
           - '{{ USERNAME }}'
           - docker
         shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: absent
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml

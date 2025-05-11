@@ -8,6 +8,11 @@ FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
 # Install npm for prisma
 RUN apk add --no-cache npm
 
+# Add ffmpeg from
+# https://github.com/wader/static-ffmpeg
+COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
+
 # Install dependencies
 COPY uv.lock pyproject.toml /root/fastapi_server/
 
