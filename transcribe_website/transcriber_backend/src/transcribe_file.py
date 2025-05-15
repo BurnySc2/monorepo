@@ -166,9 +166,11 @@ if __name__ == "__main__":
     # input_file_path = Path("my_file.mp4")
     # subtitle_path = input_file_path.parent / f"{input_file_path.stem}_DE.srt"
     # if not subtitle_path.is_file():
+    #     logger.info(f"Started transcribing {input_file_path.name}")
     #     result = transcribe_file(input_file_path, model_size="turbo", language="de")
     #     subtitle_data = get_srt_content(result)
     #     subtitle_path.write_text(subtitle_data.getvalue().decode())
+    #     logger.info(f"Done transcribing {input_file_path.name}")
     # output_file_path = input_file_path.parent / f"{input_file_path.stem}_DE.mp4"
     # hard_burn_subtitles(input_file_path, subtitle_path, output_file_path)
 
@@ -178,10 +180,10 @@ if __name__ == "__main__":
     if not subtitle_path.is_file():
         # "language" specifies the input language,
         # task "translate" translates to english (no other language possible as of yet)
-        logger.info("Started translating")
-        result = transcribe_file(input_file_path, task="translate", model_size="medium", language="de")
+        logger.info(f"Started translating {input_file_path.name}")
+        result = transcribe_file(input_file_path, task="translate", model_size="large", language="de")
         subtitle_data = get_srt_content(result)
         subtitle_path.write_text(subtitle_data.getvalue().decode())
-        logger.info("Done translating")
+        logger.info(f"Done translating {input_file_path.name}")
     output_file_path = input_file_path.parent / f"{input_file_path.stem}_EN.mp4"
     hard_burn_subtitles(input_file_path, subtitle_path, output_file_path)

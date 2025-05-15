@@ -27,5 +27,5 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: '0.5'
+          cpus: '0.25'
           memory: 2048M
