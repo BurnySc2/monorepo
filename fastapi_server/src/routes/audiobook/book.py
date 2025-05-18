@@ -419,7 +419,12 @@ class MyAudiobookBookRoute(Controller):
                 minio_client.remove_object(bucket_name, minio_object_name)
 
         async with get_db() as db:
-            chapters = await db.audiobookchapter.find_many(where={"minio_object_name": {"not": None}})
+            chapters = await db.audiobookchapter.find_many(
+                where={
+                    "book_id": book_id,
+                    "minio_object_name": {"not": None},
+                }
+            )
             chapter_objects_to_remove = [
                 chapter.minio_object_name for chapter in chapters if chapter.minio_object_name is not None
             ]
