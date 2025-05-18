@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import io
 from typing import Annotated
 
@@ -53,9 +54,9 @@ class MyAudiobookEpubRoute(Controller):
         # TODO limit file size
         # TODO Enable pdf upload with "from_pdf.py" - how to detect if uploaded file is in .pdf or .epub format?
         # Raise error on other file formats
-        epub_data: io.BytesIO = io.BytesIO(data.file.read())
+        epub_data = io.BytesIO(data.file.read())
 
-        metadata: EpubMetadata = extract_metadata(epub_data)
+        metadata: EpubMetadata = await asyncio.to_thread(extract_metadata, epub_data)
 
         # If not present in database, add book entry
         async with get_db() as db:
@@ -74,7 +75,7 @@ class MyAudiobookEpubRoute(Controller):
 
         # TODO If user uploaded X books in the last Y days, return error that too many books were uploaded
 
-        chapters: list[EpubChapter] = extract_chapters(epub_data)
+        chapters: list[EpubChapter] = await asyncio.to_thread(extract_chapters, epub_data)
         # Insert book
         async with get_db() as db:
             book = await db.audiobookbook.create(
@@ -98,6 +99,4 @@ class MyAudiobookEpubRoute(Controller):
                     },
                 }
             )
-        return ClientRedirect(
-            f"/audiobook/book/{book.id}",
-        )
+        return ClientRedirect(f"/audiobook/book/{book.id}")
