@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+import time
 
 import arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, Message, NotFoundError, User
@@ -10,6 +11,8 @@ from loguru import logger
 from cache import get_db
 from prisma import models
 
+
+MIN_SECONDS_ELAPSED_BEFORE_FETCH = 10 * 60 # 10 minutes
 
 class Remind:
     REMINDER_ERROR_EMBED = Embed(
@@ -28,6 +31,7 @@ Example usage:
         self.next_reminder: models.Reminder | None = None
         # Limit of reminders per person
         self.reminder_limit = 20
+        self.last_reminder_fetch: float = time.time()
 
     async def fetch_next_reminder(self) -> None:
         async with get_db() as db:
@@ -39,6 +43,11 @@ Example usage:
         """Function gets called every second."""
         reminded: bool = True
         utc_now = arrow.utcnow().datetime
+
+        # Fetch next reminder if none is loaded
+        if self.next_reminder is None and MIN_SECONDS_ELAPSED_BEFORE_FETCH < time.time() - self.last_reminder_fetch:  # noqa: SIM300
+            self.last_reminder_fetch = time.time()
+            await self.fetch_next_reminder()
 
         while self.next_reminder is not None and reminded is True:
             reminded = False

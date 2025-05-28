@@ -167,7 +167,6 @@ async def on_start(_event: StartedEvent) -> None:
     global BOT_USER_ID
     logger.info("Bot started")
     BOT_USER_ID = (await bot.rest.fetch_my_user()).id
-    await my_reminder.fetch_next_reminder()
     # Call another async function that runs forever
     asyncio.create_task(loop_function())
     async for server_name in get_all_servers():
