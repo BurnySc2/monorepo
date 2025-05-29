@@ -24,28 +24,29 @@ format:
     # poetry install
 
     # Convert single to double quotes
-    RUN poetry run ruff check . --select Q --fix
+    RUN uv run ruff check . --select Q --fix
     # Remove unused imports
-    RUN poetry run ruff check . --select F --fix
+    RUN uv run ruff check . --select F --fix
     # Sort imports
-    RUN poetry run ruff check . --select I --fix
+    RUN uv run ruff check . --select I --fix
     # Format code
-    RUN poetry run ruff format .
+    RUN uv run ruff format .
 
 # Check if files are correctly formatted
 format-check:
     FROM +install-dev
-    RUN poetry run ruff format . --check --diff
+    RUN uv run ruff format . --check --diff
 
 # Ignore errors via "# noqa: F841"
 lint:
     FROM +install-dev
-    RUN poetry run ruff check .
+    RUN uv run ruff check .
 
 # Ignore errors via "# pyre-fixme[11]"
 pyre:
     FROM +install-dev
-    RUN poetry run pyre
+    COPY .pyre_configuration /root/fastapi_server/.pyre_configuration
+    RUN uv run pyre
 
 pytest:
     FROM +install-dev
