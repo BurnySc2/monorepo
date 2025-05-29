@@ -31,7 +31,7 @@ Example usage:
         self.next_reminder: models.Reminder | None = None
         # Limit of reminders per person
         self.reminder_limit = 20
-        self.last_reminder_fetch: float = time.time()
+        self.last_reminder_fetch: float = 0
 
     async def fetch_next_reminder(self) -> None:
         async with get_db() as db:

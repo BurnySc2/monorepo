@@ -2,7 +2,7 @@ services:
   discord_bot:
     image: burnysc2/discord_bot:latest
     pull_policy: never
-    command: uv run --no-dev src/discord_bot.py
+    command: uv run --no-dev python src/discord_bot.py
     restart: unless-stopped
     container_name: discord_bot
     env_file:
