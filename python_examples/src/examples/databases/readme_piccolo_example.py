@@ -113,6 +113,7 @@ async def run_database_with_piccolo():
     books = await query
     for book in books:
         logger.info(f"Found books released before 1960: {book}")
+    # books_as_dict = await Book.select()
 
     # Assert before
     books_before = await Book.count().where(Book.release_year < 1960)
@@ -155,10 +156,11 @@ async def run_database_with_piccolo():
         25 <= BookInventory.amount,
         BookInventory.book.author.birth_year < 1910,
     )
-    print(book_inventories)
     assert len(book_inventories) == 2
 
     # 8) Alter table: Managed by CLI
+    # See https://piccolo-orm.readthedocs.io/en/latest/piccolo/migrations/create.html
+    # and https://piccolo-orm.readthedocs.io/en/latest/piccolo/migrations/running.html
 
     # 9) Delete all books
     assert await Book.count() == 3
