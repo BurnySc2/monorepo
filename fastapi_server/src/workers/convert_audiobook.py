@@ -39,6 +39,24 @@ assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
 ESTIMATE_FACTOR = 0.3
 
 
+"""
+TODO Refactor:
+Run this only once in parallel
+Instead, this script will create async workers (8, 16?)
+
+Use with async with contextmanager
+- on enter: set chapter to converting
+- on exit (finally): set no longer to converting
+
+workers will end themselves if done (success or error)
+
+fetcher:
+- fetch jobs every 10s
+- assign jobs to workers
+- create workers (up to LIMIT)
+"""
+
+
 async def convert_one() -> None:
     # Reset those that have failed to convert in time
     async with Prisma() as db:
@@ -123,6 +141,10 @@ async def convert_one() -> None:
 
         # Save result to database
         object_name = f"{chapter.id}_audio.mp3"
+        """
+        TODO
+convert_audiobook_worker-1  | minio.error.S3Error: S3 operation failed; code: InvalidAccessKeyId, message: The Access Key Id you provided does not exist in our records., resource: /staging-audiobooks, request_id: 18322FFB689E0AD3, host_id: dd9025bab4ad464b049177c95fd1af9251148b658df7ac2e3e8, bucket_name: staging-audiobooks
+        """
         minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, object_name, audio, len(audio.getvalue()))
         logger.info("Saving result to database")
         await db.audiobookchapter.update_many(
