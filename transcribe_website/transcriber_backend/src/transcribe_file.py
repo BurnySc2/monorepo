@@ -162,28 +162,32 @@ if __name__ == "__main__":
     # mass_transcribe(input_folder_path, model_size="tiny", language="de")
     # mass_transcribe(input_folder_path, model_size="medium", language="de")
 
-    # Example of writing german subtitles
-    # input_file_path = Path("my_file.mp4")
-    # subtitle_path = input_file_path.parent / f"{input_file_path.stem}_DE.srt"
-    # if not subtitle_path.is_file():
-    #     logger.info(f"Started transcribing {input_file_path.name}")
-    #     result = transcribe_file(input_file_path, model_size="turbo", language="de")
-    #     subtitle_data = get_srt_content(result)
-    #     subtitle_path.write_text(subtitle_data.getvalue().decode())
-    #     logger.info(f"Done transcribing {input_file_path.name}")
-    # output_file_path = input_file_path.parent / f"{input_file_path.stem}_DE.mp4"
-    # hard_burn_subtitles(input_file_path, subtitle_path, output_file_path)
+    paths = """
+/my/absolute/path/to/file.mp4
+"""
+    paths_split = [Path(p.strip()) for p in paths.splitlines() if p.strip()]
 
-    # Example of writing english subtitles
-    input_file_path = Path("my_file.mp4")
-    subtitle_path = input_file_path.parent / f"{input_file_path.stem}_EN.srt"
-    if not subtitle_path.is_file():
-        # "language" specifies the input language,
-        # task "translate" translates to english (no other language possible as of yet)
-        logger.info(f"Started translating {input_file_path.name}")
-        result = transcribe_file(input_file_path, task="translate", model_size="large", language="de")
-        subtitle_data = get_srt_content(result)
-        subtitle_path.write_text(subtitle_data.getvalue().decode())
-        logger.info(f"Done translating {input_file_path.name}")
-    output_file_path = input_file_path.parent / f"{input_file_path.stem}_EN.mp4"
-    hard_burn_subtitles(input_file_path, subtitle_path, output_file_path)
+    for input_file_path in paths_split:
+        # Example of writing german subtitles
+        subtitle_path = input_file_path.parent / f"{input_file_path.stem}_DE.srt"
+        if not subtitle_path.is_file():
+            logger.info(f"Started transcribing {input_file_path.name}")
+            result = transcribe_file(input_file_path, model_size="turbo", language="de")
+            subtitle_data = get_srt_content(result)
+            subtitle_path.write_text(subtitle_data.getvalue().decode())
+            logger.info(f"Done transcribing {input_file_path.name}")
+        output_file_path = input_file_path.parent / f"{input_file_path.stem}_DE.mp4"
+        hard_burn_subtitles(input_file_path, subtitle_path, output_file_path)
+
+        # Example of writing english subtitles
+        subtitle_path = input_file_path.parent / f"{input_file_path.stem}_EN.srt"
+        if not subtitle_path.is_file():
+            # "language" specifies the input language,
+            # task "translate" translates to english (no other language possible as of yet)
+            logger.info(f"Started translating {input_file_path.name}")
+            result = transcribe_file(input_file_path, task="translate", model_size="large", language="de")
+            subtitle_data = get_srt_content(result)
+            subtitle_path.write_text(subtitle_data.getvalue().decode())
+            logger.info(f"Done translating {input_file_path.name}")
+        output_file_path = input_file_path.parent / f"{input_file_path.stem}_EN.mp4"
+        hard_burn_subtitles(input_file_path, subtitle_path, output_file_path)
