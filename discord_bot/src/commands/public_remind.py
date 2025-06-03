@@ -199,7 +199,7 @@ Example usage:
         guild = event.get_guild()
         if not channel or not guild:
             return
-        await Reminder.insert(
+        await Reminder(
             reminder_utc=future_reminder_time.datetime,
             user_id=event.author_id,
             user_name=event.author.username,
@@ -251,7 +251,7 @@ Example usage:
         if not channel or not guild:
             return
         if time_now < future_reminder_time:
-            await Reminder.insert(
+            await Reminder(
                 reminder_utc=future_reminder_time.datetime,
                 user_id=event.author_id,
                 user_name=event.author.username,
