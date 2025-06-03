@@ -10,7 +10,6 @@ from loguru import logger
 
 from models import Reminder
 
-
 MIN_SECONDS_ELAPSED_BEFORE_FETCH = 10 * 60  # 10 minutes
 
 
@@ -48,7 +47,7 @@ Example usage:
 
         while self.next_reminder is not None and reminded is True:
             reminded = False
-            if utc_now <  self.next_reminder.reminder_utc:
+            if utc_now < self.next_reminder.reminder_utc:
                 continue
             # Run remind, remind user in discord
             reminded = True
@@ -285,7 +284,9 @@ Example usage:
         user_reminders: list[tuple[int, str, str, str]] = []
 
         # Sorted reminders by date and time ascending
-        user_reminders2 = await Reminder.objects().where(Reminder.user_id == event.author_id).order_by(Reminder.reminder_utc)
+        user_reminders2 = (
+            await Reminder.objects().where(Reminder.user_id == event.author_id).order_by(Reminder.reminder_utc)
+        )
 
         if len(user_reminders2) == 0:
             return "You don't have any reminders."
@@ -321,7 +322,9 @@ Example usage:
             embed = Embed(title=error_title, description=embed_description)
             return embed
 
-        user_reminders = await Reminder.objects().where(Reminder.user_id == event.author_id).order_by(Reminder.reminder_utc)
+        user_reminders = (
+            await Reminder.objects().where(Reminder.user_id == event.author_id).order_by(Reminder.reminder_utc)
+        )
         if 0 <= reminder_id_to_delete <= len(user_reminders) - 1:
             reminder_to_delete: Reminder = user_reminders[reminder_id_to_delete]
             # Find the reminder in the reminder list, then remove it

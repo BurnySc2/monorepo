@@ -34,7 +34,7 @@ LIMIT 1;
     if len(quotes) == 0:
         return None
     quote = quotes[0]
-    return f'{quote.when.strftime("%Y-%m-%d")} {quote.who}: {quote.what}'
+    return f"{quote.when.strftime('%Y-%m-%d')} {quote.who}: {quote.what}"
 
 
 async def main() -> None:

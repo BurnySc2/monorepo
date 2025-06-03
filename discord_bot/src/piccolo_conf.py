@@ -1,6 +1,6 @@
 import os
-from piccolo.engine.postgres import PostgresEngine
 
+from piccolo.engine.postgres import PostgresEngine
 
 DB = PostgresEngine(
     config={

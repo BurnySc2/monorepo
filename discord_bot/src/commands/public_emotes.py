@@ -5,9 +5,10 @@ from collections import Counter
 from collections import Counter as CounterType
 from dataclasses import dataclass
 
-from arrow import Arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, KnownCustomEmoji
 from simple_parsing import ArgumentParser
+
+from models import DiscordMessage
 
 # How many emojis to list when counting
 TOP_EMOTE_LIMIT = 10
@@ -40,33 +41,10 @@ async def public_count_emotes(
         return f"Unknown params: {' '.join(unknown_args)}\n{public_count_emotes_parser.format_help()}"
     params: CountEmotesParserOptions = parsed.params
 
-    query: AsyncSelectRequestBuilder = (  # pyre-fixme[11]
-        supabase.table(DiscordMessage.table_name())
-        .select(
-            "what",
-        )
-        # Get messages written in that guild
-        .eq(
-            "guild_id",
-            event.guild_id,
-        )
-        # Get messages with content similar to those of emojis
-        .like(
-            "what",
-            "<%:%>",
-        )
-    )
-    if not params.all:
-        # Get messages by author_id
-        query = query.eq(
-            "author_id",
-            event.author_id,
-        )
-    if params.days is not None:
-        after: Arrow = Arrow.utcnow().shift(days=-params.days)  # pyre-fixme[16]
-        query = query.gt("when", str(after))
-
-    result_emotes: APIResponse = await query.execute()  # pyre-fixme[11]
+    discord_messages = await DiscordMessage.objects().where(DiscordMessage.guild_id == event.guild_id)
+    # TODO Add filter: match emote name or emote is in the message
+    # TODO Filter only by author
+    # TODO Filter by amount of days
 
     # What emotes to include in response
     if params.nostatic and params.noanimated:
@@ -79,7 +57,7 @@ async def public_count_emotes(
         emote_pattern = r"<a?:([\d\w_]+):(\d+)>"
 
     emote_counter: CounterType[str] = Counter()
-    for message_row in DiscordMessage.from_select(result_emotes):
+    for message_row in discord_messages:
         for match in re.finditer(emote_pattern, message_row.what):
             # Validate/load emoji from cache
             _emote_name, emote_snowflake = match.groups()
