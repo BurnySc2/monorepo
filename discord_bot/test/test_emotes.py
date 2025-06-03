@@ -1,13 +1,13 @@
-from typing import Optional
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from hikari import Embed, KnownCustomEmoji, Snowflake
 from hypothesis import given
 from hypothesis import strategies as st
-from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
+from piccolo.query.methods.objects import Objects
 
 from commands.public_emotes import TOP_EMOTE_LIMIT, public_count_emotes, public_count_emotes_parser
+from models import DiscordMessage
 
 
 @given(
@@ -16,7 +16,7 @@ from commands.public_emotes import TOP_EMOTE_LIMIT, public_count_emotes, public_
     st.booleans(),
     st.one_of(st.none(), st.floats(min_value=0, max_value=1e6, allow_nan=False, allow_infinity=False)),
 )
-def test_count_emotes_parser(all_: bool, nostatic: bool, noanimated: bool, days: Optional[int]):
+def test_count_emotes_parser(all_: bool, nostatic: bool, noanimated: bool, days: int | None):
     params = []
     if all_:
         params.append("--all")
@@ -67,10 +67,10 @@ async def test_public_count_emotes():
     fake_event.author_id = 456
     fake_event.author.username = "some_username"
     message = "--days 5"
-    data = [{"what": "<:some_emote:123456789>"}, {"what": "<:some_emote:123456789>"}]
+    data = {"what": "<:some_emote:123456789>"}
 
-    with patch.object(AsyncSelectRequestBuilder, "execute", AsyncMock()) as execute:
-        execute.return_value = APIResponse(data=data)
+    with patch.object(Objects, "run", AsyncMock()) as execute:
+        execute.return_value = [DiscordMessage(**data)]
         result = await public_count_emotes(fake_bot, fake_event, message)
 
     assert isinstance(result, Embed)
