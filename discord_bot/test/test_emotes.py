@@ -1,7 +1,8 @@
 from unittest.mock import AsyncMock, Mock, patch
 
+import arrow
 import pytest
-from hikari import Embed, KnownCustomEmoji, Snowflake
+from hikari import Embed, KnownCustomEmoji, Snowflake  # pyrefly: ignore
 from hypothesis import given
 from hypothesis import strategies as st
 from piccolo.query.methods.objects import Objects
@@ -67,9 +68,18 @@ async def test_public_count_emotes():
     fake_event.author_id = 456
     fake_event.author.username = "some_username"
     message = "--days 5"
-    data = {"what": "<:some_emote:123456789>"}
+    data = {
+        "what": "<:some_emote:123456789>",
+        "guild_id": 0,
+        "channel_id": 0,
+        "author_id": 0,
+        "message_id": 0,
+        "who": "",
+        "when": arrow.utcnow().datetime,
+    }
 
     with patch.object(Objects, "run", AsyncMock()) as execute:
+        # pyrefly: ignore
         execute.return_value = [DiscordMessage(**data)]
         result = await public_count_emotes(fake_bot, fake_event, message)
 

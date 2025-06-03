@@ -5,7 +5,7 @@ from collections import Counter
 from collections import Counter as CounterType
 from dataclasses import dataclass
 
-from hikari import Embed, GatewayBot, GuildMessageCreateEvent, KnownCustomEmoji
+from hikari import Embed, GatewayBot, GuildMessageCreateEvent, KnownCustomEmoji  # pyrefly: ignore
 from simple_parsing import ArgumentParser
 
 from models import DiscordMessage
@@ -41,6 +41,7 @@ async def public_count_emotes(
         return f"Unknown params: {' '.join(unknown_args)}\n{public_count_emotes_parser.format_help()}"
     params: CountEmotesParserOptions = parsed.params
 
+    # pyrefly: ignore
     discord_messages = await DiscordMessage.objects().where(DiscordMessage.guild_id == event.guild_id)
     # TODO Add filter: match emote name or emote is in the message
     # TODO Filter only by author

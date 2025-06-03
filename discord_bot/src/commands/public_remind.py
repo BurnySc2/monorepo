@@ -5,7 +5,7 @@ import re
 import time
 
 import arrow
-from hikari import Embed, GatewayBot, GuildMessageCreateEvent, Message, NotFoundError, User
+from hikari import Embed, GatewayBot, GuildMessageCreateEvent, Message, NotFoundError, User  # pyrefly: ignore
 from loguru import logger
 
 from models import Reminder
@@ -33,6 +33,7 @@ Example usage:
         self.last_reminder_fetch: float = 0
 
     async def fetch_next_reminder(self) -> None:
+        # pyrefly: ignore
         self.next_reminder = await Reminder.objects().order_by(Reminder.reminder_utc).first()
 
     async def tick(self):
@@ -65,6 +66,7 @@ Example usage:
             await person.send(f"{link}You wanted to be reminded of: {self.next_reminder.message}")
 
             # Remove reminder from db
+            # pyrefly: ignore
             await Reminder.delete().where(Reminder.id == self.next_reminder.id)
             self.next_reminder = None
 
@@ -285,6 +287,7 @@ Example usage:
 
         # Sorted reminders by date and time ascending
         user_reminders2 = (
+            # pyrefly: ignore
             await Reminder.objects().where(Reminder.user_id == event.author_id).order_by(Reminder.reminder_utc)
         )
 
@@ -323,6 +326,7 @@ Example usage:
             return embed
 
         user_reminders = (
+            # pyrefly: ignore
             await Reminder.objects().where(Reminder.user_id == event.author_id).order_by(Reminder.reminder_utc)
         )
         if 0 <= reminder_id_to_delete <= len(user_reminders) - 1:
@@ -330,7 +334,7 @@ Example usage:
             # Find the reminder in the reminder list, then remove it
             logger.info(f"Trying to remove reminder {reminder_to_delete}")
             logger.info(f"Reminders available: {user_reminders}")
-            await Reminder.delete().where(Reminder.id == reminder_to_delete.id)
+            await Reminder.delete().where(Reminder.id == reminder_to_delete.id)  # pyrefly: ignore
 
             # Confirm the reminder was successfully deleted
             embed = Embed(
@@ -358,6 +362,7 @@ def main():
     # message = ""
     r = Remind(None)
     result = asyncio.run(r._parse_date_and_time_from_message(message))
+    assert result is not None
     print(result, bool(result[1]))
     assert result[1] == "some message"
 

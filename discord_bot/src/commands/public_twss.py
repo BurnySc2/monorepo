@@ -3,7 +3,7 @@ from csv import DictReader
 from pathlib import Path
 
 import arrow
-from hikari import GatewayBot, GuildMessageCreateEvent
+from hikari import GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 from loguru import logger
 
 from models import DiscordQuote

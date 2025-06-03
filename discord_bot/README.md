@@ -4,21 +4,21 @@
 - Install python 3.8 or newer (32 or 64 bit)
 - Run commands 
     ```
-    pip install poetry --user
-    poetry install
+    pip install uv --user
+    uv sync
     ```
 - Required private file: DISCORDKEY, SUPABASEKEY, SUPABASEURL (the error messages should display if certain keys are missing)
 
 ### Development
-Open this project folder `discord_bot` with VSCode via command `code discord_bot`. Configure the python interpreter to point to your venv location, which can be found via `poetry env info --path`. Now the debugger options from the project's launch.json and the `testing` tab should be available in VSCode. Consider installing the recommended VSCode extensions.
+Open this project folder `discord_bot` with VSCode via command `code discord_bot`. Configure the python interpreter to point to your venv location. Now the debugger options from the project's launch.json and the `testing` tab should be available in VSCode. Consider installing the recommended VSCode extensions.
 
-You can run and debug the bot and tests via the debug config, or manually via terminal `poetry run python main.py` and the tests via `poetry run pytest`
+You can run and debug the bot and tests via the debug config, or manually via terminal `uv run python main.py` and the tests via `uv run python -m pytest`
 
 ### Running
 
 Start the bot in `cwd=discord_bot/` with command
 
-`poetry run python main.py`
+`uv run python main.py`
 
 or inside docker via
 

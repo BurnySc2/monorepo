@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 
 import aiohttp
-from hikari import GatewayBot, GuildMessageCreateEvent
+from hikari import GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 
 # http://zetcode.com/python/prettytable/
 from prettytable import PrettyTable  # pyre-fixme[21]

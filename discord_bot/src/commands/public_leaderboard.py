@@ -4,7 +4,7 @@ import asyncio
 from dataclasses import dataclass
 
 import hikari
-from hikari import GatewayBot, GuildMessageCreateEvent, Member
+from hikari import GatewayBot, GuildMessageCreateEvent, Member  # pyrefly: ignore
 from loguru import logger
 from simple_parsing import ArgumentParser, field
 from table2ascii import Alignment, PresetStyle

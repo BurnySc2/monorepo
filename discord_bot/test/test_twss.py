@@ -24,6 +24,7 @@ async def test_public_twss():
     }
 
     with patch.object(DiscordQuote, "raw", AsyncMock()) as execute:
+        # pyrefly: ignore
         execute.return_value = [DiscordQuote(**data)]
         result = await public_twss(fake_bot, fake_event, message)
 

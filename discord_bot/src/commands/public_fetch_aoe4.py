@@ -12,7 +12,7 @@ from dataclasses import dataclass
 import aiohttp
 import arrow
 from aiohttp import ClientSession, TCPConnector
-from hikari import GatewayBot, GuildMessageCreateEvent
+from hikari import GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 from loguru import logger
 from pydantic import BaseModel, Field, field_validator
 from simple_parsing import ArgumentParser, field
@@ -86,6 +86,7 @@ class Condition(BaseModel):
         time_suffix_regex = "(s|m)?"
         matcher_regex = f"{optional_count_regex}{action_regex}{operator_regex}{time_regex}{time_suffix_regex}"
         compiled = re.compile(matcher_regex)
+        # pyrefly: ignore
         regex_match = compiled.fullmatch(condition)
 
         if regex_match is None:
@@ -320,11 +321,13 @@ async def public_fetch_aoe4_bo(
         for future in asyncio.as_completed(get_games_by_player_tasks):
             for game_result, player_profile_id in await future:
                 game_result: GameResult
+                # pyrefly: ignore
                 map_game_id_to_game_result[game_result.game_id] = game_result
                 get_build_order_tasks.append(
                     asyncio.create_task(
                         get_build_order_of_game(
                             session,
+                            # pyrefly: ignore
                             game_id=game_result.game_id,
                             player_profile_id=player_profile_id,
                         )
@@ -343,8 +346,9 @@ async def public_fetch_aoe4_bo(
             parsed_build_orders_count += 1
 
             # Only collect games from latest patch
-            if game_result.patch > latest_patch:
-                latest_patch = game_result.patch
+            assert isinstance(game_result, GameResult)  # pyrefly: ignore
+            if game_result.patch > latest_patch:  # pyrefly: ignore
+                latest_patch = game_result.patch  # pyrefly: ignore
                 collected_games.clear()
 
             if not game_player_data.matches_all_conditions(parsed_params.conditions_parsed):
@@ -472,7 +476,7 @@ class BuildOrderItem(BaseModel):
     destroyed: list[int]
 
     @field_validator("id", check_fields=False)
-    def format_id(cls, v: str | int | None) -> int | None:
+    def format_id(cls, v: str | int | None) -> int | None:  # noqa: N805
         if v is None:
             return None
         if isinstance(v, int):

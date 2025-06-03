@@ -9,15 +9,15 @@ from typing import Any
 import hikari.errors
 from dotenv import load_dotenv
 from hikari import (
-    Embed,
-    GatewayBot,
-    GuildMessageCreateEvent,
-    GuildReactionAddEvent,
-    GuildTextChannel,
-    Intents,
-    Message,
-    OwnGuild,
-    StartedEvent,
+    Embed,  # pyrefly: ignore
+    GatewayBot,  # pyrefly: ignore
+    GuildMessageCreateEvent,  # pyrefly: ignore
+    GuildReactionAddEvent,  # pyrefly: ignore
+    GuildTextChannel,  # pyrefly: ignore
+    Intents,  # pyrefly: ignore
+    Message,  # pyrefly: ignore
+    OwnGuild,  # pyrefly: ignore
+    StartedEvent,  # pyrefly: ignore
 )
 from hikari.channels import ChannelType
 from loguru import logger
@@ -32,7 +32,7 @@ from models import DiscordMessage, DiscordQuote
 load_dotenv()
 
 STAGE = os.getenv("STAGE")
-assert STAGE in {"DEV", "PROD"}, STAGE
+assert STAGE in {"DEV", "PROD", "TEST"}, STAGE
 
 # pyre-fixme[6]
 bot = GatewayBot(token=os.getenv("DISCORD_KEY"), intents=Intents.ALL)
