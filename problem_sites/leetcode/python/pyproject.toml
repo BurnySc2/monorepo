@@ -41,6 +41,7 @@ lint.select = [
   "UP",  # pyupgrade
   #    "A",  # flake8-builtins
 ]
+ignore = ["SIM300"]
 
 [tool.ruff.lint.pep8-naming]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.

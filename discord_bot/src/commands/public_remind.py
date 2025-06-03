@@ -8,11 +8,11 @@ import arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, Message, NotFoundError, User
 from loguru import logger
 
-from cache import get_db
-from prisma import models
+from models import Reminder
 
 
-MIN_SECONDS_ELAPSED_BEFORE_FETCH = 10 * 60 # 10 minutes
+MIN_SECONDS_ELAPSED_BEFORE_FETCH = 10 * 60  # 10 minutes
+
 
 class Remind:
     REMINDER_ERROR_EMBED = Embed(
@@ -28,16 +28,13 @@ Example usage:
     def __init__(self, client: GatewayBot):
         super().__init__()
         self.client: GatewayBot = client
-        self.next_reminder: models.Reminder | None = None
+        self.next_reminder: Reminder | None = None
         # Limit of reminders per person
         self.reminder_limit = 20
         self.last_reminder_fetch: float = 0
 
     async def fetch_next_reminder(self) -> None:
-        async with get_db() as db:
-            next_reminder = await db.reminder.find_first(order=[{"reminder_utc": "asc"}])
-            if next_reminder is not None:
-                self.next_reminder = next_reminder
+        self.next_reminder = await Reminder.objects().order_by(Reminder.reminder_utc).first()
 
     async def tick(self):
         """Function gets called every second."""
@@ -51,29 +48,29 @@ Example usage:
 
         while self.next_reminder is not None and reminded is True:
             reminded = False
-            if self.next_reminder.reminder_utc < utc_now:
-                # Run remind, remind user in discord
-                reminded = True
-                person: User = await self._get_user_by_id(self.next_reminder.user_id)
-                logger.info(f"Attempting to remind {person.username} of: {self.next_reminder.message}")
-                try:
-                    # The original !reminder message may have been deleted
-                    message: Message = await self._get_message_by_id(
-                        self.next_reminder.channel_id,
-                        self.next_reminder.message_id,
-                    )
-                    link: str = message.make_link(message.guild_id) + "\n"
-                except NotFoundError:
-                    link = ""
-                await person.send(f"{link}You wanted to be reminded of: {self.next_reminder.message}")
+            if utc_now <  self.next_reminder.reminder_utc:
+                continue
+            # Run remind, remind user in discord
+            reminded = True
+            person: User = await self._get_user_by_id(self.next_reminder.user_id)
+            logger.info(f"Attempting to remind {person.username} of: {self.next_reminder.message}")
+            try:
+                # The original !reminder message may have been deleted
+                message: Message = await self._get_message_by_id(
+                    self.next_reminder.channel_id,
+                    self.next_reminder.message_id,
+                )
+                link: str = message.make_link(message.guild_id) + "\n"
+            except NotFoundError:
+                link = ""
+            await person.send(f"{link}You wanted to be reminded of: {self.next_reminder.message}")
 
-                # Remove reminder from db
-                async with get_db() as db:
-                    await db.reminder.delete(where={"id": self.next_reminder.id})
-                    self.next_reminder = None
+            # Remove reminder from db
+            await Reminder.delete().where(Reminder.id == self.next_reminder.id)
+            self.next_reminder = None
 
-                # Fetch next reminder
-                await self.fetch_next_reminder()
+            # Fetch next reminder
+            await self.fetch_next_reminder()
 
     async def _get_user_by_id(self, user_id: int) -> User:
         return await self.client.rest.fetch_user(user_id)
@@ -82,9 +79,8 @@ Example usage:
         return await self.client.rest.fetch_message(channel_id, message_id)
 
     async def _user_reached_max_reminder_threshold(self, user_id: int) -> bool:
-        async with get_db() as db:
-            count = await db.reminder.count(where={"user_id": user_id})
-            return count >= self.reminder_limit
+        count = await Reminder.count(Reminder.user_id)
+        return count >= self.reminder_limit
 
     async def _parse_date_and_time_from_message(self, message: str) -> tuple[arrow.Arrow, str] | None:
         time_now: arrow.Arrow = arrow.utcnow()
@@ -204,18 +200,15 @@ Example usage:
         guild = event.get_guild()
         if not channel or not guild:
             return
-        async with get_db() as db:
-            await db.reminder.create(
-                data={
-                    "reminder_utc": future_reminder_time.datetime,
-                    "user_id": event.author_id,
-                    "user_name": event.author.username,
-                    "guild_id": guild.id,
-                    "channel_id": channel.id,
-                    "message": reminder_message,
-                    "message_id": event.message_id,
-                }
-            )
+        await Reminder.insert(
+            reminder_utc=future_reminder_time.datetime,
+            user_id=event.author_id,
+            user_name=event.author.username,
+            guild_id=guild.id,
+            channel_id=channel.id,
+            message=reminder_message,
+            message_id=event.message_id,
+        ).save()
         # New reminder might be newer than currently cached reminder
         await self.fetch_next_reminder()
 
@@ -259,18 +252,15 @@ Example usage:
         if not channel or not guild:
             return
         if time_now < future_reminder_time:
-            async with get_db() as db:
-                await db.reminder.create(
-                    data={
-                        "reminder_utc": future_reminder_time.datetime,
-                        "user_id": event.author_id,
-                        "user_name": event.author.username,
-                        "guild_id": guild.id,
-                        "channel_id": channel.id,
-                        "message": reminder_message,
-                        "message_id": event.message_id,
-                    }
-                )
+            await Reminder.insert(
+                reminder_utc=future_reminder_time.datetime,
+                user_id=event.author_id,
+                user_name=event.author.username,
+                guild_id=guild.id,
+                channel_id=channel.id,
+                message=reminder_message,
+                message_id=event.message_id,
+            ).save()
             # New reminder might be newer than currently cached reminder
             await self.fetch_next_reminder()
 
@@ -295,15 +285,14 @@ Example usage:
         user_reminders: list[tuple[int, str, str, str]] = []
 
         # Sorted reminders by date and time ascending
-        async with get_db() as db:
-            user_reminders2 = await db.reminder.find_many(order=[{"reminder_utc": "asc"}])
+        user_reminders2 = await Reminder.objects().where(Reminder.user_id == event.author_id).order_by(Reminder.reminder_utc)
 
         if len(user_reminders2) == 0:
             return "You don't have any reminders."
 
         reminder_id = 1
         while user_reminders2:
-            r: models.Reminder = user_reminders2.pop(0)
+            r: Reminder = user_reminders2.pop(0)
             time: arrow.Arrow = arrow.get(r.reminder_utc)
             user_reminders.append((reminder_id, str(time), time.humanize(), r.message))
             reminder_id += 1
@@ -332,20 +321,19 @@ Example usage:
             embed = Embed(title=error_title, description=embed_description)
             return embed
 
-        async with get_db() as db:
-            user_reminders = await db.reminder.find_many(order=[{"reminder_utc": "asc"}])
-            if 0 <= reminder_id_to_delete <= len(user_reminders) - 1:
-                reminder_to_delete: models.Reminder = user_reminders[reminder_id_to_delete]
-                # Find the reminder in the reminder list, then remove it
-                logger.info(f"Trying to remove reminder {reminder_to_delete}")
-                logger.info(f"Reminders available: {user_reminders}")
-                await db.reminder.delete(where={"id": reminder_to_delete.id})
+        user_reminders = await Reminder.objects().where(Reminder.user_id == event.author_id).order_by(Reminder.reminder_utc)
+        if 0 <= reminder_id_to_delete <= len(user_reminders) - 1:
+            reminder_to_delete: Reminder = user_reminders[reminder_id_to_delete]
+            # Find the reminder in the reminder list, then remove it
+            logger.info(f"Trying to remove reminder {reminder_to_delete}")
+            logger.info(f"Reminders available: {user_reminders}")
+            await Reminder.delete().where(Reminder.id == reminder_to_delete.id)
 
-                # Say that the reminder was successfully removed?
-                embed = Embed(
-                    title=f"Removed {event.author.username}'s reminder", description=f"{reminder_to_delete.message}"
-                )
-                return embed
+            # Confirm the reminder was successfully deleted
+            embed = Embed(
+                title=f"Removed {event.author.username}'s reminder", description=f"{reminder_to_delete.message}"
+            )
+            return embed
 
         # Invalid reminder id, too high number
         if len(user_reminders) == 0:

@@ -9,8 +9,8 @@ dependencies = [
     "hikari>=2.1.0",
     # Simple logger
     "loguru>=0.7.3",
-    # postgres client
-    "prisma>=0.15.0",
+    # Postgres client
+    "piccolo[postgres]>=1.26.1",
     # Table plotting
     "ptable>=0.9.2",
     "pydantic>=2.10.3",
@@ -60,5 +60,6 @@ select = [
     "UP",  # pyupgrade
     #    "A",  # flake8-builtins
 ]
+ignore = ["SIM300"]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.
 pep8-naming.classmethod-decorators = ["pydantic.validator", "classmethod"]

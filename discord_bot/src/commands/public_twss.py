@@ -6,7 +6,6 @@ import arrow
 from hikari import GatewayBot, GuildMessageCreateEvent
 from loguru import logger
 
-from cache import get_db
 
 
 async def public_twss(

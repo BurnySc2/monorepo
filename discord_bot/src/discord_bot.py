@@ -22,7 +22,6 @@ from hikari import (
 from hikari.channels import ChannelType
 from loguru import logger
 
-from cache import get_db
 from commands.public_fetch_aoe4 import public_analyse_aoe4_game, public_fetch_aoe4_bo, public_search_aoe4_players
 from commands.public_leaderboard import public_leaderboard
 from commands.public_mmr import public_mmr

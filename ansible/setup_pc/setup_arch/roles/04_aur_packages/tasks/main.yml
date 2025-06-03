@@ -10,6 +10,7 @@
 - name: Install AUR packages
   kewlfft.aur.aur:
     name:
+      # TODO Add 'DaVinci Resolve' using 'opencl-clover-mesa' (need to manually download davinci-linux.zip to '~/.cache/yay/davinci-resolve/')
       - xq  # html content extractor
       - zoom
       - visual-studio-code-bin
@@ -22,6 +23,7 @@
       - jdownloader2
       - ttf-symbola  # required by discord? https://wiki.archlinux.org/title/Discord#Emojis_are_not_rendered_correctly
       - nodejs-emmet-ls  # emmet language server for helix
+      - warp-terminal  # Modern terminal emulator
       # - opera
       # - lazydocker-bin  # docker gui in terminal
     state: present
