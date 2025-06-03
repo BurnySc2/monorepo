@@ -7,8 +7,6 @@ WORKDIR /root/discord_bot
 install-dev:
     COPY uv.lock pyproject.toml ./
     RUN uv sync --frozen --no-cache --no-install-project
-    COPY prisma/* /root/discord_bot/prisma/
-    RUN uv run --frozen prisma generate
     COPY src /root/discord_bot/src
 
 format:
