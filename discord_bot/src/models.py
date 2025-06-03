@@ -18,6 +18,7 @@ class DiscordMessage(Table, tablename="discord_message"):
     who = Text(required=True)
     when= Timestamp(required=True)
     what= Text(required=True)
+
 class DiscordQuote(Table, tablename="discord_quote"):
     guild_id = Integer(required=True)
     channel_id = Integer(required=True)

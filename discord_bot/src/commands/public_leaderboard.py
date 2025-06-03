@@ -10,6 +10,7 @@ from simple_parsing import ArgumentParser, field
 from table2ascii import Alignment, PresetStyle
 from table2ascii import table2ascii as t2a
 
+from models import DiscordMessage
 
 
 @dataclass
@@ -131,63 +132,60 @@ async def public_leaderboard(
     return f"{title}```\n{output}\n```"
 
 
-async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
+async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> list[DiscordMessage]:
     query = """
 SELECT guild_id, author_id, count(*) AS count
 FROM discord_message
-WHERE guild_id = $1
+WHERE guild_id = {}
 GROUP BY guild_id, author_id
 ORDER BY count DESC
-LIMIT $2
-OFFSET $3;
+LIMIT {}
+OFFSET {};
 """
-    async with get_db() as db:
-        return await db.query_raw(
-            query,
-            server_id,
-            end_rank - start_rank,
-            start_rank - 1,
-        )
+    return await DiscordMessage.raw(
+        query,
+        server_id,
+        end_rank - start_rank,
+        start_rank - 1,
+    )
 
 
 async def get_leaderboard_month(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
     query = """
 SELECT guild_id, author_id, count(*) AS count
 FROM discord_message
-WHERE guild_id = $1
+WHERE guild_id = {}
     AND date_trunc('month', now()) < discord_message.when
 GROUP BY guild_id, author_id
 ORDER BY count DESC
-LIMIT $2
-OFFSET $3;
+LIMIT {}
+OFFSET {};
 """
-    async with get_db() as db:
-        return await db.query_raw(
-            query,
-            server_id,
-            end_rank - start_rank,
-            start_rank - 1,
-        )
+    return await DiscordMessage.raw(
+        query,
+        server_id,
+        end_rank - start_rank,
+        start_rank - 1,
+    )
 
 
 async def get_leaderboard_week(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
     query = """
 SELECT guild_id, author_id, count(*) AS count
 FROM discord_message
-WHERE guild_id = $1
+WHERE guild_id = {}
     AND date_trunc('week', now()) < discord_message.when
 GROUP BY guild_id, author_id
 ORDER BY count DESC
-LIMIT $2
-OFFSET $3;
+LIMIT {}
+OFFSET {};
 """
-    async with get_db() as db:
-        return await db.query_raw(
-            query,
-            server_id,
-            end_rank - start_rank,
-            start_rank - 1,
-        )
+    return await DiscordMessage.raw(
+        query,
+        server_id,
+        end_rank - start_rank,
+        start_rank - 1,
+    )
 
 
 async def main() -> None:
