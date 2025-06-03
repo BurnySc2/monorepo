@@ -288,7 +288,7 @@ async def public_fetch_aoe4_bo(
             if not profile_response.ok:
                 return "Could not find a profile with this id."
             data = await profile_response.json()
-            profiles = [PlayerSearchResult.parse_obj(data)]
+            profiles = [PlayerSearchResult.model_validate(data)]
         else:
             profiles = await fetch_top_profiles(
                 session,
@@ -697,7 +697,7 @@ async def fetch_top_profiles(session: ClientSession, max_pages: int = 1) -> list
             continue
         data = await response.json()
         for player_profle in data["players"]:
-            profile = PlayerSearchResult.parse_obj(player_profle)
+            profile = PlayerSearchResult.model_validate(player_profle)
             collected_profiles.append(profile)
     return collected_profiles
 
@@ -730,7 +730,7 @@ async def get_games_by_player_id(
             logger.debug("Exiting because there are no games in this request.")
             continue
         for game_data in data["games"]:
-            game_result = GameResult.parse_obj(game_data)
+            game_result = GameResult.model_validate(game_data)
             # Skip short games
             if game_result.ongoing or game_result.duration is None or game_result.duration <= 600:
                 continue
