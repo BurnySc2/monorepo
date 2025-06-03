@@ -14,7 +14,7 @@ import arrow
 from aiohttp import ClientSession, TCPConnector
 from hikari import GatewayBot, GuildMessageCreateEvent
 from loguru import logger
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from simple_parsing import ArgumentParser, field
 
 TCP_CONNECTOR_LIMIT = 10
@@ -415,7 +415,10 @@ class PlayerSearchResult(BaseModel):
     def last_game_at_arrow(self) -> arrow.Arrow:
         if self.last_game_at is None:
             return arrow.utcnow().shift(years=-1)
-        return arrow.get(self.last_game_at)
+        try:
+            return arrow.get(self.last_game_at)
+        except arrow.parser.ParserError:
+            return arrow.utcnow()
 
 
 class PlayerOfTeam(BaseModel):
@@ -468,7 +471,7 @@ class BuildOrderItem(BaseModel):
     transformed: list[int]
     destroyed: list[int]
 
-    @validator("id", check_fields=False)
+    @field_validator("id", check_fields=False)
     def format_id(cls, v: str | int | None) -> int | None:
         if v is None:
             return None
@@ -673,7 +676,7 @@ async def search(
         raise aiohttp.ClientConnectionError
     data = await response.json()
     for player_data in data["players"]:
-        player: PlayerSearchResult = PlayerSearchResult.parse_obj(player_data)
+        player: PlayerSearchResult = PlayerSearchResult.model_validate(player_data)
         collected_players.append(player)
     return collected_players
 
@@ -760,7 +763,7 @@ async def get_build_order_of_game(
         return
     data = await response.json()
     for player_data in data["players"]:
-        parsed = GamePlayerData.parse_obj(player_data)
+        parsed = GamePlayerData.model_validate(player_data)
         if parsed.profile_id is None or player_profile_id != parsed.profile_id:
             # Not the player we are looking for
             continue

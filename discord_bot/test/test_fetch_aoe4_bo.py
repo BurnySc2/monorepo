@@ -105,7 +105,7 @@ async def test_public_search_aoe4_players(message_text: str, player_search_resul
                 ok=True,
                 json=AsyncMock(
                     return_value={
-                        "players": [player_search_result.dict() for player_search_result in player_search_results]
+                        "players": [player_search_result.model_dump() for player_search_result in player_search_results]
                     }
                 ),
             )
@@ -155,7 +155,7 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
             return_value=AsyncMock(
                 ok=True,
                 json=AsyncMock(
-                    return_value={"players": [game_player_data.dict() for game_player_data in game_players_data]}
+                    return_value={"players": [game_player_data.model_dump() for game_player_data in game_players_data]}
                 ),
             )
         ),
