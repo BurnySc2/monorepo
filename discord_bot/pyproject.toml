@@ -63,3 +63,12 @@ select = [
 ignore = ["SIM300"]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.
 pep8-naming.classmethod-decorators = ["pydantic.validator", "classmethod"]
+
+[tool.pytest.ini_options]
+pythonpath = "src"
+
+[tool.pytest_env]
+# Env variables to be used while tests run
+STAGE = "test"
+POSTGRES_CONNECTION_STRING = "postgresql://test:test@localhost:5433/test"
+DISCORDKEY = "test_key"

@@ -132,7 +132,7 @@ async def public_leaderboard(
     return f"{title}```\n{output}\n```"
 
 
-async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> list[DiscordMessage]:
+async def get_leaderboard_all(server_id: int, start_rank: int, end_rank: int) -> list[dict]:
     query = """
 SELECT guild_id, author_id, count(*) AS count
 FROM discord_message

@@ -37,7 +37,7 @@ def test_parse_api_result():
         },
     }
 
-    parsed_data = PlayerData.parse_obj(example_response)
+    parsed_data = PlayerData.model_validate(example_response)
     test_object = Sc2LadderResult.from_api_result(parsed_data)
     result = test_object.format_result()
 
