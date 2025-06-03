@@ -27,6 +27,7 @@ from commands.public_leaderboard import public_leaderboard
 from commands.public_mmr import public_mmr
 from commands.public_remind import Remind
 from commands.public_twss import public_twss
+from models import DiscordMessage, DiscordQuote
 
 load_dotenv()
 
@@ -102,18 +103,15 @@ async def add_message_to_db(server_id: int, channel_id: int, message: Message) -
     """Insert message into database."""
     if message.content is None:
         return
-    async with get_db() as db:
-        await db.discordmessage.create(
-            data={
-                "message_id": message.id,
-                "guild_id": server_id,
-                "channel_id": channel_id,
-                "author_id": message.author.id,
-                "who": str(message.author),
-                "when": message.created_at,
-                "what": message.content,  # TODO Ignore text
-            }
-        )
+    await DiscordMessage(
+        message_id=message.id,
+        guild_id=server_id,
+        channel_id=channel_id,
+        author_id=message.author.id,
+        who=str(message.author),
+        when=message.created_at,
+        what=message.content,  # TODO Ignore text
+    ).save()
 
 
 async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextChannel) -> None:
@@ -129,10 +127,9 @@ async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextC
         logger.error(f"Last message in channel '{channel}' in server '{server}' could not be fetched")
         return
 
-    async with get_db() as db:
-        # Grab message ids to not insert duplicates
-        messages = await db.query_raw("SELECT message_id FROM discord_message;")
-        message_ids: set[int] = {message["message_id"] for message in messages}
+    # Grab message ids to not insert duplicates
+    messages = await DiscordMessage.select(DiscordMessage.message_id)
+    message_ids: set[int] = {message["message_id"] for message in messages}
 
     messages_inserted_count = 0
     async for message in channel.fetch_history():
@@ -212,26 +209,23 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
             if reaction.emoji.name in allowed_emoji_names and reaction.count >= target_emoji_count:
                 # Add quote to db
                 if STAGE == "PROD":
-                    async with get_db() as db:
-                        await db.discordquote.create(
-                            data={
-                                "message_id": message.id,
-                                "guild_id": event.guild_id,
-                                "channel_id": event.channel_id,
-                                "author_id": message.author.id,
-                                "who": str(message.author),
-                                "when": message.created_at,
-                                "what": message.content,
-                                "emoji_name": reaction.emoji.name,
-                            }
-                        )
+                    await DiscordQuote(
+                        message_id=message.id,
+                        guild_id=event.guild_id,
+                        channel_id=event.channel_id,
+                        author_id=message.author.id,
+                        who=str(message.author),
+                        when=message.created_at,
+                        what=message.content,
+                        emoji_name=reaction.emoji.name,
+                    ).save()
                 logger.info(f"Added quote: {message.content}")
 
                 # Notify people in channel that a quote has been added
                 # TODO and how many there are now in total
                 response_message = (
-                    f'Added {reaction.emoji.name} quote:\n{message.created_at.strftime("%Y-%m-%d")} '
-                    f'{str(message.author)}: {message.content}'
+                    f"Added {reaction.emoji.name} quote:\n{message.created_at.strftime('%Y-%m-%d')} "
+                    f"{str(message.author)}: {message.content}"
                 )
                 await channel.send(response_message)
                 return
