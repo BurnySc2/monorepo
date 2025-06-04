@@ -9,7 +9,9 @@ from loguru import logger
 from minio import S3Error
 from minio.helpers import _BUCKET_NAME_REGEX
 
+from models.audiobook import AudiobookBook
 from routes.audiobook.schema import (
+    hard_delete_book,
     minio_client,
 )
 
@@ -32,40 +34,6 @@ async def minio_get_bucket_size_in_mb(bucket_name: str) -> float:
     return await asyncio.to_thread(_minio_get_bucket_size_in_mb_sync, bucket_name)
 
 
-async def delete_book_return_bytes(book: models.AudiobookBook) -> int:
-    """Delete a book and return the amount of bytes freed."""
-
-    def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
-        # minio_client.remove_objects does not work
-        for minio_object_name in object_names:
-            minio_client.remove_object(bucket_name, minio_object_name)
-
-    total_size_freed = 0
-    chapter_objects_to_remove: list[str] = []
-    chapter: models.AudiobookChapter
-    # pyre-fixme[16]
-    for chapter in book.AudiobookChapter:
-        if chapter.minio_object_name is None:
-            continue
-        chapter_object = await asyncio.to_thread(
-            minio_client.stat_object,
-            MINIO_AUDIOBOOK_BUCKET,
-            chapter.minio_object_name,
-        )
-        chapter_objects_to_remove.append(chapter.minio_object_name)
-        if chapter_object.size is None:
-            continue
-        total_size_freed += chapter_object.size
-    await asyncio.to_thread(
-        delete_minio_objects,
-        MINIO_AUDIOBOOK_BUCKET,
-        chapter_objects_to_remove,
-    )
-    async with get_db() as db:
-        await db.audiobookbook.delete(where={"id": book.id})
-    return total_size_freed
-
-
 async def prevent_overflowing_audiobook_bucket() -> None:
     """Keep minio bucket size below a maximum by removing oldest uploaded books and minio data."""
     # pyre-fixme[9]
@@ -77,16 +45,11 @@ async def prevent_overflowing_audiobook_bucket() -> None:
         minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(MINIO_AUDIOBOOK_BUCKET)
         while minio_audiobooks_size_used_mb > minio_audiobook_max_size_mb:
             # Delete book and minio data
-            async with get_db() as db:
-                oldest_book = await db.audiobookbook.find_first(
-                    where={},
-                    include={"AudiobookChapter": True},
-                    order=[{"upload_date": "asc"}],
-                )
+            oldest_book = await AudiobookBook.objects().order_by(AudiobookBook.upload_date).first()
             if oldest_book is None:
                 break
             logger.info(f"Deleting book to free up space: {oldest_book.id}")
-            _size_freed: int = await delete_book_return_bytes(oldest_book)
+            await hard_delete_book(oldest_book.id)
             minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(MINIO_AUDIOBOOK_BUCKET)
 
         # Repeat every hour

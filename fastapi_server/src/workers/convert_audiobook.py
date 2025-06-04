@@ -113,7 +113,7 @@ async def convert_one() -> None:
             where={"id": chapter.id},
             data={
                 "started_converting": arrow.utcnow()
-                .shift(seconds=len(get_chapter_combined_text(chapter)) * ESTIMATE_FACTOR)
+                .shift(seconds=len(get_chapter_combined_text(chapter.content)) * ESTIMATE_FACTOR)
                 .datetime
             },
         )

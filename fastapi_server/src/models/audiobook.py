@@ -1,6 +1,8 @@
+import asyncio
 import arrow
 from piccolo.columns import ForeignKey, Integer, Text, Timestamptz, Boolean, JSON
 from piccolo.table import Table
+
 
 
 # await AudiobookBook.create_table(if_not_exists=True)
@@ -28,3 +30,4 @@ class AudiobookChapter(Table, tablename="litestar_audiobook_chapter"):
     content = Text(required=True)
     minio_object_name = Text()
     audio_settings = JSON()
+

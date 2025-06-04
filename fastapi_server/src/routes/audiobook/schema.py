@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 from minio import Minio, S3Error
 from pydantic import BaseModel
 
+from models.audiobook import AudiobookBook, AudiobookChapter
+
 
 load_dotenv()
 
@@ -56,39 +58,37 @@ class AudioSettings(BaseModel):
     voice_pitch: int = 0
 
 
-def base64_encode_data(data: bytes) -> str:
-    return base64.b64encode(data).decode("utf-8")
+# def base64_encode_data(data: bytes) -> str:
+#     return base64.b64encode(data).decode("utf-8")
 
 
-def base64_decode_data(data: str) -> bytes:
-    return base64.b64decode(data)
+# def base64_decode_data(data: str) -> bytes:
+#     return base64.b64decode(data)
 
 
-def _minio_get_audio_of_chapter_sync(chapter: models.AudiobookChapter) -> bytes:
-    # pyre-fixme[6]
-    return minio_client.get_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3").data
-
-
-async def minio_get_audio_of_chapter(chapter: models.AudiobookChapter) -> bytes:
-    # Turn the minio API to be non-blocking by running it in a coroutine
-    return await asyncio.to_thread(_minio_get_audio_of_chapter_sync, chapter)
-
-
-def get_chapter_combined_text(chapter: models.AudiobookChapter) -> str:
+def get_chapter_combined_text(text: str) -> str:
     # Text still contains "\n" characters
-    combined = " ".join(row for row in chapter.content)
+    combined = " ".join(row for row in text)
     return re.sub(r"\s+", " ", combined)
 
 
-async def get_chapter_position_in_queue(chapter: models.AudiobookChapter) -> int:
-    if not chapter.queued or chapter.minio_object_name:
-        return -1
-    async with get_db() as db:
-        return await db.audiobookchapter.count(
-            where={
-                # pyre-fixme[55]
-                "queued": {"lte": chapter.queued},
-                "started_converting": None,
-                "minio_object_name": None,
-            }
-        )
+def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
+    # minio_client.remove_objects does not work
+    for minio_object_name in object_names:
+        minio_client.remove_object(bucket_name, minio_object_name)
+
+
+async def hard_delete_book(book_id: int) -> None:
+    minio_objects = await AudiobookChapter.select(AudiobookChapter.minio_object_name).where(
+        AudiobookChapter.book == book_id
+    )
+
+    # TODO Wrap in transaction
+    # Delete minio objects
+    await asyncio.to_thread(delete_minio_objects, [i["minio_object_name"] for i in minio_objects])
+
+    # Delete chapters
+    await AudiobookChapter.delete().where(AudiobookChapter.book == book_id)
+
+    # Delete book
+    await AudiobookBook.delete().where(AudiobookBook.id == book_id)

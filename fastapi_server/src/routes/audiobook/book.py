@@ -25,7 +25,7 @@ from routes.audiobook.schema import (
     AudioSettings,
     minio_check_if_object_exists,
     minio_client,
-    minio_get_audio_of_chapter,
+    hard_delete_book,
     normalize_filename,
     normalize_title,
 )
@@ -344,6 +344,14 @@ class MyAudiobookBookRoute(Controller):
             .order_by(AudiobookChapter.chapter_number)
         )
 
+        def _minio_get_audio_of_chapter_sync(chapter: AudiobookChapter) -> bytes:
+            # pyre-fixme[6]
+            return minio_client.get_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3").data
+
+        async def minio_get_audio_of_chapter(chapter: AudiobookChapter) -> bytes:
+            # Turn the minio API to be non-blocking by running it in a coroutine
+            return await asyncio.to_thread(_minio_get_audio_of_chapter_sync, chapter)
+
         # Zip files via iterator to use the least amount of memory
         # https://stream-zip.docs.trade.gov.uk/
         # https://stream-zip.docs.trade.gov.uk/get-started/
@@ -393,23 +401,7 @@ class MyAudiobookBookRoute(Controller):
         """
         Remove book and all chapters from db and .mp3s from minio
         """
-        # TODO Mark book as deleted instead (soft-delete) and delete from minio in seperate process
-
-        def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
-            # minio_client.remove_objects does not work
-            for minio_object_name in object_names:
-                minio_client.remove_object(bucket_name, minio_object_name)
-
-        chapters = await AudiobookChapter.objects().where(
-            (AudiobookChapter.book == book_id) & (AudiobookChapter.minio_object_name != None)  # noqa: E711
-        )
-        chapter_objects_to_remove = [
-            chapter.minio_object_name for chapter in chapters if chapter.minio_object_name is not None
-        ]
-        await asyncio.to_thread(delete_minio_objects, MINIO_AUDIOBOOK_BUCKET, chapter_objects_to_remove)
-        await AudiobookBook.delete().where(
-            (AudiobookBook.id == book_id) & (AudiobookBook.uploaded_by == logged_in_user.db_name)
-        )
+        await hard_delete_book(book_id)
 
         # hx-remove table row if origin path is overview of uploaded books
         # pyre-fixme[16]
