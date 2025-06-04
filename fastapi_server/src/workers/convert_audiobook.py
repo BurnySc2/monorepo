@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from minio import Minio, S3Error
 
-from prisma import Prisma
+from models.audiobook import AudiobookChapter
 from routes.audiobook.my_minio_client import (
     MINIO_AUDIOBOOK_BUCKET,
     AudioSettings,
@@ -53,24 +53,17 @@ fetcher:
 
 async def convert_one() -> None:
     # Reset those that have failed to convert in time
-    async with Prisma() as db:
-        await db.audiobookchapter.update_many(
-            where={
-                "started_converting": {"lt": arrow.utcnow().datetime},
-            },
-            data={"started_converting": None},
-        )
+    await AudiobookChapter.update({AudiobookChapter.started_converting: None}).where(
+        AudiobookChapter.started_converting <= arrow.utcnow().datetime
+    )
 
     # Abort if queue empty
-    async with Prisma() as db:
-        any_in_queue = await db.audiobookchapter.count(
-            where={
-                "minio_object_name": None,
-                "queued": {"not": None},
-                "started_converting": None,
-            }
-        )
-    if any_in_queue == 0:
+    count_in_queue = await AudiobookChapter.count().where(
+        (AudiobookChapter.minio_object_name != None)  # noqa: E711
+        & (AudiobookChapter.queued != None)  # noqa: E711
+        & (AudiobookChapter.started_converting == None)  # noqa: E711
+    )
+    if count_in_queue == 0:
         return
 
     minio_client = Minio(
@@ -85,33 +78,28 @@ async def convert_one() -> None:
         minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
 
     # Get first book that is waiting to be converted
-    async with Prisma() as db:
-        chapter = await db.audiobookchapter.find_first(
-            where={
-                "minio_object_name": None,
-                "queued": {"not": None},
-                "started_converting": None,
-            },
-            order=[
-                {"queued": "asc"},
-                {"chapter_number": "asc"},
-            ],
+    chapter = (
+        await AudiobookChapter.objects()
+        .where(
+            (AudiobookChapter.minio_object_name != None)  # noqa: E711
+            & (AudiobookChapter.queued != None)  # noqa: E711
+            & (AudiobookChapter.started_converting == None)  # noqa: E711
         )
-        if chapter is None:
-            return
-        logger.info(f"Converting text to audio {chapter.id}...")
+        .order_by(AudiobookChapter.queued, ascending=True)
+        .order_by(AudiobookChapter.chapter_number, ascending=True)
+        .first()
+    )
+    if chapter is None:
+        return
+    logger.info(f"Converting text to audio {chapter.id}...")
 
-        # Mark chapter as "in_progress" converting
-        # Datetime is the estimation when it should be done converting based on text length
-        updated_count = await db.audiobookchapter.update_many(
-            where={"id": chapter.id},
-            data={
-                "started_converting": arrow.utcnow()
-                .shift(seconds=len(get_chapter_combined_text(chapter.content)) * ESTIMATE_FACTOR)
-                .datetime
-            },
-        )
-        assert updated_count == 1
+    # Mark chapter as "in_progress" converting
+    # Datetime is the estimation when it should be done converting based on text length
+    chapter.started_converting = (
+        arrow.utcnow().shift(seconds=len(get_chapter_combined_text(chapter.content)) * ESTIMATE_FACTOR).datetime
+    )
+    await chapter.save()
+
     # Generate tts from the book
     audio_settings: AudioSettings = AudioSettings.model_validate(chapter.audio_settings)
     audio: io.BytesIO = await generate_text_to_speech(
@@ -123,31 +111,28 @@ async def convert_one() -> None:
     )
 
     # Get data from db, user may have clicked "delete" button on book or chapter
-    async with Prisma() as db:
-        chapter2 = await db.audiobookchapter.find_first(where={"id": chapter.id})
-        if chapter2 is None:
-            # Book was deleted
-            return
-        if chapter.audio_settings != chapter2.audio_settings:
-            # Audio was removed while conversion was in progress, and a new one was queued
-            logger.info("Audio settings mismatch, skipping")
-            return
+    chapter2 = await AudiobookChapter.objects().where(AudiobookChapter.id == chapter.id).first()
+    if chapter2 is None:
+        # Book was deleted
+        return
+    if chapter.audio_settings != chapter2.audio_settings:
+        # Audio was removed while conversion was in progress, and a new one was queued
+        logger.info("Audio settings mismatch, skipping")
+        return
 
-        # Save result to database
-        object_name = f"{chapter.id}_audio.mp3"
-        """
-        TODO
+    # Save result to database
+    object_name = f"{chapter.id}_audio.mp3"
+    """
+    TODO
 convert_audiobook_worker-1  | minio.error.S3Error: S3 operation failed; code: InvalidAccessKeyId, message: The Access Key Id you provided does not exist in our records., resource: /staging-audiobooks, request_id: 18322FFB689E0AD3, host_id: dd9025bab4ad464b049177c95fd1af9251148b658df7ac2e3e8, bucket_name: staging-audiobooks
-        """
-        minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, object_name, audio, len(audio.getvalue()))
-        logger.info("Saving result to database")
-        await db.audiobookchapter.update_many(
-            data={
-                "started_converting": None,
-                "minio_object_name": object_name,
-            },
-            where={"id": chapter.id},
-        )
+    """
+    minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, object_name, audio, len(audio.getvalue()))
+
+    logger.info("Saving result to database")
+    chapter.started_converting = None
+    chapter.minio_object_name = object_name
+    chapter.save()
+
     logger.info(f"Done converting, saved to {object_name}")
 
 
