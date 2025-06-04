@@ -20,7 +20,6 @@ from examples.async_await.rate_limited_example import api_rate_limited_example
 from examples.databases.mongodb_example import test_database_with_mongodb
 from examples.databases.sqlalchemy_example import test_database_with_sqlalchemy
 from examples.databases.sqlite_example import test_database
-from examples.databases.sqlmodel_example import test_database_with_sqlmodel
 from examples.databases.tinydb_example import test_database_with_tinydb
 from examples.dataclasses_and_dicts.import_export_dataclass import test_data_class_to_and_from_json
 from examples.dataclasses_and_dicts.modify_dictionary import modify_dictionary
@@ -111,7 +110,6 @@ async def main():
     test_database()
     test_database_with_sqlalchemy()
     test_database_with_tinydb()
-    test_database_with_sqlmodel()
     await test_database_with_mongodb()
 
     logger.info("Running template files")
