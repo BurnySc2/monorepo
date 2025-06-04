@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from loguru import logger
 from sqlalchemy import Column, ForeignKey, Integer, String, create_engine, delete

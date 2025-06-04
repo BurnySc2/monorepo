@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
-from typing import Counter as TypingCounter
+from collections import Counter as TypingCounter
 
 
 def sieve_of_eratosthenes(limit: int) -> list[int]:

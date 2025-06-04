@@ -1,6 +1,6 @@
 import inspect
+from collections.abc import Callable
 from types import MappingProxyType
-from typing import Callable
 
 
 def func_without_arg() -> None:

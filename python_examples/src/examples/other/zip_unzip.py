@@ -1,6 +1,6 @@
 import io
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from burny_common.path_manipulation import recurse_path  # pyre-fixme[21]

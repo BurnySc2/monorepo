@@ -11,7 +11,7 @@ class Item:
 class Stack:
     def __init__(self):
         """The stack will be initialized empty."""
-        self.top: Optional[Item] = None
+        self.top: Item | None = None
 
     def push(self, value: int) -> None:
         """

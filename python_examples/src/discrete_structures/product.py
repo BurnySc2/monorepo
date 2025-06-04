@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Generator, Iterable
+from collections.abc import Generator, Iterable
+from typing import Any
 
 
 def product_generator(*args: Iterable[Any], repeat: int = 1) -> Generator[Any, None, None]:

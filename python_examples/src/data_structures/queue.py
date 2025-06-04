@@ -13,8 +13,8 @@ class Node:
 
 class Queue:
     def __init__(self):
-        self.front: Optional[Node] = None
-        self.tail: Optional[Node] = None
+        self.front: Node | None = None
+        self.tail: Node | None = None
         self.size: int = 0
 
     def enqueue(self, value: int):

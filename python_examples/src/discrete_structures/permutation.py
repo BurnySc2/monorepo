@@ -4,9 +4,10 @@ These are lexicographically ordered permutations.
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from math import factorial
 from string import ascii_uppercase
-from typing import Any, Generator
+from typing import Any
 
 from burny_common.measure_time import time_this  # pyre-fixme[21]
 

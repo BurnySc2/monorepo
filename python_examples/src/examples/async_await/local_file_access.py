@@ -34,7 +34,7 @@ def read_sync(files: list[Path]) -> list[str]:
 
 
 async def read_async_single_file(file: Path) -> str:
-    async with aiofiles.open(file, "r") as f:
+    async with aiofiles.open(file) as f:
         return await f.read()
 
 

@@ -1,5 +1,5 @@
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, Optional
 
 from dataclasses_json import DataClassJsonMixin
 from loguru import logger
@@ -23,8 +23,8 @@ class Publisher(DataClassJsonMixin):
 class Book(DataClassJsonMixin):
     name: str
     release_year: int
-    author_id: Optional[int] = None
-    publisher_id: Optional[int] = None
+    author_id: int | None = None
+    publisher_id: int | None = None
 
 
 @dataclass
@@ -36,8 +36,8 @@ class Library(DataClassJsonMixin):
 @dataclass
 class BookInventory(DataClassJsonMixin):
     amount: int
-    book_id: Optional[int] = None
-    library_id: Optional[int] = None
+    book_id: int | None = None
+    library_id: int | None = None
 
 
 def list_of_items_to_dict(items: Iterable[DataClassJsonMixin]) -> Iterable[dict]:

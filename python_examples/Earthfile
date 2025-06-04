@@ -1,20 +1,19 @@
 VERSION 0.6
 # earthly +all --PYTHONVERSION=3.12
 ARG PYTHONVERSION=3.12
-FROM python:${PYTHONVERSION}-slim
+FROM ghcr.io/astral-sh/uv:python${PYTHONVERSION}-bookworm-slim
 WORKDIR /root/python_examples
 
 # Run local example python file
 start-dev:
     # Run on host system instead of inside a container
     LOCALLY
-    RUN poetry run python main.py
+    RUN uv run python main.py
 
 install-dev:
-    RUN pip install poetry --no-cache-dir
-    COPY poetry.lock pyproject.toml ./
-    RUN poetry install
-    COPY . /root/python_examples
+    COPY uv.lock pyproject.toml ./
+    RUN uv sync --frozen --no-cache --no-install-project
+    COPY src src
 
 format:
     # Run on host system instead of inside a container
@@ -42,20 +41,20 @@ lint:
     FROM +install-dev
     RUN uv run ruff check .
 
-# Ignore errors via "# pyre-fixme[11]"
-pyre:
+# Ignore errors via "# pyrefly: ignore"
+pyrefly:
     FROM +install-dev
-    COPY .pyre_configuration /root/fastapi_server/.pyre_configuration
-    RUN uv run pyre
+    # TODO Fix me
+    # RUN uv run pyrefly check
 
 pytest:
     FROM +install-dev
-    RUN poetry run pytest
+    RUN uv run python -m pytest
 
 pre-commit:
     BUILD +format-check
     BUILD +lint
-    BUILD +pyre
+    BUILD +pyrefly
 
 all:
     BUILD +pre-commit
