@@ -1,11 +1,9 @@
-from typing import Any, Iterator
-import pytest
+from contextlib import asynccontextmanager
+
 import pytest_asyncio
+
 from models import DiscordMessage
 from piccolo_conf_test import db_path
-
-
-from contextlib import asynccontextmanager
 
 
 @asynccontextmanager

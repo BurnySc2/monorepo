@@ -1,15 +1,14 @@
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock
 
 import arrow
 import pytest
 from hikari import Embed, KnownCustomEmoji, Snowflake  # pyrefly: ignore
 from hypothesis import given
 from hypothesis import strategies as st
-from piccolo.query.methods.objects import Objects
 
 from commands.public_emotes import TOP_EMOTE_LIMIT, public_count_emotes, public_count_emotes_parser
 from models import DiscordMessage
-from test.db_helper import empty_database
+from test.db_helper import empty_database  # pyrefly: ignore
 
 _empty_database = empty_database
 
@@ -83,6 +82,7 @@ async def test_public_count_emotes(empty_database):
         }
     ]
     for row in data:
+        # pyrefly: ignore
         await DiscordMessage(**row).save()
 
     result = await public_count_emotes(fake_bot, fake_event, message)
