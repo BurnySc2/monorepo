@@ -12,7 +12,6 @@ dependencies = [
     # Display sizes in human readable format
     "humanize>=4.11.0",
     "langdetect>=1.0.9",
-    # Had to fix version to make poetry work
     "llvmlite>=0.43.0",
     # Logging
     "loguru>=0.7.2",
@@ -36,7 +35,8 @@ dependencies = [
 [tool.uv]
 dev-dependencies = [
     # Type checker
-    "pyre-check>=0.9.23",
+    "pyrefly>=0.18.0",
+    "pytest>=8.4.0",
     # Linter
     "ruff>=0.8.0",
 ]
@@ -56,6 +56,9 @@ column_limit = 120
 split_arguments_when_comma_terminated = true
 dedent_closing_brackets = true
 allow_split_before_dict_value = false
+
+[tool.pyrefly]
+project_includes = ["src"]
 
 [tool.ruff]
 target-version = 'py310'

@@ -7,11 +7,8 @@ WORKDIR /root/transcriber_backend
 install-dev:
     # RUN apt update && apt install -y gcc # Required by tgcrypto
     COPY uv.lock pyproject.toml ./
-    RUN uv sync
-    # RUN uv sync --frozen --no-cache --no-install-project
-    COPY prisma/* /root/transcriber_backend/prisma/
-    RUN uv run --frozen prisma generate
-    COPY src /root/transcriber_backend/src
+    RUN uv sync --frozen --no-cache --no-install-project
+    COPY src src
 
 format:
     # Run on host system instead of inside a container
@@ -40,19 +37,19 @@ lint:
     RUN uv run ruff check .
 
 # Ignore errors via "# pyre-fixme[11]"
-pyre:
+pyrefly:
     FROM +install-dev
-    RUN uv run pyre
+    RUN uv run pyrefly check
 
 pytest:
     FROM +install-dev
     # TODO fix me
-    # RUN poetry run python -m pytest test
+    # RUN uv run python -m pytest test
 
 pre-commit:
     BUILD +format-check
     BUILD +lint
-    BUILD +pyre
+    BUILD +pyrefly
 
 all:
     BUILD +pre-commit

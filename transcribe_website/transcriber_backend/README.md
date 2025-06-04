@@ -8,12 +8,8 @@
 Install
 
 ```sh
-pip install --user poetry
-# Generate types
-poetry run prisma generate
-# Create database/database.db file
-poetry run prisma db push
-poetry install
+pip install --user uv
+uv sync
 ```
 
 ## Transcribe

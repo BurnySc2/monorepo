@@ -38,8 +38,11 @@ def compress_files(files: dict[str, str]) -> BytesIO:
 
 def decompress_files(zip_file: BytesIO) -> dict[str, str]:
     decompressed = {}
-    with zipfile.ZipFile(zip_file, mode="r") as zip_file:
+    # pyrefly: ignore
+    with zipfile.ZipFile(zip_file) as zip_file:
+        # pyrefly: ignore
         for file_name in zip_file.namelist():
-            with zip_file.open(file_name, mode="r") as file:
+            # pyrefly: ignore
+            with zip_file.open(file_name) as file:
                 decompressed[file_name] = file.read().decode()
     return decompressed

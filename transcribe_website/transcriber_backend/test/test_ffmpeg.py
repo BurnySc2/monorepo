@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-# poetry run python -m pytest
+# uv run python -m pytest
 
 
 def get_total_length_of_file(file_path: Path) -> float:

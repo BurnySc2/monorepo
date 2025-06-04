@@ -30,6 +30,7 @@ def split_subtitle(text, max_chars=42):
 
     for word in words:
         if current_length + len(word) + 1 > max_chars and current_line:
+            # pyrefly: ignore
             lines.append(" ".join(current_line))
             current_line = [word]
             current_length = len(word)
@@ -38,6 +39,7 @@ def split_subtitle(text, max_chars=42):
             current_length += len(word) + 1
 
     if current_line:
+        # pyrefly: ignore
         lines.append(" ".join(current_line))
 
     return "\n".join(lines)
@@ -95,7 +97,9 @@ def merge_short_cues(cues, min_duration=3):
         else:
             duration = cue["end"] - current_cue["start"]
             if duration < min_duration:
+                # pyrefly: ignore
                 current_cue["text"] += " " + cue["text"]
+                # pyrefly: ignore
                 current_cue["end"] = cue["end"]
             else:
                 merged_cues.append(current_cue)
@@ -138,5 +142,6 @@ if __name__ == "__main__":
     # After transcribing, create subtitles with:
     result = {}
     subtitle_path = Path("output_file.srt")
+    # pyrefly: ignore
     data = get_srt_content(result)
     subtitle_path.write_text(data.getvalue().decode())

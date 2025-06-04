@@ -10,7 +10,7 @@ from loguru import logger
 
 from src.helper import compress_files
 
-# poetry run python -m pytest
+# uv run python -m pytest
 
 PARENT_DIR = Path(__file__).parent
 TXT_FILE = PARENT_DIR / "transcribed.txt"

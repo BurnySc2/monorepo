@@ -1,24 +1,24 @@
-FROM python:3.10-slim
+FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
 
-# Install ffmpeg
-RUN export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -qq update \
-    && apt-get -qq install --no-install-recommends \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip install --no-cache-dir poetry==1.8 \
-    && yes | poetry cache clear PyPI --all
+# Add ffmpeg from
+# https://github.com/wader/static-ffmpeg
+COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock ./
+# Install dependencies
+COPY uv.lock pyproject.toml /root/discord_bot/
+RUN uv sync --no-dev --frozen --no-cache --no-install-project
 
-RUN poetry install --without dev
+COPY src src
+
+RUN rm -r \
+    /var/cache
 
 COPY src/ /app/src/
 
 # Allow imports to function correctly
 ENV PYTHONPATH=/app
 
-ENTRYPOINT [ "poetry", "run", "python", "src/worker.py" ]
+ENTRYPOINT [ "uv", "run", "--no-dev", "python", "src/worker.py" ]

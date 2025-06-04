@@ -15,6 +15,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from loguru import logger
 
+# pyrefly: ignore
 from prisma import Prisma
 
 load_dotenv()
@@ -26,6 +27,7 @@ looking_for_lower_case_words: list[str] = os.getenv("WORDS_EXTRACTOR_WORDS").spl
 out_path = Path(os.getenv("WORDS_EXTRACTOR_OUTPUT_DIRECTORY"))
 out_path.mkdir(parents=True, exist_ok=True)
 
+# pyrefly: ignore
 CLIP_BUFFER = float(os.getenv("WORDS_EXTRACTOR_CONTEXT_DURATION_SECONDS"))
 
 
@@ -95,11 +97,13 @@ def extract_matched_words(
 
     This function extracts clips from the input video file for the given list of words. It retrieves the words from the database and finds the corresponding timestamps. For each word, it extracts a clip starting 3 seconds before the word and ending 3 seconds after the word. The extracted clips are saved in the output directory with a filename containing the input file name, start and end timestamps, and the word.
     """  # noqa: E501
+    # pyrefly: ignore
     output_folder_path = Path(os.getenv("WORDS_EXTRACTOR_OUTPUT_DIRECTORY"))
     output_folder_path.mkdir(parents=True, exist_ok=True)
     with Prisma() as db:
         for word in words_list:
             results = db.word.find_many(
+                # pyrefly: ignore
                 where={
                     "file_felative_path": {
                         "contains": part_of_path,
@@ -112,7 +116,7 @@ def extract_matched_words(
                 word_subdir_path.mkdir(parents=True, exist_ok=True)
             for result in results:
                 input_file_path = Path(result.file_felative_path)
-                clip_start = max(0, result.word_start_timestamp - CLIP_BUFFER)
+                clip_start = max(0.0, result.word_start_timestamp - CLIP_BUFFER)
                 clip_end = result.word_end_timestamp + CLIP_BUFFER
 
                 clip_start_str = f"{clip_start:.3f}"

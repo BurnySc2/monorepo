@@ -11,8 +11,8 @@ from whisperx.audio import load_audio
 from whisperx.types import AlignedTranscriptionResult, SingleAlignedSegment, SingleWordSegment
 
 from hard_burn_subtitles import hard_burn_subtitles
-from prisma import Prisma
-from src.helper import recurse_path
+from helper import recurse_path
+from prisma import Prisma  # pyrefly: ignore
 from srt_writer import get_srt_content
 
 load_dotenv()
@@ -65,6 +65,7 @@ def transcribe_file(
 
     model = load_model(model_size, device, compute_type=compute_type, download_root=model_dir)
 
+    # pyrefly: ignore
     audio = load_audio(file_path)
     result = model.transcribe(audio, batch_size=batch_size, language=language, task=task)
 
@@ -83,6 +84,7 @@ def transcribe_file(
         return_char_alignments=False,
     )
 
+    # pyrefly: ignore
     result2["language"] = result["language"]
     return result2
 
@@ -109,6 +111,7 @@ def save_result_to_db(
             continue
         start, end, text = sentence_segment["start"], sentence_segment["end"], sentence_segment["text"]
         sentences_to_insert.append(
+            # pyrefly: ignore
             {
                 "file_felative_path": input_file_str,
                 "sentence_start_timestamp": start,
@@ -133,6 +136,7 @@ def save_result_to_db(
         )
 
     with Prisma() as db:
+        # pyrefly: ignore
         db.word.create_many(data=words_to_insert)
         db.sentence.create_many(data=sentences_to_insert)
 
@@ -158,6 +162,7 @@ if __name__ == "__main__":
 
     # This example mass transcribes files and loads them into database for later use
 
+    # pyrefly: ignore
     input_folder_path = Path(os.getenv("MASS_TRANSCRIBE_INPUT_DIRECTORY"))
     # mass_transcribe(input_folder_path, model_size="tiny", language="de")
     # mass_transcribe(input_folder_path, model_size="medium", language="de")

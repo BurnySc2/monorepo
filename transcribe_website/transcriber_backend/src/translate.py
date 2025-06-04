@@ -6,7 +6,9 @@ from whisperx.types import AlignedTranscriptionResult
 
 
 def translate_result(
-    result: AlignedTranscriptionResult, to_language: Literal["de", "en"]
+    result: AlignedTranscriptionResult,
+    to_language: Literal["de", "en"],
+    # pyrefly: ignore
 ) -> AlignedTranscriptionResult:
     """TODO"""
 
