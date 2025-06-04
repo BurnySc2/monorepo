@@ -69,7 +69,7 @@ services:
     networks:
       - traefiknet
     deploy:
-      replicas: 4
+      replicas: 1
     profiles:
       - prod
 

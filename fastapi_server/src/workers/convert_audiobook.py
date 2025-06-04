@@ -1,26 +1,21 @@
-"""
-TODO Keep service running, but spawn new workers if there are tasks to do, up to N workers
-Requires proper observing if workers completed (success/fail), only then spawn new ones
-"""
-
 from __future__ import annotations
 
 import asyncio
 import io
 import os
-import time
 from contextlib import suppress
 
 import arrow
 from dotenv import load_dotenv
 from loguru import logger
-from minio import Minio, S3Error
+from minio import S3Error
 
 from models.audiobook import AudiobookChapter
 from routes.audiobook.my_minio_client import (
     MINIO_AUDIOBOOK_BUCKET,
     AudioSettings,
     get_chapter_combined_text,
+    minio_client,
 )
 from routes.audiobook.temp_generate_tts import generate_text_to_speech
 
@@ -28,27 +23,16 @@ load_dotenv()
 
 
 # Increase this value to give converters more time to convert an audio
-# Ideal value is slightly above 0.1
-# TODO Export as env value
-ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR"))
+# Ideal value is slightly above 0.3
+ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR", "0.3"))
+
+# Maximum number of concurrent chapter conversions
+MAX_CONCURRENT_CONVERSIONS = int(os.getenv("AUDIOBOOK_MAX_CONCURRENT_CONVERSIONS", "1"))
 
 
-"""
-TODO Refactor:
-Run this only once in parallel
-Instead, this script will create async workers (8, 16?)
-
-Use with async with contextmanager
-- on enter: set chapter to converting
-- on exit (finally): set no longer to converting
-
-workers will end themselves if done (success or error)
-
-fetcher:
-- fetch jobs every 10s
-- assign jobs to workers
-- create workers (up to LIMIT)
-"""
+# Create bucket if it doesn't exist
+with suppress(S3Error):
+    minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
 
 
 class AudiobookConversionContext:
@@ -84,37 +68,15 @@ class AudiobookConversionContext:
             raise
 
 
-async def convert_one() -> None:
+async def check_queued_chapters() -> None:
     # Reset those that have failed to convert in time
     await AudiobookChapter.update({AudiobookChapter.started_converting: None}).where(
         AudiobookChapter.started_converting <= arrow.utcnow().datetime
     )
 
-    # Abort if queue empty
-    # pyrefly: ignore
-    count_in_queue = await AudiobookChapter.count().where(
-        (AudiobookChapter.minio_object_name != None)  # noqa: E711
-        & (AudiobookChapter.queued != None)  # noqa: E711
-        & (AudiobookChapter.started_converting == None)  # noqa: E711
-    )
-    if count_in_queue == 0:
-        return
-
-    minio_client = Minio(
-        # pyre-fixme[6]
-        os.getenv("MINIO_URL"),
-        access_key=os.getenv("MINIO_ACCESS_TOKEN"),
-        secret_key=os.getenv("MINIO_SECRET_KEY"),
-        secure=os.getenv("MINIO_SECURE") == "TRUE",
-    )
-    # Create bucket if it doesn't exist
-    with suppress(S3Error):
-        minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
-
     # Get first book that is waiting to be converted
-    chapter = (
-        # pyrefly: ignore
-        await AudiobookChapter.objects()
+    query = (
+        AudiobookChapter.objects()
         .where(
             (AudiobookChapter.minio_object_name != None)  # noqa: E711
             & (AudiobookChapter.queued != None)  # noqa: E711
@@ -122,10 +84,26 @@ async def convert_one() -> None:
         )
         .order_by(AudiobookChapter.queued, ascending=True)
         .order_by(AudiobookChapter.chapter_number, ascending=True)
-        .first()
     )
-    if chapter is None:
+    first_chapter = await query.first()
+    if first_chapter is None:
         return
+
+    # Check active conversions count
+    active_conversions = await AudiobookChapter.count().where(
+        arrow.utcnow().datetime < AudiobookChapter.started_converting
+    )
+    if MAX_CONCURRENT_CONVERSIONS <= active_conversions:
+        return
+
+    count_more_conversion_possible = MAX_CONCURRENT_CONVERSIONS - active_conversions
+    chapters = await query.limit(count_more_conversion_possible)
+    for chapter in chapters:
+        # Launch convert_one in a new asyncio task
+        asyncio.create_task(convert_one(chapter))
+
+
+async def convert_one(chapter: AudiobookChapter) -> None:
     logger.info(f"Converting text to audio {chapter.id}...")
 
     async with AudiobookConversionContext(chapter) as context:
@@ -151,7 +129,7 @@ async def convert_one() -> None:
             return
 
         # Save result to MinIO
-        minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio, len(audio.getvalue()))
+        minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio, len(audio.getvalue()))  # noqa: F821
 
         # Save result to database
         chapter.minio_object_name = context.minio_object_name
@@ -162,13 +140,8 @@ async def convert_one() -> None:
 
 async def keep_converting():
     while 1:
-        t0 = time.time()
-        await convert_one()
-        diff = time.time() - t0
-        if diff < 1:
-            # Returned quickly, let docker compose choose when to restart
-            return
-        await asyncio.sleep(1)
+        await check_queued_chapters()
+        await asyncio.sleep(30)
 
 
 if __name__ == "__main__":
