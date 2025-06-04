@@ -26,18 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-        # In conflict with pyre-check
-        #    - name: Set up Python ${{ matrix.python-version }}
-        #      uses: actions/setup-python@v4
-        #      with:
-        #        python-version: ${{ matrix.python-version }}
-        #
-        #    - name: Cache .venv
-        #      uses: actions/cache@v3
-        #      with:
-        #        path: .venv
-        #        key: ${{ env.SUBDIRECTORY }}-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
-
         # https://earthly.dev/get-earthly
       - name: Install Earthly
         run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'

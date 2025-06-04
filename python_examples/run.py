@@ -16,7 +16,7 @@ logger.add(sys.stdout, level="INFO")
 # Log to file, max size 1 mb
 logger.add("run.log", rotation="1 MB", retention="1 month", level="INFO")
 
-command_line = ["poetry", "run", "python"]
+command_line = ["uv", "run", "python"]
 current_folder = Path(__file__).parent
 bot_file_path = current_folder / "main.py"
 
@@ -32,7 +32,7 @@ class BotRunner:
         self.kill_bot()
 
     async def start_bot(self):
-        # Command is 'python file.py' because we are already in a poetry environment
+        # Command is 'python file.py' because we are already in a uv environment
         command_list = command_line + [str(bot_file_path.absolute())]
         logger.info("Starting bot ...")
         self.bot_process = subprocess.Popen(command_list)

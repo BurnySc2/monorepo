@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - python_examples/**
-      - poetry.lock
+      - uv.lock
       - .github/workflows/python_examples.yml
   pull_request:
     branches:
@@ -25,18 +25,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      # In conflict with pyre-check
-      #    - name: Set up Python ${{ matrix.python-version }}
-      #      uses: actions/setup-python@v4
-      #      with:
-      #        python-version: ${{ matrix.python-version }}
-      #
-      #    - name: Cache .venv
-      #      uses: actions/cache@v3
-      #      with:
-      #        path: .venv
-      #        key: ${{ env.SUBDIRECTORY }}-${{ matrix.os }}-${{ steps.setup-python.outputs.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
 
       - name: Start MongoDB
         uses: ankane/setup-mongodb@v1
@@ -85,18 +73,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Poetry
-        run: pip install poetry --no-cache-dir
-
-      - name: Make poetry use local .venv folder
-        run: poetry config virtualenvs.in-project true
-
-      - name: Set up cache
-        if: matrix.os != 'windows-latest'
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.SUBDIRECTORY }}.venv
-          key: ${{ matrix.os }}-$(python --version)-poetry-${{ env.SUBDIRECTORY }}-${{ hashFiles('poetry.lock') }}
+      - name: Install uv
+        run: pip install uv --no-cache-dir
 
       - name: Start MongoDB
         uses: ankane/setup-mongodb@v1
@@ -125,40 +103,32 @@ jobs:
 
       - name: Install Python dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry install
+        run: uv sync
 
       - name: Run Python tests
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run python -m pytest
+        run: uv run python -m pytest
 
       - name: Run main.py
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run python main.py
+        run: uv run python main.py
 
       - name: Run database readme example - dataset
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run python examples/databases/readme_dataset_example.py
+        run: uv run python examples/databases/readme_dataset_example.py
 
       - name: Run database readme example - peewee
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run python examples/databases/readme_peewee_example.py
-
-      - name: Set up prisma db
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run prisma db push --schema examples/databases/prisma/schema.prisma
-
-      - name: Run database readme example - prisma
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run python examples/databases/readme_prisma_example.py
+        run: uv run python examples/databases/readme_peewee_example.py
 
       - name: Run database readme example - sqlalchemy
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run python examples/databases/readme_sqlalchemy_example.py
+        run: uv run python examples/databases/readme_sqlalchemy_example.py
 
       - name: Run database readme example - sqlite
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run python examples/databases/readme_sqlite_example.py
+        run: uv run python examples/databases/readme_sqlite_example.py
 
       - name: Run database readme example - tinydb
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: poetry run python examples/databases/readme_tinydb_example.py
+        run: uv run python examples/databases/readme_tinydb_example.py

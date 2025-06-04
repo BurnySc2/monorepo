@@ -22,19 +22,14 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - uses: actions/cache@v2
-      with:
-        path: ~/.cache/pypoetry/virtualenvs
-        key: ${{ runner.os }}-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
-
     - name: Install dependencies
       run: |
-        pip install poetry --no-cache-dir
-        poetry install
+        pip install uv --no-cache-dir
+        uv sync
 
     - name: Run pytest benchmarks
       run: |
-        poetry run pytest
+        uv run pytest
 
 
   rust:

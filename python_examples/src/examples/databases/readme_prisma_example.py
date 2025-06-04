@@ -4,13 +4,13 @@ Assume database is empty. Insert only works when constraints are met.
 # Run commands from python_examples folder
 
 # Update database tables
-# poetry run prisma db push --schema examples/databases/prisma/schema.prisma
+# uv run prisma db push --schema examples/databases/prisma/schema.prisma
 
 # Update schema from db
-# poetry run prisma db pull --schema examples/databases/prisma/schema.prisma
+# uv run prisma db pull --schema examples/databases/prisma/schema.prisma
 
 # Update types (will be updated in .venv site-packages folder)
-# poetry run prisma generate --watch --schema examples/databases/prisma/schema.prisma
+# uv run prisma generate --watch --schema examples/databases/prisma/schema.prisma
 
 import asyncio
 

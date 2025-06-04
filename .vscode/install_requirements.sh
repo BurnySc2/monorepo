@@ -1,9 +1,9 @@
 # Install python / backend
 cd burny_common
-poetry install
+uv sync
 cd ../discord_bot
-poetry install
+uv sync
 cd ../fastapi_server
-poetry install
+uv sync
 cd ../python_examples
-poetry install
+uv sync

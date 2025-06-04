@@ -7,7 +7,7 @@ WORKDIR /root/fastapi_server
 install-dev:
     COPY uv.lock pyproject.toml ./
     RUN uv sync --frozen --no-cache --no-install-project
-    COPY src /root/fastapi_server/src
+    COPY src src
 
 formatsql:
     # Run on host system instead of inside a container

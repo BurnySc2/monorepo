@@ -10,16 +10,16 @@ My monorepo for various tools and showcases
 # Development
 ### Pre-requisites
 - [Python](https://www.python.org/downloads)
-    - [Poetry](https://python-poetry.org/docs/)
+    - [uv](https://docs.astral.sh/uv/)
 - [Earthly](https://earthly.dev)
     - [Docker](https://www.docker.com)
 
 ## VScode
-Run VScode task called `Install requirements` or alternatively run `sh .vscode/install_requirements.sh` or alternatively run `poetry install` in the python projects or `npm install` in the frontend projects.
+Run VScode task called `Install requirements` or alternatively run `sh .vscode/install_requirements.sh` or alternatively run `uv sync` in the python projects.
 
 Open the Command Palette and `Workspaces: Add Folder to Workspace...` and select the folders you want to edit.
 
-Now set up the correct interpreter path (may have to navigate the absolute path, on linux that is `~/.cache/pypoetry/virtualenvs/...`). The running the command `poetry env info --path` in each project shows where the environment was installed to. 
+Now set up the correct interpreter path.
 
 ## VS code
 TODO
@@ -27,13 +27,13 @@ TODO
 # Check dependencies
 To avoid packages with large packages, we can use `pipdeptree`
 ```sh
-poetry run pipdeptree > deps.txt
+uv run pipdeptree > deps.txt
 ```
 
 # Install and run pre-commit hook on all staged files
 ```sh
-poetry run pre-commit install
-poetry run pre-commit run --all-files --verbose --hook-stage push
+uv run pre-commit install
+uv run pre-commit run --all-files --verbose --hook-stage push
 ```
 
 This runs pylint, mypy, pytest tests, apply autoformatter yapf

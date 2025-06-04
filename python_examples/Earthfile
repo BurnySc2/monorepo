@@ -19,8 +19,8 @@ format:
     # Run on host system instead of inside a container
     LOCALLY
     # Requirements:
-    # pip install poetry
-    # poetry install
+    # pip install uv
+    # uv sync
 
     # Convert single to double quotes
     RUN uv run ruff check . --select Q --fix
