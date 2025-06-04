@@ -30,7 +30,7 @@ load_dotenv()
 # Increase this value to give converters more time to convert an audio
 # Ideal value is slightly above 0.1
 # TODO Export as env value
-ESTIMATE_FACTOR = 0.3
+ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR"))
 
 
 """
@@ -49,6 +49,39 @@ fetcher:
 - assign jobs to workers
 - create workers (up to LIMIT)
 """
+
+
+class AudiobookConversionContext:
+    def __init__(self, chapter: AudiobookChapter):
+        self.chapter = chapter
+        self.minio_object_name = None
+
+    async def __aenter__(self):
+        # Lock the chapter for conversion
+        self.chapter.started_converting = (
+            arrow.utcnow()
+            .shift(seconds=len(get_chapter_combined_text(self.chapter.content)) * ESTIMATE_FACTOR)
+            .datetime
+        )
+        await self.chapter.save()
+        # Generate MinIO object name
+        self.minio_object_name = f"{self.chapter.id}_audio.mp3"
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        try:
+            if exc_type is None:
+                # Conversion succeeded - clear converting flag
+                self.chapter.started_converting = None
+                await self.chapter.save()
+            else:
+                # Conversion failed - reset converting flag
+                self.chapter.started_converting = None
+                await self.chapter.save()
+                logger.error(f"Conversion failed: {exc_val}")
+        except Exception as e:
+            logger.error(f"Error in context manager cleanup: {e}")
+            raise
 
 
 async def convert_one() -> None:
@@ -95,48 +128,36 @@ async def convert_one() -> None:
         return
     logger.info(f"Converting text to audio {chapter.id}...")
 
-    # Mark chapter as "in_progress" converting
-    # Datetime is the estimation when it should be done converting based on text length
-    chapter.started_converting = (
-        arrow.utcnow().shift(seconds=len(get_chapter_combined_text(chapter.content)) * ESTIMATE_FACTOR).datetime
-    )
-    await chapter.save()
+    async with AudiobookConversionContext(chapter) as context:
+        # Generate tts from the book
+        audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
+        audio: io.BytesIO = await generate_text_to_speech(
+            chapter.content,
+            voice=audio_settings.voice_name,
+            rate=audio_settings.voice_rate,
+            volume=audio_settings.voice_volume,
+            pitch=audio_settings.voice_pitch,
+        )
 
-    # Generate tts from the book
-    audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
-    audio: io.BytesIO = await generate_text_to_speech(
-        chapter.content,
-        voice=audio_settings.voice_name,
-        rate=audio_settings.voice_rate,
-        volume=audio_settings.voice_volume,
-        pitch=audio_settings.voice_pitch,
-    )
+        # Get data from db, user may have clicked "delete" button on book or chapter
+        # pyrefly: ignore
+        chapter2 = await AudiobookChapter.objects().where(AudiobookChapter.id == chapter.id).first()
+        if chapter2 is None:
+            # Book was deleted
+            return
+        if chapter.audio_settings != chapter2.audio_settings:
+            # Audio was removed while conversion was in progress, and a new one was queued
+            logger.info("Audio settings mismatch, skipping")
+            return
 
-    # Get data from db, user may have clicked "delete" button on book or chapter
-    # pyrefly: ignore
-    chapter2 = await AudiobookChapter.objects().where(AudiobookChapter.id == chapter.id).first()
-    if chapter2 is None:
-        # Book was deleted
-        return
-    if chapter.audio_settings != chapter2.audio_settings:
-        # Audio was removed while conversion was in progress, and a new one was queued
-        logger.info("Audio settings mismatch, skipping")
-        return
+        # Save result to MinIO
+        minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio, len(audio.getvalue()))
 
-    # Save result to database
-    object_name = f"{chapter.id}_audio.mp3"
-    """
-    TODO
-convert_audiobook_worker-1  | minio.error.S3Error: S3 operation failed; code: InvalidAccessKeyId, message: The Access Key Id you provided does not exist in our records., resource: /staging-audiobooks, request_id: 18322FFB689E0AD3, host_id: dd9025bab4ad464b049177c95fd1af9251148b658df7ac2e3e8, bucket_name: staging-audiobooks
-    """
-    minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, object_name, audio, len(audio.getvalue()))
+        # Save result to database
+        chapter.minio_object_name = context.minio_object_name
+        await chapter.save()
 
-    logger.info("Saving result to database")
-    chapter.started_converting = None
-    chapter.minio_object_name = object_name
-    chapter.save()
-
-    logger.info(f"Done converting, saved to {object_name}")
+        logger.info(f"Done converting, saved to {context.minio_object_name}")
 
 
 async def keep_converting():
