@@ -14,6 +14,7 @@ from routes.audiobook.my_minio_client import (
     minio_client,
 )
 
+
 async def minio_get_bucket_size_in_mb(bucket_name: str) -> float:
     """Returns the total size used up by all object in the buckets in bytes."""
 

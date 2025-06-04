@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 import os
 import re
-from minio.helpers import _BUCKET_NAME_REGEX
 
 from dotenv import load_dotenv
 from minio import Minio, S3Error
+from minio.helpers import _BUCKET_NAME_REGEX
 from pydantic import BaseModel
 
 from models.audiobook import AudiobookBook, AudiobookChapter

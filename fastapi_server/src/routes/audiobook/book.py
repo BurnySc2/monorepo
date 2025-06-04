@@ -22,9 +22,9 @@ from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.audiobook.my_minio_client import (
     MINIO_AUDIOBOOK_BUCKET,
     AudioSettings,
+    hard_delete_book,
     minio_check_if_object_exists,
     minio_client,
-    hard_delete_book,
     normalize_filename,
     normalize_title,
 )
@@ -36,7 +36,6 @@ from routes.cookies_and_guards import (
     owns_book_guard,
     provide_logged_in_user,
 )
-
 
 queries_directory = Path(__file__).parents[2] / "queries"
 query_get_book = (queries_directory / "audiobook_book_metadata.sql").read_text()

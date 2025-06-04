@@ -4,9 +4,9 @@ from typing import Any
 
 from litestar.stores.memory import MemoryStore
 
-
 # MemoryStore https://docs.litestar.dev/2/usage/stores.html
 global_cache = MemoryStore()
+
 
 async def cache_coroutine_result(
     key: str,

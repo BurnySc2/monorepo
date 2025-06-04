@@ -12,6 +12,7 @@ from litestar.static_files import create_static_files_router
 from litestar.template.config import TemplateConfig
 from loguru import logger
 
+from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.audiobook.book import MyAudiobookBookRoute
 from routes.audiobook.epub_upload import MyAudiobookEpubRoute
 from routes.audiobook.index import MyAudiobookIndexRoute
@@ -23,7 +24,6 @@ from routes.temp_swap_multiple import MySwapMultipleRoute
 from routes.text_to_speech import MyTTSRoute
 from routes.tts.websocket_handler import TTSWebsocketHandler
 from workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_audiobook_bucket
-from models.audiobook import AudiobookBook, AudiobookChapter
 
 load_dotenv()
 
@@ -49,6 +49,7 @@ async def startup_event():
     if STAGE == "dev":
         await AudiobookBook.create_table(if_not_exists=True)
         await AudiobookChapter.create_table(if_not_exists=True)
+
 
 def shutdown_event():
     logger.info("Bye world!")

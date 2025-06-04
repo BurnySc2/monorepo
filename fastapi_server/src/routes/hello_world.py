@@ -7,7 +7,6 @@ from loguru import logger
 
 from models.audiobook import AudiobookBook
 
-
 STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")  # pyre-fixme[9]
 
 
