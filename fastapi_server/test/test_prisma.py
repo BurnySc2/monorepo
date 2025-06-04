@@ -37,7 +37,7 @@ async def test_prisma_check_without_httpx_fixture(test_client: TestClient[Litest
     async with Prisma() as db:
         results = await db.audiobookbook.find_many(where={})
         assert len(results) == 0
-    response = test_client.get("/prisma-test")
+    response = test_client.get("/piccolo-test")
     assert response.status_code == HTTP_200_OK
     assert response.text == "prisma success"
     async with Prisma() as db:
@@ -51,7 +51,7 @@ async def test_prisma_check_with_httpx_fixture(test_client: TestClient[Litestar]
     async with Prisma() as db:
         results = await db.audiobookbook.find_many(where={})
         assert len(results) == 0
-    response = test_client.get("/prisma-test")
+    response = test_client.get("/piccolo-test")
     assert response.status_code == HTTP_200_OK
     assert response.text == "prisma success"
     async with Prisma() as db:

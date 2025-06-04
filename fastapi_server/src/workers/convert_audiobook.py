@@ -8,7 +8,6 @@ from __future__ import annotations
 import asyncio
 import io
 import os
-import re
 import time
 from contextlib import suppress
 
@@ -16,7 +15,6 @@ import arrow
 from dotenv import load_dotenv
 from loguru import logger
 from minio import Minio, S3Error
-from minio.helpers import _BUCKET_NAME_REGEX
 
 from prisma import Prisma
 from routes.audiobook.my_minio_client import (

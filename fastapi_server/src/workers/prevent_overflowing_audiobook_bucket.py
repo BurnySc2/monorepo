@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import os
-import re
 from contextlib import suppress
 
 from loguru import logger
 from minio import S3Error
-from minio.helpers import _BUCKET_NAME_REGEX
 
 from models.audiobook import AudiobookBook
 from routes.audiobook.my_minio_client import (

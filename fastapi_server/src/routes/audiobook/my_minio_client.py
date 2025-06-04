@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import base64
 import os
 import re
 from minio.helpers import _BUCKET_NAME_REGEX

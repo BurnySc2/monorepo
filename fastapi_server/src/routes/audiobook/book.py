@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import os
-import re
 from datetime import timedelta
 from pathlib import Path
 from stat import S_IFREG

@@ -1,4 +1,3 @@
-import asyncio
 import arrow
 from piccolo.columns import ForeignKey, Integer, Text, Timestamptz, Boolean, JSON
 from piccolo.table import Table
