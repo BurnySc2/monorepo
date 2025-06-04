@@ -1,11 +1,11 @@
 [project]
 name = "burny_common"
 version = "0.0.14"
-requires-python = ">=3.9, <3.13"
+requires-python = ">=3.9, <3.14"
 dependencies = ["click>=8.1.7", "loguru>=0.7.3", "paramiko>=3.5.0"]
 
 [dependency-groups]
-dev = ["pyright>=1.1.391", "pyre-check>=0.9.23", "ruff>=0.8.3"]
+dev = ["pyrefly>=0.18.0", "pyright>=1.1.391", "ruff>=0.8.3"]
 
 [tool.yapf]
 based_on_style = "pep8"
@@ -13,6 +13,9 @@ column_limit = 120
 split_arguments_when_comma_terminated = true
 dedent_closing_brackets = true
 allow_split_before_dict_value = false
+
+[tool.pyrefly]
+project_includes = ["burny_common"]
 
 [tool.ruff]
 target-version = 'py310'

@@ -7,7 +7,7 @@ WORKDIR /root/burny_common
 install-dev:
     COPY uv.lock pyproject.toml ./
     RUN uv sync --frozen --no-cache --no-install-project
-    COPY burny_common /root/burny_common/burny_common
+    COPY burny_common burny_common
 
 format:
     # Run on host system instead of inside a container
@@ -41,10 +41,9 @@ build:
     RUN uv build
 
 # Ignore errors via "# pyre-fixme[11]"
-pyre:
+pyrefly:
     FROM +install-dev
-    COPY .pyre_configuration /root/burny_common/.pyre_configuration
-    RUN uv run pyre
+    RUN uv run pyrefly check
 
 # TODO Add tests
 # pytest:
@@ -54,7 +53,7 @@ pyre:
 pre-commit:
     BUILD +format-check
     BUILD +lint
-    BUILD +pyre
+    BUILD +pyrefly
     BUILD +build
 
 all:

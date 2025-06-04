@@ -79,6 +79,7 @@ def copy_folder_to_server(
             )
             output = proc.stdout
             if output is not None:
+                # pyrefly: ignore
                 files = output.read().decode()
                 allowed_files = {(path_source_root_folder / Path(file)).absolute() for file in files.splitlines()}
 
