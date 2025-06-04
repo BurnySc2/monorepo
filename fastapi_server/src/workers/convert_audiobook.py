@@ -19,18 +19,14 @@ from minio import Minio, S3Error
 from minio.helpers import _BUCKET_NAME_REGEX
 
 from prisma import Prisma
-from routes.audiobook.schema import (
+from routes.audiobook.my_minio_client import (
+    MINIO_AUDIOBOOK_BUCKET,
     AudioSettings,
     get_chapter_combined_text,
 )
 from routes.audiobook.temp_generate_tts import generate_text_to_speech
 
 load_dotenv()
-
-# pyre-fixme[9]
-MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
-assert MINIO_AUDIOBOOK_BUCKET is not None
-assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
 
 
 # Increase this value to give converters more time to convert an audio

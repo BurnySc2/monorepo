@@ -16,12 +16,12 @@ from litestar.di import Provide
 from litestar.enums import MediaType, RequestEncodingType
 from litestar.params import Body
 from litestar.response import Stream, Template
-from minio.helpers import _BUCKET_NAME_REGEX
 from pydantic import BaseModel
 from stream_zip import ZIP_64, async_stream_zip
 
 from models.audiobook import AudiobookBook, AudiobookChapter
-from routes.audiobook.schema import (
+from routes.audiobook.my_minio_client import (
+    MINIO_AUDIOBOOK_BUCKET,
     AudioSettings,
     minio_check_if_object_exists,
     minio_client,
@@ -38,10 +38,6 @@ from routes.cookies_and_guards import (
     provide_logged_in_user,
 )
 
-# pyre-fixme[9]
-MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
-assert MINIO_AUDIOBOOK_BUCKET is not None
-assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
 
 queries_directory = Path(__file__).parents[2] / "queries"
 query_get_book = (queries_directory / "audiobook_book_metadata.sql").read_text()

@@ -10,16 +10,11 @@ from minio import S3Error
 from minio.helpers import _BUCKET_NAME_REGEX
 
 from models.audiobook import AudiobookBook
-from routes.audiobook.schema import (
+from routes.audiobook.my_minio_client import (
+    MINIO_AUDIOBOOK_BUCKET,
     hard_delete_book,
     minio_client,
 )
-
-# pyre-fixme[9]
-MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
-assert MINIO_AUDIOBOOK_BUCKET is not None
-assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
-
 
 async def minio_get_bucket_size_in_mb(bucket_name: str) -> float:
     """Returns the total size used up by all object in the buckets in bytes."""

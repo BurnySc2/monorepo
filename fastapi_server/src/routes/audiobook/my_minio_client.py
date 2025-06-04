@@ -4,6 +4,7 @@ import asyncio
 import base64
 import os
 import re
+from minio.helpers import _BUCKET_NAME_REGEX
 
 from dotenv import load_dotenv
 from minio import Minio, S3Error
@@ -11,9 +12,12 @@ from pydantic import BaseModel
 
 from models.audiobook import AudiobookBook, AudiobookChapter
 
-
 load_dotenv()
 
+# pyre-fixme[9]
+MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
+assert MINIO_AUDIOBOOK_BUCKET is not None
+assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
 
 minio_client = Minio(
     # pyre-fixme[6]
@@ -79,13 +83,16 @@ def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
 
 
 async def hard_delete_book(book_id: int) -> None:
-    minio_objects = await AudiobookChapter.select(AudiobookChapter.minio_object_name).where(
-        AudiobookChapter.book == book_id
+    minio_objects = (
+        await AudiobookChapter.select(AudiobookChapter.minio_object_name)
+        .where(AudiobookChapter.book == book_id)
+        .where(AudiobookChapter.minio_object_name != None)  # noqa: E711
     )
 
     # TODO Wrap in transaction
     # Delete minio objects
-    await asyncio.to_thread(delete_minio_objects, [i["minio_object_name"] for i in minio_objects])
+    names = [i["minio_object_name"] for i in minio_objects]
+    await asyncio.to_thread(delete_minio_objects, MINIO_AUDIOBOOK_BUCKET, names)
 
     # Delete chapters
     await AudiobookChapter.delete().where(AudiobookChapter.book == book_id)
