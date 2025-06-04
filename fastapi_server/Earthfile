@@ -49,6 +49,7 @@ lint:
     RUN uv run ruff check .
     # TODO Check sql files
     # Check yaml/yml files
+    COPY .yamllint.yml ./
     RUN uv run yamllint --format parsable .
 
 # Ignore errors via "# pyre-fixme[11]"
@@ -56,10 +57,9 @@ lint:
 # uv run pyre --output=json | uv run pyre-upgrade fixme
 # Automatically infer types with
 # uv run pyre infer -i
-pyre:
+pyrefly:
     FROM +install-dev
-    COPY .pyre_configuration .pyre_configuration
-    RUN uv run pyre
+    RUN uv run pyrefly check
 
 lintsql:
     LOCALLY
@@ -75,7 +75,7 @@ pre-commit:
     BUILD +format-check
     BUILD +lint
     BUILD +lintsql
-    BUILD +pyre
+    BUILD +pyrefly
 
 all:
     BUILD +pre-commit

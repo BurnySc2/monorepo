@@ -104,7 +104,13 @@ async def check_queued_chapters() -> None:
 
 
 async def convert_one(chapter: AudiobookChapter) -> None:
-    logger.info(f"Converting text to audio {chapter.id}...")
+    """Convert a single audiobook chapter to audio using text-to-speech.
+
+    Args:
+        chapter: The chapter to convert containing text content and audio settings
+    """
+    logger.info(f"Starting conversion for chapter {chapter.id} (book: {chapter.book_id})")
+    logger.debug(f"Audio settings: {chapter.audio_settings}")
 
     async with AudiobookConversionContext(chapter) as context:
         # Generate tts from the book
@@ -129,7 +135,12 @@ async def convert_one(chapter: AudiobookChapter) -> None:
             return
 
         # Save result to MinIO
-        minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio, len(audio.getvalue()))  # noqa: F821
+        try:
+            minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio, len(audio.getvalue()))
+            logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
+        except S3Error as e:
+            logger.error(f"Failed to save audio to MinIO: {e}")
+            raise
 
         # Save result to database
         chapter.minio_object_name = context.minio_object_name
@@ -139,9 +150,15 @@ async def convert_one(chapter: AudiobookChapter) -> None:
 
 
 async def keep_converting():
-    while 1:
-        await check_queued_chapters()
-        await asyncio.sleep(30)
+    """Main worker loop that continuously checks for and processes queued chapters."""
+    logger.info("Starting audiobook conversion worker")
+    while True:
+        try:
+            await check_queued_chapters()
+            await asyncio.sleep(30)
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Error in conversion loop: {e}")
+            await asyncio.sleep(5)  # Brief pause before retrying
 
 
 if __name__ == "__main__":
