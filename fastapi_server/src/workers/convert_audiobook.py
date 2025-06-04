@@ -103,7 +103,7 @@ async def convert_one() -> None:
     await chapter.save()
 
     # Generate tts from the book
-    audio_settings: AudioSettings = AudioSettings.model_validate(chapter.audio_settings)
+    audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
     audio: io.BytesIO = await generate_text_to_speech(
         chapter.content,
         voice=audio_settings.voice_name,
