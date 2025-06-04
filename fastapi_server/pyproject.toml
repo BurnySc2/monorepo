@@ -22,7 +22,7 @@ dependencies = [
     # Language manipulation
     "nltk>=3.9.1",
     # Database
-    "prisma>=0.15.0",
+    "piccolo[postgres]>=1.27.0",
     # Dataclasses with type validation
     "pydantic>=2.9.2",
     # PDF Parsing
