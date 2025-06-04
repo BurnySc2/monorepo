@@ -7,8 +7,6 @@ WORKDIR /root/fastapi_server
 install-dev:
     COPY uv.lock pyproject.toml ./
     RUN uv sync --frozen --no-cache --no-install-project
-    COPY prisma/* /root/fastapi_server/prisma/
-    RUN uv run --frozen prisma generate
     COPY src /root/fastapi_server/src
 
 formatsql:
@@ -60,7 +58,7 @@ lint:
 # uv run pyre infer -i
 pyre:
     FROM +install-dev
-    COPY .pyre_configuration /root/fastapi_server/.pyre_configuration
+    COPY .pyre_configuration .pyre_configuration
     RUN uv run pyre
 
 lintsql:

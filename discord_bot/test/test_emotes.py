@@ -9,6 +9,9 @@ from piccolo.query.methods.objects import Objects
 
 from commands.public_emotes import TOP_EMOTE_LIMIT, public_count_emotes, public_count_emotes_parser
 from models import DiscordMessage
+from test.db_helper import empty_database
+
+_empty_database = empty_database
 
 
 @given(
@@ -60,7 +63,7 @@ def fake_get_emoji(value: int) -> KnownCustomEmoji:
 
 
 @pytest.mark.asyncio
-async def test_public_count_emotes():
+async def test_public_count_emotes(empty_database):
     fake_bot = Mock()
     fake_bot.cache.get_emoji = fake_get_emoji
     fake_event = Mock()
@@ -68,20 +71,21 @@ async def test_public_count_emotes():
     fake_event.author_id = 456
     fake_event.author.username = "some_username"
     message = "--days 5"
-    data = {
-        "what": "<:some_emote:123456789>",
-        "guild_id": 0,
-        "channel_id": 0,
-        "author_id": 0,
-        "message_id": 0,
-        "who": "",
-        "when": arrow.utcnow().datetime,
-    }
+    data = [
+        {
+            "what": "<:some_emote:123456789>",
+            "guild_id": 123,
+            "channel_id": 0,
+            "author_id": 456,
+            "message_id": 0,
+            "who": "",
+            "when": arrow.utcnow().datetime,
+        }
+    ]
+    for row in data:
+        await DiscordMessage(**row).save()
 
-    with patch.object(Objects, "run", AsyncMock()) as execute:
-        # pyrefly: ignore
-        execute.return_value = [DiscordMessage(**data)]
-        result = await public_count_emotes(fake_bot, fake_event, message)
+    result = await public_count_emotes(fake_bot, fake_event, message)
 
     assert isinstance(result, Embed)
     assert result.title == f"{fake_event.author.username}'s top {TOP_EMOTE_LIMIT} used emotes"

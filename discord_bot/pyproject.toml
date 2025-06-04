@@ -25,6 +25,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "hypothesis>=6.122.3",
+    "piccolo[sqlite]>=1.27.0",
     "pyrefly>=0.18.0",
     "pytest>=8.3.4",
     "pytest-asyncio>=0.25.0",
