@@ -1,12 +1,11 @@
 FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
 
 # Install dependencies
-COPY uv.lock pyproject.toml /root/discord_bot/
-
 WORKDIR /root/discord_bot
+COPY uv.lock pyproject.toml ./
 RUN uv sync --no-dev --frozen --no-cache --no-install-project
 
-COPY src /root/discord_bot/src
+COPY src src
 
 RUN rm -r \
     /var/cache
