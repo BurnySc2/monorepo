@@ -30,6 +30,7 @@ SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE $1
 """,
         table_name,
     )
+    # pyrefly: ignore
     return data.get("exists")
 
 
@@ -78,6 +79,7 @@ VALUES ($1, $2, $3);
             chat_message,
         )
         # Assume increasing ids
+        # pyrefly: ignore
         row: Record = await conn.fetchrow(
             f"""
 SELECT id, time_stamp, message_author, chat_message FROM {TABLE_NAME}

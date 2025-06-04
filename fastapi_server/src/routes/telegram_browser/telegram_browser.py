@@ -61,6 +61,7 @@ RESULT_COLUMNS = {
 
 async def all_channels_cache() -> list[TelegramChannel]:
     all_channels_query = (
+        # pyrefly: ignore
         await TelegramChannel.objects()
         .where(TelegramChannel.channel_username != None)  # noqa: E711
         .order_by(TelegramChannel.channel_username)
@@ -168,59 +169,79 @@ class MyTelegramBrowserRoute(Controller):
         active_columns_dict, disabled_columns_dict = get_actived_and_disabled_columns(active_columns_str)
 
         query = TelegramMessage.objects(TelegramMessage.channel)
+        # SEARCH TEXT
         if data.search_text != "":
-            # SEARCH TEXT
+            # pyrefly: ignore
             query = query.where(TelegramMessage.message_text.ilike(data.search_text))
+        # CHANNEL NAME
         if data.channel_name:
-            # CHANNEL NAME
+            # pyrefly: ignore
             query = query.where(TelegramMessage.channel.channel_username == data.channel_name)
         # DATE RANGE
         if data.datetime_min != "":
+            # pyrefly: ignore
             query = query.where(arrow.get(data.datetime_min).datetime <= TelegramMessage.message_date)
         if data.datetime_max != "":
+            # pyrefly: ignore
             query = query.where(TelegramMessage.message_date <= arrow.get(data.datetime_max).datetime)
         # AMOUNT OF REACTIONS
         if data.reactions_min != "":
+            # pyrefly: ignore
             query = query.where(data.reactions_min <= TelegramMessage.amount_of_reactions)
         if data.reactions_max != "":
+            # pyrefly: ignore
             query = query.where(TelegramMessage.amount_of_reactions <= data.reactions_max)
         # AMOUNT OF COMMENTS
         if data.comments_min != "":
+            # pyrefly: ignore
             query = query.where(data.comments_min <= TelegramMessage.amount_of_comments)
         if data.comments_max != "":
+            # pyrefly: ignore
             query = query.where(TelegramMessage.amount_of_comments <= data.comments_max)
         # ATTACHMENT
         # HAS FILE, TODO change do select: must have file, must not have file, either
         if data.must_have_file:
+            # pyrefly: ignore
             query = query.where(TelegramMessage.status == Status.HasFile)
         else:
+            # pyrefly: ignore
             query = query.where(TelegramMessage.status == Status.NoFile)
         # FILE EXTENSION
         if data.file_extension != "":
+            # pyrefly: ignore
             query = query.where(TelegramMessage.file_extension == data.file_extension)
         # FILE DURATION
         if data.file_duration_min != "":
+            # pyrefly: ignore
             query = query.where(data.file_duration_min <= TelegramMessage.file_duration_seconds)
         if data.file_duration_max != "":
+            # pyrefly: ignore
             query = query.where(TelegramMessage.file_duration_seconds <= data.file_duration_max)
         # FILE SIZE
         if data.file_size_min != "":
+            # pyrefly: ignore
             query = query.where(data.file_size_min <= TelegramMessage.file_size_bytes)
         if data.file_size_max != "":
+            # pyrefly: ignore
             query = query.where(TelegramMessage.file_size_bytes <= data.file_size_max)
         # IMAGE SIZE WIDTH
         if data.file_image_width_min != "":
+            # pyrefly: ignore
             query = query.where(data.file_image_width_min <= TelegramMessage.file_width)
         if data.file_image_width_max != "":
+            # pyrefly: ignore
             query = query.where(TelegramMessage.file_width <= data.file_image_width_max)
         # IMAGE SIZE HEIGHT
         if data.file_image_height_min != "":
+            # pyrefly: ignore
             query = query.where(data.file_image_height_min <= TelegramMessage.file_height)
         if data.file_image_height_max != "":
+            # pyrefly: ignore
             query = query.where(TelegramMessage.file_height <= data.file_image_height_max)
 
         # TODO Pagination
         # query.offset()
+        # pyrefly: ignore
         query = query.limit(200)
         # TODO How to order search? Click on table columns?
         # order={""},
@@ -273,6 +294,7 @@ class MyTelegramBrowserRoute(Controller):
         message_id: int,
     ) -> Template:
         """In database, set file to queued"""
+        # pyrefly: ignore
         item = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
         if item is None:
             return
@@ -296,6 +318,7 @@ class MyTelegramBrowserRoute(Controller):
         message_id: int,
     ) -> Template | Response:
         """Check if file has been downloaded"""
+        # pyrefly: ignore
         item = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
         if item is None:
             return
@@ -324,6 +347,7 @@ class MyTelegramBrowserRoute(Controller):
         Return <video> element for videos, <audio> for audio, <img> for image
         Return <object> or <embed> for other mime types
         """
+        # pyrefly: ignore
         message = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
         if message is None:
             raise HTTPException(detail="Message not found", status_code=400)
@@ -331,6 +355,7 @@ class MyTelegramBrowserRoute(Controller):
             raise HTTPException(detail="File has not been downloaded.", status_code=400)
         minio_url = await asyncio.to_thread(
             minio_client.presigned_get_object,
+            # pyrefly: ignore
             BUCKET_NAME,
             message.minio_object_name,
             expires=timedelta(seconds=(message.file_duration_seconds or 0) + 5 * 60),
@@ -349,14 +374,18 @@ class MyTelegramBrowserRoute(Controller):
         message_id: int,
     ) -> ClientRedirect | None:
         """Allow the user to download the file to file system"""
-
+        # pyrefly: ignore
         message = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
         if message is None:
             raise HTTPException(detail="Message not found", status_code=400)
         if message.minio_object_name is None:
             return
         minio_url = await asyncio.to_thread(
-            minio_client.presigned_get_object, BUCKET_NAME, message.minio_object_name, expires=timedelta(hours=1)
+            minio_client.presigned_get_object,
+            # pyrefly: ignore
+            BUCKET_NAME,
+            message.minio_object_name,
+            expires=timedelta(hours=1),
         )
         return ClientRedirect(redirect_to=minio_url)
 
@@ -364,13 +393,14 @@ class MyTelegramBrowserRoute(Controller):
     async def delete_file(
         self,
         message_id: int,
-    ) -> None:
+    ) -> Template:
         """Delete file in database and in minio"""
-
+        # pyrefly: ignore
         message = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
         if message is None:
             raise HTTPException(detail="Message not found", status_code=400)
         if message.minio_object_name is not None:
+            # pyrefly: ignore
             asyncio.to_thread(minio_client.remove_object, BUCKET_NAME, message.minio_object_name)
         message.status = Status.HasFile
         message.downloading_retry_attempt = 0

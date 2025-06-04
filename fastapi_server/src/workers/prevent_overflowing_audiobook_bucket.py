@@ -19,8 +19,10 @@ async def minio_get_bucket_size_in_mb(bucket_name: str) -> float:
     """Returns the total size used up by all object in the buckets in bytes."""
 
     def _minio_get_bucket_size_in_mb_sync(bucket_name: str) -> float:
-        bucket_size_used_in_mb = 0
+        bucket_size_used_in_mb = 0.0
         for object in minio_client.list_objects(bucket_name, recursive=True):
+            if object.size is None:
+                continue
             object_size_in_mb = object.size / 2**20
             bucket_size_used_in_mb += object_size_in_mb
         return bucket_size_used_in_mb
@@ -39,6 +41,7 @@ async def prevent_overflowing_audiobook_bucket() -> None:
         minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(MINIO_AUDIOBOOK_BUCKET)
         while minio_audiobooks_size_used_mb > minio_audiobook_max_size_mb:
             # Delete book and minio data
+            # pyrefly: ignore
             oldest_book = await AudiobookBook.objects().order_by(AudiobookBook.upload_date).first()
             if oldest_book is None:
                 break

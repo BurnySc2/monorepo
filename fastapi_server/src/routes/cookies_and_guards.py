@@ -281,7 +281,9 @@ async def owns_book_guard(
     assert isinstance(logged_in_user.name, str), logged_in_user.name
     book_id: int = connection.path_params.get("book_id") or int(connection.query_params["book_id"])
     assert isinstance(book_id, int), book_id
+    # pyrefly: ignore
     count = await AudiobookBook.count().where(
+        # pyrefly: ignore
         (AudiobookBook.id == book_id) & (AudiobookBook.uploaded_by == logged_in_user.db_name)
     )
     if count == 0:

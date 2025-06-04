@@ -60,6 +60,7 @@ class MyAudiobookEpubRoute(Controller):
 
         # If not present in database, add book entry
         book = (
+            # pyrefly: ignore
             await AudiobookBook.objects()
             .where(
                 (AudiobookBook.uploaded_by == logged_in_user.db_name)
@@ -101,4 +102,5 @@ class MyAudiobookEpubRoute(Controller):
                 for chapter in chapters
             ]
         )
+        # pyrefly: ignore
         return ClientRedirect(f"/audiobook/book/{book.id}")

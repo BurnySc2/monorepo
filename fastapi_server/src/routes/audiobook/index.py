@@ -31,6 +31,7 @@ class MyAudiobookIndexRoute(Controller):
     ) -> Template | str:
         # Book Title, Book Author, chapters, Uploaded Date, delete button
         books = (
+            # pyrefly: ignore
             await AudiobookBook.objects()
             .where(AudiobookBook.uploaded_by == logged_in_user.db_name)
             .order_by(AudiobookBook.upload_date, ascending=False)

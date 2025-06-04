@@ -44,10 +44,12 @@ class MyWordsRoute(Controller):
     @property
     def nouns(self) -> list[Synset]:
         if self.nouns_cache is None:
+            # pyrefly: ignore
             self.nouns_cache = list(wn.all_synsets("n", lang="eng"))
         return self.nouns_cache
 
     async def _get_random_nouns(self, number: int = 30) -> str:
+        # pyrefly: ignore
         words = [s.name().split(".")[0] for s in random.choices(self.nouns, k=number)]
         return "\n".join(words)
 

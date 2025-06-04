@@ -83,6 +83,7 @@ def delete_minio_objects(bucket_name: str, object_names: list[str]) -> None:
 
 async def hard_delete_book(book_id: int) -> None:
     minio_objects = (
+        # pyrefly: ignore
         await AudiobookChapter.select(AudiobookChapter.minio_object_name)
         .where(AudiobookChapter.book == book_id)
         .where(AudiobookChapter.minio_object_name != None)  # noqa: E711
@@ -94,7 +95,9 @@ async def hard_delete_book(book_id: int) -> None:
     await asyncio.to_thread(delete_minio_objects, MINIO_AUDIOBOOK_BUCKET, names)
 
     # Delete chapters
+    # pyrefly: ignore
     await AudiobookChapter.delete().where(AudiobookChapter.book == book_id)
 
     # Delete book
+    # pyrefly: ignore
     await AudiobookBook.delete().where(AudiobookBook.id == book_id)

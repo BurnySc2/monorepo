@@ -58,6 +58,7 @@ async def convert_one() -> None:
     )
 
     # Abort if queue empty
+    # pyrefly: ignore
     count_in_queue = await AudiobookChapter.count().where(
         (AudiobookChapter.minio_object_name != None)  # noqa: E711
         & (AudiobookChapter.queued != None)  # noqa: E711
@@ -79,6 +80,7 @@ async def convert_one() -> None:
 
     # Get first book that is waiting to be converted
     chapter = (
+        # pyrefly: ignore
         await AudiobookChapter.objects()
         .where(
             (AudiobookChapter.minio_object_name != None)  # noqa: E711
@@ -111,6 +113,7 @@ async def convert_one() -> None:
     )
 
     # Get data from db, user may have clicked "delete" button on book or chapter
+    # pyrefly: ignore
     chapter2 = await AudiobookChapter.objects().where(AudiobookChapter.id == chapter.id).first()
     if chapter2 is None:
         # Book was deleted

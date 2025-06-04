@@ -13,6 +13,7 @@ from websockets import ConnectionClosedError, ConnectionClosedOK
 from routes.tts.generate_tts import Voices, generate_tts
 from routes.tts.irc_bot_async import ALLOWED_NAME_LANGUAGES, AsyncIrcBot
 
+# pyrefly: ignore
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
 
 
@@ -129,11 +130,13 @@ class TTSQueueRunner:
                 continue
 
             # No new items
+            # pyrefly: ignore
             if self.text_queue.empty():
                 await asyncio.sleep(0.1)
                 continue
 
             # Generate tts
+            # pyrefly: ignore
             voice, text = await self.text_queue.get()
             logger.info(f"Generating tts: {self.stream_name}: ({voice}) {text}")
 
@@ -146,6 +149,7 @@ class TTSQueueRunner:
                 logger.error(e)
                 continue
             logger.info(f"Sending generated tts to clients: {self.stream_name}: ({voice}) {text}")
+            # pyrefly: ignore
             self.text_queue.task_done()
             tasks = [
                 asyncio.create_task(
@@ -184,6 +188,7 @@ class TTSQueueRunner:
 class TTSWebsocketHandler(WebsocketListener):
     path = "/tts-ws/{stream_name: str}/{read_name_lang: str}"
 
+    # pyrefly: ignore
     async def on_accept(self, socket: WebSocket, stream_name: str, read_name_lang: Literal["none", "en", "de"]) -> None:
         """
         On new ws-connection:
@@ -208,6 +213,7 @@ class TTSWebsocketHandler(WebsocketListener):
             await TTSQueue.twitch_irc_bot.join([f"#{stream_name}"])
             TTSQueue.joined_twitch_channels.add(stream_name)
 
+    # pyrefly: ignore
     async def on_disconnect(
         self, socket: WebSocket, stream_name: str, read_name_lang: Literal["none", "en", "de"]
     ) -> None:

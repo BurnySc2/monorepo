@@ -103,6 +103,7 @@ class Voices(enum.Enum):
     VARSITY = "en_female_pansino"
 
 
+# pyrefly: ignore
 for voice in Voices:
     assert voice.name == voice.name.upper(), voice.name
 

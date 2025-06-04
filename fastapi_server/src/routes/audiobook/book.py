@@ -184,6 +184,7 @@ class MyAudiobookBookRoute(Controller):
 
         # Queue the chapter to the database
         chapter = (
+            # pyrefly: ignore
             await AudiobookChapter.objects()
             .where((AudiobookChapter.book == book_id) & (AudiobookChapter.chapter_number == chapter_number))
             .first()
@@ -305,7 +306,9 @@ class MyAudiobookBookRoute(Controller):
         create zip from all chapters, make download available to user
         """
         book = (
+            # pyrefly: ignore
             await AudiobookBook.objects()
+            # pyrefly: ignore
             .where((AudiobookBook.id == book_id) & (AudiobookBook.uploaded_by == logged_in_user.db_name))
             .first()
         )
@@ -314,8 +317,9 @@ class MyAudiobookBookRoute(Controller):
         # Wait for book audio to be generated
         total_count = book.chapter_count
         for _ in range(60):
+            # pyrefly: ignore
             done_count: int = await AudiobookChapter.count().where(
-                (AudiobookChapter.book == book_id) & (AudiobookChapter.minio_object_name != None)
+                (AudiobookChapter.book == book_id) & (AudiobookChapter.minio_object_name != None)  # noqa: E711
             )
             if done_count >= total_count:
                 break
@@ -328,12 +332,15 @@ class MyAudiobookBookRoute(Controller):
         normalized_book_title = f"{normalize_title(book.book_title)}"[:150].strip()
 
         book = (
+            # pyrefly: ignore
             await AudiobookBook.objects()
+            # pyrefly: ignore
             .where((AudiobookBook.id == book_id) & (AudiobookBook.uploaded_by == logged_in_user.db_name))
             .first()
         )
         chapters = (
             await AudiobookChapter.objects()
+            # pyrefly: ignore
             .where((AudiobookChapter.book == book_id) & (AudiobookChapter.book.uploaded_by == logged_in_user.db_name))
             .order_by(AudiobookChapter.chapter_number)
         )
@@ -413,6 +420,7 @@ class MyAudiobookBookRoute(Controller):
         Remove generated audio from db and .mp3 from minio
         """
         chapter = (
+            # pyrefly: ignore
             await AudiobookChapter.objects()
             .where((AudiobookChapter.book == book_id) & (AudiobookChapter.chapter_number == chapter_number))
             .first()

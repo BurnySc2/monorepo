@@ -32,6 +32,7 @@ class TTSData(BaseModel):
 
 class MyTTSRoute(Controller):
     path = "/tts"
+    # pyrefly: ignore
     VOICES_LIST: list[str] = [v.name for v in Voices]
 
     @get("/")
@@ -54,6 +55,7 @@ class MyTTSRoute(Controller):
         self,
         data: Annotated[TTSData, Body(media_type=RequestEncodingType.URL_ENCODED)],
     ) -> Template:
+        # pyrefly: ignore
         mp3_b64_data, _ = await generate_tts(Voices[data.tts_voice], data.tts_text)
         """
         Returns a template which allows you to create an audio from text

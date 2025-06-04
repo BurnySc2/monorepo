@@ -12,8 +12,10 @@ from routes.tts.generate_tts import Voices
 if TYPE_CHECKING:
     from routes.tts.websocket_handler import TTSQueue
 
+# pyrefly: ignore
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
 
+# pyrefly: ignore
 ALLOWED_NAME_LANGUAGES: dict[str, tuple[Voices | None, str | None]] = {
     # {str: (Voice, suffix 'says')}
     "none": (None, None),
@@ -122,7 +124,9 @@ class AsyncIrcBot:
         if voice_from_chat not in VOICE_NAMES_LOWERCASE:
             return
         selected_voice: Voices | None = None
+        # pyrefly: ignore
         for voice in Voices:
+            # pyrefly: ignore
             if voice.name.lower() == voice_from_chat:
                 selected_voice = voice
                 break
@@ -136,11 +140,13 @@ class AsyncIrcBot:
         # Put voice and text into queue
         for read_name_lang, (voice, name_suffix) in ALLOWED_NAME_LANGUAGES.items():
             assert self.tts_queue is not None
+            # pyrefly: ignore
             if self.tts_queue.is_connected(channel_name, read_name_lang):
                 if voice is not None:
                     # Put "burnysc2 says:"
                     # logger.info(f"{read_name_lang} {voice} {name_suffix}")
                     assert self.tts_queue is not None
+                    # pyrefly: ignore
                     await self.tts_queue.add_text_queue(
                         channel_name, read_name_lang, voice, f"{display_name} {name_suffix}:"
                     )
@@ -148,6 +154,7 @@ class AsyncIrcBot:
                 # Put text into queue
                 logger.info(f"{channel_name}: {read_name_lang} says: {text_from_chat}")
                 assert self.tts_queue is not None
+                # pyrefly: ignore
                 await self.tts_queue.add_text_queue(channel_name, read_name_lang, selected_voice, text_from_chat)
 
 
