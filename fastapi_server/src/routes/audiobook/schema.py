@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 from minio import Minio, S3Error
 from pydantic import BaseModel
 
-from prisma import models
-from routes.caches import get_db
 
 load_dotenv()
 

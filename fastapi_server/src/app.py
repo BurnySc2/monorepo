@@ -23,6 +23,7 @@ from routes.temp_swap_multiple import MySwapMultipleRoute
 from routes.text_to_speech import MyTTSRoute
 from routes.tts.websocket_handler import TTSWebsocketHandler
 from workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_audiobook_bucket
+from models.audiobook import AudiobookBook, AudiobookChapter
 
 load_dotenv()
 
@@ -44,6 +45,10 @@ async def startup_event():
     asyncio.create_task(prevent_overflowing_audiobook_bucket())
     logger.info(f"Startup took {time.time() - t0:.2} seconds")
 
+    # Create tables
+    if STAGE == "dev":
+        await AudiobookBook.create_table(if_not_exists=True)
+        await AudiobookChapter.create_table(if_not_exists=True)
 
 def shutdown_event():
     logger.info("Bye world!")

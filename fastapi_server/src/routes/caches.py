@@ -7,37 +7,9 @@ from typing import Any
 
 from litestar.stores.memory import MemoryStore
 
-from prisma import Prisma
 
 # MemoryStore https://docs.litestar.dev/2/usage/stores.html
 global_cache = MemoryStore()
-
-_db: Prisma | None = None
-_lock = asyncio.Lock()
-
-
-@asynccontextmanager
-async def get_db() -> AsyncGenerator[Prisma, None]:
-    # https://github.com/RobertCraigie/prisma-client-py/issues/103
-    # TODO What if connection is interrupted?
-    global _db
-    if _db is None:
-        async with _lock:
-            if _db is None:
-                db = Prisma()
-                await db.connect()
-                _db = db
-    yield _db
-
-
-# TODO Fix me, can't seem to keep the connection open (event loop closed)
-if os.getenv("STAGE") == "test":
-
-    @asynccontextmanager
-    async def get_db() -> AsyncGenerator[Prisma, None]:
-        async with Prisma() as db:
-            yield db
-
 
 async def cache_coroutine_result(
     key: str,

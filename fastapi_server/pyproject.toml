@@ -106,7 +106,8 @@ sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
 exclude_rules = "CP02,AL09,RF04"
 
 [tool.sqlfluff.templater.placeholder]
-param_style = "question_mark"
+# https://docs.sqlfluff.com/en/3.3.0/configuration/templating/placeholder.html
+param_style = "ampersand" # { }
 
 [tool.sqlfluff.indentation]
 indented_joins = false

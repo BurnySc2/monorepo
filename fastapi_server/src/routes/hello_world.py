@@ -5,7 +5,6 @@ from typing import Literal
 from litestar import Controller, MediaType, get
 from loguru import logger
 
-from prisma import Prisma
 
 STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")  # pyre-fixme[9]
 

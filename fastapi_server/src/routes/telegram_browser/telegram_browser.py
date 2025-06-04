@@ -24,9 +24,7 @@ from minio import Minio
 from minio.helpers import _BUCKET_NAME_REGEX
 from pydantic import BaseModel, PositiveInt
 
-from prisma import models
-from prisma.enums import Status
-from routes.caches import cache_coroutine_result, get_db
+from routes.caches import cache_coroutine_result
 from routes.telegram_browser.cookies_and_guards import is_logged_in_allowed_accounts_guard
 
 minio_client = Minio(

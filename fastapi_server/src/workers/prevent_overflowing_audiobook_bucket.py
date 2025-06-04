@@ -9,11 +9,9 @@ from loguru import logger
 from minio import S3Error
 from minio.helpers import _BUCKET_NAME_REGEX
 
-from prisma import models
 from routes.audiobook.schema import (
     minio_client,
 )
-from routes.caches import get_db
 
 # pyre-fixme[9]
 MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
