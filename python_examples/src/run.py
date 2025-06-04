@@ -2,7 +2,6 @@ import asyncio
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional
 
 from loguru import logger
 
@@ -23,7 +22,7 @@ bot_file_path = current_folder / "main.py"
 
 class BotRunner:
     def __init__(self):
-        self.bot_process: Optional[subprocess.Popen] = None
+        self.bot_process: subprocess.Popen | None = None
 
     def __enter__(self):
         return self
