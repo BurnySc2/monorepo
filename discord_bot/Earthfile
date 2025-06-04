@@ -7,9 +7,7 @@ WORKDIR /root/discord_bot
 install-dev:
     COPY uv.lock pyproject.toml ./
     RUN uv sync --frozen --no-cache --no-install-project
-    COPY prisma/* /root/discord_bot/prisma/
-    RUN uv run --frozen prisma generate
-    COPY src /root/discord_bot/src
+    COPY src ./src
 
 format:
     # Run on host system instead of inside a container
@@ -37,20 +35,20 @@ lint:
     FROM +install-dev
     RUN uv run ruff check .
 
-# Ignore errors via "# pyre-fixme[11]"
-pyre:
+# Ignore errors via "# pyrefly: ignore"
+pyrefly:
     FROM +install-dev
-    COPY .pyre_configuration /root/fastapi_server/.pyre_configuration
-    RUN uv run pyre
+    RUN uv run pyrefly check
 
 pytest:
     FROM +install-dev
-    RUN poetry run pytest
+    COPY test test
+    RUN uv run python -m pytest test
 
 pre-commit:
     BUILD +format-check
     BUILD +lint
-    BUILD +pyre
+    BUILD +pyrefly
 
 all:
     BUILD +pre-commit

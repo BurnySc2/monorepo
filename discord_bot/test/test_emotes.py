@@ -1,13 +1,16 @@
-from typing import Optional
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import Mock
 
+import arrow
 import pytest
-from hikari import Embed, KnownCustomEmoji, Snowflake
+from hikari import Embed, KnownCustomEmoji, Snowflake  # pyrefly: ignore
 from hypothesis import given
 from hypothesis import strategies as st
-from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 
 from commands.public_emotes import TOP_EMOTE_LIMIT, public_count_emotes, public_count_emotes_parser
+from models import DiscordMessage
+from test.db_helper import empty_database  # pyrefly: ignore
+
+_empty_database = empty_database
 
 
 @given(
@@ -16,7 +19,7 @@ from commands.public_emotes import TOP_EMOTE_LIMIT, public_count_emotes, public_
     st.booleans(),
     st.one_of(st.none(), st.floats(min_value=0, max_value=1e6, allow_nan=False, allow_infinity=False)),
 )
-def test_count_emotes_parser(all_: bool, nostatic: bool, noanimated: bool, days: Optional[int]):
+def test_count_emotes_parser(all_: bool, nostatic: bool, noanimated: bool, days: int | None):
     params = []
     if all_:
         params.append("--all")
@@ -59,7 +62,7 @@ def fake_get_emoji(value: int) -> KnownCustomEmoji:
 
 
 @pytest.mark.asyncio
-async def test_public_count_emotes():
+async def test_public_count_emotes(empty_database):
     fake_bot = Mock()
     fake_bot.cache.get_emoji = fake_get_emoji
     fake_event = Mock()
@@ -67,11 +70,22 @@ async def test_public_count_emotes():
     fake_event.author_id = 456
     fake_event.author.username = "some_username"
     message = "--days 5"
-    data = [{"what": "<:some_emote:123456789>"}, {"what": "<:some_emote:123456789>"}]
+    data = [
+        {
+            "what": "<:some_emote:123456789>",
+            "guild_id": 123,
+            "channel_id": 0,
+            "author_id": 456,
+            "message_id": 0,
+            "who": "",
+            "when": arrow.utcnow().datetime,
+        }
+    ]
+    for row in data:
+        # pyrefly: ignore
+        await DiscordMessage(**row).save()
 
-    with patch.object(AsyncSelectRequestBuilder, "execute", AsyncMock()) as execute:
-        execute.return_value = APIResponse(data=data)
-        result = await public_count_emotes(fake_bot, fake_event, message)
+    result = await public_count_emotes(fake_bot, fake_event, message)
 
     assert isinstance(result, Embed)
     assert result.title == f"{fake_event.author.username}'s top {TOP_EMOTE_LIMIT} used emotes"

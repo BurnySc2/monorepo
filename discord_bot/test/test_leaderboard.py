@@ -1,9 +1,9 @@
 from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
-from postgrest import APIResponse, AsyncSelectRequestBuilder  # pyre-fixme[21]
 
 from commands.public_leaderboard import public_leaderboard
+from models import DiscordMessage
 
 
 @pytest.mark.asyncio
@@ -18,8 +18,8 @@ async def test_public_leaderboard():
     message = ""
     data = [{"guild_id": 123, "author_id": 456, "count": 123456789}]
 
-    with patch.object(AsyncSelectRequestBuilder, "execute", AsyncMock()) as execute:
-        execute.return_value = APIResponse(data=data)
+    with patch.object(DiscordMessage, "raw", AsyncMock()) as execute:
+        execute.return_value = data
         result = await public_leaderboard(fake_bot, fake_event, message)
 
     assert isinstance(result, str)

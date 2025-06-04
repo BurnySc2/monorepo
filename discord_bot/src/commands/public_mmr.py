@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 
 import aiohttp
-from hikari import GatewayBot, GuildMessageCreateEvent
+from hikari import GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 
 # http://zetcode.com/python/prettytable/
 from prettytable import PrettyTable  # pyre-fixme[21]
@@ -115,7 +115,7 @@ async def public_mmr(
             fields = ["S-R", "MMR", "Games", "Name"]
             parsed_results: list[Sc2LadderResult] = []
             for api_result in results:
-                parsed_player_data = PlayerData.parse_obj(api_result)
+                parsed_player_data = PlayerData.model_validate(api_result)
                 result_object: Sc2LadderResult = Sc2LadderResult.from_api_result(parsed_player_data)
                 parsed_results.append(result_object)
             parsed_results.sort(key=lambda result: (result.mmr, result.rating_max), reverse=True)
@@ -142,7 +142,7 @@ async def main():
         url = "https://www.nephest.com/sc2/api/characters?name=maru"
         response = await session.get(url)
         data_json = await response.json()
-        data_parsed = [PlayerData.parse_obj(item) for item in data_json]
+        data_parsed = [PlayerData.model_validate(item) for item in data_json]
         print(data_parsed)
 
 

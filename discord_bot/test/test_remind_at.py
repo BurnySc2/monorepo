@@ -49,7 +49,7 @@ def create_date_time_string(_year: int, _month: int, _day: int, _hour: int, _min
     st.text(min_size=1),
 )
 @pytest.mark.asyncio
-async def test_parsing_date_and_time_from_message_success(_year, _month, _day, _hour, _minute, _second, _message):
+async def test_parsing_date_and_time_from_message_success(_year, _month, _day, _hour, _minute, _second, _message: str):
     # Dont care about empty strings, or just space or just new line characters
     if not _message.strip():
         return
@@ -58,6 +58,7 @@ async def test_parsing_date_and_time_from_message_success(_year, _month, _day, _
     date_time = create_date_time_string(_year, _month, _day, _hour, _minute, _second)
     my_message = f"{date_time} {_message}"
     result = await r._parse_date_and_time_from_message(my_message)
+    assert result is not None
 
     assert isinstance(result[0], arrow.Arrow)
     assert result[1] == _message.strip()

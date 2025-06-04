@@ -3,10 +3,10 @@ from csv import DictReader
 from pathlib import Path
 
 import arrow
-from hikari import GatewayBot, GuildMessageCreateEvent
+from hikari import GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 from loguru import logger
 
-from cache import get_db
+from models import DiscordQuote
 
 
 async def public_twss(
@@ -26,15 +26,15 @@ async def get_random_twss_quote(server_id: int) -> str | None:
     # <YYYY-MM-DD> <Name>: <Message>
     query = """
 SELECT * FROM discord_quote
-WHERE guild_id = $1
+WHERE guild_id = {}
 ORDER BY RANDOM()
 LIMIT 1;
 """
-    async with get_db() as db:
-        quote = await db.discordquote.query_first(query, server_id)
-        if quote is None:
-            return None
-    return f'{quote.when.strftime("%Y-%m-%d")} {quote.who}: {quote.what}'
+    quotes: list[DiscordQuote] = await DiscordQuote.raw(query, server_id)
+    if len(quotes) == 0:
+        return None
+    quote = quotes[0]
+    return f"{quote.when.strftime('%Y-%m-%d')} {quote.who}: {quote.what}"
 
 
 async def main() -> None:
@@ -53,29 +53,26 @@ async def load_csv_to_postgres() -> None:
         data = DictReader(f.readlines())
 
     # Don't add duplicates
-    async with get_db() as db:
-        existing_quotes = await db.discordquote.find_many(where={})
-        message_ids = {message.message_id for message in existing_quotes}
+    existing_quotes = await DiscordQuote.select(DiscordQuote.message_id)
+    message_ids = {message["message_id"] for message in existing_quotes}
 
-        for row in data:
-            message_id = int(row["message_id"])
-            time_arrow = arrow.get(row["when"])
-            # Add quote to db
-            if message_id in message_ids:
-                continue
+    for row in data:
+        message_id = int(row["message_id"])
+        time_arrow = arrow.get(row["when"])
+        # Add quote to db
+        if message_id in message_ids:
+            continue
 
-            await db.discordquote.create(
-                data={
-                    "message_id": message_id,
-                    "guild_id": int(row["guild_id"]),
-                    "channel_id": int(row["message_id"]),
-                    "author_id": int(row["author_id"]),
-                    "who": row["who"],
-                    "when": time_arrow.datetime,
-                    "what": row["what"],
-                    "emoji_name": row["emoji_name"],
-                }
-            )
+        await DiscordQuote(
+            message_id=message_id,
+            guild_id=int(row["guild_id"]),
+            channel_id=int(row["message_id"]),
+            author_id=int(row["author_id"]),
+            who=row["who"],
+            when=time_arrow.datetime,
+            what=row["what"],
+            emoji_name=row["emoji_name"],
+        ).save()
 
 
 if __name__ == "__main__":

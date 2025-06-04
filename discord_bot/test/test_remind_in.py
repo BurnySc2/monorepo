@@ -21,6 +21,7 @@ def create_time_shift_string(_day, _hour, _minute, _second):
             # Random use of "6 days" or "6days"
             space_characer = random.choice(space)
             time_string = random.choice(time_strings)
+            # pyrefly: ignore
             shift_list.append(f"{time}{space_characer}{time_string}")
             # Sometimes insert a space character after "6days"
             if random.choice(space):
@@ -48,7 +49,7 @@ def create_time_shift_string(_day, _hour, _minute, _second):
     st.text(min_size=1),
 )
 @pytest.mark.asyncio
-async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, _second, _message):
+async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, _second, _message: str):
     # Dont care about empty strings, or just space or just new line characters
     if not _message.strip():
         return
@@ -61,6 +62,7 @@ async def test_parsing_date_and_time_from_message_success(_day, _hour, _minute, 
     time_shift = create_time_shift_string(_day, _hour, _minute, _second)
     my_message = f"{time_shift} {_message}"
     result = await r._parse_time_shift_from_message(my_message)
+    assert result is not None
 
     assert isinstance(result[0], arrow.Arrow)
     assert result[1] == _message.strip()

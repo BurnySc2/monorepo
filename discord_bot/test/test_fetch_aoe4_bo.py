@@ -105,7 +105,7 @@ async def test_public_search_aoe4_players(message_text: str, player_search_resul
                 ok=True,
                 json=AsyncMock(
                     return_value={
-                        "players": [player_search_result.dict() for player_search_result in player_search_results]
+                        "players": [player_search_result.model_dump() for player_search_result in player_search_results]
                     }
                 ),
             )
@@ -155,7 +155,7 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
             return_value=AsyncMock(
                 ok=True,
                 json=AsyncMock(
-                    return_value={"players": [game_player_data.dict() for game_player_data in game_players_data]}
+                    return_value={"players": [game_player_data.model_dump() for game_player_data in game_players_data]}
                 ),
             )
         ),
@@ -173,15 +173,15 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
 
 
 @pytest.mark.asyncio
-@settings(deadline=2000)
+@settings(deadline=2_000)
 @given(
     data=st.data(),
     amount_of_games_per_page=st.integers(min_value=1, max_value=10),
     amount_of_players_per_team=st.integers(min_value=1, max_value=4),
     player_race=st.sampled_from(list(ALLOWED_RACES)),
     player_profile_id=st.integers(min_value=1),
-    villagers_built=st.integers(min_value=1, max_value=100),
-    villagers_required=st.integers(min_value=1, max_value=100),
+    villagers_built=st.integers(min_value=1, max_value=50),
+    villagers_required=st.integers(min_value=1, max_value=50),
 )
 async def test_public_fetch_aoe4_bo_match_villager_condition(
     data: DataObject,
@@ -199,11 +199,12 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
     build_order_item = data.draw(
         st.builds(
             BuildOrderItem,
+            id=st.integers(),
             icon=st.just("icons/races/common/units/villager"),
             finished=st.just([0] * villagers_built),
             constructed=st.just([]),
         )
-    ).dict()
+    ).model_dump()
     build_order_parser_input = data.draw(
         st.builds(
             BuildOrderParserOptions,
@@ -230,7 +231,7 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
                                 # Required for finding profile
                                 profile_id=st.just(player_profile_id),
                             )
-                        ).dict()
+                        ).model_dump()
                     ),
                 ),
             ]

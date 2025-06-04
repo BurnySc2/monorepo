@@ -12,9 +12,9 @@ from dataclasses import dataclass
 import aiohttp
 import arrow
 from aiohttp import ClientSession, TCPConnector
-from hikari import GatewayBot, GuildMessageCreateEvent
+from hikari import GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 from loguru import logger
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from simple_parsing import ArgumentParser, field
 
 TCP_CONNECTOR_LIMIT = 10
@@ -86,6 +86,7 @@ class Condition(BaseModel):
         time_suffix_regex = "(s|m)?"
         matcher_regex = f"{optional_count_regex}{action_regex}{operator_regex}{time_regex}{time_suffix_regex}"
         compiled = re.compile(matcher_regex)
+        # pyrefly: ignore
         regex_match = compiled.fullmatch(condition)
 
         if regex_match is None:
@@ -288,7 +289,7 @@ async def public_fetch_aoe4_bo(
             if not profile_response.ok:
                 return "Could not find a profile with this id."
             data = await profile_response.json()
-            profiles = [PlayerSearchResult.parse_obj(data)]
+            profiles = [PlayerSearchResult.model_validate(data)]
         else:
             profiles = await fetch_top_profiles(
                 session,
@@ -320,11 +321,13 @@ async def public_fetch_aoe4_bo(
         for future in asyncio.as_completed(get_games_by_player_tasks):
             for game_result, player_profile_id in await future:
                 game_result: GameResult
+                # pyrefly: ignore
                 map_game_id_to_game_result[game_result.game_id] = game_result
                 get_build_order_tasks.append(
                     asyncio.create_task(
                         get_build_order_of_game(
                             session,
+                            # pyrefly: ignore
                             game_id=game_result.game_id,
                             player_profile_id=player_profile_id,
                         )
@@ -343,8 +346,9 @@ async def public_fetch_aoe4_bo(
             parsed_build_orders_count += 1
 
             # Only collect games from latest patch
-            if game_result.patch > latest_patch:
-                latest_patch = game_result.patch
+            assert isinstance(game_result, GameResult)  # pyrefly: ignore
+            if game_result.patch > latest_patch:  # pyrefly: ignore
+                latest_patch = game_result.patch  # pyrefly: ignore
                 collected_games.clear()
 
             if not game_player_data.matches_all_conditions(parsed_params.conditions_parsed):
@@ -415,7 +419,10 @@ class PlayerSearchResult(BaseModel):
     def last_game_at_arrow(self) -> arrow.Arrow:
         if self.last_game_at is None:
             return arrow.utcnow().shift(years=-1)
-        return arrow.get(self.last_game_at)
+        try:
+            return arrow.get(self.last_game_at)
+        except arrow.parser.ParserError:
+            return arrow.utcnow()
 
 
 class PlayerOfTeam(BaseModel):
@@ -468,8 +475,8 @@ class BuildOrderItem(BaseModel):
     transformed: list[int]
     destroyed: list[int]
 
-    @validator("id", check_fields=False)
-    def format_id(cls, v: str | int | None) -> int | None:
+    @field_validator("id", check_fields=False)
+    def format_id(cls, v: str | int | None) -> int | None:  # noqa: N805
         if v is None:
             return None
         if isinstance(v, int):
@@ -673,7 +680,7 @@ async def search(
         raise aiohttp.ClientConnectionError
     data = await response.json()
     for player_data in data["players"]:
-        player: PlayerSearchResult = PlayerSearchResult.parse_obj(player_data)
+        player: PlayerSearchResult = PlayerSearchResult.model_validate(player_data)
         collected_players.append(player)
     return collected_players
 
@@ -694,7 +701,7 @@ async def fetch_top_profiles(session: ClientSession, max_pages: int = 1) -> list
             continue
         data = await response.json()
         for player_profle in data["players"]:
-            profile = PlayerSearchResult.parse_obj(player_profle)
+            profile = PlayerSearchResult.model_validate(player_profle)
             collected_profiles.append(profile)
     return collected_profiles
 
@@ -727,7 +734,7 @@ async def get_games_by_player_id(
             logger.debug("Exiting because there are no games in this request.")
             continue
         for game_data in data["games"]:
-            game_result = GameResult.parse_obj(game_data)
+            game_result = GameResult.model_validate(game_data)
             # Skip short games
             if game_result.ongoing or game_result.duration is None or game_result.duration <= 600:
                 continue
@@ -760,7 +767,7 @@ async def get_build_order_of_game(
         return
     data = await response.json()
     for player_data in data["players"]:
-        parsed = GamePlayerData.parse_obj(player_data)
+        parsed = GamePlayerData.model_validate(player_data)
         if parsed.profile_id is None or player_profile_id != parsed.profile_id:
             # Not the player we are looking for
             continue
