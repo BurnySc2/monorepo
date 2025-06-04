@@ -49,6 +49,7 @@ class AudiobookConversionContext:
         )
         await self.chapter.save()
         # Generate MinIO object name
+        # pyrefly: ignore
         self.minio_object_name = f"{self.chapter.id}_audio.mp3"
         return self
 
@@ -76,6 +77,7 @@ async def check_queued_chapters() -> None:
 
     # Get first book that is waiting to be converted
     query = (
+        # pyrefly: ignore
         AudiobookChapter.objects()
         .where(
             (AudiobookChapter.minio_object_name != None)  # noqa: E711
@@ -90,6 +92,7 @@ async def check_queued_chapters() -> None:
         return
 
     # Check active conversions count
+    # pyrefly: ignore
     active_conversions = await AudiobookChapter.count().where(
         arrow.utcnow().datetime < AudiobookChapter.started_converting
     )
@@ -109,6 +112,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
     Args:
         chapter: The chapter to convert containing text content and audio settings
     """
+    # pyrefly: ignore
     logger.info(f"Starting conversion for chapter {chapter.id} (book: {chapter.book_id})")
     logger.debug(f"Audio settings: {chapter.audio_settings}")
 
@@ -136,6 +140,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
 
         # Save result to MinIO
         try:
+            # pyrefly: ignore
             minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio, len(audio.getvalue()))
             logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
         except S3Error as e:
