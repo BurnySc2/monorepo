@@ -3,7 +3,7 @@ import warnings
 
 def deprecated_function(args):
     warnings.warn(
-        "deprecated_function is deprecated and will be removed in a future version. " "Use new_function instead.",
+        "deprecated_function is deprecated and will be removed in a future version. Use new_function instead.",
         DeprecationWarning,
         stacklevel=2,
     )
