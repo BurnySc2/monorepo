@@ -62,6 +62,7 @@ dev-dependencies = [
     "toml>=0.10.2",
     "yamllint>=1.37.0",
     "yamlfix>=1.17.0",
+    "pytest-databases[postgres]>=0.13.0",
 ]
 
 [tool.yapf]

@@ -11,6 +11,13 @@ from app import app
 from prisma.cli import prisma
 from routes.login_logout import COOKIES
 
+# TODO Decide which testing method i want to use
+# 1) use a test environment with real piccolo postgres client and minio client - will need to set up before and clear up after (or before)
+# 2) use mock functions, what disadvantages does it have? uses string to find attributes? no external applications like db needed tho
+# 3) are there other possibilities? read pytest docs?
+
+# TODO Use https://github.com/litestar-org/pytest-databases#readme
+# to fake databases and minio
 
 @pytest.fixture(scope="function")
 def test_client() -> Iterator[TestClient[Litestar]]:
