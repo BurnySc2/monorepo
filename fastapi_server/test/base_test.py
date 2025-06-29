@@ -19,6 +19,7 @@ from routes.login_logout import COOKIES
 # TODO Use https://github.com/litestar-org/pytest-databases#readme
 # to fake databases and minio
 
+
 @pytest.fixture(scope="function")
 def test_client() -> Iterator[TestClient[Litestar]]:
     # Use this client only if the test does not access the test-database
