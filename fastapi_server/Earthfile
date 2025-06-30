@@ -62,7 +62,7 @@ pyrefly:
     RUN uv run pyrefly check
 
 lintsql:
-    LOCALLY
+    FROM +install-dev
     RUN uv run sqlfluff lint src/queries
 
 # Doesn't work anymore because it requires a separate postgres container now!
