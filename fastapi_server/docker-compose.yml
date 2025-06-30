@@ -120,7 +120,7 @@ services:
   local_dev_minio:
     container_name: fastapi_dev_minio
     hostname: fastapi_dev_minio
-    image: quay.io/minio/minio
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
     pull_policy: always
     # Start minio server, then after 10 seconds create access key
     entrypoint:
