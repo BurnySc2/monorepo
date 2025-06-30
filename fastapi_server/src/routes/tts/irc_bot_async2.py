@@ -44,7 +44,7 @@ class IRCClient:
         self,
         channel: str,
         read_name_lang: ReadNameLang,
-        callback: Callable[[str, ReadNameLang, Voices, str, str], None],
+        callback: Callable[[str, ReadNameLang, str, str], None],
     ):
         """
         Callback params:
@@ -63,7 +63,7 @@ class IRCClient:
         self.writer: asyncio.StreamWriter | None = None
         self.reconnect_attempts = 0
         self.max_reconnect_attempts = 1000
-        self.last_ping = 0
+        self.last_ping = 0.0
 
     async def connect(self):
         """Connect to IRC server and join channel"""
@@ -126,7 +126,7 @@ class IRCClient:
                         username, content = match.groups()
                         self.callback(self.channel, self.read_name_lang, username, content)
 
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.error(f"Error receiving message: {e}")
                 await self.handle_reconnect()
 
@@ -149,7 +149,7 @@ class IRCClient:
 
         try:
             await self.connect()
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error(f"Reconnection failed: {e}")
 
     async def shutdown(self):
@@ -159,7 +159,11 @@ class IRCClient:
 
 async def main():
     """Main function to start the IRC client"""
-    client = IRCClient(channel="burnysc2", callback=lambda channel, user, msg: logger.info(f"{channel} {user}: {msg}"))
+    client = IRCClient(
+        channel="burnysc2",
+        read_name_lang="none",
+        callback=lambda channel, read_name_lang, user, msg: logger.info(f"{channel} {user}: {msg}"),
+    )
     await client.connect()
     await client.listen()
 

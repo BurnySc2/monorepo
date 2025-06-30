@@ -52,7 +52,7 @@ lint:
     COPY .yamllint.yml ./
     RUN uv run yamllint --format parsable .
 
-# Ignore errors via "# pyre-fixme[11]"
+# Ignore errors via "# pyrefly: ignore"
 # Use the following to generate fixme's automatically
 # uv run pyre --output=json | uv run pyre-upgrade fixme
 # Automatically infer types with

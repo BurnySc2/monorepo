@@ -50,13 +50,14 @@ class TTSQueue:
         # Sanity check: has voice in message
         message_lowercase = message.lower()
         if ":" in message_lowercase:
-            voice, *content = message_lowercase.split(":")
-            if voice not in VOICE_NAMES_LOWERCASE:
+            message_voice, *content = message_lowercase.split(":")
+            if message_voice not in VOICE_NAMES_LOWERCASE:
                 return
 
         # Find voice name
         voice: Voices | None = None
-        for loop_voice in Voices:
+        loop_voice: Voices
+        for loop_voice in Voices.__iter__():
             if message_lowercase.startswith(f"{loop_voice.name.lower()}:"):
                 voice = loop_voice
                 break
