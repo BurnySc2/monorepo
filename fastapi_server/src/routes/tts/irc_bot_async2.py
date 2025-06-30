@@ -23,6 +23,10 @@ from routes.tts.generate_tts import Voices
 # pyrefly: ignore
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
 
+# If no ping received by this time, reconnect
+TWITCH_PING_TIMEOUT_SECONDS = 6 * 60  # Ping received roughly every 5mins
+TIMEOUT_SECONDS = 60  # Timeout "readline()" after n seconds
+
 
 class IRCClient:
     def __init__(self, channel: str, callback: Callable[[str, str, str], None]):
@@ -34,7 +38,8 @@ class IRCClient:
         self.reader: asyncio.StreamReader | None = None
         self.writer: asyncio.StreamWriter | None = None
         self.reconnect_attempts = 0
-        self.max_reconnect_attempts = 5
+        self.max_reconnect_attempts = 1000
+        self.last_ping = 0
 
     async def connect(self):
         """Connect to IRC server and join channel"""
@@ -60,13 +65,27 @@ class IRCClient:
                     await self.handle_reconnect()
                     continue
 
-                data = await self.reader.readline()
-                if not data:
+                data = None
+                # Wait for new chat message, timeout after n seconds
+                with contextlib.suppress(TimeoutError):
+                    data = await asyncio.wait_for(self.reader.readline(), timeout=TIMEOUT_SECONDS)
+                    if not data:
+                        logger.info("Reconnecting because no data was received")
+                        await self.handle_reconnect()
+                        continue
+
+                if TWITCH_PING_TIMEOUT_SECONDS < time.time() - self.last_ping:
+                    logger.info("Reconnecting because ping was ages ago")
                     await self.handle_reconnect()
                     continue
 
+                if data is None:
+                    continue
                 message = data.decode().strip()
                 if message.startswith("PING"):
+                    # Handle ping
+                    self.last_ping = time.time()
+                    logger.info("Received PING")
                     self.writer.write(f"PONG {message[5:]}\r\n".encode())
                     await self.writer.drain()
                 elif "PRIVMSG" in message:
@@ -82,6 +101,7 @@ class IRCClient:
 
     async def handle_reconnect(self):
         """Handle reconnection with exponential backoff"""
+        logger.info(f"Running reconnect to channel {self.channel}")
         if self.writer:
             self.writer.close()
             with contextlib.suppress(Exception):
