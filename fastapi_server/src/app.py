@@ -39,8 +39,6 @@ t0 = time.time()
 async def startup_event():
     if STAGE == "test":
         return
-    # Run websocket handler which handles tts
-    # asyncio.create_task(TTSQueue.start_irc_bot())
     # Remove books and minio objects if minio bucket is overflowing
     asyncio.create_task(prevent_overflowing_audiobook_bucket())
     logger.info(f"Startup took {time.time() - t0:.2} seconds")

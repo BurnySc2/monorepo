@@ -15,6 +15,7 @@ import re
 import ssl
 import time
 from collections.abc import Callable
+from typing import Literal
 
 from loguru import logger
 
@@ -23,17 +24,40 @@ from routes.tts.generate_tts import Voices
 # pyrefly: ignore
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
 
+# pyrefly: ignore
+ALLOWED_NAME_LANGUAGES: dict[str, tuple[Voices | None, str | None]] = {
+    # {str: (Voice, suffix 'says')}
+    "none": (None, None),
+    "en": (Voices.STORY_TELLER, "says"),
+    "de": (Voices.GERMAN_FEMALE, "sagt"),
+}
+
 # If no ping received by this time, reconnect
 TWITCH_PING_TIMEOUT_SECONDS = 6 * 60  # Ping received roughly every 5mins
 TIMEOUT_SECONDS = 60  # Timeout "readline()" after n seconds
 
+type ReadNameLang = Literal["none", "en", "de"]
+
 
 class IRCClient:
-    def __init__(self, channel: str, callback: Callable[[str, str, str], None]):
+    def __init__(
+        self,
+        channel: str,
+        read_name_lang: ReadNameLang,
+        callback: Callable[[str, ReadNameLang, Voices, str, str], None],
+    ):
+        """
+        Callback params:
+        - stream_name
+        - read_name_lang: Literal['none', 'de', 'en']
+        - voice: one valid Voice
+        - text: str
+        """
         self.host = "irc.chat.twitch.tv"  # Use standard IRC endpoint
         self.port = 6697  # Standard IRC SSL port
         self.nick = "justinfan12345"
         self.channel = channel
+        self.read_name_lang = read_name_lang
         self.callback = callback
         self.reader: asyncio.StreamReader | None = None
         self.writer: asyncio.StreamWriter | None = None
@@ -57,10 +81,17 @@ class IRCClient:
         self.reconnect_attempts = 0
         self.last_ping = time.time()
 
+    async def wait_till_ready(self) -> None:
+        while not self.reader or not self.writer:
+            await asyncio.sleep(1)
+
     async def listen(self):
         """Listen for incoming messages"""
         while True:
             try:
+                if self.channel == "":
+                    # shutdown() was called
+                    return
                 if not self.reader or not self.writer:
                     await self.handle_reconnect()
                     continue
@@ -93,7 +124,7 @@ class IRCClient:
                     match = re.match(r":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)", message)
                     if match:
                         username, content = match.groups()
-                        self.callback(self.channel, username, content)
+                        self.callback(self.channel, self.read_name_lang, username, content)
 
             except Exception as e:
                 logger.error(f"Error receiving message: {e}")
@@ -120,6 +151,10 @@ class IRCClient:
             await self.connect()
         except Exception as e:
             logger.error(f"Reconnection failed: {e}")
+
+    async def shutdown(self):
+        # Setting channel to empty-string will end the for-loop
+        self.channel = ""
 
 
 async def main():
