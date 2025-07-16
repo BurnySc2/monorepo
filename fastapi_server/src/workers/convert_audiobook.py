@@ -43,9 +43,7 @@ class AudiobookConversionContext:
     async def __aenter__(self):
         # Lock the chapter for conversion
         self.chapter.started_converting = (
-            arrow.utcnow()
-            .shift(seconds=len(get_chapter_combined_text(self.chapter.content)) * ESTIMATE_FACTOR)
-            .datetime
+            arrow.utcnow().shift(seconds=len(get_chapter_combined_text(self.chapter.content)) * ESTIMATE_FACTOR).naive
         )
         await self.chapter.save()
         # Generate MinIO object name
@@ -72,7 +70,7 @@ class AudiobookConversionContext:
 async def check_queued_chapters() -> None:
     # Reset those that have failed to convert in time
     await AudiobookChapter.update({AudiobookChapter.started_converting: None}).where(
-        AudiobookChapter.started_converting <= arrow.utcnow().datetime
+        AudiobookChapter.started_converting <= arrow.utcnow().naive
     )
 
     # Get first book that is waiting to be converted
@@ -80,7 +78,7 @@ async def check_queued_chapters() -> None:
         # pyrefly: ignore
         AudiobookChapter.objects()
         .where(
-            (AudiobookChapter.minio_object_name != None)  # noqa: E711
+            (AudiobookChapter.minio_object_name == None)  # noqa: E711
             & (AudiobookChapter.queued != None)  # noqa: E711
             & (AudiobookChapter.started_converting == None)  # noqa: E711
         )
@@ -93,8 +91,8 @@ async def check_queued_chapters() -> None:
 
     # Check active conversions count
     # pyrefly: ignore
-    active_conversions = await AudiobookChapter.count().where(
-        arrow.utcnow().datetime < AudiobookChapter.started_converting
+    active_conversions: int = await AudiobookChapter.count().where(
+        arrow.utcnow().naive < AudiobookChapter.started_converting
     )
     if MAX_CONCURRENT_CONVERSIONS <= active_conversions:
         return
@@ -113,7 +111,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         chapter: The chapter to convert containing text content and audio settings
     """
     # pyrefly: ignore
-    logger.info(f"Starting conversion for chapter {chapter.id} (book: {chapter.book_id})")
+    logger.info(f"Starting conversion for chapter {chapter.chapter_number} (book: {chapter.book})")
     logger.debug(f"Audio settings: {chapter.audio_settings}")
 
     async with AudiobookConversionContext(chapter) as context:
@@ -147,11 +145,10 @@ async def convert_one(chapter: AudiobookChapter) -> None:
             logger.error(f"Failed to save audio to MinIO: {e}")
             raise
 
-        # Save result to database
-        chapter.minio_object_name = context.minio_object_name
-        await chapter.save()
+        # Save result to database after exiting context
+        context.chapter.minio_object_name = context.minio_object_name
 
-        logger.info(f"Done converting, saved to {context.minio_object_name}")
+    logger.info(f"Done converting, saved to {context.minio_object_name}")
 
 
 async def keep_converting():

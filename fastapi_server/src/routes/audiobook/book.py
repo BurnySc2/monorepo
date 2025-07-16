@@ -191,7 +191,7 @@ class MyAudiobookBookRoute(Controller):
         )
         if chapter and chapter.queued is None:
             chapter.audio_settings = audio_settings.model_dump_json()
-            chapter.queued = arrow.utcnow().datetime
+            chapter.queued = arrow.utcnow().naive
             await chapter.save()
         return Template(
             template_name="audiobook/epub_refresh.html",
@@ -362,7 +362,7 @@ class MyAudiobookBookRoute(Controller):
 
         async def member_files():
             nonlocal normalized_author, normalized_book_title
-            modified_at = arrow.utcnow().datetime
+            modified_at = arrow.utcnow().naive
             mode = S_IFREG | 0o600
             for chapter in chapters:
                 normalized_chapter_name = normalize_filename(chapter.chapter_title)[:200].strip()

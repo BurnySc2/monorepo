@@ -87,12 +87,13 @@ class MyAudiobookEpubRoute(Controller):
             book_author=metadata.author,
             chapter_count=len(chapters),
         ).save()
+        book = book[0]
 
         # Insert chapters
         await AudiobookChapter.insert(
             *[
                 AudiobookChapter(
-                    book=book,
+                    book=book["id"],
                     chapter_title=chapter.chapter_title,
                     chapter_number=chapter.chapter_number,
                     word_count=chapter.word_count,
@@ -103,4 +104,4 @@ class MyAudiobookEpubRoute(Controller):
             ]
         )
         # pyrefly: ignore
-        return ClientRedirect(f"/audiobook/book/{book.id}")
+        return ClientRedirect(f"/audiobook/book/{book['id']}")
