@@ -1,68 +1,62 @@
-<table style="margin: 2rem;
-              border: 1px solid black;
-              border-collapse: collapse">
-    <tr style="border: 1px solid black;">
-        <th style="border: 1px solid black;">
-            Upload Date
+<div class="overflow-x-auto">
+  <table class="min-w-full my-8 border border-gray-300 rounded-lg overflow-hidden">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="px-4 py-2 text-left border-b border-gray-300 hidden md:table-cell">
+          Upload Date
         </th>
-        <th style="border: 1px solid black;">
-            Book Title
+        <th class="px-4 py-2 text-left border-b border-gray-300">
+          Book Title
         </th>
-        <th style="border: 1px solid black;">
-            Book Author
+        <th class="px-4 py-2 text-left border-b border-gray-300">
+          Book Author
         </th>
-        <th style="border: 1px solid black;">
-            Chapters
+        <th class="px-4 py-2 text-left border-b border-gray-300 hidden md:table-cell">
+          Chapters
         </th>
-        <th style="border: 1px solid black;">
-            Remove Book
+        <th class="px-4 py-2 text-left border-b border-gray-300">
+          Remove Book
         </th>
-    </tr>
-    {% for book in books %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for book in books %}
         <tr id="bookrow{{ book.id }}"
-            style="cursor: pointer"
-            class="hover:bg-yellow-400"
+            class="cursor-pointer hover:bg-yellow-100 transition-colors duration-200"
             onclick="handleRowClick(event, '/audiobook/book/{{ book.id }}')">
-            <td style="border-right: 1px dashed black;
-                       border-bottom: 1px dotted black;
-                       border-collapse: collapse">
-                {{ book.upload_date.strftime("%Y-%m-%d") }}
-            </td>
-            <td style="border-right: 1px dashed black;
-                       border-bottom: 1px dotted black;
-                       border-collapse: collapse">
-                {{ book.custom_book_title or book.book_title }}
-            </td>
-            <td style="border-right: 1px dashed black;
-                       border-bottom: 1px dotted black;
-                       border-collapse: collapse">
-                {{ book.custom_book_author or book.book_author }}
-            </td>
-            <td style="border-right: 1px dashed black;
-                       border-bottom: 1px dotted black;
-                       border-collapse: collapse">
-                {{ book.chapter_count }}
-            </td>
-            {#- djlint:off -#}
-            <td style="border-right: 1px dashed black;
-                       border-bottom: 1px dotted black;
-                       border-collapse: collapse"
-                hx-post="/audiobook/delete_book?book_id={{ book.id }}"
-                hx-swap="delete"
-                hx-target="#bookrow{{ book.id }}"
-                hx-confirm="Are you sure you wish to delete this book?"
-                hx-trigger="click consume">
-                {#- djlint:on -#}
-                <img class="rounded-xl hover:bg-red-500 bg-red-300"
-                     width="32"
-                     height="32"
-                     style="margin: auto"
-                     src="/static/delete.svg"
-                     alt="Delete book">
-            </td>
+          <td class="px-4 py-2 border-b border-gray-200 hidden md:table-cell">
+            {{ book.upload_date.strftime("%Y-%m-%d") }}
+          </td>
+          <td class="px-4 py-2 border-b border-gray-200">
+            {{ book.custom_book_title or book.book_title }}
+          </td>
+          <td class="px-4 py-2 border-b border-gray-200">
+            {{ book.custom_book_author or book.book_author }}
+          </td>
+          <td class="px-4 py-2 border-b border-gray-200 hidden md:table-cell">
+            {{ book.chapter_count }}
+          </td>
+          {#- djlint:off -#}
+          <td class="px-4 py-2 border-b border-gray-200"
+              hx-post="/audiobook/delete_book?book_id={{ book.id }}"
+              hx-swap="delete"
+              hx-target="#bookrow{{ book.id }}"
+              hx-confirm="Are you sure you wish to delete this book?"
+              hx-trigger="click consume">
+            {#- djlint:on -#}
+            <div class="flex justify-center">
+              <img class="rounded-xl hover:bg-red-500 bg-red-300 p-1 transition-colors duration-200"
+                   width="32"
+                   height="32"
+                   src="/static/delete.svg"
+                   alt="Delete book">
+            </div>
+          </td>
         </tr>
-    {% endfor %}
-</table>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 <script>
     function handleRowClick(event, url) {
       if (event.ctrlKey || event.metaKey) {

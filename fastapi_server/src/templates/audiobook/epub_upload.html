@@ -2,61 +2,68 @@
 
 <body class="flex h-screen flex-col">
     {% include "nav.html" with context %}
-    <main
-        id="main"
-        class="h-full"
-    >
-        <div class="flex h-full flex-col items-center justify-center bg-gray-300">
-            <div
-                id="spinner"
-                class="htmx-indicator flex flex-col"
-                style="margin: 1rem;"
-            >
-                <div class="flex">
-                    <img
-                        class="htmx-spinner w-8 animate-spin"
-                        src="/static/spinner.svg"
-                    />
-                    {# When done uploading, show: processing #}
-                    <span>Uploading...</span>
+    <main id="main" class="h-full">
+        <div class="flex h-full flex-col items-center justify-center bg-gray-100 p-4">
+            <div id="spinner" class="htmx-indicator flex flex-col items-center gap-2 w-full max-w-md">
+                <div class="flex items-center gap-2">
+                    <img class="htmx-spinner w-8 h-8 animate-spin" src="/static/spinner.svg" alt="Loading indicator" />
+                    <span class="text-lg font-medium">Uploading...</span>
                 </div>
-                <progress
-                    id='progress'
-                    class="progress"
-                    value='0'
-                    max='100'
-                ></progress>
+                <progress id='progress' class="w-full h-2 rounded-full overflow-hidden" value='0' max='100'
+                    aria-label="Upload progress"></progress>
             </div>
-            <form
-                id="form"
-                class="flex flex-col place-items-center items-center justify-items-center gap-4 text-center"
-                enctype="multipart/form-data"
-                hx-post="/audiobook/epub_upload"
-                hx-trigger="submit"
-                hx-target="#main"
-                hx-swap="innerHTML"
-                hx-indicator="#spinner"
-            >
-                <input
-                    class="rounded-3xl border-4 border-black"
-                    type="file"
-                    name="file"
-                    accept=".epub"
-                >
-                <button
-                    type="submit"
-                    class="rounded-3xl border-4 border-black p-4 hover:bg-green-500"
-                >
-                Upload epub
-            </button>
+            <form id="form" class="flex flex-col items-center gap-6 w-full max-w-md p-8 bg-white rounded-xl shadow-md"
+                enctype="multipart/form-data" hx-post="/audiobook/epub_upload" hx-trigger="submit" hx-target="#main"
+                hx-swap="innerHTML" hx-indicator="#spinner"
+                _="on dragover add .border-blue-500 to me end on dragleave remove .border-blue-500 from me end">
+                <div class="w-full">
+                    <label for="file-input"
+                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                        _="on dragover add .border-blue-500 to me end on dragleave remove .border-blue-500 from me end">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <svg class="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                </path>
+                            </svg>
+                            <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or
+                                drag and drop</p>
+                            <p class="text-xs text-gray-500">EPUB files only</p>
+                        </div>
+                        <input id="file-input" type="file" name="file" accept=".epub" class="hidden"
+                            _="on change set #file-name.textContent to me.files[0].name" />
+                    </label>
+                    <div id="file-name" class="mt-2 text-sm text-gray-600 text-center"></div>
+                </div>
+                <button type="submit"
+                    class="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    _="on click if #file-input.files.length is 0 then preventDefault() end">
+                    Upload EPUB
+                </button>
             </form>
         </div>
     </main>
 </body>
 
-{# Progress bar https://htmx.org/examples/file-upload/ #}
 <script>
     htmx.on('#form', 'htmx:xhr:progress', function (evt) {
         htmx.find('#progress').setAttribute('value', evt.detail.loaded / evt.detail.total * 100)
+    });
+
+    // Add drag and drop support
+    document.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.dataTransfer.files.length) {
+            const fileInput = document.getElementById('file-input');
+            fileInput.files = e.dataTransfer.files;
+            document.getElementById('file-name').textContent = fileInput.files[0].name;
+        }
+    });
+
+    document.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
     });
 </script>

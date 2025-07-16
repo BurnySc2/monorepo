@@ -36,6 +36,7 @@ class MyAudiobookIndexRoute(Controller):
             .where(AudiobookBook.uploaded_by == logged_in_user.db_name)
             .order_by(AudiobookBook.upload_date, ascending=False)
         )
+        # return "You don't have any books uploaded."
         if len(books) == 0:
             return "You don't have any books uploaded."
         return Template(
