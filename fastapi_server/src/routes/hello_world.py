@@ -3,6 +3,7 @@ import os
 from typing import Literal
 
 from litestar import Controller, MediaType, get
+from litestar.response import Template
 from loguru import logger
 
 from models.audiobook import AudiobookBook
@@ -14,8 +15,8 @@ class MyRootRoute(Controller):
     path = "/"
 
     @get("/")
-    async def index(self) -> str:
-        return "Welcome!"
+    async def index(self) -> Template:
+        return Template(template_name="index.html")
 
     @get("/test")
     async def test(self) -> str:
