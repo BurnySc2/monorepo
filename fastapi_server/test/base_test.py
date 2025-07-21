@@ -1,10 +1,11 @@
+from contextlib import suppress
 import os
 from collections.abc import Iterator
 
 import pytest
 from litestar import Litestar
 from litestar.testing import TestClient
-from minio import Minio
+from minio import Minio, S3Error
 from pytest_httpx import HTTPXMock
 
 from app import app
@@ -52,6 +53,14 @@ def test_minio_client() -> Iterator[Minio]:
         os.getenv("MINIO_SECRET_KEY"),
         secure=False,
     )
+    # Create bucket
+    bucket = os.getenv("MINIO_AUDIOBOOK_BUCKET")
+    with suppress(S3Error):
+        minio_client.make_bucket(bucket)
+    # Delete all objects in bucket
+    objects = minio_client.list_objects(bucket)
+    for obj in objects:
+        minio_client.remove_object(bucket, obj.object_name)
     yield minio_client
 
 

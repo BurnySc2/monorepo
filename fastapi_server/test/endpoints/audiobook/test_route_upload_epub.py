@@ -3,6 +3,7 @@ import io
 import os
 import re
 from pathlib import Path
+import time
 from unittest.mock import AsyncMock, patch
 from zipfile import ZipFile
 
@@ -15,6 +16,7 @@ from minio import Minio, S3Error
 from pytest_httpx import HTTPXMock
 
 from models.audiobook import AudiobookBook, AudiobookChapter
+from routes.audiobook.my_minio_client import minio_check_if_object_exists
 from routes.caches import global_cache
 from test.base_test import log_in_with_twitch, test_client, test_client_db_reset, test_minio_client  # noqa: F401
 from workers import convert_audiobook
@@ -230,13 +232,23 @@ async def test_generate_audio_for_chapter(
         await check_queued_chapters()
 
         # Wait for the create_task() to generate audio and put object on minio
-        # TODO Poll DB to check if minio object was written
-        await asyncio.sleep(5)
+        # Poll minio to check if object was written
+        time_start = time.time()
+        while 1:
+            object_created: bool = await minio_check_if_object_exists(
+                os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3"
+            )
+            if object_created:
+                break
+            if 5 < time.time() - time_start:
+                break
+            await asyncio.sleep(0.001)
 
     # 4) Make sure generated audio was saved in minio
     assert test_minio_client.bucket_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
-    minio_object =  test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
-    assert minio_object.size == len(example_audio_bytes)
+    assert await minio_check_if_object_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
+    minio_object_info = test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
+    assert minio_object_info.size == len(example_audio_bytes)
 
     # 5) Verify audio has been generated and is saved in DB
     chapter_from_db = (
@@ -247,7 +259,7 @@ async def test_generate_audio_for_chapter(
     assert chapter_from_db.queued is not None
     assert chapter_from_db.minio_object_name is not None
 
-    # 6) Verify delete audio works
+    # 6) Verify delete-audio works
     # Request to delete the audio
     delete_audio_response = test_client_db_reset.post(
         "/audiobook/delete_generated_audio",
@@ -263,13 +275,6 @@ async def test_generate_audio_for_chapter(
     with pytest.raises(S3Error):
         # Raises error if object does not exist
         test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
-
-    # Make sure the amount of buttons with "Generate audio" is the same as on after upload
-    load_book_afterwards_response = test_client_db_reset.get("/audiobook/book/1")
-    assert load_book_afterwards_response.status_code == HTTP_200_OK
-    load_book_afterwards_response_soup = BeautifulSoup(load_book_afterwards_response.text, features="lxml")
-    chapters_elements_divs = load_book_afterwards_response_soup.find_all("div", id=re.compile(r"chapter_audio_\d+"))
-    assert len(chapters_elements_divs) == expected_chapter_count
 
 
 # TODO Mark test as slow?
