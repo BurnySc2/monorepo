@@ -189,6 +189,7 @@ class MyAudiobookBookRoute(Controller):
             .where((AudiobookChapter.book == book_id) & (AudiobookChapter.chapter_number == chapter_number))
             .first()
         )
+        # Check if already queued
         if chapter and chapter.queued is None:
             chapter.audio_settings = audio_settings.model_dump_json()
             chapter.queued = arrow.utcnow().naive

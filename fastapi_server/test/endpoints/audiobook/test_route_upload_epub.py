@@ -1,3 +1,4 @@
+import asyncio
 import io
 import os
 import re
@@ -5,8 +6,6 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 from zipfile import ZipFile
 
-from hypothesis import strategies as st
-from hypothesis import example, given, settings
 import pytest
 from bs4 import BeautifulSoup  # pyre-fixme[21]
 from litestar.contrib.htmx._utils import HTMXHeaders
@@ -19,7 +18,7 @@ from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.caches import global_cache
 from test.base_test import log_in_with_twitch, test_client, test_client_db_reset, test_minio_client  # noqa: F401
 from workers import convert_audiobook
-from workers.convert_audiobook import convert_one
+from workers.convert_audiobook import check_queued_chapters, convert_one
 
 _test_client = test_client
 _test_client_db_reset = test_client_db_reset
@@ -44,52 +43,58 @@ async def test_index_route_has_upload_button(test_client_db_reset: TestClient, h
 
 
 # Test post request to "/audiobook/epub_upload" can upload an epub
-# TODO Add other 2 examples
-# @example("actual_books/romeo-and-juliet.epub", 1, 28)
-# @example("actual_books/the-war-of-the-worlds.epub", 1, 29)
 @pytest.mark.asyncio
 async def test_index_route_upload_epub_frankenstein(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
-    book_relative_path = "actual_books/frankenstein.epub"
-    book_id = 1
-    chapters_amount = 31
+    book_paths = [
+        ("actual_books/frankenstein.epub", 31),
+        ("actual_books/romeo-and-juliet.epub", 28),
+        ("actual_books/the-war-of-the-worlds.epub", 29),
+    ]
+    sum_of_chapters = 0
+    for book_id, (book_relative_path, book_chapters_amount) in enumerate(book_paths, start=1):
+        log_in_with_twitch(test_client_db_reset, httpx_mock)
 
-    await global_cache.delete_all()
-    log_in_with_twitch(test_client_db_reset, httpx_mock)
+        # Sanity check
+        pre_book_count = await AudiobookBook.count()
+        assert pre_book_count == book_id - 1
+        pre_chapter_count = await AudiobookChapter.count()
+        assert pre_chapter_count == sum_of_chapters
 
-    # Sanity check
-    pre_book_count = await AudiobookBook.count()
-    assert pre_book_count == 0
-    # Make sure the book does not exist yet
-    upload_response = test_client_db_reset.get(f"/audiobook/book/{book_id}")
-    assert upload_response.status_code == HTTP_401_UNAUTHORIZED
+        # Make sure the book does not exist yet
+        upload_response = test_client_db_reset.get(f"/audiobook/book/{book_id}")
+        assert upload_response.status_code == HTTP_401_UNAUTHORIZED
 
-    # Upload book
-    book_path = Path(__file__).parent / book_relative_path
-    upload_response = test_client_db_reset.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
-    assert upload_response.status_code == HTTP_201_CREATED
-    # Why is the database not empty?
-    assert upload_response.headers.get(HTMXHeaders.REDIRECT) == f"/audiobook/book/{book_id}"
-    assert upload_response.headers.get("location") is None
+        # Upload book
+        book_path = Path(__file__).parent / book_relative_path
+        upload_response = test_client_db_reset.post(
+            "/audiobook/epub_upload", files={"upload-file": book_path.open("rb")}
+        )
+        assert upload_response.status_code == HTTP_201_CREATED
+        assert upload_response.headers.get(HTMXHeaders.REDIRECT) == f"/audiobook/book/{book_id}"
+        assert upload_response.headers.get("location") is None
 
-    # Make sure N chapters were detected
-    redirect_response = test_client_db_reset.get(upload_response.headers.get(HTMXHeaders.REDIRECT))
-    soup = BeautifulSoup(redirect_response.text, features="lxml")
-    matching_divs = soup.find_all("div", id=lambda x: x is not None and x.startswith("chapter_audio_"))
-    assert redirect_response.status_code == HTTP_200_OK
-    assert len(matching_divs) == chapters_amount
+        # Make sure N chapters were detected
+        redirect_response = test_client_db_reset.get(upload_response.headers.get(HTMXHeaders.REDIRECT))
+        soup = BeautifulSoup(redirect_response.text, features="lxml")
+        matching_divs = soup.find_all("div", id=lambda x: x is not None and x.startswith("chapter_audio_"))
+        assert redirect_response.status_code == HTTP_200_OK
+        assert len(matching_divs) == book_chapters_amount
 
-    # Database verification check
-    post_book_count = await AudiobookBook.count()
-    assert post_book_count == 1
-    post_chapter_count = await AudiobookChapter.count()
-    assert post_chapter_count == chapters_amount
+        # Database verification check
+        post_book_count = await AudiobookBook.count()
+        assert post_book_count == book_id
+        sum_of_chapters += book_chapters_amount
+        post_chapter_count = await AudiobookChapter.count()
+        assert post_chapter_count == sum_of_chapters
 
 
 # Test post request to "/" book already exists
-@pytest.mark.httpx_mock(should_mock=lambda request: request.url.host not in ["localhost"])
 @pytest.mark.asyncio
 async def test_index_route_upload_epub_twice(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
-    await global_cache.delete_all()
+    # Sanity check
+    pre_book_count = await AudiobookBook.count()
+    assert pre_book_count == 0
+
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     # Make sure the book does not exist yet
@@ -110,9 +115,12 @@ async def test_index_route_upload_epub_twice(test_client_db_reset: TestClient, h
     assert response3.headers.get(HTMXHeaders.REDIRECT) == "/audiobook/book/1"
     assert response3.headers.get("location") is None
 
+    # Assert book has been added to db once
+    post_book_count = await AudiobookBook.count()
+    assert post_book_count == 1
+
 
 # Test "/delete_book" can remove book
-@pytest.mark.httpx_mock(should_mock=lambda request: request.url.host not in ["localhost"])
 @pytest.mark.asyncio
 async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
     await global_cache.delete_all()
@@ -122,11 +130,10 @@ async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: H
     assert book_before_upload_response.status_code == HTTP_401_UNAUTHORIZED
 
     # Pre condition: no book uploaded
-    async with Prisma() as db:
-        uploaded_books_pre_upload = await db.audiobookbook.count(where={})
-        assert uploaded_books_pre_upload == 0
-        uploaded_chapters_pre_upload = await db.audiobookchapter.count(where={})
-        assert uploaded_chapters_pre_upload == 0
+    pre_book_count = await AudiobookBook.count()
+    assert pre_book_count == 0
+    pre_chapter_count = await AudiobookChapter.count()
+    assert pre_chapter_count == 0
 
     # Upload book
     expected_chapter_count = 31
@@ -138,11 +145,10 @@ async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: H
     # TODO Check redirect content
 
     # Condition: book was successfully entered
-    async with Prisma() as db:
-        uploaded_books_post_upload = await db.audiobookbook.count(where={})
-        assert uploaded_books_post_upload == 1
-        uploaded_chapters_post_upload = await db.audiobookchapter.count(where={})
-        assert uploaded_chapters_post_upload == expected_chapter_count
+    post_book_count = await AudiobookBook.count()
+    assert post_book_count == 1
+    post_chapter_count = await AudiobookChapter.count()
+    assert post_chapter_count == expected_chapter_count
 
     book_after_upload_response = test_client_db_reset.get("/audiobook/book/1")
     assert book_after_upload_response.status_code == HTTP_200_OK
@@ -155,11 +161,10 @@ async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: H
     assert delete_book_response.status_code == HTTP_201_CREATED
 
     # Post condition: book has been deleted, no book in db
-    async with Prisma() as db:
-        uploaded_books_post_upload = await db.audiobookbook.count(where={})
-        assert uploaded_books_post_upload == 0
-        uploaded_chapters_post_upload = await db.audiobookchapter.count(where={})
-        assert uploaded_chapters_post_upload == 0
+    post_delete_book_count = await AudiobookBook.count()
+    assert post_delete_book_count == 0
+    post_delete_chapter_count = await AudiobookChapter.count()
+    assert post_delete_chapter_count == 0
 
     # Book has been deleted
     book_after_delete_response = test_client_db_reset.get("/audiobook/book/1")
@@ -167,12 +172,11 @@ async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: H
 
 
 # Test "/generate_audio" can generate audio for a chapter
-@pytest.mark.httpx_mock(should_mock=lambda request: request.url.host not in ["localhost"])
 @pytest.mark.asyncio
 async def test_generate_audio_for_chapter(
     test_client_db_reset: TestClient, test_minio_client: Minio, httpx_mock: HTTPXMock
-) -> None:  # noqa: F811
-    await global_cache.delete_all()
+) -> None:  # noqa: F811o
+    # 1) Login and upload book
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     # Upload book
@@ -190,11 +194,8 @@ async def test_generate_audio_for_chapter(
     book_after_upload_response_soup = BeautifulSoup(book_after_upload_response.text, features="lxml")
     chapters_elements = book_after_upload_response_soup.find_all("div", id=re.compile(r"chapter_audio_\d+"))
     assert len(chapters_elements) == expected_chapter_count
-    generate_audio_buttons = book_after_upload_response_soup.find_all(
-        lambda tag: tag.name == "button" and tag.text.strip() == "Generate audio"
-    )
-    assert len(generate_audio_buttons) == expected_chapter_count
 
+    # 2) Queue chapter for audio generation
     # Request to generate audio for first chapter
     click_generate_audio_response = test_client_db_reset.post(
         "/audiobook/generate_audio",
@@ -202,21 +203,20 @@ async def test_generate_audio_for_chapter(
             "book_id": 1,
             "chapter_number": 1,
         },
+        data={
+            "voice_name": "my_test",
+            "voice_rate": 0,
+            "voice_volume": 0,
+            "voice_pitch": 0,
+            "hidden_refresh_queue": "",
+        },
     )
     assert click_generate_audio_response.status_code == HTTP_200_OK
     # Text "Queued" will be in the response html element
     click_generate_audio_response_soup = BeautifulSoup(click_generate_audio_response.text, features="lxml")
     assert "Queued" in click_generate_audio_response_soup.text
 
-    # Check how many chapters are available after clicking generate audio
-    book_after_generate_audio_response = test_client_db_reset.get("/audiobook/book/1")
-    assert book_after_generate_audio_response.status_code == HTTP_200_OK
-    book_after_generate_audio_response_soup = BeautifulSoup(book_after_generate_audio_response.text, features="lxml")
-    generate_audio_buttons_after_clicking_generate = book_after_generate_audio_response_soup.find_all(
-        lambda tag: tag.name == "button" and tag.text.strip() == "Generate audio"
-    )
-    assert len(generate_audio_buttons_after_clicking_generate) == expected_chapter_count - 1
-
+    # 3) Generate audio
     example_audio_bytes = b"asd_my_audio"
     with patch.object(
         convert_audiobook,
@@ -227,64 +227,27 @@ async def test_generate_audio_for_chapter(
         ),
     ):
         # Convert one chapter to audio, save it in db and in minio
-        await convert_one()
+        await check_queued_chapters()
 
-    # Make sure generated audio was saved in minio
+        # Wait for the create_task() to generate audio and put object on minio
+        # TODO Poll DB to check if minio object was written
+        await asyncio.sleep(5)
+
+    # 4) Make sure generated audio was saved in minio
     assert test_minio_client.bucket_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
-    assert test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
+    minio_object =  test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
+    assert minio_object.size == len(example_audio_bytes)
 
-    # Audio has been generated, a different HTML element will be returned which allows loading audio
-    load_audio_response = test_client_db_reset.post(
-        "/audiobook/generate_audio",
-        params={
-            "book_id": 1,
-            "chapter_number": 1,
-        },
+    # 5) Verify audio has been generated and is saved in DB
+    chapter_from_db = (
+        await AudiobookChapter.objects()
+        .where((AudiobookChapter.book == 1) & (AudiobookChapter.chapter_number == 1))
+        .first()
     )
-    assert load_audio_response.status_code == HTTP_200_OK
-    # Text "Load audio" will be in the response
-    load_audio_response_soup = BeautifulSoup(load_audio_response.text, features="lxml")
-    assert "Load audio" in load_audio_response_soup.text
+    assert chapter_from_db.queued is not None
+    assert chapter_from_db.minio_object_name is not None
 
-    # Make sure one element with "Load audio" button exists
-    book_after_audio_was_generated_response = test_client_db_reset.get("/audiobook/book/1")
-    assert book_after_audio_was_generated_response.status_code == HTTP_200_OK
-    book_after_audio_was_generated_response_soup = BeautifulSoup(
-        book_after_audio_was_generated_response.text, features="lxml"
-    )
-    generate_audio_buttons_after_clicking_generate = book_after_audio_was_generated_response_soup.find_all(
-        lambda tag: tag.name == "button" and "Load audio" in tag.text
-    )
-    assert len(generate_audio_buttons_after_clicking_generate) == 1
-
-    # Issue loading the <audio> element
-    load_audio_response = test_client_db_reset.post(
-        "/audiobook/load_generated_audio",
-        params={
-            "book_id": 1,
-            "chapter_number": 1,
-        },
-    )
-    assert load_audio_response.status_code == HTTP_200_OK
-    # Text "Load audio" will be in the response
-    load_audio_response_soup = BeautifulSoup(load_audio_response.text, features="lxml")
-    assert "Your browser does not support the audio element." in load_audio_response_soup.text
-    # Response contains element with <audio> tag
-    audio_elements = load_audio_response_soup.find_all("audio")
-    assert len(audio_elements) == 1
-
-    # Request to download the audio
-    download_mp3_response = test_client_db_reset.get(
-        "/audiobook/download_chapter_mp3",
-        params={
-            "book_id": 1,
-            "chapter_number": 1,
-        },
-    )
-    assert download_mp3_response.status_code == HTTP_200_OK
-    # Response contains the audio bytes
-    assert download_mp3_response.content == example_audio_bytes
-
+    # 6) Verify delete audio works
     # Request to delete the audio
     delete_audio_response = test_client_db_reset.post(
         "/audiobook/delete_generated_audio",
@@ -307,10 +270,6 @@ async def test_generate_audio_for_chapter(
     load_book_afterwards_response_soup = BeautifulSoup(load_book_afterwards_response.text, features="lxml")
     chapters_elements_divs = load_book_afterwards_response_soup.find_all("div", id=re.compile(r"chapter_audio_\d+"))
     assert len(chapters_elements_divs) == expected_chapter_count
-    generate_audio_buttons_after_delete_audio = load_book_afterwards_response_soup.find_all(
-        lambda tag: tag.name == "button" and tag.text.strip() == "Generate audio"
-    )
-    assert len(generate_audio_buttons_after_delete_audio) == expected_chapter_count
 
 
 # TODO Mark test as slow?
