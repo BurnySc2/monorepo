@@ -1,136 +1,133 @@
-"""
-TODO Keep service running, but spawn new workers if there are tasks to do, up to N workers
-Requires proper observing if workers completed (success/fail), only then spawn new ones
-"""
-
 from __future__ import annotations
 
 import asyncio
 import io
 import os
-import re
-import time
 from contextlib import suppress
 
 import arrow
 from dotenv import load_dotenv
 from loguru import logger
-from minio import Minio, S3Error
-from minio.helpers import _BUCKET_NAME_REGEX
+from minio import S3Error
 
-from prisma import Prisma
-from routes.audiobook.schema import (
+from models.audiobook import AudiobookChapter
+from routes.audiobook.my_minio_client import (
+    MINIO_AUDIOBOOK_BUCKET,
     AudioSettings,
     get_chapter_combined_text,
+    minio_client,
 )
 from routes.audiobook.temp_generate_tts import generate_text_to_speech
 
 load_dotenv()
 
-# pyre-fixme[9]
-MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
-assert MINIO_AUDIOBOOK_BUCKET is not None
-assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
-
 
 # Increase this value to give converters more time to convert an audio
-# Ideal value is slightly above 0.1
-# TODO Export as env value
-ESTIMATE_FACTOR = 0.3
+# Ideal value is slightly above 0.3
+ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR", "0.3"))
+
+# Maximum number of concurrent chapter conversions
+MAX_CONCURRENT_CONVERSIONS = int(os.getenv("AUDIOBOOK_MAX_CONCURRENT_CONVERSIONS", "1"))
 
 
-"""
-TODO Refactor:
-Run this only once in parallel
-Instead, this script will create async workers (8, 16?)
-
-Use with async with contextmanager
-- on enter: set chapter to converting
-- on exit (finally): set no longer to converting
-
-workers will end themselves if done (success or error)
-
-fetcher:
-- fetch jobs every 10s
-- assign jobs to workers
-- create workers (up to LIMIT)
-"""
+# Create bucket if it doesn't exist
+with suppress(S3Error):
+    minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
 
 
-async def convert_one() -> None:
+class AudiobookConversionContext:
+    def __init__(self, chapter: AudiobookChapter):
+        self.chapter = chapter
+        self.minio_object_name = None
+
+    async def __aenter__(self):
+        # Lock the chapter for conversion
+        self.chapter.started_converting = (
+            arrow.utcnow().shift(seconds=len(get_chapter_combined_text(self.chapter.content)) * ESTIMATE_FACTOR).naive
+        )
+        await self.chapter.save()
+        # Generate MinIO object name
+        # pyrefly: ignore
+        self.minio_object_name = f"{self.chapter.id}_audio.mp3"
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        try:
+            if exc_type is None:
+                # Conversion succeeded - clear converting flag
+                self.chapter.started_converting = None
+                await self.chapter.save()
+            else:
+                # Conversion failed - reset converting flag
+                self.chapter.started_converting = None
+                await self.chapter.save()
+                logger.error(f"Conversion failed: {exc_val}")
+        except Exception as e:
+            logger.error(f"Error in context manager cleanup: {e}")
+            raise
+
+
+async def check_queued_chapters() -> None:
     # Reset those that have failed to convert in time
-    async with Prisma() as db:
-        await db.audiobookchapter.update_many(
-            where={
-                "started_converting": {"lt": arrow.utcnow().datetime},
-            },
-            data={"started_converting": None},
-        )
-
-    # Abort if queue empty
-    async with Prisma() as db:
-        any_in_queue = await db.audiobookchapter.count(
-            where={
-                "minio_object_name": None,
-                "queued": {"not": None},
-                "started_converting": None,
-            }
-        )
-    if any_in_queue == 0:
-        return
-
-    minio_client = Minio(
-        # pyre-fixme[6]
-        os.getenv("MINIO_URL"),
-        access_key=os.getenv("MINIO_ACCESS_TOKEN"),
-        secret_key=os.getenv("MINIO_SECRET_KEY"),
-        secure=os.getenv("MINIO_SECURE") == "TRUE",
+    await AudiobookChapter.update({AudiobookChapter.started_converting: None}).where(
+        AudiobookChapter.started_converting <= arrow.utcnow().naive
     )
-    # Create bucket if it doesn't exist
-    with suppress(S3Error):
-        minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
 
     # Get first book that is waiting to be converted
-    async with Prisma() as db:
-        chapter = await db.audiobookchapter.find_first(
-            where={
-                "minio_object_name": None,
-                "queued": {"not": None},
-                "started_converting": None,
-            },
-            order=[
-                {"queued": "asc"},
-                {"chapter_number": "asc"},
-            ],
+    query = (
+        # pyrefly: ignore
+        AudiobookChapter.objects()
+        .where(
+            (AudiobookChapter.minio_object_name == None)  # noqa: E711
+            & (AudiobookChapter.queued != None)  # noqa: E711
+            & (AudiobookChapter.started_converting == None)  # noqa: E711
         )
-        if chapter is None:
-            return
-        logger.info(f"Converting text to audio {chapter.id}...")
-
-        # Mark chapter as "in_progress" converting
-        # Datetime is the estimation when it should be done converting based on text length
-        updated_count = await db.audiobookchapter.update_many(
-            where={"id": chapter.id},
-            data={
-                "started_converting": arrow.utcnow()
-                .shift(seconds=len(get_chapter_combined_text(chapter)) * ESTIMATE_FACTOR)
-                .datetime
-            },
-        )
-        assert updated_count == 1
-    # Generate tts from the book
-    audio_settings: AudioSettings = AudioSettings.model_validate(chapter.audio_settings)
-    audio: io.BytesIO = await generate_text_to_speech(
-        chapter.content,
-        voice=audio_settings.voice_name,
-        rate=audio_settings.voice_rate,
-        volume=audio_settings.voice_volume,
-        pitch=audio_settings.voice_pitch,
+        .order_by(AudiobookChapter.queued, ascending=True)
+        .order_by(AudiobookChapter.chapter_number, ascending=True)
     )
+    first_chapter = await query.first()
+    if first_chapter is None:
+        return
 
-    # Get data from db, user may have clicked "delete" button on book or chapter
-    async with Prisma() as db:
-        chapter2 = await db.audiobookchapter.find_first(where={"id": chapter.id})
+    # Check active conversions count
+    # pyrefly: ignore
+    active_conversions: int = await AudiobookChapter.count().where(
+        arrow.utcnow().naive < AudiobookChapter.started_converting
+    )
+    if MAX_CONCURRENT_CONVERSIONS <= active_conversions:
+        return
+
+    count_more_conversion_possible = MAX_CONCURRENT_CONVERSIONS - active_conversions
+    chapters = await query.limit(count_more_conversion_possible)
+    for chapter in chapters:
+        # Launch convert_one in a new asyncio task
+        asyncio.create_task(convert_one(chapter))
+
+
+async def convert_one(chapter: AudiobookChapter) -> None:
+    """Convert a single audiobook chapter to audio using text-to-speech.
+
+    Args:
+        chapter: The chapter to convert containing text content and audio settings
+    """
+    # pyrefly: ignore
+    logger.info(f"Starting conversion for chapter {chapter.chapter_number} (book: {chapter.book})")
+    logger.debug(f"Audio settings: {chapter.audio_settings}")
+
+    async with AudiobookConversionContext(chapter) as context:
+        # Generate tts from the book
+        audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
+        audio: io.BytesIO = await generate_text_to_speech(
+            chapter.content,
+            voice=audio_settings.voice_name,
+            rate=audio_settings.voice_rate,
+            volume=audio_settings.voice_volume,
+            pitch=audio_settings.voice_pitch,
+        )
+
+        # Get data from db, user may have clicked "delete" button on book or chapter
+        # pyrefly: ignore
+        chapter2 = await AudiobookChapter.objects().where(AudiobookChapter.id == chapter.id).first()
         if chapter2 is None:
             # Book was deleted
             return
@@ -139,33 +136,31 @@ async def convert_one() -> None:
             logger.info("Audio settings mismatch, skipping")
             return
 
-        # Save result to database
-        object_name = f"{chapter.id}_audio.mp3"
-        """
-        TODO
-convert_audiobook_worker-1  | minio.error.S3Error: S3 operation failed; code: InvalidAccessKeyId, message: The Access Key Id you provided does not exist in our records., resource: /staging-audiobooks, request_id: 18322FFB689E0AD3, host_id: dd9025bab4ad464b049177c95fd1af9251148b658df7ac2e3e8, bucket_name: staging-audiobooks
-        """
-        minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, object_name, audio, len(audio.getvalue()))
-        logger.info("Saving result to database")
-        await db.audiobookchapter.update_many(
-            data={
-                "started_converting": None,
-                "minio_object_name": object_name,
-            },
-            where={"id": chapter.id},
-        )
-    logger.info(f"Done converting, saved to {object_name}")
+        # Save result to MinIO
+        try:
+            # pyrefly: ignore
+            minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio, len(audio.getvalue()))
+            logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
+        except S3Error as e:
+            logger.error(f"Failed to save audio to MinIO: {e}")
+            raise
+
+        # Save result to database after exiting context
+        context.chapter.minio_object_name = context.minio_object_name
+
+    logger.info(f"Done converting, saved to {context.minio_object_name}")
 
 
 async def keep_converting():
-    while 1:
-        t0 = time.time()
-        await convert_one()
-        diff = time.time() - t0
-        if diff < 1:
-            # Returned quickly, let docker compose choose when to restart
-            return
-        await asyncio.sleep(1)
+    """Main worker loop that continuously checks for and processes queued chapters."""
+    logger.info("Starting audiobook conversion worker")
+    while True:
+        try:
+            await check_queued_chapters()
+            await asyncio.sleep(30)
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Error in conversion loop: {e}")
+            await asyncio.sleep(5)  # Brief pause before retrying
 
 
 if __name__ == "__main__":

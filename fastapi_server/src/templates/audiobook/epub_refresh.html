@@ -20,7 +20,7 @@
     {%- for chapter in chapters -%}
         {% if chapter.chapter_title is defined and chapter.sentence_count is defined %}
             <div id="chapter_{{ chapter.chapter_number }}"
-                 class="self-center"
+                 class="self-center border-gray-400 bg-white p-2 hover:bg-gray-100"
                  hx-swap-oob="outerHTML">
                 {{ chapter.chapter_title }} with {{ chapter.sentence_count }} sentences
             </div>

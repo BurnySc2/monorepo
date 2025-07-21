@@ -9,16 +9,17 @@ State3: audio generated, audio loaded
 #}
 <div id="chapter_audio_{{ chapter.chapter_number }}"
      hx-swap-oob="outerHTML"
-     class="flex gap-2">
+     class="flex items-center gap-4">
     {# State4: audio generated and loaded #}
     {% if chapter.minio_presigned_url is defined and chapter.minio_presigned_url != "" %}
-        <audio controls preload="metadata" id="audio" class="grow">
+        <audio controls preload="metadata" id="audio"
+               class="grow rounded-lg border-2 border-gray-700 bg-white p-2 shadow">
             <source src="{{ chapter.minio_presigned_url }}"
                     type="audio/mpeg" />
             Your browser does not support the audio element.
         </audio>
     {% elif chapter.number_in_queue is defined and  chapter.number_in_queue != None and chapter.number_in_queue >= 0 %}
-        <div class="flex items-center rounded-3xl border-4 border-black p-2 grow">
+        <div class="flex items-center rounded-lg border-2 border-gray-700 bg-gray-200 p-3 grow shadow">
             <img class="w-8 animate-spin"
                  style="opacity: 1"
                  src="/static/spinner.svg" />
@@ -29,7 +30,7 @@ State3: audio generated, audio loaded
             {% endif %}
         </div>
     {% elif chapter.is_converting %}
-        <div class="flex items-center rounded-3xl border-4 border-black p-2 grow">
+        <div class="flex items-center rounded-lg border-2 border-gray-700 bg-gray-200 p-3 grow shadow">
             <img class="w-8 animate-spin"
                  style="opacity: 1"
                  src="/static/spinner.svg" />
@@ -37,7 +38,7 @@ State3: audio generated, audio loaded
         </div>
         {# State1: no audio generated and not queued #}
     {% else %}
-        <button class="flex items-center rounded-3xl border-4 border-black p-2 hover:bg-green-500 grow"
+        <button class="flex items-center gap-2 rounded-lg border-2 border-gray-700 bg-green-200 px-4 py-2 font-semibold text-gray-800 transition-colors hover:bg-green-300 grow shadow"
                 hx-swap="none"
                 hx-post="/audiobook/generate_audio?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
                 hx-trigger="click"
@@ -53,7 +54,7 @@ State3: audio generated, audio loaded
     {% if chapter.minio_presigned_url %}
         <a href="{{ chapter.minio_presigned_url }}"
            download
-           class="self-center rounded-3xl hover:bg-yellow-500">
+           class="flex items-center gap-2 rounded-lg border-2 border-gray-700 bg-yellow-200 px-3 py-2 font-semibold text-gray-800 transition-colors hover:bg-yellow-300">
             <img class="h-auto"
                  width="32"
                  height="32"
@@ -66,7 +67,7 @@ State3: audio generated, audio loaded
         <button hx-post="/audiobook/delete_generated_audio/?book_id={{ book_id }}&chapter_number={{ chapter.chapter_number }}"
                 hx-target="#chapter_audio_{{ chapter.chapter_number }}"
                 hx-swap="outerHTML"
-                class="rounded-3xl hover:bg-red-500">
+                class="flex items-center gap-2 rounded-lg border-2 border-gray-700 bg-red-200 px-3 py-2 font-semibold text-gray-800 transition-colors hover:bg-red-300">
             <img width="32"
                  height="32"
                  src="/static/delete.svg"

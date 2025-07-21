@@ -1,38 +1,34 @@
 {#
 <!-- https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML/Document_and_website_structure -->
 #}
-<nav class="flex justify-between bg-white">
-    <div class="flex grow justify-center gap-2">
-        <a
-            class="rounded-xl px-2 hover:bg-yellow-500"
-            href="/audiobook"
-        >Audio-Converter</a>
-        <a
-            class="rounded-xl px-2 hover:bg-yellow-500"
-            href="/telegram-browser"
-        >Telegram-Browser</a>
+<nav class="flex justify-between items-center bg-white shadow-sm px-4 py-2">
+    <div class="flex grow justify-center gap-4">
+        <a class="flex items-center gap-2 rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200"
+            href="/tts">
+            TTS
+        </a>
+        <a class="flex items-center gap-2 rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200"
+            href="/audiobook">
+            Audiobook-Converter
+        </a>
+        <a class="flex items-center gap-2 rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200"
+            href="/telegram-browser">
+            Telegram-Browser
+        </a>
     </div>
-    <a
-        hx-get="/login/name"
-        hx-trigger="load"
-        hx-indicator="#spinner_login"
-        href="/login"
-        class="overflow-hidden rounded-xl px-2 hover:bg-yellow-500"
-    >
-        <img
-            id="spinner_login"
-            class="htmx-indicator w-8 animate-spin overflow-hidden"
-            src="/static/spinner.svg"
-        />
+    <a hx-get="/login/name" hx-trigger="load" hx-indicator="#spinner_login" href="/login"
+        class="flex items-center gap-2 rounded-lg px-4 py-2 hover:bg-blue-100 hover:text-blue-800 transition-colors duration-200">
+        <img id="spinner_login" class="htmx-indicator w-5 h-5 animate-spin" src="/static/spinner.svg" />
+        Login
     </a>
 </nav>
+{# Script adds active styling if we are on this path #}
 <script>
-    {# Script adds class 'bg-blue-300' if we are on this path #}
     const currentPath = window.location.pathname;
     const navLinks = document.querySelectorAll('nav a');
     navLinks.forEach(link => {
         if (link.getAttribute('href') === currentPath) {
-            link.classList.add('bg-blue-300');
+            link.classList.add('bg-blue-100', 'text-blue-800', 'font-medium');
         }
     });
 </script>

@@ -22,7 +22,7 @@ WITH all_queued AS (
 -- Then filter out those chapters that do not belong to the book while keeping the number_in_queued information
 SELECT
     c.id,
-    c.book_id,
+    c.book AS book_id,
     -- Will be either a number if queued, or NULL if not yet queued, started converting or done converting
     q.number_in_queue,
     c.chapter_title,
@@ -40,9 +40,9 @@ FROM
 LEFT JOIN all_queued AS q
     ON c.id = q.id
 LEFT JOIN litestar_audiobook_book AS b
-    ON c.book_id = b.id
+    ON c.book = b.id
 WHERE
-    c.book_id = $1
-    AND c.chapter_number = ANY(CAST($2 AS INTEGER []))
+    c.book = { }
+    AND c.chapter_number = ANY(CAST({ } AS INTEGER []))
     -- AND c.chapter_number = ANY($2::INTEGER[])
     AND b.deleted = FALSE

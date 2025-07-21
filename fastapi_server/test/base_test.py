@@ -1,15 +1,54 @@
+import asyncio
 import os
+import time
 from collections.abc import Iterator
+from contextlib import suppress
 
 import pytest
 from litestar import Litestar
 from litestar.testing import TestClient
-from minio import Minio
+from minio import Minio, S3Error
+from piccolo.table import create_db_tables, drop_db_tables
+from piccolo.utils.sync import run_sync
 from pytest_httpx import HTTPXMock
 
 from app import app
-from prisma.cli import prisma
+from models.audiobook import AudiobookBook, AudiobookChapter
+from routes.audiobook.my_minio_client import minio_check_if_object_exists
 from routes.login_logout import COOKIES
+
+TABLES = [AudiobookBook, AudiobookChapter]
+
+
+async def helper_wait_till_minio_object_exists(bucket_name, object_name, max_wait_seconds: float = 5) -> bool:
+    # Sleep till bucket object exists
+    time_start = time.time()
+    while time.time() - time_start < max_wait_seconds:
+        object_created: bool = await minio_check_if_object_exists(bucket_name, object_name)
+        if object_created:
+            return True
+        await asyncio.sleep(0.1)
+    return False
+
+
+async def helper_wait_till_db_has_count_minio_objects(target_amount: int, max_wait_seconds: float = 5) -> bool:
+    # Sleep till db has target amount of minio objects saved
+    time_start = time.time()
+    while time.time() - time_start < max_wait_seconds:
+        count = await AudiobookChapter.count().where(AudiobookChapter.minio_object_name != None)  # noqa: E711
+        if target_amount <= count:
+            return True
+        await asyncio.sleep(0.1)
+    return False
+
+
+# TODO Decide which testing method i want to use
+# 1) use a test environment with real piccolo postgres client and minio client - will need to set up before and clear up after (or before)
+# 2) use mock functions, what disadvantages does it have? uses string to find attributes? no external applications like db needed tho
+# 3) are there other possibilities? read pytest docs?
+
+# TODO Use https://github.com/litestar-org/pytest-databases#readme
+# to fake databases and minio
 
 
 @pytest.fixture(scope="function")
@@ -22,9 +61,12 @@ def test_client() -> Iterator[TestClient[Litestar]]:
 @pytest.fixture(scope="function")
 def test_client_db_reset() -> Iterator[TestClient[Litestar]]:
     # Use this client if the test accesses and modifies the test-database
-    prisma.run(["migrate", "reset", "--force", "--skip-generate"], check=True)
-    with TestClient(app=app, raise_server_exceptions=True) as client:
-        yield client
+    run_sync(create_db_tables(*TABLES, if_not_exists=True))
+    try:
+        with TestClient(app=app, raise_server_exceptions=True) as client:
+            yield client
+    finally:
+        run_sync(drop_db_tables(*TABLES))
 
 
 @pytest.fixture(scope="function")
@@ -35,6 +77,14 @@ def test_minio_client() -> Iterator[Minio]:
         os.getenv("MINIO_SECRET_KEY"),
         secure=False,
     )
+    # Create bucket
+    bucket = os.getenv("MINIO_AUDIOBOOK_BUCKET")
+    with suppress(S3Error):
+        minio_client.make_bucket(bucket)
+    # Delete all objects in bucket
+    objects = minio_client.list_objects(bucket)
+    for obj in objects:
+        minio_client.remove_object(bucket, obj.object_name)
     yield minio_client
 
 

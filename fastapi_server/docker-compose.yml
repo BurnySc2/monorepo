@@ -3,7 +3,8 @@ x-services-fragments:
   webserver: &webserver
     image: burnysc2/litestar_server:latest_dev
     pull_policy: never
-    command: litestar --app-dir src run --wc 1 --host 0.0.0.0 --port 8000
+    command: uv run --no-dev litestar --app-dir src run --wc 1 --host 0.0.0.0 --port
+      8000
     restart: unless-stopped
     container_name: litestar_server
     hostname: litestar_server
@@ -15,7 +16,7 @@ x-services-fragments:
     command:
       - sh
       - -c
-      - python src/workers/convert_audiobook.py && sleep 1m
+      - uv run --no-dev python src/workers/convert_audiobook.py && sleep 1m
     env_file:
       - .env
     # Has no volume because all files are temporary
@@ -68,7 +69,7 @@ services:
     networks:
       - traefiknet
     deploy:
-      replicas: 4
+      replicas: 1
     profiles:
       - prod
 
@@ -119,7 +120,7 @@ services:
   local_dev_minio:
     container_name: fastapi_dev_minio
     hostname: fastapi_dev_minio
-    image: quay.io/minio/minio
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
     pull_policy: always
     # Start minio server, then after 10 seconds create access key
     entrypoint:

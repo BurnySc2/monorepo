@@ -11,33 +11,75 @@ from loguru import logger
 from websockets import ConnectionClosedError, ConnectionClosedOK
 
 from routes.tts.generate_tts import Voices, generate_tts
-from routes.tts.irc_bot_async import ALLOWED_NAME_LANGUAGES, AsyncIrcBot
+from routes.tts.irc_bot_async2 import ALLOWED_NAME_LANGUAGES, IRCClient, ReadNameLang
 
+# pyrefly: ignore
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
 
 
 @dataclass
 class TTSQueue:
-    # {stream_name: {read_name_lang: asyncio.Queue}}
+    """
+    Central coordination class for TTS WebSocket connections and text processing.
+
+    Manages:
+    - Text queues for each (stream_name, read_name_lang) combination
+    - Connected WebSocket clients for each stream/language pair
+    - Twitch IRC bot connection state
+
+    Provides methods to:
+    - Add/remove WebSocket connections
+    - Queue text for TTS processing
+    - Check connection status
+    - Manage IRC channel joins/parts
+
+    Works with TTSQueueRunner which processes the queues and generates TTS audio.
+    """
+
+    # {(stream_name, read_name_lang): asyncio.Queue}
+    # Each queue item is a tuple[voice: str, text: str]
     text_queue: ClassVar[dict[tuple[str, str], asyncio.Queue]] = {}
-    # {stream_name: {read_name_lang: list[Websocket]}}
+    # {(stream_name, read_name_lang): list[Websocket]}
     connected_websockets: ClassVar[dict[tuple[str, str], list[WebSocket]]] = {}
-    joined_twitch_channels: ClassVar[set[str]] = set()
-    twitch_irc_bot: ClassVar[AsyncIrcBot | None] = None
+    # {(stream_name, read_name_lang): irc_client}
+    twitch_irc_bots: ClassVar[dict[tuple[str, str], IRCClient]] = {}
+
+    @classmethod
+    def irc_client_add_text_method(cls, stream_name: str, read_name_lang: ReadNameLang, username: str, message: str):
+        """Callback function for irc client on new message."""
+        # Sanity check: has voice in message
+        message_lowercase = message.lower()
+        if ":" in message_lowercase:
+            message_voice, *content = message_lowercase.split(":")
+            if message_voice not in VOICE_NAMES_LOWERCASE:
+                return
+
+        # Find voice name
+        voice: Voices | None = None
+        loop_voice: Voices
+        for loop_voice in Voices.__iter__():
+            if message_lowercase.startswith(f"{loop_voice.name.lower()}:"):
+                voice = loop_voice
+                break
+        if voice is None:
+            # No voice found
+            return
+        message = message[len(voice.name) + 1 :].strip()
+        if message == "":
+            # Message is empty
+            return
+        if read_name_lang != "none":
+            username_says_voice, username_says_text = ALLOWED_NAME_LANGUAGES[read_name_lang]
+            cls.text_queue[(stream_name, read_name_lang)].put_nowait(
+                (username_says_voice, f"{username} {username_says_text}")
+            )
+        cls.text_queue[(stream_name, read_name_lang)].put_nowait((voice, message))
 
     @classmethod
     def add_websocket(cls, stream_name: str, read_name_lang: str, socket: WebSocket) -> None:
         if (stream_name, read_name_lang) not in cls.connected_websockets:
             cls.connected_websockets[(stream_name, read_name_lang)] = []
         cls.connected_websockets[(stream_name, read_name_lang)].append(socket)
-
-    @classmethod
-    async def add_text_queue(cls, stream_name: str, read_name_lang: str, voice: Voices, text: str) -> None:
-        if (stream_name, read_name_lang) not in cls.text_queue:
-            cls.text_queue[(stream_name, read_name_lang)] = asyncio.Queue()
-        if text == "":
-            return
-        await cls.text_queue[(stream_name, read_name_lang)].put((voice, text))
 
     @classmethod
     def get_text_queue(cls, stream_name: str, read_name_lang: str) -> asyncio.Queue | None:
@@ -78,26 +120,30 @@ class TTSQueue:
         """
         cls.text_queue.pop((stream_name, read_name_lang))
         cls.connected_websockets.pop((stream_name, read_name_lang))
-
-        # Leave irc channel if no websocket is connected
-        if not cls.is_connected(stream_name):
-            logger.info(f"Disconnecting from irc channel: {stream_name}")
-            cls.joined_twitch_channels.discard(stream_name)
-            assert TTSQueue.twitch_irc_bot is not None
-            await TTSQueue.twitch_irc_bot.part([f"#{stream_name}"])
-
-    @classmethod
-    async def start_irc_bot(cls) -> None:
-        cls.twitch_irc_bot = AsyncIrcBot(tts_queue=TTSQueue)
-        await cls.twitch_irc_bot.connect()
+        # Shut down irc bot
+        irc_client = cls.twitch_irc_bots.pop((stream_name, read_name_lang))
+        await irc_client.shutdown()
 
 
 @dataclass
 class TTSQueueRunner:
     """
-    Worker waits for currently running tts to finish before queueing a new one.
-    Wait for newly queued text to arrive to be converted to audio and played on all connected websockets.
-    End endless loop if there are no more connected websockets.
+    Worker class that processes TTS requests for a specific stream/language pair.
+
+    Responsibilities:
+    - Continuously checks the text queue for new messages
+    - Generates TTS audio via generate_tts()
+    - Streams audio to all connected WebSocket clients
+    - Manages timing between TTS segments
+    - Cleans up when all clients disconnect
+
+    Key behaviors:
+    - Runs in an infinite loop until the queue is removed (no clients left)
+    - Respects TTS playback duration (won't start new TTS while one is playing)
+    - Handles WebSocket disconnections and errors gracefully
+    - Logs TTS generation and delivery events
+
+    Works in conjunction with TTSQueue which manages the shared state.
     """
 
     stream_name: str
@@ -105,7 +151,7 @@ class TTSQueueRunner:
     tts_is_playing_till: arrow.Arrow = field(default_factory=arrow.utcnow)
 
     @property
-    def text_queue(self) -> asyncio.Queue | None:
+    def text_queue(self) -> asyncio.Queue[tuple[Voices, str]] | None:
         return TTSQueue.get_text_queue(self.stream_name, self.read_name_lang)
 
     @property
@@ -117,7 +163,6 @@ class TTSQueueRunner:
         return TTSQueue.get_connected_websockets(self.stream_name, self.read_name_lang)
 
     async def run(self):
-        await TTSQueue.add_text_queue(self.stream_name, self.read_name_lang, Voices.STORY_TELLER, text="")
         while 1:
             # End worker if text queue was removed which means all connected websockets have disconnected
             if not self.text_queue_exists:
@@ -129,11 +174,13 @@ class TTSQueueRunner:
                 continue
 
             # No new items
+            # pyrefly: ignore
             if self.text_queue.empty():
                 await asyncio.sleep(0.1)
                 continue
 
             # Generate tts
+            # pyrefly: ignore
             voice, text = await self.text_queue.get()
             logger.info(f"Generating tts: {self.stream_name}: ({voice}) {text}")
 
@@ -146,19 +193,20 @@ class TTSQueueRunner:
                 logger.error(e)
                 continue
             logger.info(f"Sending generated tts to clients: {self.stream_name}: ({voice}) {text}")
+            # pyrefly: ignore
             self.text_queue.task_done()
             tasks = [
                 asyncio.create_task(
                     self.send_template_to_ws(
                         ws,
                         f"""
-                    <div hx-swap-oob="innerHTML:#content">
-                        <audio controls autoplay id="audio">
-                            <source src="data:audio/mpeg;base64, {mp3_b64_data}" type="audio/mpeg" />
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                    """,
+<div hx-swap-oob="innerHTML:#content">
+    <audio controls autoplay id="audio">
+        <source src="data:audio/mpeg;base64, {mp3_b64_data}" type="audio/mpeg" />
+        Your browser does not support the audio element.
+    </audio>
+</div>
+                        """.strip(),
                     )
                 )
                 for ws in self.connected_websockets
@@ -184,7 +232,8 @@ class TTSQueueRunner:
 class TTSWebsocketHandler(WebsocketListener):
     path = "/tts-ws/{stream_name: str}/{read_name_lang: str}"
 
-    async def on_accept(self, socket: WebSocket, stream_name: str, read_name_lang: Literal["none", "en", "de"]) -> None:
+    # pyrefly: ignore
+    async def on_accept(self, socket: WebSocket, stream_name: str, read_name_lang: ReadNameLang) -> None:
         """
         On new ws-connection:
             - join twitch channel
@@ -193,21 +242,26 @@ class TTSWebsocketHandler(WebsocketListener):
         # Is this required?
         await socket.accept(headers={"Cookie": "custom-cookie"})
 
-        # Add socket
-        TTSQueue.add_websocket(stream_name, read_name_lang, socket)
+        # Initialize text queue if not exists
         if (stream_name, read_name_lang) not in TTSQueue.text_queue:
+            TTSQueue.text_queue[(stream_name, read_name_lang)] = asyncio.Queue()
             # Create worker for this 'stream_name' and 'read_name_lang'
             asyncio.create_task(TTSQueueRunner(stream_name, read_name_lang).run())
 
-        # Join twitch channel
-        assert TTSQueue.twitch_irc_bot is not None
-        await TTSQueue.twitch_irc_bot.wait_till_ready()
-        if stream_name not in TTSQueue.joined_twitch_channels:
-            logger.info(f"Connecting to irc channel: {stream_name}")
-            assert TTSQueue.twitch_irc_bot is not None
-            await TTSQueue.twitch_irc_bot.join([f"#{stream_name}"])
-            TTSQueue.joined_twitch_channels.add(stream_name)
+        # Add socket - needs to happen after text_queue is initialized
+        TTSQueue.add_websocket(stream_name, read_name_lang, socket)
 
+        # Start irc bot: listen to messages in channel
+        if (stream_name, read_name_lang) not in TTSQueue.twitch_irc_bots:
+            new_irc_client = IRCClient(
+                channel=stream_name, read_name_lang=read_name_lang, callback=TTSQueue.irc_client_add_text_method
+            )
+            TTSQueue.twitch_irc_bots[(stream_name, read_name_lang)] = new_irc_client
+            await new_irc_client.connect()
+            # Keep irc bot running
+            asyncio.create_task(new_irc_client.listen())
+
+    # pyrefly: ignore
     async def on_disconnect(
         self, socket: WebSocket, stream_name: str, read_name_lang: Literal["none", "en", "de"]
     ) -> None:

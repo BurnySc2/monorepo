@@ -12,11 +12,12 @@ from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Parameter
 from pydantic import BaseModel
 
-from routes.audiobook.schema import (
+from models.audiobook import AudiobookBook
+from routes.audiobook.my_minio_client import (
     AudioSettings,
 )
 from routes.audiobook.temp_generate_tts import get_supported_voices
-from routes.caches import get_db, global_cache
+from routes.caches import global_cache
 
 load_dotenv()
 
@@ -280,14 +281,12 @@ async def owns_book_guard(
     assert isinstance(logged_in_user.name, str), logged_in_user.name
     book_id: int = connection.path_params.get("book_id") or int(connection.query_params["book_id"])
     assert isinstance(book_id, int), book_id
-    async with get_db() as db:
-        book = await db.audiobookbook.find_first(
-            where={
-                "id": book_id,
-                "uploaded_by": logged_in_user.db_name,
-            }
-        )
-    if book is None:
+    # pyrefly: ignore
+    count = await AudiobookBook.count().where(
+        # pyrefly: ignore
+        (AudiobookBook.id == book_id) & (AudiobookBook.uploaded_by == logged_in_user.db_name)
+    )
+    if count == 0:
         raise NotAuthorizedException("You don't have access to this book.")
 
 

@@ -1,53 +1,113 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Streamer Tiktok TTS</title>
-    <script
-      src="https://unpkg.com/htmx.org@1.9.5"
-      integrity="sha384-xcuj3WpfgjlKF+FXhSQFQ0ZNr39ln+hwjN3npfM9VBnUskLolQAcN80McRIVOPuO"
-      crossorigin="anonymous"
-    ></script>
-    <script src="https://cdn.tailwindcss.com/3.3.0"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
-    <script>
-      // Change volume on '/tts'
-      document.addEventListener('htmx:afterRequest', function (evt) {
-        document.getElementById("audio").volume = {{ volume }};
-      });
-    </script>
-  </head>
+{% include "header.html" with context %}
+<script>
+  // Change volume on '/tts'
+  document.addEventListener('htmx:afterRequest', function (evt) {
+    document.getElementById("audio").volume = Number('{{ volume }}');
+  });
 
-  <body class="flex h-screen flex-col items-center justify-center bg-gray-300">
-    <form
-      hx-post="/tts/generate_mp3"
-      hx-target="#audio"
-      hx-swap="outerHTML"
-      class="w-2/3h-fit flex flex-col"
-    >
-      <div class="grid grid-cols-2">
-        <div>Voice</div>
-        <select name="tts_voice">
-          {% for voice_name in voices %} {% if voice_name == 'SONG_TENOR' %}
-          <option selected>{{ voice_name }}</option>
-          {% else %}
-          <option>{{ voice_name }}</option>
-          {% endif %} {% endfor %}
-        </select>
-        <div>Text</div>
-        <input type="text" name="tts_text" placeholder="Your text here" />
+  // Update preview field when form changes
+  function update_preview() {
+    const voice = document.querySelector('[name="tts_voice"]').value.toLowerCase();
+    const text = document.querySelector('[name="tts_text"]').value;
+    document.getElementById('preview').value = `${voice}: ${text}`;
+  }
+
+  function copy_preview() {
+    // const preview = document.getElementById('preview');
+    // preview.select();
+    // document.execCommand('copy');
+    navigator.clipboard.writeText(document.getElementById('preview').value)
+    // Show feedback
+    const btn = event.target;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelector('[name="tts_voice"]').addEventListener('change', update_preview);
+    document.querySelector('[name="tts_text"]').addEventListener('input', update_preview);
+    update_preview(); // Initialize
+  });
+</script>
+
+<body class="flex h-screen flex-col bg-gray-100">
+  {% include "nav.html" with context %}
+  <main class="flex flex-col items-center justify-center grow">
+    <div class="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
+      <h1 class="mb-6 text-center text-2xl font-bold text-gray-800">Text-to-Speech Generator</h1>
+
+      <form hx-post="/tts/generate_mp3" hx-target="#audio" hx-swap="outerHTML" class="space-y-4">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Voice</label>
+          <select name="tts_voice"
+            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500">
+            {% for voice_name in voices %}
+            <option value="{{ voice_name }}" {% if voice_name=='SONG_TENOR' %}selected{% endif %}>
+              {{ voice_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Text</label>
+          <input type="text" name="tts_text" placeholder="Enter text to convert to speech"
+            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+            required />
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">Preview</label>
+          <div class="flex gap-2">
+            <input type="text" id="preview" readonly
+              class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500" />
+            <button type="button" onclick="copy_preview()"
+              class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <button type="submit"
+          class="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          hx-indicator=".loading">
+          <span class="flex items-center justify-center">
+            <span>Generate Audio</span>
+            <svg class="loading h-4 w-4 animate-spin ml-2 hidden" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+              </path>
+            </svg>
+          </span>
+        </button>
+      </form>
+
+      <div class="mt-6 w-full">
+        <audio controls id="audio" class="w-full rounded-lg shadow-md">
+          <source src="data:audio/mpeg;base64, {{ mp3_b64_data }}" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
       </div>
-      <button type="submit" class="m-2 border border-black p-2">
-        Generate audio
-      </button>
-    </form>
-    <audio controls id="audio">
-      <source
-        src="data:audio/mpeg;base64, {{ mp3_b64_data }}"
-        type="audio/mpeg"
-      />
-      Your browser does not support the audio element.
-    </audio>
-  </body>
+      <div class="mt-6 space-y-2">
+        <p class="text-sm font-medium text-gray-700">OBS Overlay Setup</p>
+        <p class="text-sm text-gray-600">
+          You can add this TTS as an overlay in OBS by adding this URL as a browser source (replace "channelname" with
+          your Twitch username):
+        </p>
+        <div class="flex gap-2">
+          <textarea id="obs-url"
+            class="w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 resize-none"
+            readonly>https://burnysc2.xyz/tts/twitch/channelname?volume=15</textarea>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('obs-url').value)"
+            class="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+
 </html>

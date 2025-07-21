@@ -24,22 +24,22 @@ from minio import Minio
 from minio.helpers import _BUCKET_NAME_REGEX
 from pydantic import BaseModel, PositiveInt
 
-from prisma import models
-from prisma.enums import Status
-from routes.caches import cache_coroutine_result, get_db
+from models.telegram_browser import Status, TelegramChannel, TelegramMessage
+from routes.caches import cache_coroutine_result
 from routes.telegram_browser.cookies_and_guards import is_logged_in_allowed_accounts_guard
+
+# pyre-fixme[9]
+BUCKET_NAME = os.getenv("MINIO_TELEGRAM_FILES_BUCKET")
+assert BUCKET_NAME is not None
+assert re.match(_BUCKET_NAME_REGEX, BUCKET_NAME) is not None
 
 minio_client = Minio(
     # pyre-fixme[6]
     os.getenv("MINIO_URL"),
-    os.getenv("MINIO_ACCESS_TOKEN"),
-    os.getenv("MINIO_SECRET_KEY"),
-    secure=os.getenv("STAGE") in {"prod"},
+    access_key=os.getenv("MINIO_ACCESS_TOKEN"),
+    secret_key=os.getenv("MINIO_SECRET_KEY"),
+    secure=os.getenv("MINIO_SECURE") == "TRUE",
 )
-
-BUCKET_NAME = os.getenv("MINIO_TELEGRAM_FILES_BUCKET")
-assert BUCKET_NAME is not None
-assert re.match(_BUCKET_NAME_REGEX, BUCKET_NAME) is not None
 
 
 telegram_store = MemoryStore()
@@ -59,36 +59,36 @@ RESULT_COLUMNS = {
 }
 
 
-async def all_channels_cache() -> list[models.TelegramChannel]:
-    async with get_db() as db:
-        all_channels_query = db.telegramchannel.find_many(
-            where={"channel_username": {"not": None}},
-            order={"channel_username": "asc"},
-        )
-        return await cache_coroutine_result(
-            "all_telegram_channels",
-            all_channels_query,
-            # Cache for 5 minutes
-            expires_in=5 * 60,
-        )
+async def all_channels_cache() -> list[TelegramChannel]:
+    all_channels_query = (
+        # pyrefly: ignore
+        await TelegramChannel.objects()
+        .where(TelegramChannel.channel_username != None)  # noqa: E711
+        .order_by(TelegramChannel.channel_username)
+    )
+    return await cache_coroutine_result(
+        "all_telegram_channels",
+        all_channels_query,
+        # Cache for 5 minutes
+        expires_in=5 * 60,
+    )
 
 
 async def all_file_formats_cache() -> list[dict]:
-    async with get_db() as db:
-        all_file_formats_query = db.query_raw(
-            """
+    all_file_formats_query = await TelegramChannel.raw(
+        """
 SELECT DISTINCT LOWER(file_extension) AS file_extension_lower
 FROM public.litestar_telegram_message
 WHERE file_extension IS NOT NULL
 ORDER BY file_extension_lower;
-            """
-        )
-        return await cache_coroutine_result(
-            "all_telegram_file_formats",
-            all_file_formats_query,
-            # Cache for 1 hour
-            expires_in=60 * 60,
-        )
+        """
+    )
+    return await cache_coroutine_result(
+        "all_telegram_file_formats",
+        all_file_formats_query,
+        # Cache for 1 hour
+        expires_in=60 * 60,
+    )
 
 
 class SearchInput(BaseModel):
@@ -167,65 +167,87 @@ class MyTelegramBrowserRoute(Controller):
     ) -> Template:
         logger.info(f"Search input: {data=}")
         active_columns_dict, disabled_columns_dict = get_actived_and_disabled_columns(active_columns_str)
-        async with get_db() as db:
-            results = await db.telegrammessage.find_many(
-                # If "{}" then the filter will be ignored
-                # pyre-fixme[55]
-                where={
-                    "AND": [
-                        # SEARCH TEXT
-                        {"message_text": {"contains": data.search_text, "mode": "insensitive"}}
-                        if data.search_text != ""
-                        else {},
-                        # CHANNEL NAME
-                        {"channel": {"channel_username": data.channel_name}} if data.channel_name else {},
-                        # DATE RANGE
-                        {"message_date": {"gte": arrow.get(data.datetime_min).datetime}}
-                        if data.datetime_min != ""
-                        else {},
-                        {"message_date": {"lte": arrow.get(data.datetime_max).datetime}}
-                        if data.datetime_max != ""
-                        else {},
-                        # AMOUNT OF REACTIONS
-                        {"amount_of_reactions": {"gte": data.reactions_min}} if data.reactions_min != "" else {},
-                        {"amount_of_reactions": {"lte": data.reactions_max}} if data.reactions_max != "" else {},
-                        # AMOUNT OF COMMENTS
-                        {"amount_of_comments": {"gte": data.comments_min}} if data.comments_min != "" else {},
-                        {"amount_of_comments": {"lte": data.comments_min}} if data.comments_min != "" else {},
-                        # ATTACHMENT
-                        # HAS FILE
-                        {"status": Status.NoFile} if not data.must_have_file else {},
-                        {"status": {"not": Status.NoFile}} if data.must_have_file else {},
-                        # HAS FILE
-                        {"file_extension": data.file_extension} if data.file_extension != "" else {},
-                        # FILE DURATION
-                        {"file_duration_seconds": {"gte": string_to_seconds(data.file_duration_min)}}
-                        if string_to_seconds(data.file_duration_min) > 0
-                        else {},
-                        {"file_duration_seconds": {"lte": string_to_seconds(data.file_duration_max)}}
-                        if string_to_seconds(data.file_duration_max) > 0
-                        else {},
-                        # FILE SIZE
-                        {"file_size_bytes": {"gte": data.file_size_min * 2**20}} if data.file_size_min != "" else {},
-                        {"file_size_bytes": {"lte": data.file_size_max * 2**20}} if data.file_size_max != "" else {},
-                        # IMAGE SIZE WIDTH
-                        {"file_width": {"gte": data.file_image_width_min}} if data.file_image_width_min != "" else {},
-                        {"file_width": {"lte": data.file_image_width_max}} if data.file_image_width_max != "" else {},
-                        # IMAGE SIZE HEIGHT
-                        {"file_height": {"gte": data.file_image_height_min}}
-                        if data.file_image_height_min != ""
-                        else {},
-                        {"file_height": {"lte": data.file_image_height_max}}
-                        if data.file_image_height_max != ""
-                        else {},
-                    ],
-                },
-                # TODO How to order search? Click on table columns?
-                # order={""},
-                include={"channel": True},
-                take=200,
-                # skip=0,  # TODO Pagination
-            )
+
+        query = TelegramMessage.objects(TelegramMessage.channel)
+        # SEARCH TEXT
+        if data.search_text != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.message_text.ilike(data.search_text))
+        # CHANNEL NAME
+        if data.channel_name:
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.channel.channel_username == data.channel_name)
+        # DATE RANGE
+        if data.datetime_min != "":
+            # pyrefly: ignore
+            query = query.where(arrow.get(data.datetime_min).datetime <= TelegramMessage.message_date)
+        if data.datetime_max != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.message_date <= arrow.get(data.datetime_max).datetime)
+        # AMOUNT OF REACTIONS
+        if data.reactions_min != "":
+            # pyrefly: ignore
+            query = query.where(data.reactions_min <= TelegramMessage.amount_of_reactions)
+        if data.reactions_max != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.amount_of_reactions <= data.reactions_max)
+        # AMOUNT OF COMMENTS
+        if data.comments_min != "":
+            # pyrefly: ignore
+            query = query.where(data.comments_min <= TelegramMessage.amount_of_comments)
+        if data.comments_max != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.amount_of_comments <= data.comments_max)
+        # ATTACHMENT
+        # HAS FILE, TODO change do select: must have file, must not have file, either
+        if data.must_have_file:
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.status == Status.HasFile)
+        else:
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.status == Status.NoFile)
+        # FILE EXTENSION
+        if data.file_extension != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.file_extension == data.file_extension)
+        # FILE DURATION
+        if data.file_duration_min != "":
+            # pyrefly: ignore
+            query = query.where(data.file_duration_min <= TelegramMessage.file_duration_seconds)
+        if data.file_duration_max != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.file_duration_seconds <= data.file_duration_max)
+        # FILE SIZE
+        if data.file_size_min != "":
+            # pyrefly: ignore
+            query = query.where(data.file_size_min <= TelegramMessage.file_size_bytes)
+        if data.file_size_max != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.file_size_bytes <= data.file_size_max)
+        # IMAGE SIZE WIDTH
+        if data.file_image_width_min != "":
+            # pyrefly: ignore
+            query = query.where(data.file_image_width_min <= TelegramMessage.file_width)
+        if data.file_image_width_max != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.file_width <= data.file_image_width_max)
+        # IMAGE SIZE HEIGHT
+        if data.file_image_height_min != "":
+            # pyrefly: ignore
+            query = query.where(data.file_image_height_min <= TelegramMessage.file_height)
+        if data.file_image_height_max != "":
+            # pyrefly: ignore
+            query = query.where(TelegramMessage.file_height <= data.file_image_height_max)
+
+        # TODO Pagination
+        # query.offset()
+        # pyrefly: ignore
+        query = query.limit(200)
+        # TODO How to order search? Click on table columns?
+        # order={""},
+
+        results = await query
+
         results_as_dict: list[dict] = [
             {
                 # Data displayed in the columns
@@ -272,13 +294,12 @@ class MyTelegramBrowserRoute(Controller):
         message_id: int,
     ) -> Template:
         """In database, set file to queued"""
-        async with get_db() as db:
-            item = await db.telegrammessage.update(
-                data={
-                    "status": Status.Queued,
-                },
-                where={"id": message_id},
-            )
+        # pyrefly: ignore
+        item = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
+        if item is None:
+            return
+        item.status = Status.Queued
+        await item.save()
         return Template(
             "telegram_browser/search_result_icons.html",
             context={
@@ -297,13 +318,13 @@ class MyTelegramBrowserRoute(Controller):
         message_id: int,
     ) -> Template | Response:
         """Check if file has been downloaded"""
-        async with get_db() as db:
-            item = await db.telegrammessage.find_unique(
-                where={"id": message_id},
-            )
-            if item.status in {Status.Downloading, Status.Queued}:
-                # No content, do not swap
-                return Response(content="", status_code=HTTP_204_NO_CONTENT)
+        # pyrefly: ignore
+        item = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
+        if item is None:
+            return
+        if item.status in {Status.Downloading, Status.Queued}:
+            # No content, do not swap
+            return Response(content="", status_code=HTTP_204_NO_CONTENT)
         return Template(
             "telegram_browser/search_result_icons.html",
             context={
@@ -326,16 +347,15 @@ class MyTelegramBrowserRoute(Controller):
         Return <video> element for videos, <audio> for audio, <img> for image
         Return <object> or <embed> for other mime types
         """
-        async with get_db() as db:
-            message = await db.telegrammessage.find_unique(
-                where={"id": message_id},
-            )
+        # pyrefly: ignore
+        message = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
         if message is None:
             raise HTTPException(detail="Message not found", status_code=400)
         if message.minio_object_name is None:
             raise HTTPException(detail="File has not been downloaded.", status_code=400)
         minio_url = await asyncio.to_thread(
             minio_client.presigned_get_object,
+            # pyrefly: ignore
             BUCKET_NAME,
             message.minio_object_name,
             expires=timedelta(seconds=(message.file_duration_seconds or 0) + 5 * 60),
@@ -354,12 +374,18 @@ class MyTelegramBrowserRoute(Controller):
         message_id: int,
     ) -> ClientRedirect | None:
         """Allow the user to download the file to file system"""
-        async with get_db() as db:
-            message = await db.telegrammessage.find_unique(where={"id": message_id})
-            if message is None or message.minio_object_name is None:
-                return
+        # pyrefly: ignore
+        message = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
+        if message is None:
+            raise HTTPException(detail="Message not found", status_code=400)
+        if message.minio_object_name is None:
+            return
         minio_url = await asyncio.to_thread(
-            minio_client.presigned_get_object, BUCKET_NAME, message.minio_object_name, expires=timedelta(hours=1)
+            minio_client.presigned_get_object,
+            # pyrefly: ignore
+            BUCKET_NAME,
+            message.minio_object_name,
+            expires=timedelta(hours=1),
         )
         return ClientRedirect(redirect_to=minio_url)
 
@@ -367,30 +393,27 @@ class MyTelegramBrowserRoute(Controller):
     async def delete_file(
         self,
         message_id: int,
-    ) -> None:
+    ) -> Template:
         """Delete file in database and in minio"""
-        async with get_db() as db:
-            message = await db.telegrammessage.find_unique(where={"id": message_id})
-            assert message is not None
-            if message.minio_object_name is not None:
-                asyncio.to_thread(minio_client.remove_object, BUCKET_NAME, message.minio_object_name)
-            item = await db.telegrammessage.update(
-                data={
-                    "status": Status.HasFile,
-                    "downloading_retry_attempt": 0,
-                    "downloading_start_time": None,
-                    "minio_object_name": None,
-                },
-                # pyre-fixme[55]
-                where={"id": message_id},
-            )
+        # pyrefly: ignore
+        message = await TelegramMessage.objects().where(TelegramMessage.id == message_id).first()
+        if message is None:
+            raise HTTPException(detail="Message not found", status_code=400)
+        if message.minio_object_name is not None:
+            # pyrefly: ignore
+            asyncio.to_thread(minio_client.remove_object, BUCKET_NAME, message.minio_object_name)
+        message.status = Status.HasFile
+        message.downloading_retry_attempt = 0
+        message.downloading_start_time = None
+        message.minio_object_name = None
+        await message.save()
         return Template(
             "telegram_browser/search_result_icons.html",
             context={
                 "row": {
                     "metadata": {
-                        "id": item.id,
-                        "status": item.status,
+                        "id": message.id,
+                        "status": message.status,
                     }
                 }
             },
