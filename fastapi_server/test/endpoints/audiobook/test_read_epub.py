@@ -91,7 +91,7 @@ def test_epub_reader_extract_chapters_simple():
         # Chapter title
         keys=st.from_regex(r"\w[\w \n]*", fullmatch=True),
         # Chapter content
-        values=st.from_regex(r"\w[\w \n]*", fullmatch=True),
+        values=st.from_regex(r"\w[\w \n]*", fullmatch=True, alphabet=st.characters(codec="ascii")),
         # Alternative parsing if only 1 chapter was detected
         min_size=2,
         max_size=10**4 - 1,

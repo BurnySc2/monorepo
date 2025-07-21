@@ -13,7 +13,6 @@ from litestar.testing import TestClient
 from minio import Minio, S3Error
 from pytest_httpx import HTTPXMock
 
-from prisma import Prisma
 from routes.caches import global_cache
 from test.base_test import log_in_with_twitch, test_client, test_client_db_reset, test_minio_client  # noqa: F401
 from workers import convert_audiobook

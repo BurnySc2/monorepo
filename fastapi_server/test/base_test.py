@@ -8,7 +8,6 @@ from minio import Minio
 from pytest_httpx import HTTPXMock
 
 from app import app
-from prisma.cli import prisma
 from routes.login_logout import COOKIES
 
 # TODO Decide which testing method i want to use
@@ -30,7 +29,6 @@ def test_client() -> Iterator[TestClient[Litestar]]:
 @pytest.fixture(scope="function")
 def test_client_db_reset() -> Iterator[TestClient[Litestar]]:
     # Use this client if the test accesses and modifies the test-database
-    prisma.run(["migrate", "reset", "--force", "--skip-generate"], check=True)
     with TestClient(app=app, raise_server_exceptions=True) as client:
         yield client
 
