@@ -135,6 +135,7 @@ sequence_style = "block_style"
 
 [tool.pytest.ini_options]
 pythonpath = "src"
+testpaths = ["test"]
 
 [tool.pytest_env]
 # Env variables to be used while tests run

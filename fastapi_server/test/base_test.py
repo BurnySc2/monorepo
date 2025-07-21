@@ -8,7 +8,14 @@ from minio import Minio
 from pytest_httpx import HTTPXMock
 
 from app import app
+from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.login_logout import COOKIES
+
+from piccolo.table import create_db_tables, drop_db_tables
+from piccolo.utils.sync import run_sync
+
+TABLES = [AudiobookBook, AudiobookChapter]
+
 
 # TODO Decide which testing method i want to use
 # 1) use a test environment with real piccolo postgres client and minio client - will need to set up before and clear up after (or before)
@@ -29,8 +36,12 @@ def test_client() -> Iterator[TestClient[Litestar]]:
 @pytest.fixture(scope="function")
 def test_client_db_reset() -> Iterator[TestClient[Litestar]]:
     # Use this client if the test accesses and modifies the test-database
-    with TestClient(app=app, raise_server_exceptions=True) as client:
-        yield client
+    run_sync(create_db_tables(*TABLES, if_not_exists=True))
+    try:
+        with TestClient(app=app, raise_server_exceptions=True) as client:
+            yield client
+    finally:
+        run_sync(drop_db_tables(*TABLES))
 
 
 @pytest.fixture(scope="function")

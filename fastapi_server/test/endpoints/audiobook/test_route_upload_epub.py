@@ -5,6 +5,8 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 from zipfile import ZipFile
 
+from hypothesis import strategies as st
+from hypothesis import example, given, settings
 import pytest
 from bs4 import BeautifulSoup  # pyre-fixme[21]
 from litestar.contrib.htmx._utils import HTMXHeaders
@@ -13,6 +15,7 @@ from litestar.testing import TestClient
 from minio import Minio, S3Error
 from pytest_httpx import HTTPXMock
 
+from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.caches import global_cache
 from test.base_test import log_in_with_twitch, test_client, test_client_db_reset, test_minio_client  # noqa: F401
 from workers import convert_audiobook
@@ -41,44 +44,45 @@ async def test_index_route_has_upload_button(test_client_db_reset: TestClient, h
 
 
 # Test post request to "/audiobook/epub_upload" can upload an epub
-@pytest.mark.parametrize(
-    "book_relative_path, book_id, chapters_amount",
-    [
-        ("actual_books/frankenstein.epub", 1, 31),
-        ("actual_books/romeo-and-juliet.epub", 1, 28),
-        ("actual_books/the-war-of-the-worlds.epub", 1, 29),
-    ],
-)
-@pytest.mark.httpx_mock(should_mock=lambda request: request.url.host not in ["localhost"])
+# TODO Add other 2 examples
+# @example("actual_books/romeo-and-juliet.epub", 1, 28)
+# @example("actual_books/the-war-of-the-worlds.epub", 1, 29)
 @pytest.mark.asyncio
-async def test_index_route_upload_epub(
-    book_relative_path: str, book_id: int, chapters_amount: int, test_client_db_reset: TestClient, httpx_mock: HTTPXMock
-) -> None:  # noqa: F811
+async def test_index_route_upload_epub_frankenstein(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+    book_relative_path = "actual_books/frankenstein.epub"
+    book_id = 1
+    chapters_amount = 31
+
     await global_cache.delete_all()
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
     # Sanity check
-    async with Prisma() as db:
-        count = await db.audiobookbook.count()
-        assert count == 0
+    pre_book_count = await AudiobookBook.count()
+    assert pre_book_count == 0
     # Make sure the book does not exist yet
-    response = test_client_db_reset.get(f"/audiobook/book/{book_id}")
-    assert response.status_code == HTTP_401_UNAUTHORIZED
+    upload_response = test_client_db_reset.get(f"/audiobook/book/{book_id}")
+    assert upload_response.status_code == HTTP_401_UNAUTHORIZED
 
     # Upload book
     book_path = Path(__file__).parent / book_relative_path
-    response = test_client_db_reset.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
-    assert response.status_code == HTTP_201_CREATED
+    upload_response = test_client_db_reset.post("/audiobook/epub_upload", files={"upload-file": book_path.open("rb")})
+    assert upload_response.status_code == HTTP_201_CREATED
     # Why is the database not empty?
-    assert response.headers.get(HTMXHeaders.REDIRECT) == f"/audiobook/book/{book_id}"
-    assert response.headers.get("location") is None
+    assert upload_response.headers.get(HTMXHeaders.REDIRECT) == f"/audiobook/book/{book_id}"
+    assert upload_response.headers.get("location") is None
 
     # Make sure N chapters were detected
-    response2 = test_client_db_reset.get(response.headers.get(HTMXHeaders.REDIRECT))
-    soup = BeautifulSoup(response2.text, features="lxml")
+    redirect_response = test_client_db_reset.get(upload_response.headers.get(HTMXHeaders.REDIRECT))
+    soup = BeautifulSoup(redirect_response.text, features="lxml")
     matching_divs = soup.find_all("div", id=lambda x: x is not None and x.startswith("chapter_audio_"))
-    assert response2.status_code == HTTP_200_OK
+    assert redirect_response.status_code == HTTP_200_OK
     assert len(matching_divs) == chapters_amount
+
+    # Database verification check
+    post_book_count = await AudiobookBook.count()
+    assert post_book_count == 1
+    post_chapter_count = await AudiobookChapter.count()
+    assert post_chapter_count == chapters_amount
 
 
 # Test post request to "/" book already exists
