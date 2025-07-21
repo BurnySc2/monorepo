@@ -52,6 +52,9 @@ async def test_index_route_has_upload_button(test_client_db_reset: TestClient, h
 # Test post request to "/audiobook/epub_upload" can upload an epub
 @pytest.mark.asyncio
 async def test_index_route_upload_epub_frankenstein(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+    await global_cache.delete_all()
+    log_in_with_twitch(test_client_db_reset, httpx_mock)
+
     book_paths = [
         ("actual_books/frankenstein.epub", 31),
         ("actual_books/romeo-and-juliet.epub", 28),
@@ -59,8 +62,6 @@ async def test_index_route_upload_epub_frankenstein(test_client_db_reset: TestCl
     ]
     sum_of_chapters = 0
     for book_id, (book_relative_path, book_chapters_amount) in enumerate(book_paths, start=1):
-        log_in_with_twitch(test_client_db_reset, httpx_mock)
-
         # Sanity check
         pre_book_count = await AudiobookBook.count()
         assert pre_book_count == book_id - 1
@@ -98,6 +99,7 @@ async def test_index_route_upload_epub_frankenstein(test_client_db_reset: TestCl
 # Test post request to "/" book already exists
 @pytest.mark.asyncio
 async def test_index_route_upload_epub_twice(test_client_db_reset: TestClient, httpx_mock: HTTPXMock) -> None:  # noqa: F811
+    await global_cache.delete_all()
     # Sanity check
     pre_book_count = await AudiobookBook.count()
     assert pre_book_count == 0
@@ -183,6 +185,7 @@ async def test_delete_book_works(test_client_db_reset: TestClient, httpx_mock: H
 async def test_generate_audio_for_chapter(
     test_client_db_reset: TestClient, test_minio_client: Minio, httpx_mock: HTTPXMock
 ) -> None:  # noqa: F811o
+    await global_cache.delete_all()
     # 1) Login and upload book
     log_in_with_twitch(test_client_db_reset, httpx_mock)
 
@@ -278,6 +281,7 @@ async def test_generate_audio_for_chapter(
 async def test_generate_audio_for_entire_book(
     test_client_db_reset: TestClient, test_minio_client: Minio, httpx_mock: HTTPXMock
 ) -> None:  # noqa: F811
+    await global_cache.delete_all()
     # Sanity check: no book and chapters exist in db
     pre_book_count = await AudiobookBook.count()
     assert pre_book_count == 0
