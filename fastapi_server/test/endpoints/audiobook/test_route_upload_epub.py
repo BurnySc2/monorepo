@@ -5,12 +5,12 @@ from pathlib import Path
 from unittest.mock import AsyncMock, patch
 from zipfile import ZipFile
 
-from minio import Minio, S3Error
 import pytest
 from bs4 import BeautifulSoup  # pyre-fixme[21]
 from litestar.contrib.htmx._utils import HTMXHeaders
 from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTHORIZED
 from litestar.testing import TestClient
+from minio import Minio, S3Error
 from pytest_httpx import HTTPXMock
 
 from models.audiobook import AudiobookBook, AudiobookChapter
