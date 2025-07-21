@@ -1,6 +1,8 @@
+import asyncio
 from contextlib import suppress
 import os
 from collections.abc import Iterator
+import time
 
 import pytest
 from litestar import Litestar
@@ -10,12 +12,34 @@ from pytest_httpx import HTTPXMock
 
 from app import app
 from models.audiobook import AudiobookBook, AudiobookChapter
+from routes.audiobook.my_minio_client import minio_check_if_object_exists
 from routes.login_logout import COOKIES
 
 from piccolo.table import create_db_tables, drop_db_tables
 from piccolo.utils.sync import run_sync
 
 TABLES = [AudiobookBook, AudiobookChapter]
+
+
+async def helper_wait_till_minio_object_exists(bucket_name, object_name, max_wait_seconds: float = 5) -> bool:
+    # Sleep till bucket object exists
+    time_start = time.time()
+    while time.time() - time_start < max_wait_seconds:
+        object_created: bool = await minio_check_if_object_exists(bucket_name, object_name)
+        if object_created:
+            return True
+        await asyncio.sleep(0.1)
+    return False
+
+async def helper_wait_till_db_has_count_minio_objects(target_amount: int, max_wait_seconds: float = 5) -> bool:
+    # Sleep till db has target amount of minio objects saved
+    time_start = time.time()
+    while time.time() - time_start < max_wait_seconds:
+        count = await AudiobookChapter.count().where(AudiobookChapter.minio_object_name != None)  # noqa: E711
+        if target_amount <= count:
+            return True
+        await asyncio.sleep(0.1)
+    return False
 
 
 # TODO Decide which testing method i want to use
