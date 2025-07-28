@@ -1,0 +1,29 @@
+---
+networks:
+  '{{secrets.TRAEFIK_NETWORK}}':
+    external: true
+services:
+  comfyui:
+    container_name: comfyui-cpu
+    # build:
+    #  context: .
+    #  dockerfile: Dockerfile
+    image: yanwk/comfyui-boot:cpu-20250630
+    # Expose locally, accessible via http://192.168.188.23:8082
+    ports:
+      - 8082:8188
+    volumes:
+      - ./storage:/root
+    environment:
+      - CLI_ARGS=--cpu
+    networks:
+      - '{{ secrets.TRAEFIK_NETWORK }}'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ SUBDOMAIN }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN
+        }}`)
+      - traefik.http.services.{{ SUBDOMAIN }}.loadbalancer.server.port={{ APPLICATION_PORT
+        }}
+      - traefik.http.routers.{{ SUBDOMAIN }}.tls=true
+      - traefik.http.routers.{{ SUBDOMAIN }}.tls.certresolver=production
+      - traefik.http.routers.{{ SUBDOMAIN }}.middlewares=authelia@docker
