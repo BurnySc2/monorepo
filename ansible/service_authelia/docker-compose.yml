@@ -4,7 +4,7 @@ networks:
     external: true
 services:
   authelia:
-    image: authelia/authelia:4.38.17
+    image: authelia/authelia:4.39.5
     container_name: authelia
     volumes:
       - ./authelia:/config
