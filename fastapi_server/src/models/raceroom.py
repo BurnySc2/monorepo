@@ -40,6 +40,7 @@ class RRREBestTime(Table, tablename="litestar_rrre_best_time"):
     datetime_driven = Timestamp()
     # How good was the driver's time?
     best_time = DoublePrecision()
+    date_added = Timestamp()
 
 
 async def main():

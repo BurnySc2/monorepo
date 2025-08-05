@@ -5,6 +5,7 @@ import re
 
 import arrow
 import httpx
+from loguru import logger
 from pydantic import BaseModel
 
 from models.raceroom import RRREBestTime, RRREPlayer, RRRETrack
@@ -122,10 +123,12 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
 
 async def main():
     while 1:
+        logger.info("Fetching records")
         async with httpx.AsyncClient() as client:
             for track_id in TRACK_IDS:
                 data = await fetch_track_info(client, track_id=track_id)
                 await update_db_data(data, track_id=track_id)
+        logger.info("Fetched records")
         if os.getenv("STAGE") == "dev":
             return
         # Loop every hour
