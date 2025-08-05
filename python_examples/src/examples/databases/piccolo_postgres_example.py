@@ -58,7 +58,7 @@ async def run_database_with_piccolo():
         await TestTable().save()
 
     # Retrieve example
-    temp_row = await TestTable.objects().first()
+    _temp_row = await TestTable.objects().first()
     "debug entrypoint"
 
 
