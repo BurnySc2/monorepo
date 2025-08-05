@@ -36,7 +36,8 @@ ALLOWED_NAME_LANGUAGES: dict[str, tuple[Voices | None, str | None]] = {
 TWITCH_PING_TIMEOUT_SECONDS = 6 * 60  # Ping received roughly every 5mins
 TIMEOUT_SECONDS = 60  # Timeout "readline()" after n seconds
 
-type ReadNameLang = Literal["none", "en", "de"]
+
+ReadNameLang = Literal["none", "en", "de"]
 
 
 class IRCClient:

@@ -1,3 +1,4 @@
+# DEPRECATED
 import asyncio
 import re
 import time
