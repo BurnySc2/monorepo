@@ -2,22 +2,21 @@ import asyncio
 import os
 from pathlib import Path
 
+import arrow
 from piccolo.columns import (
-    Integer,
-    Text,
     JSON,
     JSONB,
-    Bytea,
+    UUID,
     Boolean,
+    Bytea,
+    DoublePrecision,
+    Integer,
+    Text,
     Timestamp,
     Timestamptz,
-    DoublePrecision,
-    UUID,
 )
 from piccolo.engine.postgres import PostgresEngine
 from piccolo.table import Table, create_db_tables
-import arrow
-
 
 # Normally set in "piccolo_conf.py"
 db_path = Path(__file__).parent / "temp.db"
