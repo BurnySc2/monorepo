@@ -68,8 +68,18 @@ services:
     <<: *convert_audiobook_worker
     networks:
       - traefiknet
-    deploy:
-      replicas: 1
+    profiles:
+      - prod
+
+  # Responsible for fetching raceroom stats
+  raceroom_fetch_worker:
+    <<: *convert_audiobook_worker
+    command:
+      - sh
+      - -c
+      - uv run --no-dev python src/workers/raceroom_fetch_records.py && sleep 1m
+    networks:
+      - traefiknet
     profiles:
       - prod
 
