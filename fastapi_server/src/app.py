@@ -18,6 +18,7 @@ from routes.audiobook.epub_upload import MyAudiobookEpubRoute
 from routes.audiobook.index import MyAudiobookIndexRoute
 from routes.hello_world import MyRootRoute
 from routes.login_logout import MyLoginRoute, MyLogoutRoute
+from routes.replay_pack_builder.index import MyReplayPackBuilderRoute
 from routes.telegram_browser.telegram_browser import MyTelegramBrowserRoute
 from routes.temp_multiswap import MyMultiswapRoute
 from routes.temp_swap_multiple import MySwapMultipleRoute
@@ -63,6 +64,7 @@ app = Litestar(
         MyLogoutRoute,
         MyMultiswapRoute,
         MySwapMultipleRoute,
+        MyReplayPackBuilderRoute,
         MyRootRoute,
         MyTelegramBrowserRoute,
         # MyTodoRoute,
