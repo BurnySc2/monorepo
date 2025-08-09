@@ -57,7 +57,6 @@
                         name="filter_enabled" id="filter_enabled" checked
                         onclick="document.querySelector('#filters-list').classList.toggle('hidden')">
                     <label class="ml-2 text-sm text-gray-700" for="filter_enabled">Filter enabled</label>
-                    <!-- TODO If disabled, dont show the rest of the filters -->
                     <!-- Hover-Info box -->
                     <span class="ml-2 relative group">
                         <svg class="h-4 w-4 text-gray-500 cursor-help" fill="none" stroke="currentColor"
@@ -86,12 +85,12 @@
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
                                 <label for="custom" class="ml-2 text-sm text-gray-700">Custom Game</label>
                             </div>
-                            <div class="flex items-center">
+                            <div class="flex items-center hidden">
                                 <input id="coop" type="checkbox"
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
                                 <label for="coop" class="ml-2 text-sm text-gray-700">COOP</label>
                             </div>
-                            <div class="flex items-center">
+                            <div class="flex items-center hidden">
                                 <input id="arcade" type="checkbox"
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
                                 <label for="arcade" class="ml-2 text-sm text-gray-700">Arcade</label>
@@ -317,8 +316,8 @@
             </fieldset>
 
             <!-- Replay Renaming Template -->
-            <fieldset class="bg-white p-4 rounded-lg shadow-lg w-full  border border-gray-300">
-                <legend class="flex text-2xl font-bold text-gray-800 mb-4 text-center" for="name_template">
+            <fieldset class="bg-white p-4 rounded-lg shadow-lg w-full  border border-gray-300 flex flex-col">
+                <legend class="flex text-2xl font-bold text-gray-800  text-center" for="name_template">
                     Name Template
                     <!-- Hover-Info box -->
                     <span class="ml-2 relative group">
@@ -329,31 +328,41 @@
                         </svg>
                         <div
                             class="absolute left-0 bottom-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
-                            Available tags:<br>
-                            {date} (2025_01_01)<br>
-                            {duration} (4m20s)<br>
-                            {map}<br>
-                            {region} (eu)<br>
-                            {REGION} (EU)<br>
-                            {version} (5.0.14)<br>
-                            {p1name}<br>
-                            {p1race}<br>
+                            Available placeholders:<br>
+                            {date} 2025_01_01<br>
+                            {time} 13_25_31<br>
+                            {duration} 4m20s<br>
+                            {map} Alcyone_LE<br>
+                            {region} eu<br>
+                            {REGION} EU<br>
+                            {version} 5.0.14<br>
+                            {p1name} BuRny<br>
+                            {p1race} Terran<br>
+                            {p1r} T<br>
                             {p1mmr} (only available in matchmaking)<br>
                             {p2name}<br>
                             {p2race}<br>
+                            {p2r}<br>
                             {p2mmr} (only available in matchmaking)<br>
                         </div>
                     </span>
                 </legend>
-                <input type="text" id="name_template" name="name_template" value="{date}_{map}_{p1}_vs_{p2}"
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                <label for="">TODO Rename preview</label>
+
+                <div class="grid grid-cols-4 space-y-2">
+                    <div class="col-span-1">Rename pattern</div>
+                    <input
+                        class="col-span-3 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        type="text" id="name_template" name="name_template"
+                        value="{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}">
+                    <div class="col-span-1">Example name</div>
+                    <input class="col-span-3" type="text" name="name_example" id="name_example" value="Loading..."
+                        readonly>
+                </div>
             </fieldset>
 
             <button id="download_button" onclick="download_files_as_zip()"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200">
-                <!-- TODO display the amount of replays that pass the filters -->
-                <!-- if 0 replays passed, grey out / disable the button -->
+                <!-- TODO if 0 replays passed, grey out / disable the button -->
                 Zip and download Replays
             </button>
         </div>

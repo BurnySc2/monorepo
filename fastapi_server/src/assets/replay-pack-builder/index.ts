@@ -110,9 +110,11 @@ async function download_files_as_zip() {
     const zip = new (window as any).JSZip()
 
     // Add each file to the ZIP
+    const rename_pattern = (document.querySelector("#name_template") as HTMLInputElement).value
     for (const file_data of FILTERED) {
         // Use the file name from the File object and its content
-        zip.file(file_data.file.name, file_data.file)
+        const new_file_name = get_replay_name_from_template(rename_pattern, file_data)
+        zip.file(`${new_file_name}.SC2Replay`, file_data.file)
     }
 
     try {
@@ -217,11 +219,11 @@ const replay_passes_filter = (filter_settings: ReplayFilter, replay: ReplayData)
     const timestamp_parse = (date_string: string): number => {
         return Date.parse(date_string)
     }
-    if (filter_settings.date_played_min !== "" && replay.played_timestamp * 1000 < timestamp_parse(filter_settings.date_played_min)) {
+    if (filter_settings.date_played_min !== "" && replay.played_timestamp < timestamp_parse(filter_settings.date_played_min)) {
         console.log("Replay does not pass 'date_played_min' filter")
         return false
     }
-    if (filter_settings.date_played_max !== "" && timestamp_parse(filter_settings.date_played_max) < replay.played_timestamp * 1000) {
+    if (filter_settings.date_played_max !== "" && timestamp_parse(filter_settings.date_played_max) < replay.played_timestamp) {
         console.log("Replay does not pass 'date_played_max' filter")
         return false
     }
@@ -409,8 +411,8 @@ const filter_replays = (): void => {
         game_custom: (document.querySelector("#custom") as HTMLInputElement).checked,
         game_coop: (document.querySelector("#coop") as HTMLInputElement).checked,
         game_arcade: (document.querySelector("#arcade") as HTMLInputElement).checked,
-        game_include_games_with_ai: (document.querySelector("#games-with-ai") as HTMLInputElement).checked,
-        game_include_games_resumed_from_replay: (document.querySelector("#resume-from-replay") as HTMLInputElement).checked,
+        game_include_games_with_ai: (document.querySelector("#games_with_ai") as HTMLInputElement).checked,
+        game_include_games_resumed_from_replay: (document.querySelector("#resume_from_replay") as HTMLInputElement).checked,
         expansion_wol: (document.querySelector("#expansion_wol") as HTMLInputElement).checked,
         expansion_hots: (document.querySelector("#expansion_hots") as HTMLInputElement).checked,
         expansion_lotv: (document.querySelector("#expansion_lotv") as HTMLInputElement).checked,
@@ -455,8 +457,62 @@ const filter_replays = (): void => {
 
 
 const get_replay_name_from_template = (template: string, replay: ReplayData): string => {
-    // TODO
-    return ""
+    type TempPlayer = {
+        name: string
+        race: "Protoss" | "Terran" | "Zerg"
+        mmr: number
+    }
+    let player1: TempPlayer = {
+        name: "",
+        race: "Protoss",
+        mmr: 0,
+    }
+    let player2: TempPlayer = {
+        name: "",
+        race: "Protoss",
+        mmr: 0,
+    }
+    if (0 < replay.teams.length) {
+        player1 = {
+            name: replay.teams[0].players[0].name,
+            race: replay.teams[0].players[0].play_race,
+            mmr: replay.teams[0].players[0].mmr ?? 0,
+        }
+        if (1 < replay.teams.length) {
+            player2 = {
+                name: replay.teams[1].players[0].name,
+                race: replay.teams[1].players[0].play_race,
+                mmr: replay.teams[1].players[0].mmr ?? 0,
+            }
+        }
+    }
+
+    const replay_date = new Date(replay.played_timestamp).toISOString().split("T")[0].replace(/-/g, "_")
+    const replay_time = new Date(replay.played_timestamp).toISOString().split("T")[1].split(".")[0].replace(/:/g, "_")
+    const [minutes, seconds] = [replay.game_length_seconds / 60, replay.game_length_seconds % 60]
+    const placeholders = {
+        date: replay_date,
+        time: replay_time,
+        duration: `${Math.round(minutes)}m` + `${seconds}`.padStart(2, "0") + "s",
+        map: replay.map_name.replace(/ /g, "_"),
+        region: replay.region_short,
+        REGION: replay.region_short.toUpperCase(),
+        version: replay.game_version,
+        p1name: player1.name,
+        p1race: player1.race,
+        p1r: player1.race[0],
+        p1mmr: player1.mmr,
+        p2name: player2.name,
+        p2race: player2.race,
+        p2r: player2.race[0],
+        p2mmr: player2.mmr,
+    }
+
+    let replaced_string = template
+    for (const key of Object.keys(placeholders)) {
+        replaced_string = replaced_string.replace(`\{${key}\}`, placeholders[key])
+    }
+    return replaced_string
 }
 
 const prevent_defaults = (e: Event) => {
@@ -548,6 +604,59 @@ const init_filter_event_listeners = () => {
     }
 }
 
+const init_template_listener = () => {
+    const update_example_name_template = () => {
+        const rename_pattern = (document.querySelector("#name_template") as HTMLInputElement).value;
+        (document.querySelector("#name_example") as HTMLInputElement).value = get_replay_name_from_template(rename_pattern,
+            // Example replay data
+            {
+                file: new File([], "test"),
+                md5: "12345",
+                status: "processed",
+                teams: [
+                    {
+                        result: "Win",
+                        players: [{
+                            clan_tag: "Heroes",
+                            name: "BuRny",
+                            pick_race: "Terran",
+                            play_race: "Terran",
+                            is_human: true,
+                            mmr: 420,
+                        }]
+                    },
+                    {
+                        result: "Loss",
+                        players: [{
+                            clan_tag: "",
+                            name: "Computer (Easy)",
+                            pick_race: "Random",
+                            play_race: "Zerg",
+                            is_human: false,
+                            mmr: 42,
+                        }]
+                    },
+                ],
+                played_timestamp: Date.now(),
+                game_length_seconds: 1337,
+                map_name: "Alcyone LE",
+                region_short: "eu",
+                expansion: "LotV",
+                game_base_build: 1234,
+                game_version: "5.0.14",
+                game_type: "idk",
+                is_ladder: false,
+                is_private: false,
+                resume_from_replay: false,
+            })
+    }
+
+    update_example_name_template()
+    document.querySelector("#name_template")!.addEventListener("input", () => {
+        update_example_name_template()
+    })
+}
+
 const parse_replay = async (file_data: FileData): Promise<ReplayData> => {
     const form_data = new FormData()
     form_data.append('file', file_data.file)
@@ -594,6 +703,7 @@ const process_files = async () => {
 const main = (): void => {
     init_drop_zone()
     init_filter_event_listeners()
+    init_template_listener()
     console.log("Replay pack builder initialized")
     setInterval(process_files, 1000)
 }
