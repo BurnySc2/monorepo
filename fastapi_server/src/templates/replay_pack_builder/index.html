@@ -51,8 +51,27 @@
             </fieldset>
 
             <fieldset class="bg-white p-4 rounded-lg shadow-lg w-full  border border-gray-300">
-                <legend class="text-2xl font-bold text-gray-800 mb-4 text-center">SC2 Replay Filters</legend>
-                <div class="space-y-4">
+                <legend class="text-2xl font-bold text-gray-800 text-center">SC2 Replay Filters</legend>
+                <div class="flex my-2">
+                    <input class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" type="checkbox"
+                        name="filter_enabled" id="filter_enabled" checked
+                        onclick="document.querySelector('#filters-list').classList.toggle('hidden')">
+                    <label class="ml-2 text-sm text-gray-700" for="filter_enabled">Filter enabled</label>
+                    <!-- TODO If disabled, dont show the rest of the filters -->
+                    <!-- Hover-Info box -->
+                    <span class="ml-2 relative group">
+                        <svg class="h-4 w-4 text-gray-500 cursor-help" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
+                        </svg>
+                        <span
+                            class="absolute left-0 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
+                            If unchecked, all replays will be renamed and zipped
+                        </span>
+                    </span>
+                </div>
+                <div id="filters-list" class="space-y-4">
                     <!-- Game Type Filter -->
                     <fieldset class="border border-gray-300 rounded-md p-4">
                         <legend class="text-sm font-medium text-gray-700 px-2">Game types</legend>
@@ -82,9 +101,9 @@
 
                     <!-- Games with AI Checkbox -->
                     <div class="flex items-center">
-                        <input id="games-with-ai" type="checkbox"
+                        <input id="games_with_ai" type="checkbox"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="games-with-ai" class="ml-2 text-sm text-gray-700">Include Games with AI</label>
+                        <label for="games_with_ai" class="ml-2 text-sm text-gray-700">Include Games with AI</label>
                         <!-- Hover-Info box -->
                         <span class="ml-2 relative group">
                             <svg class="h-4 w-4 text-gray-500 cursor-help" fill="none" stroke="currentColor"
@@ -93,7 +112,7 @@
                                     d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
                             </svg>
                             <span
-                                class="absolute left-0 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                class="absolute left-0 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
                                 If unchecked, filters out replays that have at least one AI player
                             </span>
                         </span>
@@ -101,9 +120,9 @@
 
                     <!-- Resume from Replay Checkbox -->
                     <div class="flex items-center">
-                        <input id="resume-from-replay" type="checkbox"
+                        <input id="resume_from_replay" type="checkbox"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="resume-from-replay" class="ml-2 text-sm text-gray-700">Include Games Resumed from
+                        <label for="resume_from_replay" class="ml-2 text-sm text-gray-700">Include Games Resumed from
                             Replay</label>
                         <!-- Hover-Info box -->
                         <span class="ml-2 relative group">
@@ -113,184 +132,188 @@
                                     d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
                             </svg>
                             <span
-                                class="absolute left-0 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                class="absolute left-0 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
                                 If unchecked, filters out replays that were resumed from replay
                             </span>
                         </span>
                     </div>
+
+                    <!-- EXPANSIONS wol,hots,lotv -->
+                    <fieldset class="border border-gray-300 rounded-md p-4 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Expansion</legend>
+
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <input id="expansion_wol" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="expansion_wol" class="ml-2 text-sm text-gray-700">Wings of Liberty</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="expansion_hots" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="expansion_hots" class="ml-2 text-sm text-gray-700">Heart of the
+                                    Swarm</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="expansion_lotv" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="expansion_lotv" class="ml-2 text-sm text-gray-700">Legacy of the
+                                    Void</label>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Regions na,eu,kr -->
+                    <fieldset class="border border-gray-300 rounded-md p-4 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Regions</legend>
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <input id="server_americas" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="server_americas" class="ml-2 text-sm text-gray-700">Americas</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="server_europe" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="server_europe" class="ml-2 text-sm text-gray-700">Europe</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="server_asia" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="server_asia" class="ml-2 text-sm text-gray-700">Asia</label>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Player names -->
+                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Player name (partial match, case
+                            insensitive)
+                        </legend>
+                        <div class="grid grid-cols-3 space-y-2">
+                            <label class="col-span-1" for="">Must include names</label>
+                            <input class="col-span-2 border border-black" type="text" name="player_names_include"
+                                id="player_names_include">
+                            <label class="col-span-1" for="">Must exclude names</label>
+                            <input class="col-span-2 border border-black" type="text" name="player_names_exclude"
+                                id="player_names_exclude">
+                        </div>
+                    </fieldset>
+
+                    <!-- Date played -->
+                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Date played</legend>
+                        <div class="flex space-x-2">
+                            <label for="">Between</label>
+                            <input class="border border-black" type="datetime-local" name="date_min" id="date_min">
+                            <label for="">and</label>
+                            <input class="border border-black" type="datetime-local" name="date_max" id="date_max">
+                        </div>
+                    </fieldset>
+
+                    <!-- Game length -->
+                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Game duration (mm:ss)</legend>
+                        <div class="flex space-x-2">
+                            <label for="">Between</label>
+                            <input class="border border-black" type="time" name="duration_min" id="duration_min">
+                            <label for="">and</label>
+                            <input class="border border-black" type="time" name="duration_max" id="duration_max">
+                        </div>
+                    </fieldset>
+
+                    <!-- Players amount -->
+                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Player count</legend>
+                        <div class="flex space-x-2">
+                            <label for="">Between</label>
+                            <input class="border border-black" type="number" name="player_count_min"
+                                id="player_count_min" min="1" max="32" step="1">
+                            <label for="">and</label>
+                            <input class="border border-black" type="number" name="player_count_max"
+                                id="player_count_max" min="1" max="32" step="1">
+                        </div>
+                    </fieldset>
+
+                    <!-- MMR -->
+                    <fieldset class=" border border-gray-300 rounded-md p-2 my-4">
+                        <legend class="flex text-sm font-medium text-gray-700 px-2">Average Player MMR
+                            <!-- Hover-Info box -->
+                            <span class="ml-2 relative group">
+                                <svg class="h-4 w-4 text-gray-500 cursor-help" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
+                                </svg>
+                                <span
+                                    class="absolute left-0 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
+                                    Player MMR is only available in matchmaking games
+                                </span>
+                            </span>
+                        </legend>
+                        <div class="flex space-x-2">
+                            <label for="">Between</label>
+                            <input class="border border-black" type="number" name="mmr_min" id="mmr_min" min="1"
+                                max="9999" step="1">
+                            <label for="">and</label>
+                            <input class="border border-black" type="number" name="mmr_max" id="mmr_max" min="1"
+                                max="9999" step="1">
+                        </div>
+                    </fieldset>
+
+                    <!-- Matchups -->
+                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Matchups</legend>
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <input id="matchup_pvp" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="matchup_pvp" class="ml-2 text-sm text-gray-700">PvP</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="matchup_pvt" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="matchup_pvt" class="ml-2 text-sm text-gray-700">PvT</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="matchup_pvz" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="matchup_pvz" class="ml-2 text-sm text-gray-700">PvZ</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="matchup_tvt" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="matchup_tvt" class="ml-2 text-sm text-gray-700">TvT</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="matchup_tvz" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="matchup_tvz" class="ml-2 text-sm text-gray-700">TvZ</label>
+                            </div>
+                            <div class="flex items-center">
+                                <input id="matchup_zvz" type="checkbox"
+                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
+                                <label for="matchup_zvz" class="ml-2 text-sm text-gray-700">ZvZ</label>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Map names -->
+                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Map name (partial match, case
+                            insensitive)
+                        </legend>
+                        <div class="grid grid-cols-3 space-y-2">
+                            <label class="col-span-1" for="">Must include names</label>
+                            <input class="col-span-2 border border-black" type="text" name="map_names_include"
+                                id="map_names_include">
+                            <label class="col-span-1" for="">Must exclude names</label>
+                            <input class="col-span-2 border border-black" type="text" name="map_names_exclude"
+                                id="map_names_exclude">
+                        </div>
+                    </fieldset>
                 </div>
 
-                <!-- FILTERS  -->
-                <!-- EXPANSIONS wol,hots,lotv -->
-                <fieldset class="border border-gray-300 rounded-md p-4 my-4">
-                    <legend class="text-sm font-medium text-gray-700 px-2">Expansion</legend>
-
-                    <div class="space-y-2">
-                        <div class="flex items-center">
-                            <input id="expansion_wol" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="expansion_wol" class="ml-2 text-sm text-gray-700">Wings of Liberty</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="expansion_hots" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="expansion_hots" class="ml-2 text-sm text-gray-700">Heart of the Swarm</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="expansion_lotv" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="expansion_lotv" class="ml-2 text-sm text-gray-700">Legacy of the Void</label>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Regions na,eu,kr -->
-                <fieldset class="border border-gray-300 rounded-md p-4 my-4">
-                    <legend class="text-sm font-medium text-gray-700 px-2">Regions</legend>
-                    <div class="space-y-2">
-                        <div class="flex items-center">
-                            <input id="server_americas" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="server_americas" class="ml-2 text-sm text-gray-700">Americas</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="server_europe" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="server_europe" class="ml-2 text-sm text-gray-700">Europe</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="server_asia" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="server_asia" class="ml-2 text-sm text-gray-700">Asia</label>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Player names -->
-                <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                    <legend class="text-sm font-medium text-gray-700 px-2">Player name (partial match, case insensitive)
-                    </legend>
-                    <div class="grid grid-cols-3 space-y-2">
-                        <label class="col-span-1" for="">Must include names</label>
-                        <input class="col-span-2 border border-black" type="text" name="player_names_include"
-                            id="player_names_include">
-                        <label class="col-span-1" for="">Must exclude names</label>
-                        <input class="col-span-2 border border-black" type="text" name="player_names_exclude"
-                            id="player_names_exclude">
-                    </div>
-                </fieldset>
-
-                <!-- Date played -->
-                <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                    <legend class="text-sm font-medium text-gray-700 px-2">Date played</legend>
-                    <div class="flex space-x-2">
-                        <label for="">Between</label>
-                        <input class="border border-black" type="datetime-local" name="date_min" id="date_min">
-                        <label for="">and</label>
-                        <input class="border border-black" type="datetime-local" name="date_max" id="date_max">
-                    </div>
-                </fieldset>
-
-                <!-- Game length -->
-                <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                    <legend class="text-sm font-medium text-gray-700 px-2">Game duration (mm:ss)</legend>
-                    <div class="flex space-x-2">
-                        <label for="">Between</label>
-                        <input class="border border-black" type="time" name="duration_min" id="duration_min">
-                        <label for="">and</label>
-                        <input class="border border-black" type="time" name="duration_max" id="duration_max">
-                    </div>
-                </fieldset>
-
-                <!-- Players amount -->
-                <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                    <legend class="text-sm font-medium text-gray-700 px-2">Player count</legend>
-                    <div class="flex space-x-2">
-                        <label for="">Between</label>
-                        <input class="border border-black" type="number" name="player_count_min" id="player_count_min"
-                            min="1" max="32" step="1">
-                        <label for="">and</label>
-                        <input class="border border-black" type="number" name="player_count_max" id="player_count_max"
-                            min="1" max="32" step="1">
-                    </div>
-                </fieldset>
-
-                <!-- MMR -->
-                <fieldset class=" border border-gray-300 rounded-md p-2 my-4">
-                    <legend class="flex text-sm font-medium text-gray-700 px-2">Average Player MMR
-                        <!-- Hover-Info box -->
-                        <span class="ml-2 relative group">
-                            <svg class="h-4 w-4 text-gray-500 cursor-help" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
-                            </svg>
-                            <span
-                                class="absolute left-0 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                Player MMR is only available in matchmaking games
-                            </span>
-                        </span>
-                    </legend>
-                    <div class="flex space-x-2">
-                        <label for="">Between</label>
-                        <input class="border border-black" type="number" name="mmr_min" id="mmr_min" min="1" max="9999"
-                            step="1">
-                        <label for="">and</label>
-                        <input class="border border-black" type="number" name="mmr_max" id="mmr_max" min="1" max="9999"
-                            step="1">
-                    </div>
-                </fieldset>
-
-                <!-- Matchups -->
-                <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                    <legend class="text-sm font-medium text-gray-700 px-2">Matchups</legend>
-                    <div class="space-y-2">
-                        <div class="flex items-center">
-                            <input id="matchup_pvp" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="matchup_pvp" class="ml-2 text-sm text-gray-700">PvP</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="matchup_pvt" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="matchup_pvt" class="ml-2 text-sm text-gray-700">PvT</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="matchup_pvz" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="matchup_pvz" class="ml-2 text-sm text-gray-700">PvZ</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="matchup_tvt" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="matchup_tvt" class="ml-2 text-sm text-gray-700">TvT</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="matchup_tvz" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="matchup_tvz" class="ml-2 text-sm text-gray-700">TvZ</label>
-                        </div>
-                        <div class="flex items-center">
-                            <input id="matchup_zvz" type="checkbox"
-                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                            <label for="matchup_zvz" class="ml-2 text-sm text-gray-700">ZvZ</label>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <!-- Map names -->
-                <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                    <legend class="text-sm font-medium text-gray-700 px-2">Map name (partial match, case insensitive)
-                    </legend>
-                    <div class="grid grid-cols-3 space-y-2">
-                        <label class="col-span-1" for="">Must include names</label>
-                        <input class="col-span-2 border border-black" type="text" name="map_names_include"
-                            id="map_names_include">
-                        <label class="col-span-1" for="">Must exclude names</label>
-                        <input class="col-span-2 border border-black" type="text" name="map_names_exclude"
-                            id="map_names_exclude">
-                    </div>
-                </fieldset>
             </fieldset>
 
             <!-- Replay Renaming Template -->
@@ -305,7 +328,7 @@
                                 d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
                         </svg>
                         <div
-                            class="absolute left-0 bottom-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            class="absolute left-0 bottom-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
                             Available tags:<br>
                             {date} (2025_01_01)<br>
                             {duration} (4m20s)<br>
@@ -327,7 +350,7 @@
                 <label for="">TODO Rename preview</label>
             </fieldset>
 
-            <button onclick="download_files_as_zip()"
+            <button id="download_button" onclick="download_files_as_zip()"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200">
                 <!-- TODO display the amount of replays that pass the filters -->
                 <!-- if 0 replays passed, grey out / disable the button -->

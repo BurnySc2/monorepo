@@ -76,12 +76,14 @@ class MyReplayPackBuilderRoute(Controller):
                     "result": team.result,
                     "players": [
                         {
-                            "clan_tag": player.clan_tag,
+                            # May not be set on computer
+                            "clan_tag": player.__dict__.get("clan_tag", ""),
                             "name": player.name,
                             "pick_race": player.pick_race,
                             "play_race": player.play_race,
                             "is_human": player.is_human,
-                            "mmr": player.init_data["scaled_rating"],
+                            # init_data is not set on computer
+                            "mmr": player.__dict__.get("init_data", {}).get("scaled_rating", None),
                         }
                         for player in team.players
                     ],
