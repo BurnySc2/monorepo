@@ -36,6 +36,8 @@ dependencies = [
     # AWS S3
     "minio>=7.2.15",
     "humanize>=4.11.0",
+    # SC2 Replay Parser
+    "sc2reader>=1.8.0",
 ]
 
 [tool.uv]

@@ -1052,6 +1052,12 @@ wheels = [
 ]
 
 [[package]]
+name = "mpyq"
+version = "0.2.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/10/76041d97aa01e4d0f93481942b4faf5652123acdd90fbff4e40bb8d9024c/mpyq-0.2.5.tar.gz", hash = "sha256:30aaf5962be569f3f2b53978060cd047434ee4f5a215925dd6ff0fef04ec0007", size = 8677, upload-time = "2014-03-17T02:25:41.54Z" }
+
+[[package]]
 name = "msgspec"
 version = "0.19.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1807,6 +1813,18 @@ wheels = [
 ]
 
 [[package]]
+name = "sc2reader"
+version = "1.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mpyq" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e7/30/785ed415214dc9c8abfdaa94dbb189158bcedcf2037be48e91acf25d738b/sc2reader-1.8.0.tar.gz", hash = "sha256:8c0872f8e8daa5b7b8cd9d4542e12df0a7109a03c494bbe32b81f5384c27c396", size = 247046, upload-time = "2022-05-05T05:37:29.875Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/23/dd/b39107c44056ae081206d7cfd306f680fcb15cb0bbda8434b82cf442a26d/sc2reader-1.8.0-py3-none-any.whl", hash = "sha256:b86b3e967dcbc33c35e7ef300b3ec4a70a80bcf56df964f92086fd87c4fd5205", size = 329125, upload-time = "2022-05-05T05:37:20.012Z" },
+]
+
+[[package]]
 name = "setuptools"
 version = "80.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1895,6 +1913,7 @@ dependencies = [
     { name = "piccolo", extra = ["postgres"] },
     { name = "pydantic" },
     { name = "python-dotenv" },
+    { name = "sc2reader" },
     { name = "stream-zip" },
 ]
 
@@ -1935,6 +1954,7 @@ requires-dist = [
     { name = "piccolo", extras = ["postgres"], specifier = ">=1.27.0" },
     { name = "pydantic", specifier = ">=2.9.2" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
+    { name = "sc2reader", specifier = ">=1.8.0" },
     { name = "stream-zip", specifier = ">=0.0.83" },
 ]
 

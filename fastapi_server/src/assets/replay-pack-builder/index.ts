@@ -19,17 +19,49 @@ type ReplayData = FileData & {
     game_type: "custom" | "ladder" | "resume_from_replay"
     // 0, 1, 2, 3 whichever team won
     // -1 for draw
-    team_victory: number
     map_name: string
-    date_played: string
-    date_time_played: string
-    game_duration: number
-    region: "Americas" | "Europe" | "Asia"
-    region_short: "NA" | "EU" | "KR"
+    date_time_played: number
+    game_length_seconds: number
+    region_short: "na" | "eu" | "kr"
+    expansion: "WoL" | "HotS" | "LotV"
+}
+
+type ReplayFilter = {
+    game_matchmaking: boolean
+    game_custom: boolean
+    game_coop: boolean
+    game_arcade: boolean
+    game_include_games_with_ai: boolean
+    game_include_games_resumed_from_replay: boolean
+    expansion_wol: boolean
+    expansion_hots: boolean
+    expansion_lotv: boolean
+    server_americas: boolean
+    server_europe: boolean
+    server_asia: boolean
+    player_name_must_include: string
+    player_name_must_exclude: string
+    date_played_min: number
+    date_played_max: number
+    game_duration_min: number
+    game_duration_max: number
+    player_count_min: number
+    player_count_max: number
+    average_mmr_min: number
+    average_mmr_max: number
+    matchup_pvp: boolean
+    matchup_pvt: boolean
+    matchup_pvz: boolean
+    matchup_tvt: boolean
+    matchup_tvz: boolean
+    matchup_zvz: boolean
+    map_name_must_include: string
+    map_name_must_exclude: string
 }
 
 let FILES: FileData[] = []
 let PARSED: ReplayData[] = []
+let FILTERED: ReplayData[] = []
 
 const calculate_md5 = async (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -90,14 +122,74 @@ async function download_files_as_zip() {
     }
 }
 
+const replay_passes_filter = (filter_settings: ReplayFilter, replay: ReplayData): boolean => {
+    // TODO implement
+    return true
+}
+
+const filter_replays = (): void => {
+    let filter_settings: ReplayFilter = {
+        game_matchmaking: (document.querySelector("#matchmaking") as HTMLInputElement).checked,
+        game_custom: (document.querySelector("#custom") as HTMLInputElement).checked,
+        game_coop: (document.querySelector("#coop") as HTMLInputElement).checked,
+        game_arcade: (document.querySelector("#arcade") as HTMLInputElement).checked,
+        game_include_games_with_ai: (document.querySelector("#games-with-ai") as HTMLInputElement).checked,
+        game_include_games_resumed_from_replay: (document.querySelector("#resume-from-replay") as HTMLInputElement).checked,
+        expansion_wol: (document.querySelector("#expansion_wol") as HTMLInputElement).checked,
+        expansion_hots: (document.querySelector("#expansion_hots") as HTMLInputElement).checked,
+        expansion_lotv: (document.querySelector("#expansion_lotv") as HTMLInputElement).checked,
+        server_americas: (document.querySelector("#server_americas") as HTMLInputElement).checked,
+        server_europe: (document.querySelector("#server_europe") as HTMLInputElement).checked,
+        server_asia: (document.querySelector("#server_asia") as HTMLInputElement).checked,
+        player_name_must_include: (document.querySelector("#player_names_include") as HTMLInputElement).value,
+        player_name_must_exclude: (document.querySelector("#player_names_exclude") as HTMLInputElement).value,
+        date_played_min: Number((document.querySelector("#date_min") as HTMLInputElement).value),
+        date_played_max: Number((document.querySelector("#date_max") as HTMLInputElement).value),
+        game_duration_min: Number((document.querySelector("#duration_min") as HTMLInputElement).value),
+        game_duration_max: Number((document.querySelector("#duration_max") as HTMLInputElement).value),
+        player_count_min: Number((document.querySelector("#player_count_min") as HTMLInputElement).value),
+        player_count_max: Number((document.querySelector("#player_count_max") as HTMLInputElement).value),
+        average_mmr_min: Number((document.querySelector("#mmr_min") as HTMLInputElement).value),
+        average_mmr_max: Number((document.querySelector("#mmr_max") as HTMLInputElement).value),
+        matchup_pvp: (document.querySelector("#matchup_pvp") as HTMLInputElement).checked,
+        matchup_pvt: (document.querySelector("#matchup_pvt") as HTMLInputElement).checked,
+        matchup_pvz: (document.querySelector("#matchup_pvz") as HTMLInputElement).checked,
+        matchup_tvt: (document.querySelector("#matchup_tvt") as HTMLInputElement).checked,
+        matchup_tvz: (document.querySelector("#matchup_tvz") as HTMLInputElement).checked,
+        matchup_zvz: (document.querySelector("#matchup_zvz") as HTMLInputElement).checked,
+        map_name_must_include: (document.querySelector("#map_names_include") as HTMLInputElement).value,
+        map_name_must_exclude: (document.querySelector("#map_names_exclude") as HTMLInputElement).value,
+    }
+
+    console.log(filter_settings)
+
+    const filtered: ReplayData[] = []
+    for (const replay of PARSED) {
+        if (replay.status !== "processed") {
+            continue
+        }
+        if (replay_passes_filter(filter_settings, replay)) {
+            filtered.push(replay)
+        }
+    }
+    FILTERED = filtered
+}
+
+const get_replay_name_from_template = (template: string, replay: ReplayData): string => {
+    // TODO
+    return ""
+}
+
 const prevent_defaults = (e: Event) => {
     e.preventDefault();
     e.stopPropagation();
 };
 
-if (!drop_zone || !file_input) {
-    console.error('Required elements not found');
-} else {
+const init_drop_zone = () => {
+    if (!drop_zone || !file_input) {
+        console.error('Required elements not found');
+        return
+    }
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event_name => {
         document.body.addEventListener(event_name, prevent_defaults, false);
@@ -148,15 +240,49 @@ if (!drop_zone || !file_input) {
         file_input.files = data_transfer.files
     });
 
-    // TODO After drag drop, parse the file (extract file name, calculate md5 to get a unique id per replay to not upload same replay twice)
-
-    // TODO For each replay, parse data with the help of backend, extract metadata (player name, map name, date played, mmr etc)
-
     // TODO Display how many replays currently pass the filter
+}
 
-    // TODO When clicking "build and download pack", zip selected files in frontend and download zip with renamed files
+const parse_replay = async (file_data: FileData): Promise<ReplayData> => {
+    const form_data = new FormData()
+    form_data.append('file', file_data.file)
+
+    const response = await fetch('/sc2-replay-pack-builder/parse-replay', {
+        method: 'POST',
+        body: form_data,
+    })
+
+    if (!response.ok) {
+        throw new Error(`Failed to parse replay: ${response.statusText}`)
+    }
+
+    return await response.json()
+}
+
+const process_files = async () => {
+    for (const file_data of [...FILES]) {
+        if (file_data.status !== 'uploaded') continue
+
+        try {
+            file_data.status = 'processing'
+            const replay_data = await parse_replay(file_data)
+            PARSED.push({
+                ...file_data,
+                ...replay_data,
+                status: 'processed'
+            })
+            FILES = FILES.filter(f => f.md5 !== file_data.md5)
+        } catch (error) {
+            console.error('Error parsing replay:', error)
+            file_data.status = 'error'
+        }
+    }
 }
 
 const main = (): void => {
-    console.log("Replay pack builder initialized");
-};
+    init_drop_zone()
+    console.log("Replay pack builder initialized")
+    setInterval(process_files, 1000)
+}
+
+main()
