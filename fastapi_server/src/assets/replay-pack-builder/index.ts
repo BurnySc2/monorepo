@@ -525,7 +525,7 @@ const init_file_input = () => {
     const handle_files = async (files: File[]) => {
         if (!files) { return }
         const md5s = [...FILES, ...PARSED].map(file => file.md5)
-        const all_replay_files = [...files].filter(file => file !== null && file.name.toLowerCase().endsWith('.sc2replay')) as File[]
+        const all_replay_files = [...files].filter(file => file.name.toLowerCase().endsWith('.sc2replay')) as File[]
 
         for (let file of all_replay_files) {
             let md5 = await calculate_md5(file)
