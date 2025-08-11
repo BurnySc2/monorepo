@@ -29,7 +29,7 @@ class ReplayPlayer(BaseModel):
 
 
 class ReplayTeam(BaseModel):
-    result: Literal["Win", "Loss"]
+    result: Literal["Win", "Loss"] | None
     players: list[ReplayPlayer]
 
 
@@ -38,7 +38,7 @@ class ReplayData(BaseModel):
     played_timestamp: int
     game_length_seconds: int
     map_name: str
-    region_short: Literal["us", "eu", "kr"]
+    region_short: Literal["us", "eu", "kr", "cn"]
     expansion: Literal["WoL", "HotS", "LotV"]
     game_base_build: int
     game_version: str

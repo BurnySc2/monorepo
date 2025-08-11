@@ -11,30 +11,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 
-<body class="bg-gray-50 min-h-screen p-4">
+<body id="body" class="bg-gray-50 min-h-screen p-4">
     <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-4">
         <div class="space-y-4">
             <fieldset class="bg-white p-4 rounded-lg shadow-lg w-full  border border-gray-300">
                 <legend class="text-2xl font-bold text-gray-800 text-center">Upload SC2 Replays</legend>
-                <div>
-                    <label for="replays" class="block text-sm font-medium text-gray-700 mb-1">
-                        Select Replays (.SC2Replay)
-                    </label>
-                    <input type="file" id="replays" name="replays" multiple accept=".SC2Replay" class="block w-full text-sm text-gray-500
+                <div class="flex space-x-2">
+                    <label for="amount_files">Total Replay files uploaded:</label>
+                    <div id="amount_files">0</div>
+                </div>
+                <fieldset class="flex flex-col items-center border border-gray-300">
+                    <legend class="text-center">Select Replay Folder</legend>
+                    <input type="file" id="folder_input" webkitdirectory directory multiple class="w-auto text-sm text-gray-500
                         file:mr-4 file:py-2 file:px-4
                         file:rounded-md file:border-0
                         file:text-sm file:font-semibold
                         file:bg-blue-50 file:text-blue-700
                         hover:file:bg-blue-100">
-                </div>
+                </fieldset>
+                <fieldset class="flex flex-col items-center  border border-gray-300">
+                    <legend class="text-center">Select Replays (.SC2Replay)</legend>
+                    <input type="file" id="file_input" multiple class="w-auto text-sm text-gray-500
+            file:mr-4 file:py-2 file:px-4
+            file:rounded-md file:border-0
+            file:text-sm file:font-semibold
+            file:bg-blue-50 file:text-blue-700
+            hover:file:bg-blue-100">
+                </fieldset>
 
-                <div id="drop-zone"
-                    class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-colors duration-200 hover:border-blue-400 hover:bg-blue-50">
-                    <p class="text-gray-500">Or drag & drop replay files here</p>
-                    <p class="text-xs text-gray-400 mt-2">Supports multiple files</p>
-                </div>
-
-                <div id="parsed_replays" class="grid grid-cols-3">
+                <div id="parsed_replays" class="grid grid-cols-3 hidden">
+                    <!-- TODO -->
                     <div>File name</div>
                     <div>Status</div>
                     <div></div>
@@ -55,7 +61,7 @@
                 <div class="flex my-2">
                     <input class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" type="checkbox"
                         name="filter_enabled" id="filter_enabled" checked
-                        onclick="document.querySelector('#filters-list').classList.toggle('hidden')">
+                        onclick="document.getElementById('filters-list').classList.toggle('hidden')">
                     <label class="ml-2 text-sm text-gray-700" for="filter_enabled">Filter enabled</label>
                     <!-- Hover-Info box -->
                     <span class="ml-2 relative group">
@@ -184,21 +190,6 @@
                         </div>
                     </fieldset>
 
-                    <!-- Player names -->
-                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Player name (partial match, case
-                            insensitive)
-                        </legend>
-                        <div class="grid grid-cols-3 space-y-2">
-                            <label class="col-span-1" for="">Must include names</label>
-                            <input class="col-span-2 border border-black" type="text" name="player_names_include"
-                                id="player_names_include">
-                            <label class="col-span-1" for="">Must exclude names</label>
-                            <input class="col-span-2 border border-black" type="text" name="player_names_exclude"
-                                id="player_names_exclude">
-                        </div>
-                    </fieldset>
-
                     <!-- Date played -->
                     <fieldset class="border border-gray-300 rounded-md p-2 my-4">
                         <legend class="text-sm font-medium text-gray-700 px-2">Date played</legend>
@@ -294,6 +285,21 @@
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
                                 <label for="matchup_zvz" class="ml-2 text-sm text-gray-700">ZvZ</label>
                             </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Player names -->
+                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
+                        <legend class="text-sm font-medium text-gray-700 px-2">Player name (partial match, case
+                            insensitive)
+                        </legend>
+                        <div class="grid grid-cols-3 space-y-2">
+                            <label class="col-span-1" for="">Must include names</label>
+                            <input class="col-span-2 border border-black" type="text" name="player_names_include"
+                                id="player_names_include">
+                            <label class="col-span-1" for="">Must exclude names</label>
+                            <input class="col-span-2 border border-black" type="text" name="player_names_exclude"
+                                id="player_names_exclude">
                         </div>
                     </fieldset>
 

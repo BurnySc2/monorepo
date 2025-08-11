@@ -1,5 +1,6 @@
-const drop_zone = document.getElementById('drop-zone') as HTMLDivElement | null
-const file_input = document.getElementById('replays') as HTMLInputElement | null
+const amount_of_files = document.getElementById('amount_files') as HTMLDivElement | null
+const folder_input = document.getElementById('folder_input') as HTMLInputElement | null
+const file_input = document.getElementById('file_input') as HTMLInputElement | null
 
 
 type Status = "uploaded" | "processing" | "processed" | "error"
@@ -20,7 +21,7 @@ type ReplayPlayer = {
 }
 
 type ReplayTeam = {
-    result: "Win" | "Loss"
+    result: "Win" | "Loss" | null
     players: ReplayPlayer[]
 }
 
@@ -31,7 +32,7 @@ type ReplayData = FileData & {
     played_timestamp: number
     game_length_seconds: number
     map_name: string
-    region_short: "us" | "eu" | "kr"
+    region_short: "us" | "eu" | "kr" | "cn"
     expansion: "WoL" | "HotS" | "LotV"
     game_base_build: number
     game_version: string
@@ -110,7 +111,7 @@ async function download_files_as_zip() {
     const zip = new (window as any).JSZip()
 
     // Add each file to the ZIP
-    const rename_pattern = (document.querySelector("#name_template") as HTMLInputElement).value
+    const rename_pattern = (document.getElementById("name_template") as HTMLInputElement).value
     for (const file_data of FILTERED) {
         // Use the file name from the File object and its content
         const new_file_name = get_replay_name_from_template(rename_pattern, file_data)
@@ -406,37 +407,37 @@ const replay_passes_filter = (filter_settings: ReplayFilter, replay: ReplayData)
 
 const filter_replays = (): void => {
     let filter_settings: ReplayFilter = {
-        filter_enabled: (document.querySelector("#filter_enabled") as HTMLInputElement).checked,
-        game_matchmaking: (document.querySelector("#matchmaking") as HTMLInputElement).checked,
-        game_custom: (document.querySelector("#custom") as HTMLInputElement).checked,
-        game_coop: (document.querySelector("#coop") as HTMLInputElement).checked,
-        game_arcade: (document.querySelector("#arcade") as HTMLInputElement).checked,
-        game_include_games_with_ai: (document.querySelector("#games_with_ai") as HTMLInputElement).checked,
-        game_include_games_resumed_from_replay: (document.querySelector("#resume_from_replay") as HTMLInputElement).checked,
-        expansion_wol: (document.querySelector("#expansion_wol") as HTMLInputElement).checked,
-        expansion_hots: (document.querySelector("#expansion_hots") as HTMLInputElement).checked,
-        expansion_lotv: (document.querySelector("#expansion_lotv") as HTMLInputElement).checked,
-        server_americas: (document.querySelector("#server_americas") as HTMLInputElement).checked,
-        server_europe: (document.querySelector("#server_europe") as HTMLInputElement).checked,
-        server_asia: (document.querySelector("#server_asia") as HTMLInputElement).checked,
-        player_name_must_include: (document.querySelector("#player_names_include") as HTMLInputElement).value,
-        player_name_must_exclude: (document.querySelector("#player_names_exclude") as HTMLInputElement).value,
-        date_played_min: (document.querySelector("#date_min") as HTMLInputElement).value,
-        date_played_max: (document.querySelector("#date_max") as HTMLInputElement).value,
-        game_duration_min: (document.querySelector("#duration_min") as HTMLInputElement).value,
-        game_duration_max: (document.querySelector("#duration_max") as HTMLInputElement).value,
-        player_count_min: Number((document.querySelector("#player_count_min") as HTMLInputElement).value),
-        player_count_max: Number((document.querySelector("#player_count_max") as HTMLInputElement).value),
-        average_mmr_min: Number((document.querySelector("#mmr_min") as HTMLInputElement).value),
-        average_mmr_max: Number((document.querySelector("#mmr_max") as HTMLInputElement).value),
-        matchup_pvp: (document.querySelector("#matchup_pvp") as HTMLInputElement).checked,
-        matchup_pvt: (document.querySelector("#matchup_pvt") as HTMLInputElement).checked,
-        matchup_pvz: (document.querySelector("#matchup_pvz") as HTMLInputElement).checked,
-        matchup_tvt: (document.querySelector("#matchup_tvt") as HTMLInputElement).checked,
-        matchup_tvz: (document.querySelector("#matchup_tvz") as HTMLInputElement).checked,
-        matchup_zvz: (document.querySelector("#matchup_zvz") as HTMLInputElement).checked,
-        map_name_must_include: (document.querySelector("#map_names_include") as HTMLInputElement).value,
-        map_name_must_exclude: (document.querySelector("#map_names_exclude") as HTMLInputElement).value,
+        filter_enabled: (document.getElementById("filter_enabled") as HTMLInputElement).checked,
+        game_matchmaking: (document.getElementById("matchmaking") as HTMLInputElement).checked,
+        game_custom: (document.getElementById("custom") as HTMLInputElement).checked,
+        game_coop: (document.getElementById("coop") as HTMLInputElement).checked,
+        game_arcade: (document.getElementById("arcade") as HTMLInputElement).checked,
+        game_include_games_with_ai: (document.getElementById("games_with_ai") as HTMLInputElement).checked,
+        game_include_games_resumed_from_replay: (document.getElementById("resume_from_replay") as HTMLInputElement).checked,
+        expansion_wol: (document.getElementById("expansion_wol") as HTMLInputElement).checked,
+        expansion_hots: (document.getElementById("expansion_hots") as HTMLInputElement).checked,
+        expansion_lotv: (document.getElementById("expansion_lotv") as HTMLInputElement).checked,
+        server_americas: (document.getElementById("server_americas") as HTMLInputElement).checked,
+        server_europe: (document.getElementById("server_europe") as HTMLInputElement).checked,
+        server_asia: (document.getElementById("server_asia") as HTMLInputElement).checked,
+        player_name_must_include: (document.getElementById("player_names_include") as HTMLInputElement).value,
+        player_name_must_exclude: (document.getElementById("player_names_exclude") as HTMLInputElement).value,
+        date_played_min: (document.getElementById("date_min") as HTMLInputElement).value,
+        date_played_max: (document.getElementById("date_max") as HTMLInputElement).value,
+        game_duration_min: (document.getElementById("duration_min") as HTMLInputElement).value,
+        game_duration_max: (document.getElementById("duration_max") as HTMLInputElement).value,
+        player_count_min: Number((document.getElementById("player_count_min") as HTMLInputElement).value),
+        player_count_max: Number((document.getElementById("player_count_max") as HTMLInputElement).value),
+        average_mmr_min: Number((document.getElementById("mmr_min") as HTMLInputElement).value),
+        average_mmr_max: Number((document.getElementById("mmr_max") as HTMLInputElement).value),
+        matchup_pvp: (document.getElementById("matchup_pvp") as HTMLInputElement).checked,
+        matchup_pvt: (document.getElementById("matchup_pvt") as HTMLInputElement).checked,
+        matchup_pvz: (document.getElementById("matchup_pvz") as HTMLInputElement).checked,
+        matchup_tvt: (document.getElementById("matchup_tvt") as HTMLInputElement).checked,
+        matchup_tvz: (document.getElementById("matchup_tvz") as HTMLInputElement).checked,
+        matchup_zvz: (document.getElementById("matchup_zvz") as HTMLInputElement).checked,
+        map_name_must_include: (document.getElementById("map_names_include") as HTMLInputElement).value,
+        map_name_must_exclude: (document.getElementById("map_names_exclude") as HTMLInputElement).value,
     }
 
     console.log(filter_settings)
@@ -452,7 +453,7 @@ const filter_replays = (): void => {
     }
     FILTERED = filtered
 
-    document.querySelector("#download_button")!.textContent = `Zip and download ${FILTERED.length} Replays`
+    document.getElementById("download_button")!.textContent = `Zip and download ${FILTERED.length} Replays`
 }
 
 
@@ -520,84 +521,11 @@ const prevent_defaults = (e: Event) => {
     e.stopPropagation()
 }
 
-const init_drop_zone = () => {
-    if (!drop_zone || !file_input) {
-        console.error('Required elements not found')
-        return
-    }
-    // Prevent default drag behaviors
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event_name => {
-        document.body.addEventListener(event_name, prevent_defaults, false)
-    });
-
-    // Highlight drop zone when dragging files over
-    ['dragenter', 'dragover'].forEach(event_name => {
-        drop_zone.addEventListener(event_name, (e) => {
-            e.preventDefault()
-            drop_zone.classList.add('border-blue-500', 'bg-blue-100')
-        }, false)
-    });
-
-    ['dragleave', 'drop'].forEach(event_name => {
-        drop_zone.addEventListener(event_name, (e) => {
-            e.preventDefault()
-            drop_zone.classList.remove('border-blue-500', 'bg-blue-100')
-        }, false)
-    })
-
-    // Handle dropped files
-    drop_zone.addEventListener('drop', async (e: DragEvent) => {
-        e.preventDefault()
-
-        if (!e.dataTransfer) {
-            return
-        }
-
-        // Parse file in frontend, calculate md5
+const init_file_input = () => {
+    const handle_files = async (files: File[]) => {
+        if (!files) { return }
         const md5s = [...FILES, ...PARSED].map(file => file.md5)
-
-        // Helper to recursively parse all files if a folder was dropped
-        const extract_all_files = async (files_and_folders: DataTransferItemList): Promise<File[]> => {
-            const replay_files: File[] = []
-
-            // Process a single FileSystemEntry recursively
-            async function process_entry(entry: FileSystemEntry): Promise<void> {
-                if (entry.isFile) {
-                    const file_entry = entry as FileSystemFileEntry
-                    const file = await new Promise<File>((resolve) => {
-                        file_entry.file(resolve)
-                    })
-
-                    // Only include .SC2Replay files
-                    if (file.name.toLowerCase().endsWith('.sc2replay')) {
-                        replay_files.push(file) // Push File object, not FileSystemFileEntry
-                    }
-                } else if (entry.isDirectory) {
-                    const dir_entry = entry as FileSystemDirectoryEntry
-                    const reader = dir_entry.createReader()
-                    const entries = await new Promise<FileSystemEntry[]>((resolve) => {
-                        reader.readEntries(resolve)
-                    });
-
-                    // Recursively process directory contents
-                    for (const sub_entry of entries) {
-                        await process_entry(sub_entry)
-                    }
-                }
-            }
-
-            // Process all items in the DataTransferItemList
-            for (const item of files_and_folders) {
-                const entry = item.webkitGetAsEntry()
-                if (entry) {
-                    await process_entry(entry)
-                }
-            }
-
-            return replay_files
-        }
-
-        const all_replay_files = await extract_all_files(e.dataTransfer.items)
+        const all_replay_files = [...files].filter(file => file !== null && file.name.toLowerCase().endsWith('.sc2replay')) as File[]
 
         for (let file of all_replay_files) {
             let md5 = await calculate_md5(file)
@@ -612,12 +540,33 @@ const init_drop_zone = () => {
             // console.log('File:', file.name, 'MD5:', md5)
         }
 
-        // Add files to input element
-        const data_transfer = new DataTransfer()
-        for (const file of [...FILES, ...PARSED]) {
-            data_transfer.items.add(file.file)
-        }
-        file_input.files = data_transfer.files
+        // Update number of replay files accepted
+        amount_of_files!.innerText = [...FILES, ...PARSED].length.toString()
+    }
+
+    // Handle folder and file input
+    folder_input!.addEventListener('change', async (e: Event) => {
+        const element = e.target as HTMLInputElement
+        if (!element || !element.files) { return }
+        const files_array = [...element.files]
+        await handle_files(files_array)
+        folder_input!.value = ''
+    })
+    file_input!.addEventListener('change', async (e: Event) => {
+        const element = e.target as HTMLInputElement
+        if (!element || !element.files) { return }
+        const files_array = [...element.files]
+        await handle_files(files_array)
+        file_input!.value = ''
+    });
+    // Drag and drop anywhere on the page will result in file drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event_name => {
+        document.body.addEventListener(event_name, prevent_defaults, false)
+    });
+    document.body.addEventListener("drop", async (e: DragEvent) => {
+        e.preventDefault()
+        if (!e.dataTransfer) { return }
+        await handle_files([...e.dataTransfer.items].map((value: DataTransferItem) => value.getAsFile()).filter((i => !!i)))
     })
 }
 
@@ -633,14 +582,14 @@ const init_filter_event_listeners = () => {
 
     const element_ids_instant_filter = ["filter_enabled", "matchmaking", "custom", "coop", "arcade", "games_with_ai", "resume_from_replay", "expansion_wol", "expansion_hots", "expansion_lotv", "server_americas", "server_europe", "server_asia", "matchup_pvp", "matchup_pvt", "matchup_pvz", "matchup_tvt", "matchup_tvz", "matchup_zvz"]
     for (const element_id of element_ids_instant_filter) {
-        document.querySelector(`#${element_id}`)!.addEventListener("change", () => {
+        document.getElementById(`${element_id}`)!.addEventListener("change", () => {
             filter_replays()
         })
     }
 
     const element_ids_debounce_filter = ["player_names_include", "player_names_exclude", "date_min", "date_max", "duration_min", "duration_max", "player_count_min", "player_count_max", "mmr_min", "mmr_max", "map_names_include", "map_names_exclude"]
     for (const element_id of element_ids_debounce_filter) {
-        document.querySelector(`#${element_id}`)!.addEventListener("input", () => {
+        document.getElementById(`${element_id}`)!.addEventListener("input", () => {
             debounce(() => {
                 filter_replays()
             })
@@ -650,8 +599,8 @@ const init_filter_event_listeners = () => {
 
 const init_template_listener = () => {
     const update_example_name_template = () => {
-        const rename_pattern = (document.querySelector("#name_template") as HTMLInputElement).value;
-        (document.querySelector("#name_example") as HTMLInputElement).value = get_replay_name_from_template(rename_pattern,
+        const rename_pattern = (document.getElementById("name_template") as HTMLInputElement).value;
+        (document.getElementById("name_example") as HTMLInputElement).value = get_replay_name_from_template(rename_pattern,
             // Example replay data
             {
                 file: new File([], "test"),
@@ -696,7 +645,7 @@ const init_template_listener = () => {
     }
 
     update_example_name_template()
-    document.querySelector("#name_template")!.addEventListener("input", () => {
+    document.getElementById("name_template")!.addEventListener("input", () => {
         update_example_name_template()
     })
 }
@@ -717,7 +666,10 @@ const parse_replay = async (file_data: FileData): Promise<ReplayData> => {
     return await response.json()
 }
 
+let is_processing = false
 const process_files = async () => {
+    if (is_processing) { return }
+    is_processing = true
     let new_files_processed = false
     for (const file_data of [...FILES]) {
         if (file_data.status !== 'uploaded') continue
@@ -742,10 +694,11 @@ const process_files = async () => {
     if (new_files_processed) {
         filter_replays()
     }
+    is_processing = false
 }
 
 const main = (): void => {
-    init_drop_zone()
+    init_file_input()
     init_filter_event_listeners()
     init_template_listener()
     console.log("Replay pack builder initialized")
