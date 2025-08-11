@@ -127,7 +127,7 @@ async function download_files_as_zip() {
         // Create a temporary link element to trigger the download
         const link = document.createElement("a")
         link.href = url
-        link.download = "downloaded_files.zip" // Name of the downloaded ZIP file
+        link.download = "replay_pack.zip" // Name of the downloaded ZIP file
         document.body.appendChild(link)
         link.click()
 
@@ -555,7 +555,51 @@ const init_drop_zone = () => {
 
         // Parse file in frontend, calculate md5
         const md5s = [...FILES, ...PARSED].map(file => file.md5)
-        for (let file of e.dataTransfer.files) {
+
+        // Helper to recursively parse all files if a folder was dropped
+        const extract_all_files = async (files_and_folders: DataTransferItemList): Promise<File[]> => {
+            const replay_files: File[] = []
+
+            // Process a single FileSystemEntry recursively
+            async function process_entry(entry: FileSystemEntry): Promise<void> {
+                if (entry.isFile) {
+                    const file_entry = entry as FileSystemFileEntry
+                    const file = await new Promise<File>((resolve) => {
+                        file_entry.file(resolve)
+                    })
+
+                    // Only include .SC2Replay files
+                    if (file.name.toLowerCase().endsWith('.sc2replay')) {
+                        replay_files.push(file) // Push File object, not FileSystemFileEntry
+                    }
+                } else if (entry.isDirectory) {
+                    const dir_entry = entry as FileSystemDirectoryEntry
+                    const reader = dir_entry.createReader()
+                    const entries = await new Promise<FileSystemEntry[]>((resolve) => {
+                        reader.readEntries(resolve)
+                    });
+
+                    // Recursively process directory contents
+                    for (const sub_entry of entries) {
+                        await process_entry(sub_entry)
+                    }
+                }
+            }
+
+            // Process all items in the DataTransferItemList
+            for (const item of files_and_folders) {
+                const entry = item.webkitGetAsEntry()
+                if (entry) {
+                    await process_entry(entry)
+                }
+            }
+
+            return replay_files
+        }
+
+        const all_replay_files = await extract_all_files(e.dataTransfer.items)
+
+        for (let file of all_replay_files) {
             let md5 = await calculate_md5(file)
             // Don't add duplicates
             if (md5s.includes(md5)) { continue }
@@ -570,7 +614,7 @@ const init_drop_zone = () => {
 
         // Add files to input element
         const data_transfer = new DataTransfer()
-        for (const file of FILES) {
+        for (const file of [...FILES, ...PARSED]) {
             data_transfer.items.add(file.file)
         }
         file_input.files = data_transfer.files
