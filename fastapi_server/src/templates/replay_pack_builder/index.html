@@ -4,46 +4,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SC2 Replay Parser</title>
+    <title>SC2 Replay Pack Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/typescript/5.5.4/typescript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 
-<body id="body" class="bg-gray-50 min-h-screen p-4">
-    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-4">
+<body id="body" class="bg-gray-100 min-h-screen p-4">
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6">
         <div class="space-y-4">
             <fieldset class="bg-white p-4 rounded-lg shadow-lg w-full  border border-gray-300">
-                <legend class="text-2xl font-bold text-gray-800 text-center">Upload SC2 Replays</legend>
-                <div class="flex space-x-2">
-                    <label for="amount_files">Total Replay files uploaded:</label>
-                    <div id="amount_files">0</div>
+                <legend class="text-2xl font-bold text-gray-900 text-center">Upload SC2 Replays</legend>
+                <div class="flex items-center space-x-2 mb-4">
+                    <label class="font-medium text-gray-700" for="amount_files">Total Replays:</label>
+                    <div id="amount_files" class="font-bold text-blue-600">0</div>
                 </div>
-                <fieldset class="flex flex-col items-center border border-gray-300">
-                    <legend class="text-center">Select Replay Folder</legend>
-                    <input type="file" id="folder_input" webkitdirectory directory multiple class="w-auto text-sm text-gray-500
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-md file:border-0
-                        file:text-sm file:font-semibold
-                        file:bg-blue-50 file:text-blue-700
-                        hover:file:bg-blue-100">
-                </fieldset>
-                <fieldset class="flex flex-col items-center  border border-gray-300">
-                    <legend class="text-center">Select Replays (.SC2Replay)</legend>
-                    <input type="file" id="file_input" multiple class="w-auto text-sm text-gray-500
-            file:mr-4 file:py-2 file:px-4
-            file:rounded-md file:border-0
-            file:text-sm file:font-semibold
-            file:bg-blue-50 file:text-blue-700
-            hover:file:bg-blue-100">
-                </fieldset>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <fieldset
+                        class="flex flex-col items-center border-2 border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                        <legend class="text-center font-medium text-gray-700 px-2">Select Replay Folder</legend>
+                        <input type="file" id="folder_input" webkitdirectory directory multiple class="w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-lg file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-100 file:text-blue-800
+                            hover:file:bg-blue-200 transition-colors">
+                    </fieldset>
+                    <fieldset
+                        class="flex flex-col items-center border-2 border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
+                        <legend class="text-center font-medium text-gray-700 px-2">Select Replays (.SC2Replay)</legend>
+                        <input type="file" id="file_input" multiple class="w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-lg file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-100 file:text-blue-800
+                            hover:file:bg-blue-200 transition-colors">
+                    </fieldset>
+                </div>
 
-                <div id="parsed_replays" class="grid grid-cols-3 hidden">
-                    <!-- TODO -->
-                    <div>File name</div>
-                    <div>Status</div>
-                    <div></div>
+                <div id="parsed_replays" class="hidden mt-4">
+                    <div class="grid grid-cols-12 gap-2 mb-2 font-medium text-gray-700 border-b pb-2">
+                        <div class="col-span-6">File Name</div>
+                        <div class="col-span-4">Status</div>
+                        <div class="col-span-2 text-right">Actions</div>
+                    </div>
+                    <div id="replay_list" class="space-y-2">
+                        <!-- Replay items will be added here dynamically -->
+                    </div>
+                    <div id="error_replays" class="mt-4 hidden">
+                        <button id="remove_errors_btn" class="text-sm text-red-600 hover:text-red-800 font-medium">
+                            Remove all error replays
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 
@@ -56,30 +69,30 @@
                 <!-- TODO add button remove all errornous replays (to be able to upload them again) -->
             </fieldset>
 
-            <fieldset class="bg-white p-4 rounded-lg shadow-lg w-full  border border-gray-300">
-                <legend class="text-2xl font-bold text-gray-800 text-center">SC2 Replay Filters</legend>
-                <div class="flex my-2">
-                    <input class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" type="checkbox"
+            <fieldset class="bg-white p-6 rounded-xl shadow-lg w-full border border-gray-200">
+                <legend class="text-2xl font-bold text-gray-900 text-center">Replay Filters</legend>
+                <div class="flex items-center bg-gray-50 rounded-lg">
+                    <input class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" type="checkbox"
                         name="filter_enabled" id="filter_enabled" checked
                         onclick="document.getElementById('filters-list').classList.toggle('hidden')">
-                    <label class="ml-2 text-sm text-gray-700" for="filter_enabled">Filter enabled</label>
+                    <label class="ml-2 text-base font-medium text-gray-700" for="filter_enabled">Filter enabled</label>
                     <!-- Hover-Info box -->
                     <span class="ml-2 relative group">
-                        <svg class="h-4 w-4 text-gray-500 cursor-help" fill="none" stroke="currentColor"
+                        <svg class="h-5 w-5 text-gray-500 cursor-help" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
                         </svg>
                         <span
-                            class="absolute left-0 top-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
+                            class="absolute left-0 top-full mt-2 w-64 bg-gray-800 text-white text-sm rounded-md p-2 hidden group-hover:block shadow-lg">
                             If unchecked, all replays will be renamed and zipped
                         </span>
                     </span>
                 </div>
-                <div id="filters-list" class="space-y-4">
+                <div id="filters-list" class="space-y-2 mt-4">
                     <!-- Game Type Filter -->
-                    <fieldset class="border border-gray-300 rounded-md p-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Game types</legend>
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                        <legend class="text-base font-medium text-gray-700 px-2">Game types</legend>
                         <div class="space-y-2">
                             <div class="flex items-center">
                                 <input id="matchmaking" type="checkbox"
@@ -144,8 +157,8 @@
                     </div>
 
                     <!-- EXPANSIONS wol,hots,lotv -->
-                    <fieldset class="border border-gray-300 rounded-md p-4 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Expansion</legend>
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50 my-4">
+                        <legend class="text-base font-medium text-gray-700 px-2">Expansion</legend>
 
                         <div class="space-y-2">
                             <div class="flex items-center">
@@ -169,8 +182,8 @@
                     </fieldset>
 
                     <!-- Regions na,eu,kr -->
-                    <fieldset class="border border-gray-300 rounded-md p-4 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Regions</legend>
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50 my-4">
+                        <legend class="text-base font-medium text-gray-700 px-2">Regions</legend>
                         <div class="space-y-2">
                             <div class="flex items-center">
                                 <input id="server_americas" type="checkbox"
@@ -191,8 +204,8 @@
                     </fieldset>
 
                     <!-- Date played -->
-                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Date played</legend>
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50 my-4">
+                        <legend class="text-base font-medium text-gray-700 px-2">Date played</legend>
                         <div class="flex space-x-2">
                             <label for="">Between</label>
                             <input class="border border-black" type="datetime-local" name="date_min" id="date_min">
@@ -202,8 +215,8 @@
                     </fieldset>
 
                     <!-- Game length -->
-                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Game duration (mm:ss)</legend>
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50 my-4">
+                        <legend class="text-base font-medium text-gray-700 px-2">Game duration (mm:ss)</legend>
                         <div class="flex space-x-2">
                             <label for="">Between</label>
                             <input class="border border-black" type="time" name="duration_min" id="duration_min">
@@ -213,8 +226,8 @@
                     </fieldset>
 
                     <!-- Players amount -->
-                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Player count</legend>
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50 my-4">
+                        <legend class="text-base font-medium text-gray-700 px-2">Player count</legend>
                         <div class="flex space-x-2">
                             <label for="">Between</label>
                             <input class="border border-black" type="number" name="player_count_min"
@@ -226,8 +239,8 @@
                     </fieldset>
 
                     <!-- MMR -->
-                    <fieldset class=" border border-gray-300 rounded-md p-2 my-4">
-                        <legend class="flex text-sm font-medium text-gray-700 px-2">Average Player MMR
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50 my-4">
+                        <legend class="flex text-base font-medium text-gray-700 px-2">Average Player MMR
                             <!-- Hover-Info box -->
                             <span class="ml-2 relative group">
                                 <svg class="h-4 w-4 text-gray-500 cursor-help" fill="none" stroke="currentColor"
@@ -252,45 +265,45 @@
                     </fieldset>
 
                     <!-- Matchups -->
-                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Matchups</legend>
-                        <div class="space-y-2">
+                    <fieldset class="border border-gray-200 rounded-lg p-3 bg-gray-50 my-4">
+                        <legend class="text-base font-medium text-gray-700 px-2">Matchups</legend>
+                        <div class="grid grid-cols-3 gap-2">
                             <div class="flex items-center">
                                 <input id="matchup_pvp" type="checkbox"
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                                <label for="matchup_pvp" class="ml-2 text-sm text-gray-700">PvP</label>
+                                <label for="matchup_pvp" class="ml-1 text-sm text-gray-700">PvP</label>
                             </div>
                             <div class="flex items-center">
                                 <input id="matchup_pvt" type="checkbox"
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                                <label for="matchup_pvt" class="ml-2 text-sm text-gray-700">PvT</label>
+                                <label for="matchup_pvt" class="ml-1 text-sm text-gray-700">PvT</label>
                             </div>
                             <div class="flex items-center">
                                 <input id="matchup_pvz" type="checkbox"
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                                <label for="matchup_pvz" class="ml-2 text-sm text-gray-700">PvZ</label>
+                                <label for="matchup_pvz" class="ml-1 text-sm text-gray-700">PvZ</label>
                             </div>
                             <div class="flex items-center">
                                 <input id="matchup_tvt" type="checkbox"
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                                <label for="matchup_tvt" class="ml-2 text-sm text-gray-700">TvT</label>
+                                <label for="matchup_tvt" class="ml-1 text-sm text-gray-700">TvT</label>
                             </div>
                             <div class="flex items-center">
                                 <input id="matchup_tvz" type="checkbox"
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                                <label for="matchup_tvz" class="ml-2 text-sm text-gray-700">TvZ</label>
+                                <label for="matchup_tvz" class="ml-1 text-sm text-gray-700">TvZ</label>
                             </div>
                             <div class="flex items-center">
                                 <input id="matchup_zvz" type="checkbox"
                                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" checked>
-                                <label for="matchup_zvz" class="ml-2 text-sm text-gray-700">ZvZ</label>
+                                <label for="matchup_zvz" class="ml-1 text-sm text-gray-700">ZvZ</label>
                             </div>
                         </div>
                     </fieldset>
 
                     <!-- Player names -->
-                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Player name (partial match, case
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50 my-4">
+                        <legend class="text-base font-medium text-gray-700 px-2">Player name (partial match, case
                             insensitive)
                         </legend>
                         <div class="grid grid-cols-3 space-y-2">
@@ -304,8 +317,8 @@
                     </fieldset>
 
                     <!-- Map names -->
-                    <fieldset class="border border-gray-300 rounded-md p-2 my-4">
-                        <legend class="text-sm font-medium text-gray-700 px-2">Map name (partial match, case
+                    <fieldset class="border border-gray-200 rounded-lg p-4 bg-gray-50 my-4">
+                        <legend class="text-base font-medium text-gray-700 px-2">Map name (partial match, case
                             insensitive)
                         </legend>
                         <div class="grid grid-cols-3 space-y-2">
@@ -322,18 +335,18 @@
             </fieldset>
 
             <!-- Replay Renaming Template -->
-            <fieldset class="bg-white p-4 rounded-lg shadow-lg w-full  border border-gray-300 flex flex-col">
-                <legend class="flex text-2xl font-bold text-gray-800  text-center" for="name_template">
+            <fieldset class="bg-white p-6 rounded-xl shadow-lg w-full border border-gray-200 flex flex-col">
+                <legend class="flex text-2xl font-bold text-gray-900 text-center" for="name_template">
                     Name Template
                     <!-- Hover-Info box -->
-                    <span class="ml-2 relative group">
+                    <span class="relative group">
                         <svg class="h-6 w-6 text-gray-500 cursor-help" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M13 16h-1v-4h-1m1-4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
                         </svg>
                         <div
-                            class="absolute left-0 bottom-full mt-2 w-48 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
+                            class="absolute left-0 bottom-full mt-2 w-64 bg-gray-800 text-white text-xs rounded-md p-2 hidden group-hover:block">
                             Available placeholders:<br>
                             {date} 2025_01_01<br>
                             {time} 13_25_31<br>
@@ -354,22 +367,37 @@
                     </span>
                 </legend>
 
-                <div class="grid grid-cols-4 space-y-2">
-                    <div class="col-span-1">Rename pattern</div>
-                    <input
-                        class="col-span-3 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        type="text" id="name_template" name="name_template"
-                        value="{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}">
-                    <div class="col-span-1">Example name</div>
-                    <input class="col-span-3" type="text" name="name_example" id="name_example" value="Loading..."
-                        readonly>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-4 gap-4 items-center">
+                        <label class="col-span-1 font-medium text-gray-700">Custom Pattern</label>
+                        <input
+                            class="col-span-3 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                            type="text" id="name_template" name="name_template"
+                            value="{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}">
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4 items-center">
+                        <label class="col-span-1 font-medium text-gray-700">Preview</label>
+                        <div class="col-span-3 p-2 bg-gray-50 rounded-md border border-gray-200 text-sm">
+                            <div id="name_example">Loading...</div>
+                            <div id="template_help" class="text-xs text-gray-500 mt-1">
+                                The preview updates as you type or select a preset
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </fieldset>
 
             <button id="download_button" onclick="download_files_as_zip()"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200">
-                <!-- TODO if 0 replays passed, grey out / disable the button -->
-                Zip and download Replays
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                <div class="flex items-center justify-center space-x-2">
+                    <svg id="download_icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    <span>Zip and download Replays</span>
+                </div>
             </button>
         </div>
     </div>

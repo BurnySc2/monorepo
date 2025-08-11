@@ -600,7 +600,7 @@ const init_filter_event_listeners = () => {
 const init_template_listener = () => {
     const update_example_name_template = () => {
         const rename_pattern = (document.getElementById("name_template") as HTMLInputElement).value;
-        (document.getElementById("name_example") as HTMLInputElement).value = get_replay_name_from_template(rename_pattern,
+        (document.getElementById("name_example") as HTMLDivElement).innerHTML = get_replay_name_from_template(rename_pattern,
             // Example replay data
             {
                 file: new File([], "test"),
