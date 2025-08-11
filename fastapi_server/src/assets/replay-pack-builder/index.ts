@@ -600,7 +600,7 @@ const init_filter_event_listeners = () => {
 const init_template_listener = () => {
     const update_example_name_template = () => {
         const rename_pattern = (document.getElementById("name_template") as HTMLInputElement).value;
-        (document.getElementById("name_example") as HTMLDivElement).innerHTML = get_replay_name_from_template(rename_pattern,
+        (document.getElementById("name_example") as HTMLDivElement).innerText = get_replay_name_from_template(rename_pattern,
             // Example replay data
             {
                 file: new File([], "test"),
@@ -697,12 +697,26 @@ const process_files = async () => {
     is_processing = false
 }
 
+const processing_feedback = () => {
+    const processing_count = FILES.filter((file: FileData) => file.status === "uploaded" || file.status === "processing").length
+    // const done_count = FILES.length - processing_count
+    const top_element = document.getElementById("processing_feedback")
+    const text_element = document.getElementById("processing_feedback_text")
+    if (0 < processing_count) {
+        top_element!.classList.remove("hidden")
+        text_element!.innerText = `Processing ${processing_count} files...`
+    } else {
+        top_element!.classList.add("hidden")
+    }
+}
+
 const main = (): void => {
     init_file_input()
     init_filter_event_listeners()
     init_template_listener()
     console.log("Replay pack builder initialized")
     setInterval(process_files, 1000)
+    setInterval(processing_feedback, 1000);
 }
 
 main()
