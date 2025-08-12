@@ -20,8 +20,10 @@ from prisma import Prisma
 
 load_dotenv()
 
+# pyrefly: ignore
 looking_for_lower_case_words: list[str] = os.getenv("WORDS_EXTRACTOR_WORDS").split(";")
 
+# pyrefly: ignore
 out_path = Path(os.getenv("WORDS_EXTRACTOR_OUTPUT_DIRECTORY"))
 out_path.mkdir(parents=True, exist_ok=True)
 
