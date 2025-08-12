@@ -79,6 +79,7 @@ app = Litestar(
         engine=JinjaTemplateEngine,
     ),
     debug=BACKEND_SERVER_URL == "http://localhost:8000",
+    request_max_body_size=1024 * 2**20,  # 1024 mb
 )
 
 if __name__ == "__main__":
