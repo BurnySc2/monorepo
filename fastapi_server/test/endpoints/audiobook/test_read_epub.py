@@ -32,7 +32,7 @@ def generate_epub_helper(book_title: str, book_author: str, chapters: dict[str, 
         c1 = epub.EpubHtml(
             file_name=f"chap_{chapter_id:04d}.xhtml",
             title=chapter_title,
-            content=chapter_content,
+            content=f"<html><body><p>{chapter_content}</p></body></html>",
             lang="en",
         )
 
@@ -54,6 +54,7 @@ def generate_epub_helper(book_title: str, book_author: str, chapters: dict[str, 
 
     book_in_memory = io.BytesIO()
     epub.write_epub(book_in_memory, book, {})
+    book_in_memory.seek(0)
     return book_in_memory
 
 
@@ -80,7 +81,7 @@ def test_epub_reader_extract_chapters_simple():
     epub_book = generate_epub_helper(
         book_title="test title",
         book_author="test author",
-        chapters={"asd": "asd", "asd2": "asd2"},
+        chapters={"Chapter 1": "Chapter 1 content", "Chapter 2": "Chapter 2 content"},
     )
     book_chapters = extract_chapters(epub_book)
     assert len(book_chapters) == 2
