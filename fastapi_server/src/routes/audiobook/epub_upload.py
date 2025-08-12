@@ -14,7 +14,7 @@ from litestar.params import Body
 from litestar.response import Template
 
 from models.audiobook import AudiobookBook, AudiobookChapter
-from routes.audiobook.temp_read_epub import (
+from routes.audiobook.epub_reader import (
     EpubChapter,
     EpubMetadata,
     extract_chapters,

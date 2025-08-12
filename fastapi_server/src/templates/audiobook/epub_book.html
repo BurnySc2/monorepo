@@ -2,8 +2,8 @@
 
 <body class="flex h-screen flex-col">
     {% include "nav.html" with context %}
-    <main class="flex grow flex-col items-center bg-gray-300 p-4 lg:overflow-y-auto">
-        <div class="flex flex-col gap-2 lg:m-4 lg:h-full lg:w-3/4 lg:overflow-y-auto">
+    <main class="flex grow flex-col items-center bg-gray-300 p-4">
+        <div class="flex flex-col gap-2 lg:m-4 lg:h-full lg:w-3/4">
             <div class="text-center text-4xl font-bold">
                 {{ book_name }}
             </div>
@@ -78,7 +78,7 @@
                 </div>
             </div>
             <div
-                class="rounded-lg border-2 border-gray-700 bg-gray-200 p-4 shadow-lg transition-all hover:shadow-xl lg:grow lg:overflow-y-auto">
+                class="rounded-lg border-2 border-gray-700 bg-gray-200 p-4 shadow-lg transition-all hover:shadow-xl">
                 <div class="mb-4 text-center text-2xl font-bold text-gray-800">
                     Table of Contents
                 </div>

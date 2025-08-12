@@ -6,7 +6,7 @@ from ebooklib import epub
 from hypothesis import given
 from hypothesis import strategies as st
 
-from routes.audiobook.temp_read_epub import combine_text, extract_chapters, extract_metadata
+from routes.audiobook.epub_reader import combine_text, extract_chapters, extract_metadata
 
 
 def generate_epub_helper(book_title: str, book_author: str, chapters: dict[str, str]) -> io.BytesIO:

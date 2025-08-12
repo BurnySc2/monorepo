@@ -1,3 +1,4 @@
+import contextlib
 import io
 import re
 import zipfile
@@ -130,7 +131,10 @@ def extract_metadata(data: io.BytesIO) -> EpubMetadata:
     c._load_container()
     c._load_opf_file()  # load title and toc etc
     title = c.book.get_metadata("DC", "title")[0][0]
-    author = c.book.get_metadata("DC", "creator")[0][0]
+    author = "Unknown"
+    with contextlib.suppress(IndexError):
+        author = c.book.get_metadata("DC", "creator")[0][0]
+
     # identifier = c.book.get_metadata("DC", "identifier")[0][0]
     # Some books seem to have no date set
     # date = ""
