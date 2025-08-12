@@ -2,7 +2,6 @@
 networks:
   '{{secrets.TRAEFIK_NETWORK}}':
     external: true
-version: '3.3'
 services:
   stirling-pdf:
     image: frooodle/s-pdf:latest
@@ -16,7 +15,6 @@ services:
         }}
       - traefik.http.routers.{{ SUBDOMAIN }}.tls=true
       - traefik.http.routers.{{ SUBDOMAIN }}.tls.certresolver=production
-      - traefik.http.routers.{{ SUBDOMAIN }}.middlewares=authelia@docker
     volumes:
       - ./trainingData:/usr/share/tessdata  # Required for extra OCR languages
       - ./extraConfigs:/configs

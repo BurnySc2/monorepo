@@ -3,12 +3,18 @@
 # Execute with
 # ansible-playbook stirling_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
-  hosts: my_servers
+  hosts: server_group4
   vars:
     USERNAME: '{{ secrets.STIRLING.USERNAME }}'
     SUBDOMAIN: '{{ secrets.STIRLING.SUBDOMAIN }}'
     APPLICATION_PORT: '8080'
   tasks:
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ USERNAME }}.{{ secrets.MY_DOMAIN }}'
+      loop_control:
+        loop_var: item
+      when: "'remote_servers' in group_names"
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'
