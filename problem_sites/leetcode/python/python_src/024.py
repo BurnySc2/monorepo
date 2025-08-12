@@ -59,7 +59,7 @@ class Solution:
         new_head = None
         previous = None
         current = head
-        while 1:
+        while True:
             # Split list node into 3 parts: first node, second node, tail
             next = current.next
             # Break out for uneven long listnodes

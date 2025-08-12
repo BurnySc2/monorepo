@@ -2,8 +2,8 @@ import random
 
 # import nltk
 from litestar import Controller, get
-from nltk.corpus import wordnet as wn  # pyre-fixme[21]
-from nltk.corpus.reader.wordnet import Synset  # pyre-fixme[21]
+from nltk.corpus import wordnet as wn
+from nltk.corpus.reader.wordnet import Synset
 
 # nltk.download("wordnet")
 
@@ -38,7 +38,6 @@ from nltk.corpus.reader.wordnet import Synset  # pyre-fixme[21]
 class MyWordsRoute(Controller):
     path = "/words"
 
-    # pyre-fixme[11]
     nouns_cache: list[Synset] | None = None
 
     @property

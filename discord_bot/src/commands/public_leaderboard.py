@@ -21,7 +21,7 @@ class LeaderboardParserOptions:
 
 
 public_leaderboard_parser = ArgumentParser()
-public_leaderboard_parser.add_arguments(LeaderboardParserOptions, dest="params")  # pyre-fixme[6]
+public_leaderboard_parser.add_arguments(LeaderboardParserOptions, dest="params")
 
 
 def parse_rank_range_argument(argument_list: list[str]) -> tuple[int, int]:
@@ -96,7 +96,7 @@ async def public_leaderboard(
 
     # Map message author_id's to nicknames
     map_author_id_to_server_nickname: dict[int, str] = {}
-    server_members: list[Member] = await bot.rest.fetch_members(event.guild_id)  # pyre-fixme[9]
+    server_members: list[Member] = await bot.rest.fetch_members(event.guild_id)
     for member in server_members:
         map_author_id_to_server_nickname[member.id] = member.display_name
 

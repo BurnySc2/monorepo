@@ -22,7 +22,7 @@ class Solution:
         sanitized = []
         index = 0
         added = False
-        while 1:
+        while True:
             if index >= len(p):
                 break
             char = p[index]

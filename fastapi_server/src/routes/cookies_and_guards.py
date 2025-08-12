@@ -99,7 +99,7 @@ async def provide_twitch_user(
     if twitch_access_token is None:
         return None
     # Grab cached user information to reduce amount of requests to twitch api
-    # pyre-fixme[9]
+    # pyrefly: ignore
     cached_user: TwitchUser | None = await global_cache.get(f"twitch_access_token {twitch_access_token}")
     if cached_user is not None:
         return cached_user
@@ -123,7 +123,7 @@ async def provide_twitch_user(
         email="",
         # email=response_json["email"],
     )
-    # pyre-fixme[6]
+    # pyrefly: ignore
     await global_cache.set(f"twitch_access_token {twitch_access_token}", twitch_user, expires_in=60)
     return twitch_user
 
@@ -135,7 +135,7 @@ async def provide_github_user(
     if github_access_token is None:
         return None
     # Grab cached user information to reduce amount of requests to github api
-    # pyre-fixme[9]
+    # pyrefly: ignore
     cached_user: GithubUser | None = await global_cache.get(f"github_access_token {github_access_token}")
     if cached_user is not None:
         return cached_user
@@ -156,7 +156,7 @@ async def provide_github_user(
         id=data["id"],
         login=data["login"],
     )
-    # pyre-fixme[6]
+    # pyrefly: ignore
     await global_cache.set(f"github_access_token {github_access_token}", github_user, expires_in=60)
     return github_user
 
@@ -168,7 +168,7 @@ async def provide_google_user(
     if google_access_token is None:
         return None
     # Grab cached user information to reduce amount of requests to google api
-    # pyre-fixme[9]
+    # pyrefly: ignore
     cached_user: GoogleUser | None = await global_cache.get(f"google_access_token {google_access_token}")
     if cached_user is not None:
         return cached_user
@@ -189,7 +189,7 @@ async def provide_google_user(
         id=data["sub"],
         display_name=data["email"],
     )
-    # pyre-fixme[6]
+    # pyrefly: ignore
     await global_cache.set(f"google_access_token {google_access_token}", google_user, expires_in=60)
     return google_user
 

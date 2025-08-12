@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import seaborn as sns  # pyre-fixme[21]
+import seaborn as sns
 
 # Apply the default theme
 sns.set_theme()

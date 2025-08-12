@@ -3,7 +3,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from burny_common.path_manipulation import recurse_path  # pyre-fixme[21]
+from burny_common.path_manipulation import recurse_path
 
 
 def zip_multiple_files(file_paths: Iterable[Path]) -> bytes:

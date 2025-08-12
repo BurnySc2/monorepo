@@ -59,7 +59,7 @@ async def file_watcher():
 async def bot_restarter():
     """If bot process is dead, restart"""
     logger.info("Started bot restarter")
-    while 1:
+    while True:
         await asyncio.sleep(5)
         if runner.bot_process is None or runner.bot_process.poll() is not None:
             logger.info("Restarting bot because it seems to have ended.")

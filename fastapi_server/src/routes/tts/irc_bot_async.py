@@ -54,20 +54,19 @@ class AsyncIrcBot:
             await asyncio.sleep(0.1)
 
     async def auto_rejoin(self) -> None:
-        while 1:
+        while True:
             # Auto rejoin if no ping in 10 minutes
             if time.time() - self.last_ping_received > 600:
                 logger.info("Attempting to auto-rejoin IRC.")
                 assert isinstance(self.ws, AsyncWebSocketSession)
                 await self.ws.send_text(f"USER {self.username} :This is a fun bot!")
-                # pyre-fixme[16]
                 await self.ws.send_text(f"NICK {self.username}")  # sets nick
                 await self.ws.send_text("PRIVMSG nickserv :iNOOPE")  # auth
                 await self.join(self.joined_channels)
             await asyncio.sleep(60)
 
     async def receive(self) -> None:
-        while 1:
+        while True:
             assert isinstance(self.ws, AsyncWebSocketSession)
             messages = await self.ws.receive_text()
             logger.info(messages)
@@ -165,7 +164,7 @@ async def main_simple_example():
         await ws.send_text("NICK justinfan12345")  # sets nick
         await ws.send_text("PRIVMSG nickserv :iNOOPE")  # auth
         await ws.send_text("JOIN #burnysc2")  # join the chan
-        while 1:
+        while True:
             message = await ws.receive_text()
             logger.info(message)
             await asyncio.sleep(0.1)

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import re
 
-import pymongo  # pyre-fixme[21]
-from bson import ObjectId  # pyre-fixme[21]
+import pymongo
+from bson import ObjectId
 from loguru import logger
 from pymongo import MongoClient
-from pymongo.collection import Collection  # pyre-fixme[21]
-from pymongo.database import Database  # pyre-fixme[21]
-from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
-from pymongo.results import InsertManyResult, InsertOneResult  # pyre-fixme[21]
+from pymongo.collection import Collection
+from pymongo.database import Database
+from pymongo.errors import ServerSelectionTimeoutError
+from pymongo.results import InsertManyResult, InsertOneResult
 
 
 async def test_database_with_mongodb():

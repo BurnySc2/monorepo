@@ -6,7 +6,7 @@ from pathlib import Path
 from string import printable
 
 import aiofiles
-from burny_common.measure_time import time_this  # pyre-fixme[21]
+from burny_common.measure_time import time_this
 
 FILES_AMOUNT = 100
 FILE_SIZE_IN_KB = 50

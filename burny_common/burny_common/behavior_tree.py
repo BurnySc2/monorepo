@@ -66,7 +66,7 @@ if __name__ == "__main__":
     some_action = MyAction()
     my_root_node = ActionNode([some_action])
 
-    while 1:
+    while True:
         result = my_root_node.run()
         if result == NodeOutcome.SUCCESS:
             break

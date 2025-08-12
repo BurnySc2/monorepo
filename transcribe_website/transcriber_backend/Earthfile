@@ -36,7 +36,7 @@ lint:
     FROM +install-dev
     RUN uv run ruff check .
 
-# Ignore errors via "# pyre-fixme[11]"
+# Ignore errors via "# pyrefly: ignore"
 pyrefly:
     FROM +install-dev
     RUN uv run pyrefly check

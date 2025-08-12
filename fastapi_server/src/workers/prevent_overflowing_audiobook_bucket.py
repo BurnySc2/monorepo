@@ -32,10 +32,10 @@ async def minio_get_bucket_size_in_mb(bucket_name: str) -> float:
 
 async def prevent_overflowing_audiobook_bucket() -> None:
     """Keep minio bucket size below a maximum by removing oldest uploaded books and minio data."""
-    # pyre-fixme[9]
+    # pyrefly: ignore
     minio_audiobook_max_size_mb_str: str = os.getenv("MINIO_AUDIOBOOK_MAX_SIZE_MB")
     minio_audiobook_max_size_mb: int = int(minio_audiobook_max_size_mb_str)
-    while 1:
+    while True:
         with suppress(S3Error):
             await asyncio.to_thread(minio_client.make_bucket, MINIO_AUDIOBOOK_BUCKET)
         minio_audiobooks_size_used_mb = await minio_get_bucket_size_in_mb(MINIO_AUDIOBOOK_BUCKET)

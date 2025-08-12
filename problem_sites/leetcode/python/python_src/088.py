@@ -11,7 +11,7 @@ class Solution:
         # Remove zeros from the end
         for i in range(len(nums1) - m):
             nums1.pop()
-        while 1:
+        while True:
             if index1 >= len(nums1) or index2 >= len(nums2):
                 break
             value1 = nums1[index1]

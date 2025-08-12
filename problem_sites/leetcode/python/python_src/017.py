@@ -44,7 +44,7 @@ class Solution:
             indices = [0 for _ in strings]
             limit = [len(string) - 1 for string in strings]
             yield indices
-            while 1:
+            while True:
                 result: bool = increment_at_index(indices, len(indices) - 1, strings)
                 # Limit reached: break
                 yield indices

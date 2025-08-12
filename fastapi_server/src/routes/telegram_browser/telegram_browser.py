@@ -28,13 +28,12 @@ from models.telegram_browser import Status, TelegramChannel, TelegramMessage
 from routes.caches import cache_coroutine_result
 from routes.telegram_browser.cookies_and_guards import is_logged_in_allowed_accounts_guard
 
-# pyre-fixme[9]
 BUCKET_NAME = os.getenv("MINIO_TELEGRAM_FILES_BUCKET")
 assert BUCKET_NAME is not None
 assert re.match(_BUCKET_NAME_REGEX, BUCKET_NAME) is not None
 
 minio_client = Minio(
-    # pyre-fixme[6]
+    # pyrefly: ignore
     os.getenv("MINIO_URL"),
     access_key=os.getenv("MINIO_ACCESS_TOKEN"),
     secret_key=os.getenv("MINIO_SECRET_KEY"),
@@ -63,6 +62,7 @@ async def all_channels_cache() -> list[TelegramChannel]:
     all_channels_query = (
         # pyrefly: ignore
         await TelegramChannel.objects()
+        # pyrefly: ignore
         .where(TelegramChannel.channel_username != None)  # noqa: E711
         .order_by(TelegramChannel.channel_username)
     )
@@ -142,6 +142,7 @@ def get_actived_and_disabled_columns(active_columns_str: str | None) -> tuple[di
 class MyTelegramBrowserRoute(Controller):
     path = "/telegram-browser"
     guards = [is_logged_in_allowed_accounts_guard]
+    # pyrefly: ignore
     request_class = HTMXRequest
 
     @get("/")
@@ -251,7 +252,6 @@ class MyTelegramBrowserRoute(Controller):
         results_as_dict: list[dict] = [
             {
                 # Data displayed in the columns
-                # pyre-fixme[16]
                 "message_link": f"https://t.me/{row.channel.channel_username.lower()}/{row.message_id}",
                 "message_date": arrow.get(row.message_date).strftime("%Y-%m-%d %H:%M:%S"),
                 "message_text": row.message_text if row.message_text is not None else "",

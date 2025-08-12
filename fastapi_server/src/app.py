@@ -30,7 +30,8 @@ load_dotenv()
 
 
 assert os.getenv("STAGE", "dev") in {"local_dev", "dev", "prod", "test"}, os.getenv("STAGE")
-STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")  # pyre-fixme[9]
+# pyrefly: ignore
+STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")
 BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://localhost:8000")
 WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:localhost:8000")
 logger.info(f"Server url: {BACKEND_SERVER_URL}")

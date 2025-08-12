@@ -111,7 +111,6 @@ async def test_public_search_aoe4_players(message_text: str, player_search_resul
             )
         ),
     ):
-        # pyre-fixme[6]
         result = await public_search_aoe4_players(None, None, message_text)
         if len(player_search_results) == 0:
             assert result == "Could not find any player with this name."
@@ -160,7 +159,6 @@ async def test_public_analyse_aoe4_game(data: DataObject, player_profile_id: int
             )
         ),
     ):
-        # pyre-fixme[6]
         result = await public_analyse_aoe4_game(None, None, message_text)
         found_game_player_data: GamePlayerData | None = next(
             (i for i in game_players_data if i.profile_id == player_profile_id), None
@@ -304,7 +302,6 @@ async def test_public_fetch_aoe4_bo_match_villager_condition(
             ]
         ),
     ) as get_mock:
-        # pyre-fixme[6]
         result = await public_fetch_aoe4_bo(None, None, message_text)
         assert get_mock.call_count == total_build_orders + amount_of_pages + 1
         if villagers_built >= villagers_required:

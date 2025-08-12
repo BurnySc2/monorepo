@@ -10,28 +10,25 @@ import asyncio
 import sys
 from typing import ForwardRef
 
-import motor  # pyre-fixme[21]
+import motor
 from beanie import Document, init_beanie
 from beanie.odm.operators.update.general import Set
 from loguru import logger
 from pydantic import Field
-from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
+from pymongo.errors import ServerSelectionTimeoutError
 
 
 # Queries can be cached https://roman-right.github.io/beanie/tutorial/cache/
-# pyre-fixme[13]
 class Author(Document):
     name: str
     birth_year: int
 
 
-# pyre-fixme[13]
 class Publisher(Document):
     name: str
     founded_year: int
 
 
-# pyre-fixme[13]
 class Book(Document):
     name: str
     release_year: int
@@ -43,22 +40,18 @@ class Book(Document):
 ForwardRefBookInventory = ForwardRef("BookInventory")
 
 
-# pyre-fixme[13]
 class Library(Document):
     name: str
     address: str
-    # pyre-fixme[11]
     books: list[ForwardRefBookInventory] = Field(default_factory=list)
 
 
-# pyre-fixme[13]
 class BookInventory(Document):
     amount: int
     book: Book
     library: Library
 
 
-# pyre-fixme[16]
 Library.update_forward_refs()
 
 

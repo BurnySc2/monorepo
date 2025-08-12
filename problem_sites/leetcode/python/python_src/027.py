@@ -7,7 +7,7 @@ class Solution:
             return 0
 
         index = 0
-        while 1:
+        while True:
             if nums[index] == val:
                 nums.pop(index)
             else:

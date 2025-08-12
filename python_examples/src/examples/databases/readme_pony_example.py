@@ -1,5 +1,5 @@
 from loguru import logger
-from pony import orm  # pyre-fixme[21]
+from pony import orm
 
 db = orm.Database()
 
@@ -13,7 +13,6 @@ db.bind(provider="sqlite", filename=":memory:")
 
 
 # Create models
-# pyre-fixme[11]
 class Library(db.Entity):
     # "id" is autoinserted
     name = orm.Required(str)

@@ -9,7 +9,6 @@ from click.testing import CliRunner
 from paramiko import SSHClient
 from paramiko.sftp_client import SFTPClient
 
-# pyre-fixme[21]
 from burny_common.copy_file_to_server import copy_file_to_server_helper, generate_path
 
 

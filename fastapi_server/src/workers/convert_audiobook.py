@@ -77,6 +77,7 @@ async def check_queued_chapters() -> None:
     query = (
         # pyrefly: ignore
         AudiobookChapter.objects()
+        # pyrefly: ignore
         .where(
             (AudiobookChapter.minio_object_name == None)  # noqa: E711
             & (AudiobookChapter.queued != None)  # noqa: E711

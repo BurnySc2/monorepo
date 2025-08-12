@@ -68,6 +68,7 @@ class MyReplayPackBuilderRoute(Controller):
     ) -> dict[str, Any]:
         bytes = BytesIO(data.file.file.read())
         # https://sc2reader.readthedocs.io/en/latest/articles/gettingstarted.html
+        # pyrefly: ignore
         replay: Replay = sc2reader.load_replay(bytes, load_level=2)
 
         parsed = {
@@ -94,6 +95,7 @@ class MyReplayPackBuilderRoute(Controller):
             "is_private": replay.is_private,
             "resume_from_replay": replay.resume_from_replay,
             "played_timestamp": replay.unix_timestamp * 1000,
+            # pyrefly: ignore
             "game_length_seconds": replay.length.seconds,
             "game_base_build": replay.base_build,
             "game_version": ".".join(map(str, replay.versions[1:4])),
@@ -102,5 +104,6 @@ class MyReplayPackBuilderRoute(Controller):
             "region_short": replay.region,
             "expansion": replay.expansion,
         }
+        # pyrefly: ignore
         parsed_checked = ReplayData(**parsed)
         return parsed_checked.model_dump()

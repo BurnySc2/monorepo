@@ -20,10 +20,8 @@ from prisma import Prisma
 
 load_dotenv()
 
-# pyre-fixme[16]
 looking_for_lower_case_words: list[str] = os.getenv("WORDS_EXTRACTOR_WORDS").split(";")
 
-# pyre-fixme[6]
 out_path = Path(os.getenv("WORDS_EXTRACTOR_OUTPUT_DIRECTORY"))
 out_path.mkdir(parents=True, exist_ok=True)
 

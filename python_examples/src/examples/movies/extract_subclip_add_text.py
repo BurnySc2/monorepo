@@ -15,16 +15,14 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from loguru import logger
-from moviepy.editor import CompositeVideoClip, TextClip, VideoFileClip  # pyre-fixme[21]
+from moviepy.editor import CompositeVideoClip, TextClip, VideoFileClip
 
 load_dotenv()
 
 
 # The folders containing the video files
-# pyre-fixme[16]
 videos_folder_path = [Path(p) for p in os.getenv("VIDEO_FOLDER_PATHS").split(";")]
 # Where to store the cut files to
-# pyre-fixme[6]
 out_folder_path = Path(os.getenv("VIDEO_OUT_PATHS"))
 # Text to be added to video
 TEXT_DESCRIPTION: str | None = os.getenv("VIDEO_TEXT_DESCRPITION")
@@ -84,7 +82,6 @@ def convert_clip(
     # Add context, half transition duration
     timestamp_start = timestamp_start - CLIP_CONTEXT
     timestamp_end = timestamp_end + CLIP_CONTEXT
-    # pyre-fixme[11]
     clip: VideoFileClip = VideoFileClip(str(video_path.absolute())).subclip(timestamp_start, timestamp_end)
 
     # Display text counter

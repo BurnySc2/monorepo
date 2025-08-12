@@ -23,7 +23,7 @@ class Solution:
         operators = {"+": add, "-": sub, "*": mul, "/": floordiv}
 
         index = 0
-        while 1:
+        while True:
             token = tokens[index]
             if token in operators:
                 first_value = tokens[index - 2]

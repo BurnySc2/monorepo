@@ -6,11 +6,10 @@ MongoDB GUI Interface: Robo 3T
 import sys
 
 from loguru import logger
-from mongoengine import Document, IntField, ListField, ReferenceField, StringField, connect  # pyre-fixme[21]
-from pymongo.errors import ServerSelectionTimeoutError  # pyre-fixme[21]
+from mongoengine import Document, IntField, ListField, ReferenceField, StringField, connect
+from pymongo.errors import ServerSelectionTimeoutError
 
 
-# pyre-fixme[11]
 class Author(Document):
     name = StringField(required=True)
     birth_year = IntField()

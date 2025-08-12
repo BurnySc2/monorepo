@@ -29,7 +29,7 @@ class ListNode:
         seen = set()
         nodes = []
         current = self
-        while 1:
+        while True:
             if id(current) in seen:
                 return "REPEATED NODES " + " -> ".join(map(str, nodes))
             seen.add(id(current))

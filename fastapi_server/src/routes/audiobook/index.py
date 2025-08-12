@@ -33,6 +33,7 @@ class MyAudiobookIndexRoute(Controller):
         books = (
             # pyrefly: ignore
             await AudiobookBook.objects()
+            # pyrefly: ignore
             .where(AudiobookBook.uploaded_by == logged_in_user.db_name)
             .order_by(AudiobookBook.upload_date, ascending=False)
         )

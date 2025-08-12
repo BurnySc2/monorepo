@@ -8,7 +8,8 @@ from loguru import logger
 
 from models.audiobook import AudiobookBook
 
-STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")  # pyre-fixme[9]
+# pyrefly: ignore
+STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")
 
 
 class MyRootRoute(Controller):
@@ -41,6 +42,6 @@ class MyRootRoute(Controller):
 
 async def background_task_function(my_text: str, other_text: str = " something!"):
     """A background function that gets called once"""
-    while 1:
+    while True:
         await asyncio.sleep(60 * 60)
         logger.info(f"Repeated {my_text}{other_text}")

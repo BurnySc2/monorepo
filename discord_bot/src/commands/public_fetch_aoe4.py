@@ -165,7 +165,7 @@ class BuildOrderParserOptions:
 
 
 public_fetch_aoe4_bo_parser = ArgumentParser()
-public_fetch_aoe4_bo_parser.add_arguments(BuildOrderParserOptions, dest="params")  # pyre-fixme[6]
+public_fetch_aoe4_bo_parser.add_arguments(BuildOrderParserOptions, dest="params")
 
 
 def get_help_string() -> str:
@@ -284,7 +284,6 @@ async def public_fetch_aoe4_bo(
         get_games_by_player_tasks = []
         if parsed_params.profile_id is not None:
             # A single profile id was given
-            # pyre-fixme[16]
             profile_response = await session.get(f"https://aoe4world.com/api/v0/players/{parsed_params.profile_id}")
             if not profile_response.ok:
                 return "Could not find a profile with this id."
@@ -533,7 +532,6 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 bo_count = len(finished_list)
             else:
-                # pyre-fixme[58]
                 bo_count = sum(1 for i in finished_list if i <= condition.time_in_seconds)
             return bo_count >= condition.target_count
         # TOWNCENTER CONDITION
@@ -544,7 +542,6 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 bo_count = len(finished_list)
             else:
-                # pyre-fixme[58]
                 bo_count = sum(1 for i in finished_list if i <= condition.time_in_seconds)
             return bo_count >= condition.target_count
         # FEUDAL CONDITION
@@ -554,7 +551,6 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 return True
             if len(self.actions.feudal_age) > 0:
-                # pyre-fixme[58]
                 return self.actions.feudal_age[0] <= condition.time_in_seconds
             return False
         # CASTLE CONDITION
@@ -564,7 +560,6 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 return True
             if len(self.actions.castle_age) > 0:
-                # pyre-fixme[58]
                 return self.actions.castle_age[0] <= condition.time_in_seconds
             return False
         # IMPERIAL CONDITION
@@ -574,7 +569,6 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 return True
             if len(self.actions.imperial_age) > 0:
-                # pyre-fixme[58]
                 return self.actions.imperial_age[0] <= condition.time_in_seconds
             return False
         # WHEELBARROW CONDITION
@@ -584,7 +578,6 @@ class GamePlayerData(BaseModel):
             if condition.time_in_seconds is None:
                 return True
             if len(self.actions.upgrade_unit_town_center_wheelbarrow_1) > 0:
-                # pyre-fixme[58]
                 return self.actions.upgrade_unit_town_center_wheelbarrow_1[0] <= condition.time_in_seconds
             return False
         raise NotImplementedError(f"Not implemented for action: {condition.action}")
@@ -674,7 +667,6 @@ async def search(
     url = f"https://aoe4world.com/api/v0/players/search?query={player_name}"
     collected_players: list[PlayerSearchResult] = []
     response: aiohttp.ClientResponse
-    # pyre-fixme[16]
     response = await session.get(url)
     if not response.ok:
         raise aiohttp.ClientConnectionError
@@ -689,7 +681,6 @@ async def fetch_top_profiles(session: ClientSession, max_pages: int = 1) -> list
     """From the first n pages, grab the profiles and return them as generator."""
     assert max_pages >= 1
     tasks = [
-        # pyre-fixme[16]
         asyncio.create_task(session.get(f"https://aoe4world.com/api/v0/leaderboards/rm_solo?page={page}"))
         for page in range(1, max_pages + 1)
     ]
@@ -718,7 +709,6 @@ async def get_games_by_player_id(
     assert max_pages >= 1
     tasks = [
         asyncio.create_task(
-            # pyre-fixme[16]
             session.get(f"https://aoe4world.com/api/v0/games?page={page}&profile_ids={player_profile_id}")
         )
         for page in range(1, max_pages + 1)
@@ -761,7 +751,6 @@ async def get_build_order_of_game(
 ) -> tuple[GamePlayerData, int, int] | None:
     """A helper function that gets and parses the build order from a game belonging to a player."""
     url = f"https://aoe4world.com/players/{player_profile_id}/games/{game_id}/summary"
-    # pyre-fixme[16]
     response = await session.get(url)
     if not response.ok:
         return

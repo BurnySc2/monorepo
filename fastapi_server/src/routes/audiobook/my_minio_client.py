@@ -13,13 +13,13 @@ from models.audiobook import AudiobookBook, AudiobookChapter
 
 load_dotenv()
 
-# pyre-fixme[9]
+# pyrefly: ignore
 MINIO_AUDIOBOOK_BUCKET: str = os.getenv("MINIO_AUDIOBOOK_BUCKET")
 assert MINIO_AUDIOBOOK_BUCKET is not None
 assert re.match(_BUCKET_NAME_REGEX, MINIO_AUDIOBOOK_BUCKET) is not None
 
 minio_client = Minio(
-    # pyre-fixme[6]
+    # pyrefly: ignore
     os.getenv("MINIO_URL"),
     access_key=os.getenv("MINIO_ACCESS_TOKEN"),
     secret_key=os.getenv("MINIO_SECRET_KEY"),
@@ -85,6 +85,7 @@ async def hard_delete_book(book_id: int) -> None:
     minio_objects = (
         # pyrefly: ignore
         await AudiobookChapter.select(AudiobookChapter.minio_object_name)
+        # pyrefly: ignore
         .where(AudiobookChapter.book == book_id)
         .where(AudiobookChapter.minio_object_name != None)  # noqa: E711
     )

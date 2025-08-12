@@ -29,7 +29,7 @@ async def do_stuff(session: ClientSession, url: str, retry: int, results: list) 
         # Amount of retries exhausted
         return True
     try:
-        response = await session.get(  # pyre-fixme[16]
+        response = await session.get(
             url,
             # How long each request can at most take
             timeout=0.005,
@@ -38,7 +38,7 @@ async def do_stuff(session: ClientSession, url: str, retry: int, results: list) 
             response_json = await response.json()
             results.append(response_json)
         return True
-    except asyncio.TimeoutError:  # pyre-fixme[16]
+    except asyncio.TimeoutError:
         # Took too long to respond
         return False
 
@@ -98,7 +98,7 @@ async def request_sequentially() -> float:
     t0 = time.perf_counter()
     async with ClientSession() as session:
         for i in range(1, 101):
-            result = await session.get(f"https://jsonplaceholder.typicode.com/posts/{i}")  # pyre-fixme[16]
+            result = await session.get(f"https://jsonplaceholder.typicode.com/posts/{i}")
             if result.ok:
                 await result.json()
     t1 = time.perf_counter()

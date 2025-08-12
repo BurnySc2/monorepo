@@ -163,7 +163,7 @@ class TTSQueueRunner:
         return TTSQueue.get_connected_websockets(self.stream_name, self.read_name_lang)
 
     async def run(self):
-        while 1:
+        while True:
             # End worker if text queue was removed which means all connected websockets have disconnected
             if not self.text_queue_exists:
                 return
@@ -267,5 +267,6 @@ class TTSWebsocketHandler(WebsocketListener):
     ) -> None:
         await TTSQueue.remove_ws(socket, stream_name, read_name_lang)
 
-    async def on_receive(self, data: str, stream_name: str) -> str:  # pyre-fixme[14]
+    # pyrefly: ignore
+    async def on_receive(self, data: str, stream_name: str) -> str:
         return ""

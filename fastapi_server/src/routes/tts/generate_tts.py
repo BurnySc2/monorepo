@@ -171,6 +171,7 @@ async def generate_tts(voice: Voices, text: str) -> tuple[str, float]:
         b64data_decoded = base64.b64decode(b64data)
         data = BytesIO(b64data_decoded)
         mp3_info = MP3(data)
+        # pyrefly: ignore
         real_duration_seconds = mp3_info.info.length
         # logger.info(f"Data was off by: {real_duration_seconds - calc_duration}")
 

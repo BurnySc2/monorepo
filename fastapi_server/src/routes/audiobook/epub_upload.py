@@ -62,6 +62,7 @@ class MyAudiobookEpubRoute(Controller):
         book = (
             # pyrefly: ignore
             await AudiobookBook.objects()
+            # pyrefly: ignore
             .where(
                 (AudiobookBook.uploaded_by == logged_in_user.db_name)
                 & (AudiobookBook.book_title == metadata.title)

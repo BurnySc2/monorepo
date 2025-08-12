@@ -4,13 +4,13 @@ import re
 import zipfile
 from pathlib import Path
 
-import nltk  # pyre-fixme[21]
-from bs4 import BeautifulSoup  # pyre-fixme[21]
-from ebooklib import ITEM_DOCUMENT  # pyre-fixme[21]
-from ebooklib.epub import EpubHtml, EpubReader, Link, Section  # pyre-fixme[21]
+import nltk
+from bs4 import BeautifulSoup
+from ebooklib import ITEM_DOCUMENT
+from ebooklib.epub import EpubHtml, EpubReader, Link, Section
 from loguru import logger
 from nltk import word_tokenize
-from nltk.tokenize import sent_tokenize  # pyre-fixme[21]
+from nltk.tokenize import sent_tokenize
 from pydantic import BaseModel
 
 nltk.download("punkt_tab")
@@ -46,7 +46,6 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
     chapters = []
     chapter_number = 1
 
-    # pyre-fixme[11]
     def follow_link(chapter: Link | Section | EpubHtml):
         nonlocal chapter_number, prev_text
         if isinstance(chapter, list | tuple):
@@ -91,6 +90,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
         if combined_text != "" and combined_text != prev_text:
             chapters.append(
                 EpubChapter(
+                    # pyrefly: ignore
                     chapter_title=chapter_title,
                     chapter_number=chapter_number,
                     word_count=len(word_tokenize(combined_text)),

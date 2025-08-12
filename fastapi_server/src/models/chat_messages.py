@@ -3,16 +3,16 @@ from __future__ import annotations
 import os
 from typing import Literal
 
-import asyncpg  # pyre-fixme[21]
+import asyncpg
 from asyncpg import Record
 
 assert os.getenv("STAGE", "dev") in {"dev", "prod"}, os.getenv("STAGE")
-STAGE: Literal["dev", "prod"] = os.getenv("STAGE", "dev")  # pyre-fixme[9]
+# pyrefly: ignore
+STAGE: Literal["dev", "prod"] = os.getenv("STAGE", "dev")
 
 TABLE_NAME = f"{STAGE}_chat_messages"
 
 
-# pyre-fixme[11]
 async def create_connection() -> asyncpg.Connection:
     # TODO use 'with' statement if possible
     return await asyncpg.connect(
@@ -23,7 +23,7 @@ async def create_connection() -> asyncpg.Connection:
 
 async def table_exists(table_name: str) -> bool:
     conn = await create_connection()
-    # pyre-fixme[11]
+    # pyrefly: ignore
     data: Record = await conn.fetchrow(
         """
 SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name ILIKE $1);

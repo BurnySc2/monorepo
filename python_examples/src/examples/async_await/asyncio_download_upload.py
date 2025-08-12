@@ -36,7 +36,7 @@ async def download_file(
     # Check if file exists
     if not file_path.exists():
         try:
-            async with session.get(url) as response:  # pyre-fixme[16]
+            async with session.get(url) as response:
                 # Assume everything went well with the response, no connection or server errors
                 assert response.status == 200
                 # Open file in binary write mode
@@ -64,7 +64,6 @@ async def download_file(
             except PermissionError:
                 # The file might be open by another process
                 logger.info(f"Permissionerror: Unable to rename file from ({temp_file_path}) to ({file_path})")
-        # pyre-fixme[16]
         except asyncio.TimeoutError:
             # The server might suddenly not respond
             logger.info(f"Received timeout error in url ({url}) in file path ({file_path})!")
@@ -75,7 +74,7 @@ async def download_file(
 
 
 async def download_site(session: aiohttp.ClientSession, url: str) -> aiohttp.ClientResponse:
-    async with session.get(url) as response:  # pyre-fixme[16]
+    async with session.get(url) as response:
         return response
 
 

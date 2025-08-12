@@ -13,7 +13,7 @@ class Solution:
         """ Endless generator for triangle numbers: [(1, 1), (2, 3), (3, 6), (4, 10) ... """
         i = 1
         n = 1
-        while 1:
+        while True:
             yield (i, n)
             i += 1
             n += i

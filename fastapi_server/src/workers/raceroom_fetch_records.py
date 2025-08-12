@@ -40,7 +40,9 @@ def parse_player_id(url: str) -> int:
 
 
 def parse_laptime(laptime: str) -> float:
-    match: re.Match = re.match(r"(\d+)m (\d+\.\d+)s", laptime)
+    match = re.match(r"(\d+)m (\d+\.\d+)s", laptime)
+    if match is None:
+        return -1
     minutes, seconds = match.groups()
     return int(minutes) * 60 + float(seconds)
 
@@ -82,6 +84,7 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
 
     # Insert track if not exists
     track_names = {i.track_id: i.track_name for i in results}
+    # pyrefly: ignore
     await RRRETrack.insert(
         *[
             RRRETrack(
@@ -90,10 +93,12 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
             )
             for dict_track_id, dict_track_name in track_names.items()
         ]
+        # pyrefly: ignore
     ).on_conflict(target=RRRETrack.track_id, action="DO UPDATE", values=[RRRETrack.track_name])
 
     # Insert driver if not exists
     driver_names = {i.player_id: i.player_name for i in results}
+    # pyrefly: ignore
     await RRREPlayer.insert(
         *[
             RRREPlayer(
@@ -102,9 +107,11 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
             )
             for driver_id, driver_name in driver_names.items()
         ]
+        # pyrefly: ignore
     ).on_conflict(target=RRREPlayer.player_id, action="DO UPDATE", values=[RRREPlayer.player_name])
 
     # Insert best time if not inserted in db
+    # pyrefly: ignore
     await RRREBestTime.insert(
         *[
             RRREBestTime(
@@ -118,11 +125,12 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
             )
             for i in results
         ]
+        # pyrefly: ignore
     ).on_conflict(action="DO NOTHING")
 
 
 async def main():
-    while 1:
+    while True:
         logger.info("Fetching records")
         async with httpx.AsyncClient() as client:
             for track_id in TRACK_IDS:

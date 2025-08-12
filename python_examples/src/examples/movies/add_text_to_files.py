@@ -6,14 +6,14 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from loguru import logger
-from moviepy.editor import CompositeVideoClip, TextClip, VideoFileClip  # pyre-fixme[21]
+from moviepy.editor import CompositeVideoClip, TextClip, VideoFileClip
 
 load_dotenv()
 
 
 def get_same_disk_temp_folder(dir_path: Path) -> Path:
     info_old = os.statvfs(dir_path)
-    while 1:
+    while True:
         dir_path_old = dir_path
         dir_path = dir_path.parent
         info = os.statvfs(dir_path)
@@ -32,7 +32,6 @@ def add_text_to_clip(
     clip: VideoFileClip = VideoFileClip(clip_input_path.as_posix())
 
     # Display text counter
-    # pyre-fixme[11]
     text: TextClip = TextClip(text_to_add, fontsize=70, color="white")
     text = text.set_position((360, clip.size[1] - text.size[1] - 10))
     text = text.set_start(clip.start)

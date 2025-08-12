@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, patch
 from zipfile import ZipFile
 
 import pytest
-from bs4 import BeautifulSoup  # pyre-fixme[21]
+from bs4 import BeautifulSoup
 from litestar.contrib.htmx._utils import HTMXHeaders
 from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTHORIZED
 from litestar.testing import TestClient

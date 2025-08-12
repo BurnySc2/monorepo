@@ -6,7 +6,7 @@ import aiohttp
 from hikari import GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 
 # http://zetcode.com/python/prettytable/
-from prettytable import PrettyTable  # pyre-fixme[21]
+from prettytable import PrettyTable
 from pydantic import BaseModel
 
 from commands.mmr_models import PlayerData
@@ -60,7 +60,6 @@ class Sc2LadderResult(BaseModel):
             rating_max=data.rating_max,
             mmr=mmr,
             games_played=games_played,
-            # pyre-fixme[6
             clan_tag=clan_tag,
             username=bnet_id.split("#")[0],
         )
@@ -98,7 +97,6 @@ async def public_mmr(
     async with aiohttp.ClientSession() as session:
         # It might fit 15 results in discord
         url = f"https://www.nephest.com/sc2/api/characters?name={query_name}"
-        # pyre-fixme[16]
         async with session.get(url) as response:
             if response.status != 200:
                 return f"Error: Status code `{response.status}` for query `{query_name}`"
@@ -123,7 +121,7 @@ async def public_mmr(
             pretty_table = PrettyTable(field_names=fields)
             pretty_table.border = False
             for count, parsed_result in enumerate(parsed_results):
-                copy: PrettyTable = pretty_table.copy()  # pyre-fixme[11]
+                copy: PrettyTable = pretty_table.copy()
                 copy.add_row(parsed_result.format_result())
                 # If message limit reached, stop adding results
                 if len(str(copy)) > MESSAGE_CHARACTER_LIMIT - 100:

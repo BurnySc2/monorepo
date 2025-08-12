@@ -9,7 +9,7 @@ from math import factorial
 from string import ascii_uppercase
 from typing import Any
 
-from burny_common.measure_time import time_this  # pyre-fixme[21]
+from burny_common.measure_time import time_this
 
 
 def permutation(my_list: list[Any]) -> list[Any]:

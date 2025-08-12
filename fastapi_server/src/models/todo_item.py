@@ -7,7 +7,8 @@ from typing import Literal
 # from asyncpg import Record
 
 assert os.getenv("STAGE", "dev") in {"dev", "prod"}, os.getenv("STAGE")
-STAGE: Literal["dev", "prod"] = os.getenv("STAGE", "dev")  # pyre-fixme[9]
+# pyrefly: ignore
+STAGE: Literal["dev", "prod"] = os.getenv("STAGE", "dev")
 
 TABLE_NAME = f"{STAGE}_todo_items"
 

@@ -9,14 +9,14 @@ from routes.caches import global_cache
 async def get_supported_voices() -> list[str]:
     # Cache result for at least 1h
     global global_cache
-    # pyre-fixme[9]
+    # pyrefly: ignore
     result_from_cache: list[str] | None = await global_cache.get("voices")
     if result_from_cache is not None:
         return result_from_cache
 
     voices = await edge_tts.list_voices()
     result = [voice["ShortName"] for voice in sorted(voices, key=lambda voice: voice["ShortName"])]
-    # pyre-fixme[6]
+    # pyrefly: ignore
     await global_cache.set("voices", result, expires_in=3600)
     return result
 

@@ -95,7 +95,6 @@ class MyLoginRoute(Controller):
     ) -> Response | Redirect:
         if twitch_user is not None:
             # User is already logged in
-            # pyre-fixme[6]
             return Redirect("/login", status_code=HTTP_302_FOUND)
         if code is None:
             return Redirect(
@@ -110,7 +109,6 @@ class MyLoginRoute(Controller):
                         },
                     )
                 ),
-                # pyre-fixme[6]
                 status_code=HTTP_302_FOUND,
             )
 
@@ -132,7 +130,6 @@ class MyLoginRoute(Controller):
             data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
-        # pyre-fixme[6]
         redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         redirect.set_cookie(
             Cookie(
@@ -155,7 +152,6 @@ class MyLoginRoute(Controller):
         """
         if github_user is not None:
             # User is already logged in
-            # pyre-fixme[6]
             return Redirect("/login", status_code=HTTP_302_FOUND)
         # If 'code' is not set as a param, redirect to github page
         # which redirects to this page again with 'code' parameter
@@ -170,7 +166,7 @@ class MyLoginRoute(Controller):
                         },
                     )
                 ),
-                status_code=HTTP_302_FOUND,  # pyre-fixme[6]
+                status_code=HTTP_302_FOUND,
             )
 
         # Code was given, get access token and set cookie
@@ -189,7 +185,7 @@ class MyLoginRoute(Controller):
             data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
-        # pyre-fixme[6]
+
         redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         redirect.set_cookie(
             Cookie(
@@ -212,7 +208,6 @@ class MyLoginRoute(Controller):
         """
         if facebook_user is not None:
             # User is already logged in
-            # pyre-fixme[6]
             return Redirect("/login", status_code=HTTP_302_FOUND)
         # If 'code' is not set as a param, redirect to facebook page
         # which redirects to this page again with 'code' parameter
@@ -228,7 +223,7 @@ class MyLoginRoute(Controller):
                         },
                     )
                 ),
-                status_code=HTTP_302_FOUND,  # pyre-fixme[6]
+                status_code=HTTP_302_FOUND,
             )
         # Code was given, get access token and set cookie
         async with httpx.AsyncClient() as client:
@@ -247,7 +242,6 @@ class MyLoginRoute(Controller):
             data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
-        # pyre-fixme[6]
         redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         redirect.set_cookie(
             Cookie(
@@ -271,7 +265,6 @@ class MyLoginRoute(Controller):
         """
         if google_user is not None:
             # User is already logged in
-            # pyre-fixme[6]
             return Redirect("/login", status_code=HTTP_302_FOUND)
         # If 'code' is not set as a param, redirect to google page
         # which redirects to this page again with 'code' parameter
@@ -289,7 +282,7 @@ class MyLoginRoute(Controller):
                         },
                     )
                 ),
-                status_code=HTTP_302_FOUND,  # pyre-fixme[6]
+                status_code=HTTP_302_FOUND,
             )
         # Code was given, get access token and set cookie
         async with httpx.AsyncClient() as client:
@@ -311,7 +304,6 @@ class MyLoginRoute(Controller):
             data = post_response.json()
         if "error" in data:
             return Response("Error in json response. Try clearing your cookies", status_code=HTTP_409_CONFLICT)
-        # pyre-fixme[6]
         redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         redirect.set_cookie(
             Cookie(
@@ -329,7 +321,6 @@ class MyLogoutRoute(Controller):
 
     @get("/")
     async def user_logout(self) -> Redirect:
-        # pyre-fixme[6]
         redirect = Redirect("/login", status_code=HTTP_302_FOUND)
         for cookie_key in COOKIES.values():
             redirect.delete_cookie(cookie_key)

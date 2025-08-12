@@ -56,7 +56,7 @@ def next_prime(n: int):
     if n == 2:
         return 3
     n += 1 if n % 2 == 0 else 2
-    while 1:
+    while True:
         if is_prime(n):
             return n
         n += 2

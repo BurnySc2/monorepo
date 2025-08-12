@@ -200,7 +200,7 @@ class MyChatRoute(Controller):
 
 #     await handle_join(user, websocket)
 
-#     while 1:
+#     while True:
 #         try:
 #             data = await websocket.receive_json()
 #         except WebSocketDisconnect:

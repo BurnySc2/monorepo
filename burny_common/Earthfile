@@ -40,7 +40,7 @@ build:
     FROM +install-dev
     RUN uv build
 
-# Ignore errors via "# pyre-fixme[11]"
+# Ignore errors via "# pyrefly: ignore"
 pyrefly:
     FROM +install-dev
     RUN uv run pyrefly check

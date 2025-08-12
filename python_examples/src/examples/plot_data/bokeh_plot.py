@@ -2,7 +2,7 @@ from math import pi
 from pathlib import Path
 
 import numpy as np
-import pandas as pd  # pyre-fixme[21]
+import pandas as pd
 from bokeh.io import output_file, save
 from bokeh.palettes import Category20c
 from bokeh.plotting import figure

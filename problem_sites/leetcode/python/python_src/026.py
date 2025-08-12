@@ -15,7 +15,7 @@ class Solution:
             return 0
         index = 0
         amount_in_list = len(nums)
-        while 1:
+        while True:
             if index + 1 > len(nums) - 1:
                 break
             if nums[index] == nums[index + 1]:

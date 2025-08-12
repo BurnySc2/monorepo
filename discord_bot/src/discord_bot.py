@@ -34,7 +34,6 @@ load_dotenv()
 STAGE = os.getenv("STAGE")
 assert STAGE in {"DEV", "PROD", "TEST"}, STAGE
 
-# pyre-fixme[6]
 bot = GatewayBot(token=os.getenv("DISCORD_KEY"), intents=Intents.ALL)
 BOT_USER_ID: int = -1
 
@@ -85,7 +84,7 @@ async def generic_command_caller(
 
 async def loop_function() -> None:
     """A function that is called every X seconds based on the asyncio.sleep(time) below."""
-    while 1:
+    while True:
         await asyncio.sleep(1)
         await my_reminder.tick()
 
@@ -174,7 +173,7 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if event.member.is_bot:
         return
 
-    channel: GuildTextChannel = await bot.rest.fetch_channel(event.channel_id)  # pyre-fixme[9]
+    channel: GuildTextChannel = await bot.rest.fetch_channel(event.channel_id)
     # Use channel 'bot_tests' only for development
     if STAGE == "DEV" and channel.name != "bot_tests":
         return

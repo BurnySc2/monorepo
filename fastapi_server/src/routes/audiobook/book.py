@@ -186,6 +186,7 @@ class MyAudiobookBookRoute(Controller):
         chapter = (
             # pyrefly: ignore
             await AudiobookChapter.objects()
+            # pyrefly: ignore
             .where((AudiobookChapter.book == book_id) & (AudiobookChapter.chapter_number == chapter_number))
             .first()
         )
@@ -346,8 +347,9 @@ class MyAudiobookBookRoute(Controller):
             .order_by(AudiobookChapter.chapter_number)
         )
 
+        # pyrefly: ignore
         def _minio_get_audio_of_chapter_sync(chapter: AudiobookChapter) -> bytes:
-            # pyre-fixme[6]
+            # pyrefly: ignore
             return minio_client.get_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter.id}_audio.mp3").data
 
         async def minio_get_audio_of_chapter(chapter: AudiobookChapter) -> bytes:
@@ -406,7 +408,7 @@ class MyAudiobookBookRoute(Controller):
         await hard_delete_book(book_id)
 
         # hx-remove table row if origin path is overview of uploaded books
-        # pyre-fixme[16]
+        # pyrefly: ignore
         if isinstance(request.headers.get("referer"), str) and request.headers.get("referer").endswith("/audiobook"):
             return None
         return ClientRedirect("/audiobook")
@@ -423,6 +425,7 @@ class MyAudiobookBookRoute(Controller):
         chapter = (
             # pyrefly: ignore
             await AudiobookChapter.objects()
+            # pyrefly: ignore
             .where((AudiobookChapter.book == book_id) & (AudiobookChapter.chapter_number == chapter_number))
             .first()
         )

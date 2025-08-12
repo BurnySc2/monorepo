@@ -4,7 +4,7 @@
 class Solution:
     def isHappy(self, n: int) -> bool:
         seen = {n}
-        while 1:
+        while True:
             new_n = 0
             while n > 0:
                 n, remainder = divmod(n, 10)
