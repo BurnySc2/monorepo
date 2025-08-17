@@ -12,3 +12,4 @@ bin           = @["twitch_stream_announcer"]
 
 requires "nim >= 2.2.0"
 requires "db_connector"
+requires "dotenv >= 2.0.2"

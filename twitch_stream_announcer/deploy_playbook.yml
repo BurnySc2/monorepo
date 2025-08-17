@@ -18,6 +18,13 @@
           - docker
         shell: "/bin/fish"
 
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: absent
+        # Comment out to skip update
+        remove_images: all
+
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
@@ -27,6 +34,37 @@
       template:
         src: .env.server
         dest: /home/{{ USERNAME }}/.env
+
+    - name: Ensure destination directory exists
+      file:
+        path: /home/{{ USERNAME }}/dockerfiles
+        state: directory
+        mode: "0755"
+
+    - name: Copy files except .env to the destination directory
+      ansible.posix.synchronize:
+        src: ./
+        dest: /home/{{ USERNAME }}/dockerfiles/
+        rsync_opts:
+          - --filter=':- .gitignore'
+          - --exclude=.env*
+          - --exclude=.git
+          - --exclude=.vscode
+
+    - name: Build the Docker image
+      community.docker.docker_image:
+        name: burnysc2/twitch_stream_announcer:latest
+        state: present
+        build:
+          path: /home/{{ USERNAME }}/dockerfiles
+        source: build
+        # Force building even if image already exists
+        force_source: true
+
+    - name: Delete all build-files
+      file:
+        path: /home/{{ USERNAME }}/dockerfiles
+        state: absent
 
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
