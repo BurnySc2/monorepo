@@ -1,3 +1,7 @@
+"""
+This file poses as an example to test async code.
+"""
+
 import hypothesis.strategies as st
 import pytest
 import pytest_asyncio
@@ -5,11 +9,11 @@ from hypothesis import given, settings
 from loguru import logger
 
 
-class TestHypothesis:
+class TestAsync:
     """
     Setup and teardown happen as described in this file.
     You can verify this by running
-    uv run pytest -s test/test_hypothesis.py
+    uv run pytest -s test/test_async.py
     """
 
     class_fixture_async_variable = 0
@@ -65,20 +69,15 @@ class TestHypothesis:
         logger.info("Teardown example")
         cls.example_fixture_sync_variable -= 1
 
-    @settings(max_examples=2)
-    @given(_number=st.integers())
+    @pytest.mark.parametrize("number", [1, 2, 3])
     @pytest.mark.asyncio
-    async def test_hypothesis_async(self, _number: int):
-        assert self.class_fixture_async_variable == 1
-        assert self.class_fixture_sync_variable == 1
-        assert self.method_fixture_async_variable == 1
-        assert self.method_fixture_sync_variable == 1
-        assert self.example_fixture_sync_variable == 1
+    async def test_my_examples(self, number: int) -> None:
+        assert number in [1, 2, 3]
 
     @settings(max_examples=2)
     @given(_number=st.integers())
     @pytest.mark.asyncio
-    async def test_hypothesis_sync(self, _number: int):
+    async def test_my_function(self, _number: int) -> None:
         assert self.class_fixture_async_variable == 1
         assert self.class_fixture_sync_variable == 1
         assert self.method_fixture_async_variable == 1
