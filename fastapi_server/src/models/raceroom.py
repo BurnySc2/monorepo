@@ -57,7 +57,7 @@ BEGIN
     ) THEN
         ALTER TABLE public.litestar_rrre_best_time
         ADD CONSTRAINT unique_player_car_driving_track
-        UNIQUE (player_id, car_name, driving_model, track_id);
+        UNIQUE (player_id, car_name, driving_model, track_id, best_time);
     END IF;
 END $$;
     """)
