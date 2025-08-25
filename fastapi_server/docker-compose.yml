@@ -235,6 +235,7 @@ networks:
     driver: bridge
   traefiknet:
     external: true
+    name: traefiknet
 volumes:
   dev_minio_data: null
   dev_postgres_data: null
