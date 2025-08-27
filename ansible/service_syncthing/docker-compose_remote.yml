@@ -8,9 +8,9 @@ services:
     container_name: syncthing
     hostname: syncthing
     restart: unless-stopped
-    image: lscr.io/linuxserver/syncthing:latest
+    image: syncthing/syncthing:latest
     volumes:
-      - ./config:/config
+      - ./config:/var/syncthing/config
       - ./data1:/data1
     environment:
       - PUID={{ USER_ID.stdout }}
