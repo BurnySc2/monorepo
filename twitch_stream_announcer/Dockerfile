@@ -5,6 +5,9 @@ COPY twitch_stream_announcer.nimble /root/tsa/
 WORKDIR /root/tsa
 RUN nimble install --depsOnly
 
+# Needs empty .env file to not crash
+RUN touch .env
+
 # Build binary
 COPY src /root/tsa/src
 RUN nimble c -d:ssl -d:release --opt:size -o:main src/main.nim 

@@ -182,6 +182,9 @@ proc parse_postgres_time(my_time: string): DateTime =
     $parse("2025-01-01 09:09:09", "yyyy-MM-dd HH:mm:ss", tz = utc())
   var time_copied = my_time
   let expected_format = "2025-01-06 01:44:43.123456789"
+  # If ends with 0 ms, will end with "HH:mm:ss"
+  if time_copied.len == "2025-01-06 01:44:43".len:
+    time_copied &= "."
   # Extend timestamp if too short
   while time_copied.len < expected_format.len:
     time_copied &= "0"
@@ -235,7 +238,7 @@ proc send_webhooks(infos: seq[AnnounceInfo]) =
         }
       if STAGE == "PROD":
         let response = client.post(info.webhook_url, body = $my_request_body)
-        assert response.status[0] == '2'
+        assert response.status[0] == '2', fmt"Status: {response.status}, url: {info.webhook_url}, announce_message: {info.announce_message}"
         assert response.status == "204 No Content"
       elif STAGE == "DEV":
         echo(
