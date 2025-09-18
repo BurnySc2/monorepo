@@ -102,7 +102,6 @@
       - audacity  # audio editor
       - ffmpeg  # CLI video converter
       - gifski  # CLI gif converter
-      - kdenlive  # video editor
       - qbittorrent
       - yt-dlp
       # - samba  # share folders in local network
@@ -171,11 +170,11 @@
     state: directory
   loop:
     - ~/.config/systemd/user
-- name: Copy shell script
+- name: Copy audio.sh script
   ansible.builtin.template:
     src: audio.sh
     dest: ~/.config/systemd/user/audiosh.sh
-- name: Copy service file
+- name: Copy audio.sh service file
   ansible.builtin.template:
     src: audiosh.service
     dest: ~/.config/systemd/user/audiosh.service
@@ -190,14 +189,14 @@
   when: not ansible_check_mode
 - name: Ensure local directory exists
   ansible.builtin.file:
-    path: /home/burny/remote_drives/burnylaptopd
+    path: /media/burnylaptopd
     state: directory
     owner: burny
     group: burny
     mode: '0755'
 - name: Mount burnylaptopd:/home
   ansible.builtin.mount:
-    name: /home/burny/remote_drives/burnylaptopd
+    name: /media/burnylaptopd
     src: burnylaptopd:/home
     fstype: fuse.sshfs
     opts: auto,reconnect
@@ -207,14 +206,14 @@
   become: true
 - name: Ensure local directory exists
   ansible.builtin.file:
-    path: /home/burny/remote_drives/prodesk
+    path: /media/prodesk 
     state: directory
     owner: burny
     group: burny
     mode: '0755'
 - name: Mount prodesk:/home
   ansible.builtin.mount:
-    name: /home/burny/remote_drives/prodesk
+    name: /media/prodesk 
     src: prodesk:/home
     fstype: fuse.sshfs
     opts: auto,reconnect
