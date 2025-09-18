@@ -327,7 +327,7 @@ proc run_for_one_hour(db: DbConn) =
       break
     echo "Running once"
     run_once(db)
-    sleep 60 * 1000
+    sleep 20 * 1000
 
 proc main(db: DbConn) =
   if STAGE == "DEV":
