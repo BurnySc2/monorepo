@@ -8,11 +8,10 @@ import pytest
 from litestar import Litestar
 from litestar.testing import TestClient
 from minio import Minio, S3Error  # pyright: ignore[reportMissingTypeStubs]
-from piccolo.table import create_db_tables, drop_db_tables
+from piccolo.table import Table, create_db_tables, drop_db_tables
 from piccolo.utils.sync import run_sync
 from pytest_httpx import HTTPXMock
 
-from piccolo.table import Table
 from app import app
 from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.audiobook.my_minio_client import minio_check_if_object_exists

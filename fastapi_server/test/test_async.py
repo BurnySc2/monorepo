@@ -65,7 +65,7 @@ class TestAsync:
         cls.example_fixture_sync_variable += 1
 
     @classmethod
-    def teardown_example(cls):
+    def teardown_example(cls, _):
         logger.info("Teardown example")
         cls.example_fixture_sync_variable -= 1
 
