@@ -68,14 +68,6 @@
         dest: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
         # owner: '{{ USER_ID.stdout }}'
         # group: '{{ GROUP_ID.stdout }}'
-    - name: Create cron job for database 'postgres'
-      ansible.builtin.cron:
-        name: Run postgres backup database 'postgres'
-        job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
-          postgres '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres_postgres.log'
-        minute: '0'
-        hour: '3'
-        user: root
     - name: Create cron job for database 'stream_announcer'
       ansible.builtin.cron:
         name: Run postgres backup database 'stream_announcer'
@@ -89,6 +81,22 @@
         name: Run postgres backup database 'ladder_announcer'
         job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
           ladder_announcer '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres_ladder_announcer.log'
+        minute: '0'
+        hour: '3'
+        user: root
+    - name: Create cron job for database 'discord_bot'
+      ansible.builtin.cron:
+        name: Run postgres backup database 'discord_bot'
+        job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
+          discord_bot '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres_discord_bot.log'
+        minute: '0'
+        hour: '3'
+        user: root
+    - name: Create cron job for database 'litestar_server'
+      ansible.builtin.cron:
+        name: Run postgres backup database 'litestar_server'
+        job: /bin/bash '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
+          litestar_server '{{ BACKUP_PASSWORD }}' >> '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres_litestar_server.log'
         minute: '0'
         hour: '3'
         user: root

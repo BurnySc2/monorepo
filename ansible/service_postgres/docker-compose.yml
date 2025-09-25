@@ -88,7 +88,6 @@ services:
       # PGADMIN_CONFIG_WTF_CSRF_CHECK_DEFAULT: 'False'
       # PGADMIN_CONFIG_WTF_CSRF_ENABLED: 'False'
     volumes:
-      # - pgadmindata:/var/lib/pgadmin
       # pgadmindata folder needs to be owned by user id '5050'
       - ./pgadmindata:/var/lib/pgadmin
   nocodb:
@@ -110,5 +109,3 @@ services:
     restart: unless-stopped
     volumes:
       - ./nocodb:/usr/app/data/
-# volumes:
-#   pgadmindata:
