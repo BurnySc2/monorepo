@@ -206,14 +206,14 @@
   become: true
 - name: Ensure local directory exists
   ansible.builtin.file:
-    path: /media/prodesk 
+    path: /media/prodesk
     state: directory
     owner: burny
     group: burny
     mode: '0755'
 - name: Mount prodesk:/home
   ansible.builtin.mount:
-    name: /media/prodesk 
+    name: /media/prodesk
     src: prodesk:/home
     fstype: fuse.sshfs
     opts: auto,reconnect
