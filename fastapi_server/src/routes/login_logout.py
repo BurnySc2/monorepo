@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import os
+from datetime import timedelta
+from typing import Any
+
 import httpx
 from litestar import Controller, Response, get
 from litestar.datastructures import Cookie
@@ -61,6 +65,22 @@ class MyLoginRoute(Controller):
                 "google_user": google_user,
             },
         )
+
+    @get("/api_status")
+    async def status(
+        self,
+        twitch_user: TwitchUser | None,
+        github_user: GithubUser | None,
+        facebook_user: FacebookUser | None,
+        google_user: GoogleUser | None,
+    ) -> dict[str, Any]:
+        if twitch_user is not None:
+            return {"authenticated": True, "user": twitch_user.login}
+        if github_user is not None:
+            return {"authenticated": True, "user": github_user.login}
+        if google_user is not None:
+            return {"authenticated": True, "user": google_user.display_name}
+        return {"authenticated": False, "user": None}
 
     @get("/name")
     async def nav_name(
@@ -135,8 +155,14 @@ class MyLoginRoute(Controller):
             Cookie(
                 key=COOKIES["twitch"],
                 value=data["access_token"],
-                # Is this required?
-                # secure=True,
+                # Send only over https
+                secure=True,
+                # Prevent reading cookie from frontend
+                httponly=True,
+                samesite="strict",
+                max_age=int(timedelta(days=1).total_seconds()),
+                # Allow access from subdomains
+                domain=os.getenv("BACKEND_DOMAIN"),
             )
         )
         return redirect
@@ -191,8 +217,14 @@ class MyLoginRoute(Controller):
             Cookie(
                 key=COOKIES["github"],
                 value=data["access_token"],
-                # Is this required?
-                # secure=True,
+                # Send only over https
+                secure=True,
+                # Prevent reading cookie from frontend
+                httponly=True,
+                samesite="strict",
+                max_age=int(timedelta(days=1).total_seconds()),
+                # Allow access from subdomains
+                domain=os.getenv("BACKEND_DOMAIN"),
             )
         )
         return redirect
@@ -247,8 +279,14 @@ class MyLoginRoute(Controller):
             Cookie(
                 key=COOKIES["facebook"],
                 value=data["access_token"],
-                # Is this required?
-                # secure=True,
+                # Send only over https
+                secure=True,
+                # Prevent reading cookie from frontend
+                httponly=True,
+                samesite="strict",
+                max_age=int(timedelta(days=1).total_seconds()),
+                # Allow access from subdomains
+                domain=os.getenv("BACKEND_DOMAIN"),
             )
         )
         return redirect
@@ -309,8 +347,14 @@ class MyLoginRoute(Controller):
             Cookie(
                 key=COOKIES["google"],
                 value=data["access_token"],
-                # Is this required?
-                # secure=True,
+                # Send only over https
+                secure=True,
+                # Prevent reading cookie from frontend
+                httponly=True,
+                samesite="strict",
+                max_age=int(timedelta(days=1).total_seconds()),
+                # Allow access from subdomains
+                domain=os.getenv("BACKEND_DOMAIN"),
             )
         )
         return redirect

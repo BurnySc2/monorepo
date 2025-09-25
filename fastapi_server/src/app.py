@@ -7,6 +7,7 @@ from typing import Literal
 import uvicorn
 from dotenv import load_dotenv
 from litestar import Litestar
+from litestar.config.cors import CORSConfig
 from litestar.contrib.jinja import JinjaTemplateEngine
 from litestar.static_files import create_static_files_router
 from litestar.template.config import TemplateConfig
@@ -55,6 +56,13 @@ def shutdown_event():
     logger.info("Bye world!")
 
 
+cors_config = CORSConfig(
+    allow_origins=["https://test.burnysc2.xyz"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app = Litestar(
     route_handlers=[
         MyAudiobookBookRoute,
@@ -81,6 +89,7 @@ app = Litestar(
     ),
     debug=BACKEND_SERVER_URL == "http://localhost:8000",
     request_max_body_size=1024 * 2**20,  # 1024 mb
+    cors_config=cors_config,
 )
 
 if __name__ == "__main__":
