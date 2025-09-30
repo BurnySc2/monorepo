@@ -111,6 +111,33 @@ http:
       service: traefik1
       tls:
         certResolver: production
+    '{{ secrets.CODESERVER.USERNAME }}':
+      entryPoints:
+        - web
+        - websecure
+      rule: Host(`{{ secrets.CODESERVER.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      service: '{{ secrets.CODESERVER.USERNAME }}'
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    preview1:
+      entryPoints:
+        - web
+        - websecure
+      rule: Host(`{{ secrets.CODESERVER.PREVIEW1 }}.{{ secrets.MY_DOMAIN }}`)
+      service: preview1
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
+    preview2:
+      entryPoints:
+        - web
+        - websecure
+      rule: Host(`{{ secrets.CODESERVER.PREVIEW2 }}.{{ secrets.MY_DOMAIN }}`)
+      service: preview1
+      tls:
+        certResolver: production
+      middlewares: authelia@docker
   # ======== SERVICES
   services:
     # Example for a local service in dynamic.yml file
@@ -168,6 +195,19 @@ http:
           - url: '{{ WIREGUARD_URL_PRODESK }}'
     # Traefik
     traefik1:
+      loadBalancer:
+        servers:
+          - url: '{{ WIREGUARD_URL_PRODESK }}'
+    # code-server and 2 preview ports
+    codeserver:
+      loadBalancer:
+        servers:
+          - url: '{{ WIREGUARD_URL_PRODESK }}'
+    preview1:
+      loadBalancer:
+        servers:
+          - url: '{{ WIREGUARD_URL_PRODESK }}'
+    preview2:
       loadBalancer:
         servers:
           - url: '{{ WIREGUARD_URL_PRODESK }}'

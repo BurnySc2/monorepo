@@ -1,0 +1,38 @@
+---
+networks:
+  '{{secrets.TRAEFIK_NETWORK}}':
+    external: true
+services:
+  code-server:
+    image: lscr.io/linuxserver/code-server:latest
+    container_name: code-server
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - PASSWORD={{ secrets.CODESERVER.PASSWORD }} #optional
+      - HASHED_PASSWORD= #optional
+      - SUDO_PASSWORD={{ secrets.CODESERVER.PASSWORD }} #optional
+      - SUDO_PASSWORD_HASH= #optional
+      # - PROXY_DOMAIN='{{ secrets.CODESERVER.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}' #optional
+      - DEFAULT_WORKSPACE=/config/workspace #optional
+      - PWA_APPNAME=code-server #optional
+    volumes:
+      - ./config:/config
+    restart: unless-stopped
+    networks:
+      - '{{ secrets.TRAEFIK_NETWORK }}'
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.{{ USERNAME }}.entryPoints=web
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - traefik.http.routers.{{ USERNAME }}.service={{ USERNAME }}
+      - traefik.http.routers.{{ PREVIEW1 }}.entryPoints=web
+      - traefik.http.routers.{{ PREVIEW1 }}.rule=Host(`{{ PREVIEW1 }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ PREVIEW1 }}.loadbalancer.server.port={{ PREVIEW1_PORT }}
+      - traefik.http.routers.{{ PREVIEW1 }}.service={{ PREVIEW1 }}
+      - traefik.http.routers.{{ PREVIEW2 }}.entryPoints=web
+      - traefik.http.routers.{{ PREVIEW2 }}.rule=Host(`{{ PREVIEW2 }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ PREVIEW2 }}.loadbalancer.server.port={{ PREVIEW2_PORT }}
+      - traefik.http.routers.{{ PREVIEW2 }}.service={{ PREVIEW2 }}

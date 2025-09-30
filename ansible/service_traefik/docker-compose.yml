@@ -43,7 +43,6 @@ services:
       - --api.dashboard=true
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
-      # - "--providers.docker.network={{ secrets.TRAEFIK_NETWORK }}"
       - --entryPoints.web.address=:80
     labels:
       - traefik.enable=true
