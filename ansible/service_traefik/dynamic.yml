@@ -113,7 +113,7 @@ http:
         certResolver: production
     '{{ secrets.CODESERVER.USERNAME }}':
     # Vscode server
-    code:
+    codeserver:
       entryPoints:
         - web
         - websecure
