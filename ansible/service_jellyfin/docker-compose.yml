@@ -19,6 +19,7 @@ services:
         }}.{{ secrets.MY_DOMAIN }}`)
       - traefik.http.services.{{ secrets.JELLYFIN.USERNAME }}.loadbalancer.server.port={{
         APPLICATION_PORT }}
+      - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.middlewares=authelia@docker
     volumes:
       - ./config:/config
       - '{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media'
