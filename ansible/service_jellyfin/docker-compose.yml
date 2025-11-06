@@ -14,12 +14,14 @@ services:
       - 10000:{{ APPLICATION_PORT }}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.entrypoints=web
-      - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.rule=Host(`{{ SUBDOMAIN
+      - traefik.http.routers.{{ USERNAME }}.entrypoints=web
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN
         }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ secrets.JELLYFIN.USERNAME }}.loadbalancer.server.port={{
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{
         APPLICATION_PORT }}
-      - traefik.http.routers.{{ secrets.JELLYFIN.USERNAME }}.middlewares=authelia@docker
+      - traefik.http.routers.{{ USERNAME }}.service={{ USERNAME }}
+      # No need on this server due to wireguard
+      # - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
     volumes:
       - ./config:/config
       - '{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media'

@@ -112,6 +112,8 @@ http:
       tls:
         certResolver: production
     '{{ secrets.CODESERVER.USERNAME }}':
+    # Vscode server
+    code:
       entryPoints:
         - web
         - websecure
