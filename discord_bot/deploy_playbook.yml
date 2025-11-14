@@ -60,6 +60,12 @@
         path: /home/{{ USERNAME }}/dockerfiles
         state: absent
 
+    - name: docker-compose stop
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        # Reload config files
+        state: stopped
+
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

@@ -3,10 +3,12 @@ from __future__ import annotations
 import asyncio
 import os
 from collections.abc import AsyncGenerator, Awaitable, Callable
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
 import hikari.errors
+from asyncpg.exceptions import UniqueViolationError  # pyright: ignore[reportMissingTypeStubs, reportUnusedImport]
 from dotenv import load_dotenv
 from hikari import (
     Embed,  # pyrefly: ignore
@@ -102,15 +104,17 @@ async def add_message_to_db(server_id: int, channel_id: int, message: Message) -
     """Insert message into database."""
     if message.content is None:
         return
-    await DiscordMessage(
-        message_id=message.id,
-        guild_id=server_id,
-        channel_id=channel_id,
-        author_id=message.author.id,
-        who=str(message.author),
-        when=message.created_at,
-        what=message.content,  # TODO Ignore text
-    ).save()
+    # duplicate key value violates unique constraint "discord_message_message_id_key"
+    with suppress(UniqueViolationError):
+        await DiscordMessage(
+            message_id=message.id,
+            guild_id=server_id,
+            channel_id=channel_id,
+            author_id=message.author.id,
+            who=str(message.author),
+            when=message.created_at,
+            what=message.content,  # TODO Ignore text
+        ).save()
 
 
 async def insert_messages_of_channel_to_db(server: OwnGuild, channel: GuildTextChannel) -> None:
