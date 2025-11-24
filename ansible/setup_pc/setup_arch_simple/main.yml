@@ -1,0 +1,8 @@
+---
+- name: Main play
+  hosts: all
+  roles:
+    - {role: 01_host_info}
+    - {role: 02_basics}
+    - {role: 03_packages}
+    - {role: 04_aur_packages}

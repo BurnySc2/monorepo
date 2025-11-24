@@ -1,0 +1,95 @@
+---
+- name: Install packages
+  community.general.pacman:
+    name:
+      - rsync
+      # Internet browser
+      - vivaldi
+      - firefox
+      - chromium
+      # Terminal
+      - fish
+      # Explorer
+      - thunar
+      # Communication
+      - thunderbird
+      # Remote hard drive mounting
+      # sshfs remote:/remote/directory /my/local/directory
+      - fuse
+      - sshfs
+      # Media viewer and editors
+      - xournalpp
+      - obsidian  # notes editor
+      - libreoffice-still  # libre office
+      # pdf viewers
+      - mupdf
+      - okular
+      ## Images
+      - gwenview  # image viewer and simple editor
+      - viewnior  # image viewer
+      ## Video players
+      - mpv
+      - vlc
+      # System & utility tools
+      - p7zip  # better zip alternative
+      - pavucontrol  # audio manager
+      - flameshot  # screenshotting tool
+      - simple-scan
+      # - tree  # tree view of folder structure
+      - inxi  # system information
+      - btop  # monitor of system resources
+      - gdu  # terminal disk usage stats viewer like qdirstat
+      - gnome-disk-utility  # disk and usb stick management
+      - imagewriter  # usb stick writer
+      - isoimagewriter  # usb stick writer
+      # Basic programming and server tools
+      - base-devel
+      - curl
+      - wget
+      - cloc
+      - jq  # JSON processor
+      - openssh
+      - sshpass  # Allow ssh/ansible to login with password
+      - ansible
+      - git
+      - helix
+      - xsel  # enables helix to use system clipboard with space+y
+      # Advanced programming tools, languages
+      - make  # For AUR packages
+      - python-pip
+      - python-uv  # python package manager like poetry and pipenv
+    state: present
+  become: true
+- name: Install bigger packages (>10mb)
+  community.general.pacman:
+    name:
+      - gcc
+      - jre17-openjdk
+      - audacity  # audio editor
+      - gimp  # image editor
+      - krita  # gimp alternative
+      - calibre  # epub reader
+      # Communication
+      - signal-desktop
+      - telegram-desktop
+      - wine
+      # Discord fonts
+      - noto-fonts-cjk
+      - noto-fonts-emoji
+    state: present
+  become: true
+# - name: Create user and set default shell
+#   ansible.builtin.user:
+#     name: burny
+#     groups:
+#       - burny
+#       - wheel  # sudo rights
+#     shell: /usr/bin/fish
+#   become: true
+- name: Create user systemd directory
+  file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+  loop:
+    - ~/.config/systemd/user
