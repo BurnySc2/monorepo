@@ -29,7 +29,6 @@
       # sshfs remote:/remote/directory /my/local/directory
       - fuse
       - sshfs
-      - netplan  # network manager
       # Media viewer and editors
       - xournalpp
       - obsidian  # notes editor
