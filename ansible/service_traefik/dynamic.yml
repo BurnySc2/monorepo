@@ -111,7 +111,6 @@ http:
       service: traefik1
       tls:
         certResolver: production
-    '{{ secrets.CODESERVER.USERNAME }}':
     # Vscode server
     codeserver:
       entryPoints:

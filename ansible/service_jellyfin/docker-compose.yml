@@ -15,10 +15,10 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ USERNAME }}.entrypoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN
-        }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{
-        APPLICATION_PORT }}
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN
+        }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
+        }}
       - traefik.http.routers.{{ USERNAME }}.service={{ USERNAME }}
       # No need on this server due to wireguard
       # - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
