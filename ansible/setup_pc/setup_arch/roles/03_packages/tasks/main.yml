@@ -32,14 +32,13 @@
       # Media viewer and editors
       - xournalpp
       - obsidian  # notes editor
-      - libreoffice-still  # openoffice
+      - libreoffice-still  # libre office
       ## Images
       - gwenview  # image viewer and simple editor
       - viewnior  # image viewer
       ## Video
       - mpv  # video player
       # System & utility tools
-      # - zip
       - p7zip  # better zip alternative
       - pavucontrol  # audio manager, switch between earphones and speakers
       - flameshot  # screenshotting tool
