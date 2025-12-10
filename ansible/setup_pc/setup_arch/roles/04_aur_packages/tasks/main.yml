@@ -14,6 +14,7 @@
       - xq  # html content extractor
       - zoom
       - visual-studio-code-bin
+      - nimlangserver-bin
       - spotify
       - spotify-adblock
       - anydesk-bin  # remote maintenance
