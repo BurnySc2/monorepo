@@ -19,13 +19,13 @@
       - spotify-adblock
       - anydesk-bin  # remote maintenance
       - earthly-bin  # development helper
-      - docker-slim-bin  # slimify docker images by stripping them to files that are required
+      # - docker-slim-bin  # slimify docker images by stripping them to files that are required
       - choosenim  # nim installer
       - jdownloader2
       - ttf-symbola  # required by discord? https://wiki.archlinux.org/title/Discord#Emojis_are_not_rendered_correctly
       - nodejs-emmet-ls  # emmet language server for helix
       - warp-terminal  # Modern terminal emulator
-      - whatsie  # Whatsapp
+      # - whatsie  # Whatsapp, use web version instead https://web.whatsapp.com
       # - opera
       # - lazydocker-bin  # docker gui in terminal
     state: present

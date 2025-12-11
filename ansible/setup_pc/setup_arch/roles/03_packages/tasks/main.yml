@@ -93,6 +93,7 @@
       - gcc
       - rust
       - jre11-openjdk
+      - jre17-openjdk
       - postgresql  # postgres shell, psql
       - dbeaver  # database inspector gui
       - docker
