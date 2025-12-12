@@ -49,10 +49,14 @@
       - gdu  # terminal disk usage stats viewer like qdirstat
       # - filelight  # gui disk usage stats viewer like qdirstat
       - gnome-system-monitor  # task manager
-      - brasero  # dvd burner
+      # - brasero  # dvd burner
       - gnome-disk-utility  # disk and usb stick management
-      - imagewriter  # usb stick writer
-      - isoimagewriter  # usb stick writer
+      # Use the following instead of usb stick writer GUIs:
+      # Find out sdX: lsblk
+      # Replace sdX with usb slot
+      # sudo dd if=path/to/ubuntu.iso of=/dev/sdX bs=4M status=progress && sync && eject /dev/sdX
+      # - imagewriter  # usb stick writer
+      # - isoimagewriter  # usb stick writer
       # Basic programming and server tools
       - base-devel
       - curl
@@ -79,10 +83,10 @@
       ## yaml
       - yaml-language-server
       ## html
-      - vscode-html-languageserver
-      - tailwindcss-language-server  # tailwindcss support in html
+      # - vscode-html-languageserver
+      # - tailwindcss-language-server  # tailwindcss support in html
       ## toml
-      - taplo-cli
+      # - taplo-cli
     state: present
   become: true
 - name: Install bigger packages (>10mb)
@@ -103,7 +107,6 @@
       - ffmpeg  # CLI video converter
       - gifski  # CLI gif converter
       - qbittorrent
-      - yt-dlp
       # - samba  # share folders in local network
       - krita  # gimp alternative
       - firefox
@@ -119,7 +122,7 @@
       # Sheet music editor
       - musescore
       # Markdown support for helix editor
-      - marksman
+      # - marksman
       # Discord fonts
       - noto-fonts-cjk
       - noto-fonts-emoji

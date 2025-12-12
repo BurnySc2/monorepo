@@ -22,6 +22,7 @@
       # - docker-slim-bin  # slimify docker images by stripping them to files that are required
       - choosenim  # nim installer
       - jdownloader2
+      - yt-dlp-git  # Videos downloader
       - ttf-symbola  # required by discord? https://wiki.archlinux.org/title/Discord#Emojis_are_not_rendered_correctly
       - nodejs-emmet-ls  # emmet language server for helix
       - warp-terminal  # Modern terminal emulator
