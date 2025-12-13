@@ -54,7 +54,7 @@
       # Use the following instead of usb stick writer GUIs:
       # Find out sdX: lsblk
       # Replace sdX with usb slot
-      # sudo dd if=path/to/ubuntu.iso of=/dev/sdX bs=4M status=progress && sync && eject /dev/sdX
+      # sudo dd if=path/to/ubuntu.iso of=/dev/sdX bs=4M status=progress && sync && sudo eject /dev/sdX
       # - imagewriter  # usb stick writer
       # - isoimagewriter  # usb stick writer
       # Basic programming and server tools
