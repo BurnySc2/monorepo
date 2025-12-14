@@ -104,8 +104,7 @@
       - postgresql  # postgres shell, psql
       - dbeaver  # database gui client
       - docker
-      # docker-compose is now part of docker?
-      # - docker-compose
+      - docker-compose
       - filezilla  # ftp file transfer
       - audacity  # audio editor
       - ffmpeg  # CLI video converter
