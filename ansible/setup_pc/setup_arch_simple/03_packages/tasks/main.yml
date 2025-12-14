@@ -78,14 +78,11 @@
       - noto-fonts-emoji
     state: present
   become: true
-# - name: Create user and set default shell
-#   ansible.builtin.user:
-#     name: burny
-#     groups:
-#       - burny
-#       - wheel  # sudo rights
-#     shell: /usr/bin/fish
-#   become: true
+- name: Set default shell
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    shell: /usr/bin/fish
+  become: true
 - name: Create user systemd directory
   file:
     path: '{{ item }}'
