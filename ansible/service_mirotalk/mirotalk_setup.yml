@@ -1,12 +1,12 @@
 ---
-# https://docmost.com/docs/
+# https://github.com/miroslavpejic85/mirotalk
 # Execute with
-# ansible-playbook docmost_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook mirotalk_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: server_group4
   vars:
-    USERNAME: '{{ secrets.DOCMOST.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.DOCMOST.SUBDOMAIN }}'
+    USERNAME: '{{ secrets.MIROTALK.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.MIROTALK.SUBDOMAIN }}'
     APPLICATION_PORT: '3000'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
@@ -26,6 +26,10 @@
           - '{{ USERNAME }}'
           - docker
         shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Copy env file
+      template:
+        src: mirotalk.env
+        dest: /home/{{ USERNAME }}/.env
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
