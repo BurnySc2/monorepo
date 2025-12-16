@@ -1,0 +1,34 @@
+[project]
+name = "postgres"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10, <3.13"
+dependencies = [
+    "sqlfluff>=3.5.0",
+]
+
+[tool.sqlfluff.core]
+dialect = "postgres"
+max_line_length = 120
+templater = "placeholder"
+sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+exclude_rules = "CP02,AL09,RF04"
+
+[tool.sqlfluff.templater.placeholder]
+# https://docs.sqlfluff.com/en/3.3.0/configuration/templating/placeholder.html
+param_style = "ampersand" # { }
+
+[tool.sqlfluff.indentation]
+indented_joins = false
+indented_using_on = true
+template_blocks_indent = false
+
+[tool.sqlfluff.templater]
+unwrap_wrapped_queries = true
+
+[tool.sqlfluff.templater.jinja]
+apply_dbt_builtins = true
+
+[tool.sqlfluff.rules.capitalisation.keywords]
+capitalisation_policy = "upper"
