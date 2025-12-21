@@ -30,6 +30,7 @@
       ## Video players
       - mpv
       - vlc
+      - vlc-plugin-ffmpeg
       # System & utility tools
       - p7zip  # better zip alternative
       - pavucontrol  # audio manager
@@ -67,6 +68,7 @@
       - jre17-openjdk
       - audacity  # audio editor
       - gimp  # image editor
+      - ffmpeg  # CLI video converter
       - krita  # gimp alternative
       - calibre  # epub reader
       # Communication

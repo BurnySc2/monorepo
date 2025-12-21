@@ -94,6 +94,7 @@
     name:
       # TODO Add Devbox and Nix
       - vlc
+      - vlc-plugin-ffmpeg
       - gcc
       - rust
       # Activate via 
@@ -111,6 +112,7 @@
       - gifski  # CLI gif converter
       - qbittorrent
       # - samba  # share folders in local network
+      - gimp
       - krita  # gimp alternative
       - firefox
       - calibre  # epub reader
