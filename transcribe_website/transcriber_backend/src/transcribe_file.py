@@ -39,7 +39,7 @@ type model_sizes = Literal[
     "small",
     "medium",
     "large",
-    # turbo model works only well for transcribing (all languages)
+    # turbo model only works for transcribing (all languages), not for translating
     "turbo",
     # Only works for transcribing english
     "tiny.en",
