@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 
 from deepmultilingualpunctuation import PunctuationModel
-from whisperx.types import AlignedTranscriptionResult
+from whisperx.schema import AlignedTranscriptionResult
 
 # Initialize PunctuationModel
 punct_model = PunctuationModel()

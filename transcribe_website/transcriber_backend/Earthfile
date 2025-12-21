@@ -1,6 +1,6 @@
 VERSION 0.6
 # earthly +all --PYTHONVERSION=3.12
-ARG PYTHONVERSION=3.11
+ARG PYTHONVERSION=3.12
 FROM ghcr.io/astral-sh/uv:python${PYTHONVERSION}-bookworm-slim
 WORKDIR /root/transcriber_backend
 

@@ -1,14 +1,14 @@
 [project]
 name = "src"
 version = "0.1.0"
-requires-python = ">=3.10, <3.14"
+requires-python = ">=3.12, <3.14"
 dependencies = [
     # Better datetime
     "arrow>=1.3.0",
     # Translator
     "deep-translator>=1.11.4",
     "deepmultilingualpunctuation>=1.0.1",
-    "faster-whisper==1.1.1",
+    "faster-whisper>=1.1.1",
     # Display sizes in human readable format
     "humanize>=4.11.0",
     "langdetect>=1.0.9",
@@ -17,19 +17,17 @@ dependencies = [
     "loguru>=0.7.2",
     "numba>=0.60.0",
     "numpy>=2",
-    # Database interaction
-    "prisma>=0.15.0",
     # Better dataclasses
     "pydantic>=2.10.1",
     "python-dotenv>=1.0.1",
     # Argparse with dataclass
     "simple-parsing>=0.1.6",
     # https://stackoverflow.com/a/76359919/10882657
-    "torch>=2.4.0",
-    "torchaudio>=2.4.0",
+    "torch~=2.8.0",
+    "torchaudio~=2.8.0",
     # Progress bar
     "tqdm>=4.67.1",
-    "whisperx>=3.3.4",
+    "whisperx>=3.7.0",
 ]
 
 [tool.uv]
@@ -61,7 +59,7 @@ allow_split_before_dict_value = false
 project_includes = ["src"]
 
 [tool.ruff]
-target-version = 'py310'
+target-version = 'py312'
 line-length = 120
 
 [tool.ruff.lint]

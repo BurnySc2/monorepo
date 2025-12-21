@@ -22,7 +22,7 @@ def recurse_path(path: Path, depth: int = 0) -> Iterable[Path]:
 
 
 def generate_txt_data(transcribed_data: list[tuple[float, float, str]]) -> str:
-    data_list = []
+    data_list:list[str] = []
     for line in transcribed_data:
         data_list.append(f"{line[2]}\n")
     return "".join(data_list)
