@@ -140,8 +140,10 @@ if __name__ == "__main__":
             logger.info(f"Started translating {input_file_path.name}")
             # Subtitle from a german video generating english subtitles
             # result = transcribe_file(input_file_path, task="translate", model_size="large", language="de")
-            # Subtitle from a english video generating english subtitles
-            result = transcribe_file(input_file_path, task="transcribe", model_size="turbo", language="en")
+            # Subtitle from video generating same-language subtitles
+            # result = transcribe_file(input_file_path, task="transcribe", model_size="turbo", language="en")
+            # Subtitle from an english video generating english subtitles
+            result = transcribe_file(input_file_path, task="transcribe", model_size="distil-large-v3", language="en")
             subtitle_data = get_srt_content(result)
             subtitle_path.write_text(subtitle_data.getvalue().decode())
             logger.info(f"Done translating {input_file_path.name}")
