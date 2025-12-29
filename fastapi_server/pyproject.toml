@@ -38,9 +38,9 @@ dependencies = [
     "humanize>=4.11.0",
     # SC2 Replay Parser
     "sc2reader>=1.8.0",
-    "reflex==0.8.24.post1",
+    # "reflex==0.8.24.post1",
     # "streamlit>=1.52.2",
-    # "rio-ui>=0.11.1",
+    "rio-ui>=0.11.1",
 ]
 
 [tool.uv]
@@ -70,6 +70,7 @@ dev = [
     "yamlfix>=1.17.0",
     "pytest-databases[postgres]>=0.13.0",
     "basedpyright>=1.36.2",
+    # "ty>=0.0.7",
 ]
 
 [tool.yapf]

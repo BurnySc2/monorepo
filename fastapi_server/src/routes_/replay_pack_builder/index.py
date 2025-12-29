@@ -1,4 +1,4 @@
-# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false
+# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportUndefinedVariable=false, reportUnknownVariableType=false
 from dataclasses import dataclass
 from hashlib import md5
 from io import BytesIO
@@ -12,7 +12,7 @@ from loguru import logger
 from pydantic import BaseModel
 from sc2reader.resources import Replay
 
-from routes.replay_pack_builder.index_ import ReplayData
+
 
 
 @dataclass
@@ -59,7 +59,7 @@ class ParsedReplayFile(ReplayFile):
     # chat_messages: list[ReplayMessage]
 
 
-async def parse_replay(data: BytesIO) -> ReplayData:
+async def parse_replay(data: BytesIO) -> ReplayData: 
     replay: Replay = sc2reader.load_replay(data, load_level=2)  # pyright: ignore[reportUnknownVariableType]
     parsed = {  # pyright: ignore[reportUnknownVariableType]
         "teams": [
@@ -93,17 +93,20 @@ async def parse_replay(data: BytesIO) -> ReplayData:
         "region_short": replay.region,
         "expansion": replay.expansion,
     }
-    parsed_checked = ReplayData(**parsed)  # pyright: ignore[reportArgumentType]
+    parsed_checked = ReplayData(**parsed)  # pyright: ignore[reportArgumentType]  # ty:ignore[invalid-argument-type]
     return parsed_checked
 
 
 class State(rx.State):
+    # TODO Reset uploaded files on page load
     uploaded_files: dict[str, ReplayFile] = {}
     parsed_files: dict[str, ParsedReplayFile] = {}
     # filtered: list[ParsedReplayFile] = []
     replay_name_pattern: str = r"{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}"
-
+    
+    
     # Filters
+    # TODO reload filters after filter has changed
     filter_enabled: bool = True
     game_matchmaking: bool = True
     game_custom: bool = True
@@ -297,7 +300,7 @@ FIELDSET_SUB_STYLE = {
 
 
 def _upload_component() -> rx.Component:
-    count_uploaded: int = State.uploaded_files.length()  # pyright: ignore[reportUnknownVariableType]
+    count_uploaded: int = State.uploaded_files.length()  # ty:ignore[unresolved-attribute]
     return rx.el.fieldset(
         rx.el.legend("Upload Replays"),
         rx.flex(
@@ -305,9 +308,7 @@ def _upload_component() -> rx.Component:
             rx.text("Upload zone"),
             rx.upload(
                 id="upload",
-                on_drop=State.handle_upload(
-                    rx.upload_files("upload")  # pyright: ignore[reportArgumentType]
-                ),
+                on_drop=State.handle_upload(rx.upload_files("upload")),
                 width="10px",
                 height="10px",
             ),

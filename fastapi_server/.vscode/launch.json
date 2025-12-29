@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Reflex Server: Start server",
+            "name": "Rio Server: Start server",
             "type": "debugpy",
             "request": "launch",
             "cwd": "${workspaceFolder}/src",
-            "module": "reflex",
+            "module": "rio",
             "args": [
                 "run"
             ],
