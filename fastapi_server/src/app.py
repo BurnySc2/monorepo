@@ -1,102 +1,32 @@
-import asyncio
-import os
-import time
-from pathlib import Path
-from typing import Literal
-
-import uvicorn
-from dotenv import load_dotenv
-from litestar import Litestar
-from litestar.config.cors import CORSConfig
-from litestar.contrib.jinja import JinjaTemplateEngine
-from litestar.static_files import create_static_files_router
-from litestar.template.config import TemplateConfig
-from loguru import logger
-
-from models.audiobook import AudiobookBook, AudiobookChapter
-from routes.audiobook.book import MyAudiobookBookRoute
-from routes.audiobook.epub_upload import MyAudiobookEpubRoute
-from routes.audiobook.index import MyAudiobookIndexRoute
-from routes.hello_world import MyRootRoute
-from routes.login_logout import MyLoginRoute, MyLogoutRoute
-from routes.replay_pack_builder.index import MyReplayPackBuilderRoute
-from routes.telegram_browser.telegram_browser import MyTelegramBrowserRoute
-from routes.temp_multiswap import MyMultiswapRoute
-from routes.temp_swap_multiple import MySwapMultipleRoute
-from routes.text_to_speech import MyTTSRoute
-from routes.tts.websocket_handler import TTSWebsocketHandler
-from workers.prevent_overflowing_audiobook_bucket import prevent_overflowing_audiobook_bucket
-
-load_dotenv()
+import reflex as rx
 
 
-assert os.getenv("STAGE", "dev") in {"local_dev", "dev", "prod", "test"}, os.getenv("STAGE")
-# pyrefly: ignore
-STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")
-BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://localhost:8000")
-WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:localhost:8000")
-logger.info(f"Server url: {BACKEND_SERVER_URL}")
-t0 = time.time()
+class State(rx.State):
+    count: int = 0
+
+    def increment(self):
+        self.count += 1
+
+    def decrement(self):
+        self.count -= 1
 
 
-async def startup_event():
-    if STAGE == "test":
-        return
-    # Remove books and minio objects if minio bucket is overflowing
-    asyncio.create_task(prevent_overflowing_audiobook_bucket())
-    logger.info(f"Startup took {time.time() - t0:.2} seconds")
-
-    # Create tables
-    if STAGE == "dev":
-        await AudiobookBook.create_table(if_not_exists=True)
-        await AudiobookChapter.create_table(if_not_exists=True)
-
-
-def shutdown_event():
-    logger.info("Bye world!")
-
-
-cors_config = CORSConfig(
-    allow_origins=["https://test.burnysc2.xyz"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app = Litestar(
-    route_handlers=[
-        MyAudiobookBookRoute,
-        MyAudiobookIndexRoute,
-        MyAudiobookEpubRoute,
-        # MyChatRoute,
-        MyLoginRoute,
-        MyLogoutRoute,
-        MyMultiswapRoute,
-        MySwapMultipleRoute,
-        MyReplayPackBuilderRoute,
-        MyRootRoute,
-        MyTelegramBrowserRoute,
-        # MyTodoRoute,
-        MyTTSRoute,
-        TTSWebsocketHandler,
-        create_static_files_router(path="/static", directories=["src/assets"]),
-    ],
-    on_startup=[startup_event],
-    on_shutdown=[shutdown_event],
-    template_config=TemplateConfig(
-        directory=Path("src/templates"),
-        engine=JinjaTemplateEngine,
-    ),
-    debug=BACKEND_SERVER_URL == "http://localhost:8000",
-    request_max_body_size=1024 * 2**20,  # 1024 mb
-    cors_config=cors_config,
-)
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "__main__:app",
-        host="localhost",
-        port=8000,
-        reload_delay=5,
-        reload=BACKEND_SERVER_URL == "http://localhost:8000",
+def index():
+    return rx.hstack(
+        rx.button(
+            "Decrement",
+            color_scheme="ruby",
+            on_click=State.decrement,
+        ),
+        rx.heading(State.count, font_size="2em"),
+        rx.button(
+            "Increment",
+            color_scheme="grass",
+            on_click=State.increment,
+        ),
+        spacing="4",
     )
+
+
+app = rx.App()
+app.add_page(index)

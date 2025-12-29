@@ -12,7 +12,7 @@ from piccolo.table import Table, create_db_tables, drop_db_tables
 from piccolo.utils.sync import run_sync
 from pytest_httpx import HTTPXMock
 
-from app import app
+from _app import app
 from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.audiobook.my_minio_client import minio_check_if_object_exists
 from routes.login_logout import COOKIES

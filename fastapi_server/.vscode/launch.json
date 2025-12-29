@@ -5,6 +5,25 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Reflex Server: Start server",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src",
+            "module": "reflex",
+            "args": [
+                "run"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYDEVD_DISABLE_FILE_VALIDATION": "1",
+                "PYTHONPATH": "${workspaceFolder}/src",
+                "REFLEX_HOT_RELOAD_INCLUDE_PATHS": "${workspaceFolder}/src",
+                "REFLEX_WEB_WORKDIR": "${workspaceFolder}/data/.web",
+                "REFLEX_STATES_WORKDIR": "${workspaceFolder}/data/.states",
+            }
+        },
+        {
             "name": "Fastapi Server: Run Current File",
             "type": "debugpy",
             "request": "launch",
@@ -21,7 +40,18 @@
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "module": "litestar",
-            "args": ["--app-dir", "src", "run", "--reload", "--host", "0.0.0.0", "--wc", "1", "--reload-include", "*.sql"],
+            "args": [
+                "--app-dir",
+                "src",
+                "run",
+                "--reload",
+                "--host",
+                "0.0.0.0",
+                "--wc",
+                "1",
+                "--reload-include",
+                "*.sql"
+            ],
             "console": "integratedTerminal",
             "justMyCode": true,
             "env": {
