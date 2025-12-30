@@ -5,6 +5,7 @@ from pathlib import Path
 import rio
 
 from rio_app.pages.page_replay_pack_builder import FilterSettings
+from rio_app.routes.index import router
 
 # from . import components as comps
 from . import data_models, theme
@@ -57,3 +58,6 @@ app = rio.App(
     assets_dir=Path(__file__).parent / "assets",
     default_attachments=[FilterSettings()],
 )
+
+fastapi_app = app.as_fastapi()
+fastapi_app.include_router(router, prefix="/api")
