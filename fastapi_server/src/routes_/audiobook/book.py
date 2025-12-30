@@ -16,9 +16,6 @@ from litestar.enums import MediaType, RequestEncodingType
 from litestar.params import Body
 from litestar.response import Stream, Template
 from pydantic import BaseModel
-from stream_zip import ZIP_64, async_stream_zip
-
-from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.audiobook.my_minio_client import (
     MINIO_AUDIOBOOK_BUCKET,
     AudioSettings,
@@ -36,6 +33,9 @@ from routes.cookies_and_guards import (
     owns_book_guard,
     provide_logged_in_user,
 )
+from stream_zip import ZIP_64, async_stream_zip
+
+from models.audiobook import AudiobookBook, AudiobookChapter
 
 queries_directory = Path(__file__).parents[2] / "queries"
 query_get_book = (queries_directory / "audiobook_book_metadata.sql").read_text()

@@ -167,6 +167,4 @@ BLOG_POSTS = [
 # Dictionary mapping blog post URL segments to their corresponding BlogPost
 # objects. Only includes posts with non-empty url_segments. Access pattern:
 # BLOG_POSTS_BY_URL["/url-segment"]
-BLOG_POSTS_BY_URL = {
-    post.url_segment: post for post in BLOG_POSTS if post.url_segment
-}
+BLOG_POSTS_BY_URL = {post.url_segment: post for post in BLOG_POSTS if post.url_segment}

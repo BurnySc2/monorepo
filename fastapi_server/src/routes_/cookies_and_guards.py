@@ -11,13 +11,13 @@ from litestar.exceptions import NotAuthorizedException
 from litestar.handlers.base import BaseRouteHandler
 from litestar.params import Parameter
 from pydantic import BaseModel
-
-from models.audiobook import AudiobookBook
 from routes.audiobook.my_minio_client import (
     AudioSettings,
 )
 from routes.audiobook.temp_generate_tts import get_supported_voices
 from routes.caches import global_cache
+
+from models.audiobook import AudiobookBook
 
 load_dotenv()
 

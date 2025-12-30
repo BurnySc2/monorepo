@@ -3,13 +3,13 @@ from __future__ import annotations
 from litestar import Controller, get
 from litestar.di import Provide
 from litestar.response import Template
-
-from models.audiobook import AudiobookBook
 from routes.cookies_and_guards import (
     LoggedInUser,
     is_logged_in_guard,
     provide_logged_in_user,
 )
+
+from models.audiobook import AudiobookBook
 
 
 class MyAudiobookIndexRoute(Controller):

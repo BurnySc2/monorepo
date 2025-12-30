@@ -9,6 +9,7 @@ from rio_app.routes.index import router
 
 # from . import components as comps
 from . import data_models, theme
+
 # from .utils import ASSETS_DIR
 
 # rio.Icon.register_single_icon(

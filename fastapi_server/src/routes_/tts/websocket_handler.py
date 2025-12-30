@@ -8,10 +8,9 @@ from litestar import WebSocket
 from litestar.exceptions.websocket_exceptions import WebSocketDisconnect
 from litestar.handlers import WebsocketListener
 from loguru import logger
-from websockets import ConnectionClosedError, ConnectionClosedOK
-
 from routes.tts.generate_tts import Voices, generate_tts
 from routes.tts.irc_bot_async2 import ALLOWED_NAME_LANGUAGES, IRCClient, ReadNameLang
+from websockets import ConnectionClosedError, ConnectionClosedOK
 
 # pyrefly: ignore
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}

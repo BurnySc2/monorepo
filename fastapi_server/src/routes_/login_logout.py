@@ -14,7 +14,6 @@ from litestar.status_codes import (
     HTTP_409_CONFLICT,
     HTTP_503_SERVICE_UNAVAILABLE,
 )
-
 from routes.cookies_and_guards import (
     BACKEND_SERVER_URL,
     COOKIES,

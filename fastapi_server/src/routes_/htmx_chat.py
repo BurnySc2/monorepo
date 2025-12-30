@@ -7,7 +7,6 @@ from typing import Annotated
 from litestar import Controller, get
 from litestar.params import Parameter
 from litestar.response import Template
-
 from routes.login_logout import COOKIES
 
 # connected_users: OrderedDict[str, list[WebSocket]] = OrderedDict()

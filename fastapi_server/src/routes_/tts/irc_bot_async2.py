@@ -18,7 +18,6 @@ from collections.abc import Callable
 from typing import Literal
 
 from loguru import logger
-
 from routes.tts.generate_tts import Voices
 
 # pyrefly: ignore
