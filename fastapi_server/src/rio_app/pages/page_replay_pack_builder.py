@@ -1,21 +1,16 @@
 # pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
 from dataclasses import dataclass
-from datetime import date
-from functools import partial
 from hashlib import md5
 from io import BytesIO
 from rio.components.file_picker_area import FilePickerArea
-from rio.components.file_picker_area import FilePickerArea
-from typing import Any, Literal, TypedDict
-import typing
+from typing import Literal
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import arrow
-from litestar.datastructures import upload_file
-import sc2reader
+import sc2reader  # pyright: ignore[reportMissingTypeStubs]
 from loguru import logger
 from pydantic import BaseModel
-from sc2reader.resources import Replay
+from sc2reader.resources import Replay  # pyright: ignore[reportMissingTypeStubs]
 import rio
 
 
@@ -132,7 +127,7 @@ class FilterSettings(rio.UserSettings):
     server_europe: bool = True
     server_asia: bool = True
     # Unable do store as date (can't convert to JSON bug?)
-    date_played_min: float = arrow.get(0).timestamp()
+    date_played_min: float = arrow.get("2010-01-01").timestamp()
     date_played_max: float = arrow.utcnow().timestamp()
     game_duration_min: int = 0
     game_duration_max: int = 9999
@@ -180,37 +175,122 @@ class FilterSettings(rio.UserSettings):
             return False
         if not self.server_europe and replay.region_short == "eu":
             return False
-        if not self.server_asia and replay.region_short == "kr":  # noqa: SIM103
+        if not self.server_asia and replay.region_short == "kr":
             return False
 
         # Date played filter
+        game_date = arrow.get(replay.played_timestamp).timestamp()
+        if not (self.date_played_min <= game_date <= self.date_played_max):
+            return False
 
         # Game duration filter
+        if not (self.game_duration_min <= replay.game_length_seconds <= self.game_duration_max):
+            return False
 
         # Average mmr filter
+        average_mmr = sum(player.mmr for team in replay.teams for player in team.players if player.mmr is not None)
+        if not (self.average_mmr_min <= average_mmr <= self.average_mmr_max):
+            return False
 
         # Player count filter
+        teams_count = len(replay.teams)
+        players_count = sum(len(team.players) for team in replay.teams)
 
         # Matchup filter
+        if teams_count == 2 and players_count == 2:
+            players = [replay.teams[0].players[0], replay.teams[1].players[0]]
+            player_races = "v".join(p.play_race[0] for p in sorted(players, key=lambda i: i.play_race))
+            if not self.matchup_pvp and player_races == "PvP":
+                return False
+            if not self.matchup_pvt and player_races == "PvT":
+                return False
+            if not self.matchup_pvz and player_races == "PvZ":
+                return False
+            if not self.matchup_tvt and player_races == "TvT":
+                return False
+            if not self.matchup_tvz and player_races == "TvZ":
+                return False
+            if not self.matchup_zvz and player_races == "ZvZ":
+                return False
 
         # Player name include / exclude filter
+        all_player_names = [player.name.lower() for team in replay.teams for player in team.players]
+
+        players_must_include = [
+            i.strip().lower() for i in self.player_name_must_include.strip().split(",") if i.strip()
+        ]
+        map_name_matches_include = False
+        if players_must_include:
+            for player_name in all_player_names:
+                for search_string in players_must_include:
+                    if search_string in player_name:
+                        map_name_matches_include = True
+            if not map_name_matches_include:
+                return False
+
+        players_must_exclude = [
+            i.strip().lower() for i in self.player_name_must_exclude.strip().split(",") if i.strip()
+        ]
+        map_name_matches_exclude = False
+        if players_must_exclude:
+            for player_name in all_player_names:
+                for search_string in players_must_exclude:
+                    if search_string in player_name:
+                        map_name_matches_exclude = True
+            if map_name_matches_exclude:
+                return False
 
         # Map name include / exclude filter
+        map_name = replay.map_name.lower()
 
-        logger.info("aloo")
+        map_name_must_include = [i.strip().lower() for i in self.map_name_must_include.strip().split(",") if i.strip()]
+        map_name_matches_include = False
+        if map_name_must_include:
+            for search_string in map_name_must_include:
+                if search_string in map_name:
+                    map_name_matches_include = True
+            if not map_name_matches_include:
+                return False
+
+        map_name_must_exclude = [i.strip().lower() for i in self.map_name_must_exclude.strip().split(",") if i.strip()]
+        map_name_matches_exclude = False
+        if map_name_must_exclude:
+            for search_string in map_name_must_exclude:
+                if search_string in map_name:
+                    map_name_matches_exclude = True
+            if map_name_matches_exclude:
+                return False
         return True
 
 
 class UploadComponent(rio.Component):
     uploaded_files: dict[str, ReplayFile] = {}
     parsed_files: dict[str, ParsedReplayFile] = {}
+    filtered_replays: list[ParsedReplayFile] = []
 
     def clear_files(self):
         self.uploaded_files = {}
         self.parsed_files = {}
+        self.filtered_replays = []
+
+    @property
+    def uploaded_replays_count(self):
+        return len(self.uploaded_files) + len(self.parsed_files)
+
+    @property
+    def file_picker(self) -> FilePickerArea | None:
+        try:
+            my_file_picker = next(
+                (i for i in self._build_data_.all_children_in_build_boundary if isinstance(i, FilePickerArea)),  # pyright: ignore[reportOptionalMemberAccess]
+                None,
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Error with file picker: {e}")
+            return None
+        return my_file_picker
 
     async def parse_replays(self, _event: rio.FilePickEvent):
-        if "file_picker" not in self.__dict__:
+        if self.file_picker is None:
             return
         # Add newly added replays
         for new_file in self.file_picker.files:
@@ -220,47 +300,53 @@ class UploadComponent(rio.Component):
                 status="uploaded",
             )
             replay_file_md5 = replay_file.md5
-            if replay_file_md5 in self.uploaded_files:
+            # Already parsed, duplicate
+            if replay_file_md5 in self.uploaded_files or replay_file_md5 in self.parsed_files:
                 continue
             self.uploaded_files[replay_file_md5] = replay_file
         # Clear list in file_picker
         self.file_picker.files = []
-        self.force_refresh()
+        # self.force_refresh()
 
         # Parse newly added replays
-        for replay_file_md5, replay_file in self.uploaded_files.items():
+        for replay_file_md5 in list(self.uploaded_files):
+            replay_file = self.uploaded_files.get(replay_file_md5, None)
+            if replay_file is None:
+                continue
             if replay_file.status != "uploaded":
                 continue
             try:
                 replay_file.status = "processing"
                 replay_data: ReplayData = await parse_replay(BytesIO(replay_file.data))
                 self.parsed_files[replay_file_md5] = ParsedReplayFile(
-                    **replay_file.model_dump(),
+                    **replay_file.model_dump(),  # pyright: ignore[reportAny]
                     **replay_data.model_dump(),
                 )
+                _ = self.uploaded_files.pop(replay_file_md5)
                 replay_file.status = "processed"
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 replay_file.status = "error"
-                logger.info(e)
+                logger.info(f"Error parsing replay file {e}")
 
         filter_settings = self.session[FilterSettings]
         filter_settings.filtered_replays_need_updating = True
         self.session.attach(filter_settings)
 
     def build(self) -> rio.Component:
-        self.file_picker: FilePickerArea = rio.FilePickerArea(
-            "Drop your replay files here",
-            on_pick_file=self.parse_replays,
-            file_types=["SC2Replay"],
-            multiple=True,
-        )
         component = rio.Column(
             rio.Text("Upload Replays", style="heading1"),
         )
-        if 0 < len(self.uploaded_files):
+        if 0 < self.uploaded_replays_count:
             _ = component.add(rio.Button("Clear uploaded files", on_press=self.clear_files, align_x=0))
-        _ = component.add(rio.Text(f"Total replays uploaded: {len(self.uploaded_files)}"))
-        _ = component.add(self.file_picker)
+        _ = component.add(rio.Text(f"Total replays uploaded: {self.uploaded_replays_count}"))
+        _ = component.add(
+            rio.FilePickerArea(
+                "Drop your replay files here",
+                on_pick_file=self.parse_replays,
+                file_types=["SC2Replay"],
+                multiple=True,
+            )
+        )
         return component
 
 
@@ -343,10 +429,10 @@ class FilterComponent(rio.Component):
             rio.Text("Date played", style="heading2"),
             rio.Row(
                 rio.Text("Between"),
-                MyFilter(rio.DateInput, "", "date_played_min"),
+                MyFilter(rio.DateInput, "", "date_played_min", grow_x=True),
                 rio.Text("and"),
-                MyFilter(rio.DateInput, "", "date_played_max"),
-                spacing=1,
+                MyFilter(rio.DateInput, "", "date_played_max", grow_x=True),
+                spacing=0.5,
             ),
             rio.Text("Game duration (seconds)", style="heading2"),
             rio.Row(
@@ -354,7 +440,7 @@ class FilterComponent(rio.Component):
                 MyFilter(rio.NumberInput, "", "game_duration_min", grow_x=True),
                 rio.Text("and"),
                 MyFilter(rio.NumberInput, "", "game_duration_max", grow_x=True),
-                spacing=1,
+                spacing=0.5,
             ),
             rio.Text("Player count", style="heading2"),
             rio.Row(
@@ -362,7 +448,7 @@ class FilterComponent(rio.Component):
                 MyFilter(rio.NumberInput, "", "player_count_min", grow_x=True),
                 rio.Text("and"),
                 MyFilter(rio.NumberInput, "", "player_count_max", grow_x=True),
-                spacing=1,
+                spacing=0.5,
             ),
             rio.Text("Average player MMR", style="heading2"),
             rio.Row(
@@ -370,7 +456,7 @@ class FilterComponent(rio.Component):
                 MyFilter(rio.NumberInput, "", "average_mmr_min", grow_x=True),
                 rio.Text("and"),
                 MyFilter(rio.NumberInput, "", "average_mmr_max", grow_x=True),
-                spacing=1,
+                spacing=0.5,
             ),
             rio.Text("Matchups", style="heading2"),
             rio.Grid(
@@ -498,14 +584,16 @@ class ZipAndDownloadComponent(rio.Component):
         return new_name
 
     async def handle_download(self):
+        if len(self.filtered_replays) == 0:
+            return
         # Create zip file
+        # TODO Add spinner while zipping
         zip_buffer = BytesIO()
         with ZipFile(zip_buffer, "w", ZIP_DEFLATED, False) as zipfile_handler:
             for replay_data in self.filtered_replays:
                 new_name = self.rename_file_according_to_template(replay_data)
                 zipfile_handler.writestr(f"{new_name}.SC2Replay", replay_data.data)
-        zip_as_data: bytes = zip_buffer.getvalue()
-        await self.session.save_file(zip_as_data, "replay_pack.zip")
+        await self.session.save_file(zip_buffer.getvalue(), "replay_pack.zip")
 
     def build(self) -> rio.Component:
         col = rio.Column()
@@ -519,7 +607,7 @@ class ZipAndDownloadComponent(rio.Component):
                 )
             )
         # Disable button if no replays to download: none passing filters
-        button_disabled = 0 < self.replays_processing_count or len(self.filtered_replays) == 0
+        button_disabled = 0 < self.replays_processing_count
         btn = rio.Button("Zip and download replays", on_press=self.handle_download, is_loading=button_disabled)
         if 0 < len(self.filtered_replays):
             btn.content = f"Zip and download {len(self.filtered_replays)} replays"
@@ -558,7 +646,7 @@ class ReplayPackBuilderPage(rio.Component):
 
     def build(self) -> rio.Component:
         return rio.Column(
-            UploadComponent(self.bind().uploaded_files, self.bind().parsed_files),
+            UploadComponent(self.bind().uploaded_files, self.bind().parsed_files, self.bind().filtered_replays),
             rio.Separator(min_height=0.1, margin_y=0.5),
             FilterComponent(),
             rio.Separator(min_height=0.1, margin_y=0.5),
