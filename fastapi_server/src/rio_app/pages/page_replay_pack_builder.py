@@ -2,12 +2,12 @@
 
 import rio
 
-from rio_app.components.replay_pack_builder.filter_component import FilterComponent
+from rio_app.components.replay_pack_builder.component_filter import FilterComponent
+from rio_app.components.replay_pack_builder.component_name_template import NameTemplateComponent
+from rio_app.components.replay_pack_builder.component_upload import UploadComponent
+from rio_app.components.replay_pack_builder.component_zip_and_download import ZipAndDownloadComponent
 from rio_app.components.replay_pack_builder.models import ParsedReplayFile, ReplayFile
-from rio_app.components.replay_pack_builder.name_template_component import NameTemplateComponent
 from rio_app.components.replay_pack_builder.settings import FilterSettings
-from rio_app.components.replay_pack_builder.upload_component import UploadComponent
-from rio_app.components.replay_pack_builder.zip_and_download_component import ZipAndDownloadComponent
 
 
 @rio.page(
@@ -19,6 +19,12 @@ class ReplayPackBuilderPage(rio.Component):
     parsed_files: dict[str, ParsedReplayFile] = {}
     filtered_replays: list[ParsedReplayFile] = []
     replay_name_pattern: str = r"{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}"
+
+    _is_loading: bool = True
+
+    @rio.event.on_mount
+    def _mount(self):
+        self._is_loading = False
 
     @rio.event.periodic(1)
     async def update_filtered_replays(self):
@@ -40,6 +46,11 @@ class ReplayPackBuilderPage(rio.Component):
         self.session.attach(filter_settings)
 
     def build(self) -> rio.Component:
+        if self._is_loading:
+            return rio.ProgressCircle(
+                margin_y=self.session.window_height // 5,
+                margin_x=self.session.window_width // 5,
+            )
         return rio.Column(
             UploadComponent(self.bind().uploaded_files, self.bind().parsed_files, self.bind().filtered_replays),
             rio.Separator(min_height=0.1, margin_y=0.5),
@@ -53,7 +64,7 @@ class ReplayPackBuilderPage(rio.Component):
                 self.bind().replay_name_pattern,
             ),
             margin=2,
-            margin_x=20,
+            margin_x=self.session.window_width // 5,
             align_x=0.5,
             align_y=0.5,
         )

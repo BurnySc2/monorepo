@@ -1,5 +1,7 @@
 # pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
 
+from uuid import uuid4
+
 import arrow
 import rio
 
@@ -40,6 +42,9 @@ class FilterSettings(rio.UserSettings):
     map_name_must_include: str = ""
     map_name_must_exclude: str = ""
 
+    # Identifier to store replays
+    user_id: str = str(uuid4())
+    # Let zipper know there are files to be parsed
     filtered_replays_need_updating: bool = False
 
     async def replay_passes_filter(self, replay: ParsedReplayFile) -> bool:

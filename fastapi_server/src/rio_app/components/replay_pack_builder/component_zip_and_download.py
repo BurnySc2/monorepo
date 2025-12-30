@@ -66,7 +66,9 @@ class ZipAndDownloadComponent(rio.Component):
         with ZipFile(zip_buffer, "w", ZIP_DEFLATED, False) as zipfile_handler:
             for replay_data in self.filtered_replays:
                 new_name = self.rename_file_according_to_template(replay_data)
-                zipfile_handler.writestr(f"{new_name}.SC2Replay", replay_data.data)
+                if replay_data.path is None:
+                    continue
+                zipfile_handler.write(replay_data.path, f"{new_name}.SC2Replay")
         await self.session.save_file(zip_buffer.getvalue(), "replay_pack.zip")
 
     def build(self) -> rio.Component:
