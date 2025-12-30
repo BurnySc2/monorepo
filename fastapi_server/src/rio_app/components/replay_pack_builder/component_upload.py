@@ -1,6 +1,5 @@
 # pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
 import shutil
-from collections import deque
 from io import BytesIO
 from pathlib import Path
 
@@ -8,33 +7,24 @@ import rio
 from loguru import logger
 from rio.components.file_picker_area import FilePickerArea
 
-from rio_app.components.replay_pack_builder.models import REPLAYS_FOLDER, ParsedReplayFile, ReplayData, ReplayFile
+from rio_app.components.replay_pack_builder.models import (
+    FILES_IN_ORDER,
+    REPLAYS_FOLDER,
+    ParsedReplayFile,
+    ReplayData,
+    ReplayFile,
+    quota,
+)
 from rio_app.components.replay_pack_builder.replay_parser import parse_replay
 from rio_app.components.replay_pack_builder.settings import FilterSettings
 
-# Mapping: {user_uuid4: {md5 hashes}}
-# FILES_EXIST: dict[str, set[str]] = {}
-# Once a file size threshold exceeds, start deleting files
-FILES_IN_ORDER = deque[Path](p for p in REPLAYS_FOLDER.glob("**/*.SC2Replay"))
-QUOTA_LIMIT = 10 * 2**30  # 10 gigabyte of replays can be uploaded in total
 
-
-# On server start: Delete all uploading files
-def delete_pending_upload_files():
-    for f in REPLAYS_FOLDER.glob("*.uploading"):
-        f.unlink(missing_ok=True)
-
-
-delete_pending_upload_files()
-
-# Initial usage in bytes
-quota_usage = sum(p.stat().st_size for p in FILES_IN_ORDER)
 
 
 def delete_file(path: Path):
     global quota_usage
     if path.is_file():
-        quota_usage -= path.stat().st_size
+        quota["quota_usage"] -= path.stat().st_size
     path.unlink(missing_ok=True)
 
 
@@ -79,13 +69,12 @@ class UploadComponent(rio.Component):
         return my_file_picker
 
     async def handle_replays_upload(self, _event: rio.FilePickEvent):
-        global quota_usage
         if self.file_picker is None:
             return
         filter_settings = self.session[FilterSettings]
         # Delete if above quota
         for p in list(FILES_IN_ORDER):
-            if quota_usage < QUOTA_LIMIT:
+            if quota["quota_usage"] < quota["QUOTA_LIMIT"]:
                 break
             delete_file(p)
             _ = FILES_IN_ORDER.popleft()
@@ -97,7 +86,9 @@ class UploadComponent(rio.Component):
             # Already parsed, duplicate
             if replay_file.md5 in self.uploaded_files or replay_file.md5 in self.parsed_files:
                 continue
-            quota_usage += replay_file.save_to_disk(filter_settings.user_id, data)
+            quota["quota_usage"] += replay_file.save_to_disk(filter_settings.user_id, data)
+            if replay_file.path:
+                FILES_IN_ORDER.append(replay_file.path)
             self.uploaded_files[replay_file.md5] = replay_file
         # Clear list in file_picker
         self.file_picker.files = []
