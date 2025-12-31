@@ -48,8 +48,8 @@ class ReplayPackBuilderPage(rio.Component):
     def build(self) -> rio.Component:
         if self._is_loading:
             return rio.ProgressCircle(
-                margin_y=self.session.window_height // 5,
-                margin_x=self.session.window_width // 5,
+                align_x=0.5,
+                align_y=0.5,
             )
         return rio.Column(
             UploadComponent(self.bind().uploaded_files, self.bind().parsed_files, self.bind().filtered_replays),

@@ -65,7 +65,7 @@ class LoginRootPage(rio.Component):
                 rio.Button("Log out", color="danger", on_press=self.logout_handler),
                 align_x=0.5,
                 align_y=0.5,
-                spacing=3,
+                spacing=2,
             )
         return rio.Column(
             rio.Button(
@@ -88,5 +88,5 @@ class LoginRootPage(rio.Component):
             ),
             align_x=0.5,
             align_y=0.5,
-            spacing=3,
+            spacing=2,
         )

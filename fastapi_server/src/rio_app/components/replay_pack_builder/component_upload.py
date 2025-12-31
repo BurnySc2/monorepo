@@ -25,12 +25,15 @@ class UploadComponent(rio.Component):
     parsed_files: dict[str, ParsedReplayFile] = {}
     filtered_replays: list[ParsedReplayFile] = []
 
+    file_picker_files: list[rio.FileInfo] = []
+
     @rio.event.on_mount
     async def on_mount(self):
         filter_settings = self.session[FilterSettings]
         for p in (REPLAYS_FOLDER / filter_settings.user_id).glob("*.SC2Replay"):
             replay = ReplayFile.from_file(p)
             self.uploaded_files[replay.md5] = replay
+        self.force_refresh()
         self.session.attach(filter_settings)
         await self.process_replays()
 
@@ -47,30 +50,16 @@ class UploadComponent(rio.Component):
     def uploaded_replays_count(self):
         return len(self.uploaded_files) + len(self.parsed_files)
 
-    @property
-    def file_picker(self) -> FilePickerArea | None:
-        try:
-            my_file_picker = next(
-                (i for i in self._build_data_.all_children_in_build_boundary if isinstance(i, FilePickerArea)),  # pyright: ignore[reportOptionalMemberAccess]
-                None,
-            )
-        except Exception as e:  # noqa: BLE001
-            logger.error(f"Error with file picker: {e}")
-            return None
-        return my_file_picker
-
     async def handle_replays_upload(self, _event: rio.FilePickEvent):
-        if self.file_picker is None:
-            return
-        filter_settings = self.session[FilterSettings]
         # Delete if above quota
         for p in list(FILES_IN_ORDER):
             if quota["quota_used"] < quota["QUOTA_LIMIT"]:
                 break
             delete_file(p)
 
+        filter_settings = self.session[FilterSettings]
         # Add newly added replays
-        for new_file in self.file_picker.files:
+        for new_file in self.file_picker_files:
             # 100 mb file size limit
             if 100 * 2**30 < new_file.size_in_bytes:
                 continue
@@ -84,8 +73,8 @@ class UploadComponent(rio.Component):
                 FILES_IN_ORDER.append(replay_file.path)
             self.uploaded_files[replay_file.md5] = replay_file
         # Clear list in file_picker
-        self.file_picker.files = []
-        # self.force_refresh()
+        self.file_picker_files.clear()
+        self.force_refresh()
         await self.process_replays()
 
     async def process_replays(self):
@@ -119,15 +108,17 @@ class UploadComponent(rio.Component):
             rio.Text("Upload Replays", style="heading1"),
         )
         if 0 < self.uploaded_replays_count:
-            _ = component.add(rio.Button("Remove uploaded files", on_press=self.clear_files, align_x=0))
-        _ = component.add(rio.Text(f"Total replays uploaded: {self.uploaded_replays_count}"))
-
-        _ = component.add(
-            rio.FilePickerArea(
-                "Drop your replay files here",
-                on_pick_file=self.handle_replays_upload,
-                file_types=["SC2Replay"],
-                multiple=True,
-            )
+            component.children.append(rio.Button("Remove uploaded files", on_press=self.clear_files, align_x=0))
+        component.children.extend(
+            [
+                rio.Text(f"Total replays uploaded: {self.uploaded_replays_count}"),
+                rio.FilePickerArea(
+                    "Drop your replay files here",
+                    on_pick_file=self.handle_replays_upload,
+                    files=self.bind().file_picker_files,
+                    file_types=["SC2Replay"],
+                    multiple=True,
+                ),
+            ]
         )
         return component
