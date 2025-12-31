@@ -69,6 +69,7 @@ class ZipAndDownloadComponent(rio.Component):
                 if replay_data.path is None:
                     continue
                 zipfile_handler.write(replay_data.path, f"{new_name}.SC2Replay")
+        # TODO Redirect to minio file instance
         await self.session.save_file(zip_buffer.getvalue(), "replay_pack.zip")
 
     def build(self) -> rio.Component:

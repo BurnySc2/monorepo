@@ -41,6 +41,8 @@ dependencies = [
     # "reflex==0.8.24.post1",
     # "streamlit>=1.52.2",
     "rio-ui>=0.11.1",
+    # Async access to minio client
+    "aioboto3>=15.5.0",
 ]
 
 [tool.uv]
@@ -70,6 +72,7 @@ dev = [
     "basedpyright>=1.36.2",
     # "ty>=0.0.7",
     "pre-commit>=4.5.1",
+    "types-aioboto3[full]>=15.5.0",
 ]
 
 [tool.yapf]

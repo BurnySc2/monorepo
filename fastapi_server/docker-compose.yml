@@ -131,20 +131,10 @@ services:
   local_dev_minio:
     container_name: fastapi_dev_minio
     hostname: fastapi_dev_minio
+    # image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
     pull_policy: always
-    # Start minio server, then after 10 seconds create access key
-    entrypoint:
-      - bash
-      - -c
-    command: >
-      "/usr/bin/docker-entrypoint.sh minio server --console-address ':9001' 'data'
-      &
-      sleep 10 &&
-      mc alias set myminio http://localhost:9000 root rootroot &&
-      mc admin user svcacct add --access-key "mylocaldevkey" --secret-key "mylocaldevpassword"
-      myminio root;
-      wait"
+    command: minio server data --console-address ":9001"
     restart: unless-stopped
     labels:
       - traefik.enable=true
