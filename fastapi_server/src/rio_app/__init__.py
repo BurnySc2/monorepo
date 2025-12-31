@@ -4,25 +4,9 @@ from pathlib import Path
 
 import rio
 
-from rio_app.pages.page_replay_pack_builder import FilterSettings
+from rio_app import data_models, theme
+from rio_app.components.replay_pack_builder.settings import FilterSettings
 from rio_app.routes.index import router
-
-# from . import components as comps
-from . import data_models, theme
-
-# from .utils import ASSETS_DIR
-
-# rio.Icon.register_single_icon(
-#     ASSETS_DIR / "discord_logo.svg",
-#     "thirdparty",
-#     "discord_logo",
-# )
-
-# rio.Icon.register_single_icon(
-#     ASSETS_DIR / "github_logo.svg",
-#     "thirdparty",
-#     "github_logo",
-# )
 
 
 def on_session_start(sess: rio.Session) -> None:
@@ -42,7 +26,7 @@ def on_session_start(sess: rio.Session) -> None:
 
 # Create the Rio app
 app = rio.App(
-    name="rio_app",
+    name="Burnysc2's Website",
     # This function will be called each time a user connects
     on_session_start=on_session_start,
     # You can optionally provide a root component for the app. By default,

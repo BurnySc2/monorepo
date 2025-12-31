@@ -109,6 +109,7 @@ class UploadComponent(rio.Component):
             except Exception as e:  # noqa: BLE001
                 if replay_file.path is not None:
                     delete_file(replay_file.path)
+                _ = self.uploaded_files.pop(replay_file.md5, None)
                 logger.info(f"Error parsing replay file {e}")
         filter_settings.filtered_replays_need_updating = True
         self.session.attach(filter_settings)

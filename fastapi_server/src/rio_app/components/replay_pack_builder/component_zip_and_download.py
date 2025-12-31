@@ -83,8 +83,13 @@ class ZipAndDownloadComponent(rio.Component):
                 )
             )
         # Disable button if no replays to download: none passing filters
-        button_disabled = 0 < self.replays_processing_count
-        btn = rio.Button("Zip and download replays", on_press=self.handle_download, is_loading=button_disabled)
+        button_enabled = self.replays_processing_count == 0 and 0 < len(self.filtered_replays)
+        btn = rio.Button(
+            "Zip and download replays",
+            on_press=self.handle_download,
+            is_sensitive=button_enabled,
+            icon="material/download",
+        )
         if 0 < len(self.filtered_replays):
             btn.content = f"Zip and download {len(self.filtered_replays)} replays"
         _ = col.add(btn)

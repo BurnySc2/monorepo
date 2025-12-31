@@ -10,11 +10,11 @@ dependencies = [
     # Epub Parsing
     "ebooklib>=0.18",
     # Web requests (sync + async)
-    "httpx>=0.27.2",
+    # "httpx>=0.27.2",
     # Websockets for httpx
-    "httpx-ws>=0.6.2",
+    # "httpx-ws>=0.6.2",
     # Fastapi alternative https://docs.litestar.dev/latest/
-    "litestar[standard]>=2.12.1",
+    # "litestar[standard]>=2.12.1",
     # Simple logger
     "loguru>=0.7.2",
     # Analyse mp3 files in memory
@@ -34,7 +34,7 @@ dependencies = [
     # Zip files with low memory footprint
     "stream-zip>=0.0.83",
     # AWS S3
-    "minio>=7.2.15",
+    # "minio>=7.2.15",
     "humanize>=4.11.0",
     # SC2 Replay Parser
     "sc2reader>=1.8.0",
@@ -71,6 +71,7 @@ dev = [
     "pytest-databases[postgres]>=0.13.0",
     "basedpyright>=1.36.2",
     # "ty>=0.0.7",
+    "pre-commit>=4.5.1",
 ]
 
 [tool.yapf]
