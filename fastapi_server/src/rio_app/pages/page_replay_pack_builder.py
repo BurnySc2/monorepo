@@ -26,24 +26,13 @@ class ReplayPackBuilderPage(rio.Component):
     def _mount(self):
         self._is_loading = False
 
-    @rio.event.periodic(1)
-    async def update_filtered_replays(self):
+    async def on_update_filters(self):
         filter_settings = self.session[FilterSettings]
-        if not filter_settings.filtered_replays_need_updating:
-            return
-
-        filter_settings.filtered_replays_need_updating = False
         filtered: list[ParsedReplayFile] = []
         for file in self.parsed_files.values():
             if await filter_settings.replay_passes_filter(file):
                 filtered.append(file)
-
-        # Filter changed while parsing replays
-        if filter_settings.filtered_replays_need_updating:
-            return
         self.filtered_replays = filtered
-        filter_settings.filtered_replays_need_updating = False
-        self.session.attach(filter_settings)
 
     def build(self) -> rio.Component:
         if self._is_loading:
@@ -52,9 +41,14 @@ class ReplayPackBuilderPage(rio.Component):
                 align_y=0.5,
             )
         return rio.Column(
-            UploadComponent(self.bind().uploaded_files, self.bind().parsed_files, self.bind().filtered_replays),
+            UploadComponent(
+                self.bind().uploaded_files,
+                self.bind().parsed_files,
+                self.bind().filtered_replays,
+                self.on_update_filters,
+            ),
             rio.Separator(min_height=0.1, margin_y=0.5),
-            FilterComponent(),
+            FilterComponent(self.on_update_filters),
             rio.Separator(min_height=0.1, margin_y=0.5),
             NameTemplateComponent(self.bind().replay_name_pattern),
             rio.Separator(min_height=0.1, margin_y=0.5),

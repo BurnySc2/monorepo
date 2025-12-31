@@ -10,8 +10,9 @@ class MyFilter(rio.Component):
     kind: type[rio.Checkbox | rio.NumberInput | rio.TextInput | rio.DateInput]
     label: str
     filter_settings_key: str
+    on_update_filters: rio.EventHandler[[]] = None
 
-    def set_value(
+    async def set_value(
         self,
         event: rio.CheckboxChangeEvent | rio.NumberInputChangeEvent | rio.TextInputChangeEvent | rio.DateChangeEvent,
     ):
@@ -25,8 +26,8 @@ class MyFilter(rio.Component):
             filter_settings.__setattr__(self.filter_settings_key, event.text)
         if isinstance(event, rio.DateChangeEvent):
             filter_settings.__setattr__(self.filter_settings_key, arrow.get(event.value).timestamp())
-        filter_settings.filtered_replays_need_updating = True
         self.session.attach(filter_settings)
+        await self.call_event_handler(self.on_update_filters)
 
     def build(self) -> rio.Component:
         filter_settings = self.session[FilterSettings]
@@ -54,6 +55,8 @@ class MyFilter(rio.Component):
 
 
 class FilterComponent(rio.Component):
+    on_update_filters: rio.EventHandler[[]] = None
+
     def build(self) -> rio.Component:
         return rio.Column(
             rio.Text("Replay Filters", style="heading1"),
@@ -62,71 +65,73 @@ class FilterComponent(rio.Component):
                     rio.Checkbox,
                     "Filter enabled",
                     "filter_enabled",
+                    self.on_update_filters,
                 ),
                 tip="If unchecked, no replay will be filtered and all replays will be renamed and zipped",
             ),
             rio.Text("Game types", style="heading2"),
-            MyFilter(rio.Checkbox, "Matchmaking", "game_matchmaking"),
-            MyFilter(rio.Checkbox, "Custom Game", "game_custom"),
+            MyFilter(rio.Checkbox, "Matchmaking", "game_matchmaking", self.on_update_filters),
+            MyFilter(rio.Checkbox, "Custom Game", "game_custom", self.on_update_filters),
             # TODO Add tooltip
-            MyFilter(rio.Checkbox, "Include Games with AI", "game_include_games_with_ai"),
+            MyFilter(rio.Checkbox, "Include Games with AI", "game_include_games_with_ai", self.on_update_filters),
             # TODO Add tooltip
             MyFilter(
                 rio.Checkbox,
                 "Include Games Resumed from Replay",
                 "game_include_games_resumed_from_replay",
+                self.on_update_filters,
             ),
             rio.Text("Expansion", style="heading2"),
-            MyFilter(rio.Checkbox, "Wings of Liberty", "expansion_wol"),
-            MyFilter(rio.Checkbox, "Heart of the Swarm", "expansion_hots"),
-            MyFilter(rio.Checkbox, "Legacy of the Void", "expansion_lotv"),
+            MyFilter(rio.Checkbox, "Wings of Liberty", "expansion_wol", self.on_update_filters),
+            MyFilter(rio.Checkbox, "Heart of the Swarm", "expansion_hots", self.on_update_filters),
+            MyFilter(rio.Checkbox, "Legacy of the Void", "expansion_lotv", self.on_update_filters),
             rio.Text("Server", style="heading2"),
-            MyFilter(rio.Checkbox, "Americas", "server_americas"),
-            MyFilter(rio.Checkbox, "Europe", "server_europe"),
-            MyFilter(rio.Checkbox, "Asia", "server_asia"),
+            MyFilter(rio.Checkbox, "Americas", "server_americas", self.on_update_filters),
+            MyFilter(rio.Checkbox, "Europe", "server_europe", self.on_update_filters),
+            MyFilter(rio.Checkbox, "Asia", "server_asia", self.on_update_filters),
             rio.Text("Date played", style="heading2"),
             rio.Row(
                 rio.Text("Between"),
-                MyFilter(rio.DateInput, "", "date_played_min", grow_x=True),
+                MyFilter(rio.DateInput, "", "date_played_min", self.on_update_filters, grow_x=True),
                 rio.Text("and"),
-                MyFilter(rio.DateInput, "", "date_played_max", grow_x=True),
+                MyFilter(rio.DateInput, "", "date_played_max", self.on_update_filters, grow_x=True),
                 spacing=0.5,
             ),
             rio.Text("Game duration (seconds)", style="heading2"),
             rio.Row(
                 rio.Text("Between"),
-                MyFilter(rio.NumberInput, "", "game_duration_min", grow_x=True),
+                MyFilter(rio.NumberInput, "", "game_duration_min", self.on_update_filters, grow_x=True),
                 rio.Text("and"),
-                MyFilter(rio.NumberInput, "", "game_duration_max", grow_x=True),
+                MyFilter(rio.NumberInput, "", "game_duration_max", self.on_update_filters, grow_x=True),
                 spacing=0.5,
             ),
             rio.Text("Player count", style="heading2"),
             rio.Row(
                 rio.Text("Between"),
-                MyFilter(rio.NumberInput, "", "player_count_min", grow_x=True),
+                MyFilter(rio.NumberInput, "", "player_count_min", self.on_update_filters, grow_x=True),
                 rio.Text("and"),
-                MyFilter(rio.NumberInput, "", "player_count_max", grow_x=True),
+                MyFilter(rio.NumberInput, "", "player_count_max", self.on_update_filters, grow_x=True),
                 spacing=0.5,
             ),
             rio.Text("Average player MMR", style="heading2"),
             rio.Row(
                 rio.Text("Between"),
-                MyFilter(rio.NumberInput, "", "average_mmr_min", grow_x=True),
+                MyFilter(rio.NumberInput, "", "average_mmr_min", self.on_update_filters, grow_x=True),
                 rio.Text("and"),
-                MyFilter(rio.NumberInput, "", "average_mmr_max", grow_x=True),
+                MyFilter(rio.NumberInput, "", "average_mmr_max", self.on_update_filters, grow_x=True),
                 spacing=0.5,
             ),
             rio.Text("Matchups", style="heading2"),
             rio.Grid(
                 [
-                    MyFilter(rio.Checkbox, "PvP", "matchup_pvp"),
-                    MyFilter(rio.Checkbox, "PvT", "matchup_pvt"),
-                    MyFilter(rio.Checkbox, "PvZ", "matchup_pvz"),
+                    MyFilter(rio.Checkbox, "PvP", "matchup_pvp", self.on_update_filters),
+                    MyFilter(rio.Checkbox, "PvT", "matchup_pvt", self.on_update_filters),
+                    MyFilter(rio.Checkbox, "PvZ", "matchup_pvz", self.on_update_filters),
                 ],
                 [
-                    MyFilter(rio.Checkbox, "TvT", "matchup_tvt"),
-                    MyFilter(rio.Checkbox, "TvZ", "matchup_tvz"),
-                    MyFilter(rio.Checkbox, "ZvZ", "matchup_zvz"),
+                    MyFilter(rio.Checkbox, "TvT", "matchup_tvt", self.on_update_filters),
+                    MyFilter(rio.Checkbox, "TvZ", "matchup_tvz", self.on_update_filters),
+                    MyFilter(rio.Checkbox, "ZvZ", "matchup_zvz", self.on_update_filters),
                 ],
             ),
             rio.Text("Player name (partial match, case insensitive)", style="heading2"),
@@ -137,6 +142,7 @@ class FilterComponent(rio.Component):
                         rio.TextInput,
                         "",
                         "player_name_must_include",
+                        self.on_update_filters,
                         grow_x=True,
                     ),
                 ],
@@ -146,6 +152,7 @@ class FilterComponent(rio.Component):
                         rio.TextInput,
                         "",
                         "player_name_must_exclude",
+                        self.on_update_filters,
                         grow_x=True,
                     ),
                 ],
@@ -159,6 +166,7 @@ class FilterComponent(rio.Component):
                         rio.TextInput,
                         "",
                         "map_name_must_include",
+                        self.on_update_filters,
                         grow_x=True,
                     ),
                 ],
@@ -168,6 +176,7 @@ class FilterComponent(rio.Component):
                         rio.TextInput,
                         "",
                         "map_name_must_exclude",
+                        self.on_update_filters,
                         grow_x=True,
                     ),
                 ],

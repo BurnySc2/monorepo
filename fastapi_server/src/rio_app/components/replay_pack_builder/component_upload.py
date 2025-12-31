@@ -4,7 +4,6 @@ from io import BytesIO
 
 import rio
 from loguru import logger
-from rio.components.file_picker_area import FilePickerArea
 
 from rio_app.components.replay_pack_builder.models import (
     FILES_IN_ORDER,
@@ -24,6 +23,7 @@ class UploadComponent(rio.Component):
     uploaded_files: dict[str, ReplayFile] = {}
     parsed_files: dict[str, ParsedReplayFile] = {}
     filtered_replays: list[ParsedReplayFile] = []
+    on_update_filters: rio.EventHandler[[]] = None
 
     file_picker_files: list[rio.FileInfo] = []
 
@@ -34,7 +34,6 @@ class UploadComponent(rio.Component):
             replay = ReplayFile.from_file(p)
             self.uploaded_files[replay.md5] = replay
         self.force_refresh()
-        self.session.attach(filter_settings)
         await self.process_replays()
 
     def clear_files(self):
@@ -100,8 +99,8 @@ class UploadComponent(rio.Component):
                     delete_file(replay_file.path)
                 _ = self.uploaded_files.pop(replay_file.md5, None)
                 logger.info(f"Error parsing replay file {e}")
-        filter_settings.filtered_replays_need_updating = True
         self.session.attach(filter_settings)
+        await self.call_event_handler(self.on_update_filters)
 
     def build(self) -> rio.Component:
         component = rio.Column(
