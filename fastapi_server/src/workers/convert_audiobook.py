@@ -9,8 +9,6 @@ import arrow
 from dotenv import load_dotenv
 from loguru import logger
 from minio import S3Error
-
-from models.audiobook import AudiobookChapter
 from routes.audiobook.my_minio_client import (
     MINIO_AUDIOBOOK_BUCKET,
     AudioSettings,
@@ -18,6 +16,8 @@ from routes.audiobook.my_minio_client import (
     minio_client,
 )
 from routes.audiobook.temp_generate_tts import generate_text_to_speech
+
+from models.audiobook import AudiobookChapter
 
 load_dotenv()
 

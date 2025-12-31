@@ -6,13 +6,13 @@ from contextlib import suppress
 
 from loguru import logger
 from minio import S3Error
-
-from models.audiobook import AudiobookBook
 from routes.audiobook.my_minio_client import (
     MINIO_AUDIOBOOK_BUCKET,
     hard_delete_book,
     minio_client,
 )
+
+from models.audiobook import AudiobookBook
 
 
 async def minio_get_bucket_size_in_mb(bucket_name: str) -> float:

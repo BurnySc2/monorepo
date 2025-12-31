@@ -12,10 +12,10 @@ from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_401_UNAUTH
 from litestar.testing import TestClient
 from minio import Minio, S3Error
 from pytest_httpx import HTTPXMock
-
-from models.audiobook import AudiobookBook, AudiobookChapter
 from routes.audiobook.my_minio_client import minio_check_if_object_exists
 from routes.caches import global_cache
+
+from models.audiobook import AudiobookBook, AudiobookChapter
 from test.base_test import (
     helper_wait_till_db_has_count_minio_objects,
     helper_wait_till_minio_object_exists,

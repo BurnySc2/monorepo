@@ -41,4 +41,5 @@ FROM
 CROSS JOIN chapters_may_have_audio AS cmha
 CROSS JOIN chapters_have_audio_generated AS chag
 WHERE b.id = { } AND b.deleted = FALSE
+ORDER BY b.id
 LIMIT 1

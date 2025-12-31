@@ -1,1 +1,0 @@
-// File required by vscode extension to work

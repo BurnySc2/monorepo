@@ -4,7 +4,8 @@ class Solution:
         for i in range(32):
             n_reversed = n_reversed << 1 | n & 1
             if n <= 1:
-                return n_reversed <<= 32 - i - 1
+                n_reversed <<= 32 - i - 1
+                return n_reversed
             n >>= 1
         return n_reversed
 

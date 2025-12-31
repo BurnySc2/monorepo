@@ -3,7 +3,8 @@ x-services-fragments:
   webserver: &webserver
     image: burnysc2/litestar_server:latest_dev
     pull_policy: never
-    command: uv run --no-dev litestar --app-dir src run --wc 1 --host 0.0.0.0 --port
+    command:
+      uv run --no-dev litestar --app-dir src run --wc 1 --host 0.0.0.0 --port
       8000
     restart: unless-stopped
     container_name: litestar_server
@@ -25,7 +26,7 @@ x-services-fragments:
       replicas: 1
       resources:
         limits:
-          cpus: '0.1'
+          cpus: "0.1"
           memory: 2048M
     restart: always
 services:
@@ -95,11 +96,11 @@ services:
       - --entrypoints.web.address=:80
     ports:
       - 80:80
-      - 8080:8080  # Dashboard
+      - 8080:8080 # Dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     profiles:
-      - ''
+      - ""
       - local_dev
   webserver_dev:
     <<: *webserver
@@ -164,7 +165,7 @@ services:
       - MINIO_ROOT_USER=root
       - MINIO_ROOT_PASSWORD=rootroot
     profiles:
-      - ''
+      - ""
       - local_dev
       - test
   local_dev_postgres:
@@ -187,7 +188,7 @@ services:
     volumes:
       - dev_postgres_data:/var/lib/postgresql/data
     profiles:
-      - ''
+      - ""
       - local_dev
   local_dev_postgres_test:
     # This container is only used for running tests
@@ -202,7 +203,7 @@ services:
     ports:
       - 5433:5432
     profiles:
-      - ''
+      - ""
       - test
   local_dev_pgadmin:
     # Connect via:
@@ -227,7 +228,7 @@ services:
     volumes:
       - dev_pgadmin_data:/var/lib/pgadmin
     profiles:
-      - ''
+      - ""
       - local_dev
 # TODO Background workers for transcription
 networks:

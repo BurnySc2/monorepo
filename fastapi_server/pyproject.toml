@@ -66,8 +66,6 @@ dev = [
     "ruff>=0.7.3",
     "sqlfluff>=3.3.1",
     "toml>=0.10.2",
-    "yamllint>=1.37.0",
-    "yamlfix>=1.17.0",
     "pytest-databases[postgres]>=0.13.0",
     "basedpyright>=1.36.2",
     # "ty>=0.0.7",
@@ -83,6 +81,15 @@ allow_split_before_dict_value = false
 
 [tool.pyrefly]
 project_includes = ["src"]
+project-excludes = [
+    # Temp disable for those files and folders
+    "**/workers/prevent_overflowing_audiobook_bucket.py",
+    "**/workers/convert_audiobook.py",
+    "**/_app.py",
+    "**/components/**/*.py",
+    "**/pages/**/*.py",
+    "**/routes_/**/*.py",
+]
 
 [tool.ruff]
 target-version = 'py310'
@@ -115,7 +122,7 @@ pep8-naming.classmethod-decorators = ["pydantic.validator", "classmethod"]
 dialect = "postgres"
 max_line_length = 120
 templater = "placeholder"
-sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+sql_file_exts = ".sql"
 exclude_rules = "CP02,AL09,RF04"
 
 [tool.sqlfluff.templater.placeholder]
@@ -135,12 +142,6 @@ apply_dbt_builtins = true
 
 [tool.sqlfluff.rules.capitalisation.keywords]
 capitalisation_policy = "upper"
-
-[tool.yamlfix]
-allow_duplicate_keys = true
-line_length = 80
-none_representation = "null"
-sequence_style = "block_style"
 
 [tool.pytest.ini_options]
 pythonpath = "src"

@@ -8,13 +8,13 @@
   tasks:
     - name: Create group
       ansible.builtin.group:
-        name: '{{ USERNAME }}'
+        name: "{{ USERNAME }}"
         state: present
     - name: Create user
       ansible.builtin.user:
-        name: '{{ USERNAME }}'
+        name: "{{ USERNAME }}"
         groups:
-          - '{{ USERNAME }}'
+          - "{{ USERNAME }}"
           - docker
         shell: /bin/fish
     - name: Copy docker-compose.yml file
@@ -29,7 +29,7 @@
       file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: directory
-        mode: '0755'
+        mode: "0755"
     - name: Copy files except .env to the destination directory
       ansible.posix.synchronize:
         src: ./

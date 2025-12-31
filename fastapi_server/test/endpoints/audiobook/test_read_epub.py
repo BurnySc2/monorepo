@@ -5,7 +5,6 @@ import pytest
 from ebooklib import epub
 from hypothesis import given
 from hypothesis import strategies as st
-
 from routes.audiobook.epub_reader import combine_text, extract_chapters, extract_metadata
 
 
