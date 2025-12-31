@@ -1,4 +1,4 @@
-# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
+# pyright: reportImplicitOverride=false
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 

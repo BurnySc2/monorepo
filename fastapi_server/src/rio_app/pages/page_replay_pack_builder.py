@@ -1,4 +1,4 @@
-# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
+# pyright: reportImplicitOverride=false
 
 import rio
 

@@ -1,7 +1,6 @@
-# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
+# pyright: reportImplicitOverride=false
 import shutil
 from io import BytesIO
-from pathlib import Path
 
 import rio
 from loguru import logger
@@ -13,19 +12,11 @@ from rio_app.components.replay_pack_builder.models import (
     ParsedReplayFile,
     ReplayData,
     ReplayFile,
+    delete_file,
     quota,
 )
 from rio_app.components.replay_pack_builder.replay_parser import parse_replay
 from rio_app.components.replay_pack_builder.settings import FilterSettings
-
-
-
-
-def delete_file(path: Path):
-    global quota_usage
-    if path.is_file():
-        quota["quota_usage"] -= path.stat().st_size
-    path.unlink(missing_ok=True)
 
 
 class UploadComponent(rio.Component):
@@ -74,19 +65,21 @@ class UploadComponent(rio.Component):
         filter_settings = self.session[FilterSettings]
         # Delete if above quota
         for p in list(FILES_IN_ORDER):
-            if quota["quota_usage"] < quota["QUOTA_LIMIT"]:
+            if quota["quota_used"] < quota["QUOTA_LIMIT"]:
                 break
             delete_file(p)
-            _ = FILES_IN_ORDER.popleft()
 
         # Add newly added replays
         for new_file in self.file_picker.files:
+            # 100 mb file size limit
+            if 100 * 2**30 < new_file.size_in_bytes:
+                continue
             data = await new_file.read_bytes()
             replay_file = ReplayFile.from_file_info(new_file, data)
             # Already parsed, duplicate
             if replay_file.md5 in self.uploaded_files or replay_file.md5 in self.parsed_files:
                 continue
-            quota["quota_usage"] += replay_file.save_to_disk(filter_settings.user_id, data)
+            quota["quota_used"] += replay_file.save_to_disk(filter_settings.user_id, data)
             if replay_file.path:
                 FILES_IN_ORDER.append(replay_file.path)
             self.uploaded_files[replay_file.md5] = replay_file
@@ -114,7 +107,8 @@ class UploadComponent(rio.Component):
                 _ = self.uploaded_files.pop(replay_file_md5)
                 self.parsed_files[replay_file_md5].status = "processed"
             except Exception as e:  # noqa: BLE001
-                replay_file.status = "error"
+                if replay_file.path is not None:
+                    delete_file(replay_file.path)
                 logger.info(f"Error parsing replay file {e}")
         filter_settings.filtered_replays_need_updating = True
         self.session.attach(filter_settings)

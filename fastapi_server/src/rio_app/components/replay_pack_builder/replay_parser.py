@@ -1,4 +1,4 @@
-# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
+# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false
 from io import BytesIO
 
 import sc2reader  # pyright: ignore[reportMissingTypeStubs]

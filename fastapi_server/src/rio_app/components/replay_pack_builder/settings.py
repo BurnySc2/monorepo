@@ -1,5 +1,3 @@
-# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
-
 from uuid import uuid4
 
 import arrow

@@ -1,4 +1,3 @@
-# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false, reportImplicitOverride=false
 from collections import deque
 from dataclasses import dataclass
 from hashlib import md5
@@ -27,6 +26,14 @@ def delete_pending_upload_files():
 
 
 delete_pending_upload_files()
+
+
+def delete_file(path: Path):
+    if path.is_file():
+        quota["quota_used"] -= path.stat().st_size
+        path.unlink(missing_ok=True)
+    if path in FILES_IN_ORDER:
+        FILES_IN_ORDER.remove(path)
 
 
 @dataclass
