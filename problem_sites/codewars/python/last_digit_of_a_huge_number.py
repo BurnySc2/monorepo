@@ -37,7 +37,7 @@ def helper(a: int, b: int) -> int:
         if b >= 4:
             exponent += 4
         return (a % 100) ** exponent
-          
+
 def last_digit(lst: list[int]) -> int:
     if not lst:
         return 1
@@ -45,7 +45,7 @@ def last_digit(lst: list[int]) -> int:
         return lst[0] % 10
     if len(lst) == 2:
         return helper(lst[0], lst[1]) % 10
-    
+
     base = lst[-2]
     exponent = lst.pop()
     lst[-1] = helper(base, exponent)

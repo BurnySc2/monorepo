@@ -19,7 +19,7 @@ run:
 
 compile:
     FROM +setup
-    RUN nimble c -d:ssl -d:release --opt:size -o:main src/main.nim 
+    RUN nimble c -d:ssl -d:release --opt:size -o:main src/main.nim
 
 run-tests:
     FROM +setup

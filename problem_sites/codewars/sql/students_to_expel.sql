@@ -11,7 +11,7 @@ WITH failed_table AS (
 )
 
 -- All student who 'quit studying':
-SELECT id AS student_id, name, 'quit studying' AS reason FROM students 
+SELECT id AS student_id, name, 'quit studying' AS reason FROM students
 WHERE id NOT IN (SELECT student_id FROM courses)
 
 UNION ALL

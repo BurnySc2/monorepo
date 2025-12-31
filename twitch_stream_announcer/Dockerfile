@@ -10,7 +10,7 @@ RUN touch .env
 
 # Build binary
 COPY src /root/tsa/src
-RUN nimble c -d:ssl -d:release --opt:size -o:main src/main.nim 
+RUN nimble c -d:ssl -d:release --opt:size -o:main src/main.nim
 
 # https://pkgs.alpinelinux.org/package/edge/main/x86/libpq
 RUN apk add --no-cache libpq

@@ -12,7 +12,7 @@ Start database (postgres) and minio
 docker compose up
 ```
 
-Install dependencies with 
+Install dependencies with
 ```sh
 uv sync
 ```

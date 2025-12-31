@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x 
+set -x
 
 # Install or update the game to '/astroneer'
 /usr/games/steamcmd +@sSteamCmdForcePlatformType windows +force_install_dir /astroneer +login anonymous +app_update 728470 validate +quit

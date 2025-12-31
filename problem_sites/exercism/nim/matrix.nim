@@ -10,7 +10,7 @@ proc parseMatrix*(s: string): seq[seq[int]] =
 
 proc row*(s: string, n: int): seq[int] =
     parseMatrix(s)[n-1]
-    
+
 proc column*(s: string, n: int): seq[int] =
     collect:
         for row in parseMatrix(s):

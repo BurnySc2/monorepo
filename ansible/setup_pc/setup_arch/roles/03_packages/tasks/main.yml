@@ -97,7 +97,7 @@
       - vlc-plugin-ffmpeg
       - gcc
       - rust
-      # Activate via 
+      # Activate via
       # sudo archlinux-java set java-21-openjdk
       - jre11-openjdk
       - jre17-openjdk

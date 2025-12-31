@@ -48,8 +48,8 @@ proc fetch_postgres_users(db: DbConn): seq[TableRef[string, string]] =
     ]
   for row in db.fastRows(
     sql"""
-    SELECT id, twitch_name, discord_webhook, announce_message, announced_at, status, last_seen_online 
-    FROM stream_announcer_streams 
+    SELECT id, twitch_name, discord_webhook, announce_message, announced_at, status, last_seen_online
+    FROM stream_announcer_streams
     WHERE enabled IS TRUE
     ORDER BY id
     ;"""

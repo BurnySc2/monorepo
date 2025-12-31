@@ -37,6 +37,6 @@ def helper(a: int, b: int) -> int:
         if b >= 4:
             exponent += 4
         return (a % 100) ** exponent
-          
+
 def last_digit(n1, n2):
     return helper(n1, n2) % 10

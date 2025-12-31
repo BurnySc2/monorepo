@@ -1,4 +1,4 @@
-# Database examples 
+# Database examples
 
 ## Tables
 ### Library

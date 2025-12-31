@@ -16,7 +16,7 @@ proc isHappy(n: var int): bool {.exportc.} =
             new_n += remainder ^ 2
         n = new_n
         if n == 1:
-            return true 
+            return true
         if n in seen:
             return false
-        seen.add(n) 
+        seen.add(n)

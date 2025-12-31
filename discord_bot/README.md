@@ -2,7 +2,7 @@
 
 ### Installation
 - Install python 3.8 or newer (32 or 64 bit)
-- Run commands 
+- Run commands
     ```
     pip install uv --user
     uv sync
@@ -71,7 +71,7 @@ or inside docker via
 # Analyse build order of a specific game from a specific player perspective
 !aoe4analyse https://aoe4world.com/players/585764/games/66434421
 !aoe4analyse <https://aoe4world.com/players/585764/games/66434421>
-        
+
 # Find games that match the specific criteria
 !aoe4bo --race english --condition 2towncenter<400s,wheelbarrow<900s,feudal<360s,castle<660s
 ```

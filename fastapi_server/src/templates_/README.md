@@ -12,7 +12,7 @@ Spinner with this class will be shown if a request is pending. See below.
 ```
 hx-indicator=".loading-spinner"
 ```
-Shows all elements with class `loading-spinner` 
+Shows all elements with class `loading-spinner`
 
 ## Autoformatting
 ```

@@ -4,7 +4,7 @@ set -e
 backup_function() {
     # Check if the correct number of parameters is provided
     if [ "$#" -ne 4 ]; then
-        echo "Usage: backup_function <source> <target> <max_backups_to_keep> <password>" 
+        echo "Usage: backup_function <source> <target> <max_backups_to_keep> <password>"
         exit 1
     fi
 
