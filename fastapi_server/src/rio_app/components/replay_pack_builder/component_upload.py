@@ -26,11 +26,13 @@ class UploadComponent(rio.Component):
     on_update_filters: rio.EventHandler[[]] = None
 
     file_picker_files: list[rio.FileInfo] = []
+    user_id: str = ""
 
     @rio.event.on_mount
     async def on_mount(self):
         filter_settings = self.session[FilterSettings]
-        for p in (REPLAYS_FOLDER / filter_settings.user_id).glob("*.SC2Replay"):
+        self.user_id = filter_settings.user_id
+        for p in (REPLAYS_FOLDER / self.user_id).glob("*.SC2Replay"):
             replay = ReplayFile.from_file(p)
             self.uploaded_files[replay.md5] = replay
         self.force_refresh()
@@ -41,9 +43,9 @@ class UploadComponent(rio.Component):
         self.parsed_files = {}
         self.filtered_replays = []
         # Delete replay files for user
-        filter_settings = self.session[FilterSettings]
-        user_path = REPLAYS_FOLDER / filter_settings.user_id
-        shutil.rmtree(user_path)
+        if self.user_id != "":
+            user_path = REPLAYS_FOLDER / self.user_id
+            shutil.rmtree(user_path)
 
     @property
     def uploaded_replays_count(self):
@@ -56,7 +58,6 @@ class UploadComponent(rio.Component):
                 break
             delete_file(p)
 
-        filter_settings = self.session[FilterSettings]
         # Add newly added replays
         for new_file in self.file_picker_files:
             # 100 mb file size limit
@@ -67,7 +68,8 @@ class UploadComponent(rio.Component):
             # Already parsed, duplicate
             if replay_file.md5 in self.uploaded_files or replay_file.md5 in self.parsed_files:
                 continue
-            quota["quota_used"] += replay_file.save_to_disk(filter_settings.user_id, data)
+            if self.user_id != "":
+                quota["quota_used"] += replay_file.save_to_disk(self.user_id, data)
             if replay_file.path:
                 FILES_IN_ORDER.append(replay_file.path)
             self.uploaded_files[replay_file.md5] = replay_file
