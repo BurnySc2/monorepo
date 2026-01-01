@@ -6,7 +6,6 @@ from contextlib import asynccontextmanager
 import aioboto3
 from botocore.exceptions import ClientError
 from types_aiobotocore_s3 import S3Client
-from types_aiobotocore_s3.client import S3Client
 from types_aiobotocore_s3.service_resource import Bucket, S3ServiceResource
 from types_aiobotocore_s3.type_defs import HeadObjectOutputTypeDef, ObjectTypeDef
 
