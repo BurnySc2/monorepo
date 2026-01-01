@@ -72,14 +72,28 @@ class FilterComponent(rio.Component):
             rio.Text("Game types", style="heading2"),
             MyFilter(rio.Checkbox, "Matchmaking", "game_matchmaking", self.on_update_filters),
             MyFilter(rio.Checkbox, "Custom Game", "game_custom", self.on_update_filters),
-            # TODO Add tooltip
-            MyFilter(rio.Checkbox, "Include Games with AI", "game_include_games_with_ai", self.on_update_filters),
-            # TODO Add tooltip
-            MyFilter(
-                rio.Checkbox,
-                "Include Games Resumed from Replay",
-                "game_include_games_resumed_from_replay",
-                self.on_update_filters,
+            rio.Row(
+                MyFilter(rio.Checkbox, "Include Games with AI", "game_include_games_with_ai", self.on_update_filters),
+                rio.Tooltip(
+                    rio.Icon("material/info"),
+                    tip="If unchecked, filters out replays that have at least one AI player",
+                ),
+                align_x=0,
+                spacing=0.5,
+            ),
+            rio.Row(
+                MyFilter(
+                    rio.Checkbox,
+                    "Include Games Resumed from Replay",
+                    "game_include_games_resumed_from_replay",
+                    self.on_update_filters,
+                ),
+                rio.Tooltip(
+                    rio.Icon("material/info"),
+                    tip="If unchecked, filters out replays that were resumed from replay",
+                ),
+                align_x=0,
+                spacing=0.5,
             ),
             rio.Text("Expansion", style="heading2"),
             MyFilter(rio.Checkbox, "Wings of Liberty", "expansion_wol", self.on_update_filters),
