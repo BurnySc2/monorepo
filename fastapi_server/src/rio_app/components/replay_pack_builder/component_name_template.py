@@ -76,7 +76,7 @@ Available placeholders:
 {p1name} BuRny
 {p1race} Terran
 {p1r} T
-{p1mmr} (only available in matchmaking)
+{p1mmr} 1234 (only available in matchmaking)
 {p2name}
 {p2race}
 {p2r}

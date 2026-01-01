@@ -67,7 +67,10 @@ class FilterComponent(rio.Component):
                     "filter_enabled",
                     self.on_update_filters,
                 ),
-                tip="If unchecked, no replay will be filtered and all replays will be renamed and zipped",
+                tip="""
+If unchecked, no replay will be filtered and all replays will be renamed and zipped.
+Can be used to simply rename replays.
+""".strip(),
             ),
             rio.Text("Game types", style="heading2"),
             MyFilter(rio.Checkbox, "Matchmaking", "game_matchmaking", self.on_update_filters),
@@ -76,7 +79,7 @@ class FilterComponent(rio.Component):
                 MyFilter(rio.Checkbox, "Include Games with AI", "game_include_games_with_ai", self.on_update_filters),
                 rio.Tooltip(
                     rio.Icon("material/info"),
-                    tip="If unchecked, filters out replays that have at least one AI player",
+                    tip="If unchecked, filters out replays that have at least one AI player.",
                 ),
                 align_x=0,
                 spacing=0.5,
@@ -90,7 +93,7 @@ class FilterComponent(rio.Component):
                 ),
                 rio.Tooltip(
                     rio.Icon("material/info"),
-                    tip="If unchecked, filters out replays that were resumed from replay",
+                    tip="If unchecked, filters out replays that were resumed from replay.",
                 ),
                 align_x=0,
                 spacing=0.5,
