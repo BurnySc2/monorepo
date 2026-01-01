@@ -36,9 +36,11 @@ jobs:
         run: pip install uv
 
       - name: Install dependencies
+        working-directory: ${{ env.SUBDIRECTORY }}
         run: uv sync --frozen --no-cache --no-install-project
 
       - name: Run pre-commit hooks
+        working-directory: ${{ env.SUBDIRECTORY }}
         run: uv run pre-commit run --all-files --hook-stage push
 
   test_backend:
@@ -56,8 +58,7 @@ jobs:
 
       - name: Set up postgres and minio test instances
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: |
-          docker compose --profile test up -d
+        run: docker compose --profile test up -d
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
