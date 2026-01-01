@@ -15,6 +15,7 @@ class BookComponent(rio.Component):
     book: Book
 
     def build(self):
+        # TODO After clicking on edit, allow user to change title and author name
         return rio.Column(
             rio.Row(
                 rio.Text(f"{self.book.title}", style="heading1", align_x=1),
@@ -48,11 +49,15 @@ class AudiobookSettingsComponent(rio.Component):
         return rio.Rectangle(
             content=rio.Column(
                 rio.Text("Settings", style="heading2", align_x=0.5),
+                # TODO Allow user to change voice
+                # TODO Grab all available voices from edge-tts
+                # TODO Store voice settings in localstorage
                 rio.Grid(
-                    [rio.Text("Voice"), rio.Dropdown({"Hallo": "Welt"})],
-                    [rio.Text("Rate"), rio.NumberInput(0, decimals=0)],
-                    [rio.Text("Volume"), rio.NumberInput(0, decimals=0)],
-                    [rio.Text("Pitch"), rio.NumberInput(0, decimals=0)],
+                    [rio.Text("Voice", align_x=1), rio.Dropdown({"Hallo": "Welt"})],
+                    [rio.Text("Rate", align_x=1), rio.NumberInput(0, decimals=0)],
+                    [rio.Text("Volume", align_x=1), rio.NumberInput(0, decimals=0)],
+                    [rio.Text("Pitch", align_x=1), rio.NumberInput(0, decimals=0)],
+                    column_spacing=1,
                 ),
                 rio.Row(
                     rio.Button(
@@ -70,7 +75,7 @@ class AudiobookSettingsComponent(rio.Component):
                     ),
                     rio.Button(
                         "Delete book",
-                        color="danger",
+                        color=rio.Color.from_oklab(0.25, 0.5, 0.2),
                         grow_x=True,
                     ),
                     spacing=1,
@@ -94,6 +99,10 @@ TEST_HTML = """
 
 class AudiobookChapterComponent(rio.Component):
     chapter: Chapter
+
+    # TODO Generate audio event handler
+    # TODO Delete audio event handler
+    # TODO Download audio event handler
 
     def build(self):
         row = rio.Row(
@@ -140,6 +149,7 @@ class AudiobookChapterComponent(rio.Component):
                 rio.IconButton(
                     "material/delete",
                     align_x=1,
+                    color=rio.Color.from_oklab(0.25, 0.5, 0.2),
                 ),
             )
         else:
@@ -201,6 +211,8 @@ class AudiobookBookPage(rio.Component):
 
     @rio.event.on_mount
     async def on_mount(self):
+        # TODO Get data from database about book and chapters
+        # TODO Get audiosettings from localstorage
         pass
 
     def build(self):
@@ -219,6 +231,7 @@ class AudiobookBookPage(rio.Component):
 
         return rio.Column(
             BookComponent(self.book),
+            # TODO Pass down audiosettings (binding)
             AudiobookSettingsComponent(self.chapters),
             rio.Rectangle(
                 content=rio.Column(
@@ -238,7 +251,6 @@ class AudiobookBookPage(rio.Component):
                 stroke_color=rio.Color.PURPLE,
                 corner_radius=2,
             ),
-            # *[AudiobookChapterComponent(chapter) for chapter in self.chapters],
             align_x=0.5,
             align_y=0.5,
             spacing=1,

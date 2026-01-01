@@ -10,6 +10,7 @@ class AudioSettings(rio.UserSettings):
 
 
 class Book(BaseModel):
+    # TODO Upload date
     id: int
     chapters_count: int
     title: str

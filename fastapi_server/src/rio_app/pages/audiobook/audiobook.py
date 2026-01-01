@@ -14,6 +14,11 @@ data = {
     url_segment="",
 )
 class AudiobookRootPage(rio.Component):
+    # TODO On file drop: redirect to page of the book
+    # TODO List already uploaded books
+    # TODO Clicking on book redirects to book page
+    # TODO Allow user to delete book from the list
+    # TODO Add button to delete all books
     def build(self):
         return rio.Column(
             rio.Text("Audiobooks", style="heading1", font_weight="bold", align_x=0.5),
