@@ -1,18 +1,22 @@
 # pyright: reportImplicitOverride=false
-import shutil
 from io import BytesIO
 
 import rio
 from loguru import logger
 
+from minio_helper import (
+    SC2_REPLAYS_BUCKET,
+    bucket_list_objects,
+    get_s3_client,
+    object_delete,
+    object_download,
+    object_upload,
+    objects_delete_with_prefix,
+)
 from rio_app.components.replay_pack_builder.models import (
-    FILES_IN_ORDER,
-    REPLAYS_FOLDER,
     ParsedReplayFile,
     ReplayData,
     ReplayFile,
-    delete_file,
-    quota,
 )
 from rio_app.components.replay_pack_builder.replay_parser import parse_replay
 from rio_app.components.replay_pack_builder.settings import FilterSettings
@@ -32,46 +36,39 @@ class UploadComponent(rio.Component):
     async def on_mount(self):
         filter_settings = self.session[FilterSettings]
         self.user_id = filter_settings.user_id
-        for p in (REPLAYS_FOLDER / self.user_id).glob("*.SC2Replay"):
-            replay = ReplayFile.from_file(p)
+        async with get_s3_client() as s3:
+            replays_by_user = await bucket_list_objects(s3, SC2_REPLAYS_BUCKET, self.user_id)
+        for replay_response in replays_by_user:
+            replay = ReplayFile.from_minio(replay_response)
             self.uploaded_files[replay.md5] = replay
         self.force_refresh()
         await self.process_replays()
 
-    def clear_files(self):
+    async def clear_files(self):
         self.uploaded_files = {}
         self.parsed_files = {}
         self.filtered_replays = []
-        # Delete replay files for user
+        # Delete all files in minio by user_id
         if self.user_id != "":
-            user_path = REPLAYS_FOLDER / self.user_id
-            shutil.rmtree(user_path)
+            await objects_delete_with_prefix(SC2_REPLAYS_BUCKET, self.user_id)
 
     @property
     def uploaded_replays_count(self):
         return len(self.uploaded_files) + len(self.parsed_files)
 
     async def handle_replays_upload(self, _event: rio.FilePickEvent):
-        # Delete if above quota
-        for p in list(FILES_IN_ORDER):
-            if quota["quota_used"] < quota["QUOTA_LIMIT"]:
-                break
-            delete_file(p)
-
         # Add newly added replays
         for new_file in self.file_picker_files:
             # 100 mb file size limit
             if 100 * 2**30 < new_file.size_in_bytes:
                 continue
             data = await new_file.read_bytes()
-            replay_file = ReplayFile.from_file_info(new_file, data)
+            replay_file = ReplayFile.from_file_info(self.user_id, new_file, data)
             # Already parsed, duplicate
             if replay_file.md5 in self.uploaded_files or replay_file.md5 in self.parsed_files:
                 continue
-            if self.user_id != "":
-                quota["quota_used"] += replay_file.save_to_disk(self.user_id, data)
-            if replay_file.path:
-                FILES_IN_ORDER.append(replay_file.path)
+            async with get_s3_client() as s3:
+                await object_upload(s3, SC2_REPLAYS_BUCKET, replay_file.minio_key, data)
             self.uploaded_files[replay_file.md5] = replay_file
         # Clear list in file_picker
         self.file_picker_files.clear()
@@ -89,7 +86,12 @@ class UploadComponent(rio.Component):
                 continue
             try:
                 replay_file.status = "processing"
-                replay_data: ReplayData = await parse_replay(BytesIO(replay_file.read_file()))
+                # Get bytes from minio object
+                async with get_s3_client() as s3:
+                    replay_by_user = await object_download(s3, SC2_REPLAYS_BUCKET, replay_file.minio_key)
+                if replay_by_user is None:
+                    raise ValueError("Replay does not exist")
+                replay_data: ReplayData = await parse_replay(BytesIO(replay_by_user))
                 self.parsed_files[replay_file_md5] = ParsedReplayFile(
                     **replay_file.model_dump(),  # pyright: ignore[reportAny]
                     **replay_data.model_dump(),
@@ -97,8 +99,8 @@ class UploadComponent(rio.Component):
                 _ = self.uploaded_files.pop(replay_file_md5)
                 self.parsed_files[replay_file_md5].status = "processed"
             except Exception as e:  # noqa: BLE001
-                if replay_file.path is not None:
-                    delete_file(replay_file.path)
+                async with get_s3_client() as s3:
+                    await object_delete(s3, SC2_REPLAYS_BUCKET, replay_file.minio_key)
                 _ = self.uploaded_files.pop(replay_file.md5, None)
                 logger.info(f"Error parsing replay file {e}")
         self.session.attach(filter_settings)

@@ -4,10 +4,19 @@ from pathlib import Path
 
 import rio
 
+from minio_helper import SC2_REPLAYS_BUCKET, bucket_create, bucket_set_expiration, get_s3_client
 from rio_app import data_models, theme
 from rio_app.components.login.cookies import LoginSettings
 from rio_app.components.replay_pack_builder.settings import FilterSettings
 from rio_app.routes.index import router
+
+
+async def on_app_start(_app: rio.App):
+    # TODO Create database tables
+    # Create minio buckets
+    async with get_s3_client() as s3:
+        await bucket_create(s3, SC2_REPLAYS_BUCKET)
+        await bucket_set_expiration(s3, SC2_REPLAYS_BUCKET, 1)
 
 
 def on_session_start(sess: rio.Session) -> None:
@@ -30,6 +39,7 @@ app = rio.App(
     name="Burnysc2's Website",
     # This function will be called each time a user connects
     on_session_start=on_session_start,
+    on_app_start=on_app_start,
     # You can optionally provide a root component for the app. By default,
     # Rio's default navigation is used. By providing your own component, you
     # can create components which stay put while the user navigates between

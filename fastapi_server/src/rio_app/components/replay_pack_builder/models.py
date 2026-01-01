@@ -1,39 +1,11 @@
-from collections import deque
+from __future__ import annotations
 from dataclasses import dataclass
 from hashlib import md5
-from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel
 from rio import FileInfo
-
-REPLAYS_FOLDER = Path(__file__).parents[4] / "data" / "replay_pack_builder"
-REPLAYS_FOLDER.mkdir(parents=True, exist_ok=True)
-
-# Once a file size threshold exceeds, start deleting files
-FILES_IN_ORDER = deque[Path](p for p in REPLAYS_FOLDER.glob("**/*.SC2Replay"))
-
-quota = {
-    "QUOTA_LIMIT": 10 * 2**30,  # 10 gigabyte of replays can be uploaded in total
-    "quota_used": sum(p.stat().st_size for p in FILES_IN_ORDER),
-}
-
-
-# On server start: Delete all uploading files
-def delete_pending_upload_files():
-    for f in REPLAYS_FOLDER.glob("*.uploading"):
-        f.unlink(missing_ok=True)
-
-
-delete_pending_upload_files()
-
-
-def delete_file(path: Path):
-    if path.is_file():
-        quota["quota_used"] -= path.stat().st_size
-        path.unlink(missing_ok=True)
-    if path in FILES_IN_ORDER:
-        FILES_IN_ORDER.remove(path)
+from types_aiobotocore_s3.type_defs import ObjectTypeDef
 
 
 @dataclass
@@ -69,23 +41,31 @@ class ReplayData(BaseModel):
 
 
 class ReplayFile(BaseModel):
-    path: Path | None = None
+    user_id: str
     size: int
     md5: str
     status: Literal["uploaded", "processing", "processed", "error"] = "uploaded"
 
+    @property
+    def minio_key(self):
+        return f"{self.user_id}/{self.md5}.SC2Replay"
+
     @classmethod
-    def from_file(cls, file: Path) -> "ReplayFile":
+    def from_minio(cls, file_response: ObjectTypeDef) -> ReplayFile:
+        key = file_response["Key"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        user_id, name = key.split("/")
+        stem, _suffix = name.split(".")
         return ReplayFile(
-            path=file,
-            size=file.stat().st_size,
-            md5=file.stem,
+            user_id=user_id,
+            size=file_response["Size"],  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            md5=stem,
             status="uploaded",
         )
 
     @classmethod
-    def from_file_info(cls, file_info: FileInfo, data: bytes) -> "ReplayFile":
+    def from_file_info(cls, user_id: str, file_info: FileInfo, data: bytes) -> ReplayFile:
         return ReplayFile(
+            user_id=user_id,
             size=file_info.size_in_bytes,
             md5=cls.calculate_md5(data),
             status="uploaded",
@@ -94,20 +74,6 @@ class ReplayFile(BaseModel):
     @classmethod
     def calculate_md5(cls, data: bytes) -> str:
         return md5(data).hexdigest()
-
-    def save_to_disk(self, user_id: str, data: bytes) -> int:
-        temp_replay_path = REPLAYS_FOLDER / f"{self.md5}.uploading"
-        replay_path = REPLAYS_FOLDER / user_id / f"{self.md5}.SC2Replay"
-        replay_path.parent.mkdir(parents=True, exist_ok=True)
-        _ = temp_replay_path.write_bytes(data)
-        _ = temp_replay_path.rename(replay_path)
-        FILES_IN_ORDER.append(replay_path)
-        self.path = replay_path
-        return self.size
-
-    def read_file(self) -> bytes:
-        assert self.path is not None
-        return self.path.read_bytes()
 
 
 class ParsedReplayFile(ReplayFile):
