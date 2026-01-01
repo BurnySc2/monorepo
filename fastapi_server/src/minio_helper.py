@@ -14,7 +14,7 @@ ACCESS_KEY = os.getenv("MINIO_ACCESS_TOKEN")
 SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 
 # TODO Set env var
-SC2_REPLAYS_BUCKET = os.getenv("doesnt_exist", "sc2-replays")
+SC2_REPLAYS_BUCKET = os.getenv("DOESNT_EXIST", "sc2-replays")
 
 
 @asynccontextmanager
