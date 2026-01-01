@@ -1,3 +1,9 @@
+"""
+Generate voice via tiktok voice api.
+Get sessionid via "sessionid" cookie after logging in on tiktok.
+With cookie name "store-idc" you can find the server name your sessionid works with.
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -10,6 +16,9 @@ from pathlib import Path
 
 import httpx
 from mutagen.mp3 import MP3
+
+
+SESSION_ID = os.getenv("TIKTOK_SESSION_ID")
 
 
 # https://github.com/oscie57/tiktok-voice/issues/1
@@ -110,25 +119,42 @@ for voice in Voices:
 CACHE_LIMIT = 1000
 generated_tts_cache: OrderedDict[tuple[Voices, str], tuple[str, float]] = OrderedDict()
 
-
-API_DOMAINS = [
-    "https://api16-normal-c-useast2a.tiktokv.com",
-    # The following don't seem to be working
-    # "https://api16-normal-v6.tiktokv.com",
-    # "https://api16-normal-c-useast1a.tiktokv.com",
-    # "https://api16-normal-c-useast1a.tiktokv.com",
-    # "https://api16-core-c-useast1a.tiktokv.com",
-    # "https://api16-normal-useast5.us.tiktokv.com",
-    # "https://api16-core.tiktokv.com",
-    # "https://api16-core-useast5.us.tiktokv.com",
-    # "https://api19-core-c-useast1a.tiktokv.com",
-    # "https://api-core.tiktokv.com",
-    # "https://api-normal.tiktokv.com",
-    # "https://api19-normal-c-useast1a.tiktokv.com",
-    # "https://api16-core-c-alisg.tiktokv.com",
-    # "https://api16-normal-c-alisg.tiktokv.com",
-    # "https://api22-core-c-alisg.tiktokv.com",
-]
+# For domains see https://github.com/hagezi/dns-blocklists/blob/main/domains/native.tiktok.txt
+API_DOMAINS = list(
+    {
+        "https://log16-normal-no1a.tiktokv.eu",
+        # "https://api16-normal-c-useast2a.tiktokv.com",
+        # The following don't seem to be working
+        # "https://api16-normal-v6.tiktokv.com",
+        # "https://api16-normal-c-useast1a.tiktokv.com",
+        # "https://api16-normal-c-useast1a.tiktokv.com",
+        # "https://api16-core-c-useast1a.tiktokv.com",
+        # "https://api16-normal-useast5.us.tiktokv.com",
+        # "https://api16-core.tiktokv.com",
+        # "https://api16-core-useast5.us.tiktokv.com",
+        # "https://api19-core-c-useast1a.tiktokv.com",
+        # "https://api-core.tiktokv.com",
+        # "https://api-normal.tiktokv.com",
+        # "https://api19-normal-c-useast1a.tiktokv.com",
+        # "https://api16-core-c-alisg.tiktokv.com",
+        # "https://api16-normal-c-alisg.tiktokv.com",
+        # "https://api22-core-c-alisg.tiktokv.com",
+        # "https://api22-normal-c-alisg.tiktokv.com",
+        # "https://api16-normal-c-useast1a.tiktokv.com",
+        # "https://api16-core-c-useast1a.tiktokv.com",
+        # "https://api16-normal-useast5.us.tiktokv.com",
+        # "https://api16-core.tiktokv.com",
+        # "https://api16-core-useast5.us.tiktokv.com",
+        # "https://api19-core-c-useast1a.tiktokv.com",
+        # "https://api-core.tiktokv.com",
+        # "https://api-normal.tiktokv.com",
+        # "https://api19-normal-c-useast1a.tiktokv.com",
+        # "https://api16-core-c-alisg.tiktokv.com",
+        # "https://api16-normal-c-alisg.tiktokv.com",
+        # "https://api22-core-c-alisg.tiktokv.com",
+        # "https://api16-normal-c-useast2a.tiktokv.com",
+    }
+)
 API_PATH = "/media/api/text/speech/invoke/"
 
 
@@ -142,7 +168,7 @@ async def generate_tts(voice: Voices, text: str) -> tuple[str, float]:
     async with httpx.AsyncClient() as client:
         headers = {
             "User-Agent": "com.zhiliaoapp.musically/2022600030 (Linux; U; Android 7.1.2; es_ES; SM-G988N; Build/NRD90M;tt-ok/3.12.13.1)",  # noqa: E501
-            "Cookie": f"sessionid={os.getenv('TIKTOK_SESSION_ID')}",
+            "Cookie": f"sessionid={SESSION_ID}",
         }
 
         data = {}
