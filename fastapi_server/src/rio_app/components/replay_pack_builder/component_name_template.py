@@ -4,6 +4,7 @@ import arrow
 import rio
 
 from rio_app.components.replay_pack_builder.models import ParsedReplayFile
+from rio_app.components.replay_pack_builder.settings import DEFAULT_REPLAY_NAME_PATTERN, FilterSettings
 
 example_replay = ParsedReplayFile(
     **{  # pyright: ignore[reportArgumentType]
@@ -57,6 +58,22 @@ example_replay = ParsedReplayFile(
 class NameTemplateComponent(rio.Component):
     replay_name_pattern: str = ""
 
+    @rio.event.on_mount
+    async def on_mount(self):
+        filter_settings = self.session[FilterSettings]
+        self.replay_name_pattern = filter_settings.replay_name_pattern
+
+    async def on_reset_name_pattern(self):
+        self.replay_name_pattern = DEFAULT_REPLAY_NAME_PATTERN
+        filter_settings = self.session[FilterSettings]
+        filter_settings.replay_name_pattern = DEFAULT_REPLAY_NAME_PATTERN
+        self.session.attach(filter_settings)
+
+    async def on_input_handler(self, event: rio.TextInputChangeEvent):
+        filter_settings = self.session[FilterSettings]
+        filter_settings.replay_name_pattern = event.text
+        self.session.attach(filter_settings)
+
     def build(self) -> rio.Component:
         # TODO Add tooltip
         return rio.Column(
@@ -87,8 +104,17 @@ Available placeholders:
                 spacing=0.5,
             ),
             rio.Grid(
-                [rio.Text("Custom pattern"), rio.TextInput(self.bind().replay_name_pattern, grow_x=True)],
-                # TODO Parse example replay and match for preview
+                [
+                    rio.Button(
+                        "Reset pattern",
+                        on_press=self.on_reset_name_pattern,
+                        is_sensitive=DEFAULT_REPLAY_NAME_PATTERN != self.replay_name_pattern,
+                    )
+                ],
+                [
+                    rio.Text("Custom pattern"),
+                    rio.TextInput(self.bind().replay_name_pattern, on_change=self.on_input_handler, grow_x=True),
+                ],
                 [
                     rio.Text("Preview"),
                     rio.Text(

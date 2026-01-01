@@ -18,7 +18,7 @@ class ReplayPackBuilderPage(rio.Component):
     uploaded_files: dict[str, ReplayFile] = {}
     parsed_files: dict[str, ParsedReplayFile] = {}
     filtered_replays: list[ParsedReplayFile] = []
-    replay_name_pattern: str = r"{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}"
+    replay_name_pattern: str = ""
 
     _is_loading: bool = True
 

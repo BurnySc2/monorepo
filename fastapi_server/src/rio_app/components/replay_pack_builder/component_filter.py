@@ -150,6 +150,7 @@ Can be used to simply rename replays.
                     MyFilter(rio.Checkbox, "TvZ", "matchup_tvz", self.on_update_filters),
                     MyFilter(rio.Checkbox, "ZvZ", "matchup_zvz", self.on_update_filters),
                 ],
+                row_spacing=1,
             ),
             rio.Text("Player name (partial match, case insensitive)", style="heading2"),
             rio.Grid(

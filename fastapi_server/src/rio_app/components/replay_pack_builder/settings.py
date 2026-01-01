@@ -5,6 +5,8 @@ import rio
 
 from rio_app.components.replay_pack_builder.models import ParsedReplayFile
 
+DEFAULT_REPLAY_NAME_PATTERN = r"{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}"
+
 
 class FilterSettings(rio.UserSettings):
     filter_enabled: bool = True
@@ -39,6 +41,8 @@ class FilterSettings(rio.UserSettings):
     player_name_must_exclude: str = ""
     map_name_must_include: str = ""
     map_name_must_exclude: str = ""
+
+    replay_name_pattern: str = DEFAULT_REPLAY_NAME_PATTERN
 
     # Identifier to store replays
     user_id: str = str(uuid4())
