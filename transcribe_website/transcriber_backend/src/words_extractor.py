@@ -15,9 +15,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from loguru import logger
 
-# pyrefly: ignore
-from prisma import Prisma
-
 load_dotenv()
 
 # pyrefly: ignore
@@ -70,7 +67,6 @@ def print_words_overview() -> None:
     This function prints a summary of the words found in the videos. It retrieves the words from the database and counts their occurrences in each video. The function then prints the top 10 most common words for each video.
     """  # noqa: E501
     part_of_path = os.getenv("WORDS_EXTRACTOR_PART_OF_PATH")
-    with Prisma() as db:
         results = db.query_raw(
             """
 SELECT LOWER(word_text) AS word_text, COUNT(*) AS count FROM word
@@ -100,7 +96,6 @@ def extract_matched_words(
     # pyrefly: ignore
     output_folder_path = Path(os.getenv("WORDS_EXTRACTOR_OUTPUT_DIRECTORY"))
     output_folder_path.mkdir(parents=True, exist_ok=True)
-    with Prisma() as db:
         for word in words_list:
             results = db.word.find_many(
                 # pyrefly: ignore

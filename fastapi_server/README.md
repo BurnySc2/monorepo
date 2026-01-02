@@ -21,12 +21,6 @@ Open a Python file in the `fastapi_server` folder and select the correct python 
 
 Start webserver with `uv run src/app.py` or via the vscode debug config `Start LiteStar`.
 
-If you run it for the first time, the database schema needs to be generated and pushed to postgres
-```sh
-uv run prisma generate
-uv run prisma migrate reset
-```
-
 Now you can go to http://0.0.0.0:8000 or http://0.0.0.0:8000/schema to check out the documentation to all endpoints.
 
 Under http://pgadmin.localhost you can `register` the postgres instance with host name `fastapi_dev_postgres`, port `5432`, username `root` and password `root` and keep database as `postgres` and now click on `save`. You will now be able to browse the database tables and data.
