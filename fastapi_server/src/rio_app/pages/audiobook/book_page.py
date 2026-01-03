@@ -4,10 +4,11 @@ import arrow
 import rio
 from pydantic import BaseModel
 
-from minio_helper import AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url
+from minio_helper import AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from models.audiobook import AudiobookBook, AudiobookChapter
+from piccolo_conf import DB
 from rio_app.components.audiobook.generate_tts import get_supported_voices
-from rio_app.components.audiobook.models import AudioSettings, AudioSettingsBaseModel
+from rio_app.components.audiobook.models import AudioSettings, AudioSettingsBaseModel, normalize_filename
 from rio_app.components.login.cookies import LoggedInUser, logged_in_guard
 
 queries_directory = Path(__file__).parents[3] / "queries"
@@ -28,6 +29,40 @@ class AudiobookChapterQueryResult(BaseModel):
     minio_object_name: str | None
     # Filled after query
     minio_presigned_url: str = ""
+
+
+def get_book_minio_zip_name(book_id: int) -> str:
+    return f"book_{book_id}.zip"
+
+
+async def delete_audio_for_chapters(book_id: int, chapters: list[AudiobookChapterQueryResult]) -> None:
+    # Delete audiobook zip from minio if exists
+    # Delete audio for chapter from minio if exists
+    # Set chapters to not have audio for ids
+    chapter_ids: list[int] = [chapter.id for chapter in chapters]
+    async with DB.transaction():
+        async with get_s3_client() as s3:
+            # Delete book zip
+            await object_delete(s3, AUDIOBOOK_BUCKET, get_book_minio_zip_name(book_id))
+
+            # Delete audio for chapters
+            for chapter in chapters:
+                if chapter.minio_object_name is None:
+                    continue
+                await object_delete(s3, AUDIOBOOK_BUCKET, chapter.minio_object_name)
+
+        # Set chapters in db to unqueued
+        await AudiobookChapter.update(
+            {
+                "queued": None,
+                "started_converting": None,
+                "minio_object_name": None,
+                "audio_settings": None,
+            }
+        ).where(
+            # pyrefly: ignore
+            AudiobookChapter.id.is_in(chapter_ids)
+        )
 
 
 class BookComponent(rio.Component):
@@ -69,25 +104,37 @@ class AudiobookSettingsComponent(rio.Component):
             )
             .where(
                 (AudiobookChapter.book == self.book_id)
-                & (AudiobookChapter.queued == None)  # pyrefly: ignore # noqa: E711
+                & (AudiobookChapter.queued == None)  # noqa: E711
+                & (AudiobookChapter.minio_object_name == None)  # noqa: E711
             )
             .returning(AudiobookChapter.chapter_number)
         )
         await self.call_event_handler(self.refresh_chapters, [c["chapter_number"] for c in updated_chapters])
 
+    # TODO Download book handler
+    async def prepare_book_download_and_redirect(self):
+        # If object exists, already redirect
+        async with get_s3_client() as s3:
+            obj = await object_create_presigned_url(
+                s3, AUDIOBOOK_BUCKET, get_book_minio_zip_name(self.book_id), "audiobook.zip"
+            )
+            if obj is not None:
+                self.session.open_url_in_browser(obj)
+        # Download chapter audios and upload one by one as stream to minio
+        # Redirect user to presigned url
+        pass
+
     async def delete_all_audio_for_book(self):
-        await AudiobookChapter.update(
-            {
-                "queued": None,
-                "minio_object_name": None,
-                "audio_settings": None,
-            }
-        ).where(
-            AudiobookChapter.book == self.book_id  # pyrefly: ignore
-        )
+        await delete_audio_for_chapters(self.book_id, self.chapters)
         await self.call_event_handler(self.refresh_chapters, [c.chapter_number for c in self.chapters])
 
-    # TODO Download book handler
+    async def delete_book(self):
+        async with DB.transaction():
+            # pyrefly: ignore
+            await AudiobookBook.delete().where(AudiobookBook.id == self.book_id)
+            # pyrefly: ignore
+            await AudiobookChapter.delete().where(AudiobookChapter.book == self.book_id)
+        await self.call_event_handler(self.refresh_chapters, [c.chapter_number for c in self.chapters])
 
     # TODO Delete book handler
 
@@ -160,6 +207,7 @@ class AudiobookSettingsComponent(rio.Component):
                     rio.Button(
                         "Delete book",
                         color=rio.Color.from_oklab(0.25, 0.5, 0.2),
+                        on_press=self.delete_book,
                         grow_x=True,  # pyrefly: ignore
                     ),
                     spacing=1,
@@ -176,8 +224,6 @@ class AudiobookSettingsComponent(rio.Component):
 class AudiobookChapterComponent(rio.Component):
     chapter: AudiobookChapterQueryResult
 
-    # TODO Download audio event handler
-
     async def chapter_queue(self):
         # Change chapter to be queued
         audio_settings = self.session[AudioSettings]
@@ -193,26 +239,27 @@ class AudiobookChapterComponent(rio.Component):
         self.force_refresh()
 
     async def chapter_download(self):
-        # Create presigned url and redirect user
-        pass
+        # Create presigned url and redirect user to trigger download
+        if self.chapter.minio_object_name is None:
+            return
+        async with get_s3_client() as s3:
+            obj = await object_create_presigned_url(
+                s3,
+                AUDIOBOOK_BUCKET,
+                self.chapter.minio_object_name,
+                f"{self.chapter.chapter_number:04d}_{normalize_filename(self.chapter.chapter_title)}.mp3",
+            )
+            if obj is not None:
+                self.session.navigate_to(obj)
+                # self.session.open_url_in_browser(obj)
 
     async def chapter_audio_delete(self):
         # Change chapter entry in db to no longer have audio
-        await AudiobookChapter.update(
-            {
-                "queued": None,
-                "minio_object_name": None,
-                "audio_settings": None,
-            }
-        ).where(
-            # pyrefly: ignore
-            AudiobookChapter.id == self.chapter.id
-        )
+        await delete_audio_for_chapters(self.chapter.book_id, [self.chapter])
         self.chapter.has_audio = False
         self.chapter.number_in_queue = None
         self.chapter.is_converting = False
         self.force_refresh()
-        # TODO Delete minio audio file
 
     def build(self):
         row = rio.Row(
@@ -233,13 +280,14 @@ class AudiobookChapterComponent(rio.Component):
                     rio.IconButton(
                         # TODO Implement download file
                         "material/download",
+                        on_press=self.chapter_download,
                         align_x=1,
                     ),
                     rio.IconButton(
                         "material/delete",
+                        on_press=self.chapter_audio_delete,
                         align_x=1,
                         color=rio.Color.from_oklab(0.25, 0.5, 0.2),
-                        on_press=self.chapter_audio_delete,
                     ),
                 ]
             )

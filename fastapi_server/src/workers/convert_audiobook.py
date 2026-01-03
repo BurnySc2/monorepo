@@ -21,8 +21,7 @@ load_dotenv()
 ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR", "0.3"))
 
 # Maximum number of concurrent chapter conversions
-MAX_CONCURRENT_CONVERSIONS = int(os.getenv("AUDIOBOOK_MAX_CONCURRENT_CONVERSIONS", "2"))
-MAX_CONCURRENT_CONVERSIONS = 3
+MAX_CONCURRENT_CONVERSIONS = int(os.getenv("AUDIOBOOK_MAX_CONCURRENT_CONVERSIONS", "1"))
 
 
 class AudiobookConversionContext:

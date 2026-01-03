@@ -29,7 +29,7 @@ async def on_app_start(_app: rio.App):
         await bucket_create(s3, SC2_REPLAYS_BUCKET)
         await bucket_set_expiration(s3, SC2_REPLAYS_BUCKET, 1)
         await bucket_create(s3, AUDIOBOOK_BUCKET)
-        await bucket_set_expiration(s3, AUDIOBOOK_BUCKET, 1)
+        await bucket_set_expiration(s3, AUDIOBOOK_BUCKET, 21)
 
     # Create tables
     if STAGE == "dev":

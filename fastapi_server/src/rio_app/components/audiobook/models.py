@@ -21,7 +21,7 @@ class AudioSettingsBaseModel(BaseModel):
 
     @classmethod
     def from_dataclass(cls, data: AudioSettings) -> AudioSettingsBaseModel:
-        return AudioSettingsBaseModel(**data.__dict__)
+        return cls(**data.__dict__)
 
 
 class Book(BaseModel):

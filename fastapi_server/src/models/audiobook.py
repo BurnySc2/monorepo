@@ -2,8 +2,6 @@ from piccolo.columns import JSON, Boolean, ForeignKey, Integer, Text, Timestamp
 from piccolo.table import Table
 
 
-# await AudiobookBook.create_table(if_not_exists=True)
-# await AudiobookChapter.create_table(if_not_exists=True)
 class AudiobookBook(Table, tablename="litestar_audiobook_book"):
     uploaded_by = Text(required=True)
     book_title = Text(required=True)
