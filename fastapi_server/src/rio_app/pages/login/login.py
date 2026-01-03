@@ -1,7 +1,14 @@
 import httpx
 import rio
 
-from rio_app.components.login.cookies import BACKEND_SERVER_URL, TWITCH_CLIENT_ID, LoginSettings, TwitchUser
+from rio_app.components.login.cookies import (
+    BACKEND_SERVER_URL,
+    GITHUB_CLIENT_ID,
+    TWITCH_CLIENT_ID,
+    LoggedInUser,
+    LoginSettings,
+)
+from rio_app.components.login.github import github_get_user
 from rio_app.components.login.twitch import twitch_get_user
 
 
@@ -11,21 +18,18 @@ from rio_app.components.login.twitch import twitch_get_user
 )
 class LoginRootPage(rio.Component):
     _is_loading: bool = True
-    logged_in: bool = False
-    logged_in_as: str = ""
-    logged_in_on: str = ""
+    logged_in_user: LoggedInUser | None = None
 
     @rio.event.on_mount
     async def on_mount(self):
         login_settings = self.session[LoginSettings]
+
+        user = None
         user = await twitch_get_user(login_settings.twitch_access_token)
-        # TODO Add github and google
-        # TODO Use generic LoggedInUser model
-        if user:
-            self.logged_in = True
-            self.logged_in_as = user.display_name
-            if isinstance(user, TwitchUser):
-                self.logged_in_on = "Twitch"
+        if user is None:
+            user = await github_get_user(login_settings.github_access_token)
+
+        self.logged_in_user = LoggedInUser.from_service(user)
         self._is_loading = False
 
     async def twitch_login_handler(self):
@@ -43,13 +47,26 @@ class LoginRootPage(rio.Component):
             ),
         )
 
+    async def github_login_handler(self):
+        self.session.navigate_to(
+            str(
+                httpx.URL(
+                    "https://github.com/login/oauth/authorize",
+                    params={
+                        "client_id": GITHUB_CLIENT_ID,
+                        "scope": "read:user",
+                    },
+                )
+            ),
+        )
+
     async def logout_handler(self):
         login_settings = self.session[LoginSettings]
         login_settings.twitch_access_token = None
         login_settings.github_access_token = None
         login_settings.google_access_token = None
         self.session.attach(login_settings)
-        self.logged_in = False
+        self.logged_in_user = None
 
     def build(self) -> rio.Component:
         if self._is_loading:
@@ -57,9 +74,11 @@ class LoginRootPage(rio.Component):
                 align_x=0.5,
                 align_y=0.5,
             )
-        if self.logged_in:
+        if self.logged_in_user is not None:
             return rio.Column(
-                rio.Text(f"You are logged in via {self.logged_in_on} as '{self.logged_in_as}'"),
+                rio.Text(
+                    f"You are logged in via {self.logged_in_user.service.capitalize()} as '{self.logged_in_user.name}'"
+                ),
                 rio.Button("Log out", color="danger", on_press=self.logout_handler),
                 align_x=0.5,
                 align_y=0.5,
@@ -74,7 +93,7 @@ class LoginRootPage(rio.Component):
             ),
             rio.Button(
                 "Login with GitHub",
-                on_press=self.twitch_login_handler,
+                on_press=self.github_login_handler,
                 icon="brand/github",
                 color=rio.Color.from_hex("171515"),
             ),

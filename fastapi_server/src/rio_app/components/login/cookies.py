@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import typing
 from typing import Literal
@@ -43,9 +45,17 @@ class TwitchUser(BaseModel):
     email: str
 
 
-# TODO Add github and google
+class GithubUser(BaseModel):
+    id: int
+    login: str
 
-AVAILABLE_SERVICES_TYPE = Literal["twitch", "github", "facebook", "google"]
+
+class GoogleUser(BaseModel):
+    id: int
+    display_name: str
+
+
+AVAILABLE_SERVICES_TYPE = Literal["twitch", "github", "google"]
 VALID_SERVICES: tuple[AVAILABLE_SERVICES_TYPE, ...] = typing.get_args(AVAILABLE_SERVICES_TYPE)
 
 
@@ -53,6 +63,16 @@ class LoggedInUser(BaseModel):
     id: int
     name: str
     service: AVAILABLE_SERVICES_TYPE
+
+    @classmethod
+    def from_service(cls, user: GithubUser | TwitchUser | GoogleUser | None) -> LoggedInUser | None:
+        if isinstance(user, TwitchUser):
+            return LoggedInUser(id=user.id, name=user.display_name, service="twitch")
+        if isinstance(user, GithubUser):
+            return LoggedInUser(id=user.id, name=user.login, service="github")
+        if isinstance(user, GoogleUser):
+            return LoggedInUser(id=user.id, name=user.display_name, service="google")
+        return None
 
     @property
     def db_name(self) -> str:
