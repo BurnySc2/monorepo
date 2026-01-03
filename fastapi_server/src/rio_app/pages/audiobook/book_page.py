@@ -527,6 +527,7 @@ class AudiobookBookPage(rio.Component):
 
     @rio.event.on_mount
     async def on_mount(self):
+        # TODO Handle auto deletion from minio - minio url might be invalid for audio from chapter, set to None then
         logged_in_user = self.session[LoggedInUser]
         # Check if user owns this book
         book = await AudiobookBook.objects().get(
