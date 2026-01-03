@@ -4,6 +4,7 @@ import io
 import rio
 
 from models.audiobook import AudiobookBook, AudiobookChapter
+from piccolo_conf import DB
 from rio_app.components.audiobook.epub_reader import EpubChapter, EpubMetadata, extract_chapters, extract_metadata
 from rio_app.components.login.cookies import LoggedInUser
 
@@ -19,7 +20,6 @@ data = {
     url_segment="",
 )
 class AudiobookRootPage(rio.Component):
-    # TODO On file drop: redirect to page of the book
     # TODO List already uploaded books
     # TODO Clicking on book redirects to book page
     # TODO Allow user to delete book from the list
@@ -57,31 +57,30 @@ class AudiobookRootPage(rio.Component):
 
         chapters: list[EpubChapter] = await asyncio.to_thread(extract_chapters, epub_data)
 
-        # TODO Store book and chapters in one query or transactions
-
         # Insert book
-        book = await AudiobookBook(
-            uploaded_by=logged_in_user.db_name,
-            book_title=metadata.title,
-            book_author=metadata.author,
-            chapter_count=len(chapters),
-        ).save()
-        book = book[0]
-        # Insert chapters
-        if 0 < len(chapters):
-            await AudiobookChapter.insert(
-                *[
-                    AudiobookChapter(
-                        book=book["id"],
-                        chapter_title=chapter.chapter_title,
-                        chapter_number=chapter.chapter_number,
-                        word_count=chapter.word_count,
-                        sentence_count=chapter.sentence_count,
-                        content=chapter.combined_text,
-                    )
-                    for chapter in chapters
-                ]
-            )
+        async with DB.transaction():
+            book = await AudiobookBook(
+                uploaded_by=logged_in_user.db_name,
+                book_title=metadata.title,
+                book_author=metadata.author,
+                chapter_count=len(chapters),
+            ).save()
+            book = book[0]
+            # Insert chapters
+            if 0 < len(chapters):
+                await AudiobookChapter.insert(
+                    *[
+                        AudiobookChapter(
+                            book=book["id"],
+                            chapter_title=chapter.chapter_title,
+                            chapter_number=chapter.chapter_number,
+                            word_count=chapter.word_count,
+                            sentence_count=chapter.sentence_count,
+                            content=chapter.combined_text,
+                        )
+                        for chapter in chapters
+                    ]
+                )
         self.book_processing = False
         return self.session.navigate_to(
             f"/audiobook/book/{book['id']}",

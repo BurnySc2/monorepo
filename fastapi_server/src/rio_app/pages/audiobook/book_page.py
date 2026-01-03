@@ -1,14 +1,28 @@
 from pathlib import Path
+from stat import S_IFREG
 
 import arrow
 import rio
 from pydantic import BaseModel
+from stream_zip import NO_COMPRESSION_64, async_stream_zip
 
-from minio_helper import AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
+from minio_helper import (
+    AUDIOBOOK_BUCKET,
+    get_s3_client,
+    object_create_presigned_url,
+    object_delete,
+    object_download,
+    object_upload_async_iterable,
+)
 from models.audiobook import AudiobookBook, AudiobookChapter
 from piccolo_conf import DB
 from rio_app.components.audiobook.generate_tts import get_supported_voices
-from rio_app.components.audiobook.models import AudioSettings, AudioSettingsBaseModel, normalize_filename
+from rio_app.components.audiobook.models import (
+    AudioSettings,
+    AudioSettingsBaseModel,
+    normalize_filename,
+    normalize_title,
+)
 from rio_app.components.login.cookies import LoggedInUser, logged_in_guard
 
 queries_directory = Path(__file__).parents[3] / "queries"
@@ -65,21 +79,67 @@ async def delete_audio_for_chapters(book_id: int, chapters: list[AudiobookChapte
         )
 
 
+async def upload_multipart_book(book: AudiobookBook, chapters: list[AudiobookChapterQueryResult]):
+    assert book is not None
+    normalized_author = f"{normalize_title(book.custom_book_author or book.book_author)}"[:50].strip()
+    normalized_book_title = f"{normalize_title(book.custom_book_title or book.book_title)}"[:150].strip()
+
+    async with get_s3_client() as s3:
+
+        async def chapter_audio_chunks():
+            for chapter in chapters:
+                assert chapter.minio_object_name is not None
+                obj = await object_download(s3, AUDIOBOOK_BUCKET, chapter.minio_object_name)
+                assert obj is not None
+
+                async def yield_data():
+                    assert obj is not None
+                    yield obj
+
+                normalized_chapter_name = normalize_filename(chapter.chapter_title)[:200].strip()
+                audio_file_name = f"{normalized_author}/{normalized_book_title}/{chapter.chapter_number:04d}_{normalized_chapter_name}.mp3"  # noqa: E501
+                yield (
+                    audio_file_name,
+                    arrow.utcnow().naive,
+                    S_IFREG | 0o600,
+                    # ZIP_64,  # Use compression to save about 4%
+                    NO_COMPRESSION_64,  # Don't use compression
+                    yield_data(),
+                )
+
+        await object_upload_async_iterable(
+            s3,
+            AUDIOBOOK_BUCKET,
+            # pyrefly: ignore
+            get_book_minio_zip_name(book.id),
+            async_stream_zip(chapter_audio_chunks()),
+        )
+
+
 class BookComponent(rio.Component):
     book: AudiobookBook
+
+    edit_title: bool = False
+    edit_author: bool = False
+
+    def on_edit_title_button(self):
+        pass
+
+    def on_edit_author_button(self):
+        pass
 
     def build(self):
         # TODO After clicking on edit, allow user to change title and author name
         return rio.Column(
             rio.Row(
                 # pyrefly: ignore
-                rio.Text(f"{self.book.book_title}", style="heading1", align_x=1),
+                rio.Text(f"{self.book.custom_book_title or self.book.book_title}", style="heading1", align_x=1),
                 rio.IconButton("material/edit_square", align_x=0, style="colored-text"),
                 spacing=1,
             ),
             rio.Row(
                 # pyrefly: ignore
-                rio.Text(f"{self.book.book_author}", style="heading1", align_x=1),
+                rio.Text(f"{self.book.custom_book_author or self.book.book_author}", style="heading1", align_x=1),
                 rio.IconButton("material/edit_square", align_x=0, style="colored-text"),
                 spacing=1,
             ),
@@ -111,18 +171,34 @@ class AudiobookSettingsComponent(rio.Component):
         )
         await self.call_event_handler(self.refresh_chapters, [c["chapter_number"] for c in updated_chapters])
 
-    # TODO Download book handler
     async def prepare_book_download_and_redirect(self):
-        # If object exists, already redirect
-        async with get_s3_client() as s3:
-            obj = await object_create_presigned_url(
-                s3, AUDIOBOOK_BUCKET, get_book_minio_zip_name(self.book_id), "audiobook.zip"
-            )
-            if obj is not None:
-                self.session.open_url_in_browser(obj)
-        # Download chapter audios and upload one by one as stream to minio
-        # Redirect user to presigned url
-        pass
+        book = await AudiobookBook.objects().get(AudiobookBook.id == self.book_id)  # pyrefly: ignore
+
+        # If object exists, redirect
+        async def download_book_object():
+            assert book is not None
+            async with get_s3_client() as s3:
+                normalized_author = f"{normalize_title(book.custom_book_author or book.book_author)}"[:50].strip()
+                normalized_book_title = f"{normalize_title(book.custom_book_title or book.book_title)}"[:150].strip()
+                url = await object_create_presigned_url(
+                    s3,
+                    AUDIOBOOK_BUCKET,
+                    get_book_minio_zip_name(self.book_id),
+                    f"{normalized_author} - {normalized_book_title}.zip",
+                    verify_object_exists=True,
+                )
+                if url is not None:
+                    self.session.navigate_to(url)
+                    return True
+            return False
+
+        already_exists = await download_book_object()
+        if already_exists:
+            return
+
+        assert book is not None
+        await upload_multipart_book(book, self.chapters)
+        await download_book_object()
 
     async def delete_all_audio_for_book(self):
         await delete_audio_for_chapters(self.book_id, self.chapters)
@@ -135,8 +211,6 @@ class AudiobookSettingsComponent(rio.Component):
             # pyrefly: ignore
             await AudiobookChapter.delete().where(AudiobookChapter.book == self.book_id)
         await self.call_event_handler(self.refresh_chapters, [c.chapter_number for c in self.chapters])
-
-    # TODO Delete book handler
 
     @property
     def is_button_generate_audio_enabled(self) -> bool:
@@ -192,8 +266,8 @@ class AudiobookSettingsComponent(rio.Component):
                         grow_x=True,  # pyrefly: ignore
                     ),
                     rio.Button(
-                        # TODO Implement download handler
                         "Download book",
+                        on_press=self.prepare_book_download_and_redirect,
                         color="primary",
                         is_sensitive=self.is_button_download_enabled,
                         grow_x=True,  # pyrefly: ignore
@@ -270,7 +344,7 @@ class AudiobookChapterComponent(rio.Component):
                 [
                     rio.Webview(
                         f"""
-<audio controls="" preload="metadata" id="audio">
+<audio controls preload="metadata" id="audio">
     <source src="{self.chapter.minio_presigned_url}" type="audio/mpeg">
     Your browser does not support the audio element.
 </audio>
@@ -278,7 +352,6 @@ class AudiobookChapterComponent(rio.Component):
                     ),
                     # rio.MediaPlayer(rio.URL(self.chapter.minio_presigned_url), media_type="audio/mp3"),
                     rio.IconButton(
-                        # TODO Implement download file
                         "material/download",
                         on_press=self.chapter_download,
                         align_x=1,
@@ -347,40 +420,6 @@ class AudiobookBookPage(rio.Component):
     chapters_data: list[AudiobookChapterQueryResult] = []
     available_voices: list[str] = []
 
-    async def refresh_chapters(self, chapter_numbers_needing_refresh: list[int]):
-        chapters_info_response: list[dict] = await AudiobookChapter.raw(
-            query_get_chapters, self.book_id, chapter_numbers_needing_refresh
-        )
-        chapters_data = [AudiobookChapterQueryResult(**row) for row in chapters_info_response]
-        for chapter in chapters_data:
-            self.chapters_data[chapter.chapter_number - 1] = chapter
-        self.force_refresh()
-
-    async def create_presigned_urls(self, chapters: list[AudiobookChapterQueryResult]):
-        async with get_s3_client() as s3:
-            # TODO Get presigned urls for all of them at the same time
-            for chapter in chapters:
-                if chapter.minio_object_name is None:
-                    continue
-                url = await object_create_presigned_url(
-                    s3, AUDIOBOOK_BUCKET, chapter.minio_object_name, file_name=f"chapter_{chapter.chapter_number}.mp3"
-                )
-                if url is None:
-                    continue
-                chapter.minio_presigned_url = url
-
-    @rio.event.periodic(10)
-    async def periodic(self):
-        # Update queued chapters
-        if self.is_loading or self.book_data is None:
-            return
-        chapter_numbers_needing_refresh: list[int] = [
-            c.chapter_number for c in self.chapters_data if c.number_in_queue is not None or c.is_converting is True
-        ]
-        if len(chapter_numbers_needing_refresh) == 0:
-            return
-        await self.refresh_chapters(chapter_numbers_needing_refresh)
-
     @rio.event.on_mount
     async def on_mount(self):
         logged_in_user = self.session[LoggedInUser]
@@ -403,12 +442,6 @@ class AudiobookBookPage(rio.Component):
 
         await self.create_presigned_urls(self.chapters_data)
 
-        # await AudiobookChapter.update({"queued": None, "started_converting": None}).where(
-        #     (AudiobookChapter.queued != None) | (AudiobookChapter.started_converting != None)
-        # )
-
-        # b = await AudiobookChapter.objects().where((AudiobookChapter.book == 34) & (AudiobookChapter.queued != None))
-
         # Grab available voices
         self.available_voices = await get_supported_voices()
 
@@ -421,7 +454,41 @@ class AudiobookBookPage(rio.Component):
 
         self.is_loading = False
 
-    def build(self):
+    @rio.event.periodic(10)
+    async def periodic(self):
+        # Update queued chapters
+        if self.is_loading or self.book_data is None:
+            return
+        chapter_numbers_needing_refresh: list[int] = [
+            c.chapter_number for c in self.chapters_data if c.number_in_queue is not None or c.is_converting is True
+        ]
+        if len(chapter_numbers_needing_refresh) == 0:
+            return
+        await self.refresh_chapters(chapter_numbers_needing_refresh)
+
+    async def refresh_chapters(self, chapter_numbers_needing_refresh: list[int]):
+        chapters_info_response: list[dict] = await AudiobookChapter.raw(
+            query_get_chapters, self.book_id, chapter_numbers_needing_refresh
+        )
+        chapters_data = [AudiobookChapterQueryResult(**row) for row in chapters_info_response]
+        for chapter in chapters_data:
+            self.chapters_data[chapter.chapter_number - 1] = chapter
+        self.force_refresh()
+
+    async def create_presigned_urls(self, chapters: list[AudiobookChapterQueryResult]):
+        async with get_s3_client() as s3:
+            # TODO Get presigned urls for all of them at the same time
+            for chapter in chapters:
+                if chapter.minio_object_name is None:
+                    continue
+                url = await object_create_presigned_url(
+                    s3, AUDIOBOOK_BUCKET, chapter.minio_object_name, file_name=f"chapter_{chapter.chapter_number}.mp3"
+                )
+                if url is None:
+                    continue
+                chapter.minio_presigned_url = url
+
+    def build(self) -> rio.Component:
         if self.is_loading:
             return rio.ProgressCircle(align_x=0.5)
         if not self.user_has_access:

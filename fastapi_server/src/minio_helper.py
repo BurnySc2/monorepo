@@ -1,7 +1,8 @@
 import asyncio
 import os
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 
 import aioboto3
 from botocore.exceptions import ClientError
@@ -46,6 +47,28 @@ async def object_upload(session: S3Client, bucket: str, key: str, data: bytes) -
     _ = await session.put_object(Bucket=bucket, Key=key, Body=data)
 
 
+async def object_upload_async_iterable(session: S3Client, bucket: str, key: str, data: AsyncIterable[bytes]) -> None:
+    """
+    Pass in a async function that this function can iterate over
+    async for chunk in data:
+        logger.info(len(chunk))
+    """
+
+    @dataclass
+    class AsyncStream:
+        iterator: AsyncIterator[bytes]
+
+        async def read(self, _size: int = -1) -> bytes:
+            try:
+                return await anext(self.iterator)
+            except StopAsyncIteration:
+                return b""
+
+    my_stream = AsyncStream(aiter(data))
+
+    _ = await session.upload_fileobj(Bucket=bucket, Key=key, Fileobj=my_stream)
+
+
 async def object_get_info(session: S3Client, bucket: str, key: str) -> HeadObjectOutputTypeDef | None:
     try:
         response = await session.head_object(Bucket=bucket, Key=key)
@@ -70,9 +93,22 @@ async def object_delete(session: S3Client, bucket: str, key: str):
 
 
 async def object_create_presigned_url(
-    session: S3Client, bucket: str, key: str, file_name: str, expires_in_seconds: int = 3600
+    session: S3Client,
+    bucket: str,
+    key: str,
+    file_name: str,
+    expires_in_seconds: int = 3600,
+    verify_object_exists: bool = False,
 ) -> str | None:
+    """
+    verify_object_exists: if True, returns None if object doesn't exist
+    """
     try:
+        if verify_object_exists:
+            obj = await object_get_info(session, bucket, key)
+            if obj is None:
+                return None
+
         url = await session.generate_presigned_url(
             "get_object",
             Params={
