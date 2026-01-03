@@ -4,9 +4,10 @@ import arrow
 import rio
 from pydantic import BaseModel
 
+from minio_helper import AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url
 from models.audiobook import AudiobookBook, AudiobookChapter
 from rio_app.components.audiobook.generate_tts import get_supported_voices
-from rio_app.components.audiobook.models import AudioSettings
+from rio_app.components.audiobook.models import AudioSettings, AudioSettingsBaseModel
 from rio_app.components.login.cookies import LoggedInUser, logged_in_guard
 
 queries_directory = Path(__file__).parents[3] / "queries"
@@ -63,7 +64,7 @@ class AudiobookSettingsComponent(rio.Component):
             await AudiobookChapter.update(
                 {
                     "queued": arrow.utcnow().naive,
-                    "audio_settings": audio_settings.__dict__,
+                    "audio_settings": AudioSettingsBaseModel.from_dataclass(audio_settings).model_dump_json(),
                 }
             )
             .where(
@@ -144,6 +145,7 @@ class AudiobookSettingsComponent(rio.Component):
                         grow_x=True,  # pyrefly: ignore
                     ),
                     rio.Button(
+                        # TODO Implement download handler
                         "Download book",
                         color="primary",
                         is_sensitive=self.is_button_download_enabled,
@@ -171,14 +173,6 @@ class AudiobookSettingsComponent(rio.Component):
         )
 
 
-TEST_HTML = """
-<audio controls="" preload="metadata" id="audio">
-    <source src="https://minio.burnysc2.xyz/staging-audiobooks/1379_audio.mp3?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=s40LqDjsa7CtorQDL62F%2F20260101%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20260101T131356Z&amp;X-Amz-Expires=86400&amp;X-Amz-SignedHeaders=host&amp;X-Amz-Signature=cbf6f99379a393addf7bf5059ae0a051b92d1e2bd1445bcb0d88d2288bcfa7d0" type="audio/mpeg">
-    Your browser does not support the audio element.
-</audio>
-"""
-
-
 class AudiobookChapterComponent(rio.Component):
     chapter: AudiobookChapterQueryResult
 
@@ -190,7 +184,7 @@ class AudiobookChapterComponent(rio.Component):
         await AudiobookChapter.update(
             {
                 "queued": arrow.utcnow().naive,
-                "audio_settings": audio_settings.__dict__,
+                "audio_settings": AudioSettingsBaseModel.from_dataclass(audio_settings).model_dump_json(),
             }
         ).where(
             AudiobookChapter.id == self.chapter.id  # pyrefly: ignore
@@ -228,10 +222,16 @@ class AudiobookChapterComponent(rio.Component):
             row.children.extend(
                 [
                     rio.Webview(
-                        self.chapter.minio_presigned_url,
-                        align_x=1,  # pyrefly: ignore
+                        f"""
+<audio controls="" preload="metadata" id="audio">
+    <source src="{self.chapter.minio_presigned_url}" type="audio/mpeg">
+    Your browser does not support the audio element.
+</audio>
+""".strip()
                     ),
+                    # rio.MediaPlayer(rio.URL(self.chapter.minio_presigned_url), media_type="audio/mp3"),
                     rio.IconButton(
+                        # TODO Implement download file
                         "material/download",
                         align_x=1,
                     ),
@@ -249,7 +249,7 @@ class AudiobookChapterComponent(rio.Component):
                 text = f"Queued ({self.chapter.number_in_queue})"
             row.children.extend(
                 [
-                    rio.ProgressCircle(align_x=1),
+                    rio.ProgressCircle(align_x=0),
                     rio.Text(
                         text,
                         align_x=1,  # pyrefly: ignore
@@ -263,11 +263,14 @@ class AudiobookChapterComponent(rio.Component):
                 ]
             )
         elif self.chapter.is_converting:
-            row.children.append(
-                rio.Text(
-                    "Generating audio...)",
-                    align_x=1,  # pyrefly: ignore
-                )
+            row.children.extend(
+                [
+                    rio.ProgressCircle(align_x=0),
+                    rio.Text(
+                        "Generating audio ...",
+                        align_x=1,  # pyrefly: ignore
+                    ),
+                ]
             )
             row.children.append(
                 rio.IconButton(
@@ -305,6 +308,19 @@ class AudiobookBookPage(rio.Component):
             self.chapters_data[chapter.chapter_number - 1] = chapter
         self.force_refresh()
 
+    async def create_presigned_urls(self, chapters: list[AudiobookChapterQueryResult]):
+        async with get_s3_client() as s3:
+            # TODO Get presigned urls for all of them at the same time
+            for chapter in chapters:
+                if chapter.minio_object_name is None:
+                    continue
+                url = await object_create_presigned_url(
+                    s3, AUDIOBOOK_BUCKET, chapter.minio_object_name, file_name=f"chapter_{chapter.chapter_number}.mp3"
+                )
+                if url is None:
+                    continue
+                chapter.minio_presigned_url = url
+
     @rio.event.periodic(10)
     async def periodic(self):
         # Update queued chapters
@@ -336,6 +352,14 @@ class AudiobookBookPage(rio.Component):
             query_get_chapters, self.book_id, [i + 1 for i in range(self.book_data.chapter_count)]
         )
         self.chapters_data = [AudiobookChapterQueryResult(**row) for row in chapters_info_response]
+
+        await self.create_presigned_urls(self.chapters_data)
+
+        # await AudiobookChapter.update({"queued": None, "started_converting": None}).where(
+        #     (AudiobookChapter.queued != None) | (AudiobookChapter.started_converting != None)
+        # )
+
+        # b = await AudiobookChapter.objects().where((AudiobookChapter.book == 34) & (AudiobookChapter.queued != None))
 
         # Grab available voices
         self.available_voices = await get_supported_voices()
