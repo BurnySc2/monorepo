@@ -1,5 +1,3 @@
-# pyright: reportImplicitOverride=false
-
 import rio
 
 from rio_app.components.replay_pack_builder.component_filter import FilterComponent

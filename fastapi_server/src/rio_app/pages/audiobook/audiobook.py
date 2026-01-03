@@ -1,5 +1,3 @@
-# pyright: reportImplicitOverride=false
-
 import rio
 
 data = {

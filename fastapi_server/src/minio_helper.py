@@ -99,7 +99,7 @@ async def bucket_set_expiration(session: S3Client, bucket: str, days: int) -> No
     _ = await session.put_bucket_lifecycle_configuration(
         Bucket=bucket,
         # pyrefly: ignore
-        LifecycleConfiguration=lifecycle_config,  # pyright: ignore[reportArgumentType]
+        LifecycleConfiguration=lifecycle_config,
     )
 
 

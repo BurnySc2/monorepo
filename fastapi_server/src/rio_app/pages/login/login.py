@@ -1,5 +1,3 @@
-# pyright: reportImplicitOverride=false
-
 import httpx
 import rio
 
@@ -26,7 +24,7 @@ class LoginRootPage(rio.Component):
         if user:
             self.logged_in = True
             self.logged_in_as = user.display_name
-            if isinstance(user, TwitchUser):  # pyright: ignore[reportUnnecessaryIsInstance]
+            if isinstance(user, TwitchUser):
                 self.logged_in_on = "Twitch"
         self._is_loading = False
 

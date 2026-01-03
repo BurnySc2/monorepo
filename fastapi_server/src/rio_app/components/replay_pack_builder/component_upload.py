@@ -1,4 +1,3 @@
-# pyright: reportImplicitOverride=false
 from io import BytesIO
 
 import rio
@@ -93,7 +92,7 @@ class UploadComponent(rio.Component):
                     raise ValueError("Replay does not exist")
                 replay_data: ReplayData = await parse_replay(BytesIO(replay_by_user))
                 self.parsed_files[replay_file_md5] = ParsedReplayFile(
-                    **replay_file.model_dump(),  # pyright: ignore[reportAny]
+                    **replay_file.model_dump(),
                     **replay_data.model_dump(),
                 )
                 _ = self.uploaded_files.pop(replay_file_md5)

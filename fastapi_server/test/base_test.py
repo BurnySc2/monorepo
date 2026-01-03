@@ -7,7 +7,7 @@ from contextlib import suppress
 import pytest
 from litestar import Litestar
 from litestar.testing import TestClient
-from minio import Minio, S3Error  # pyright: ignore[reportMissingTypeStubs]
+from minio import Minio, S3Error
 from piccolo.table import Table, create_db_tables, drop_db_tables
 from piccolo.utils.sync import run_sync
 from pytest_httpx import HTTPXMock

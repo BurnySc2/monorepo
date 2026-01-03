@@ -1,5 +1,3 @@
-# pyright: reportImplicitOverride=false
-
 import arrow
 import rio
 
@@ -33,22 +31,22 @@ class MyFilter(rio.Component):
         filter_settings = self.session[FilterSettings]
         if self.kind == rio.Checkbox:
             return rio.Row(
-                rio.Checkbox(filter_settings.__getattribute__(self.filter_settings_key), on_change=self.set_value),  # pyright: ignore[reportAny]
+                rio.Checkbox(filter_settings.__getattribute__(self.filter_settings_key), on_change=self.set_value),
                 rio.Text(self.label),
                 spacing=1,
                 align_x=0,
             )
         elif self.kind == rio.NumberInput:
             return rio.NumberInput(
-                filter_settings.__getattribute__(self.filter_settings_key),  # pyright: ignore[reportAny]
+                filter_settings.__getattribute__(self.filter_settings_key),
                 on_change=self.set_value,
                 decimals=0,
             )
         elif self.kind == rio.TextInput:
-            return rio.TextInput(filter_settings.__getattribute__(self.filter_settings_key), on_change=self.set_value)  # pyright: ignore[reportAny]
+            return rio.TextInput(filter_settings.__getattribute__(self.filter_settings_key), on_change=self.set_value)
         elif self.kind == rio.DateInput:
             return rio.DateInput(
-                arrow.get(filter_settings.__getattribute__(self.filter_settings_key)).date(),  # pyright: ignore[reportAny]
+                arrow.get(filter_settings.__getattribute__(self.filter_settings_key)).date(),
                 on_change=self.set_value,
             )
         return rio.Text("TODO")

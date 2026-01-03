@@ -27,7 +27,7 @@ async def twitch_verify_code(code: str) -> str | Literal[503, 409]:
         )
         if post_response.is_error:
             return 503
-        data: dict[str, str] = post_response.json()  # pyright: ignore[reportAny]
+        data: dict[str, str] = post_response.json()
     if "error" in data:
         return 409
     return data["access_token"]

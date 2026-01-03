@@ -1,5 +1,3 @@
-# pyright: reportImplicitOverride=false
-
 import arrow
 import rio
 
@@ -7,7 +5,7 @@ from rio_app.components.replay_pack_builder.models import ParsedReplayFile
 from rio_app.components.replay_pack_builder.settings import DEFAULT_REPLAY_NAME_PATTERN, FilterSettings
 
 example_replay = ParsedReplayFile(
-    **{  # pyright: ignore[reportArgumentType]
+    **{
         "user_id": "some_id",
         "size": 0,
         "md5": "some_md5",

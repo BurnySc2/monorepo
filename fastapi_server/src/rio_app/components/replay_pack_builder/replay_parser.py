@@ -1,15 +1,14 @@
-# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false
 from io import BytesIO
 
-import sc2reader  # pyright: ignore[reportMissingTypeStubs]
-from sc2reader.resources import Replay  # pyright: ignore[reportMissingTypeStubs]
+import sc2reader
+from sc2reader.resources import Replay
 
 from rio_app.components.replay_pack_builder.models import ReplayData
 
 
 async def parse_replay(data: BytesIO) -> ReplayData:
-    replay: Replay = sc2reader.load_replay(data, load_level=2)  # pyright: ignore[reportUnknownVariableType]
-    parsed = {  # pyright: ignore[reportUnknownVariableType]
+    replay: Replay = sc2reader.load_replay(data, load_level=2)
+    parsed = {
         "teams": [
             {
                 "result": team.result,
@@ -24,16 +23,16 @@ async def parse_replay(data: BytesIO) -> ReplayData:
                         # init_data is not set on computer
                         "mmr": player.__dict__.get("init_data", {}).get("scaled_rating", None),
                     }
-                    for player in team.players  # pyright: ignore[reportUnknownVariableType]
+                    for player in team.players
                 ],
             }
-            for team in replay.teams  # pyright: ignore[reportUnknownVariableType]
+            for team in replay.teams
         ],
         "is_ladder": replay.is_ladder,
         "is_private": replay.is_private,
         "resume_from_replay": replay.resume_from_replay,
         "played_timestamp": replay.unix_timestamp * 1000,
-        "game_length_seconds": replay.length.seconds,  # pyright: ignore[reportOptionalMemberAccess]
+        "game_length_seconds": replay.length.seconds,
         "game_base_build": replay.base_build,
         "game_version": ".".join(map(str, replay.versions[1:4])),
         "game_type": replay.type,
@@ -41,5 +40,5 @@ async def parse_replay(data: BytesIO) -> ReplayData:
         "region_short": replay.region,
         "expansion": replay.expansion,
     }
-    parsed_checked = ReplayData(**parsed)  # pyright: ignore[reportArgumentType]  # ty:ignore[invalid-argument-type]
+    parsed_checked = ReplayData(**parsed)
     return parsed_checked

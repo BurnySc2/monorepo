@@ -54,12 +54,12 @@ class ReplayFile(BaseModel):
 
     @classmethod
     def from_minio(cls, file_response: ObjectTypeDef) -> ReplayFile:
-        key = file_response["Key"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
+        key = file_response["Key"]
         user_id, name = key.split("/")
         stem, _suffix = name.split(".")
         return ReplayFile(
             user_id=user_id,
-            size=file_response["Size"],  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            size=file_response["Size"],
             md5=stem,
             status="uploaded",
         )
