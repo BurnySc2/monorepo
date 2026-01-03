@@ -43,6 +43,4 @@ LEFT JOIN litestar_audiobook_book AS b
     ON c.book = b.id
 WHERE
     c.book = { }
-    AND c.chapter_number = ANY(CAST({ } AS INTEGER []))
-    -- AND c.chapter_number = ANY($2::INTEGER[])
     AND b.deleted = FALSE

@@ -1,14 +1,25 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
+from typing import Literal
 
 import rio
+from dotenv import load_dotenv
 
-from minio_helper import SC2_REPLAYS_BUCKET, bucket_create, bucket_set_expiration, get_s3_client
+from minio_helper import AUDIOBOOK_BUCKET, SC2_REPLAYS_BUCKET, bucket_create, bucket_set_expiration, get_s3_client
+from models.audiobook import AudiobookBook, AudiobookChapter
 from rio_app import data_models, theme
+from rio_app.components.audiobook.models import AudioSettings
 from rio_app.components.login.cookies import LoggedInUser, LoginSettings, provide_logged_in_user
 from rio_app.components.replay_pack_builder.settings import FilterSettings
 from rio_app.routes.index import router
+
+_ = load_dotenv()
+
+assert os.getenv("STAGE", "dev") in {"local_dev", "dev", "prod", "test"}, os.getenv("STAGE")
+# pyrefly: ignore
+STAGE: Literal["local_dev", "dev", "prod", "test"] = os.getenv("STAGE")
 
 
 async def on_app_start(_app: rio.App):
@@ -17,6 +28,13 @@ async def on_app_start(_app: rio.App):
     async with get_s3_client() as s3:
         await bucket_create(s3, SC2_REPLAYS_BUCKET)
         await bucket_set_expiration(s3, SC2_REPLAYS_BUCKET, 1)
+        await bucket_create(s3, AUDIOBOOK_BUCKET)
+        await bucket_set_expiration(s3, AUDIOBOOK_BUCKET, 1)
+
+    # Create tables
+    if STAGE == "dev":
+        await AudiobookBook.create_table(if_not_exists=True)
+        await AudiobookChapter.create_table(if_not_exists=True)
 
 
 async def on_session_start(session: rio.Session) -> None:
@@ -60,7 +78,7 @@ app = rio.App(
     # override Rio's default.
     theme=theme.THEME,
     assets_dir=Path(__file__).parent / "assets",
-    default_attachments=[FilterSettings(), LoginSettings()],
+    default_attachments=[FilterSettings(), LoginSettings(), AudioSettings()],
 )
 
 fastapi_app = app.as_fastapi()

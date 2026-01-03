@@ -1,30 +1,48 @@
+from pathlib import Path
+
 import rio
+from pydantic import BaseModel
 
-from rio_app.components.audiobook.models import Book, Chapter
-from rio_app.components.login.cookies import logged_in_guard
+from models.audiobook import AudiobookBook, AudiobookChapter
+from rio_app.components.audiobook.generate_tts import get_supported_voices
+from rio_app.components.audiobook.models import AudioSettings
+from rio_app.components.login.cookies import LoggedInUser, logged_in_guard
 
-data = {
-    "Name": ["Alice", "Bob", "Charlie"],
-    "Age": [25, 30, 35],
-    "City": ["New York", "San Francisco", "Los Angeles"],
-}
+queries_directory = Path(__file__).parents[3] / "queries"
+query_get_chapters = (queries_directory / "audiobook_get_chapters.sql").read_text()
+
+
+class AudiobookChapterQueryResult(BaseModel):
+    # Class used in other contexts
+    id: int
+    book_id: int
+    number_in_queue: int | None  # 'None' if converting or not queued
+    is_converting: bool
+    has_audio: bool
+    chapter_title: str
+    chapter_number: int
+    # word_count: int
+    sentence_count: int
+    minio_object_name: str | None
+    # Filled after query
+    minio_presigned_url: str = ""
 
 
 class BookComponent(rio.Component):
-    book: Book
+    book: AudiobookBook
 
     def build(self):
         # TODO After clicking on edit, allow user to change title and author name
         return rio.Column(
             rio.Row(
                 # pyrefly: ignore
-                rio.Text(f"{self.book.title}", style="heading1", align_x=1),
+                rio.Text(f"{self.book.book_title}", style="heading1", align_x=1),
                 rio.IconButton("material/edit_square", align_x=0, style="colored-text"),
                 spacing=1,
             ),
             rio.Row(
                 # pyrefly: ignore
-                rio.Text(f"{self.book.author}", style="heading1", align_x=1),
+                rio.Text(f"{self.book.book_author}", style="heading1", align_x=1),
                 rio.IconButton("material/edit_square", align_x=0, style="colored-text"),
                 spacing=1,
             ),
@@ -32,31 +50,46 @@ class BookComponent(rio.Component):
 
 
 class AudiobookSettingsComponent(rio.Component):
-    chapters: list[Chapter]
+    chapters: list[AudiobookChapterQueryResult]
+    available_voices: list[str]
 
     @property
     def is_button_generate_audio_enabled(self) -> bool:
-        return any(not (c.queued or c.audio_generated) for c in self.chapters)
+        return True
+        # return any(not (c.queued or c.audio_generated) for c in self.chapters)
 
     @property
     def is_button_download_enabled(self) -> bool:
-        return all(c.audio_generated for c in self.chapters)
+        return True
+        # return all(c.audio_generated for c in self.chapters)
 
     @property
     def button_download_has_spinner(self) -> bool:
-        return any(c.queued for c in self.chapters)
+        return False
+        # return any(c.queued for c in self.chapters)
+
+    def on_voice_change(self, event: rio.DropdownChangeEvent):
+        audio_settings = self.session[AudioSettings]
+        audio_settings.voice = event.value
+        self.session.attach(audio_settings)
+
+    # TODO Other change handlers
 
     def build(self):
+        audio_settings = self.session[AudioSettings]
+
         return rio.Rectangle(
             content=rio.Column(
                 # pyrefly: ignore
                 rio.Text("Settings", style="heading2", align_x=0.5),
-                # TODO Allow user to change voice
-                # TODO Grab all available voices from edge-tts
-                # TODO Store voice settings in localstorage
                 rio.Grid(
-                    # pyrefly: ignore
-                    [rio.Text("Voice", align_x=1), rio.Dropdown({"Hallo": "Welt"})],
+                    [
+                        # pyrefly: ignore
+                        rio.Text("Voice", align_x=1),
+                        rio.Dropdown(
+                            self.available_voices, on_change=self.on_voice_change, selected_value=audio_settings.voice
+                        ),
+                    ],
                     # pyrefly: ignore
                     [rio.Text("Rate", align_x=1), rio.NumberInput(0, decimals=0)],
                     # pyrefly: ignore
@@ -104,7 +137,7 @@ TEST_HTML = """
 
 
 class AudiobookChapterComponent(rio.Component):
-    chapter: Chapter
+    chapter: AudiobookChapterQueryResult
 
     # TODO Generate audio event handler
     # TODO Delete audio event handler
@@ -114,11 +147,11 @@ class AudiobookChapterComponent(rio.Component):
         row = rio.Row(
             spacing=0.5,
         )
-        if self.chapter.audio_generated:
+        if self.chapter.has_audio:
             row.children.extend(
                 [
                     rio.Webview(
-                        self.chapter.audio_url,
+                        self.chapter.minio_presigned_url,
                         align_x=1,  # pyrefly: ignore
                     ),
                     rio.IconButton(
@@ -133,24 +166,30 @@ class AudiobookChapterComponent(rio.Component):
                 ]
             )
 
-        elif self.chapter.queued:
-            if 0 < self.chapter.queued_position:
-                row.children.extend(
-                    [
-                        rio.ProgressCircle(align_x=1),
-                        rio.Text(
-                            f"Queued ({self.chapter.queued_position})",
-                            align_x=1,  # pyrefly: ignore
-                        ),
-                    ]
-                )
-            else:
-                row.children.append(
+        elif self.chapter.number_in_queue is not None:
+            row.children.extend(
+                [
+                    rio.ProgressCircle(align_x=1),
                     rio.Text(
-                        "Generating audio...)",
+                        f"Queued ({self.chapter.number_in_queue})",
                         align_x=1,  # pyrefly: ignore
-                    )
+                    ),
+                ]
+            )
+            row.children.append(
+                rio.IconButton(
+                    "material/delete",
+                    align_x=1,
+                    color=rio.Color.from_oklab(0.25, 0.5, 0.2),
+                ),
+            )
+        elif self.chapter.is_converting:
+            row.children.append(
+                rio.Text(
+                    "Generating audio...)",
+                    align_x=1,  # pyrefly: ignore
                 )
+            )
             row.children.append(
                 rio.IconButton(
                     "material/delete",
@@ -170,67 +209,59 @@ class AudiobookChapterComponent(rio.Component):
 )
 class AudiobookBookPage(rio.Component):
     book_id: int
+    is_loading: bool = True
+    user_has_access: bool = False
 
-    # book: Book | None = None
-    # chapters: list[Chapter] = []
-
-    book: Book = Book(
-        id=0,
-        chapters_count=0,
-        title="Hallo ChefuBr0t",
-        author="BurnySc2",
-    )
-    chapters: list[Chapter] = [
-        Chapter(
-            id=0,
-            number=1,
-            title="Mein tolles Kapitel1",
-            word_count=0,
-            sentence_count=7,
-            queued=True,
-            queued_position=5,
-            audio_generated=True,
-            audio_url=TEST_HTML,
-        ),
-        Chapter(
-            id=0,
-            number=1,
-            title="Mein tolles Kapitel2",
-            word_count=0,
-            sentence_count=7,
-            queued=True,
-            queued_position=5,
-            audio_generated=False,
-            audio_url="",
-        ),
-        Chapter(
-            id=0,
-            number=1,
-            title="Mein tolles Kapitel3         asdasd",
-            word_count=0,
-            sentence_count=8,
-            queued=False,
-            queued_position=5,
-            audio_generated=False,
-            audio_url="",
-        ),
-    ]
+    book_data: AudiobookBook | None = None
+    chapters_data: list[AudiobookChapterQueryResult] = []
+    available_voices: list[str] = []
 
     @rio.event.on_mount
     async def on_mount(self):
-        # TODO Check if user owns this book
+        logged_in_user = self.session[LoggedInUser]
+        # Check if user owns this book
+        book = await AudiobookBook.objects().get(
+            # pyrefly: ignore
+            (AudiobookBook.id == self.book_id) & (AudiobookBook.uploaded_by == logged_in_user.db_name)
+        )
+        if book is None:
+            self.is_loading = False
+            return
+        self.user_has_access = True
+        self.book_data = book
 
-        # TODO Get data from database about book and chapters
-        # TODO Get audiosettings from localstorage
-        pass
+        # Grab chapter info
+        chapters_info_response: list[dict] = await AudiobookChapter.raw(
+            query_get_chapters,
+            self.book_id,
+        )
+        self.chapters_data = [AudiobookChapterQueryResult(**row) for row in chapters_info_response]
+
+        # Grab available voices
+        self.available_voices = await get_supported_voices()
+
+        # Grab user audio settings from localstorage
+        audio_settings = self.session[AudioSettings]
+        # Set voice to first available
+        if 0 < len(self.available_voices) and audio_settings.voice not in self.available_voices:
+            audio_settings.voice = self.available_voices[0]
+            self.session.attach(audio_settings)
+
+        self.is_loading = False
 
     def build(self):
+        if self.is_loading:
+            return rio.ProgressCircle(align_x=0.5)
+        if not self.user_has_access:
+            return rio.Text("You don't have access to this book!")
+
+        # Render chapters
         my_grid: list[list[rio.Component]] = []
-        for chapter in self.chapters:
+        for chapter in self.chapters_data:
             my_grid.append(
                 [
                     rio.Text(
-                        f"'{chapter.custom_title or chapter.title}' with {chapter.sentence_count} sentences",
+                        f"'{chapter.chapter_title}' with {chapter.sentence_count} sentences",
                         grow_x=True,  # pyrefly: ignore
                         overflow="wrap",
                     ),
@@ -238,10 +269,11 @@ class AudiobookBookPage(rio.Component):
                 ]
             )
 
+        assert self.book_data is not None
         return rio.Column(
-            BookComponent(self.book),
+            BookComponent(self.book_data),
             # TODO Pass down audiosettings (binding)
-            AudiobookSettingsComponent(self.chapters),
+            AudiobookSettingsComponent(self.chapters_data, self.available_voices),
             rio.Rectangle(
                 content=rio.Column(
                     rio.Text(

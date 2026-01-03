@@ -71,6 +71,7 @@ dev = [
     "pytest-databases[postgres]>=0.13.0",
     "pre-commit>=4.5.1",
     "types-aioboto3[full]>=15.5.0",
+    "cachetools>=6.2.4",
 ]
 
 [tool.yapf]

@@ -15,6 +15,7 @@ SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 
 # TODO Set env var
 SC2_REPLAYS_BUCKET = os.getenv("DOESNT_EXIST", "sc2-replays")
+AUDIOBOOK_BUCKET = os.getenv("DOESNT_EXIST", "audibooks")
 
 
 @asynccontextmanager
