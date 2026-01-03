@@ -17,7 +17,6 @@ from pathlib import Path
 import httpx
 from mutagen.mp3 import MP3
 
-
 SESSION_ID = os.getenv("TIKTOK_SESSION_ID")
 
 

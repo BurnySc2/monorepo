@@ -18,11 +18,13 @@ class BookComponent(rio.Component):
         # TODO After clicking on edit, allow user to change title and author name
         return rio.Column(
             rio.Row(
+                # pyrefly: ignore
                 rio.Text(f"{self.book.title}", style="heading1", align_x=1),
                 rio.IconButton("material/edit_square", align_x=0, style="colored-text"),
                 spacing=1,
             ),
             rio.Row(
+                # pyrefly: ignore
                 rio.Text(f"{self.book.author}", style="heading1", align_x=1),
                 rio.IconButton("material/edit_square", align_x=0, style="colored-text"),
                 spacing=1,
@@ -48,14 +50,19 @@ class AudiobookSettingsComponent(rio.Component):
     def build(self):
         return rio.Rectangle(
             content=rio.Column(
+                # pyrefly: ignore
                 rio.Text("Settings", style="heading2", align_x=0.5),
                 # TODO Allow user to change voice
                 # TODO Grab all available voices from edge-tts
                 # TODO Store voice settings in localstorage
                 rio.Grid(
+                    # pyrefly: ignore
                     [rio.Text("Voice", align_x=1), rio.Dropdown({"Hallo": "Welt"})],
+                    # pyrefly: ignore
                     [rio.Text("Rate", align_x=1), rio.NumberInput(0, decimals=0)],
+                    # pyrefly: ignore
                     [rio.Text("Volume", align_x=1), rio.NumberInput(0, decimals=0)],
+                    # pyrefly: ignore
                     [rio.Text("Pitch", align_x=1), rio.NumberInput(0, decimals=0)],
                     column_spacing=1,
                 ),
@@ -64,19 +71,19 @@ class AudiobookSettingsComponent(rio.Component):
                         "Generate audio for all chapters",
                         color="success",
                         is_sensitive=self.is_button_generate_audio_enabled,
-                        grow_x=True,
+                        grow_x=True,  # pyrefly: ignore
                     ),
                     rio.Button(
                         "Download book",
                         color="primary",
                         is_loading=self.button_download_has_spinner,
                         is_sensitive=self.is_button_download_enabled,
-                        grow_x=True,
+                        grow_x=True,  # pyrefly: ignore
                     ),
                     rio.Button(
                         "Delete book",
                         color=rio.Color.from_oklab(0.25, 0.5, 0.2),
-                        grow_x=True,
+                        grow_x=True,  # pyrefly: ignore
                     ),
                     spacing=1,
                 ),
@@ -113,7 +120,7 @@ class AudiobookChapterComponent(rio.Component):
                 [
                     rio.Webview(
                         self.chapter.audio_url,
-                        align_x=1,
+                        align_x=1,  # pyrefly: ignore
                     ),
                     rio.IconButton(
                         "material/download",
@@ -134,7 +141,7 @@ class AudiobookChapterComponent(rio.Component):
                         rio.ProgressCircle(align_x=1),
                         rio.Text(
                             f"Queued ({self.chapter.queued_position})",
-                            align_x=1,
+                            align_x=1,  # pyrefly: ignore
                         ),
                     ]
                 )
@@ -142,7 +149,7 @@ class AudiobookChapterComponent(rio.Component):
                 row.children.append(
                     rio.Text(
                         "Generating audio...)",
-                        align_x=1,
+                        align_x=1,  # pyrefly: ignore
                     )
                 )
             row.children.append(
@@ -222,7 +229,7 @@ class AudiobookBookPage(rio.Component):
                 [
                     rio.Text(
                         f"'{chapter.custom_title or chapter.title}' with {chapter.sentence_count} sentences",
-                        grow_x=True,
+                        grow_x=True,  # pyrefly: ignore
                         overflow="wrap",
                     ),
                     AudiobookChapterComponent(chapter),
@@ -238,7 +245,7 @@ class AudiobookBookPage(rio.Component):
                     rio.Text(
                         "Table of Contents",
                         style="heading2",
-                        align_x=0.5,
+                        align_x=0.5,  # pyrefly: ignore
                     ),
                     rio.Grid(
                         *my_grid,

@@ -54,7 +54,7 @@ dev = [
     # Info about the system
     "psutil>=6.1.0",
     # Type checker
-    "pyrefly>=0.18.0",
+    "pyrefly>=0.40.0",
     "pytest>=8.3.3",
     # Async await support
     "pytest-asyncio>=0.24.0",
@@ -90,7 +90,7 @@ project-excludes = [
     "**/workers/convert_audiobook.py",
     "**/_app.py",
     "**/components/**/*.py",
-    "**/pages/**/*.py",
+    # "**/pages/**/*.py",
     "**/routes_/**/*.py",
 ]
 

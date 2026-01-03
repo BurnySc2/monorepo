@@ -47,10 +47,13 @@ class ReplayPackBuilderPage(rio.Component):
                 self.bind().filtered_replays,
                 self.on_update_filters,
             ),
+            # pyrefly: ignore
             rio.Separator(min_height=0.1, margin_y=0.5),
             FilterComponent(self.on_update_filters),
+            # pyrefly: ignore
             rio.Separator(min_height=0.1, margin_y=0.5),
             NameTemplateComponent(self.bind().replay_name_pattern),
+            # pyrefly: ignore
             rio.Separator(min_height=0.1, margin_y=0.5),
             ZipAndDownloadComponent(
                 self.bind().uploaded_files,

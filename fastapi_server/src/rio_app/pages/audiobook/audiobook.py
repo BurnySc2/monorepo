@@ -21,6 +21,7 @@ class AudiobookRootPage(rio.Component):
     # TODO Add button to delete all books
     def build(self):
         return rio.Column(
+            # pyrefly: ignore
             rio.Text("Audiobooks", style="heading1", font_weight="bold", align_x=0.5),
             rio.FilePickerArea(),
             rio.Table(data=data, show_row_numbers=False),

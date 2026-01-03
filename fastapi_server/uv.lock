@@ -2885,7 +2885,7 @@ dev = [
     { name = "hypothesis", specifier = ">=6.118.8" },
     { name = "pre-commit", specifier = ">=4.5.1" },
     { name = "psutil", specifier = ">=6.1.0" },
-    { name = "pyrefly", specifier = ">=0.18.0" },
+    { name = "pyrefly", specifier = ">=0.40.0" },
     { name = "pytest", specifier = ">=8.3.3" },
     { name = "pytest-asyncio", specifier = ">=0.24.0" },
     { name = "pytest-benchmark", specifier = ">=5.1.0" },

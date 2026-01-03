@@ -9,5 +9,5 @@ class AudiobookPage(rio.Component):
         return rio.Row(
             # The PageView is responsible for displaying
             # the currently active sub-page
-            rio.PageView(grow_x=True),
+            rio.PageView(),
         )
