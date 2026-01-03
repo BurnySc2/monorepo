@@ -205,7 +205,7 @@ class BookComponent(rio.Component):
             row_book_author.children.append(
                 rio.Text(
                     f"{self.book.custom_book_author or self.book.book_author}",
-                    style="heading1",
+                    style="heading2",
                     align_x=1,  # pyrefly: ignore
                 )
             )
@@ -342,12 +342,21 @@ class AudiobookSettingsComponent(rio.Component):
                             self.available_voices, on_change=self.on_voice_change, selected_value=audio_settings.voice
                         ),
                     ],
-                    # pyrefly: ignore
-                    [rio.Text("Rate", align_x=1), rio.NumberInput(0, decimals=0, on_change=self.on_rate_change)],
-                    # pyrefly: ignore
-                    [rio.Text("Volume", align_x=1), rio.NumberInput(0, decimals=0, on_change=self.on_volume_change)],
-                    # pyrefly: ignore
-                    [rio.Text("Pitch", align_x=1), rio.NumberInput(0, decimals=0, on_change=self.on_pitch_change)],
+                    [
+                        # pyrefly: ignore
+                        rio.Text("Rate", align_x=1),
+                        rio.NumberInput(value=audio_settings.rate, decimals=0, on_change=self.on_rate_change),
+                    ],
+                    [
+                        # pyrefly: ignore
+                        rio.Text("Volume", align_x=1),
+                        rio.NumberInput(value=audio_settings.volume, decimals=0, on_change=self.on_volume_change),
+                    ],
+                    [
+                        # pyrefly: ignore
+                        rio.Text("Pitch", align_x=1),
+                        rio.NumberInput(value=audio_settings.pitch, decimals=0, on_change=self.on_pitch_change),
+                    ],
                     column_spacing=1,
                 ),
                 rio.Row(
@@ -504,7 +513,6 @@ class AudiobookChapterComponent(rio.Component):
 
 
 @rio.page(
-    name="TODO according to book",
     url_segment="book/{book_id}",
     guard=logged_in_guard,
 )
@@ -528,6 +536,9 @@ class AudiobookBookPage(rio.Component):
         if book is None:
             self.is_loading = False
             return
+        await self.session.set_title(
+            f"Book: {book.custom_book_author or book.book_author} - {book.custom_book_title or book.book_title}"
+        )
         self.user_has_access = True
         self.book_data = book
 
