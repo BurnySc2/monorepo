@@ -6,6 +6,7 @@ from functools import partial
 import arrow
 import rio
 
+from minio_helper import AUDIOBOOK_BUCKET, get_s3_client, object_delete
 from models.audiobook import AudiobookBook, AudiobookChapter
 from piccolo_conf import DB
 from rio_app.components.audiobook.epub_reader import EpubChapter, EpubMetadata, extract_chapters, extract_metadata
@@ -30,8 +31,10 @@ class AudiobookRootPage(rio.Component):
     async def on_mount(self):
         @contextmanager
         def set_loading_to_false_afterwards():
-            yield
-            self.is_loading = False
+            try:
+                yield
+            finally:
+                self.is_loading = False
 
         with set_loading_to_false_afterwards():
             logged_in_user = self.session[LoggedInUser]
@@ -44,9 +47,25 @@ class AudiobookRootPage(rio.Component):
     def on_book_click(self, book_id: int):
         self.session.navigate_to(f"/audiobook/book/{book_id}")
 
-    def on_delete_book(self, book_id: int):
-        # TODO Delete book
-        pass
+    async def on_delete_book(self, id_in_list: int, book_id: int):
+        async with DB.transaction():
+            # Delete audio from minio
+            chapters = await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)
+            async with get_s3_client() as s3:
+                for chapter in chapters:
+                    if chapter.minio_object_name is None:
+                        continue
+                    await object_delete(s3, AUDIOBOOK_BUCKET, chapter.minio_object_name)
+            # Delete chapters from db
+            await AudiobookChapter.delete().where(AudiobookChapter.book == book_id)
+            # Delete book from db
+            await AudiobookBook.delete().where(
+                # pyrefly: ignore
+                AudiobookBook.id == book_id
+            )
+        # Update UI
+        self.uploaded_books.pop(id_in_list)
+        self.force_refresh()
 
     async def on_file_drop(self, event: rio.FilePickEvent):
         # TODO File size limit 100mb
@@ -143,8 +162,10 @@ class AudiobookRootPage(rio.Component):
                     rio.Text(arrow.get(b.upload_date).format("YYYY-MM-DD")),
                     rio.Button(
                         b.custom_book_title or b.book_title,
-                        style="plain",
+                        style="plain-text",
                         shape="rounded",
+                        # pyrefly: ignore
+                        align_x=0,
                         # pyrefly: ignore
                         on_press=partial(self.on_book_click, b.id),
                     ),
@@ -153,15 +174,19 @@ class AudiobookRootPage(rio.Component):
                         style="plain-text",
                         shape="rounded",
                         # pyrefly: ignore
+                        align_x=0,
+                        # pyrefly: ignore
                         on_press=partial(self.on_book_click, b.id),
                     ),
                     rio.Text(str(b.chapter_count)),
                     rio.IconButton(
                         "material/delete_forever",
+                        # pyrefly: ignore
+                        on_press=partial(self.on_delete_book, i, b.id),
                         color=rio.Color.from_oklab(0.25, 0.5, 0.2),
                     ),
                 ]
-                for b in self.uploaded_books
+                for i, b in enumerate(self.uploaded_books)
             ]
             col.children.append(rio.Grid(header_row, *rows, column_spacing=2))
         return col
