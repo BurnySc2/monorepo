@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import arrow
 import rio
 from pydantic import BaseModel
 
@@ -52,21 +53,57 @@ class BookComponent(rio.Component):
 class AudiobookSettingsComponent(rio.Component):
     chapters: list[AudiobookChapterQueryResult]
     available_voices: list[str]
+    book_id: int
+
+    refresh_chapters: rio.EventHandler[list[int]] = None
+
+    async def queue_audio_for_all_chapters(self):
+        audio_settings = self.session[AudioSettings]
+        updated_chapters = (
+            await AudiobookChapter.update(
+                {
+                    "queued": arrow.utcnow().naive,
+                    "audio_settings": audio_settings.__dict__,
+                }
+            )
+            .where(
+                (AudiobookChapter.book == self.book_id)
+                & (AudiobookChapter.queued == None)  # pyrefly: ignore # noqa: E711
+            )
+            .returning(AudiobookChapter.chapter_number)
+        )
+        await self.call_event_handler(self.refresh_chapters, [c["chapter_number"] for c in updated_chapters])
+
+    async def delete_all_audio_for_book(self):
+        await AudiobookChapter.update(
+            {
+                "queued": None,
+                "minio_object_name": None,
+                "audio_settings": None,
+            }
+        ).where(
+            AudiobookChapter.book == self.book_id  # pyrefly: ignore
+        )
+        await self.call_event_handler(self.refresh_chapters, [c.chapter_number for c in self.chapters])
+
+    # TODO Download book handler
+
+    # TODO Delete book handler
 
     @property
     def is_button_generate_audio_enabled(self) -> bool:
-        return True
-        # return any(not (c.queued or c.audio_generated) for c in self.chapters)
+        def can_generate_audio(chapter: AudiobookChapterQueryResult) -> bool:
+            if chapter.has_audio:
+                return False
+            if chapter.number_in_queue is not None:
+                return False
+            return not chapter.is_converting
+
+        return any(can_generate_audio(c) for c in self.chapters)
 
     @property
     def is_button_download_enabled(self) -> bool:
-        return True
-        # return all(c.audio_generated for c in self.chapters)
-
-    @property
-    def button_download_has_spinner(self) -> bool:
-        return False
-        # return any(c.queued for c in self.chapters)
+        return all(c.has_audio for c in self.chapters)
 
     def on_voice_change(self, event: rio.DropdownChangeEvent):
         audio_settings = self.session[AudioSettings]
@@ -103,13 +140,19 @@ class AudiobookSettingsComponent(rio.Component):
                         "Generate audio for all chapters",
                         color="success",
                         is_sensitive=self.is_button_generate_audio_enabled,
+                        on_press=self.queue_audio_for_all_chapters,
                         grow_x=True,  # pyrefly: ignore
                     ),
                     rio.Button(
                         "Download book",
                         color="primary",
-                        is_loading=self.button_download_has_spinner,
                         is_sensitive=self.is_button_download_enabled,
+                        grow_x=True,  # pyrefly: ignore
+                    ),
+                    rio.Button(
+                        "Delete all audio",
+                        color=rio.Color.from_oklab(0.25, 0.5, 0.2),
+                        on_press=self.delete_all_audio_for_book,
                         grow_x=True,  # pyrefly: ignore
                     ),
                     rio.Button(
@@ -139,9 +182,43 @@ TEST_HTML = """
 class AudiobookChapterComponent(rio.Component):
     chapter: AudiobookChapterQueryResult
 
-    # TODO Generate audio event handler
-    # TODO Delete audio event handler
     # TODO Download audio event handler
+
+    async def chapter_queue(self):
+        # Change chapter to be queued
+        audio_settings = self.session[AudioSettings]
+        await AudiobookChapter.update(
+            {
+                "queued": arrow.utcnow().naive,
+                "audio_settings": audio_settings.__dict__,
+            }
+        ).where(
+            AudiobookChapter.id == self.chapter.id  # pyrefly: ignore
+        )
+        self.chapter.number_in_queue = -1
+        self.force_refresh()
+
+    async def chapter_download(self):
+        # Create presigned url and redirect user
+        pass
+
+    async def chapter_audio_delete(self):
+        # Change chapter entry in db to no longer have audio
+        await AudiobookChapter.update(
+            {
+                "queued": None,
+                "minio_object_name": None,
+                "audio_settings": None,
+            }
+        ).where(
+            # pyrefly: ignore
+            AudiobookChapter.id == self.chapter.id
+        )
+        self.chapter.has_audio = False
+        self.chapter.number_in_queue = None
+        self.chapter.is_converting = False
+        self.force_refresh()
+        # TODO Delete minio audio file
 
     def build(self):
         row = rio.Row(
@@ -162,26 +239,28 @@ class AudiobookChapterComponent(rio.Component):
                         "material/delete",
                         align_x=1,
                         color=rio.Color.from_oklab(0.25, 0.5, 0.2),
+                        on_press=self.chapter_audio_delete,
                     ),
                 ]
             )
-
         elif self.chapter.number_in_queue is not None:
+            text = "Queued ..."
+            if 0 < self.chapter.number_in_queue:
+                text = f"Queued ({self.chapter.number_in_queue})"
             row.children.extend(
                 [
                     rio.ProgressCircle(align_x=1),
                     rio.Text(
-                        f"Queued ({self.chapter.number_in_queue})",
+                        text,
                         align_x=1,  # pyrefly: ignore
                     ),
+                    rio.IconButton(
+                        "material/delete",
+                        align_x=1,
+                        color=rio.Color.from_oklab(0.25, 0.5, 0.2),
+                        on_press=self.chapter_audio_delete,
+                    ),
                 ]
-            )
-            row.children.append(
-                rio.IconButton(
-                    "material/delete",
-                    align_x=1,
-                    color=rio.Color.from_oklab(0.25, 0.5, 0.2),
-                ),
             )
         elif self.chapter.is_converting:
             row.children.append(
@@ -195,10 +274,11 @@ class AudiobookChapterComponent(rio.Component):
                     "material/delete",
                     align_x=1,
                     color=rio.Color.from_oklab(0.25, 0.5, 0.2),
+                    on_press=self.chapter_audio_delete,
                 ),
             )
         else:
-            row.children.append(rio.Button("Generate audio", color="success"))
+            row.children.append(rio.Button("Generate audio", color="success", on_press=self.chapter_queue))
         return row
 
 
@@ -216,6 +296,27 @@ class AudiobookBookPage(rio.Component):
     chapters_data: list[AudiobookChapterQueryResult] = []
     available_voices: list[str] = []
 
+    async def refresh_chapters(self, chapter_numbers_needing_refresh: list[int]):
+        chapters_info_response: list[dict] = await AudiobookChapter.raw(
+            query_get_chapters, self.book_id, chapter_numbers_needing_refresh
+        )
+        chapters_data = [AudiobookChapterQueryResult(**row) for row in chapters_info_response]
+        for chapter in chapters_data:
+            self.chapters_data[chapter.chapter_number - 1] = chapter
+        self.force_refresh()
+
+    @rio.event.periodic(10)
+    async def periodic(self):
+        # Update queued chapters
+        if self.is_loading or self.book_data is None:
+            return
+        chapter_numbers_needing_refresh: list[int] = [
+            c.chapter_number for c in self.chapters_data if c.number_in_queue is not None or c.is_converting is True
+        ]
+        if len(chapter_numbers_needing_refresh) == 0:
+            return
+        await self.refresh_chapters(chapter_numbers_needing_refresh)
+
     @rio.event.on_mount
     async def on_mount(self):
         logged_in_user = self.session[LoggedInUser]
@@ -232,8 +333,7 @@ class AudiobookBookPage(rio.Component):
 
         # Grab chapter info
         chapters_info_response: list[dict] = await AudiobookChapter.raw(
-            query_get_chapters,
-            self.book_id,
+            query_get_chapters, self.book_id, [i + 1 for i in range(self.book_data.chapter_count)]
         )
         self.chapters_data = [AudiobookChapterQueryResult(**row) for row in chapters_info_response]
 
@@ -272,8 +372,7 @@ class AudiobookBookPage(rio.Component):
         assert self.book_data is not None
         return rio.Column(
             BookComponent(self.book_data),
-            # TODO Pass down audiosettings (binding)
-            AudiobookSettingsComponent(self.chapters_data, self.available_voices),
+            AudiobookSettingsComponent(self.chapters_data, self.available_voices, self.book_id, self.refresh_chapters),
             rio.Rectangle(
                 content=rio.Column(
                     rio.Text(
