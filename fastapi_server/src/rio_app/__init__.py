@@ -6,7 +6,7 @@ import rio
 
 from minio_helper import SC2_REPLAYS_BUCKET, bucket_create, bucket_set_expiration, get_s3_client
 from rio_app import data_models, theme
-from rio_app.components.login.cookies import LoginSettings
+from rio_app.components.login.cookies import LoggedInUser, LoginSettings, provide_logged_in_user
 from rio_app.components.replay_pack_builder.settings import FilterSettings
 from rio_app.routes.index import router
 
@@ -19,9 +19,9 @@ async def on_app_start(_app: rio.App):
         await bucket_set_expiration(s3, SC2_REPLAYS_BUCKET, 1)
 
 
-def on_session_start(sess: rio.Session) -> None:
+async def on_session_start(session: rio.Session) -> None:
     # Determine which layout to use
-    if sess.window_width < 60:
+    if session.window_width < 60:
         layout = data_models.PageLayout(
             device="mobile",
         )
@@ -31,7 +31,15 @@ def on_session_start(sess: rio.Session) -> None:
         )
 
     # Attach the layout to the session
-    sess.attach(layout)
+    session.attach(layout)
+
+    try:
+        logged_in_user = session[LoggedInUser]
+    except KeyError:
+        login_settings = session[LoginSettings]
+        logged_in_user = await provide_logged_in_user(login_settings)
+        if logged_in_user is not None:
+            session.attach(logged_in_user)
 
 
 # Create the Rio app

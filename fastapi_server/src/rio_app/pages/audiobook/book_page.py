@@ -1,6 +1,7 @@
 import rio
 
 from rio_app.components.audiobook.models import Book, Chapter
+from rio_app.components.login.cookies import logged_in_guard
 
 data = {
     "Name": ["Alice", "Bob", "Charlie"],
@@ -165,6 +166,7 @@ class AudiobookChapterComponent(rio.Component):
 @rio.page(
     name="TODO according to book",
     url_segment="book/{book_id}",
+    guard=logged_in_guard,
 )
 class AudiobookBookPage(rio.Component):
     book_id: int
@@ -216,6 +218,8 @@ class AudiobookBookPage(rio.Component):
 
     @rio.event.on_mount
     async def on_mount(self):
+        # TODO Check if user owns this book
+
         # TODO Get data from database about book and chapters
         # TODO Get audiosettings from localstorage
         pass

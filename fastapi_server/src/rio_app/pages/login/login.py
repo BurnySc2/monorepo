@@ -7,9 +7,8 @@ from rio_app.components.login.cookies import (
     TWITCH_CLIENT_ID,
     LoggedInUser,
     LoginSettings,
+    provide_logged_in_user,
 )
-from rio_app.components.login.github import github_get_user
-from rio_app.components.login.twitch import twitch_get_user
 
 
 @rio.page(
@@ -22,14 +21,16 @@ class LoginRootPage(rio.Component):
 
     @rio.event.on_mount
     async def on_mount(self):
-        login_settings = self.session[LoginSettings]
-
-        user = None
-        user = await twitch_get_user(login_settings.twitch_access_token)
-        if user is None:
-            user = await github_get_user(login_settings.github_access_token)
-
-        self.logged_in_user = LoggedInUser.from_service(user)
+        try:
+            # Load session from last time
+            self.logged_in_user = self.session[LoggedInUser]
+        except KeyError:
+            # Log the user in, create user_logged_in session
+            login_settings = self.session[LoginSettings]
+            logged_in_user = await provide_logged_in_user(login_settings)
+            if logged_in_user is not None:
+                self.session.attach(logged_in_user)
+                self.logged_in_user = logged_in_user
         self._is_loading = False
 
     async def twitch_login_handler(self):
@@ -67,6 +68,7 @@ class LoginRootPage(rio.Component):
         login_settings.google_access_token = None
         self.session.attach(login_settings)
         self.logged_in_user = None
+        self.session.detach(LoggedInUser)
 
     def build(self) -> rio.Component:
         if self._is_loading:

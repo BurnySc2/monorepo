@@ -26,4 +26,4 @@ class CallbackGitHubPage(rio.Component):
             self.session.navigate_to("/login")
 
     def build(self) -> rio.Component:
-        return rio.Column(rio.ProgressCircle())
+        return rio.Column(rio.ProgressCircle(align_x=0.5))
