@@ -30,7 +30,6 @@ query_get_chapters = (queries_directory / "audiobook_get_chapters.sql").read_tex
 
 
 class AudiobookChapterQueryResult(BaseModel):
-    # Class used in other contexts
     id: int
     book_id: int
     number_in_queue: int | None  # 'None' if converting or not queued
@@ -56,8 +55,8 @@ async def delete_audio_for_chapters(book_id: int, chapters: list[AudiobookChapte
     chapter_ids: list[int] = [chapter.id for chapter in chapters]
     async with DB.transaction():
         async with get_s3_client() as s3:
-            # Delete book zip
-            await object_delete(s3, AUDIOBOOK_BUCKET, get_book_minio_zip_name(book_id))
+            # Delete book zip - doesn't matter as we re-generate the zip for each download
+            # await object_delete(s3, AUDIOBOOK_BUCKET, get_book_minio_zip_name(book_id))
 
             # Delete audio for chapters
             for chapter in chapters:
@@ -68,10 +67,10 @@ async def delete_audio_for_chapters(book_id: int, chapters: list[AudiobookChapte
         # Set chapters in db to unqueued
         await AudiobookChapter.update(
             {
-                "queued": None,
-                "started_converting": None,
-                "minio_object_name": None,
-                "audio_settings": None,
+                AudiobookChapter.queued: None,
+                AudiobookChapter.started_converting: None,
+                AudiobookChapter.minio_object_name: None,
+                AudiobookChapter.audio_settings: None,
             }
         ).where(
             # pyrefly: ignore
@@ -119,31 +118,102 @@ async def upload_multipart_book(book: AudiobookBook, chapters: list[AudiobookCha
 class BookComponent(rio.Component):
     book: AudiobookBook
 
+    custom_book_title: str = ""
+    custom_book_author: str = ""
+
     edit_title: bool = False
     edit_author: bool = False
 
-    def on_edit_title_button(self):
-        pass
+    @rio.event.on_mount
+    def on_moun(self):
+        self.custom_book_title = self.book.custom_book_title or self.book.book_title
+        self.custom_book_author = self.book.custom_book_author or self.book.book_author
 
-    def on_edit_author_button(self):
-        pass
+    async def on_custom_title_confirm(self, value: rio.TextInputConfirmEvent):
+        await self.on_edit_title_button()
 
-    def build(self):
-        # TODO After clicking on edit, allow user to change title and author name
-        return rio.Column(
-            rio.Row(
+    async def on_custom_author_confirm(self, value: rio.TextInputConfirmEvent):
+        await self.on_edit_author_button()
+
+    async def on_edit_title_button(self):
+        self.edit_title = not self.edit_title
+        if self.edit_title is False:
+            # Save custom title in db to fetch later when downloading book
+            self.book.custom_book_title = self.custom_book_title
+            await AudiobookBook.update(
+                {
+                    AudiobookBook.custom_book_title: self.custom_book_title,
+                }
                 # pyrefly: ignore
-                rio.Text(f"{self.book.custom_book_title or self.book.book_title}", style="heading1", align_x=1),
-                rio.IconButton("material/edit_square", align_x=0, style="colored-text"),
-                spacing=1,
-            ),
-            rio.Row(
+            ).where(AudiobookBook.id == self.book.id)
+        if self.custom_book_title == "":
+            self.custom_book_title = self.book.book_title
+
+    async def on_edit_author_button(self):
+        self.edit_author = not self.edit_author
+        if self.edit_author is False:
+            # Save custom author in db to fetch later when downloading book
+            self.book.custom_book_author = self.custom_book_author
+            await AudiobookBook.update(
+                {
+                    AudiobookBook.custom_book_author: self.custom_book_author,
+                }
                 # pyrefly: ignore
-                rio.Text(f"{self.book.custom_book_author or self.book.book_author}", style="heading1", align_x=1),
-                rio.IconButton("material/edit_square", align_x=0, style="colored-text"),
-                spacing=1,
-            ),
+            ).where(AudiobookBook.id == self.book.id)
+        if self.custom_book_author == "":
+            self.custom_book_author = self.book.book_author
+
+    def build(self) -> rio.Component:
+        row_book_title = rio.Row(spacing=1, grow_x=True)
+        if self.edit_title:
+            row_book_title.children.append(
+                rio.TextInput(
+                    # pyrefly: ignore
+                    self.bind().custom_book_title,
+                    # pyrefly: ignore
+                    on_confirm=self.on_custom_title_confirm,
+                    text_style=rio.TextStyle(font_size=2),
+                    label="Book title",
+                    grow_x=True,  # pyrefly: ignore
+                )
+            )
+        else:
+            row_book_title.children.append(
+                rio.Text(
+                    f"{self.book.custom_book_title or self.book.book_title}",
+                    style="heading1",
+                    align_x=1,  # pyrefly: ignore
+                )
+            )
+        row_book_title.children.append(
+            rio.IconButton("material/edit_square", align_x=1, style="colored-text", on_press=self.on_edit_title_button)
         )
+
+        row_book_author = rio.Row(spacing=1, grow_x=True)
+        if self.edit_author:
+            row_book_author.children.append(
+                rio.TextInput(
+                    # pyrefly: ignore
+                    self.bind().custom_book_author,
+                    on_confirm=self.on_custom_author_confirm,
+                    text_style=rio.TextStyle(font_size=2),
+                    label="Author name",
+                    grow_x=True,  # pyrefly: ignore
+                )
+            )
+        else:
+            row_book_author.children.append(
+                rio.Text(
+                    f"{self.book.custom_book_author or self.book.book_author}",
+                    style="heading1",
+                    align_x=1,  # pyrefly: ignore
+                )
+            )
+        row_book_author.children.append(
+            rio.IconButton("material/edit_square", align_x=1, style="colored-text", on_press=self.on_edit_author_button)
+        )
+
+        return rio.Column(row_book_title, row_book_author)
 
 
 class AudiobookSettingsComponent(rio.Component):
@@ -158,8 +228,10 @@ class AudiobookSettingsComponent(rio.Component):
         updated_chapters = (
             await AudiobookChapter.update(
                 {
-                    "queued": arrow.utcnow().naive,
-                    "audio_settings": AudioSettingsBaseModel.from_dataclass(audio_settings).model_dump_json(),
+                    AudiobookChapter.queued: arrow.utcnow().naive,
+                    AudiobookChapter.audio_settings: AudioSettingsBaseModel.from_dataclass(
+                        audio_settings
+                    ).model_dump_json(),
                 }
             )
             .where(
@@ -172,6 +244,9 @@ class AudiobookSettingsComponent(rio.Component):
         await self.call_event_handler(self.refresh_chapters, [c["chapter_number"] for c in updated_chapters])
 
     async def prepare_book_download_and_redirect(self):
+        assert all(chapter.has_audio for chapter in self.chapters), (
+            "All chapters need to have audio generated for this to work"
+        )
         book = await AudiobookBook.objects().get(AudiobookBook.id == self.book_id)  # pyrefly: ignore
 
         # If object exists, redirect
@@ -192,9 +267,10 @@ class AudiobookSettingsComponent(rio.Component):
                     return True
             return False
 
-        already_exists = await download_book_object()
-        if already_exists:
-            return
+        # Book title or author may have changed, always re-generate .zip
+        # already_exists = await download_book_object()
+        # if already_exists:
+        #     return
 
         assert book is not None
         await upload_multipart_book(book, self.chapters)
@@ -214,18 +290,22 @@ class AudiobookSettingsComponent(rio.Component):
 
     @property
     def is_button_generate_audio_enabled(self) -> bool:
-        def can_generate_audio(chapter: AudiobookChapterQueryResult) -> bool:
-            if chapter.has_audio:
-                return False
-            if chapter.number_in_queue is not None:
-                return False
-            return not chapter.is_converting
+        # TODO Needs to react on chapter deletions and new queues, return True for now
+        return True
+        # def can_generate_audio(chapter: AudiobookChapterQueryResult) -> bool:
+        #     if chapter.has_audio:
+        #         return False
+        #     if chapter.number_in_queue is not None:
+        #         return False
+        #     return not chapter.is_converting
 
-        return any(can_generate_audio(c) for c in self.chapters)
+        # return any(can_generate_audio(c) for c in self.chapters)
 
     @property
     def is_button_download_enabled(self) -> bool:
-        return all(c.has_audio for c in self.chapters)
+        # TODO Same as above
+        return True
+        # return all(c.has_audio for c in self.chapters)
 
     def on_voice_change(self, event: rio.DropdownChangeEvent):
         audio_settings = self.session[AudioSettings]
@@ -303,8 +383,10 @@ class AudiobookChapterComponent(rio.Component):
         audio_settings = self.session[AudioSettings]
         await AudiobookChapter.update(
             {
-                "queued": arrow.utcnow().naive,
-                "audio_settings": AudioSettingsBaseModel.from_dataclass(audio_settings).model_dump_json(),
+                AudiobookChapter.queued: arrow.utcnow().naive,
+                AudiobookChapter.audio_settings: AudioSettingsBaseModel.from_dataclass(
+                    audio_settings
+                ).model_dump_json(),
             }
         ).where(
             AudiobookChapter.id == self.chapter.id  # pyrefly: ignore
@@ -373,7 +455,8 @@ class AudiobookChapterComponent(rio.Component):
                     rio.ProgressCircle(align_x=0),
                     rio.Text(
                         text,
-                        align_x=1,  # pyrefly: ignore
+                        align_x=0,  # pyrefly: ignore
+                        grow_x=True,  # pyrefly: ignore
                     ),
                     rio.IconButton(
                         "material/delete",
@@ -389,7 +472,8 @@ class AudiobookChapterComponent(rio.Component):
                     rio.ProgressCircle(align_x=0),
                     rio.Text(
                         "Generating audio ...",
-                        align_x=1,  # pyrefly: ignore
+                        align_x=0,  # pyrefly: ignore
+                        grow_x=True,  # pyrefly: ignore
                     ),
                 ]
             )
@@ -473,12 +557,15 @@ class AudiobookBookPage(rio.Component):
         chapters_data = [AudiobookChapterQueryResult(**row) for row in chapters_info_response]
         for chapter in chapters_data:
             self.chapters_data[chapter.chapter_number - 1] = chapter
+        await self.create_presigned_urls(self.chapters_data)
         self.force_refresh()
 
     async def create_presigned_urls(self, chapters: list[AudiobookChapterQueryResult]):
         async with get_s3_client() as s3:
             # TODO Get presigned urls for all of them at the same time
             for chapter in chapters:
+                if chapter.minio_presigned_url != "":
+                    continue
                 if chapter.minio_object_name is None:
                     continue
                 url = await object_create_presigned_url(
