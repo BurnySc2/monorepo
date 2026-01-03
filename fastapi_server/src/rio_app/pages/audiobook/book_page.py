@@ -312,7 +312,20 @@ class AudiobookSettingsComponent(rio.Component):
         audio_settings.voice = event.value
         self.session.attach(audio_settings)
 
-    # TODO Other change handlers
+    def on_rate_change(self, event: rio.NumberInputChangeEvent):
+        audio_settings = self.session[AudioSettings]
+        audio_settings.rate = int(event.value)
+        self.session.attach(audio_settings)
+
+    def on_volume_change(self, event: rio.NumberInputChangeEvent):
+        audio_settings = self.session[AudioSettings]
+        audio_settings.volume = int(event.value)
+        self.session.attach(audio_settings)
+
+    def on_pitch_change(self, event: rio.NumberInputChangeEvent):
+        audio_settings = self.session[AudioSettings]
+        audio_settings.pitch = int(event.value)
+        self.session.attach(audio_settings)
 
     def build(self):
         audio_settings = self.session[AudioSettings]
@@ -330,11 +343,11 @@ class AudiobookSettingsComponent(rio.Component):
                         ),
                     ],
                     # pyrefly: ignore
-                    [rio.Text("Rate", align_x=1), rio.NumberInput(0, decimals=0)],
+                    [rio.Text("Rate", align_x=1), rio.NumberInput(0, decimals=0, on_change=self.on_rate_change)],
                     # pyrefly: ignore
-                    [rio.Text("Volume", align_x=1), rio.NumberInput(0, decimals=0)],
+                    [rio.Text("Volume", align_x=1), rio.NumberInput(0, decimals=0, on_change=self.on_volume_change)],
                     # pyrefly: ignore
-                    [rio.Text("Pitch", align_x=1), rio.NumberInput(0, decimals=0)],
+                    [rio.Text("Pitch", align_x=1), rio.NumberInput(0, decimals=0, on_change=self.on_pitch_change)],
                     column_spacing=1,
                 ),
                 rio.Row(
