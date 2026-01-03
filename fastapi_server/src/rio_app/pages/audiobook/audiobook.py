@@ -13,36 +13,8 @@ from rio_app.components.audiobook.epub_reader import EpubChapter, EpubMetadata, 
 from rio_app.components.login.cookies import LoggedInUser
 
 
-@rio.page(
-    name="Audiobook List",
-    url_segment="",
-)
-class AudiobookRootPage(rio.Component):
-    # TODO Allow user to delete book from the list
-    # TODO Add button to delete all books
-
-    is_loading: bool = True
-    is_logged_in: bool = False
-    book_processing: bool = False
-
-    uploaded_books: list[AudiobookBook] = []
-
-    @rio.event.on_mount
-    async def on_mount(self):
-        @contextmanager
-        def set_loading_to_false_afterwards():
-            try:
-                yield
-            finally:
-                self.is_loading = False
-
-        with set_loading_to_false_afterwards():
-            logged_in_user = self.session[LoggedInUser]
-            self.is_logged_in = True
-            books = await AudiobookBook.objects().where(AudiobookBook.uploaded_by == logged_in_user.db_name)
-            if len(books) == 0:
-                return
-            self.uploaded_books = books
+class AudiobookBooksOverview(rio.Component):
+    uploaded_books: list[AudiobookBook]
 
     def on_book_click(self, book_id: int):
         self.session.navigate_to(f"/audiobook/book/{book_id}")
@@ -66,6 +38,76 @@ class AudiobookRootPage(rio.Component):
         # Update UI
         self.uploaded_books.pop(id_in_list)
         self.force_refresh()
+
+    def build(self):
+        header_row = [
+            rio.Text("Upload date", font_weight="bold"),
+            rio.Text("Book title", font_weight="bold"),
+            rio.Text("Book author", font_weight="bold"),
+            rio.Text("Chapters", font_weight="bold"),
+            rio.Text("Remove Book", font_weight="bold"),
+        ]
+        rows = [
+            [
+                rio.Text(arrow.get(b.upload_date).format("YYYY-MM-DD")),
+                rio.Button(
+                    b.custom_book_title or b.book_title,
+                    style="plain-text",
+                    shape="rounded",
+                    # pyrefly: ignore
+                    align_x=0,
+                    # pyrefly: ignore
+                    on_press=partial(self.on_book_click, b.id),
+                ),
+                rio.Button(
+                    b.custom_book_author or b.book_author,
+                    style="plain-text",
+                    shape="rounded",
+                    # pyrefly: ignore
+                    align_x=0,
+                    # pyrefly: ignore
+                    on_press=partial(self.on_book_click, b.id),
+                ),
+                rio.Text(str(b.chapter_count)),
+                rio.IconButton(
+                    "material/delete_forever",
+                    # pyrefly: ignore
+                    on_press=partial(self.on_delete_book, i, b.id),
+                    color=rio.Color.from_oklab(0.25, 0.5, 0.2),
+                ),
+            ]
+            for i, b in enumerate(self.uploaded_books)
+        ]
+        return rio.Grid(header_row, *rows, column_spacing=2)
+
+
+@rio.page(
+    name="Audiobook List",
+    url_segment="",
+)
+class AudiobookRootPage(rio.Component):
+    is_loading: bool = True
+    is_logged_in: bool = False
+    book_processing: bool = False
+
+    uploaded_books: list[AudiobookBook] = []
+
+    @rio.event.on_mount
+    async def on_mount(self):
+        @contextmanager
+        def set_loading_to_false_afterwards():
+            try:
+                yield
+            finally:
+                self.is_loading = False
+
+        with set_loading_to_false_afterwards():
+            logged_in_user = self.session[LoggedInUser]
+            self.is_logged_in = True
+            books = await AudiobookBook.objects().where(AudiobookBook.uploaded_by == logged_in_user.db_name)
+            if len(books) == 0:
+                return
+            self.uploaded_books = books
 
     async def on_file_drop(self, event: rio.FilePickEvent):
         # TODO File size limit 100mb
@@ -150,43 +192,5 @@ class AudiobookRootPage(rio.Component):
         elif len(self.uploaded_books) == 0:
             col.children.append(rio.Text("Your uploaded books will appear here."))
         else:
-            header_row = [
-                rio.Text("Upload date", font_weight="bold"),
-                rio.Text("Book title", font_weight="bold"),
-                rio.Text("Book author", font_weight="bold"),
-                rio.Text("Chapters", font_weight="bold"),
-                rio.Text("Remove Book", font_weight="bold"),
-            ]
-            rows = [
-                [
-                    rio.Text(arrow.get(b.upload_date).format("YYYY-MM-DD")),
-                    rio.Button(
-                        b.custom_book_title or b.book_title,
-                        style="plain-text",
-                        shape="rounded",
-                        # pyrefly: ignore
-                        align_x=0,
-                        # pyrefly: ignore
-                        on_press=partial(self.on_book_click, b.id),
-                    ),
-                    rio.Button(
-                        b.custom_book_author or b.book_author,
-                        style="plain-text",
-                        shape="rounded",
-                        # pyrefly: ignore
-                        align_x=0,
-                        # pyrefly: ignore
-                        on_press=partial(self.on_book_click, b.id),
-                    ),
-                    rio.Text(str(b.chapter_count)),
-                    rio.IconButton(
-                        "material/delete_forever",
-                        # pyrefly: ignore
-                        on_press=partial(self.on_delete_book, i, b.id),
-                        color=rio.Color.from_oklab(0.25, 0.5, 0.2),
-                    ),
-                ]
-                for i, b in enumerate(self.uploaded_books)
-            ]
-            col.children.append(rio.Grid(header_row, *rows, column_spacing=2))
+            col.children.append(AudiobookBooksOverview(self.bind().uploaded_books))
         return col
