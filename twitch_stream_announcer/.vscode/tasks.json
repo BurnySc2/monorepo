@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "nim: build current file (for debugging)",
+      "type": "shell",
+      "command": "nim",
+      "args": [
+        "c",
+        "--debugger:native",
+        "--out:${workspaceFolder}/bin/${fileBasenameNoExtension}",
+        "${relativeFile}"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
