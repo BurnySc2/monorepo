@@ -80,7 +80,7 @@ class AudiobookSettingsComponent(rio.Component):
         await download_book_object()
 
     async def delete_all_audio_for_book(self):
-        await delete_audio_for_chapters(self.book_id, self.chapters)
+        await delete_audio_for_chapters(self.chapters)
         await self.call_event_handler(self.refresh_chapters, [c.chapter_number for c in self.chapters])
 
     async def delete_book(self):

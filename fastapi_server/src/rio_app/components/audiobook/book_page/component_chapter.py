@@ -52,7 +52,7 @@ class AudiobookChapterComponent(rio.Component):
 
     async def chapter_audio_delete(self):
         # Change chapter entry in db to no longer have audio
-        await delete_audio_for_chapters(self.chapter.book_id, [self.chapter])
+        await delete_audio_for_chapters([self.chapter])
         self.chapter.has_audio = False
         self.chapter.number_in_queue = None
         self.chapter.is_converting = False

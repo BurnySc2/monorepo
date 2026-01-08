@@ -16,12 +16,15 @@ class AudiobookBook(Table, tablename="litestar_audiobook_book"):
 
 class AudiobookChapter(Table, tablename="litestar_audiobook_chapter"):
     book = ForeignKey(references=AudiobookBook)
+    # None if not queued, otherwise queued at timestamp
     queued = Timestamp(required=False, null=True, default=None)
+    # None if not started converting, otherwise started converting at timestamp
     started_converting = Timestamp(required=False, null=True, default=None)
     chapter_title = Text(required=True)
     chapter_number = Integer(required=True)
     word_count = Integer(required=True)
     sentence_count = Integer(required=True)
     content = Text(required=True)
+    # None if has no audio on minio, otherwise audio (probably) exists
     minio_object_name = Text(required=False, null=True, default=None)
     audio_settings = JSON(required=False, null=True, default=None)

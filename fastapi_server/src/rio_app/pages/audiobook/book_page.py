@@ -15,6 +15,7 @@ from rio_app.components.audiobook.generate_tts import get_supported_voices
 from rio_app.components.audiobook.models import (
     AudiobookChapterQueryResult,
     AudioSettings,
+    delete_audio_for_chapters,
 )
 from rio_app.components.login.cookies import LoggedInUser, logged_in_guard
 
@@ -37,7 +38,6 @@ class AudiobookBookPage(rio.Component):
 
     @rio.event.on_mount
     async def on_mount(self):
-        # TODO Handle auto deletion from minio - minio url might be invalid for audio from chapter, set to None then
         logged_in_user = self.session[LoggedInUser]
         # Check if user owns this book
         book = await AudiobookBook.objects().get(
@@ -59,7 +59,10 @@ class AudiobookBookPage(rio.Component):
         )
         self.chapters_data = [AudiobookChapterQueryResult(**row) for row in chapters_info_response]
 
-        await self.create_presigned_urls(self.chapters_data)
+        # Handle auto deletion from minio - minio url might be invalid for audio because minio autodeletes files
+        # after some time, set to None then
+        chapters_with_expired_object_name = await self.create_presigned_urls(self.chapters_data)
+        await delete_audio_for_chapters(chapters_with_expired_object_name)
 
         # Grab available voices
         self.available_voices = await get_supported_voices()
@@ -96,6 +99,7 @@ class AudiobookBookPage(rio.Component):
         self.force_refresh()
 
     async def create_presigned_urls(self, chapters: list[AudiobookChapterQueryResult]):
+        chapters_with_expired_object_name = list[AudiobookChapterQueryResult]()
         async with get_s3_client() as s3:
             # TODO Get presigned urls for all of them at the same time
             for chapter in chapters:
@@ -107,8 +111,11 @@ class AudiobookBookPage(rio.Component):
                     s3, AUDIOBOOK_BUCKET, chapter.minio_object_name, file_name=f"chapter_{chapter.chapter_number}.mp3"
                 )
                 if url is None:
+                    chapter.minio_object_name = None
+                    chapters_with_expired_object_name.append(chapter)
                     continue
                 chapter.minio_presigned_url = url
+        return chapters_with_expired_object_name
 
     def build(self) -> rio.Component:
         if self.is_loading:

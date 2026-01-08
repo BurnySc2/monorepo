@@ -79,10 +79,12 @@ def get_book_minio_zip_name(book_id: int) -> str:
     return f"book_{book_id}.zip"
 
 
-async def delete_audio_for_chapters(book_id: int, chapters: list[AudiobookChapterQueryResult]) -> None:
+async def delete_audio_for_chapters(chapters: list[AudiobookChapterQueryResult]) -> None:
     # Delete audiobook zip from minio if exists
     # Delete audio for chapter from minio if exists
     # Set chapters to not have audio for ids
+    if len(chapters) == 0:
+        return
     chapter_ids: list[int] = [chapter.id for chapter in chapters]
     async with DB.transaction():
         async with get_s3_client() as s3:
