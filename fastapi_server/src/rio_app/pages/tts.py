@@ -54,7 +54,7 @@ class LoginRootPage(rio.Component):
 
     @property
     def browser_source_url(self) -> str:
-        return f"https://burnysc2.xyz/tts/twitch/{self.twitch_url_channel_name}?volume={self.twitch_url_volume:d}"
+        return f"https://burnysc2.xyz/tts-api/twitch/{self.twitch_url_channel_name}?volume={self.twitch_url_volume:.0f}"
 
     async def copy_to_clipboard(self, trigger: Literal["chat_text", "overlay_link"]):
         if trigger == "chat_text":

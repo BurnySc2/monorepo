@@ -14,7 +14,8 @@ from rio_app.components.audiobook.models import AudioSettings
 from rio_app.components.login.cookies import LoggedInUser, LoginSettings, provide_logged_in_user
 from rio_app.components.replay_pack_builder.settings import FilterSettings
 from rio_app.components.tts.tts_settings import TTSSettings
-from rio_app.routes.index import router
+from rio_app.routes.index import IndexRouter
+from rio_app.routes.tts_websocket import TTSRouter
 
 _ = load_dotenv()
 
@@ -83,4 +84,5 @@ app = rio.App(
 )
 
 fastapi_app = app.as_fastapi()
-fastapi_app.include_router(router, prefix="/api")
+fastapi_app.include_router(IndexRouter, prefix="/api")
+fastapi_app.include_router(TTSRouter, prefix="/tts-api")
