@@ -13,6 +13,7 @@ from rio_app import data_models, theme
 from rio_app.components.audiobook.models import AudioSettings
 from rio_app.components.login.cookies import LoggedInUser, LoginSettings, provide_logged_in_user
 from rio_app.components.replay_pack_builder.settings import FilterSettings
+from rio_app.components.tts.tts_settings import TTSSettings
 from rio_app.routes.index import router
 
 _ = load_dotenv()
@@ -78,7 +79,7 @@ app = rio.App(
     # override Rio's default.
     theme=theme.THEME,
     assets_dir=Path(__file__).parent / "assets",
-    default_attachments=[FilterSettings(), LoginSettings(), AudioSettings()],
+    default_attachments=[FilterSettings(), LoginSettings(), AudioSettings(), TTSSettings()],
 )
 
 fastapi_app = app.as_fastapi()
