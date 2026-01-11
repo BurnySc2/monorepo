@@ -27,4 +27,4 @@ FROM scratch
 COPY --from=base / /
 WORKDIR /root/fastapi_server
 ENV PYTHONPATH=$PYTHONPATH:/root/fastapi_server/src
-CMD ["uv", "run", "--no-dev", "--directory", "src", "rio", "run", "--port", "8000", "--release"]
+CMD ["uv", "run", "--no-dev", "--directory", "src", "rio", "run", "--port", "8000", "--release", "--public"]

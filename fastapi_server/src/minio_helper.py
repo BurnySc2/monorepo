@@ -10,7 +10,7 @@ from types_aiobotocore_s3 import S3Client
 from types_aiobotocore_s3.service_resource import Bucket, S3ServiceResource
 from types_aiobotocore_s3.type_defs import HeadObjectOutputTypeDef, ObjectTypeDef
 
-ENDPOINT_URL = "http://localhost:9000"
+ENDPOINT_URL = os.getenv("MINIO_URL", "http://0.0.0.0.9000")
 ACCESS_KEY = os.getenv("MINIO_ACCESS_TOKEN")
 SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 

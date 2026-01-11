@@ -7,4 +7,8 @@ import rio
 )
 class ReplayPackBuilderPage(rio.Component):
     def build(self) -> rio.Component:
-        return rio.Text("Welcome to burnysc2's homepage")
+        return rio.Text(
+            "Welcome to burnysc2's homepage",
+            # pyrefly: ignore
+            align_x=0.5,
+        )
