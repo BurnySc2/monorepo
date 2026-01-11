@@ -2817,6 +2817,7 @@ dependencies = [
     { name = "rio-ui" },
     { name = "sc2reader" },
     { name = "stream-zip" },
+    { name = "types-aioboto3", extra = ["full"] },
 ]
 
 [package.dev-dependencies]
@@ -2837,7 +2838,6 @@ dev = [
     { name = "ruff" },
     { name = "sqlfluff" },
     { name = "toml" },
-    { name = "types-aioboto3", extra = ["full"] },
 ]
 
 [package.metadata]
@@ -2857,6 +2857,7 @@ requires-dist = [
     { name = "rio-ui", specifier = ">=0.11.1" },
     { name = "sc2reader", specifier = ">=1.8.0" },
     { name = "stream-zip", specifier = ">=0.0.83" },
+    { name = "types-aioboto3", extras = ["full"], specifier = ">=15.5.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -2877,7 +2878,6 @@ dev = [
     { name = "ruff", specifier = ">=0.7.3" },
     { name = "sqlfluff", specifier = ">=3.3.1" },
     { name = "toml", specifier = ">=0.10.2" },
-    { name = "types-aioboto3", extras = ["full"], specifier = ">=15.5.0" },
 ]
 
 [[package]]

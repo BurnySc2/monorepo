@@ -14,9 +14,8 @@ ENDPOINT_URL = "http://localhost:9000"
 ACCESS_KEY = os.getenv("MINIO_ACCESS_TOKEN")
 SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 
-# TODO Set env var
-SC2_REPLAYS_BUCKET = os.getenv("DOESNT_EXIST", "sc2-replays")
-AUDIOBOOK_BUCKET = os.getenv("DOESNT_EXIST", "audibooks")
+MINIO_SC2_REPLAYS_BUCKET = os.getenv("MINIO_SC2_REPLAYS_BUCKET", "sc2-replays")
+MINIO_AUDIOBOOK_BUCKET = os.getenv("MINIO_AUDIOBOOK_BUCKET", "audiobooks")
 
 
 @asynccontextmanager

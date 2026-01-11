@@ -3,7 +3,7 @@ from pathlib import Path
 import rio
 
 from minio_helper import (
-    AUDIOBOOK_BUCKET,
+    MINIO_AUDIOBOOK_BUCKET,
     get_s3_client,
     object_create_presigned_url,
 )
@@ -108,7 +108,10 @@ class AudiobookBookPage(rio.Component):
                 if chapter.minio_object_name is None:
                     continue
                 url = await object_create_presigned_url(
-                    s3, AUDIOBOOK_BUCKET, chapter.minio_object_name, file_name=f"chapter_{chapter.chapter_number}.mp3"
+                    s3,
+                    MINIO_AUDIOBOOK_BUCKET,
+                    chapter.minio_object_name,
+                    file_name=f"chapter_{chapter.chapter_number}.mp3",
                 )
                 if url is None:
                     chapter.minio_object_name = None

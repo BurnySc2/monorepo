@@ -2,7 +2,7 @@ import arrow
 import rio
 
 from minio_helper import (
-    AUDIOBOOK_BUCKET,
+    MINIO_AUDIOBOOK_BUCKET,
     get_s3_client,
     object_create_presigned_url,
 )
@@ -42,7 +42,7 @@ class AudiobookChapterComponent(rio.Component):
         async with get_s3_client() as s3:
             obj = await object_create_presigned_url(
                 s3,
-                AUDIOBOOK_BUCKET,
+                MINIO_AUDIOBOOK_BUCKET,
                 self.chapter.minio_object_name,
                 f"{self.chapter.chapter_number:04d}_{normalize_filename(self.chapter.chapter_title)}.mp3",
             )

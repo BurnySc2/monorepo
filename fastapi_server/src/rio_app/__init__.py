@@ -7,7 +7,13 @@ from typing import Literal
 import rio
 from dotenv import load_dotenv
 
-from minio_helper import AUDIOBOOK_BUCKET, SC2_REPLAYS_BUCKET, bucket_create, bucket_set_expiration, get_s3_client
+from minio_helper import (
+    MINIO_AUDIOBOOK_BUCKET,
+    MINIO_SC2_REPLAYS_BUCKET,
+    bucket_create,
+    bucket_set_expiration,
+    get_s3_client,
+)
 from models.audiobook import AudiobookBook, AudiobookChapter
 from rio_app import data_models, theme
 from rio_app.components.audiobook.models import AudioSettings
@@ -28,10 +34,10 @@ async def on_app_start(_app: rio.App):
     # TODO Create database tables
     # Create minio buckets
     async with get_s3_client() as s3:
-        await bucket_create(s3, SC2_REPLAYS_BUCKET)
-        await bucket_set_expiration(s3, SC2_REPLAYS_BUCKET, 1)
-        await bucket_create(s3, AUDIOBOOK_BUCKET)
-        await bucket_set_expiration(s3, AUDIOBOOK_BUCKET, 21)
+        await bucket_create(s3, MINIO_SC2_REPLAYS_BUCKET)
+        await bucket_set_expiration(s3, MINIO_SC2_REPLAYS_BUCKET, 1)
+        await bucket_create(s3, MINIO_AUDIOBOOK_BUCKET)
+        await bucket_set_expiration(s3, MINIO_AUDIOBOOK_BUCKET, 21)
 
     # Create tables
     if STAGE == "dev":

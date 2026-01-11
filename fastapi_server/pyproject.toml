@@ -43,6 +43,7 @@ dependencies = [
     "rio-ui>=0.11.1",
     # Async access to minio client
     "aioboto3>=15.5.0",
+    "types-aioboto3[full]>=15.5.0",
 ]
 
 [tool.uv]
@@ -70,7 +71,6 @@ dev = [
     "toml>=0.10.2",
     "pytest-databases[postgres]>=0.13.0",
     "pre-commit>=4.5.1",
-    "types-aioboto3[full]>=15.5.0",
     "cachetools>=6.2.4",
 ]
 

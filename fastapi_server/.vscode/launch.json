@@ -18,9 +18,6 @@
             "env": {
                 "PYDEVD_DISABLE_FILE_VALIDATION": "1",
                 "PYTHONPATH": "${workspaceFolder}/src",
-                "REFLEX_HOT_RELOAD_INCLUDE_PATHS": "${workspaceFolder}/src",
-                "REFLEX_WEB_WORKDIR": "${workspaceFolder}/data/.web",
-                "REFLEX_STATES_WORKDIR": "${workspaceFolder}/data/.states",
             }
         },
         {

@@ -3,9 +3,7 @@ x-services-fragments:
   webserver: &webserver
     image: burnysc2/litestar_server:latest_dev
     pull_policy: never
-    command:
-      uv run --no-dev litestar --app-dir src run --wc 1 --host 0.0.0.0 --port
-      8000
+    command: uv run --no-dev --directory src rio run --port 8000 --release
     restart: unless-stopped
     container_name: litestar_server
     hostname: litestar_server
