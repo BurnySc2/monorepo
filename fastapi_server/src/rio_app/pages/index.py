@@ -7,4 +7,4 @@ import rio
 )
 class ReplayPackBuilderPage(rio.Component):
     def build(self) -> rio.Component:
-        return rio.Text("Hello world!")
+        return rio.Text("Welcome to burnysc2's homepage")
