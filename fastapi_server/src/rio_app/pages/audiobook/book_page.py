@@ -124,7 +124,13 @@ class AudiobookBookPage(rio.Component):
         if self.is_loading:
             return rio.ProgressCircle(align_x=0.5)
         if not self.user_has_access:
-            return rio.Text("You don't have access to this book!")
+            return rio.Text(
+                text="You don't have access to this book!",
+                # pyrefly: ignore
+                align_x=0.5,
+                # pyrefly: ignore
+                align_y=0.5,
+            )
 
         # Render chapters
         my_grid: list[list[rio.Component]] = []
