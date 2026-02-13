@@ -25,7 +25,7 @@ Now set up the correct interpreter path.
 TODO
 
 # Check dependencies
-To avoid packages with large packages, we can use `pipdeptree`
+To avoid packages with large amount of dependencies, we can use `pipdeptree`
 ```sh
 uv run pipdeptree > deps.txt
 ```

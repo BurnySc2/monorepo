@@ -20,24 +20,28 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4
 
-      # https://earthly.dev/get-earthly
-      - name: Install Earthly
-        run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+      - name: Install uv
+        run: pip install uv
 
-      - name: Run code checks
+      - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: earthly +pre-commit --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+        run: uv sync --frozen --no-cache --no-install-project
+
+      - name: Run pre-commit hooks
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv run pre-commit run --all-files --hook-stage push
 
   test_backend:
     name: test_backend_py${{ matrix.python-version }}
@@ -45,7 +49,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
 
@@ -54,8 +58,7 @@ jobs:
 
       - name: Set up postgres and minio test instances
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: |
-          docker compose --profile test up -d
+        run: docker compose --profile test up -d
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4

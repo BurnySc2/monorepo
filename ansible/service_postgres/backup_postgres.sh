@@ -26,8 +26,8 @@ chmod 700 $BACKUP_FOLDER
 # Backup
 CONTAINER_NAME="postgres_postgres"
 backupargs=(
-    exec $CONTAINER_NAME 
-    pg_dump 
+    exec $CONTAINER_NAME
+    pg_dump
     # User
     -U postgres
     # Database

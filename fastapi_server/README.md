@@ -12,7 +12,7 @@ Start database (postgres) and minio
 docker compose up
 ```
 
-Install dependencies with 
+Install dependencies with
 ```sh
 uv sync
 ```
@@ -20,12 +20,6 @@ uv sync
 Open a Python file in the `fastapi_server` folder and select the correct python environment in the bottom right of vscode.
 
 Start webserver with `uv run src/app.py` or via the vscode debug config `Start LiteStar`.
-
-If you run it for the first time, the database schema needs to be generated and pushed to postgres
-```sh
-uv run prisma generate
-uv run prisma migrate reset
-```
 
 Now you can go to http://0.0.0.0:8000 or http://0.0.0.0:8000/schema to check out the documentation to all endpoints.
 

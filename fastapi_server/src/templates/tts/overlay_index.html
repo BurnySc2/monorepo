@@ -38,11 +38,10 @@
     <div
       class="flex h-screen flex-col items-center justify-center"
       hx-ext="ws"
-      ws-connect="{{ ws_backend_server_url }}/tts-ws/{{ stream_name }}/{{ read_name_lang }}"
+      ws-connect="{{ ws_backend_server_url }}/tts-api/ws/{{ stream_name }}/{{ read_name_lang }}"
     >
       <div id="content" class="fade-out-element">
         <audio controls id="audio">
-          <source src="" type="audio/mpeg" />
           Your browser does not support the audio element.
         </audio>
       </div>

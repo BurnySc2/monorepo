@@ -2,7 +2,7 @@
 # https://www.codewars.com/kata/5908242330e4f567e90000a3/train/python
 circleIntersection=lambda a,b,r: 1.2284*max(0, ((2*r)-((b[1]-a[1])**2+(b[0]-a[0])**2)**0.5))**2
 
-import math 
+import math
 def circleIntersection(a,b,r):
     const = (1/6) * (4 * math.pi - 3**1.5)
     # const = 1.2284

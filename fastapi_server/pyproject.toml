@@ -1,7 +1,7 @@
 [project]
 name = "src"
 version = "0.1.0"
-requires-python = ">=3.10, <3.13"
+requires-python = ">=3.10, <3.15"
 dependencies = [
     # Time management
     "arrow>=1.3.0",
@@ -12,9 +12,9 @@ dependencies = [
     # Web requests (sync + async)
     "httpx>=0.27.2",
     # Websockets for httpx
-    "httpx-ws>=0.6.2",
+    # "httpx-ws>=0.6.2",
     # Fastapi alternative https://docs.litestar.dev/latest/
-    "litestar[standard]>=2.12.1",
+    # "litestar[standard]>=2.12.1",
     # Simple logger
     "loguru>=0.7.2",
     # Analyse mp3 files in memory
@@ -34,21 +34,29 @@ dependencies = [
     # Zip files with low memory footprint
     "stream-zip>=0.0.83",
     # AWS S3
-    "minio>=7.2.15",
+    # "minio>=7.2.15",
     "humanize>=4.11.0",
     # SC2 Replay Parser
     "sc2reader>=1.8.0",
+    # "reflex==0.8.24.post1",
+    # "streamlit>=1.52.2",
+    "rio-ui>=0.11.1",
+    # Async access to minio client
+    "aioboto3>=15.5.0",
+    "types-aioboto3[full]>=15.5.0",
+    "cachetools>=6.2.4",
 ]
 
 [tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "djlint>=1.36.4",
     # Property based testing
     "hypothesis>=6.118.8",
     # Info about the system
     "psutil>=6.1.0",
     # Type checker
-    "pyrefly>=0.18.0",
+    "pyrefly>=0.40.0",
     "pytest>=8.3.3",
     # Async await support
     "pytest-asyncio>=0.24.0",
@@ -62,9 +70,8 @@ dev-dependencies = [
     "ruff>=0.7.3",
     "sqlfluff>=3.3.1",
     "toml>=0.10.2",
-    "yamllint>=1.37.0",
-    "yamlfix>=1.17.0",
     "pytest-databases[postgres]>=0.13.0",
+    "pre-commit>=4.5.1",
 ]
 
 [tool.yapf]
@@ -76,6 +83,17 @@ allow_split_before_dict_value = false
 
 [tool.pyrefly]
 project_includes = ["src"]
+project-excludes = [
+    # Temp disable for those files and folders
+    "**/workers/prevent_overflowing_audiobook_bucket.py",
+    "**/workers/convert_audiobook.py",
+    "**/_app.py",
+    "**/components/**/*.py",
+    "**/routes_/**/*.py",
+]
+
+# [tool.pyrefly.errors]
+# bad-override = false
 
 [tool.ruff]
 target-version = 'py310'
@@ -108,7 +126,7 @@ pep8-naming.classmethod-decorators = ["pydantic.validator", "classmethod"]
 dialect = "postgres"
 max_line_length = 120
 templater = "placeholder"
-sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
+sql_file_exts = ".sql"
 exclude_rules = "CP02,AL09,RF04"
 
 [tool.sqlfluff.templater.placeholder]
@@ -128,12 +146,6 @@ apply_dbt_builtins = true
 
 [tool.sqlfluff.rules.capitalisation.keywords]
 capitalisation_policy = "upper"
-
-[tool.yamlfix]
-allow_duplicate_keys = true
-line_length = 80
-none_representation = "null"
-sequence_style = "block_style"
 
 [tool.pytest.ini_options]
 pythonpath = "src"

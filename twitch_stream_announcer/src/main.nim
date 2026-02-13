@@ -1,3 +1,5 @@
+# Run with:
+# nim r src/main.nim
 # https://nim-lang.org/docs/db_postgres.html
 import db_connector/db_postgres # nimble install db_connector
 import std/envvars
@@ -11,11 +13,15 @@ import std/times
 import std/uri
 import strformat
 import dotenv
+import std/logging
 
 load()
 
 let STAGE = getenv("STAGE")
 assert STAGE in ["BUILD", "DEV", "PROD"]
+
+var verbose_log = new_console_logger(fmt_str = verbose_fmt_str)
+add_handler(verbose_log)
 
 type
   # Data retrieved from twitch api
@@ -48,8 +54,8 @@ proc fetch_postgres_users(db: DbConn): seq[TableRef[string, string]] =
     ]
   for row in db.fastRows(
     sql"""
-    SELECT id, twitch_name, discord_webhook, announce_message, announced_at, status, last_seen_online 
-    FROM stream_announcer_streams 
+    SELECT id, twitch_name, discord_webhook, announce_message, announced_at, status, last_seen_online
+    FROM stream_announcer_streams
     WHERE enabled IS TRUE
     ORDER BY id
     ;"""
@@ -78,7 +84,7 @@ proc update_database_entries(
   let now_offline_query =
     "UPDATE stream_announcer_streams SET status = 'offline' WHERE twitch_name = "
   if announced_streams.len > 0:
-    echo fmt"Updating announced streams in db: {announced_streams}"
+    info fmt"Updating announced streams in db: {announced_streams}"
     if STAGE == "PROD":
       db.exec(
         sql(announced_query & announced_streams.to_postgres_array & ";"),
@@ -86,11 +92,11 @@ proc update_database_entries(
         current_time,
       )
   if online_streams.len > 0:
-    echo fmt"Updating online streams in db: {online_streams}"
+    info fmt"Updating online streams in db: {online_streams}"
     if STAGE == "PROD":
       db.exec(sql(online_query & online_streams.to_postgres_array & ";"), current_time)
   if now_offline_streams.len > 0:
-    echo fmt"Updating offline streams in db: {now_offline_streams}"
+    info fmt"Updating offline streams in db: {now_offline_streams}"
     if STAGE == "PROD":
       db.exec(sql(now_offline_query & now_offline_streams.to_postgres_array & ";"))
 
@@ -202,7 +208,7 @@ proc datetime_to_webhook_string(my_time: DateTime): string =
   runnableExamples:
     let dt: DateTime =
       parse("2025-01-06 01:44:43.1234", "yyyy-MM-dd HH:mm:ss.ffffff", tz = utc())
-    echo dt.datetime_to_webhook_string()
+    info dt.datetime_to_webhook_string()
   let formatted = my_time.format("yyyy-MM-dd HH:mm:ss")
   var human_time_interval = between(my_time, now().utc)
   human_time_interval.nanoseconds = 0
@@ -238,10 +244,11 @@ proc send_webhooks(infos: seq[AnnounceInfo]) =
         }
       if STAGE == "PROD":
         let response = client.post(info.webhook_url, body = $my_request_body)
-        assert response.status[0] == '2', fmt"Status: {response.status}, url: {info.webhook_url}, announce_message: {info.announce_message}"
+        assert response.status[0] == '2',
+          fmt"Status: {response.status}, url: {info.webhook_url}, announce_message: {info.announce_message}"
         assert response.status == "204 No Content"
       elif STAGE == "DEV":
-        echo(
+        info(
           fmt"Announcing stream {info.username} in webhook {info.webhook_url}\n{$my_request_body}"
         )
   finally:
@@ -258,7 +265,7 @@ proc get_which_streams_to_announce_and_update(
   for row in database_rows:
     let name = row["twitch_name"]
     if name notin stream_infos:
-      echo fmt"Name not found in stream_info: {name}"
+      info fmt"Name not found in stream_info: {name}"
       continue
     let stream_info = stream_infos[name]
     # Find all channels that switched from online to offline
@@ -312,12 +319,12 @@ proc run_once(db: DbConn) =
   send_webhooks(info_tuple.announce_in_webhook)
   let t6 = cpuTime()
   if STAGE == "DEV":
-    echo fmt"Fetching database entries: {t2 - t1}"
-    echo fmt"Fetching twitch api data: {t3 - t2}"
-    echo fmt"Calculating which streams to announce: {t4 - t3}"
-    echo fmt"Updating database entries: {t5 - t4}"
-    echo fmt"Sending webhooks: {t6 - t5}"
-    echo fmt"Total time taken: {t6 - t1}"
+    info fmt"Fetching database entries: {t2 - t1}"
+    info fmt"Fetching twitch api data: {t3 - t2}"
+    info fmt"Calculating which streams to announce: {t4 - t3}"
+    info fmt"Updating database entries: {t5 - t4}"
+    info fmt"Sending webhooks: {t6 - t5}"
+    info fmt"Total time taken: {t6 - t1}"
 
 proc run_for_one_hour(db: DbConn) =
   let t1 = cpuTime()
@@ -325,7 +332,7 @@ proc run_for_one_hour(db: DbConn) =
   while true:
     if duration < cpuTime() - t1:
       break
-    echo "Running once"
+    info "Running once"
     run_once(db)
     sleep 20 * 1000
 
@@ -336,14 +343,14 @@ proc main(db: DbConn) =
     run_for_one_hour(db)
 
 when isMainModule:
-  echo "Started nim.main"
+  info "Started nim.main"
   var db: DbConn
   try:
     let POSTGRES_CONNECTION_STRING = getenv("POSTGRES_CONNECTION_STRING")
     db = open("", "", "", POSTGRES_CONNECTION_STRING)
     main(db)
   except DbError as e:
-    echo e.msg
+    info e.msg
     if STAGE != "BUILD":
       # Reraise error if this is not the docker build process
       raise e

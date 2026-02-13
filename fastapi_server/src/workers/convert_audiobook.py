@@ -3,21 +3,15 @@ from __future__ import annotations
 import asyncio
 import io
 import os
-from contextlib import suppress
 
 import arrow
 from dotenv import load_dotenv
 from loguru import logger
-from minio import S3Error
 
+from minio_helper import MINIO_AUDIOBOOK_BUCKET, get_s3_client, object_upload
 from models.audiobook import AudiobookChapter
-from routes.audiobook.my_minio_client import (
-    MINIO_AUDIOBOOK_BUCKET,
-    AudioSettings,
-    get_chapter_combined_text,
-    minio_client,
-)
-from routes.audiobook.temp_generate_tts import generate_text_to_speech
+from rio_app.components.audiobook.generate_tts import generate_text_to_speech
+from rio_app.components.audiobook.models import AudioSettingsBaseModel, get_chapter_combined_text
 
 load_dotenv()
 
@@ -28,11 +22,6 @@ ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR", "0.3"))
 
 # Maximum number of concurrent chapter conversions
 MAX_CONCURRENT_CONVERSIONS = int(os.getenv("AUDIOBOOK_MAX_CONCURRENT_CONVERSIONS", "1"))
-
-
-# Create bucket if it doesn't exist
-with suppress(S3Error):
-    minio_client.make_bucket(MINIO_AUDIOBOOK_BUCKET)
 
 
 class AudiobookConversionContext:
@@ -117,13 +106,13 @@ async def convert_one(chapter: AudiobookChapter) -> None:
 
     async with AudiobookConversionContext(chapter) as context:
         # Generate tts from the book
-        audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
+        audio_settings: AudioSettingsBaseModel = AudioSettingsBaseModel.model_validate_json(chapter.audio_settings)
         audio: io.BytesIO = await generate_text_to_speech(
             chapter.content,
-            voice=audio_settings.voice_name,
-            rate=audio_settings.voice_rate,
-            volume=audio_settings.voice_volume,
-            pitch=audio_settings.voice_pitch,
+            voice=audio_settings.voice,
+            rate=audio_settings.rate,
+            volume=audio_settings.volume,
+            pitch=audio_settings.pitch,
         )
 
         # Get data from db, user may have clicked "delete" button on book or chapter
@@ -140,9 +129,10 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         # Save result to MinIO
         try:
             # pyrefly: ignore
-            minio_client.put_object(MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio, len(audio.getvalue()))
+            async with get_s3_client() as s3:
+                await object_upload(s3, MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio)
             logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
-        except S3Error as e:
+        except Exception as e:
             logger.error(f"Failed to save audio to MinIO: {e}")
             raise
 

@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 import hikari.errors
-from asyncpg.exceptions import UniqueViolationError  # pyright: ignore[reportMissingTypeStubs, reportUnusedImport]
+from asyncpg.exceptions import UniqueViolationError
 from dotenv import load_dotenv
 from hikari import (
     Embed,  # pyrefly: ignore

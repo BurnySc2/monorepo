@@ -1,0 +1,75 @@
+---
+# Run check on all staged files:
+# uv run pre-commit run
+# uv run pre-commit run --all-files
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-ast
+      - id: check-yaml
+      - id: check-toml
+      - id: trailing-whitespace
+      # - id: check-json
+      # - id: end-of-file-fixer
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.21.2
+    hooks:
+      - id: pyupgrade
+        args: [--py310-plus]
+        types: [python]
+        files: "^fastapi_server/.+$"
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.10
+    hooks:
+      - id: ruff-check
+        name: Change single to double quotes
+        args: [--select, Q, --fix]
+        types: [python]
+        files: "^fastapi_server/.+$"
+
+      - id: ruff-check
+        name: Remove unused imports
+        args: [--select, F, --fix]
+        types: [python]
+        files: "^fastapi_server/.+$"
+
+      - id: ruff-check
+        name: Sort imports
+        args: [--select, I, --fix]
+        types: [python]
+        files: "^fastapi_server/.+$"
+
+      # Run formatter
+      - id: ruff-format
+        types: [python]
+        files: "^fastapi_server/.+$"
+
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8 # Use the latest stable tag or a specific version
+    hooks:
+      - id: prettier
+        name: Autoformat yaml files
+        args: [--write] # This enables auto-fixing/formatting
+        files: "^fastapi_server/.+$"
+        types: [yaml]
+
+  - repo: local
+    hooks:
+      - id: sqlfluff-fix-queries
+        name: Fix sql queries with sqlfluff
+        # To lint, use:
+        # uv run sqlfluff lint src/queries
+        entry: uv run --directory fastapi_server sqlfluff fix src/queries
+        language: system
+        types: [sql]
+        pass_filenames: false
+
+      - id: pyrefly
+        name: Pyrefly check
+        entry: uv run --directory fastapi_server pyrefly check
+        language: system
+        types: [python]
+        pass_filenames: false
