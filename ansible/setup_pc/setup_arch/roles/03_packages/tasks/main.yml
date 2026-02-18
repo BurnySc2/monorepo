@@ -87,6 +87,8 @@
       # - tailwindcss-language-server  # tailwindcss support in html
       ## toml
       # - taplo-cli
+      # Media player command-line controller 
+      - playerctl
     state: present
   become: true
 - name: Install bigger packages (>10mb)
