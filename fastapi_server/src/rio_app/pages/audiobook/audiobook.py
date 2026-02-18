@@ -104,7 +104,11 @@ class AudiobookRootPage(rio.Component):
         with set_loading_to_false_afterwards():
             logged_in_user = self.session[LoggedInUser]
             self.is_logged_in = True
-            books = await AudiobookBook.objects().where(AudiobookBook.uploaded_by == logged_in_user.db_name)
+            books = (
+                await AudiobookBook.objects()
+                .where(AudiobookBook.uploaded_by == logged_in_user.db_name)
+                .order_by(AudiobookBook.upload_date, ascending=False)
+            )
             if len(books) == 0:
                 return
             self.uploaded_books = books
