@@ -7,6 +7,7 @@ from typing import Literal
 import rio
 from dotenv import load_dotenv
 
+from rio.cli import app as app2
 from minio_helper import (
     MINIO_AUDIOBOOK_BUCKET,
     MINIO_SC2_REPLAYS_BUCKET,
@@ -92,3 +93,11 @@ app = rio.App(
 fastapi_app = app.as_fastapi()
 fastapi_app.include_router(IndexRouter, prefix="/api")
 fastapi_app.include_router(TTSRouter, prefix="/tts-api")
+
+
+if __name__ == "__main__":
+    # Run with
+    # cd fastapi_server/src
+    # PYTHONPATH=./ uv run rio_app/__init__.py
+    # PYTHONPATH=./ uv run scalene run rio_app/__init__.py
+    app2.run(["run"])

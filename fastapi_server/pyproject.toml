@@ -72,6 +72,7 @@ dev = [
     "toml>=0.10.2",
     "pytest-databases[postgres]>=0.13.0",
     "pre-commit>=4.5.1",
+    "scalene>=2.1.4",
 ]
 
 [tool.yapf]

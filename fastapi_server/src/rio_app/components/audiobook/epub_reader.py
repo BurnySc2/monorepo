@@ -1,4 +1,5 @@
 import contextlib
+import gc
 import io
 import re
 import zipfile
@@ -37,80 +38,85 @@ class EpubChapter(BaseModel):
 
 
 def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
-    c = EpubReader("")
-    # pyrefly: ignore
-    c.zf = zipfile.ZipFile(data)
-    c._load_container()
-    c._load_opf_file()
-    prev_text = ""
-    chapters = []
-    chapter_number = 1
+    try:
+        c = EpubReader("")
+        # pyrefly: ignore
+        c.zf = zipfile.ZipFile(data)
+        c._load_container()
+        c._load_opf_file()
+        prev_text = ""
+        chapters = []
+        chapter_number = 1
 
-    def follow_link(chapter: Link | Section | EpubHtml):
-        nonlocal chapter_number, prev_text
-        if isinstance(chapter, list | tuple):
-            for section in chapter:
-                follow_link(section)
-            return
-        if isinstance(chapter, Section):
-            # Not relevant
-            return
-        if not isinstance(chapter, Link | EpubHtml):
-            # Discard all other types
-            logger.debug(f"Was type: {type(chapter)}")
-            return
-        if isinstance(chapter, EpubHtml):
-            epub_html: EpubHtml = chapter
-            chapter_title = epub_html.id
-        else:
-            # pyrefly: ignore
-            epub_html: EpubHtml = c.book.get_item_with_href(chapter.href.split("#")[0])
-            chapter_title = chapter.title
-            # Might be missing in some books
-            if epub_html is None:
+        def follow_link(chapter: Link | Section | EpubHtml):
+            nonlocal chapter_number, prev_text
+            if isinstance(chapter, list | tuple):
+                for section in chapter:
+                    follow_link(section)
                 return
-        if epub_html.get_type() != ITEM_DOCUMENT:
-            return
+            if isinstance(chapter, Section):
+                # Not relevant
+                return
+            if not isinstance(chapter, Link | EpubHtml):
+                # Discard all other types
+                logger.debug(f"Was type: {type(chapter)}")
+                return
+            if isinstance(chapter, EpubHtml):
+                epub_html: EpubHtml = chapter
+                chapter_title = epub_html.id
+            else:
+                # pyrefly: ignore
+                epub_html: EpubHtml = c.book.get_item_with_href(chapter.href.split("#")[0])
+                chapter_title = chapter.title
+                # Might be missing in some books
+                if epub_html is None:
+                    return
+            if epub_html.get_type() != ITEM_DOCUMENT:
+                return
 
-        # Parse the HTML content
-        soup = BeautifulSoup(epub_html.get_body_content(), "html.parser")
+            # Parse the HTML content
+            soup = BeautifulSoup(epub_html.get_body_content(), "html.parser")
 
-        for span in soup.find_all("span"):
-            # Seems to do the same as replace_with(span.text)
-            # span.unwrap()
-            span.replace_with(span.text.strip().strip("\n"))
+            for span in soup.find_all("span"):
+                # Seems to do the same as replace_with(span.text)
+                # span.unwrap()
+                span.replace_with(span.text.strip().strip("\n"))
 
-        # TODO Remove <a> and <img> to remove texts describing images?
+            # TODO Remove <a> and <img> to remove texts describing images?
 
-        chapter_text = soup.get_text()
-        texts = [row for row in chapter_text.split("\n") if row.strip() != ""]
+            chapter_text = soup.get_text()
+            texts = [row for row in chapter_text.split("\n") if row.strip() != ""]
 
-        # Combine text for word count, sentence count
-        combined_text = combine_text(texts)
-        if combined_text != "" and combined_text != prev_text:
-            chapters.append(
-                EpubChapter(
-                    # pyrefly: ignore
-                    chapter_title=chapter_title,
-                    chapter_number=chapter_number,
-                    word_count=len(word_tokenize(combined_text)),
-                    sentence_count=len(extract_sentences(combined_text)),
-                    content=texts,
-                    combined_text=combined_text,
+            # Combine text for word count, sentence count
+            combined_text = combine_text(texts)
+            if combined_text != "" and combined_text != prev_text:
+                chapters.append(
+                    EpubChapter(
+                        # pyrefly: ignore
+                        chapter_title=chapter_title,
+                        chapter_number=chapter_number,
+                        word_count=len(word_tokenize(combined_text)),
+                        sentence_count=len(extract_sentences(combined_text)),
+                        content=texts,
+                        combined_text=combined_text,
+                    )
                 )
-            )
-            # pyrefly: ignore
-            chapter_number += 1
-            prev_text = combined_text
+                # pyrefly: ignore
+                chapter_number += 1
+                prev_text = combined_text
 
-    for chapter in c.book.toc:
-        follow_link(chapter)
-
-    # If chapters are empty (= no text extracted), try to find text via c.book.items
-    # Assumption: was created with callibre
-    if len(chapters) <= 1:
-        for chapter in c.book.items:
+        for chapter in c.book.toc:
             follow_link(chapter)
+
+        # If chapters are empty (= no text extracted), try to find text via c.book.items
+        # Assumption: was created with callibre
+        if len(chapters) <= 1:
+            for chapter in c.book.items:
+                follow_link(chapter)
+    finally:
+        # Fixes memory leak?
+        del c
+        gc.collect()
 
     return chapters
 
@@ -126,14 +132,19 @@ class EpubMetadata(BaseModel):
 
 def extract_metadata(data: io.BytesIO) -> EpubMetadata:
     c = EpubReader("")
-    # pyrefly: ignore
-    c.zf = zipfile.ZipFile(data)
-    c._load_container()
-    c._load_opf_file()  # load title and toc etc
-    title = c.book.get_metadata("DC", "title")[0][0]
-    author = "Unknown"
-    with contextlib.suppress(IndexError):
-        author = c.book.get_metadata("DC", "creator")[0][0]
+    try:
+        # pyrefly: ignore
+        c.zf = zipfile.ZipFile(data)
+        c._load_container()
+        c._load_opf_file()  # load title and toc etc
+        title = c.book.get_metadata("DC", "title")[0][0]
+        author = "Unknown"
+        with contextlib.suppress(IndexError):
+            author = c.book.get_metadata("DC", "creator")[0][0]
+    finally:
+        # Fixes memory leak?
+        del c
+        gc.collect()
 
     # identifier = c.book.get_metadata("DC", "identifier")[0][0]
     # Some books seem to have no date set
