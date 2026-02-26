@@ -1,5 +1,16 @@
 ---
 http:
+  middlewares:
+    cors:
+      headers:
+        accessControlAllowOriginList:
+          - "https://vodching2.burnysc2.xyz"
+        accessControlAllowMethods:
+          - "GET"
+        accessControlAllowHeaders:
+          - "Authorization"
+        accessControlAllowCredentials: true
+        accessControlMaxAge: 86400
   # ======== ROUTERS
   routers:
     # Example for a local service in dynamic.yml file
@@ -22,7 +33,9 @@ http:
       service: '{{ secrets.JELLYFIN.USERNAME }}'
       tls:
         certResolver: production
-      middlewares: authelia@docker
+      middlewares: 
+        - cors
+        - authelia@docker
     # Audiobookshelf
     '{{ secrets.AUDIOBOOKSHELF.USERNAME }}':
       entryPoints:
