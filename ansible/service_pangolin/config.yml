@@ -1,0 +1,41 @@
+# To see all available options, please visit the docs:
+# https://docs.pangolin.net/
+
+gerbil:
+  start_port: 51820
+  base_endpoint: "{{ PANGOLIN_URL }}" # REPLACE WITH YOUR DOMAIN
+  # Optional network settings (defaults shown):
+  # subnet_group: "100.89.137.0/20"
+  # block_size: 24
+  # site_block_size: 30
+
+app:
+  dashboard_url: "https://{{ PANGOLIN_URL }}" # REPLACE WITH YOUR DOMAIN
+  log_level: "info"
+  telemetry:
+    anonymous_usage: true
+
+domains:
+  domain1:
+    base_domain: "{{ secrets.MY_DOMAIN }}" # REPLACE WITH YOUR DOMAIN
+    cert_resolver: "letsencrypt"
+
+server:
+  secret: "{{ secrets.PANGOLIN.SECRET }}" # REPLACE
+  cors:
+    origins: ["https://{{ PANGOLIN_URL }}"] # REPLACE WITH YOUR DOMAIN
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    allowed_headers: ["X-CSRF-Token", "Content-Type"]
+    credentials: false
+
+# Optional organization network settings (defaults shown):
+# orgs:
+#     block_size: 24
+#     subnet_group: "100.90.128.0/20"
+#     utility_subnet_group: "100.96.128.0/20"
+
+flags:
+  require_email_verification: false
+  disable_signup_without_invite: true
+  disable_user_create_org: false
+  allow_raw_resources: true

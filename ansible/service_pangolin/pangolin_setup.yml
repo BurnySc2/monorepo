@@ -1,0 +1,63 @@
+---
+# Execute with
+# ansible-playbook pangolin_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service
+  hosts: server_group4
+  vars:
+    USERNAME: 'pangolin'
+  tasks:
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
+    # - name: Create docker external network
+    #   docker_network:
+    #     name: '{{ secrets.TRAEFIK_NETWORK }}'
+    #     internal: false
+    #     attachable: true
+    #     driver: bridge
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ PANGOLIN_URL }}'
+      loop_control:
+        loop_var: item
+      when: "'server_group4' in group_names"
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: absent
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: Copy pangolin config.yml file
+      template:
+        src: config.yml
+        dest: /home/{{ USERNAME }}/config/config.yml
+    - name: Copy traefik traefik_config.yml file
+      template:
+        src: traefik_config.yml
+        dest: /home/{{ USERNAME }}/config/traefik/traefik_config.yml
+    - name: Copy traefik dynamic_config.yml file
+      template:
+        src: traefik_dynamic.yml
+        dest: /home/{{ USERNAME }}/config/traefik/dynamic_config.yml
+    # - name: docker-compose stop
+    #   community.docker.docker_compose_v2:
+    #     project_src: /home/{{ USERNAME }}
+    #     # Reload config files for wireguard and traefik
+    #     state: stopped
+    #     services:
+    #       - traefik
+    #   when: traefik_config_changed is changed
+    #   ignore_errors: true
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
