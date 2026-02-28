@@ -3,6 +3,8 @@ services:
   pangolin:
     image: docker.io/fosrl/pangolin:latest # https://github.com/fosrl/pangolin/releases
     container_name: pangolin
+    networks:
+      - default
     restart: unless-stopped
     volumes:
       - ./config:/app/config
@@ -15,6 +17,9 @@ services:
   gerbil:
     image: docker.io/fosrl/gerbil:latest # https://github.com/fosrl/gerbil/releases
     container_name: gerbil
+    networks:
+      - default
+      - '{{ secrets.TRAEFIK_NETWORK }}'
     restart: unless-stopped
     depends_on:
       pangolin:
@@ -54,6 +59,7 @@ services:
 networks:
   default:
     driver: bridge
-    name: '{{ secrets.TRAEFIK_NETWORK }}'
+    name: pangolin
     #enable_ipv6: true # activate if your system supports IPv6
-     
+  '{{ secrets.TRAEFIK_NETWORK }}':
+    external: true

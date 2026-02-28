@@ -6,6 +6,12 @@
   vars:
     USERNAME: 'pangolin'
   tasks:
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ PANGOLIN_URL }}'
+      loop_control:
+        loop_var: item
+      when: "'server_group4' in group_names"
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'
@@ -17,22 +23,17 @@
           - '{{ USERNAME }}'
           - docker
         shell: '{{ secrets.DEFAULT_SHELL }}'
-    # - name: Create docker external network
-    #   docker_network:
-    #     name: '{{ secrets.TRAEFIK_NETWORK }}'
-    #     internal: false
-    #     attachable: true
-    #     driver: bridge
-    - include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - hostname: '{{ PANGOLIN_URL }}'
-      loop_control:
-        loop_var: item
-      when: "'server_group4' in group_names"
+    - name: Create docker external network
+      docker_network:
+        name: '{{ secrets.TRAEFIK_NETWORK }}'
+        internal: false
+        attachable: true
+        driver: bridge
     - name: Tear down existing services
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
         state: absent
+      ignore_errors: true
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
