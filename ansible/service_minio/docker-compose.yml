@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   minio:
@@ -10,8 +10,21 @@ services:
     command: server --console-address ":9001" "data"
     restart: unless-stopped
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
+      - pangolin.public-resources.minio.name=Minio server
+      - pangolin.public-resources.minio.full-domain={{ secrets.MINIO.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.minio.protocol=http
+      - pangolin.public-resources.minio.auth.sso-enabled=false
+      - pangolin.public-resources.minio.targets[0].method=http
+      - pangolin.public-resources.minio.targets[0].port=9000
+      - pangolin.public-resources.minio-admin.name=Minio server admin
+      - pangolin.public-resources.minio-admin.full-domain={{ secrets.MINIO.ADMINSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.minio-admin.protocol=http
+      - pangolin.public-resources.minio-admin.auth.sso-enabled=true
+      - pangolin.public-resources.minio-admin.targets[0].method=http
+      - pangolin.public-resources.minio-admin.targets[0].port=9001
+
       - traefik.enable=true
       # API
       - traefik.http.routers.{{ USERNAME }}.entrypoints=web,websecure

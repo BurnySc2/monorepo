@@ -8,7 +8,7 @@
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: '{{ PANGOLIN_URL }}'
+        - hostname: '{{ secrets.PANGOLIN_URL }}'
       loop_control:
         loop_var: item
       when: "'server_group4' in group_names"

@@ -4,24 +4,26 @@
 # docker compose exec owncloud occ files:scan --all
 # Dont forget to change owner to owncloud user
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  owncloud_mariadb:
+    driver: bridge
+  pangolin_newt:
     external: true
+
 services:
   owncloud:
     image: owncloud/server:latest
     container_name: owncloud_server
     hostname: owncloud_server
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - owncloud_mariadb
+      - pangolin_newt
     restart: unless-stopped
-    # labels:
-    # - traefik.enable=true
-    # - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-    # - traefik.http.services.{{ secrets.OWNCLOUD.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-    # - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.entryPoints=web,websecure
-    # - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.tls=true
-    # - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.tls.certresolver=letsencrypt
-    # - traefik.http.routers.{{ secrets.OWNCLOUD.USERNAME }}.middlewares=authelia@docker
+    labels:
+      - pangolin.public-resources.cloud.name={{ secrets.OWNCLOUD.USERNAME }}
+      - pangolin.public-resources.cloud.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.cloud.protocol=http
+      - pangolin.public-resources.cloud.auth.sso-enabled=false
+      - pangolin.public-resources.cloud.targets[0].method=http
     depends_on:
       - mariadb
     environment:
@@ -53,7 +55,7 @@ services:
     hostname: owncloud_mariadb
     restart: unless-stopped
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - owncloud_mariadb
     environment:
       - MYSQL_ROOT_PASSWORD={{ secrets.OWNCLOUD.MYSQL_ROOT_PASSWORD }}
       - MYSQL_USER={{ secrets.OWNCLOUD.MYSQL_USER }}

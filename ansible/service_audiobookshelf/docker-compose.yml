@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   audiobookshelf:
@@ -9,14 +9,14 @@ services:
     image: ghcr.io/advplyr/audiobookshelf
     restart: unless-stopped
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ SUBDOMAIN }}.entrypoints=web
-      - traefik.http.routers.{{ SUBDOMAIN }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN
-        }}`)
-      - traefik.http.services.{{ SUBDOMAIN }}.loadbalancer.server.port={{ APPLICATION_PORT
-        }}
+      - pangolin.public-resources.audiobookshelf.name=Audiobookshelf
+      - pangolin.public-resources.audiobookshelf.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.audiobookshelf.protocol=http
+      - pangolin.public-resources.audiobookshelf.auth.sso-enabled=false
+      - pangolin.public-resources.audiobookshelf.targets[0].method=http
+      - pangolin.public-resources.audiobookshelf.targets[0].port={{ APPLICATION_PORT }}
     volumes:
       - ./config:/config
       - ./metadata:/metadata

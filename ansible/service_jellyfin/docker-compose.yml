@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{ secrets.TRAEFIK_NETWORK }}':
+  pangolin_newt:
     external: true
 services:
   jellyfin:
@@ -9,19 +9,16 @@ services:
     hostname: jellyfin
     restart: unless-stopped
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     ports:
       - 10000:{{ APPLICATION_PORT }}
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ USERNAME }}.entrypoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN
-        }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
-        }}
-      - traefik.http.routers.{{ USERNAME }}.service={{ USERNAME }}
-      # No need on this server due to wireguard
-      # - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
+      - pangolin.public-resources.jellyfin.name=Jellyfin
+      - pangolin.public-resources.jellyfin.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.jellyfin.protocol=http
+      - pangolin.public-resources.jellyfin.auth.sso-enabled=true
+      - pangolin.public-resources.jellyfin.targets[0].method=http
+      - pangolin.public-resources.jellyfin.targets[0].port={{ APPLICATION_PORT }}
     volumes:
       - ./config:/config
       - '{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media'

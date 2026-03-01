@@ -1,0 +1,18 @@
+networks:
+  pangolin_newt:
+    external: true
+
+services:
+  newt:
+    image: fosrl/newt
+    container_name: newt
+    restart: unless-stopped
+    networks:
+      - pangolin_newt
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - PANGOLIN_ENDPOINT=https://{{ secrets.PANGOLIN_URL }}
+      - NEWT_ID={{ NEWT_ID }}
+      - NEWT_SECRET={{ NEWT_SECRET }}
+      - DOCKER_SOCKET=/var/run/docker.sock

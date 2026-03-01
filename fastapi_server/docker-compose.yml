@@ -32,15 +32,15 @@ services:
   webserver:
     <<: *webserver
     networks:
-      - traefiknet
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      # Main router for burnysc2.xyz
-      - traefik.http.routers.fastapi.rule=Host(`burnysc2.xyz`)
-      - traefik.http.services.fastapi.loadbalancer.server.port=8000
-      - traefik.http.routers.fastapi.entryPoints=web,websecure
-      - traefik.http.routers.fastapi.tls=true
-      - traefik.http.routers.fastapi.tls.certresolver=production
+      - pangolin.public-resources.fastapi.name=Fastapi server
+      - pangolin.public-resources.fastapi.full-domain=burnysc2.xyz
+      - pangolin.public-resources.fastapi.protocol=http
+      - pangolin.public-resources.fastapi.auth.sso-enabled=false
+      - pangolin.public-resources.fastapi.targets[0].method=http
+      - pangolin.public-resources.fastapi.targets[0].port=8000
+      # Old routes
       # Redirect for www.burnysc2.xyz to burnysc2.xyz
       - traefik.http.routers.www-fastapi.rule=Host(`www.burnysc2.xyz`)
       - traefik.http.routers.www-fastapi.middlewares=redirect-to-non-www
@@ -66,7 +66,7 @@ services:
   convert_audiobook_worker:
     <<: *convert_audiobook_worker
     networks:
-      - traefiknet
+      - pangolin_newt
     profiles:
       - prod
 
@@ -78,7 +78,7 @@ services:
       - -c
       - uv run --no-dev python src/workers/raceroom_fetch_records.py && sleep 1m
     networks:
-      - traefiknet
+      - pangolin_newt
     profiles:
       - prod
 
@@ -222,9 +222,11 @@ services:
 networks:
   fastapi_dev:
     driver: bridge
-  traefiknet:
+  # '{{ secrets.TRAEFIK_NETWORK }}':
+  #   name: '{{ secrets.TRAEFIK_NETWORK }}'
+  #   external: true
+  pangolin_newt:
     external: true
-    name: traefiknet
 volumes:
   dev_minio_data: null
   dev_postgres_data: null

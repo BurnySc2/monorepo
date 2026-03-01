@@ -1,0 +1,38 @@
+---
+# Execute with
+# ansible-playbook pangolin_newt_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# TODO Run on each server
+- name: Create service
+  hosts: my_servers
+  vars:
+    USERNAME: 'pangolin_newt'
+  tasks:
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Create docker external network
+      docker_network:
+        name: pangolin_newt
+        internal: false
+        attachable: true
+        driver: bridge
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: absent
+      ignore_errors: true
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}

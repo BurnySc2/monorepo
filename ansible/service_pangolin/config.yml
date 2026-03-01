@@ -3,14 +3,14 @@
 
 gerbil:
   start_port: 51820
-  base_endpoint: "{{ PANGOLIN_URL }}" # REPLACE WITH YOUR DOMAIN
+  base_endpoint: "{{ secrets.PANGOLIN_URL }}" # REPLACE WITH YOUR DOMAIN
   # Optional network settings (defaults shown):
   # subnet_group: "100.89.137.0/20"
   # block_size: 24
   # site_block_size: 30
 
 app:
-  dashboard_url: "https://{{ PANGOLIN_URL }}" # REPLACE WITH YOUR DOMAIN
+  dashboard_url: "https://{{ secrets.PANGOLIN_URL }}" # REPLACE WITH YOUR DOMAIN
   log_level: "info"
   telemetry:
     anonymous_usage: true
@@ -23,10 +23,14 @@ domains:
 server:
   secret: "{{ secrets.PANGOLIN.SECRET }}" # REPLACE
   cors:
-    origins: ["https://{{ PANGOLIN_URL }}"] # REPLACE WITH YOUR DOMAIN
+    origins: ["https://{{ secrets.PANGOLIN_URL }}", "https://vodching2.burnysc2.xyz"] # REPLACE WITH YOUR DOMAIN
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
-    allowed_headers: ["X-CSRF-Token", "Content-Type"]
-    credentials: false
+    allowed_headers: ["X-CSRF-Token", "Content-Type", "Authorization"]
+    credentials: true
+
+# traefik:
+#   # Defined in traefik_dynamic.yml
+#   additional_middlewares: ["cors"]
 
 # Optional organization network settings (defaults shown):
 # orgs:

@@ -8,11 +8,21 @@ http:
     redirect-to-https:
       redirectScheme:
         scheme: https
+    cors:
+      headers:
+        accessControlAllowOriginList:
+          - "https://vodching2.burnysc2.xyz"
+        accessControlAllowMethods:
+          - "GET"
+        accessControlAllowHeaders:
+          - "Authorization"
+        accessControlAllowCredentials: true
+        accessControlMaxAge: 86400
 
   routers:
     # HTTP to HTTPS redirect router
     main-app-router-redirect:
-      rule: "Host(`{{ PANGOLIN_URL }}`)" # REPLACE WITH YOUR DOMAIN
+      rule: "Host(`{{ secrets.PANGOLIN_URL }}`)" # REPLACE WITH YOUR DOMAIN
       service: next-service
       entryPoints:
         - web
@@ -22,7 +32,7 @@ http:
 
     # Next.js router (handles everything except API and WebSocket paths)
     next-router:
-      rule: "Host(`{{ PANGOLIN_URL }}`) && !PathPrefix(`/api/v1`)" # REPLACE WITH YOUR DOMAIN
+      rule: "Host(`{{ secrets.PANGOLIN_URL }}`) && !PathPrefix(`/api/v1`)" # REPLACE WITH YOUR DOMAIN
       service: next-service
       entryPoints:
         - websecure
@@ -33,7 +43,7 @@ http:
 
     # API router (handles /api/v1 paths)
     api-router:
-      rule: "Host(`{{ PANGOLIN_URL }}`) && PathPrefix(`/api/v1`)" # REPLACE WITH YOUR DOMAIN
+      rule: "Host(`{{ secrets.PANGOLIN_URL }}`) && PathPrefix(`/api/v1`)" # REPLACE WITH YOUR DOMAIN
       service: api-service
       entryPoints:
         - websecure
@@ -44,7 +54,7 @@ http:
 
     # WebSocket router
     ws-router:
-      rule: "Host(`{{ PANGOLIN_URL }}`)" # REPLACE WITH YOUR DOMAIN
+      rule: "Host(`{{ secrets.PANGOLIN_URL }}`)" # REPLACE WITH YOUR DOMAIN
       service: api-service
       entryPoints:
         - websecure
