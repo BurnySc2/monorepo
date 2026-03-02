@@ -46,8 +46,8 @@ entryPoints:
       encodedCharacters:
         allowEncodedSlash: true
         allowEncodedQuestionMark: true
-  pqsql:
-    address: ":5432"
+  tcp-5432:
+    address: ":5432/tcp"
 
 serversTransport:
   insecureSkipVerify: true

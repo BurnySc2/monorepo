@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 # Open postgresql console to enter queries
 # docker exec -it postgres_postgres psql -U postgres -d postgres
@@ -49,7 +49,7 @@ services:
     hostname: postgres_postgres
     image: postgres:16-alpine
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     restart: unless-stopped
     environment:
       POSTGRES_USER: '{{ secrets.POSTGRES.POSTGRES_USER }}'
@@ -57,30 +57,30 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     labels:
-      - traefik.enable=true
-      - traefik.tcp.routers.pg.rule=HostSNI(`{{ secrets.POSTGRES.POSTGRES_USER }}.{{
-        secrets.MY_DOMAIN }}`)
-      - traefik.tcp.routers.pg.entrypoints=pgsql
-      - traefik.tcp.routers.pg.tls=true
-      - traefik.tcp.routers.pg.tls.certresolver=production
-      # Optional:
-      - traefik.tcp.services.pg.loadBalancer.server.port=5432
+      - pangolin.public-resources.postgres.name=Postgres DB
+      - pangolin.public-resources.postgres.full-domain={{ secrets.POSTGRES.POSTGRES_USER }}.{{ secrets.MY_DOMAIN }}
+      # - pangolin.public-resources.postgres.tls=true
+      - pangolin.public-resources.postgres.healthcheck.enabled=true
+      - pangolin.public-resources.postgres.healthcheck.interval=10s
+      - pangolin.public-resources.postgres.healthcheck.timeout=5s
+      - pangolin.public-resources.postgres.protocol=tcp
+      - pangolin.public-resources.postgres.proxy-port=5432
+      - pangolin.public-resources.postgres.targets[0].hostname=postgres_postgres
+      - pangolin.public-resources.postgres.targets[0].port=5432
   pgadmin:
     # TODO Add default connection if possible
     container_name: postgres_pgadmin
     image: dpage/pgadmin4:8
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.entrypoints=web,websecure
-      - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.rule=Host(`{{
-        secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.tls=true
-      - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.tls.certresolver=production
-      - traefik.http.services.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.loadbalancer.server.port={{
-        APPLICATION_PORT }}
-      - traefik.http.routers.{{ secrets.POSTGRES.PGADMIN_USERNAME }}.middlewares=authelia@docker
+      - pangolin.public-resources.pgadmin.name=PDadmin
+      - pangolin.public-resources.pgadmin.full-domain={{ secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.pgadmin.protocol=http
+      - pangolin.public-resources.pgadmin.auth.sso-enabled=true
+      - pangolin.public-resources.pgadmin.targets[0].method=http
+      - pangolin.public-resources.pgadmin.targets[0].hostname=postgres_pgadmin
+      - pangolin.public-resources.pgadmin.targets[0].port=80
     restart: unless-stopped
     environment:
       PGADMIN_DEFAULT_EMAIL: '{{ secrets.POSTGRES.PGADMIN_USER }}'
@@ -95,17 +95,13 @@ services:
     container_name: postgres_nocodb
     image: nocodb/nocodb:latest
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.entrypoints=web,websecure
-      - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.rule=Host(`{{
-        secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls=true
-      - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.tls.certresolver=production
-      - traefik.http.services.{{ secrets.POSTGRES.NOCODB_USERNAME }}.loadbalancer.server.port={{
-        APPLICATION2_PORT }}
-      - traefik.http.routers.{{ secrets.POSTGRES.NOCODB_USERNAME }}.middlewares=authelia@docker
+      - pangolin.public-resources.nocodb.name=Noco DB
+      - pangolin.public-resources.nocodb.full-domain={{ secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.nocodb.protocol=http
+      - pangolin.public-resources.nocodb.auth.sso-enabled=true
+      - pangolin.public-resources.nocodb.targets[0].method=http
     restart: unless-stopped
     volumes:
       - ./nocodb:/usr/app/data/
