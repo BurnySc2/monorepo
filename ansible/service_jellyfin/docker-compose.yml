@@ -17,8 +17,15 @@ services:
       - pangolin.public-resources.jellyfin.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.jellyfin.protocol=http
       - pangolin.public-resources.jellyfin.auth.sso-enabled=true
+      - pangolin.public-resources.jellyfin.auth.sso-roles[0]=jellyfin
       - pangolin.public-resources.jellyfin.targets[0].method=http
       - pangolin.public-resources.jellyfin.targets[0].port={{ APPLICATION_PORT }}
+      - pangolin.public-resources.jellyfin.rules[0].action=allow
+      - pangolin.public-resources.jellyfin.rules[0].match=path
+      - pangolin.public-resources.jellyfin.rules[0].value=Items/*
+      - pangolin.public-resources.jellyfin.rules[1].action=allow
+      - pangolin.public-resources.jellyfin.rules[1].match=path
+      - pangolin.public-resources.jellyfin.rules[1].value=Videos/*
     volumes:
       - ./config:/config
       - '{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media'

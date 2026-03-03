@@ -8,16 +8,16 @@ http:
     redirect-to-https:
       redirectScheme:
         scheme: https
-    cors:
-      headers:
-        accessControlAllowOriginList:
-          - "https://vodching2.burnysc2.xyz"
-        accessControlAllowMethods:
-          - "GET"
-        accessControlAllowHeaders:
-          - "Authorization"
-        accessControlAllowCredentials: true
-        accessControlMaxAge: 86400
+    # cors:
+    #   headers:
+    #     accessControlAllowOriginList:
+    #       - "https://vodching2.burnysc2.xyz"
+    #     accessControlAllowMethods:
+    #       - "GET"
+    #     accessControlAllowHeaders:
+    #       - "Authorization"
+    #     accessControlAllowCredentials: true
+    #     accessControlMaxAge: 86400
 
   routers:
     # HTTP to HTTPS redirect router
