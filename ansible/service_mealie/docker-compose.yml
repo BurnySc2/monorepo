@@ -1,7 +1,7 @@
 ---
 # https://docs.mealie.io
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   mealie:
@@ -11,13 +11,15 @@ services:
     volumes:
       - ./mealie-data:/app/data/
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     environment:
       ALLOW_SIGNUP: 'false'
       LOG_LEVEL: DEBUG
       DB_ENGINE: sqlite # Optional: 'sqlite', 'postgres'
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ USERNAME }}.entrypoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - pangolin.public-resources.mealie.name=Mealie
+      - pangolin.public-resources.mealie.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.mealie.protocol=http
+      - pangolin.public-resources.mealie.auth.sso-enabled=false
+      - pangolin.public-resources.mealie.targets[0].method=http
+      - pangolin.public-resources.mealie.targets[0].port={{ APPLICATION_PORT }}
