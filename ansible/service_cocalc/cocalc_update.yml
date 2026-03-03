@@ -1,4 +1,5 @@
 ---
+# DEPRECATED
 # Execute with
 # ansible-playbook cocalc_update.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start cocalc service

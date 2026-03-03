@@ -1,4 +1,5 @@
 ---
+# DEPRECATED
 networks:
   '{{secrets.TRAEFIK_NETWORK}}':
     external: true
