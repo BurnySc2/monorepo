@@ -4,7 +4,7 @@
 - name: Create service
   hosts: server_group4
   vars:
-    USERNAME: 'pangolin'
+    USERNAME: pangolin
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
@@ -53,7 +53,7 @@
     # - name: docker-compose stop
     #   community.docker.docker_compose_v2:
     #     project_src: /home/{{ USERNAME }}
-    #     # Reload config files for wireguard and traefik
+    #  # Reload config files for wireguard and traefik
     #     state: stopped
     #     services:
     #       - traefik

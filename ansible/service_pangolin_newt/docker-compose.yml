@@ -1,7 +1,7 @@
+---
 networks:
   pangolin_newt:
     external: true
-
 services:
   newt:
     image: fosrl/newt

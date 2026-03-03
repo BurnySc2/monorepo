@@ -20,15 +20,13 @@
         shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Create directories
       file:
-        path: /home/{{ USERNAME }}/instances/{{ secrets.SPACE_ENGINEERS.INSTANCE_NAME
-          }}/Saves/World/
+        path: /home/{{ USERNAME }}/instances/{{ secrets.SPACE_ENGINEERS.INSTANCE_NAME }}/Saves/World/
         recurse: true
         state: directory
     - name: Print reminder
       ansible.builtin.debug:
         msg:
-          - Copy your savegame (e.g. files with .vx2 ending) into the "Saves/World/"
-            path
+          - Copy your savegame (e.g. files with .vx2 ending) into the "Saves/World/" path
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
@@ -36,8 +34,7 @@
     - name: Copy SpaceEngineers-Dedicated.cfg file
       template:
         src: SpaceEngineers-Dedicated.cfg
-        dest: /home/{{ USERNAME }}/instances/{{ secrets.SPACE_ENGINEERS.INSTANCE_NAME
-          }}/SpaceEngineers-Dedicated.cfg
+        dest: /home/{{ USERNAME }}/instances/{{ secrets.SPACE_ENGINEERS.INSTANCE_NAME }}/SpaceEngineers-Dedicated.cfg
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

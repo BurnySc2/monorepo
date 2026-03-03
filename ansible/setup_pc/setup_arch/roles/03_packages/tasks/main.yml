@@ -149,9 +149,9 @@
   when: not ansible_check_mode
 - name: Create user and set default shell
   ansible.builtin.user:
-    name: "{{ ansible_user_id }}"
+    name: '{{ ansible_user_id }}'
     groups:
-      - "{{ ansible_user_id }}"
+      - '{{ ansible_user_id }}'
       - docker
       - wheel  # sudo rights
     shell: /usr/bin/fish

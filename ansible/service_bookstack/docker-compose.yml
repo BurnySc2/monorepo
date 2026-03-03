@@ -22,10 +22,9 @@ services:
       - bookstack_db
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.rule=Host(`{{ secrets.BOOKSTACK.USERNAME
-        }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ secrets.BOOKSTACK.USERNAME }}.loadbalancer.server.port={{
-        APPLICATION_PORT }}
+      - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.rule=Host(`{{ secrets.BOOKSTACK.USERNAME }}.{{ secrets.MY_DOMAIN
+        }}`)
+      - traefik.http.services.{{ secrets.BOOKSTACK.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.tls=true
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.tls.certresolver=production
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.middlewares=authelia@docker

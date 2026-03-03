@@ -82,7 +82,7 @@
   become: true
 - name: Set default shell
   ansible.builtin.user:
-    name: "{{ ansible_user_id }}"
+    name: '{{ ansible_user_id }}'
     shell: /usr/bin/fish
   become: true
 - name: Create user systemd directory

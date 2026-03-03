@@ -21,8 +21,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.{{ USERNAME }}.entrypoints=web
       - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SYNCTHING_URL }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
-        }}
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
     deploy:
       replicas: 1
       resources:

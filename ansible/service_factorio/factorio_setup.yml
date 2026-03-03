@@ -86,6 +86,5 @@
         enabled: true
     - name: Print reminder
       ansible.builtin.debug:
-        msg: Remember to upload an existing savegame manually, aswell as putting
-          mods as .zip files (or mod-list.json) in the '/home/{{ USERNAME }}/data/mods'
-          folder
+        msg: Remember to upload an existing savegame manually, aswell as putting mods as .zip files (or mod-list.json) in
+          the '/home/{{ USERNAME }}/data/mods' folder

@@ -25,23 +25,17 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.{{ USERNAME }}.entryPoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN
-        }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
-        }}
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
       - traefik.http.routers.{{ USERNAME }}.service={{ USERNAME }}
       - traefik.http.routers.{{ PREVIEW1 }}.entryPoints=web
-      - traefik.http.routers.{{ PREVIEW1 }}.rule=Host(`{{ PREVIEW1 }}.{{ secrets.MY_DOMAIN
-        }}`)
-      - traefik.http.services.{{ PREVIEW1 }}.loadbalancer.server.port={{ PREVIEW1_PORT
-        }}
+      - traefik.http.routers.{{ PREVIEW1 }}.rule=Host(`{{ PREVIEW1 }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ PREVIEW1 }}.loadbalancer.server.port={{ PREVIEW1_PORT }}
       - traefik.http.routers.{{ PREVIEW1 }}.service={{ PREVIEW1 }}
       - traefik.http.routers.{{ PREVIEW1 }}.middlewares=authelia@docker
       - traefik.http.routers.{{ PREVIEW2 }}.entryPoints=web
-      - traefik.http.routers.{{ PREVIEW2 }}.rule=Host(`{{ PREVIEW2 }}.{{ secrets.MY_DOMAIN
-        }}`)
-      - traefik.http.services.{{ PREVIEW2 }}.loadbalancer.server.port={{ PREVIEW2_PORT
-        }}
+      - traefik.http.routers.{{ PREVIEW2 }}.rule=Host(`{{ PREVIEW2 }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ PREVIEW2 }}.loadbalancer.server.port={{ PREVIEW2_PORT }}
       - traefik.http.routers.{{ PREVIEW2 }}.service={{ PREVIEW2 }}
       - traefik.http.routers.{{ PREVIEW2 }}.middlewares=authelia@docker

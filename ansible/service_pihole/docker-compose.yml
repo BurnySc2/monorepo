@@ -23,10 +23,8 @@ services:
       - '{{ secrets.TRAEFIK_NETWORK }}'
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.rule=Host(`{{ SUBDOMAIN
-        }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ secrets.PIHOLE.USERNAME }}.loadbalancer.server.port={{
-        APPLICATION_PORT }}
+      - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.services.{{ secrets.PIHOLE.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.tls=true
       - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.tls.certresolver=production
       - traefik.http.routers.{{ secrets.PIHOLE.USERNAME }}.middlewares=authelia@docker

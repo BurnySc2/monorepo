@@ -4,11 +4,11 @@ http:
     cors:
       headers:
         accessControlAllowOriginList:
-          - "https://vodching2.burnysc2.xyz"
+          - https://vodching2.burnysc2.xyz
         accessControlAllowMethods:
-          - "GET"
+          - GET
         accessControlAllowHeaders:
-          - "Authorization"
+          - Authorization
         accessControlAllowCredentials: true
         accessControlMaxAge: 86400
   # ======== ROUTERS
@@ -33,7 +33,7 @@ http:
       service: '{{ secrets.JELLYFIN.USERNAME }}'
       tls:
         certResolver: production
-      middlewares: 
+      middlewares:
         - cors
         - authelia@docker
     # Audiobookshelf

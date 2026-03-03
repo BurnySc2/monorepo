@@ -1,7 +1,8 @@
+---
 name: pangolin
 services:
   pangolin:
-    image: docker.io/fosrl/pangolin:latest # https://github.com/fosrl/pangolin/releases
+    image: docker.io/fosrl/pangolin:latest  # https://github.com/fosrl/pangolin/releases
     container_name: pangolin
     networks:
       - default
@@ -10,13 +11,16 @@ services:
     volumes:
       - ./config:/app/config
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/api/v1/"]
-      interval: "10s"
-      timeout: "10s"
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:3001/api/v1/
+      interval: 10s
+      timeout: 10s
       retries: 15
-
   gerbil:
-    image: docker.io/fosrl/gerbil:latest # https://github.com/fosrl/gerbil/releases
+    image: docker.io/fosrl/gerbil:latest  # https://github.com/fosrl/gerbil/releases
     container_name: gerbil
     networks:
       - default
@@ -42,28 +46,24 @@ services:
       # The TCP port (postgres: 5432, mariadb: 3306)
       - 5432:5432
       - 3306:3306
-
   traefik:
     image: docker.io/traefik:v3.6
     container_name: traefik
     restart: unless-stopped
-
-    network_mode: service:gerbil # Ports appear on the gerbil service
-
+    network_mode: service:gerbil  # Ports appear on the gerbil service
     depends_on:
       pangolin:
         condition: service_healthy
     command:
       - --configFile=/etc/traefik/traefik_config.yml
     volumes:
-      - ./config/traefik:/etc/traefik:ro # Volume to store the Traefik configuration
-      - ./config/letsencrypt:/letsencrypt # Volume to store the Let's Encrypt certificates
-      - ./config/traefik/logs:/var/log/traefik # Volume to store Traefik logs
-
+      - ./config/traefik:/etc/traefik:ro  # Volume to store the Traefik configuration
+      - ./config/letsencrypt:/letsencrypt  # Volume to store the Let's Encrypt certificates
+      - ./config/traefik/logs:/var/log/traefik  # Volume to store Traefik logs
 networks:
   default:
     driver: bridge
     name: pangolin
-    #enable_ipv6: true # activate if your system supports IPv6
+    # enable_ipv6: true  #  activate if your system supports IPv6
   # '{{ secrets.TRAEFIK_NETWORK }}':
   #   external: true

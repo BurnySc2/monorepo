@@ -8,7 +8,6 @@ networks:
     driver: bridge
   pangolin_newt:
     external: true
-
 services:
   owncloud:
     image: owncloud/server:latest
@@ -28,8 +27,7 @@ services:
       - mariadb
     environment:
       - OWNCLOUD_DOMAIN={{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
-      - OWNCLOUD_TRUSTED_DOMAINS="localhost,{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN
-        }}
+      - OWNCLOUD_TRUSTED_DOMAINS="localhost,{{ secrets.OWNCLOUD.USERNAME }}.{{ secrets.MY_DOMAIN }}
       - OWNCLOUD_DB_TYPE=mysql
       - OWNCLOUD_DB_NAME={{ secrets.OWNCLOUD.MYSQL_DATABASE }}
       - OWNCLOUD_DB_USERNAME={{ secrets.OWNCLOUD.MYSQL_USER }}

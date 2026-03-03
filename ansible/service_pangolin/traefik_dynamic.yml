@@ -1,3 +1,4 @@
+---
 # dynamic_config.yml
 http:
   middlewares:
@@ -18,11 +19,10 @@ http:
     #       - "Authorization"
     #     accessControlAllowCredentials: true
     #     accessControlMaxAge: 86400
-
   routers:
     # HTTP to HTTPS redirect router
     main-app-router-redirect:
-      rule: "Host(`{{ secrets.PANGOLIN_URL }}`)" # REPLACE WITH YOUR DOMAIN
+      rule: Host(`{{ secrets.PANGOLIN_URL }}`)  # REPLACE WITH YOUR DOMAIN
       service: next-service
       entryPoints:
         - web
@@ -32,7 +32,7 @@ http:
 
     # Next.js router (handles everything except API and WebSocket paths)
     next-router:
-      rule: "Host(`{{ secrets.PANGOLIN_URL }}`) && !PathPrefix(`/api/v1`)" # REPLACE WITH YOUR DOMAIN
+      rule: Host(`{{ secrets.PANGOLIN_URL }}`) && !PathPrefix(`/api/v1`)  # REPLACE WITH YOUR DOMAIN
       service: next-service
       entryPoints:
         - websecure
@@ -43,7 +43,7 @@ http:
 
     # API router (handles /api/v1 paths)
     api-router:
-      rule: "Host(`{{ secrets.PANGOLIN_URL }}`) && PathPrefix(`/api/v1`)" # REPLACE WITH YOUR DOMAIN
+      rule: Host(`{{ secrets.PANGOLIN_URL }}`) && PathPrefix(`/api/v1`)  # REPLACE WITH YOUR DOMAIN
       service: api-service
       entryPoints:
         - websecure
@@ -54,7 +54,7 @@ http:
 
     # WebSocket router
     ws-router:
-      rule: "Host(`{{ secrets.PANGOLIN_URL }}`)" # REPLACE WITH YOUR DOMAIN
+      rule: Host(`{{ secrets.PANGOLIN_URL }}`)  # REPLACE WITH YOUR DOMAIN
       service: api-service
       entryPoints:
         - websecure
@@ -62,18 +62,15 @@ http:
         - badger
       tls:
         certResolver: letsencrypt
-
   services:
     next-service:
       loadBalancer:
         servers:
-          - url: "http://pangolin:3002" # Next.js server
-
+          - url: http://pangolin:3002  # Next.js server
     api-service:
       loadBalancer:
         servers:
-          - url: "http://pangolin:3000" # API/WebSocket server
-
+          - url: http://pangolin:3000  # API/WebSocket server
 tcp:
   serversTransports:
     pp-transport-v1:

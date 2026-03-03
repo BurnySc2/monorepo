@@ -11,11 +11,10 @@ services:
       - db
       - redis
     environment:
-      APP_URL: 'https://{{ secrets.DOCMOST.SUBDOMAIN
-        }}.{{ secrets.MY_DOMAIN }}'
+      APP_URL: https://{{ secrets.DOCMOST.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
       APP_SECRET: '{{ secrets.DOCMOST.APP_SECRET }}'
-      DATABASE_URL: 'postgresql://docmost:STRONG_DB_PASSWORD@db:5432/docmost?schema=public'
-      REDIS_URL: 'redis://redis:6379'
+      DATABASE_URL: postgresql://docmost:STRONG_DB_PASSWORD@db:5432/docmost?schema=public
+      REDIS_URL: redis://redis:6379
     restart: unless-stopped
     volumes:
       - ./docmost:/app/data/storage
@@ -24,14 +23,12 @@ services:
       - docmost-net
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ secrets.DOCMOST.USERNAME }}.rule=Host(`{{ secrets.DOCMOST.SUBDOMAIN
-        }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ secrets.DOCMOST.USERNAME }}.loadbalancer.server.port={{
-        APPLICATION_PORT }}
+      - traefik.http.routers.{{ secrets.DOCMOST.USERNAME }}.rule=Host(`{{ secrets.DOCMOST.SUBDOMAIN }}.{{ secrets.MY_DOMAIN
+        }}`)
+      - traefik.http.services.{{ secrets.DOCMOST.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ secrets.DOCMOST.USERNAME }}.tls=true
       - traefik.http.routers.{{ secrets.DOCMOST.USERNAME }}.tls.certresolver=production
       # - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.middlewares=authelia@docker
-
   db:
     image: postgres:16-alpine
     environment:
@@ -43,7 +40,6 @@ services:
       - db_data:/var/lib/postgresql/data
     networks:
       - docmost-net
-
   redis:
     image: redis:7.2-alpine
     restart: unless-stopped
@@ -51,8 +47,7 @@ services:
       - redis_data:/data
     networks:
       - docmost-net
-
 volumes:
-  docmost:
-  db_data:
-  redis_data:
+  docmost: null
+  db_data: null
+  redis_data: null

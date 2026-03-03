@@ -5,7 +5,7 @@
 - name: Create service
   hosts: my_servers
   vars:
-    USERNAME: 'pangolin_newt'
+    USERNAME: pangolin_newt
   tasks:
     - name: Create group
       ansible.builtin.group:

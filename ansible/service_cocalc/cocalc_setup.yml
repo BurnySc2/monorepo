@@ -59,9 +59,8 @@
         enabled: true
     - name: Print reminder to disallow signup
       ansible.builtin.debug:
-        msg: Remember go to the admin page and create registration token to disallow
-          signup for everyone
+        msg: Remember go to the admin page and create registration token to disallow signup for everyone
     - name: Print reminder to make admin user
       ansible.builtin.debug:
-        msg: Create the first user by signing up, then run 'docker exec -it cocalc
-          bash' and '/cocalc/src/scripts/make-user-admin <your-email>'
+        msg: Create the first user by signing up, then run 'docker exec -it cocalc bash' and '/cocalc/src/scripts/make-user-admin
+          <your-email>'

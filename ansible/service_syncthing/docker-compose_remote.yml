@@ -21,8 +21,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.{{ USERNAME }}.entrypoints=web,websecure
       - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SYNCTHING_URL }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT
-        }}
+      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ USERNAME }}.tls=true
       - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production
       - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
