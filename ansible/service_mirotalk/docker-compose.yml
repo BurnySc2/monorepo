@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   mirotalk:
@@ -11,12 +11,11 @@ services:
     volumes:
       - ./.env:/src/.env:ro
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ secrets.MIROTALK.USERNAME }}.rule=Host(`{{ secrets.MIROTALK.SUBDOMAIN }}.{{ secrets.MY_DOMAIN
-        }}`)
-      - traefik.http.services.{{ secrets.MIROTALK.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-      - traefik.http.routers.{{ secrets.MIROTALK.USERNAME }}.tls=true
-      - traefik.http.routers.{{ secrets.MIROTALK.USERNAME }}.tls.certresolver=production
-      # - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.middlewares=authelia@docker
+      - pangolin.public-resources.mirotalk.name=Mirotalk
+      - pangolin.public-resources.mirotalk.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.mirotalk.protocol=http
+      - pangolin.public-resources.mirotalk.auth.sso-enabled=false
+      - pangolin.public-resources.mirotalk.targets[0].method=http
+      - pangolin.public-resources.mirotalk.targets[0].port={{ APPLICATION_PORT }}

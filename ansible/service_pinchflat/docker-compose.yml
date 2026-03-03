@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   pinchflat:
@@ -15,12 +15,11 @@ services:
       - YT_DLP_WORKER_CONCURRENCY=1
       - LOG_LEVEL=info
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ USERNAME }}.entryPoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-      - traefik.http.routers.{{ USERNAME }}.service={{ USERNAME }}
-      # No need on this server due to wireguard
-      # - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
+      - pangolin.public-resources.pinchflat.name=Pinchflat
+      - pangolin.public-resources.pinchflat.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.pinchflat.protocol=http
+      - pangolin.public-resources.pinchflat.auth.sso-enabled=true
+      - pangolin.public-resources.pinchflat.targets[0].method=http
+      - pangolin.public-resources.pinchflat.targets[0].port={{ APPLICATION_PORT }}

@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
   docmost-net:
     driver: bridge
@@ -19,16 +19,15 @@ services:
     volumes:
       - ./docmost:/app/data/storage
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
       - docmost-net
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ secrets.DOCMOST.USERNAME }}.rule=Host(`{{ secrets.DOCMOST.SUBDOMAIN }}.{{ secrets.MY_DOMAIN
-        }}`)
-      - traefik.http.services.{{ secrets.DOCMOST.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-      - traefik.http.routers.{{ secrets.DOCMOST.USERNAME }}.tls=true
-      - traefik.http.routers.{{ secrets.DOCMOST.USERNAME }}.tls.certresolver=production
-      # - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.middlewares=authelia@docker
+      - pangolin.public-resources.docmost.name=Docmost
+      - pangolin.public-resources.docmost.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.docmost.protocol=http
+      - pangolin.public-resources.docmost.auth.sso-enabled=false
+      - pangolin.public-resources.docmost.targets[0].method=http
+      - pangolin.public-resources.docmost.targets[0].port={{ APPLICATION_PORT }}
   db:
     image: postgres:16-alpine
     environment:

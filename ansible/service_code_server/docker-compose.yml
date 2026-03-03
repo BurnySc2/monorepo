@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   code-server:
@@ -21,21 +21,26 @@ services:
       - ./config:/config
     restart: unless-stopped
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ USERNAME }}.entryPoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-      - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
-      - traefik.http.routers.{{ USERNAME }}.service={{ USERNAME }}
-      - traefik.http.routers.{{ PREVIEW1 }}.entryPoints=web
-      - traefik.http.routers.{{ PREVIEW1 }}.rule=Host(`{{ PREVIEW1 }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ PREVIEW1 }}.loadbalancer.server.port={{ PREVIEW1_PORT }}
-      - traefik.http.routers.{{ PREVIEW1 }}.service={{ PREVIEW1 }}
-      - traefik.http.routers.{{ PREVIEW1 }}.middlewares=authelia@docker
-      - traefik.http.routers.{{ PREVIEW2 }}.entryPoints=web
-      - traefik.http.routers.{{ PREVIEW2 }}.rule=Host(`{{ PREVIEW2 }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ PREVIEW2 }}.loadbalancer.server.port={{ PREVIEW2_PORT }}
-      - traefik.http.routers.{{ PREVIEW2 }}.service={{ PREVIEW2 }}
-      - traefik.http.routers.{{ PREVIEW2 }}.middlewares=authelia@docker
+      # Code server
+      - pangolin.public-resources.code.name=Code
+      - pangolin.public-resources.code.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.code.protocol=http
+      - pangolin.public-resources.code.auth.sso-enabled=true
+      - pangolin.public-resources.code.targets[0].method=http
+      - pangolin.public-resources.code.targets[0].port={{ APPLICATION_PORT }}
+      # Preview1 port 8000
+      - pangolin.public-resources.preview1.name=Code Preview1
+      - pangolin.public-resources.preview1.full-domain={{ PREVIEW1 }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.preview1.protocol=http
+      - pangolin.public-resources.preview1.auth.sso-enabled=true
+      - pangolin.public-resources.preview1.targets[0].method=http
+      - pangolin.public-resources.preview1.targets[0].port={{ PREVIEW1_PORT }}
+      # Preview2 port 8001
+      - pangolin.public-resources.preview2.name=Code Preview2
+      - pangolin.public-resources.preview2.full-domain={{ PREVIEW2 }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.preview2.protocol=http
+      - pangolin.public-resources.preview2.auth.sso-enabled=true
+      - pangolin.public-resources.preview2.targets[0].method=http
+      - pangolin.public-resources.preview2.targets[0].port={{ PREVIEW2_PORT }}

@@ -1,18 +1,23 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   baikal:
     image: ckulka/baikal:nginx
-    restart: always
+    container_name: baikal
+    hostname: baikal
+    restart: unless-stopped
     volumes:
       - ./config:/var/www/baikal/config
       - ./data:/var/www/baikal/Specific
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ SUBDOMAIN }}.entrypoints=web
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
+      - pangolin.public-resources.baikal.name=Baikal
+      - pangolin.public-resources.baikal.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.baikal.protocol=http
+      - pangolin.public-resources.baikal.auth.sso-enabled=false
+      - pangolin.public-resources.baikal.targets[0].method=http
+      - pangolin.public-resources.baikal.targets[0].hostname=baikal
+      - pangolin.public-resources.baikal.targets[0].port={{ APPLICATION_PORT }}
