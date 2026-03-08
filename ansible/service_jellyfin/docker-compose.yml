@@ -26,6 +26,9 @@ services:
       - pangolin.public-resources.jellyfin.rules[1].action=allow
       - pangolin.public-resources.jellyfin.rules[1].match=path
       - pangolin.public-resources.jellyfin.rules[1].value=Videos/*
+      - pangolin.public-resources.jellyfin.rules[2].action=allow
+      - pangolin.public-resources.jellyfin.rules[2].match=path
+      - pangolin.public-resources.jellyfin.rules[2].value=Shows/*
     volumes:
       - ./config:/config
       - '{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media'
