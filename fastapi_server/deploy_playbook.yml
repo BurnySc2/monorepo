@@ -2,9 +2,9 @@
 # Execute with
 # ansible-playbook deploy_playbook.yml -i ../ansible/hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
-  hosts: server_group4
+  hosts: server_group1
   vars:
-    USERNAME: litestar_server
+    USERNAME: fastapi_server
   tasks:
     - name: Create group
       ansible.builtin.group:
@@ -42,7 +42,7 @@
           - --exclude=test
     - name: Build the Docker image
       community.docker.docker_image:
-        name: burnysc2/litestar_server:latest_dev
+        name: burnysc2/fastapi_server:latest_dev
         state: present
         build:
           path: /home/{{ USERNAME }}/dockerfiles
