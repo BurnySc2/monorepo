@@ -18,7 +18,7 @@ services:
       - pangolin_newt
     restart: unless-stopped
     labels:
-      - pangolin.public-resources.cloud.name={{ secrets.OWNCLOUD.USERNAME }}
+      - pangolin.public-resources.cloud.name=Owncloud
       - pangolin.public-resources.cloud.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.cloud.protocol=http
       - pangolin.public-resources.cloud.auth.sso-enabled=false
