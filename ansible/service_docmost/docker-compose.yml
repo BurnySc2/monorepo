@@ -26,6 +26,7 @@ services:
       - pangolin.public-resources.docmost.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.docmost.protocol=http
       - pangolin.public-resources.docmost.auth.sso-enabled=false
+      - pangolin.public-resources.docmost.targets[0].site=local
       - pangolin.public-resources.docmost.targets[0].method=http
       - pangolin.public-resources.docmost.targets[0].port={{ APPLICATION_PORT }}
   db:

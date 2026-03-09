@@ -6,10 +6,13 @@ services:
     container_name: pangolin
     networks:
       - default
-      # - '{{ secrets.TRAEFIK_NETWORK }}'
+      # - pangolin_newt
     restart: unless-stopped
     volumes:
       - ./config:/app/config
+    #   - /var/run/docker.sock:/var/run/docker.sock:ro
+    # environment:
+    #   - DOCKER_SOCKET=/var/run/docker.sock
     healthcheck:
       test:
         - CMD
@@ -24,7 +27,7 @@ services:
     container_name: gerbil
     networks:
       - default
-      # - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     restart: unless-stopped
     depends_on:
       pangolin:
@@ -65,5 +68,5 @@ networks:
     driver: bridge
     name: pangolin
     # enable_ipv6: true  #  activate if your system supports IPv6
-  # '{{ secrets.TRAEFIK_NETWORK }}':
-  #   external: true
+  pangolin_newt:
+    external: true

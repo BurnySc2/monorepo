@@ -65,6 +65,7 @@ services:
       - pangolin.public-resources.postgres.healthcheck.timeout=5s
       - pangolin.public-resources.postgres.protocol=tcp
       - pangolin.public-resources.postgres.proxy-port=5432
+      - pangolin.public-resources.postgres.targets[0].site=local
       - pangolin.public-resources.postgres.targets[0].hostname=postgres_postgres
       - pangolin.public-resources.postgres.targets[0].port=5432
   pgadmin:
@@ -78,6 +79,7 @@ services:
       - pangolin.public-resources.pgadmin.full-domain={{ secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.pgadmin.protocol=http
       - pangolin.public-resources.pgadmin.auth.sso-enabled=true
+      - pangolin.public-resources.pgadmin.targets[0].site=local
       - pangolin.public-resources.pgadmin.targets[0].method=http
       - pangolin.public-resources.pgadmin.targets[0].hostname=postgres_pgadmin
       - pangolin.public-resources.pgadmin.targets[0].port=80
@@ -101,6 +103,7 @@ services:
       - pangolin.public-resources.nocodb.full-domain={{ secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.nocodb.protocol=http
       - pangolin.public-resources.nocodb.auth.sso-enabled=true
+      - pangolin.public-resources.nocodb.targets[0].site=local
       - pangolin.public-resources.nocodb.targets[0].method=http
     restart: unless-stopped
     volumes:

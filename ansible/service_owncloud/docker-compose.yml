@@ -22,7 +22,10 @@ services:
       - pangolin.public-resources.cloud.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.cloud.protocol=http
       - pangolin.public-resources.cloud.auth.sso-enabled=false
+      - pangolin.public-resources.cloud.targets[0].site=local
       - pangolin.public-resources.cloud.targets[0].method=http
+      - pangolin.public-resources.cloud.targets[0].hostname=owncloud_server
+      - pangolin.public-resources.cloud.targets[0].port={{ APPLICATION_PORT }}
     depends_on:
       - mariadb
     environment:

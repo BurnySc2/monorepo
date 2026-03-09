@@ -17,5 +17,6 @@ services:
       - pangolin.public-resources.mirotalk.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.mirotalk.protocol=http
       - pangolin.public-resources.mirotalk.auth.sso-enabled=false
+      - pangolin.public-resources.mirotalk.targets[0].site=local
       - pangolin.public-resources.mirotalk.targets[0].method=http
       - pangolin.public-resources.mirotalk.targets[0].port={{ APPLICATION_PORT }}
