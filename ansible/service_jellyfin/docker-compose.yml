@@ -29,6 +29,12 @@ services:
       - pangolin.public-resources.jellyfin.rules[2].action=allow
       - pangolin.public-resources.jellyfin.rules[2].match=path
       - pangolin.public-resources.jellyfin.rules[2].value=Shows/*
+      - pangolin.public-resources.jellyfin.rules[3].action=allow
+      - pangolin.public-resources.jellyfin.rules[3].match=path
+      - pangolin.public-resources.jellyfin.rules[3].value=UserItems/*/UserData
+      - pangolin.public-resources.jellyfin.rules[4].action=allow
+      - pangolin.public-resources.jellyfin.rules[4].match=path
+      - pangolin.public-resources.jellyfin.rules[4].value=Users/Me
     volumes:
       - ./config:/config
       - '{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media'
