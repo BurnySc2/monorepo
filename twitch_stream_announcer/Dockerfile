@@ -1,4 +1,4 @@
-FROM nimlang/nim:2.2.4-alpine-regular as base
+FROM nimlang/nim:2.2.6-alpine-regular as base
 
 # Install dependencies
 COPY twitch_stream_announcer.nimble /root/tsa/
