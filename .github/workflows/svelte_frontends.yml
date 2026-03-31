@@ -30,3 +30,7 @@ jobs:
       - name: Build
         working-directory: svelte_frontends
         run: npm run build
+
+      - name: Run unit tests
+        working-directory: svelte_frontends
+        run: npm run test:unit
