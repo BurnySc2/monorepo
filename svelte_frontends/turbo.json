@@ -7,9 +7,6 @@
             "inputs": ["$TURBO_DEFAULT$", ".env*"],
             "outputs": [".svelte-kit/**", ".vercel/**", "dist/**"]
         },
-        "lint": {
-            "dependsOn": ["^lint"]
-        },
         "check-types": {
             "dependsOn": ["^check-types"]
         },
