@@ -1,10 +1,10 @@
-name: test_stream_announcer
+name: Test Stream Announcer
 
 on:
   push:
     paths:
       - twitch_stream_announcer/**
-      - .github/workflows/test_stream_announcer.yml
+      - .github/workflows/stream_announcer.yml
   pull_request:
     branches:
       - develop

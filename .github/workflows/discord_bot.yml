@@ -1,14 +1,12 @@
-name: test_discord_bot
+name: Test Discord Bot
 
 on:
   push:
     paths:
       - discord_bot/**
-      - .github/workflows/test_discord_bot.yml
+      - .github/workflows/discord_bot.yml
   pull_request:
-    branches:
-      - master
-      - develop
+    branches: [master, develop]
 
 env:
   SUBDIRECTORY: discord_bot

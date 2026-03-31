@@ -2,7 +2,9 @@ name: Test Svelte Frontends
 
 on:
   push:
-    branches: [master, develop]
+    paths:
+      - svelte_frontends/**
+      - .github/workflows/svelte_frontends.yml
   pull_request:
     branches: [master, develop]
 

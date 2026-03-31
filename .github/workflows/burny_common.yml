@@ -1,10 +1,10 @@
-name: publish_burny_common
+name: Publish burny_common package
 
 on:
   push:
     paths:
       - burny_common/**
-      - .github/workflows/publish_burny_common.yml
+      - .github/workflows/burny_common.yml
   pull_request:
     branches:
       - master

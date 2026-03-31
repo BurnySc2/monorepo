@@ -1,10 +1,10 @@
-name: test_transcriber_backend
+name: Test Transcriber Backend
 
 on:
   push:
     paths:
       - transcribe_website/transcriber_backend/**
-      - .github/workflows/test_transcriber_backend.yml
+      - .github/workflows/transcriber_backend.yml
   pull_request:
     branches:
       - develop

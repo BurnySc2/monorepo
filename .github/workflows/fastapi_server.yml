@@ -1,10 +1,10 @@
-name: test_fastapi_server
+name: Test Fastapi Server
 
 on:
   push:
     paths:
       - fastapi_server/**
-      - .github/workflows/test_fastapi_server.yml
+      - .github/workflows/fastapi_server.yml
   pull_request:
     branches:
       - master

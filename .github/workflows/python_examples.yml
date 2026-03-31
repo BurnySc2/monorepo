@@ -1,10 +1,9 @@
-name: run_python_examples
+name: Run Python Examples
 
 on:
   push:
     paths:
       - python_examples/**
-      - uv.lock
       - .github/workflows/python_examples.yml
   pull_request:
     branches:
