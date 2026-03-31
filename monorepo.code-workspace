@@ -17,6 +17,9 @@
       "path": "python_examples"
     },
     {
+      "path": "svelte_frontends"
+    },
+    {
       "path": "transcribe_website/transcriber_backend"
     },
     {
