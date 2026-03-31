@@ -114,7 +114,9 @@ async function handle_download_book() {
 }
 
 async function handle_delete_all_audio() {
-    if (!confirm("Are you sure you want to delete all audio for this book?")) return
+    if (!confirm("Are you sure you want to delete all audio for this book?")) {
+        return
+    }
     try {
         await api.delete_all_audio(book_id)
         await load_book()
@@ -124,7 +126,9 @@ async function handle_delete_all_audio() {
 }
 
 async function handle_delete_book() {
-    if (!confirm("Are you sure you want to delete this book? This cannot be undone.")) return
+    if (!confirm("Are you sure you want to delete this book? This cannot be undone.")) {
+        return
+    }
     try {
         await api.delete_book(book_id)
         window.location.href = "/"
@@ -280,7 +284,9 @@ $effect(() => {
                                     controls
                                     src={chapter.minio_presigned_url}
                                     preload="metadata"
-                                ></audio>
+                                >
+                                    <track kind="captions">
+                                </audio>
                                 <button
                                     class="action-button"
                                     onclick={() => handle_delete_chapter_audio(chapter.id)}

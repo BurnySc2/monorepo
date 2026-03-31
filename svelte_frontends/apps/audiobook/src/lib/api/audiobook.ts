@@ -1,7 +1,7 @@
 // Placeholder API service - will be replaced with actual API calls when backend is running
-import type { AudiobookBook, AudiobookChapterQueryResult, BookWithChapters } from "$lib/types/audiobook"
+import type { AudiobookBook, BookWithChapters } from "$lib/types/audiobook"
 
-const API_BASE_URL = "http://localhost:8000"
+const _API_BASE_URL = "http://localhost:8000"
 
 // Placeholder data
 const PLACEHOLDER_VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"]

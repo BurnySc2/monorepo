@@ -21,7 +21,9 @@ async function load_books() {
 async function handle_file_drop(event: DragEvent) {
     event.preventDefault()
     const files = event.dataTransfer?.files
-    if (!files || files.length === 0) return
+    if (!files || files.length === 0) {
+        return
+    }
 
     const file = files[0]
     if (!file.name.endsWith(".epub")) {
@@ -50,7 +52,9 @@ function navigate_to_book(book_id: number) {
 }
 
 async function handle_delete_book(book_id: number, index: number) {
-    if (!confirm("Are you sure you want to delete this book?")) return
+    if (!confirm("Are you sure you want to delete this book?")) {
+        return
+    }
 
     try {
         await api.delete_book(book_id)
