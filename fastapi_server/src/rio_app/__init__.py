@@ -22,6 +22,7 @@ from rio_app.components.login.cookies import LoggedInUser, LoginSettings, provid
 from rio_app.components.replay_pack_builder.settings import FilterSettings
 from rio_app.components.tts.tts_settings import TTSSettings
 from rio_app.routes.index import IndexRouter
+from rio_app.routes.login import login_router
 from rio_app.routes.replay_parser import replay_parser_router
 from rio_app.routes.tts_websocket import TTSRouter
 
@@ -93,6 +94,7 @@ app = rio.App(
 
 fastapi_app = app.as_fastapi()
 fastapi_app.include_router(IndexRouter, prefix="/api")
+fastapi_app.include_router(login_router)
 fastapi_app.include_router(replay_parser_router, prefix="/api")
 fastapi_app.include_router(TTSRouter, prefix="/tts-api")
 
