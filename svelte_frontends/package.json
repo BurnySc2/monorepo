@@ -4,13 +4,13 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write .",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "lint-format": "biome check --write",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "prettier": "^3.8.1",
-    "prettier-plugin-svelte": "^3.5.1",
+    "@biomejs/biome": "^2.4.6",
     "turbo": "^2.9.1"
   },
   "engines": {
@@ -20,5 +20,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@repo/ui": "*"
+  }
 }
