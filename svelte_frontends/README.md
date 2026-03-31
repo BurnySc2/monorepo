@@ -18,6 +18,12 @@ This Turborepo includes the following packages/apps:
 
 ### Apps
 
+Build app via
+
+```sh
+cd svelte_frontends/apps/web && npm run build
+```
+
 - `docs`: a [svelte-kit](https://kit.svelte.dev/) app
 - `web`: another [svelte-kit](https://kit.svelte.dev/) app
 
