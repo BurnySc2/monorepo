@@ -3,7 +3,7 @@ from io import BytesIO
 import sc2reader
 from sc2reader.resources import Replay
 
-from rio_app.components.replay_pack_builder.models import ReplayData
+from components.replay_pack_builder.models import ReplayData
 
 
 async def parse_replay(data: BytesIO) -> ReplayData:

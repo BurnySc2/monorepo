@@ -8,8 +8,8 @@ from fastapi import WebSocket, WebSocketDisconnect
 from loguru import logger
 from websockets import ConnectionClosedError, ConnectionClosedOK
 
-from rio_app.components.tts.generate_tts import Voices, generate_tts
-from rio_app.components.tts.irc_bot_async import ALLOWED_NAME_LANGUAGES, IRCClient, ReadNameLang
+from components.tts.generate_tts import Voices, generate_tts
+from components.tts.irc_bot_async import ALLOWED_NAME_LANGUAGES, IRCClient, ReadNameLang
 
 # pyrefly: ignore
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}

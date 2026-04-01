@@ -7,8 +7,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from loguru import logger
 
-from rio_app.components.tts.irc_bot_async import IRCClient, ReadNameLang
-from rio_app.components.tts.websocket_handler import TTSQueue, TTSQueueRunner
+from components.tts.irc_bot_async import IRCClient, ReadNameLang
+from components.tts.websocket_handler import TTSQueue, TTSQueueRunner
 
 TTSRouter = APIRouter()
 

@@ -4,21 +4,24 @@ from typing import Literal
 
 import httpx
 
-from rio_app.components.login.cookies import (
-    GITHUB_CLIENT_ID,
-    GITHUB_CLIENT_SECRET,
+from components.login.cookies import (
+    BACKEND_SERVER_URL,
+    TWITCH_CLIENT_ID,
+    TWITCH_CLIENT_SECRET,
 )
 
 
-async def github_verify_code(code: str) -> str | Literal[503, 409]:
+async def twitch_verify_code(code: str) -> str | Literal[503, 409]:
     async with httpx.AsyncClient() as client:
         post_response = await client.post(
-            "https://github.com/login/oauth/access_token",
+            "https://id.twitch.tv/oauth2/token",
             headers={"Accept": "application/json"},
             json={
-                "client_id": GITHUB_CLIENT_ID,
-                "client_secret": GITHUB_CLIENT_SECRET,
+                "client_id": TWITCH_CLIENT_ID,
+                "client_secret": TWITCH_CLIENT_SECRET,
                 "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": f"{BACKEND_SERVER_URL}/login/twitch",
             },
         )
         if post_response.is_error:

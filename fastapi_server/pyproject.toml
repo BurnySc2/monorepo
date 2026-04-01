@@ -45,6 +45,7 @@ dependencies = [
     "aioboto3>=15.5.0",
     "types-aioboto3[full]>=15.5.0",
     "cachetools>=6.2.4",
+    "fastapi[standard]>=0.128.8",
 ]
 
 [tool.uv]

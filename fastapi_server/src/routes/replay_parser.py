@@ -3,8 +3,8 @@ from io import BytesIO
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import JSONResponse
 
-from rio_app.components.replay_pack_builder.models import ReplayData
-from rio_app.components.replay_pack_builder.replay_parser import parse_replay
+from components.replay_pack_builder.models import ReplayData
+from components.replay_pack_builder.replay_parser import parse_replay
 
 replay_parser_router = APIRouter()
 

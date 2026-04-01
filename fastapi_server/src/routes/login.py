@@ -6,7 +6,7 @@ from typing import Literal
 import httpx
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
-from rio_app.components.login.cookies import (
+from components.login.cookies import (
     COOKIES,
     GithubUser,
     LoggedInUser,
@@ -16,8 +16,8 @@ from rio_app.components.login.cookies import (
     provide_logged_in_user,
     twitch_get_user,
 )
-from rio_app.components.login.github import github_verify_code
-from rio_app.components.login.twitch import twitch_verify_code
+from components.login.github import github_verify_code
+from components.login.twitch import twitch_verify_code
 
 login_router = APIRouter()
 

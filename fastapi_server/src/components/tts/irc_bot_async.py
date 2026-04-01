@@ -19,7 +19,7 @@ from typing import Literal
 
 from loguru import logger
 
-from rio_app.components.tts.generate_tts import Voices
+from components.tts.generate_tts import Voices
 
 # pyrefly: ignore
 VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
