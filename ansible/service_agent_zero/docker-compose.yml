@@ -17,5 +17,6 @@ services:
       - pangolin.public-resources.agentzero.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.agentzero.protocol=http
       - pangolin.public-resources.agentzero.auth.sso-enabled=true
+      # - pangolin.public-resources.agentzero.auth.sso-roles[0]=jellyfin
       - pangolin.public-resources.agentzero.targets[0].method=http
       - pangolin.public-resources.agentzero.targets[0].port={{ APPLICATION_PORT }}
