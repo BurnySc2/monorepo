@@ -1,21 +1,19 @@
 ---
-# https://hub.docker.com/r/owncloud/server
-# https://owncloud.com/
+# https://github.com/agent0ai/agent-zero
 # Execute with
-# ansible-playbook owncloud_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook agent_zero_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
-  hosts: server_group4
+  hosts: server_group1
   vars:
-    USERNAME: '{{ secrets.OWNCLOUD.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.OWNCLOUD.SUBDOMAIN }}'
-    APPLICATION_PORT: '8080'
+    USERNAME: '{{ secrets.AGENTZERO.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.AGENTZERO.SUBDOMAIN }}'
+    APPLICATION_PORT: '80'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
         - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
       loop_control:
         loop_var: item
-
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'
@@ -34,4 +32,4 @@
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
-        # pull: always
+        pull: always

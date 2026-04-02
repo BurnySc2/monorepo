@@ -20,4 +20,3 @@
     - name: debug specific group
       ansible.builtin.debug:
         msg: I will only get printed by 'remote_servers' group
-      when: "'remote_servers' in group_names"
