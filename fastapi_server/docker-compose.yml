@@ -84,7 +84,7 @@ services:
 
   # === DEV SETUP
   traefik:
-    image: traefik:v2.4
+    image: traefik:v3.6
     container_name: traefik
     networks:
       - fastapi_dev

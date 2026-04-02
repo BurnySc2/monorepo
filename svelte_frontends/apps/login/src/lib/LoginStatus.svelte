@@ -63,40 +63,40 @@ onMount(() => {
 })
 </script>
 
-<div class="login_container">
+<div class="flex flex-col items-center justify-center min-h-screen p-8 w-full">
     {#if is_loading}
         <Spinner />
     {:else if error_message}
-        <div class="error">
+        <div class="text-center">
             <p>{error_message}</p>
             <button onclick={() => { error_message = null; check_login_status(); }}>Retry</button>
         </div>
     {:else if is_logged_in && logged_in_user}
-        <div class="logged_in">
+        <div class="text-center">
             <p>You are logged in via <strong>{logged_in_user.service}</strong> as '{logged_in_user.name}'</p>
             <button
-                class="logout_button"
+                class="mt-4 px-6 py-3 text-base bg-red-600 hover:bg-red-700 text-white rounded-md cursor-pointer shadow-md hover:shadow-lg transition-colors duration-200"
                 onclick={handle_logout}
             >
                 Log out
             </button>
         </div>
     {:else}
-        <div class="login_buttons">
+        <div class="flex flex-col gap-4 items-center">
             <button
-                class="oauth_button twitch"
+                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#6441a5] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md"
                 onclick={start_twitch_login}
             >
                 Login with Twitch
             </button>
             <button
-                class="oauth_button github"
+                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#171515] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md"
                 onclick={start_github_login}
             >
                 Login with GitHub
             </button>
             <button
-                class="oauth_button google"
+                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#4285f4] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md"
                 onclick={() => { alert('Google login not implemented yet'); }}
             >
                 Login with Google
@@ -104,76 +104,3 @@ onMount(() => {
         </div>
     {/if}
 </div>
-
-<style>
-.login_container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 2rem;
-}
-
-.loading,
-.error,
-.logged_in {
-    text-align: center;
-}
-
-.error button {
-    margin-top: 1rem;
-    padding: 0.5rem 1rem;
-}
-
-.login_buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-}
-
-.oauth_button {
-    padding: 1rem 2rem;
-    font-size: 1rem;
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    min-width: 200px;
-    transition: opacity 0.2s;
-}
-
-.oauth_button:hover {
-    opacity: 0.9;
-}
-
-.oauth_button.twitch {
-    background-color: #6441a5;
-    color: white;
-}
-
-.oauth_button.github {
-    background-color: #171515;
-    color: white;
-}
-
-.oauth_button.google {
-    background-color: #4285f4;
-    color: white;
-}
-
-.logout_button {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    cursor: pointer;
-    margin-top: 1rem;
-}
-
-.logout_button:hover {
-    opacity: 0.9;
-}
-</style>
