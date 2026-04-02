@@ -1,9 +1,9 @@
 <script lang="ts">
 import { onDestroy, onMount } from "svelte"
-// Simple reconnection logic for WebSocket (no external package)
-export let stream_name: string = ""
-export let read_name_lang: string = ""
-export let volume: number = 1.0
+
+let stream_name = $state("")
+let read_name_lang = $state("")
+let volume = $state(1.0)
 const ws_backend_server_url = import.meta.env.VITE_WS_BACKEND_URL || ""
 let ws: WebSocket | null = null
 
@@ -25,16 +25,16 @@ onMount(() => {
 
     const ws_url = `${ws_backend_server_url}/tts-api/ws/${stream_name}/${read_name_lang}`
     // Simple reconnection logic: attempt to reconnect with exponential backoff
-    const maxDelay = 30000 // 30 seconds max
-    let reconnectAttempts = 0
+    const max_delay = 30000 // 30 seconds max
+    let reconnect_attempts = 0
     function connect() {
         ws = new WebSocket(ws_url)
         ws.addEventListener("open", () => {
-            reconnectAttempts = 0 // reset on successful connection
+            reconnect_attempts = 0 // reset on successful connection
         })
         ws.addEventListener("close", () => {
-            const delay = Math.min(1000 * 2 ** reconnectAttempts, maxDelay)
-            reconnectAttempts++
+            const delay = Math.min(1000 * 2 ** reconnect_attempts, max_delay)
+            reconnect_attempts++
             setTimeout(connect, delay)
         })
     }

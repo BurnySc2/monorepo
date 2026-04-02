@@ -1,10 +1,6 @@
 <script lang="ts">
 import { onMount } from "svelte"
-import { writable } from "svelte/store"
 
-// Using Svelte 5 $state for reactive variables
-
-// State variables (snake_case as requested)
 const voices_list: string[] = []
 let selected_voice = $state("")
 let user_text = $state("")
