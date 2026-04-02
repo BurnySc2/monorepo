@@ -1,20 +1,16 @@
 {
-  "name": "tts",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@sveltejs/kit": "next",
-    "svelte": "^4.0.0",
-    "svelte-check": "^3.0.0",
-    "vite": "^5.0.0"
-  },
-  "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^3.0.0",
-    "typescript": "^5.0.0"
-  }
+    "name": "tts",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "svelte-kit sync && vite build",
+        "preview": "vite preview",
+        "check-types": "tsc --noEmit",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+    },
+    "dependencies": {},
+    "devDependencies": {}
 }
