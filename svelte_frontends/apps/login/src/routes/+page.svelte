@@ -1,10 +1,6 @@
 <script lang="ts">
-import { onMount } from "svelte"
-import { goto } from "$app/navigation"
-
-onMount(() => {
-    goto("/login")
-})
+// Render the new LoginStatus component
+import LoginStatus from "$lib/LoginStatus.svelte"
 </script>
 
-<p>Redirecting to login...</p>
+<LoginStatus />

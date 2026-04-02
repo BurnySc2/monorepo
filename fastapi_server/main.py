@@ -4,7 +4,9 @@ Provides a minimal FastAPI application that can be started via the
 VS Code launch configuration added above.
 """
 
+import os
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 # Import and include routers from the existing Rio app setup
 from routes.index import IndexRouter
@@ -13,6 +15,17 @@ from routes.replay_parser import replay_parser_router
 from routes.tts_websocket import TTSRouter
 
 app = FastAPI()
+
+# Enable CORS only in development mode
+if os.getenv("STAGE") == "dev":
+    # Allow the Svelte dev server to talk to the API
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"https?://localhost:\d+",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 # Include the routers with appropriate prefixes

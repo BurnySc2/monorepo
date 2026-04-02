@@ -19,11 +19,30 @@ from components.login.cookies import (
 from components.login.github import github_verify_code
 from components.login.twitch import twitch_verify_code
 
+from components.login.cookies import BACKEND_SERVER_URL, TWITCH_CLIENT_ID
+
+from components.login.cookies import GITHUB_CLIENT_ID
+
 login_router = APIRouter()
+
 
 # Frontend URL for OAuth redirects
 # Set via environment variable in production
-FRONTEND_URL: str = os.getenv("FRONTEND_URL", "")
+def _get_frontend_url(request: Request) -> str:
+    """Return the frontend base URL.
+
+    * In production it is read from the ``FRONTEND_URL`` environment variable.
+    * In development (``STAGE=dev``) we infer it from the incoming request
+      ``Host`` header and scheme so the port can change dynamically.
+    """
+    # Production override – use explicit env var if set
+    env_url = os.getenv("FRONTEND_URL")
+    if env_url:
+        return env_url.rstrip("/")
+    # Development – construct from request (any localhost port)
+    scheme = request.url.scheme
+    host = request.headers.get("host", "localhost")
+    return f"{scheme}://{host}"
 
 
 @login_router.get("/login")
@@ -57,7 +76,7 @@ async def logout(request: Request) -> RedirectResponse:
     """
     Clear all authentication cookies and redirect to login page.
     """
-    response = RedirectResponse(url=FRONTEND_URL + "/login" if FRONTEND_URL else "/login")
+    response = RedirectResponse(url=_get_frontend_url(request) + "/login")
     # Delete all auth cookies
     for cookie_name in COOKIES.values():
         response.delete_cookie(cookie_name)
@@ -80,23 +99,21 @@ async def twitch_login_callback(
     if twitch_access_token is not None:
         user = await twitch_get_user(twitch_access_token)
         if user is not None:
-            return RedirectResponse(url=FRONTEND_URL + "/login" if FRONTEND_URL else "/login")
+            return RedirectResponse(url=_get_frontend_url(request) + "/login")
 
     # No code provided, redirect to login
     if code is None:
-        return RedirectResponse(url=FRONTEND_URL + "/login" if FRONTEND_URL else "/login")
+        return RedirectResponse(url=_get_frontend_url(request) + "/login")
 
     # Exchange code for access token
     access_token = await twitch_verify_code(code)
 
     if isinstance(access_token, int):
         # Error occurred
-        return RedirectResponse(
-            url=(FRONTEND_URL + "/login?error=oauth_failed" if FRONTEND_URL else "/login?error=oauth_failed")
-        )
+        return RedirectResponse(url=(_get_frontend_url(request) + "/login?error=oauth_failed"))
 
     # Set cookie and redirect
-    response = RedirectResponse(url=FRONTEND_URL + "/login" if FRONTEND_URL else "/login")
+    response = RedirectResponse(url=_get_frontend_url(request) + "/login")
     response.set_cookie(
         key=COOKIES["twitch"],
         value=access_token,
@@ -123,23 +140,21 @@ async def github_login_callback(
     if github_access_token is not None:
         user = await github_get_user(github_access_token)
         if user is not None:
-            return RedirectResponse(url=FRONTEND_URL + "/login" if FRONTEND_URL else "/login")
+            return RedirectResponse(url=_get_frontend_url(request) + "/login")
 
     # No code provided, redirect to login
     if code is None:
-        return RedirectResponse(url=FRONTEND_URL + "/login" if FRONTEND_URL else "/login")
+        return RedirectResponse(url=_get_frontend_url(request) + "/login")
 
     # Exchange code for access token
     access_token = await github_verify_code(code)
 
     if isinstance(access_token, int):
         # Error occurred
-        return RedirectResponse(
-            url=(FRONTEND_URL + "/login?error=oauth_failed" if FRONTEND_URL else "/login?error=oauth_failed")
-        )
+        return RedirectResponse(url=(_get_frontend_url(request) + "/login?error=oauth_failed"))
 
     # Set cookie and redirect
-    response = RedirectResponse(url=FRONTEND_URL + "/login" if FRONTEND_URL else "/login")
+    response = RedirectResponse(url=_get_frontend_url(request) + "/login")
     response.set_cookie(
         key=COOKIES["github"],
         value=access_token,
@@ -160,7 +175,7 @@ async def google_login_callback(
     Currently returns a placeholder response.
     """
     # TODO: Implement Google OAuth
-    return RedirectResponse(url=FRONTEND_URL + "/login" if FRONTEND_URL else "/login")
+    return RedirectResponse(url=_get_frontend_url(request) + "/login")
 
 
 @login_router.get("/login/twitch/start")
@@ -168,7 +183,6 @@ async def start_twitch_login() -> RedirectResponse:
     """
     Start Twitch OAuth flow - redirects to Twitch authorization page.
     """
-    from rio_app.components.login.cookies import BACKEND_SERVER_URL, TWITCH_CLIENT_ID
 
     oauth_url = httpx.URL(
         "https://id.twitch.tv/oauth2/authorize",
@@ -187,7 +201,6 @@ async def start_github_login() -> RedirectResponse:
     """
     Start GitHub OAuth flow - redirects to GitHub authorization page.
     """
-    from rio_app.components.login.cookies import BACKEND_SERVER_URL, GITHUB_CLIENT_ID
 
     oauth_url = httpx.URL(
         "https://github.com/login/oauth/authorize",

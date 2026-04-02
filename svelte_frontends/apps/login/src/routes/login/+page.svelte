@@ -5,10 +5,10 @@ import { onMount } from "svelte"
 const backend_url = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"
 
 // State variables using snake_case
-let is_loading = true
-let is_logged_in = false
-let logged_in_user: { id: number; name: string; service: string } | null = null
-let error_message: string | null = null
+let is_loading = $state(true)
+let is_logged_in = $state(false)
+let logged_in_user: { id: number; name: string; service: string } | null = $state(null)
+let error_message: string | null = $state(null)
 
 // Check login status on mount
 async function check_login_status() {
