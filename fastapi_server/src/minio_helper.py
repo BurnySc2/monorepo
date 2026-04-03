@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
 import aioboto3
+import httpx
 from botocore.exceptions import ClientError
 from types_aiobotocore_s3 import S3Client
 from types_aiobotocore_s3.service_resource import Bucket, S3ServiceResource
@@ -16,6 +17,71 @@ SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
 
 MINIO_SC2_REPLAYS_BUCKET = os.getenv("MINIO_SC2_REPLAYS_BUCKET", "sc2-replays")
 MINIO_AUDIOBOOK_BUCKET = os.getenv("MINIO_AUDIOBOOK_BUCKET", "audiobooks")
+
+GARAGE_ADMIN_URL = os.getenv("GARAGE_ADMIN_URL", "http://localhost:3903")
+GARAGE_ADMIN_TOKEN = os.getenv("GARAGE_ADMIN_TOKEN", "rootroot")
+
+
+class GarageInit:
+    """
+    Garage-specific helpers for initialization and bucket management.
+
+    These functions are used during FastAPI startup to:
+    1. Create the audiobook bucket (S3 API)
+    2. Set a storage quota on the bucket (Admin API)
+    3. Create an S3 access key and grant it permissions (Admin API)
+    """
+
+    @staticmethod
+    async def admin_request(method: str, path: str, **kwargs) -> dict:
+        """Make an authenticated request to the Garage Admin API."""
+        headers = kwargs.pop("headers", {})
+        headers["Authorization"] = f"Bearer {GARAGE_ADMIN_TOKEN}"
+        headers["Content-Type"] = "application/json"
+        async with httpx.AsyncClient() as client:
+            resp = await client.request(method, f"{GARAGE_ADMIN_URL}{path}", headers=headers, **kwargs)
+            resp.raise_for_status()
+            return resp.json()
+
+    @staticmethod
+    async def bucket_id(bucket_name: str) -> str | None:
+        """
+        Get the Garage internal UUID for a bucket by its name.
+
+        Returns None if bucket doesn't exist or Admin API is unreachable.
+        """
+        try:
+            data = await GarageInit.admin_request("GET", "/v2/GetBucketInfo", params={"globalAlias": bucket_name})
+            return data.get("bucket", {}).get("id")
+        except httpx.HTTPError:
+            return None
+
+    @staticmethod
+    async def set_quota(bucket_id: str, max_size_bytes: int) -> None:
+        """Set the maxSize quota (in bytes) on a bucket via Admin API."""
+        await GarageInit.admin_request(
+            "POST", "/v2/UpdateBucket", params={"id": bucket_id}, json={"quotas": {"maxSize": max_size_bytes}}
+        )
+
+    @staticmethod
+    async def create_key(name: str) -> dict:
+        """
+        Create a new S3 access key via Admin API.
+
+        Returns the key dict containing 'accessKeyId' and 'secretKey'.
+        The secretKey is only shown once and cannot be recovered.
+        """
+        data = await GarageInit.admin_request("POST", "/v2/CreateKey", json={"name": name})
+        return data["key"]
+
+    @staticmethod
+    async def allow_bucket(key_id: str, bucket_id: str) -> None:
+        """Grant an S3 access key read/write/owner permissions on a bucket."""
+        await GarageInit.admin_request(
+            "POST",
+            "/v2/AllowBucketKey",
+            json={"bucket_id": bucket_id, "key_id": key_id, "read": True, "write": True, "owner": True},
+        )
 
 
 @asynccontextmanager

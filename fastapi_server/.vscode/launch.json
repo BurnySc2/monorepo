@@ -30,7 +30,7 @@
             ],
             "cwd": "${workspaceFolder}",
             "env": {
-                "PYTHONPATH": "${workspaceFolder}"
+                "PYTHONPATH": "${workspaceFolder}/src"
             },
             "console": "integratedTerminal",
             "justMyCode": true
