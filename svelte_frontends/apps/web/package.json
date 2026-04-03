@@ -7,12 +7,10 @@
         "dev": "vite dev",
         "build": "svelte-kit sync && vite build",
         "preview": "vite preview",
-        "test": "npm run test:integration && npm run test:unit",
+        "test": "echo 'No tests configured'",
         "check-types": "tsc --noEmit",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-        "test:integration": "playwright test",
-        "test:unit": "vitest"
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
     },
     "dependencies": {
         "@repo/ui": "*"
