@@ -29,6 +29,11 @@
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: docker-compose stop
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: stopped
+      failed_when: false
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

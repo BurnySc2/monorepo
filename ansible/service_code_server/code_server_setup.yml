@@ -37,6 +37,7 @@
         project_src: /home/{{ USERNAME }}
         # Reload config files
         state: stopped
+      failed_when: false
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml

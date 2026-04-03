@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
     volumes:
       - /media/ssd480/agentzero/usr:/a0/usr
+      - /media/ssd480/shared/workspace:/a0/usr/projects
     labels:
       - pangolin.public-resources.agentzero.name=AgentZero
       - pangolin.public-resources.agentzero.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
