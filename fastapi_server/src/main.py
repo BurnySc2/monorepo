@@ -21,6 +21,7 @@ from routes.login import login_router
 from routes.replay_parser import replay_parser_router
 from routes.tts_websocket import TTSRouter
 from routes.audiobook import audiobook_router
+from routes.raceroom import raceroom_router
 
 GARAGE_AUDIOBOOK_BUCKET = os.getenv("GARAGE_AUDIOBOOK_BUCKET", "garage-audiobook-bucket")
 GARAGE_AUDIOBOOK_MAX_SIZE_MB = int(os.getenv("GARAGE_AUDIOBOOK_MAX_SIZE_MB", "100000"))
@@ -73,6 +74,7 @@ app.include_router(login_router)
 app.include_router(replay_parser_router, prefix="/api")
 app.include_router(TTSRouter, prefix="/tts-api")
 app.include_router(audiobook_router, prefix="/api/audiobook")
+app.include_router(raceroom_router)
 
 
 @app.get("/")
