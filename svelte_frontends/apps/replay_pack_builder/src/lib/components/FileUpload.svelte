@@ -41,7 +41,9 @@ function process_files(files: FileList) {
     const valid_files = Array.from(files).filter((file) => file.name.endsWith(".SC2Replay"))
     if (valid_files.length > 0) {
         const data_transfer = new DataTransfer()
-        valid_files.forEach((file) => data_transfer.items.add(file))
+        for (const file of valid_files) {
+            data_transfer.items.add(file)
+        }
         selected_count = valid_files.length
         on_upload(data_transfer.files)
     }

@@ -44,6 +44,12 @@ function handle_keydown(event: KeyboardEvent) {
                     src={url}
                     type={mime_type}
                 >
+                <track
+                    kind="captions"
+                    srclang="en"
+                    label="English"
+                    src=""
+                >
                 Your browser does not support the video tag.
             </video>
         {:else if mime_type.startsWith("audio/")}
@@ -54,6 +60,12 @@ function handle_keydown(event: KeyboardEvent) {
                 <source
                     src={url}
                     type={mime_type}
+                >
+                <track
+                    kind="captions"
+                    srclang="en"
+                    label="English"
+                    src=""
                 >
                 Your browser does not support the audio element.
             </audio>

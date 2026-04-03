@@ -44,10 +44,10 @@ function handle_drag_over(event: DragEvent, target_column: Column, target_list: 
     }
 
     // Remove from current list
-    if (active_columns.find((c) => c.key === dragging_item!.key)) {
-        active_columns = active_columns.filter((c) => c.key !== dragging_item!.key)
+    if (active_columns.find((c) => c.key === dragging_item?.key)) {
+        active_columns = active_columns.filter((c) => c.key !== dragging_item?.key)
     } else {
-        disabled_columns = disabled_columns.filter((c) => c.key !== dragging_item!.key)
+        disabled_columns = disabled_columns.filter((c) => c.key !== dragging_item?.key)
     }
 
     // Find insert position
@@ -85,8 +85,8 @@ function handle_drop_to_empty(target_list: "active" | "disabled") {
     }
 
     // Remove from current list
-    active_columns = active_columns.filter((c) => c.key !== dragging_item!.key)
-    disabled_columns = disabled_columns.filter((c) => c.key !== dragging_item!.key)
+    active_columns = active_columns.filter((c) => c.key !== dragging_item?.key)
+    disabled_columns = disabled_columns.filter((c) => c.key !== dragging_item?.key)
 
     // Add to target list
     if (target_list === "active") {

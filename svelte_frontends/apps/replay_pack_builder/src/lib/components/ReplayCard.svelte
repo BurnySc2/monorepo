@@ -23,7 +23,7 @@ function format_duration(seconds: number): string {
     return `${mins}m ${secs.toString().padStart(2, "0")}s`
 }
 
-let matchup: string = $derived(() => {
+let matchup: string = $derived.by(() => {
     if (replay.teams.length !== 2) {
         return "N/A"
     }
@@ -36,11 +36,11 @@ let matchup: string = $derived(() => {
 
 let teams_display: { result: string; players: { name: string; race: string; mmr: number }[] }[] = $derived(
     replay.teams.map((team) => ({
-        result: team.result,
+        result: team.result ?? "",
         players: team.players.map((p) => ({
             name: p.name,
             race: p.play_race,
-            mmr: p.mmr,
+            mmr: p.mmr ?? 0,
         })),
     })),
 )

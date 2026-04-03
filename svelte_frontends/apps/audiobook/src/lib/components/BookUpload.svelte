@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Spinner from "./Spinner.svelte"
+import Spinner from "./Spinner.svelte"
 
 interface Props {
     on_upload: (file: File) => Promise<void>
@@ -10,6 +10,10 @@ interface Props {
 let { on_upload, is_uploading = false, disabled = false }: Props = $props()
 
 let is_dragging = $state(false)
+
+let container_class = $derived(
+    `border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors duration-200 ${is_dragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"} ${disabled || is_uploading ? "opacity-50 cursor-not-allowed" : ""}`,
+)
 
 function handle_drag_over(event: DragEvent) {
     event.preventDefault()
@@ -65,9 +69,7 @@ async function handle_click() {
 </script>
 
 <div
-    class="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors duration-200
-        {is_dragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"}
-        {disabled || is_uploading ? "opacity-50 cursor-not-allowed" : ""}"
+    class={container_class}
     ondrop={handle_drop}
     ondragover={handle_drag_over}
     ondragleave={handle_drag_leave}
