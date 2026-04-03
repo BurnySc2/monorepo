@@ -13,6 +13,7 @@ from routes.index import IndexRouter
 from routes.login import login_router
 from routes.replay_parser import replay_parser_router
 from routes.tts_websocket import TTSRouter
+from routes.audiobook import audiobook_router
 
 app = FastAPI()
 
@@ -33,6 +34,7 @@ app.include_router(IndexRouter, prefix="/api")
 app.include_router(login_router)
 app.include_router(replay_parser_router, prefix="/api")
 app.include_router(TTSRouter, prefix="/tts-api")
+app.include_router(audiobook_router, prefix="/api/audiobook")
 
 
 @app.get("/")

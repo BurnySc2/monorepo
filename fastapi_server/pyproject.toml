@@ -150,7 +150,7 @@ apply_dbt_builtins = true
 capitalisation_policy = "upper"
 
 [tool.pytest.ini_options]
-pythonpath = "src"
+pythonpath = ["src", "."]
 testpaths = ["test"]
 
 [tool.pytest_env]
@@ -158,7 +158,7 @@ testpaths = ["test"]
 STAGE = "test"
 POSTGRES_CONNECTION_STRING = "postgresql://test:test@localhost:5433/test"
 BACKEND_SERVER_URL = "http://localhost:8000"
-MINIO_URL = "localhost:9000"
+MINIO_URL = "http://localhost:9000"
 MINIO_ACCESS_TOKEN = "mylocaldevkey"
 MINIO_SECRET_KEY = "mylocaldevpassword"
 MINIO_AUDIOBOOK_BUCKET = "audiobooks-test"

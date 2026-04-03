@@ -21,14 +21,14 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "main:app",
+                "src.main:app",
                 "--reload",
                 "--host",
                 "0.0.0.0",
                 "--port",
                 "8000"
             ],
-            "cwd": "${workspaceFolder}/src",
+            "cwd": "${workspaceFolder}",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"
             },
