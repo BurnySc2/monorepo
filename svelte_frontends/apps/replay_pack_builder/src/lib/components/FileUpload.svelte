@@ -49,7 +49,7 @@ function process_files(files: FileList) {
 </script>
 
 <div
-    class="upload-zone"
+    class="drop-zone"
     class:dragging={is_dragging}
     class:disabled={is_processing}
     role="button"
@@ -69,68 +69,11 @@ function process_files(files: FileList) {
         disabled={is_processing}
         class="hidden-input"
     >
-    <div class="upload-content">
-        <div class="upload-icon">📁</div>
-        {#if is_processing}
-            <p class="upload-text">Processing...</p>
-        {:else}
-            <p class="upload-text">Drag & drop .SC2Replay files here</p>
-            <p class="upload-hint">or click to browse</p>
-        {/if}
-    </div>
+    <div class="drop-zone-icon">📁</div>
+    {#if is_processing}
+        <p class="drop-zone-text">Processing...</p>
+    {:else}
+        <p class="drop-zone-text">Drag & drop .SC2Replay files here</p>
+        <p class="drop-zone-hint">or click to browse</p>
+    {/if}
 </div>
-
-<style>
-.upload-zone {
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    padding: 32px;
-    text-align: center;
-    cursor: pointer;
-    transition:
-        border-color 0.2s,
-        background-color 0.2s;
-}
-
-.upload-zone:hover:not(.disabled) {
-    border-color: #666;
-    background-color: #f9f9f9;
-}
-
-.upload-zone.dragging {
-    border-color: #2196f3;
-    background-color: #e3f2fd;
-}
-
-.upload-zone.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.hidden-input {
-    display: none;
-}
-
-.upload-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-.upload-icon {
-    font-size: 48px;
-}
-
-.upload-text {
-    margin: 0;
-    font-size: 16px;
-    color: #333;
-}
-
-.upload-hint {
-    margin: 0;
-    font-size: 14px;
-    color: #888;
-}
-</style>

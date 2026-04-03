@@ -173,7 +173,7 @@ $effect(() => {
     <section>
         <h2>Upload Replays</h2>
         {#if parsed_files.length > 0}
-            <button onclick={clear_all_files}>Remove uploaded files</button>
+            <button class="btn-danger" onclick={clear_all_files}>Remove uploaded files</button>
         {/if}
         <p>Total replays uploaded: {parsed_files.length}</p>
         <FileUpload
@@ -200,6 +200,7 @@ $effect(() => {
             p2name, p2race, p2r, p2mmr
         </p>
         <button
+            class="btn-secondary"
             onclick={reset_pattern}
             disabled={replay_name_pattern === DEFAULT_REPLAY_NAME_PATTERN}
         >
@@ -220,13 +221,14 @@ $effect(() => {
         <h2>Download</h2>
         {#if filtered_replays.length > 0}
             <button
+                class="btn-primary"
                 onclick={download_zip}
                 disabled={is_processing}
             >
                 Zip and download {filtered_replays.length} replays
             </button>
         {:else}
-            <button disabled>No replays to download</button>
+            <button class="btn-primary" disabled>No replays to download</button>
         {/if}
     </section>
 
@@ -278,24 +280,5 @@ input[type="text"] {
 .help-text {
     font-size: 0.85rem;
     color: #666;
-}
-
-button {
-    padding: 0.5rem 1rem;
-    background: #4f46e5;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-}
-
-button:hover:not(:disabled) {
-    background: #4338ca;
-}
-
-button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
 }
 </style>

@@ -20,6 +20,7 @@ function handle_change() {
     <label class="checkbox-label">
         <input
             type="checkbox"
+            class="checkbox"
             bind:checked={filter_settings.filter_enabled}
             onchange={handle_change}
         >
@@ -31,6 +32,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.game_matchmaking}
                 onchange={handle_change}
             >
@@ -39,6 +41,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.game_custom}
                 onchange={handle_change}
             >
@@ -47,6 +50,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.game_include_games_with_ai}
                 onchange={handle_change}
             >
@@ -55,6 +59,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.game_include_games_resumed_from_replay}
                 onchange={handle_change}
             >
@@ -67,6 +72,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.expansion_wol}
                 onchange={handle_change}
             >
@@ -75,6 +81,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.expansion_hots}
                 onchange={handle_change}
             >
@@ -83,6 +90,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.expansion_lotv}
                 onchange={handle_change}
             >
@@ -95,6 +103,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.server_americas}
                 onchange={handle_change}
             >
@@ -103,6 +112,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.server_europe}
                 onchange={handle_change}
             >
@@ -111,6 +121,7 @@ function handle_change() {
         <label class="checkbox-label">
             <input
                 type="checkbox"
+                class="checkbox"
                 bind:checked={filter_settings.server_asia}
                 onchange={handle_change}
             >
@@ -125,6 +136,7 @@ function handle_change() {
                 From
                 <input
                     type="date"
+                    class="input"
                     bind:value={filter_settings.date_played_min}
                     onchange={handle_change}
                 >
@@ -133,6 +145,7 @@ function handle_change() {
                 To
                 <input
                     type="date"
+                    class="input"
                     bind:value={filter_settings.date_played_max}
                     onchange={handle_change}
                 >
@@ -147,6 +160,7 @@ function handle_change() {
                 Min
                 <input
                     type="number"
+                    class="input"
                     bind:value={filter_settings.game_duration_min}
                     onchange={handle_change}
                 >
@@ -155,6 +169,7 @@ function handle_change() {
                 Max
                 <input
                     type="number"
+                    class="input"
                     bind:value={filter_settings.game_duration_max}
                     onchange={handle_change}
                 >
@@ -169,6 +184,7 @@ function handle_change() {
                 Min
                 <input
                     type="number"
+                    class="input"
                     bind:value={filter_settings.player_count_min}
                     onchange={handle_change}
                 >
@@ -177,6 +193,7 @@ function handle_change() {
                 Max
                 <input
                     type="number"
+                    class="input"
                     bind:value={filter_settings.player_count_max}
                     onchange={handle_change}
                 >
@@ -191,6 +208,7 @@ function handle_change() {
                 Min
                 <input
                     type="number"
+                    class="input"
                     bind:value={filter_settings.average_mmr_min}
                     onchange={handle_change}
                 >
@@ -199,6 +217,7 @@ function handle_change() {
                 Max
                 <input
                     type="number"
+                    class="input"
                     bind:value={filter_settings.average_mmr_max}
                     onchange={handle_change}
                 >
@@ -212,6 +231,7 @@ function handle_change() {
             <label class="checkbox-label">
                 <input
                     type="checkbox"
+                    class="checkbox"
                     bind:checked={filter_settings.matchup_pvp}
                     onchange={handle_change}
                 >
@@ -220,6 +240,7 @@ function handle_change() {
             <label class="checkbox-label">
                 <input
                     type="checkbox"
+                    class="checkbox"
                     bind:checked={filter_settings.matchup_pvt}
                     onchange={handle_change}
                 >
@@ -228,6 +249,7 @@ function handle_change() {
             <label class="checkbox-label">
                 <input
                     type="checkbox"
+                    class="checkbox"
                     bind:checked={filter_settings.matchup_pvz}
                     onchange={handle_change}
                 >
@@ -236,6 +258,7 @@ function handle_change() {
             <label class="checkbox-label">
                 <input
                     type="checkbox"
+                    class="checkbox"
                     bind:checked={filter_settings.matchup_tvt}
                     onchange={handle_change}
                 >
@@ -244,6 +267,7 @@ function handle_change() {
             <label class="checkbox-label">
                 <input
                     type="checkbox"
+                    class="checkbox"
                     bind:checked={filter_settings.matchup_tvz}
                     onchange={handle_change}
                 >
@@ -252,6 +276,7 @@ function handle_change() {
             <label class="checkbox-label">
                 <input
                     type="checkbox"
+                    class="checkbox"
                     bind:checked={filter_settings.matchup_zvz}
                     onchange={handle_change}
                 >
@@ -266,6 +291,7 @@ function handle_change() {
             Must include
             <input
                 type="text"
+                class="input"
                 bind:value={filter_settings.player_name_must_include}
                 onchange={handle_change}
                 placeholder="e.g., Hero, Burny"
@@ -275,6 +301,7 @@ function handle_change() {
             Must exclude
             <input
                 type="text"
+                class="input"
                 bind:value={filter_settings.player_name_must_exclude}
                 onchange={handle_change}
                 placeholder="e.g., Computer"
@@ -288,6 +315,7 @@ function handle_change() {
             Must include
             <input
                 type="text"
+                class="input"
                 bind:value={filter_settings.map_name_must_include}
                 onchange={handle_change}
                 placeholder="e.g., LE, Station"
@@ -297,6 +325,7 @@ function handle_change() {
             Must exclude
             <input
                 type="text"
+                class="input"
                 bind:value={filter_settings.map_name_must_exclude}
                 onchange={handle_change}
                 placeholder="e.g., Altitude"
@@ -352,13 +381,6 @@ legend {
     margin-bottom: 0;
 }
 
-.text-label input {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 0.9rem;
-}
-
 .range-inputs {
     display: flex;
     gap: 1rem;
@@ -371,13 +393,6 @@ legend {
     gap: 0.25rem;
     flex: 1;
     min-width: 100px;
-}
-
-.range-inputs input {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 0.9rem;
 }
 
 .checkbox-grid {

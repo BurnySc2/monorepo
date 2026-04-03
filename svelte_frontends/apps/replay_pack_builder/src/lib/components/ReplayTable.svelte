@@ -58,6 +58,7 @@ function get_matchup(replay: ParsedReplayFile): string {
                 <th class="checkbox-col">
                     <input
                         type="checkbox"
+                        class="checkbox"
                         checked={all_selected}
                         indeterminate={some_selected}
                         onchange={toggle_all}
@@ -78,6 +79,7 @@ function get_matchup(replay: ParsedReplayFile): string {
                     <td class="checkbox-col">
                         <input
                             type="checkbox"
+                            class="checkbox"
                             checked={selected_md5s.includes(replay.md5)}
                             onchange={() => toggle_replay(replay.md5)}
                         >
@@ -95,7 +97,7 @@ function get_matchup(replay: ParsedReplayFile): string {
                     </td>
                     <td>
                         <button
-                            class="remove-btn"
+                            class="btn-danger"
                             onclick={() => on_remove(replay.md5)}
                         >
                             Remove
@@ -172,20 +174,6 @@ tr.selected {
 .loss {
     color: #dc2626;
     font-weight: 600;
-}
-
-.remove-btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-    background: #fee2e2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.remove-btn:hover {
-    background: #fecaca;
 }
 
 .empty-message {
