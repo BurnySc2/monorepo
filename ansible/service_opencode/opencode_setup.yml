@@ -1,23 +1,19 @@
 ---
-# https://github.com/kieraneglin/pinchflat
+# https://opencode.ai
 # Execute with
-# ansible-playbook pinchflat_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-# TODO Need to add crontab which sets owner to syncthing of downloaded files
+# ansible-playbook opencode_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: server_group1
   vars:
-    USERNAME: '{{ secrets.PINCHFLAT.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.PINCHFLAT.SUBDOMAIN }}'
-    APPLICATION_PORT: '8945'
+    USERNAME: opencode
+    SUBDOMAIN: opencode
+    APPLICATION_PORT: '4096'
   tasks:
-    - name: Get syncthing user id
-      ansible.builtin.shell:
-        cmd: id syncthing -u
-      register: SYNCTHING_USER_ID
-    - name: Get syncthing group id
-      ansible.builtin.shell:
-        cmd: id syncthing -g
-      register: SYNCTHING_GROUP_ID
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+      loop_control:
+        loop_var: item
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'
@@ -29,7 +25,7 @@
           - '{{ USERNAME }}'
           - docker
         shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Tear down existing services
+    - name: docker-compose stop
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
         state: stopped
