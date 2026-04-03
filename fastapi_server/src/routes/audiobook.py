@@ -1,12 +1,19 @@
 import io
+from pathlib import Path
 
 import arrow
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
-from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url
+from components.audiobook.generate_tts import get_supported_voices
+from components.audiobook.models import AudioSettingsBaseModel
+from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from models.audiobook import AudiobookBook, AudiobookChapter
+
+_queries_directory = Path(__file__).parent.parent / "queries"
+_query_get_chapters = (_queries_directory / "audiobook_get_chapters.sql").read_text()
 
 audiobook_router = APIRouter()
 
@@ -45,30 +52,27 @@ async def get_book(book_id: int) -> JSONResponse:
     Get a single book with its chapters.
     Returns 404 if not found.
     Generates presigned URLs for chapters with audio.
+    Uses optimized SQL query to get global queue position.
     """
     book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
 
     if book is None or book.deleted:
         return JSONResponse({"error": "Book not found"}, status_code=404)
 
-    chapters = (
-        await AudiobookChapter.objects()
-        .where(AudiobookChapter.book == book_id)
-        .order_by(AudiobookChapter.chapter_number)
-    )
+    chapter_numbers = list(range(1, book.chapter_count + 1))
+    chapters_rows: list[dict] = await AudiobookChapter.raw(_query_get_chapters, book_id, chapter_numbers)
 
     chapters_data = []
     async with get_s3_client() as s3:
-        for chapter in chapters:
-            # Generate presigned URL if audio exists
+        for row in chapters_rows:
             presigned_url = ""
-            if chapter.minio_object_name:
+            if row["minio_object_name"]:
                 presigned_url = (
                     await object_create_presigned_url(
                         session=s3,
                         bucket=GARAGE_AUDIOBOOK_BUCKET,
-                        key=chapter.minio_object_name,
-                        file_name=f"{chapter.chapter_title}.mp3",
+                        key=row["minio_object_name"],
+                        file_name=f"{row['chapter_title']}.mp3",
                         expires_in_seconds=3600,
                         verify_object_exists=False,
                     )
@@ -77,15 +81,15 @@ async def get_book(book_id: int) -> JSONResponse:
 
             chapters_data.append(
                 {
-                    "id": chapter.id,
-                    "book_id": chapter.book,
-                    "number_in_queue": int(arrow.get(chapter.queued).float_timestamp()) if chapter.queued else None,
-                    "is_converting": chapter.started_converting is not None,
-                    "has_audio": chapter.minio_object_name is not None,
-                    "chapter_title": chapter.chapter_title,
-                    "chapter_number": chapter.chapter_number,
-                    "sentence_count": chapter.sentence_count,
-                    "minio_object_name": chapter.minio_object_name,
+                    "id": row["id"],
+                    "book_id": row["book_id"],
+                    "number_in_queue": row["number_in_queue"],
+                    "is_converting": row["is_converting"],
+                    "has_audio": row["has_audio"],
+                    "chapter_title": row["chapter_title"],
+                    "chapter_number": row["chapter_number"],
+                    "sentence_count": row["sentence_count"],
+                    "minio_object_name": row["minio_object_name"],
                     "minio_presigned_url": presigned_url,
                 }
             )
@@ -175,5 +179,109 @@ async def delete_book(book_id: int) -> JSONResponse:
 
     # Clear queued status on all chapters
     await AudiobookChapter.update({AudiobookChapter.queued: None}).where(AudiobookChapter.book == book_id)
+
+    return JSONResponse({"deleted": True})
+
+
+@audiobook_router.get("/voices")
+async def list_voices() -> JSONResponse:
+    """
+    List all available TTS voices.
+    """
+    voices = await get_supported_voices()
+    return JSONResponse(voices)
+
+
+class QueueChapterRequest(BaseModel):
+    voice: str
+    rate: int = 0
+    volume: int = 0
+    pitch: int = 0
+
+
+@audiobook_router.post("/books/{book_id}/chapters/{chapter_id}/queue")
+async def queue_chapter(book_id: int, chapter_id: int, settings: QueueChapterRequest) -> JSONResponse:
+    """
+    Queue a chapter for audio conversion.
+    Sets queued timestamp and stores audio settings.
+    """
+    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    if book is None or book.deleted:
+        return JSONResponse({"error": "Book not found"}, status_code=404)
+
+    chapter = (
+        await AudiobookChapter.objects()
+        .where(AudiobookChapter.id == chapter_id)
+        .where(AudiobookChapter.book == book_id)
+        .first()
+    )
+    if chapter is None:
+        return JSONResponse({"error": "Chapter not found"}, status_code=404)
+
+    audio_settings = AudioSettingsBaseModel(
+        voice=settings.voice,
+        rate=settings.rate,
+        volume=settings.volume,
+        pitch=settings.pitch,
+    )
+
+    chapter.queued = arrow.utcnow().naive
+    chapter.audio_settings = audio_settings.model_dump_json()
+    await chapter.save()
+
+    return JSONResponse({"queued": True})
+
+
+@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/queue")
+async def cancel_queued_chapter(book_id: int, chapter_id: int) -> JSONResponse:
+    """
+    Cancel a queued chapter conversion.
+    Clears the queued timestamp and audio settings.
+    """
+    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    if book is None or book.deleted:
+        return JSONResponse({"error": "Book not found"}, status_code=404)
+
+    chapter = (
+        await AudiobookChapter.objects()
+        .where(AudiobookChapter.id == chapter_id)
+        .where(AudiobookChapter.book == book_id)
+        .first()
+    )
+    if chapter is None:
+        return JSONResponse({"error": "Chapter not found"}, status_code=404)
+
+    chapter.queued = None
+    chapter.audio_settings = None
+    await chapter.save()
+
+    return JSONResponse({"cancelled": True})
+
+
+@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/audio")
+async def delete_chapter_audio(book_id: int, chapter_id: int) -> JSONResponse:
+    """
+    Delete the generated audio for a chapter.
+    Removes the audio from Garage and clears the minio_object_name.
+    """
+    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    if book is None or book.deleted:
+        return JSONResponse({"error": "Book not found"}, status_code=404)
+
+    chapter = (
+        await AudiobookChapter.objects()
+        .where(AudiobookChapter.id == chapter_id)
+        .where(AudiobookChapter.book == book_id)
+        .first()
+    )
+    if chapter is None:
+        return JSONResponse({"error": "Chapter not found"}, status_code=404)
+
+    if chapter.minio_object_name:
+        async with get_s3_client() as s3:
+            await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+
+        chapter.minio_object_name = None
+        await chapter.save()
 
     return JSONResponse({"deleted": True})

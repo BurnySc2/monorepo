@@ -142,3 +142,85 @@ def test_deleted_book_not_in_list(test_client_db_reset: TestClient) -> None:
 
     response = test_client_db_reset.get("/api/audiobook/books")
     assert response.json() == []
+
+
+def test_list_voices(test_client_db_reset: TestClient) -> None:
+    """GET /api/audiobook/voices returns a list of voices."""
+    response = test_client_db_reset.get("/api/audiobook/voices")
+    assert response.status_code == 200
+    voices = response.json()
+    assert isinstance(voices, list)
+    assert len(voices) > 0
+
+
+def test_queue_chapter(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/1/chapters/1/queue queues a chapter."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.post(
+        f"/api/audiobook/books/{book_id}/chapters/1/queue",
+        json={"voice": "en-GB-SoniaNeural", "rate": 0, "volume": 0, "pitch": 0},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"queued": True}
+
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+    assert response.status_code == 200
+    chapters = response.json()["chapters"]
+    chapter_1 = next(c for c in chapters if c["chapter_number"] == 1)
+    assert chapter_1["number_in_queue"] is not None
+
+
+def test_queue_chapter_book_not_found(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/999/chapters/1/queue returns 404."""
+    response = test_client_db_reset.post(
+        "/api/audiobook/books/999/chapters/1/queue",
+        json={"voice": "en-GB-SoniaNeural", "rate": 0, "volume": 0, "pitch": 0},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"error": "Book not found"}
+
+
+def test_queue_chapter_chapter_not_found(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/1/chapters/999/queue returns 404."""
+    _upload_book(test_client_db_reset)
+    response = test_client_db_reset.post(
+        "/api/audiobook/books/1/chapters/999/queue",
+        json={"voice": "en-GB-SoniaNeural", "rate": 0, "volume": 0, "pitch": 0},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"error": "Chapter not found"}
+
+
+def test_cancel_queued_chapter(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books/1/chapters/1/queue cancels queued chapter."""
+    book_id = _upload_book(test_client_db_reset)
+    test_client_db_reset.post(
+        f"/api/audiobook/books/{book_id}/chapters/1/queue",
+        json={"voice": "en-GB-SoniaNeural", "rate": 0, "volume": 0, "pitch": 0},
+    )
+    response = test_client_db_reset.delete(f"/api/audiobook/books/{book_id}/chapters/1/queue")
+    assert response.status_code == 200
+    assert response.json() == {"cancelled": True}
+
+
+def test_delete_chapter_audio(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books/1/chapters/1/audio deletes generated audio."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.delete(f"/api/audiobook/books/{book_id}/chapters/1/audio")
+    assert response.status_code == 200
+    assert response.json() == {"deleted": True}
+
+
+def test_delete_chapter_audio_book_not_found(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books/999/chapters/1/audio returns 404."""
+    response = test_client_db_reset.delete("/api/audiobook/books/999/chapters/1/audio")
+    assert response.status_code == 404
+    assert response.json() == {"error": "Book not found"}
+
+
+def test_delete_chapter_audio_chapter_not_found(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books/1/chapters/999/audio returns 404."""
+    _upload_book(test_client_db_reset)
+    response = test_client_db_reset.delete("/api/audiobook/books/1/chapters/999/audio")
+    assert response.status_code == 404
+    assert response.json() == {"error": "Chapter not found"}
