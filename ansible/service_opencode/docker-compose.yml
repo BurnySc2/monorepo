@@ -4,6 +4,7 @@ services:
     image: smanx/opencode
     container_name: opencode
     volumes:
+      # - /media/ssd480/opencode/root:/root
       - /media/ssd480/opencode/config:/root/.config/opencode
       - /media/ssd480/opencode/data:/root/.local/share/opencode
       - /media/ssd480/opencode/workspace:/workspace
