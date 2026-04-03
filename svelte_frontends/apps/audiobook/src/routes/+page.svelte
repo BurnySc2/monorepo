@@ -51,7 +51,10 @@ $effect(() => {
 </script>
 
 <div class="container mx-auto max-w-6xl px-4 py-8">
-    <h1 class="text-3xl font-bold text-center mb-8">Audiobooks</h1>
+    <h1 class="text-3xl font-bold text-center mb-4">Audiobooks</h1>
+    <p class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 mb-6 text-center">
+        Books and audio files may be deleted at any time without notice. Do not rely on this service for permanent storage.
+    </p>
 
     {#if !is_loading && !is_logged_in}
         <p class="text-center text-gray-600">Log in before you can upload books.</p>
@@ -62,6 +65,9 @@ $effect(() => {
                 {is_uploading}
                 disabled={!is_logged_in}
             />
+            <p class="text-xs text-gray-500 mt-2 text-center">
+                By uploading, you confirm that you own the rights to this content.
+            </p>
         </div>
 
         {#if is_loading}
