@@ -9,10 +9,10 @@ from commands.public_remind import Remind
 
 
 def create_time_shift_string(_day, _hour, _minute, _second):
-    days = "d day days".split(" ")
-    hours = "h hour hours".split(" ")
-    minutes = "m min mins minute minutes".split(" ")
-    seconds = "s sec secs second seconds".split(" ")
+    days = ["d", "day", "days"]
+    hours = ["h", "hour", "hours"]
+    minutes = ["m", "min", "mins", "minute", "minutes"]
+    seconds = ["s", "sec", "secs", "second", "seconds"]
     space = ["", " "]
 
     shift_list = []

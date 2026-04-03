@@ -36,7 +36,7 @@ load_dotenv()
 STAGE = os.getenv("STAGE")
 assert STAGE in {"DEV", "PROD", "TEST"}, STAGE
 
-bot = GatewayBot(token=os.getenv("DISCORD_KEY"), intents=Intents.ALL)
+bot = GatewayBot(token=os.getenv("DISCORD_KEY", ""), intents=Intents.ALL)
 BOT_USER_ID: int = -1
 
 # Discord command prefix
@@ -177,7 +177,7 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if event.member.is_bot:
         return
 
-    channel: GuildTextChannel = await bot.rest.fetch_channel(event.channel_id)
+    channel = await bot.rest.fetch_channel(event.channel_id)
     # Use channel 'bot_tests' only for development
     if STAGE == "DEV" and channel.name != "bot_tests":
         return
@@ -230,7 +230,7 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                     f"Added {reaction.emoji.name} quote:\n{message.created_at.strftime('%Y-%m-%d')} "
                     f"{str(message.author)}: {message.content}"
                 )
-                await channel.send(response_message)
+                await channel.send(response_message)  # pyrefly: ignore
                 return
 
 
@@ -290,7 +290,7 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
         function = function_mapping[command]
         await generic_command_caller(
             event,
-            function,
+            function,  # pyrefly: ignore
             message,
             add_remove_emoji=True,
         )

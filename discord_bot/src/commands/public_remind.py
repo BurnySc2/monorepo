@@ -24,9 +24,9 @@ Example usage:
         """,
     )
 
-    def __init__(self, client: GatewayBot):
+    def __init__(self, client: GatewayBot | None):
         super().__init__()
-        self.client: GatewayBot = client
+        self.client: GatewayBot | None = client
         self.next_reminder: Reminder | None = None
         # Limit of reminders per person
         self.reminder_limit = 20
@@ -74,9 +74,11 @@ Example usage:
             await self.fetch_next_reminder()
 
     async def _get_user_by_id(self, user_id: int) -> User:
+        assert self.client is not None
         return await self.client.rest.fetch_user(user_id)
 
     async def _get_message_by_id(self, channel_id: int, message_id: int) -> Message:
+        assert self.client is not None
         return await self.client.rest.fetch_message(channel_id, message_id)
 
     async def _user_reached_max_reminder_threshold(self, user_id: int) -> bool:
