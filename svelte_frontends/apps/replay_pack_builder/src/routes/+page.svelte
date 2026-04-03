@@ -1,6 +1,9 @@
 <script lang="ts">
 import { onMount } from "svelte"
 import { parse_replay_file } from "$lib/api_client"
+import FileUpload from "$lib/components/FileUpload.svelte"
+import FilterPanel from "$lib/components/FilterPanel.svelte"
+import ReplayTable from "$lib/components/ReplayTable.svelte"
 import {
     DEFAULT_REPLAY_NAME_PATTERN,
     type FilterSettings,
@@ -17,6 +20,7 @@ let is_processing = $state(false)
 let filter_settings: FilterSettings = $state(get_default_filter_settings())
 let replay_name_pattern: string = $state(DEFAULT_REPLAY_NAME_PATTERN)
 let preview_name: string = $state("")
+let selected_md5s: string[] = $state([])
 
 // Example replay for preview
 const example_replay: ParsedReplayFile = {
@@ -73,13 +77,7 @@ function update_filters() {
     filtered_replays = parsed_files.filter((replay) => replay_passes_filter(replay, filter_settings))
 }
 
-async function handle_file_upload(event: Event) {
-    const input = event.target as HTMLInputElement
-    const files = input.files
-    if (!files) {
-        return
-    }
-
+async function handle_file_upload(files: FileList) {
     is_processing = true
     try {
         for (const file of files) {
@@ -117,6 +115,7 @@ function remove_replay(md5: string) {
 function clear_all_files() {
     parsed_files = []
     filtered_replays = []
+    selected_md5s = []
 }
 
 function reset_pattern() {
@@ -157,27 +156,6 @@ async function download_zip() {
     }
 }
 
-function format_date(timestamp: number): string {
-    return new Date(timestamp).toLocaleDateString()
-}
-
-function format_duration(seconds: number): string {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}m ${secs.toString().padStart(2, "0")}s`
-}
-
-function get_matchup(replay: ParsedReplayFile): string {
-    if (replay.teams.length !== 2) {
-        return "N/A"
-    }
-    const players = replay.teams.flatMap((t) => t.players)
-    if (players.length !== 2) {
-        return "N/A"
-    }
-    return `${players[0].play_race[0]}v${players[1].play_race[0]}`
-}
-
 onMount(() => {
     update_preview()
 })
@@ -198,268 +176,20 @@ $effect(() => {
             <button onclick={clear_all_files}>Remove uploaded files</button>
         {/if}
         <p>Total replays uploaded: {parsed_files.length}</p>
-        <input
-            type="file"
-            accept=".SC2Replay"
-            multiple
-            onchange={handle_file_upload}
-            disabled={is_processing}
-        >
-        {#if is_processing}
-            <p>Processing...</p>
-        {/if}
+        <FileUpload
+            {is_processing}
+            on_upload={handle_file_upload}
+        />
     </section>
 
     <!-- Filter Section -->
     <section>
         <h2>Replay Filters</h2>
-
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.filter_enabled}
-                onchange={update_filters}
-            >
-            Filter enabled
-        </label>
-
-        <h3>Game types</h3>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.game_matchmaking}
-                onchange={update_filters}
-            >
-            Matchmaking
-        </label>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.game_custom}
-                onchange={update_filters}
-            >
-            Custom Game
-        </label>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.game_include_games_with_ai}
-                onchange={update_filters}
-            >
-            Include Games with AI
-        </label>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.game_include_games_resumed_from_replay}
-                onchange={update_filters}
-            >
-            Include Games Resumed from Replay
-        </label>
-
-        <h3>Expansion</h3>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.expansion_wol}
-                onchange={update_filters}
-            >
-            Wings of Liberty
-        </label>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.expansion_hots}
-                onchange={update_filters}
-            >
-            Heart of the Swarm
-        </label>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.expansion_lotv}
-                onchange={update_filters}
-            >
-            Legacy of the Void
-        </label>
-
-        <h3>Server</h3>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.server_americas}
-                onchange={update_filters}
-            >
-            Americas
-        </label>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.server_europe}
-                onchange={update_filters}
-            >
-            Europe
-        </label>
-        <label>
-            <input
-                type="checkbox"
-                bind:checked={filter_settings.server_asia}
-                onchange={update_filters}
-            >
-            Asia
-        </label>
-
-        <h3>Date played</h3>
-        <label>
-            Between
-            <input
-                type="date"
-                bind:value={filter_settings.date_played_min}
-                onchange={update_filters}
-            >
-            and
-            <input
-                type="date"
-                bind:value={filter_settings.date_played_max}
-                onchange={update_filters}
-            >
-        </label>
-
-        <h3>Game duration (seconds)</h3>
-        <label>
-            Between
-            <input
-                type="number"
-                bind:value={filter_settings.game_duration_min}
-                onchange={update_filters}
-            >
-            and
-            <input
-                type="number"
-                bind:value={filter_settings.game_duration_max}
-                onchange={update_filters}
-            >
-        </label>
-
-        <h3>Player count</h3>
-        <label>
-            Between
-            <input
-                type="number"
-                bind:value={filter_settings.player_count_min}
-                onchange={update_filters}
-            >
-            and
-            <input
-                type="number"
-                bind:value={filter_settings.player_count_max}
-                onchange={update_filters}
-            >
-        </label>
-
-        <h3>Average player MMR</h3>
-        <label>
-            Between
-            <input
-                type="number"
-                bind:value={filter_settings.average_mmr_min}
-                onchange={update_filters}
-            >
-            and
-            <input
-                type="number"
-                bind:value={filter_settings.average_mmr_max}
-                onchange={update_filters}
-            >
-        </label>
-
-        <h3>Matchups</h3>
-        <div class="checkbox-grid">
-            <label>
-                <input
-                    type="checkbox"
-                    bind:checked={filter_settings.matchup_pvp}
-                    onchange={update_filters}
-                >
-                PvP
-            </label>
-            <label>
-                <input
-                    type="checkbox"
-                    bind:checked={filter_settings.matchup_pvt}
-                    onchange={update_filters}
-                >
-                PvT
-            </label>
-            <label>
-                <input
-                    type="checkbox"
-                    bind:checked={filter_settings.matchup_pvz}
-                    onchange={update_filters}
-                >
-                PvZ
-            </label>
-            <label>
-                <input
-                    type="checkbox"
-                    bind:checked={filter_settings.matchup_tvt}
-                    onchange={update_filters}
-                >
-                TvT
-            </label>
-            <label>
-                <input
-                    type="checkbox"
-                    bind:checked={filter_settings.matchup_tvz}
-                    onchange={update_filters}
-                >
-                TvZ
-            </label>
-            <label>
-                <input
-                    type="checkbox"
-                    bind:checked={filter_settings.matchup_zvz}
-                    onchange={update_filters}
-                >
-                ZvZ
-            </label>
-        </div>
-
-        <h3>Player name (partial match, case insensitive)</h3>
-        <label>
-            Must include names
-            <input
-                type="text"
-                bind:value={filter_settings.player_name_must_include}
-                onchange={update_filters}
-            >
-        </label>
-        <label>
-            Must exclude names
-            <input
-                type="text"
-                bind:value={filter_settings.player_name_must_exclude}
-                onchange={update_filters}
-            >
-        </label>
-
-        <h3>Map name (partial match, case insensitive)</h3>
-        <label>
-            Must include names
-            <input
-                type="text"
-                bind:value={filter_settings.map_name_must_include}
-                onchange={update_filters}
-            >
-        </label>
-        <label>
-            Must exclude names
-            <input
-                type="text"
-                bind:value={filter_settings.map_name_must_exclude}
-                onchange={update_filters}
-            >
-        </label>
+        <FilterPanel
+            bind:filter_settings
+            replays={parsed_files}
+            on_change={update_filters}
+        />
     </section>
 
     <!-- Name Template Section -->
@@ -504,32 +234,11 @@ $effect(() => {
     {#if parsed_files.length > 0}
         <section>
             <h2>Uploaded Replays ({filtered_replays.length} passing filters)</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Map</th>
-                        <th>Matchup</th>
-                        <th>Duration</th>
-                        <th>Region</th>
-                        <th>Result</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each parsed_files as replay}
-                        <tr>
-                            <td>{format_date(replay.played_timestamp)}</td>
-                            <td>{replay.map_name}</td>
-                            <td>{get_matchup(replay)}</td>
-                            <td>{format_duration(replay.game_length_seconds)}</td>
-                            <td>{replay.region_short.toUpperCase()}</td>
-                            <td>{replay.teams[0]?.result || "-"}</td>
-                            <td><button onclick={() => remove_replay(replay.md5)}>Remove</button></td>
-                        </tr>
-                    {/each}
-                </tbody>
-            </table>
+            <ReplayTable
+                replays={parsed_files}
+                bind:selected_md5s
+                on_remove={remove_replay}
+            />
         </section>
     {/if}
 </div>
@@ -556,20 +265,12 @@ h2 {
     margin-top: 0;
 }
 
-h3 {
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-}
-
 label {
     display: block;
     margin-bottom: 0.5rem;
 }
 
-input[type="text"],
-input[type="number"],
-input[type="date"] {
+input[type="text"] {
     width: 100%;
     max-width: 300px;
 }
@@ -579,25 +280,22 @@ input[type="date"] {
     color: #666;
 }
 
-.checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+button {
+    padding: 0.5rem 1rem;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+button:hover:not(:disabled) {
+    background: #4338ca;
 }
 
-th,
-td {
-    padding: 0.5rem;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-th {
-    background: #f5f5f5;
+button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
 }
 </style>

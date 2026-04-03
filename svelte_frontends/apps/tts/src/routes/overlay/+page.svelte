@@ -1,59 +1,65 @@
 <script lang="ts">
-import { onDestroy, onMount } from "svelte"
+import { onDestroy } from "svelte"
 
+// State initialized from URL params
 let stream_name = $state("")
 let read_name_lang = $state("")
 let volume = $state(1.0)
+let is_loaded = $state(false)
+
 const ws_backend_server_url = import.meta.env.VITE_WS_BACKEND_URL || ""
 let ws: WebSocket | null = null
 
-// Initialise parameters and WebSocket on mount
-onMount(() => {
-    const params = new URLSearchParams(window.location.search)
-    if (!stream_name) {
-        stream_name = params.get("stream_name") ?? ""
-    }
-    if (!read_name_lang) {
-        read_name_lang = params.get("read_name_lang") ?? ""
-    }
-    if (volume === 1.0) {
-        const vol = params.get("volume")
-        if (vol) {
-            volume = Number(vol)
+// WebSocket reconnection with exponential backoff
+function connect_ws(ws_url: string) {
+    ws = new WebSocket(ws_url)
+
+    ws.addEventListener("open", () => {
+        is_loaded = true
+    })
+
+    ws.addEventListener("message", (event) => {
+        const audio_el = document.getElementById("audio") as HTMLAudioElement | null
+        if (audio_el) {
+            // Server sends base64 audio data
+            audio_el.src = `data:audio/mpeg;base64,${event.data}`
+            audio_el.volume = volume
+            audio_el.play().catch(() => {
+                // Ignore autoplay errors
+            })
         }
+    })
+
+    ws.addEventListener("close", () => {
+        // Reconnect with exponential backoff
+        const max_delay = 30000 // 30 seconds
+        const stored_attempts = Number(sessionStorage.getItem("ws_reconnect_attempts") || "0")
+        const delay = Math.min(1000 * 2 ** stored_attempts, max_delay)
+        sessionStorage.setItem("ws_reconnect_attempts", String(stored_attempts + 1))
+        setTimeout(() => connect_ws(ws_url), delay)
+    })
+}
+
+// Initialize from URL params and connect WebSocket
+$effect(() => {
+    const params = new URLSearchParams(window.location.search)
+    stream_name = params.get("stream_name") ?? ""
+    read_name_lang = params.get("read_name_lang") ?? ""
+    const vol_param = params.get("volume")
+    if (vol_param) {
+        volume = Number(vol_param)
     }
 
-    const ws_url = `${ws_backend_server_url}/tts-api/ws/${stream_name}/${read_name_lang}`
-    // Simple reconnection logic: attempt to reconnect with exponential backoff
-    const max_delay = 30000 // 30 seconds max
-    let reconnect_attempts = 0
-    function connect() {
-        ws = new WebSocket(ws_url)
-        ws.addEventListener("open", () => {
-            reconnect_attempts = 0 // reset on successful connection
-        })
-        ws.addEventListener("close", () => {
-            const delay = Math.min(1000 * 2 ** reconnect_attempts, max_delay)
-            reconnect_attempts++
-            setTimeout(connect, delay)
-        })
+    if (stream_name && read_name_lang) {
+        const ws_url = `${ws_backend_server_url}/tts-api/ws/${stream_name}/${read_name_lang}`
+        connect_ws(ws_url)
     }
-    connect()
 
-    if (ws) {
-        ws.addEventListener("message", (event) => {
-            const audio_el = document.getElementById("audio") as HTMLAudioElement | null
-            if (audio_el) {
-                // Assume server sends base64 audio data
-                audio_el.src = `data:audio/mpeg;base64,${event.data}`
-                audio_el.volume = volume
-                audio_el.play().catch(() => {})
-            }
-        })
+    return () => {
+        ws?.close()
     }
 })
 
-// Clean up WebSocket when component is destroyed
 onDestroy(() => {
     ws?.close()
 })
@@ -63,6 +69,7 @@ onDestroy(() => {
     <div
         id="content"
         class="fade-out-element"
+        class:loaded={is_loaded}
     >
         <audio
             controls
@@ -82,7 +89,10 @@ onDestroy(() => {
 <style>
 .fade-out-element {
     opacity: 1;
-    transition: opacity 10s ease-out;
-    transition-delay: 5s;
+    transition: opacity 10s ease-out 5s;
+}
+
+.fade-out-element.loaded {
+    opacity: 0;
 }
 </style>
