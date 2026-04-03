@@ -3,7 +3,6 @@ let { is_processing, on_upload }: { is_processing: boolean; on_upload: (files: F
 
 let is_dragging = $state(false)
 let file_input: HTMLInputElement | undefined = $state()
-let selected_count = $state(0)
 
 function handle_drag_over(event: DragEvent) {
     event.preventDefault()
@@ -44,7 +43,6 @@ function process_files(files: FileList) {
         for (const file of valid_files) {
             data_transfer.items.add(file)
         }
-        selected_count = valid_files.length
         on_upload(data_transfer.files)
     }
 }
@@ -75,14 +73,9 @@ function process_files(files: FileList) {
         <div class="upload-icon">📁</div>
         {#if is_processing}
             <p class="upload-text">Processing...</p>
-        {:else if is_dragging}
-            <p class="upload-text">Drop your .SC2Replay files here</p>
         {:else}
             <p class="upload-text">Drag & drop .SC2Replay files here</p>
             <p class="upload-hint">or click to browse</p>
-        {/if}
-        {#if selected_count > 0}
-            <p class="file-count">{selected_count} file{selected_count !== 1 ? "s" : ""} selected</p>
         {/if}
     </div>
 </div>
@@ -139,12 +132,5 @@ function process_files(files: FileList) {
     margin: 0;
     font-size: 14px;
     color: #888;
-}
-
-.file-count {
-    margin: 8px 0 0;
-    font-size: 14px;
-    color: #2196f3;
-    font-weight: 500;
 }
 </style>

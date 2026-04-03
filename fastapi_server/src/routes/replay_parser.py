@@ -1,9 +1,10 @@
+from hashlib import md5
 from io import BytesIO
 
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import JSONResponse
 
-from components.replay_pack_builder.models import ReplayData
+from components.replay_pack_builder.models import ParsedReplayFile
 from components.replay_pack_builder.replay_parser import parse_replay
 
 replay_parser_router = APIRouter()
@@ -18,7 +19,8 @@ async def parse_replay_file(file: UploadFile = File(...)) -> JSONResponse:
     """
     try:
         contents = await file.read()
-        replay_data: ReplayData = await parse_replay(BytesIO(contents))
+        file_md5 = md5(contents).hexdigest()
+        replay_data: ParsedReplayFile = await parse_replay(BytesIO(contents), file_md5)
         return JSONResponse(replay_data.model_dump())
     except Exception as e:
         return JSONResponse(

@@ -3,10 +3,10 @@ from io import BytesIO
 import sc2reader
 from sc2reader.resources import Replay
 
-from components.replay_pack_builder.models import ReplayData
+from components.replay_pack_builder.models import ParsedReplayFile
 
 
-async def parse_replay(data: BytesIO) -> ReplayData:
+async def parse_replay(data: BytesIO, md5_hash: str) -> ParsedReplayFile:
     replay: Replay = sc2reader.load_replay(data, load_level=2)
     parsed = {
         "teams": [
@@ -40,5 +40,9 @@ async def parse_replay(data: BytesIO) -> ReplayData:
         "region_short": replay.region,
         "expansion": replay.expansion,
     }
-    parsed_checked = ReplayData(**parsed)
+    parsed["md5"] = md5_hash
+    parsed["user_id"] = ""
+    parsed["size"] = 0
+    parsed["status"] = "processed"
+    parsed_checked = ParsedReplayFile(**parsed)
     return parsed_checked
