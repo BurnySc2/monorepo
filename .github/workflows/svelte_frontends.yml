@@ -27,10 +27,43 @@ jobs:
         working-directory: svelte_frontends
         run: npm ci
 
+      - name: Lint
+        working-directory: svelte_frontends
+        run: |
+          if ! npm run lint; then
+            echo "❌ Lint failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Type check
+        working-directory: svelte_frontends
+        run: |
+          if ! npm run check; then
+            echo "❌ Type check failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
       - name: Build
         working-directory: svelte_frontends
-        run: npm run build
+        run: |
+          if ! npm run build; then
+            echo "❌ Build failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
 
       - name: Run unit tests
         working-directory: svelte_frontends
-        run: npm run test:unit
+        run: |
+          if ! npm run test:unit; then
+            echo "❌ Tests failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Report results
+        run: |
+          if grep -q "❌" $GITHUB_STEP_SUMMARY; then
+            echo "## ❌ Some steps failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "## ✅ All checks passed" >> $GITHUB_STEP_SUMMARY
+          fi
