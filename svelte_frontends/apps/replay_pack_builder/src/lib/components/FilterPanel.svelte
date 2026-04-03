@@ -14,10 +14,10 @@ function handle_change() {
 }
 </script>
 
-<div class="filter-panel">
-    <h3>Filters</h3>
+<div class="flex flex-col gap-4">
+    <h3 class="text-lg font-semibold m-0">Filters</h3>
 
-    <label class="checkbox-label">
+    <label class="flex items-center gap-2 cursor-pointer mb-1">
         <input
             type="checkbox"
             class="checkbox"
@@ -27,9 +27,9 @@ function handle_change() {
         Filter enabled
     </label>
 
-    <fieldset>
-        <legend>Game types</legend>
-        <label class="checkbox-label">
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Game types</legend>
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -38,7 +38,7 @@ function handle_change() {
             >
             Matchmaking
         </label>
-        <label class="checkbox-label">
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -47,7 +47,7 @@ function handle_change() {
             >
             Custom Game
         </label>
-        <label class="checkbox-label">
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -56,7 +56,7 @@ function handle_change() {
             >
             Include Games with AI
         </label>
-        <label class="checkbox-label">
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -67,9 +67,9 @@ function handle_change() {
         </label>
     </fieldset>
 
-    <fieldset>
-        <legend>Expansion</legend>
-        <label class="checkbox-label">
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Expansion</legend>
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -78,7 +78,7 @@ function handle_change() {
             >
             Wings of Liberty
         </label>
-        <label class="checkbox-label">
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -87,7 +87,7 @@ function handle_change() {
             >
             Heart of the Swarm
         </label>
-        <label class="checkbox-label">
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -98,9 +98,9 @@ function handle_change() {
         </label>
     </fieldset>
 
-    <fieldset>
-        <legend>Server</legend>
-        <label class="checkbox-label">
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Server</legend>
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -109,7 +109,7 @@ function handle_change() {
             >
             Americas
         </label>
-        <label class="checkbox-label">
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -118,7 +118,7 @@ function handle_change() {
             >
             Europe
         </label>
-        <label class="checkbox-label">
+        <label class="flex items-center gap-2 cursor-pointer mb-1 last:mb-0">
             <input
                 type="checkbox"
                 class="checkbox"
@@ -129,10 +129,10 @@ function handle_change() {
         </label>
     </fieldset>
 
-    <fieldset>
-        <legend>Date played</legend>
-        <div class="range-inputs">
-            <label>
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Date played</legend>
+        <div class="flex gap-4 flex-wrap">
+            <label class="flex flex-col gap-1 flex-1 min-w-24">
                 From
                 <input
                     type="date"
@@ -141,7 +141,7 @@ function handle_change() {
                     onchange={handle_change}
                 >
             </label>
-            <label>
+            <label class="flex flex-col gap-1 flex-1 min-w-24">
                 To
                 <input
                     type="date"
@@ -153,10 +153,10 @@ function handle_change() {
         </div>
     </fieldset>
 
-    <fieldset>
-        <legend>Game duration (seconds)</legend>
-        <div class="range-inputs">
-            <label>
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Game duration (seconds)</legend>
+        <div class="flex gap-4 flex-wrap">
+            <label class="flex flex-col gap-1 flex-1 min-w-24">
                 Min
                 <input
                     type="number"
@@ -165,7 +165,7 @@ function handle_change() {
                     onchange={handle_change}
                 >
             </label>
-            <label>
+            <label class="flex flex-col gap-1 flex-1 min-w-24">
                 Max
                 <input
                     type="number"
@@ -177,10 +177,10 @@ function handle_change() {
         </div>
     </fieldset>
 
-    <fieldset>
-        <legend>Player count</legend>
-        <div class="range-inputs">
-            <label>
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Player count</legend>
+        <div class="flex gap-4 flex-wrap">
+            <label class="flex flex-col gap-1 flex-1 min-w-24">
                 Min
                 <input
                     type="number"
@@ -189,7 +189,7 @@ function handle_change() {
                     onchange={handle_change}
                 >
             </label>
-            <label>
+            <label class="flex flex-col gap-1 flex-1 min-w-24">
                 Max
                 <input
                     type="number"
@@ -201,10 +201,10 @@ function handle_change() {
         </div>
     </fieldset>
 
-    <fieldset>
-        <legend>Average player MMR</legend>
-        <div class="range-inputs">
-            <label>
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Average player MMR</legend>
+        <div class="flex gap-4 flex-wrap">
+            <label class="flex flex-col gap-1 flex-1 min-w-24">
                 Min
                 <input
                     type="number"
@@ -213,7 +213,7 @@ function handle_change() {
                     onchange={handle_change}
                 >
             </label>
-            <label>
+            <label class="flex flex-col gap-1 flex-1 min-w-24">
                 Max
                 <input
                     type="number"
@@ -225,10 +225,10 @@ function handle_change() {
         </div>
     </fieldset>
 
-    <fieldset>
-        <legend>Matchups</legend>
-        <div class="checkbox-grid">
-            <label class="checkbox-label">
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Matchups</legend>
+        <div class="grid grid-cols-3 gap-2">
+            <label class="flex items-center gap-2 cursor-pointer">
                 <input
                     type="checkbox"
                     class="checkbox"
@@ -237,7 +237,7 @@ function handle_change() {
                 >
                 PvP
             </label>
-            <label class="checkbox-label">
+            <label class="flex items-center gap-2 cursor-pointer">
                 <input
                     type="checkbox"
                     class="checkbox"
@@ -246,7 +246,7 @@ function handle_change() {
                 >
                 PvT
             </label>
-            <label class="checkbox-label">
+            <label class="flex items-center gap-2 cursor-pointer">
                 <input
                     type="checkbox"
                     class="checkbox"
@@ -255,7 +255,7 @@ function handle_change() {
                 >
                 PvZ
             </label>
-            <label class="checkbox-label">
+            <label class="flex items-center gap-2 cursor-pointer">
                 <input
                     type="checkbox"
                     class="checkbox"
@@ -264,7 +264,7 @@ function handle_change() {
                 >
                 TvT
             </label>
-            <label class="checkbox-label">
+            <label class="flex items-center gap-2 cursor-pointer">
                 <input
                     type="checkbox"
                     class="checkbox"
@@ -273,7 +273,7 @@ function handle_change() {
                 >
                 TvZ
             </label>
-            <label class="checkbox-label">
+            <label class="flex items-center gap-2 cursor-pointer">
                 <input
                     type="checkbox"
                     class="checkbox"
@@ -285,9 +285,9 @@ function handle_change() {
         </div>
     </fieldset>
 
-    <fieldset>
-        <legend>Player name (partial match, case insensitive)</legend>
-        <label class="text-label">
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Player name (partial match, case insensitive)</legend>
+        <label class="flex flex-col gap-1 mb-2 last:mb-0">
             Must include
             <input
                 type="text"
@@ -297,7 +297,7 @@ function handle_change() {
                 placeholder="e.g., Hero, Burny"
             >
         </label>
-        <label class="text-label">
+        <label class="flex flex-col gap-1 mb-2 last:mb-0">
             Must exclude
             <input
                 type="text"
@@ -309,9 +309,9 @@ function handle_change() {
         </label>
     </fieldset>
 
-    <fieldset>
-        <legend>Map name (partial match, case insensitive)</legend>
-        <label class="text-label">
+    <fieldset class="border border-gray-200 rounded p-3 m-0">
+        <legend class="font-semibold px-2">Map name (partial match, case insensitive)</legend>
+        <label class="flex flex-col gap-1 mb-2 last:mb-0">
             Must include
             <input
                 type="text"
@@ -321,7 +321,7 @@ function handle_change() {
                 placeholder="e.g., LE, Station"
             >
         </label>
-        <label class="text-label">
+        <label class="flex flex-col gap-1 mb-2 last:mb-0">
             Must exclude
             <input
                 type="text"
@@ -335,78 +335,11 @@ function handle_change() {
 </div>
 
 <style>
-.filter-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-h3 {
-    margin: 0;
-    font-size: 1.1rem;
-}
-
-fieldset {
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 0.75rem;
-    margin: 0;
-}
-
-legend {
-    font-weight: 600;
-    padding: 0 0.5rem;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    margin-bottom: 0.25rem;
-}
-
-.checkbox-label:last-child {
-    margin-bottom: 0;
-}
-
-.text-label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    margin-bottom: 0.5rem;
-}
-
-.text-label:last-child {
-    margin-bottom: 0;
-}
-
-.range-inputs {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.range-inputs label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    flex: 1;
-    min-width: 100px;
-}
-
-.checkbox-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-}
-
 @media (max-width: 600px) {
-    .checkbox-grid {
+    .grid-cols-3 {
         grid-template-columns: repeat(2, 1fr);
     }
-
-    .range-inputs {
+    .flex {
         flex-direction: column;
     }
 }

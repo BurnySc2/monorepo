@@ -51,51 +51,57 @@ function get_matchup(replay: ParsedReplayFile): string {
 }
 </script>
 
-<div class="table-container">
-    <table>
+<div class="w-full overflow-x-auto">
+    <table class="w-full border-collapse">
         <thead>
             <tr>
-                <th class="checkbox-col">
+                <th
+                    class="w-10 text-center bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0"
+                >
                     <input
                         type="checkbox"
-                        class="checkbox"
+                        class="checkbox cursor-pointer"
                         checked={all_selected}
                         indeterminate={some_selected}
                         onchange={toggle_all}
                     >
                 </th>
-                <th>Date</th>
-                <th>Map</th>
-                <th>Matchup</th>
-                <th>Duration</th>
-                <th>Region</th>
-                <th>Result</th>
-                <th>Actions</th>
+                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Date</th>
+                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Map</th>
+                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Matchup</th>
+                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Duration</th>
+                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Region</th>
+                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Result</th>
+                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Actions</th>
             </tr>
         </thead>
         <tbody>
             {#each replays as replay (replay.md5)}
-                <tr class:selected={selected_md5s.includes(replay.md5)}>
-                    <td class="checkbox-col">
+                <tr
+                    class="hover:bg-gray-50"
+                    class:bg-blue-50={selected_md5s.includes(replay.md5)}
+                >
+                    <td class="w-10 text-center p-3 border-b border-gray-100">
                         <input
                             type="checkbox"
-                            class="checkbox"
+                            class="checkbox cursor-pointer"
                             checked={selected_md5s.includes(replay.md5)}
                             onchange={() => toggle_replay(replay.md5)}
                         >
                     </td>
-                    <td>{format_date(replay.played_timestamp)}</td>
-                    <td class="map-col">{replay.map_name}</td>
-                    <td class="matchup-col">{get_matchup(replay)}</td>
-                    <td>{format_duration(replay.game_length_seconds)}</td>
-                    <td>{replay.region_short.toUpperCase()}</td>
+                    <td class="p-3 border-b border-gray-100">{format_date(replay.played_timestamp)}</td>
+                    <td class="p-3 border-b border-gray-100 max-w-48 truncate">{replay.map_name}</td>
+                    <td class="p-3 border-b border-gray-100 font-semibold">{get_matchup(replay)}</td>
+                    <td class="p-3 border-b border-gray-100">{format_duration(replay.game_length_seconds)}</td>
+                    <td class="p-3 border-b border-gray-100">{replay.region_short.toUpperCase()}</td>
                     <td
-                        class:win={replay.teams[0]?.result === "Win"}
-                        class:loss={replay.teams[0]?.result === "Loss"}
+                        class="p-3 border-b border-gray-100 font-semibold"
+                        class:text-green-600={replay.teams[0]?.result === "Win"}
+                        class:text-red-600={replay.teams[0]?.result === "Loss"}
                     >
                         {replay.teams[0]?.result || "-"}
                     </td>
-                    <td>
+                    <td class="p-3 border-b border-gray-100">
                         <button
                             class="btn-danger"
                             onclick={() => on_remove(replay.md5)}
@@ -109,76 +115,6 @@ function get_matchup(replay: ParsedReplayFile): string {
     </table>
 
     {#if replays.length === 0}
-        <p class="empty-message">No replays uploaded yet.</p>
+        <p class="text-center text-gray-500 py-8">No replays uploaded yet.</p>
     {/if}
 </div>
-
-<style>
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th,
-td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-}
-
-th {
-    background: #f5f5f5;
-    font-weight: 600;
-    position: sticky;
-    top: 0;
-}
-
-.checkbox-col {
-    width: 40px;
-    text-align: center;
-}
-
-.checkbox-col input[type="checkbox"] {
-    cursor: pointer;
-}
-
-.map-col {
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.matchup-col {
-    font-weight: 600;
-}
-
-tr:hover {
-    background: #fafafa;
-}
-
-tr.selected {
-    background: #eff6ff;
-}
-
-.win {
-    color: #16a34a;
-    font-weight: 600;
-}
-
-.loss {
-    color: #dc2626;
-    font-weight: 600;
-}
-
-.empty-message {
-    text-align: center;
-    color: #888;
-    padding: 2rem;
-}
-</style>

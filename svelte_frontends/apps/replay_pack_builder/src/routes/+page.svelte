@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { parse_replay_file } from "$lib/api_client"
 import FileUpload from "$lib/components/FileUpload.svelte"
@@ -166,25 +167,39 @@ $effect(() => {
 })
 </script>
 
-<div class="container">
-    <h1>Replay Pack Builder</h1>
+<div class="max-w-3xl mx-auto p-8">
+    <h1 class="text-4xl font-bold mb-6">Replay Pack Builder</h1>
 
     <!-- Upload Section -->
-    <section>
-        <h2>Upload Replays</h2>
+    <section class="mb-6 p-4 border border-gray-300 rounded">
+        <h2 class="mt-0 mb-4">Upload Replays</h2>
         {#if parsed_files.length > 0}
-            <button class="btn-danger" onclick={clear_all_files}>Remove uploaded files</button>
+            <button
+                class="btn-danger"
+                onclick={clear_all_files}
+            >
+                Remove uploaded files
+            </button>
         {/if}
-        <p>Total replays uploaded: {parsed_files.length}</p>
-        <FileUpload
-            {is_processing}
-            on_upload={handle_file_upload}
-        />
+        <p class="text-sm text-gray-600 mt-2">Total replays uploaded: {parsed_files.length}</p>
+        <div class="mt-4">
+            {#if is_processing}
+                <div class="flex items-center justify-center p-8">
+                    <Spinner />
+                    <span class="ml-3 text-gray-600">Processing replays...</span>
+                </div>
+            {:else}
+                <FileUpload
+                    {is_processing}
+                    on_upload={handle_file_upload}
+                />
+            {/if}
+        </div>
     </section>
 
     <!-- Filter Section -->
-    <section>
-        <h2>Replay Filters</h2>
+    <section class="mb-6 p-4 border border-gray-300 rounded">
+        <h2 class="mt-0 mb-4">Replay Filters</h2>
         <FilterPanel
             bind:filter_settings
             replays={parsed_files}
@@ -193,32 +208,33 @@ $effect(() => {
     </section>
 
     <!-- Name Template Section -->
-    <section>
-        <h2>Name template</h2>
-        <p class="help-text">
+    <section class="mb-6 p-4 border border-gray-300 rounded">
+        <h2 class="mt-0 mb-4">Name template</h2>
+        <p class="text-sm text-gray-500 mb-4">
             Available placeholders: date, time, duration, map, region, REGION, version, p1name, p1race, p1r, p1mmr,
             p2name, p2race, p2r, p2mmr
         </p>
         <button
-            class="btn-secondary"
+            class="btn-secondary mb-4"
             onclick={reset_pattern}
             disabled={replay_name_pattern === DEFAULT_REPLAY_NAME_PATTERN}
         >
             Reset pattern
         </button>
-        <label>
+        <label class="block mb-2">
             Custom pattern
             <input
                 type="text"
+                class="input w-full max-w-xs mt-1"
                 bind:value={replay_name_pattern}
             >
         </label>
-        <p>Preview: {preview_name}</p>
+        <p class="text-sm text-gray-600 mt-2">Preview: {preview_name}</p>
     </section>
 
     <!-- Download Section -->
-    <section>
-        <h2>Download</h2>
+    <section class="mb-6 p-4 border border-gray-300 rounded">
+        <h2 class="mt-0 mb-4">Download</h2>
         {#if filtered_replays.length > 0}
             <button
                 class="btn-primary"
@@ -228,14 +244,19 @@ $effect(() => {
                 Zip and download {filtered_replays.length} replays
             </button>
         {:else}
-            <button class="btn-primary" disabled>No replays to download</button>
+            <button
+                class="btn-primary"
+                disabled
+            >
+                No replays to download
+            </button>
         {/if}
     </section>
 
     <!-- Replay List -->
     {#if parsed_files.length > 0}
-        <section>
-            <h2>Uploaded Replays ({filtered_replays.length} passing filters)</h2>
+        <section class="mb-6 p-4 border border-gray-300 rounded">
+            <h2 class="mt-0 mb-4">Uploaded Replays ({filtered_replays.length} passing filters)</h2>
             <ReplayTable
                 replays={parsed_files}
                 bind:selected_md5s
@@ -244,41 +265,3 @@ $effect(() => {
         </section>
     {/if}
 </div>
-
-<style>
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-section {
-    margin-bottom: 2rem;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-h1 {
-    margin-bottom: 1.5rem;
-}
-
-h2 {
-    margin-top: 0;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-input[type="text"] {
-    width: 100%;
-    max-width: 300px;
-}
-
-.help-text {
-    font-size: 0.85rem;
-    color: #666;
-}
-</style>
