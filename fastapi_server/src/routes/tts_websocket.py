@@ -1,48 +1,12 @@
 import asyncio
-import os
-from typing import Literal
 
-from fastapi import APIRouter, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from loguru import logger
 
 from components.tts.irc_bot_async import IRCClient, ReadNameLang
 from components.tts.websocket_handler import TTSQueue, TTSQueueRunner
 
 TTSRouter = APIRouter()
-
-WS_BACKEND_SERVER_URL = os.getenv("BACKEND_WS_SERVER_URL", "ws:0.0.0.0:8000")
-
-
-templates = Jinja2Templates(directory="templates")
-
-
-# http://0.0.0.0:8000/tts/twitch/STREAMER_NAME?read_name_lang=none&volume=100
-# https://URL/tts/twitch/STREAMER_NAME?read_name_lang=none&volume=100
-@TTSRouter.get("/twitch/{stream_name}", response_class=HTMLResponse)
-async def tts_overlay(
-    request: Request,
-    stream_name: str,
-    # Only allows these for 'read_name_lang'
-    read_name_lang: Literal["none", "en", "de"] = "none",
-    # Volume between 0 and 100
-    volume: int = 100,
-):
-    """
-    Returns a template which connects to the websocket connection
-    """
-    # https://fastapi.tiangolo.com/advanced/templates/#using-jinja2templates
-    return templates.TemplateResponse(
-        request=request,
-        name="tts/overlay_index.html",
-        context={
-            "ws_backend_server_url": WS_BACKEND_SERVER_URL,
-            "stream_name": stream_name.lower(),
-            "read_name_lang": read_name_lang,
-            "volume": volume / 100,
-        },
-    )
 
 
 @TTSRouter.websocket("/ws/{stream_name}/{read_name_lang}")

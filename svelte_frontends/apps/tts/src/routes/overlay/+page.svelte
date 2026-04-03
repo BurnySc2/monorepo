@@ -21,8 +21,8 @@ function connect_ws(ws_url: string) {
     ws.addEventListener("message", (event) => {
         const audio_el = document.getElementById("audio") as HTMLAudioElement | null
         if (audio_el) {
-            // Server sends base64 audio data
-            audio_el.src = `data:audio/mpeg;base64,${event.data}`
+            const message = JSON.parse(event.data)
+            audio_el.src = `data:audio/mpeg;base64,${message.data}`
             audio_el.volume = volume
             audio_el.play().catch(() => {
                 // Ignore autoplay errors

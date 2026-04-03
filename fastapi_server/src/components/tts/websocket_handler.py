@@ -194,20 +194,7 @@ class TTSQueueRunner:
             # pyrefly: ignore
             self.text_queue.task_done()
             tasks = [
-                asyncio.create_task(
-                    self.send_template_to_ws(
-                        ws,
-                        f"""
-<div hx-swap-oob="innerHTML:#content">
-    <audio controls autoplay id="audio">
-        <source src="data:audio/mpeg;base64, {mp3_b64_data}" type="audio/mpeg" />
-        Your browser does not support the audio element.
-    </audio>
-</div>
-                        """.strip(),
-                    )
-                )
-                for ws in self.connected_websockets
+                asyncio.create_task(self.send_mp3_data_to_ws(ws, mp3_b64_data)) for ws in self.connected_websockets
             ]
             for task in asyncio.as_completed(tasks):
                 await task
@@ -215,10 +202,12 @@ class TTSQueueRunner:
 
             self.tts_is_playing_till = arrow.utcnow() + timedelta(seconds=duration)
 
-    async def send_template_to_ws(self, socket: WebSocket, html: str) -> None:
-        """Send the audio template to frontend. If socked closed/has error, catch it and remove websocket from list."""
+    async def send_mp3_data_to_ws(self, socket: WebSocket, data: str) -> None:
+        """Send mp3 base64 data to frontend via WebSocket as JSON."""
         try:
-            await socket.send_text(html)
+            import json
+
+            await socket.send_text(json.dumps({"data": data}))
         # Catch errors and remove websocket on error
         except (ConnectionClosedError, ConnectionClosedOK, WebSocketDisconnect):
             await TTSQueue.remove_ws(socket, self.stream_name, self.read_name_lang)
