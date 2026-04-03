@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 
 def _minio_available() -> bool:
-    minio_url = os.getenv("MINIO_URL", "http://localhost:9000")
+    minio_url = os.getenv("GARAGE_S3_URL", "http://localhost:3900")
     url = minio_url.removeprefix("http://").removeprefix("https://")
     host, port = url.split(":")
     import socket

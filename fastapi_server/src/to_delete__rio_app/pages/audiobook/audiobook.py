@@ -6,7 +6,7 @@ from functools import partial
 import arrow
 import rio
 
-from minio_helper import MINIO_AUDIOBOOK_BUCKET, get_s3_client, object_delete
+from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_delete
 from models.audiobook import AudiobookBook, AudiobookChapter
 from piccolo_conf import DB
 from rio_app.components.audiobook.epub_reader import EpubChapter, EpubMetadata, extract_chapters, extract_metadata
@@ -27,7 +27,7 @@ class AudiobookBooksOverview(rio.Component):
                 for chapter in chapters:
                     if chapter.minio_object_name is None:
                         continue
-                    await object_delete(s3, MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+                    await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
             # Delete chapters from db
             await AudiobookChapter.delete().where(AudiobookChapter.book == book_id)
             # Delete book from db

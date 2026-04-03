@@ -1,3 +1,4 @@
+# TODO Rename to "garage_helper" or "s3_helper"
 import asyncio
 import os
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator
@@ -11,12 +12,12 @@ from types_aiobotocore_s3 import S3Client
 from types_aiobotocore_s3.service_resource import Bucket, S3ServiceResource
 from types_aiobotocore_s3.type_defs import HeadObjectOutputTypeDef, ObjectTypeDef
 
-ENDPOINT_URL = os.getenv("MINIO_URL", "http://0.0.0.0.9000")
-ACCESS_KEY = os.getenv("MINIO_ACCESS_TOKEN")
-SECRET_KEY = os.getenv("MINIO_SECRET_KEY")
+GARAGE_S3_URL = os.getenv("GARAGE_S3_URL", "http://0.0.0.0:3900")
+GARAGE_ACCESS_KEY = os.getenv("GARAGE_ACCESS_KEY")
+GARAGE_SECRET_KEY = os.getenv("GARAGE_SECRET_KEY")
 
-MINIO_SC2_REPLAYS_BUCKET = os.getenv("MINIO_SC2_REPLAYS_BUCKET", "sc2-replays")
-MINIO_AUDIOBOOK_BUCKET = os.getenv("MINIO_AUDIOBOOK_BUCKET", "audiobooks")
+GARAGE_SC2_REPLAYS_BUCKET = os.getenv("GARAGE_SC2_REPLAYS_BUCKET", "sc2-replays")
+GARAGE_AUDIOBOOK_BUCKET = os.getenv("GARAGE_AUDIOBOOK_BUCKET", "garage-audiobook-bucket")
 
 GARAGE_ADMIN_URL = os.getenv("GARAGE_ADMIN_URL", "http://localhost:3903")
 GARAGE_ADMIN_TOKEN = os.getenv("GARAGE_ADMIN_TOKEN", "rootroot")
@@ -89,9 +90,9 @@ async def get_s3_client() -> AsyncGenerator[S3Client, None]:
     session = aioboto3.Session()
     async with session.client(
         "s3",
-        endpoint_url=ENDPOINT_URL,
-        aws_access_key_id=ACCESS_KEY,
-        aws_secret_access_key=SECRET_KEY,
+        endpoint_url=GARAGE_S3_URL,
+        aws_access_key_id=GARAGE_ACCESS_KEY,
+        aws_secret_access_key=GARAGE_SECRET_KEY,
     ) as s3:
         yield s3  # This yields the client to the endpoint and closes it automatically afterward
 
@@ -101,9 +102,9 @@ async def get_s3_resource() -> AsyncGenerator[S3ServiceResource, None]:
     session = aioboto3.Session()
     async with session.resource(
         "s3",
-        endpoint_url=ENDPOINT_URL,
-        aws_access_key_id=ACCESS_KEY,
-        aws_secret_access_key=SECRET_KEY,
+        endpoint_url=GARAGE_S3_URL,
+        aws_access_key_id=GARAGE_ACCESS_KEY,
+        aws_secret_access_key=GARAGE_SECRET_KEY,
     ) as s3:
         yield s3  # This yields the client to the endpoint and closes it automatically afterward
 

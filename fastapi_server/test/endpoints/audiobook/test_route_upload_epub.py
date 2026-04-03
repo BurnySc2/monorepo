@@ -238,13 +238,13 @@ async def test_generate_audio_for_chapter(
     ):
         # Convert one chapter to audio, save it in db and in minio
         await check_queued_chapters()
-        created = await helper_wait_till_minio_object_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
+        created = await helper_wait_till_minio_object_exists(os.getenv("GARAGE_AUDIOBOOK_BUCKET"), "1_audio.mp3")
         assert created
 
     # 4) Make sure generated audio was saved in minio
-    assert test_minio_client.bucket_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
-    assert await minio_check_if_object_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
-    minio_object_info = test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
+    assert test_minio_client.bucket_exists(os.getenv("GARAGE_AUDIOBOOK_BUCKET"))
+    assert await minio_check_if_object_exists(os.getenv("GARAGE_AUDIOBOOK_BUCKET"), "1_audio.mp3")
+    minio_object_info = test_minio_client.stat_object(os.getenv("GARAGE_AUDIOBOOK_BUCKET"), "1_audio.mp3")
     assert minio_object_info.size == len(example_audio_bytes)
 
     # 5) Verify audio has been generated and is saved in DB
@@ -271,7 +271,7 @@ async def test_generate_audio_for_chapter(
     # Make sure the audio was deleted in minio too
     with pytest.raises(S3Error):
         # Raises error if object does not exist
-        test_minio_client.stat_object(os.getenv("MINIO_AUDIOBOOK_BUCKET"), "1_audio.mp3")
+        test_minio_client.stat_object(os.getenv("GARAGE_AUDIOBOOK_BUCKET"), "1_audio.mp3")
 
 
 # TODO Mark test as slow?
@@ -315,7 +315,7 @@ async def test_generate_audio_for_entire_book(
     assert request_generate_audio_for_book_response.status_code == HTTP_200_OK
 
     # Generate audio for each chapter
-    assert test_minio_client.bucket_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"))
+    assert test_minio_client.bucket_exists(os.getenv("GARAGE_AUDIOBOOK_BUCKET"))
     with patch.object(
         convert_audiobook,
         "generate_text_to_speech",
@@ -330,12 +330,12 @@ async def test_generate_audio_for_entire_book(
 
     # TODO Fix test
     # for chapter_number in range(1, expected_chapter_count + 1):
-    #     await helper_wait_till_minio_object_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter_number}_audio.mp3")
+    #     await helper_wait_till_minio_object_exists(os.getenv("GARAGE_AUDIOBOOK_BUCKET"), f"{chapter_number}_audio.mp3")
     # Verify each chapter has generated audio
     for chapter_number in range(1, expected_chapter_count + 1):
         minio_object_name = f"{chapter_number}_audio.mp3"
         assert await minio_check_if_object_exists(
-            os.getenv("MINIO_AUDIOBOOK_BUCKET"), minio_object_name, client=test_minio_client
+            os.getenv("GARAGE_AUDIOBOOK_BUCKET"), minio_object_name, client=test_minio_client
         )
     # Make sure it was saved in database and in minio
     count = await AudiobookChapter.count().where(
@@ -365,7 +365,7 @@ async def test_generate_audio_for_entire_book(
     # Test deletion of book deletes minio entries
     for chapter_number in range(1, expected_chapter_count + 1):
         assert not (
-            await minio_check_if_object_exists(os.getenv("MINIO_AUDIOBOOK_BUCKET"), f"{chapter_number}_audio.mp3")
+            await minio_check_if_object_exists(os.getenv("GARAGE_AUDIOBOOK_BUCKET"), f"{chapter_number}_audio.mp3")
         )
 
 

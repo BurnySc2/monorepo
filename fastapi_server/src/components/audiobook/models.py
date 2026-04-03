@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from stream_zip import NO_COMPRESSION_64, async_stream_zip
 
 from minio_helper import (
-    MINIO_AUDIOBOOK_BUCKET,
+    GARAGE_AUDIOBOOK_BUCKET,
     get_s3_client,
     object_delete,
     object_download,
@@ -95,7 +95,7 @@ async def delete_audio_for_chapters(chapters: list[AudiobookChapterQueryResult])
             for chapter in chapters:
                 if chapter.minio_object_name is None:
                     continue
-                await object_delete(s3, MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+                await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
 
         # Set chapters in db to unqueued
         await AudiobookChapter.update(
@@ -121,7 +121,7 @@ async def upload_multipart_book(book: AudiobookBook, chapters: list[AudiobookCha
         async def chapter_audio_chunks():
             for chapter in chapters:
                 assert chapter.minio_object_name is not None
-                obj = await object_download(s3, MINIO_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+                obj = await object_download(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
                 assert obj is not None
 
                 async def yield_data():
@@ -141,7 +141,7 @@ async def upload_multipart_book(book: AudiobookBook, chapters: list[AudiobookCha
 
         await object_upload_async_iterable(
             s3,
-            MINIO_AUDIOBOOK_BUCKET,
+            GARAGE_AUDIOBOOK_BUCKET,
             # pyrefly: ignore
             get_book_minio_zip_name(book.id),
             async_stream_zip(chapter_audio_chunks()),

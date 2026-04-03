@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 
 from rio.cli import app as app2
 from minio_helper import (
-    MINIO_AUDIOBOOK_BUCKET,
-    MINIO_SC2_REPLAYS_BUCKET,
+    GARAGE_AUDIOBOOK_BUCKET,
+    GARAGE_SC2_REPLAYS_BUCKET,
     bucket_create,
     bucket_set_expiration,
     get_s3_client,
@@ -37,10 +37,10 @@ async def on_app_start(_app: rio.App):
     # TODO Create database tables
     # Create minio buckets
     async with get_s3_client() as s3:
-        await bucket_create(s3, MINIO_SC2_REPLAYS_BUCKET)
-        await bucket_set_expiration(s3, MINIO_SC2_REPLAYS_BUCKET, 1)
-        await bucket_create(s3, MINIO_AUDIOBOOK_BUCKET)
-        await bucket_set_expiration(s3, MINIO_AUDIOBOOK_BUCKET, 21)
+        await bucket_create(s3, GARAGE_SC2_REPLAYS_BUCKET)
+        await bucket_set_expiration(s3, GARAGE_SC2_REPLAYS_BUCKET, 1)
+        await bucket_create(s3, GARAGE_AUDIOBOOK_BUCKET)
+        await bucket_set_expiration(s3, GARAGE_AUDIOBOOK_BUCKET, 21)
 
     # Create tables
     if STAGE == "dev":

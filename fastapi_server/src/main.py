@@ -22,13 +22,14 @@ from routes.replay_parser import replay_parser_router
 from routes.tts_websocket import TTSRouter
 from routes.audiobook import audiobook_router
 
-MINIO_AUDIOBOOK_BUCKET = os.getenv("MINIO_AUDIOBOOK_BUCKET", "minio-audiobook-bucket")
-MINIO_AUDIOBOOK_MAX_SIZE_MB = int(os.getenv("MINIO_AUDIOBOOK_MAX_SIZE_MB", "100000"))
+GARAGE_AUDIOBOOK_BUCKET = os.getenv("GARAGE_AUDIOBOOK_BUCKET", "garage-audiobook-bucket")
+GARAGE_AUDIOBOOK_MAX_SIZE_MB = int(os.getenv("GARAGE_AUDIOBOOK_MAX_SIZE_MB", "100000"))
+GARAGE_KEY_NAME = os.getenv("GARAGE_KEY_NAME", "audiobook-key")
 
 
 async def init_garage() -> None:
-    bucket_name = MINIO_AUDIOBOOK_BUCKET
-    max_size_bytes = MINIO_AUDIOBOOK_MAX_SIZE_MB * 1024 * 1024
+    bucket_name = GARAGE_AUDIOBOOK_BUCKET
+    max_size_bytes = GARAGE_AUDIOBOOK_MAX_SIZE_MB * 1024 * 1024
 
     async with get_s3_client() as s3:
         await bucket_create(s3, bucket_name)
@@ -39,7 +40,7 @@ async def init_garage() -> None:
             print(f"[init] Garage: bucket '{bucket_name}' created, quota not set (Admin API unavailable)")
         else:
             await GarageInit.set_quota(bucket_id, max_size_bytes)
-            key = await GarageInit.create_key("audiobook-key")
+            key = await GarageInit.create_key(GARAGE_KEY_NAME)
             await GarageInit.allow_bucket(key["accessKeyId"], bucket_id)
             print(f"[init] Garage: bucket={bucket_name}, key_id={key['accessKeyId']}")
     except (httpx.HTTPError, KeyError) as e:

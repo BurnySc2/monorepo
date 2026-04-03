@@ -2,7 +2,7 @@ import arrow
 import rio
 
 from minio_helper import (
-    MINIO_AUDIOBOOK_BUCKET,
+    GARAGE_AUDIOBOOK_BUCKET,
     get_s3_client,
     object_create_presigned_url,
 )
@@ -60,7 +60,7 @@ class AudiobookSettingsComponent(rio.Component):
                 normalized_book_title = f"{normalize_title(book.custom_book_title or book.book_title)}"[:150].strip()
                 url = await object_create_presigned_url(
                     s3,
-                    MINIO_AUDIOBOOK_BUCKET,
+                    GARAGE_AUDIOBOOK_BUCKET,
                     get_book_minio_zip_name(self.book_id),
                     f"{normalized_author} - {normalized_book_title}.zip",
                     verify_object_exists=True,

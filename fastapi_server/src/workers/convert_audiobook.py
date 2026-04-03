@@ -8,7 +8,7 @@ import arrow
 from dotenv import load_dotenv
 from loguru import logger
 
-from minio_helper import MINIO_AUDIOBOOK_BUCKET, get_s3_client, object_upload
+from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_upload
 from models.audiobook import AudiobookChapter
 from rio_app.components.audiobook.generate_tts import generate_text_to_speech
 from rio_app.components.audiobook.models import AudioSettingsBaseModel, get_chapter_combined_text
@@ -130,7 +130,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         try:
             # pyrefly: ignore
             async with get_s3_client() as s3:
-                await object_upload(s3, MINIO_AUDIOBOOK_BUCKET, context.minio_object_name, audio)
+                await object_upload(s3, GARAGE_AUDIOBOOK_BUCKET, context.minio_object_name, audio)
             logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
         except Exception as e:
             logger.error(f"Failed to save audio to MinIO: {e}")

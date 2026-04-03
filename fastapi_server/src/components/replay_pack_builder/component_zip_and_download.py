@@ -4,7 +4,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 import rio
 
 from minio_helper import (
-    MINIO_SC2_REPLAYS_BUCKET,
+    GARAGE_SC2_REPLAYS_BUCKET,
     get_s3_client,
     object_create_presigned_url,
     object_download,
@@ -44,7 +44,7 @@ class ZipAndDownloadComponent(rio.Component):
             with ZipFile(zip_buffer, "w", ZIP_DEFLATED, False) as zipfile_handler:
                 for replay_data in self.filtered_replays:
                     new_name = replay_data.rename_file_according_to_template(self.replay_name_pattern)
-                    data = await object_download(s3, MINIO_SC2_REPLAYS_BUCKET, replay_data.minio_key)
+                    data = await object_download(s3, GARAGE_SC2_REPLAYS_BUCKET, replay_data.minio_key)
                     if data is None:
                         continue
                     zipfile_handler.writestr(f"{new_name}.SC2Replay", data)
@@ -52,8 +52,8 @@ class ZipAndDownloadComponent(rio.Component):
         # Create zip, upload to minio, then redirect to pre-signed url
         async with get_s3_client() as s3:
             key = f"replaypack/{self.user_id}"
-            await object_upload(s3, MINIO_SC2_REPLAYS_BUCKET, key, zip_buffer.getvalue())
-            url = await object_create_presigned_url(s3, MINIO_SC2_REPLAYS_BUCKET, key, file_name="replay_pack.zip")
+            await object_upload(s3, GARAGE_SC2_REPLAYS_BUCKET, key, zip_buffer.getvalue())
+            url = await object_create_presigned_url(s3, GARAGE_SC2_REPLAYS_BUCKET, key, file_name="replay_pack.zip")
             if url is None:
                 return
         self.session.open_url_in_browser(url)

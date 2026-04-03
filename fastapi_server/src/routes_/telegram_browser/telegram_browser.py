@@ -28,16 +28,16 @@ from routes.telegram_browser.cookies_and_guards import is_logged_in_allowed_acco
 
 from models.telegram_browser import Status, TelegramChannel, TelegramMessage
 
-BUCKET_NAME = os.getenv("MINIO_TELEGRAM_FILES_BUCKET")
+BUCKET_NAME = os.getenv("GARAGE_TELEGRAM_FILES_BUCKET")
 assert BUCKET_NAME is not None
 assert re.match(_BUCKET_NAME_REGEX, BUCKET_NAME) is not None
 
 minio_client = Minio(
     # pyrefly: ignore
-    os.getenv("MINIO_URL"),
-    access_key=os.getenv("MINIO_ACCESS_TOKEN"),
-    secret_key=os.getenv("MINIO_SECRET_KEY"),
-    secure=os.getenv("MINIO_SECURE") == "TRUE",
+    os.getenv("GARAGE_S3_URL"),
+    access_key=os.getenv("GARAGE_ACCESS_KEY"),
+    secret_key=os.getenv("GARAGE_SECRET_KEY"),
+    secure=os.getenv("GARAGE_SECURE") == "TRUE",
 )
 
 

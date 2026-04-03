@@ -5,7 +5,7 @@ from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import JSONResponse
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
-from minio_helper import MINIO_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url
+from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url
 from models.audiobook import AudiobookBook, AudiobookChapter
 
 audiobook_router = APIRouter()
@@ -66,7 +66,7 @@ async def get_book(book_id: int) -> JSONResponse:
                 presigned_url = (
                     await object_create_presigned_url(
                         session=s3,
-                        bucket=MINIO_AUDIOBOOK_BUCKET,
+                        bucket=GARAGE_AUDIOBOOK_BUCKET,
                         key=chapter.minio_object_name,
                         file_name=f"{chapter.chapter_title}.mp3",
                         expires_in_seconds=3600,

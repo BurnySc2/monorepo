@@ -4,7 +4,7 @@ import rio
 from loguru import logger
 
 from minio_helper import (
-    MINIO_SC2_REPLAYS_BUCKET,
+    GARAGE_SC2_REPLAYS_BUCKET,
     bucket_list_objects,
     get_s3_client,
     object_delete,
@@ -36,7 +36,7 @@ class UploadComponent(rio.Component):
         filter_settings = self.session[FilterSettings]
         self.user_id = filter_settings.user_id
         async with get_s3_client() as s3:
-            replays_by_user = await bucket_list_objects(s3, MINIO_SC2_REPLAYS_BUCKET, self.user_id)
+            replays_by_user = await bucket_list_objects(s3, GARAGE_SC2_REPLAYS_BUCKET, self.user_id)
         for replay_response in replays_by_user:
             replay = ReplayFile.from_minio(replay_response)
             self.uploaded_files[replay.md5] = replay
@@ -49,7 +49,7 @@ class UploadComponent(rio.Component):
         self.filtered_replays = []
         # Delete all files in minio by user_id
         if self.user_id != "":
-            await objects_delete_with_prefix(MINIO_SC2_REPLAYS_BUCKET, self.user_id)
+            await objects_delete_with_prefix(GARAGE_SC2_REPLAYS_BUCKET, self.user_id)
 
     @property
     def uploaded_replays_count(self):
@@ -67,7 +67,7 @@ class UploadComponent(rio.Component):
             if replay_file.md5 in self.uploaded_files or replay_file.md5 in self.parsed_files:
                 continue
             async with get_s3_client() as s3:
-                await object_upload(s3, MINIO_SC2_REPLAYS_BUCKET, replay_file.minio_key, data)
+                await object_upload(s3, GARAGE_SC2_REPLAYS_BUCKET, replay_file.minio_key, data)
             self.uploaded_files[replay_file.md5] = replay_file
         # Clear list in file_picker
         self.file_picker_files.clear()
@@ -87,7 +87,7 @@ class UploadComponent(rio.Component):
                 replay_file.status = "processing"
                 # Get bytes from minio object
                 async with get_s3_client() as s3:
-                    replay_by_user = await object_download(s3, MINIO_SC2_REPLAYS_BUCKET, replay_file.minio_key)
+                    replay_by_user = await object_download(s3, GARAGE_SC2_REPLAYS_BUCKET, replay_file.minio_key)
                 if replay_by_user is None:
                     raise ValueError("Replay does not exist")
                 replay_data: ReplayData = await parse_replay(BytesIO(replay_by_user))
@@ -99,7 +99,7 @@ class UploadComponent(rio.Component):
                 self.parsed_files[replay_file_md5].status = "processed"
             except Exception as e:  # noqa: BLE001
                 async with get_s3_client() as s3:
-                    await object_delete(s3, MINIO_SC2_REPLAYS_BUCKET, replay_file.minio_key)
+                    await object_delete(s3, GARAGE_SC2_REPLAYS_BUCKET, replay_file.minio_key)
                 _ = self.uploaded_files.pop(replay_file.md5, None)
                 logger.info(f"Error parsing replay file {e}")
         self.session.attach(filter_settings)
