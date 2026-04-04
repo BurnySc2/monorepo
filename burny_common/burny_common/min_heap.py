@@ -1,131 +1,109 @@
 from __future__ import annotations
 
-import math
+from collections.abc import Iterable
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
 
 
-class Minheap:
-    def __init__(self):
-        """Implementation of binary heap as min-heap"""
-        self.heap: list[int] = [-1]
+class Minheap(Generic[T]):
+    def __init__(self) -> None:
+        self.heap: list[T] = []
 
-    def __repr__(self):
-        return_list = []
-        multiples_of_two = {2**n for n in range(1, 1 + int(math.log(len(self.heap), 2)))}
-        for i, value in enumerate(self.heap[1:], start=1):
-            if i in multiples_of_two:
-                return_list.append("\n")
-            return_list.append(value)
-            return_list.append(" ")
-        return "".join(str(x) for x in return_list)
+    def __repr__(self) -> str:
+        if not self.heap:
+            return ""
+        parts: list[str] = []
+        for i, value in enumerate(self.heap):
+            parts.append(f"{value} ")
+            if i > 0 and ((i + 1) & i) == 0:
+                parts.append("\n")
+        return "".join(parts).strip()
 
-    def get_parent(self, index: int) -> int:
-        return self.heap[index // 2]
+    def _parent_index(self, index: int) -> int:
+        return (index - 1) // 2
 
-    @classmethod
-    def get_parent_index(cls, index: int) -> int:
-        return index // 2
-
-    @classmethod
-    def get_left_child_index(cls, index: int) -> int:
-        return index * 2
-
-    @classmethod
-    def get_right_child_index(cls, index: int) -> int:
+    def _left_child_index(self, index: int) -> int:
         return index * 2 + 1
 
-    def get_left_child(self, index: int) -> int | None:
-        try:
-            return self.heap[index * 2]
-        except IndexError:
-            return None
+    def _right_child_index(self, index: int) -> int:
+        return index * 2 + 2
 
-    def get_right_child(self, index: int) -> int | None:
-        try:
-            return self.heap[index * 2 + 1]
-        except IndexError:
-            return None
+    def _get_child(self, parent_index: int, offset: int) -> T | None:
+        child_index = parent_index * 2 + 1 + offset
+        if child_index < len(self.heap):
+            return self.heap[child_index]
+        return None
 
     def is_empty(self) -> bool:
-        return len(self.heap) < 2
+        return len(self.heap) == 0
 
-    def _swap(self, index1: int, index2: int):
+    def _swap(self, index1: int, index2: int) -> None:
         self.heap[index1], self.heap[index2] = self.heap[index2], self.heap[index1]
 
-    def _move_up(self, number: int, index: int):
-        if index <= 1:
-            return
-        parent = self.get_parent(index)
-        if parent > number:
-            parent_index = self.get_parent_index(index)
-            self._swap(parent_index, index)
-            self._move_up(number, parent_index)
+    def _move_up(self, index: int) -> None:
+        while index > 0:
+            parent = self._parent_index(index)
+            if self.heap[parent] <= self.heap[index]:  # type: ignore[operator]
+                break
+            self._swap(parent, index)
+            index = parent
 
-    def _move_down(self, number: int, index: int):
-        # Swap position with the smallest child
-        left = self.get_left_child(index)
-        right = self.get_right_child(index)
-        # Has no children
-        if left is None:
-            return
-        # Has only left child, so try to swap with that if it is smaller than 'number'
-        if right is None:
-            if number > left:
-                self._swap(self.get_left_child_index(index), index)
-            return
-        # Has both children, check which child is the smallest, swap if smallest child is smaller than 'number'
-        left_index = self.get_left_child_index(index)
-        right_index = self.get_right_child_index(index)
-        smallest_child_index = left_index if left < right else right_index
-        smallest_child = self.heap[smallest_child_index]
-        if smallest_child < number:
-            self._swap(smallest_child_index, index)
-            self._move_down(number, smallest_child_index)
+    def _move_down(self, index: int) -> None:
+        size = len(self.heap)
+        while True:
+            smallest = index
+            left = self._left_child_index(index)
+            right = self._right_child_index(index)
 
-    def insert(self, number: int):
-        self.heap.append(number)
-        self._move_up(len(self.heap) - 1, len(self.heap) - 1)
+            if left < size and self.heap[left] < self.heap[smallest]:  # type: ignore[operator]
+                smallest = left
+            if right < size and self.heap[right] < self.heap[smallest]:  # type: ignore[operator]
+                smallest = right
 
-    def get_min(self) -> int:
-        if len(self.heap) > 0:
-            return self.heap[1]
-        raise IndexError("get_min from empty heap")
+            if smallest == index:
+                break
 
-    def delete_min(self):
-        # Swap minimum with last item in list before removing
-        if len(self.heap) < 2:
+            self._swap(index, smallest)
+            index = smallest
+
+    def insert(self, value: T) -> None:
+        self.heap.append(value)
+        self._move_up(len(self.heap) - 1)
+
+    def get_min(self) -> T:
+        if not self.heap:
+            raise IndexError("get_min from empty heap")
+        return self.heap[0]
+
+    def delete_min(self) -> None:
+        if not self.heap:
             raise IndexError("delete_min from empty heap")
-        if len(self.heap) < 3:
-            self.heap.pop(1)
+        if len(self.heap) == 1:
+            self.heap.pop()
             return
-        last_item_index = len(self.heap) - 1
-        self._swap(1, last_item_index)
-        # Move the item at index 1 down to its proper position
-        self.heap.pop()
-        self._move_down(self.heap[1], 1)
+        self.heap[0] = self.heap.pop()
+        self._move_down(0)
 
-    def build(self, my_list: list):
-        self.heap = [-1]
-        for i in my_list:
-            self.insert(i)
+    def build(self, values: Iterable[T]) -> None:
+        self.heap = list(values)
+        for i in range(len(self.heap) // 2 - 1, -1, -1):
+            self._move_down(i)
 
 
 if __name__ == "__main__":
     p = Minheap()
     build_list = [1, 2, 3, 4, 5, 6, 7]
     p.build(build_list)
-    assert len(p.heap) == 8, "build() function or insert() function not working as expected"
-    """ p:
-    1
-    2 3
-    4 5 6 7
-    """
+    assert len(p.heap) == 7, "build() function not working as expected"
     for i in build_list:
-        assert not p.is_empty(), "Min heap should be not empty, but is returned to be empty"
+        assert not p.is_empty(), "Min heap should not be empty"
         value = p.get_min()
-        assert value == i, (
-            f"get_min or delete_min function not working as expected, received value '{value}' "
-            f"but should have been '{i}', heap:\n{p}"
-        )
+        assert value == i, f"Expected {i}, got {value}"
         p.delete_min()
+    assert p.is_empty(), "Min heap should be empty"
 
-    assert p.is_empty(), "Min heap should be empty, but isn't"
+    p2 = Minheap()
+    for v in [3.14, 1.41, 2.71]:
+        p2.insert(v)
+    assert p2.get_min() == 1.41
