@@ -6,8 +6,7 @@ on:
       - transcribe_website/transcriber_backend/**
       - .github/workflows/transcriber_backend.yml
   pull_request:
-    branches:
-      - develop
+    branches: [master, develop]
 
 jobs:
   install-packages:

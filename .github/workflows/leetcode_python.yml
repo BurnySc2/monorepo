@@ -6,9 +6,7 @@ on:
       - problem_sites/leetcode/python/**
       - .github/workflows/leetcode_python.yml
   pull_request:
-    branches:
-      - master
-      - develop
+    branches: [master, develop]
 
 env:
   SUBDIRECTORY: problem_sites/leetcode/python

@@ -6,9 +6,7 @@ on:
       - fastapi_server/**
       - .github/workflows/fastapi_server.yml
   pull_request:
-    branches:
-      - master
-      - develop
+    branches: [master, develop]
 
 env:
   SUBDIRECTORY: fastapi_server

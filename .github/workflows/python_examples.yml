@@ -6,9 +6,7 @@ on:
       - python_examples/**
       - .github/workflows/python_examples.yml
   pull_request:
-    branches:
-      - master
-      - develop
+    branches: [master, develop]
 
 env:
   SUBDIRECTORY: python_examples

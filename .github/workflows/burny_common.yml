@@ -6,9 +6,7 @@ on:
       - burny_common/**
       - .github/workflows/burny_common.yml
   pull_request:
-    branches:
-      - master
-      - develop
+    branches: [master, develop]
 
 env:
   SUBDIRECTORY: burny_common

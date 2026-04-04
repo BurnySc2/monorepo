@@ -6,8 +6,7 @@ on:
       - twitch_stream_announcer/**
       - .github/workflows/stream_announcer.yml
   pull_request:
-    branches:
-      - develop
+    branches: [master, develop]
 
 env:
   SUBDIRECTORY: twitch_stream_announcer
