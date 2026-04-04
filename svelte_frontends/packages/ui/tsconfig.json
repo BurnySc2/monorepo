@@ -5,7 +5,7 @@
         "declarationMap": true,
         "allowArbitraryExtensions": true,
         "strictNullChecks": true,
-        "types": ["svelte"]
+        "types": ["svelte", "vite/client"]
     },
     "include": ["dist", "./src/**/*.svelte", "./src/**/*.ts"],
     "exclude": ["node_modules", ".svelte-kit"]

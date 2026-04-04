@@ -43,7 +43,7 @@ function group_by_driver(data: BestTimeEntry[]): DriverSeries[] {
         if (!groups.has(key)) {
             groups.set(key, [])
         }
-        groups.get(key)!.push(entry)
+        groups.get(key)?.push(entry)
     }
 
     const colors = [

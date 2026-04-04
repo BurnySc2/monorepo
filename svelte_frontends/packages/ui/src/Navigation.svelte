@@ -1,4 +1,5 @@
 <script lang="ts">
+/// <reference types="vite/client" />
 interface App {
     name: string
     subdomain: string
@@ -11,6 +12,7 @@ const APPS: App[] = [
     { name: "TTS", subdomain: "tts", devPort: 5174 },
     { name: "Raceroom", subdomain: "raceroom", devPort: 5180 },
     { name: "Replay Pack Builder", subdomain: "replaypack", devPort: 5175 },
+    { name: "Replay Comparer", subdomain: "replaycomparer", devPort: 5181 },
 ]
 
 const BASE_DOMAIN = "burnysc2.xyz"

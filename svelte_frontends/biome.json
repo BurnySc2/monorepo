@@ -15,6 +15,7 @@
     },
     "linter": {
         "enabled": true,
+        "includes": ["apps/**/src/**", "packages/**/src/**"],
         "rules": {
             "recommended": true,
             "a11y": {
@@ -75,6 +76,9 @@
                     "correctness": {
                         "noUnusedVariables": "off",
                         "noUnusedImports": "off"
+                    },
+                    "a11y": {
+                        "useHtmlLang": "off"
                     }
                 }
             }
