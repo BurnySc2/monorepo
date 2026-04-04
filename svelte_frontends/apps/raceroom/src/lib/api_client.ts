@@ -1,4 +1,4 @@
-import type { Track, BestTimeEntry } from "$lib/types"
+import type { BestTimeEntry, Track } from "$lib/types"
 
 const API_BASE = "/api/raceroom"
 
@@ -10,11 +10,7 @@ export async function fetch_tracks(): Promise<Track[]> {
     return response.json()
 }
 
-export async function fetch_times(
-    track_id?: number,
-    start_date?: string,
-    end_date?: string
-): Promise<BestTimeEntry[]> {
+export async function fetch_times(track_id?: number, start_date?: string, end_date?: string): Promise<BestTimeEntry[]> {
     const params = new URLSearchParams()
     if (track_id !== undefined) {
         params.set("track_id", track_id.toString())

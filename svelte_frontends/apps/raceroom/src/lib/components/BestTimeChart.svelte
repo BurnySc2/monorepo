@@ -1,61 +1,61 @@
 <script lang="ts">
-    import { LayerCake, Svg, Html } from "layercake"
-    import type { DriverSeries } from "$lib/types"
+import { Html, LayerCake, Svg } from "layercake"
+import type { DriverSeries } from "$lib/types"
 
-    interface Props {
-        series: DriverSeries[]
-        hoveredDate: Date | null
+interface Props {
+    series: DriverSeries[]
+    hoveredDate: Date | null
+}
+
+let { series, hoveredDate }: Props = $props()
+
+const DRIVER_COLORS = [
+    "#e6194b",
+    "#3cb44b",
+    "#ffe119",
+    "#4363d8",
+    "#f58231",
+    "#911eb4",
+    "#46f0f0",
+    "#f032e6",
+    "#bcf60c",
+    "#fabebe",
+    "#008080",
+    "#e6beff",
+    "#9a6324",
+    "#fffac8",
+    "#800000",
+    "#aaffc3",
+    "#808000",
+    "#ffd8b1",
+    "#000075",
+    "#808080",
+]
+
+function getColor(driver_name: string, car_name: string, driving_model: string): string {
+    const key = `${driver_name}-${car_name}-${driving_model}`
+    let hash = 0
+    for (let i = 0; i < key.length; i++) {
+        hash = (hash << 5) - hash + key.charCodeAt(i)
+        hash |= 0
     }
+    return DRIVER_COLORS[Math.abs(hash) % DRIVER_COLORS.length]
+}
 
-    let { series, hoveredDate }: Props = $props()
+function formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    const ms = Math.floor((seconds % 1) * 100)
+    return `${mins}:${secs.toString().padStart(2, "0")}.${ms.toString().padStart(2, "0")}`
+}
 
-    const DRIVER_COLORS = [
-        "#e6194b",
-        "#3cb44b",
-        "#ffe119",
-        "#4363d8",
-        "#f58231",
-        "#911eb4",
-        "#46f0f0",
-        "#f032e6",
-        "#bcf60c",
-        "#fabebe",
-        "#008080",
-        "#e6beff",
-        "#9a6324",
-        "#fffac8",
-        "#800000",
-        "#aaffc3",
-        "#808000",
-        "#ffd8b1",
-        "#000075",
-        "#808080",
-    ]
+function getDataPointX(data: DriverSeries["data"], index: number): Date {
+    return data[index]?.date ?? new Date()
+}
 
-    function getColor(driver_name: string, car_name: string, driving_model: string): string {
-        const key = `${driver_name}-${car_name}-${driving_model}`
-        let hash = 0
-        for (let i = 0; i < key.length; i++) {
-            hash = (hash << 5) - hash + key.charCodeAt(i)
-            hash |= 0
-        }
-        return DRIVER_COLORS[Math.abs(hash) % DRIVER_COLORS.length]
-    }
-
-    function formatTime(seconds: number): string {
-        const mins = Math.floor(seconds / 60)
-        const secs = Math.floor(seconds % 60)
-        const ms = Math.floor((seconds % 1) * 100)
-        return `${mins}:${secs.toString().padStart(2, "0")}.${ms.toString().padStart(2, "0")}`
-    }
-
-    function getDataPointX(data: DriverSeries["data"], index: number): Date {
-        return data[index]?.date ?? new Date()
-    }
-
-    function getDataPointY(data: DriverSeries["data"], index: number): number {
-        return data[index]?.best_time ?? 0
-    }
+function getDataPointY(data: DriverSeries["data"], index: number): number {
+    return data[index]?.best_time ?? 0
+}
 </script>
 
 <div class="chart-container">
@@ -105,9 +105,7 @@
                     class="tooltip"
                     style="left: 50%; top: 10px; transform: translateX(-50%);"
                 >
-                    <div class="tooltip-date">
-                        {hoveredDate.toLocaleDateString()}
-                    </div>
+                    <div class="tooltip-date">{hoveredDate.toLocaleDateString()}</div>
                     <div class="tooltip-entries">
                         {#each series
                             .flatMap(s => s.data.filter(p => Math.abs(p.date.getTime() - hoveredDate.getTime()) < 86400000))
@@ -130,65 +128,65 @@
 </div>
 
 <style>
-    .chart-container {
-        width: 100%;
-        height: 400px;
-        position: relative;
-    }
+.chart-container {
+    width: 100%;
+    height: 400px;
+    position: relative;
+}
 
-    .tooltip {
-        position: absolute;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-        z-index: 100;
-        pointer-events: none;
-        max-height: 300px;
-        overflow-y: auto;
-        min-width: 250px;
-    }
+.tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    pointer-events: none;
+    max-height: 300px;
+    overflow-y: auto;
+    min-width: 250px;
+}
 
-    .tooltip-date {
-        font-weight: bold;
-        margin-bottom: 8px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 4px;
-    }
+.tooltip-date {
+    font-weight: bold;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 4px;
+}
 
-    .tooltip-entries {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
+.tooltip-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
 
-    .tooltip-entry {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-    }
+.tooltip-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
 
-    .tooltip-color {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
+.tooltip-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
 
-    .tooltip-driver {
-        font-weight: 500;
-    }
+.tooltip-driver {
+    font-weight: 500;
+}
 
-    .tooltip-car {
-        color: #666;
-        font-size: 12px;
-    }
+.tooltip-car {
+    color: #666;
+    font-size: 12px;
+}
 
-    .tooltip-time {
-        margin-left: auto;
-        font-family: monospace;
-        font-weight: bold;
-    }
+.tooltip-time {
+    margin-left: auto;
+    font-family: monospace;
+    font-weight: bold;
+}
 </style>
