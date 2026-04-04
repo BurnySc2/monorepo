@@ -4,10 +4,10 @@ import type { DriverSeries } from "$lib/types"
 
 interface Props {
     series: DriverSeries[]
-    hoveredDate: Date | null
+    hovered_date: Date | null
 }
 
-let { series, hoveredDate }: Props = $props()
+let { series, hovered_date }: Props = $props()
 
 const DRIVER_COLORS = [
     "#e6194b",
@@ -32,7 +32,7 @@ const DRIVER_COLORS = [
     "#808080",
 ]
 
-function getColor(driver_name: string, car_name: string, driving_model: string): string {
+function get_color(driver_name: string, car_name: string, driving_model: string): string {
     const key = `${driver_name}-${car_name}-${driving_model}`
     let hash = 0
     for (let i = 0; i < key.length; i++) {
@@ -42,18 +42,18 @@ function getColor(driver_name: string, car_name: string, driving_model: string):
     return DRIVER_COLORS[Math.abs(hash) % DRIVER_COLORS.length]
 }
 
-function formatTime(seconds: number): string {
+function format_time(seconds: number): string {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     const ms = Math.floor((seconds % 1) * 100)
     return `${mins}:${secs.toString().padStart(2, "0")}.${ms.toString().padStart(2, "0")}`
 }
 
-function getDataPointX(data: DriverSeries["data"], index: number): Date {
+function get_data_point_x(data: DriverSeries["data"], index: number): Date {
     return data[index]?.date ?? new Date()
 }
 
-function getDataPointY(data: DriverSeries["data"], index: number): number {
+function get_data_point_y(data: DriverSeries["data"], index: number): number {
     return data[index]?.best_time ?? 0
 }
 </script>
@@ -68,30 +68,30 @@ function getDataPointY(data: DriverSeries["data"], index: number): number {
         padding={{ top: 20, right: 20, bottom: 40, left: 60 }}
     >
         <Svg>
-            {#each series as driverSeries, i}
+            {#each series as driver_series, i}
                 <g class="series-group">
-                    {#each driverSeries.data as point, j}
-                        {@const isHovered = hoveredDate && Math.abs(point.date.getTime() - hoveredDate.getTime()) < 86400000}
+                    {#each driver_series.data as point, j}
+                        {@const is_hovered = hovered_date && Math.abs(point.date.getTime() - hovered_date.getTime()) < 86400000}
                         {#if j > 0}
-                            {@const prevPoint = driverSeries.data[j - 1]}
+                            {@const prev_point = driver_series.data[j - 1]}
                             <line
-                                x1={prevPoint.date.getTime()}
-                                y1={prevPoint.best_time}
+                                x1={prev_point.date.getTime()}
+                                y1={prev_point.best_time}
                                 x2={point.date.getTime()}
                                 y2={point.best_time}
-                                stroke={driverSeries.color}
-                                stroke-width={isHovered ? 3 : 1.5}
-                                stroke-opacity={isHovered ? 1 : 0.7}
+                                stroke={driver_series.color}
+                                stroke-width={is_hovered ? 3 : 1.5}
+                                stroke-opacity={is_hovered ? 1 : 0.7}
                             />
                         {/if}
-                        {#if j === 0 || j === driverSeries.data.length - 1 || isHovered}
+                        {#if j === 0 || j === driver_series.data.length - 1 || is_hovered}
                             <circle
                                 cx={point.date.getTime()}
                                 cy={point.best_time}
-                                r={isHovered ? 5 : 3}
-                                fill={driverSeries.color}
-                                stroke={isHovered ? "#000" : "none"}
-                                stroke-width={isHovered ? 2 : 0}
+                                r={is_hovered ? 5 : 3}
+                                fill={driver_series.color}
+                                stroke={is_hovered ? "#000" : "none"}
+                                stroke-width={is_hovered ? 2 : 0}
                             />
                         {/if}
                     {/each}
@@ -100,24 +100,24 @@ function getDataPointY(data: DriverSeries["data"], index: number): number {
         </Svg>
 
         <Html>
-            {#if hoveredDate}
+            {#if hovered_date}
                 <div
                     class="tooltip"
                     style="left: 50%; top: 10px; transform: translateX(-50%);"
                 >
-                    <div class="tooltip-date">{hoveredDate.toLocaleDateString()}</div>
+                    <div class="tooltip-date">{hovered_date.toLocaleDateString()}</div>
                     <div class="tooltip-entries">
                         {#each series
-                            .flatMap(s => s.data.filter(p => Math.abs(p.date.getTime() - hoveredDate.getTime()) < 86400000))
+                            .flatMap(s => s.data.filter(p => Math.abs(p.date.getTime() - hovered_date.getTime()) < 86400000))
                             .sort((a, b) => a.best_time - b.best_time) as point}
                             <div class="tooltip-entry">
                                 <span
                                     class="tooltip-color"
-                                    style="background-color: {getColor(point.driver_name, point.car_name, point.driving_model)}"
+                                    style="background-color: {get_color(point.driver_name, point.car_name, point.driving_model)}"
                                 ></span>
                                 <span class="tooltip-driver">{point.driver_name}</span>
                                 <span class="tooltip-car">({point.car_name})</span>
-                                <span class="tooltip-time">{formatTime(point.best_time)}</span>
+                                <span class="tooltip-time">{format_time(point.best_time)}</span>
                             </div>
                         {/each}
                     </div>

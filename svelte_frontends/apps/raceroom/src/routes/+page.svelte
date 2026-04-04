@@ -5,11 +5,11 @@ import BestTimeChart from "$lib/components/BestTimeChart.svelte"
 import type { BestTimeEntry, DateRange, DriverSeries, Track } from "$lib/types"
 
 let tracks: Track[] = $state([])
-let selectedTrackId: number | undefined = $state(undefined)
-let bestTimes: BestTimeEntry[] = $state([])
-let dateRange: DateRange = $state("all")
-let hoveredDate: Date | null = $state(null)
-let isLoading = $state(false)
+let selected_track_id: number | undefined = $state(undefined)
+let best_times: BestTimeEntry[] = $state([])
+let date_range: DateRange = $state("all")
+let hovered_date: Date | null = $state(null)
+let is_loading = $state(false)
 
 const DATE_RANGE_PRESETS: { label: string; value: DateRange }[] = [
     { label: "7 days", value: "7d" },
@@ -19,7 +19,7 @@ const DATE_RANGE_PRESETS: { label: string; value: DateRange }[] = [
     { label: "All", value: "all" },
 ]
 
-function getStartDate(range: DateRange): string | undefined {
+function get_start_date(range: DateRange): string | undefined {
     const now = new Date()
     switch (range) {
         case "7d":
@@ -35,7 +35,7 @@ function getStartDate(range: DateRange): string | undefined {
     }
 }
 
-function groupByDriver(data: BestTimeEntry[]): DriverSeries[] {
+function group_by_driver(data: BestTimeEntry[]): DriverSeries[] {
     const groups = new Map<string, BestTimeEntry[]>()
 
     for (const entry of data) {
@@ -69,12 +69,12 @@ function groupByDriver(data: BestTimeEntry[]): DriverSeries[] {
         "#808080",
     ]
 
-    let colorIndex = 0
+    let color_index = 0
     const result: DriverSeries[] = []
 
     for (const [key, entries] of groups) {
         const [driver_name, car_name, driving_model] = key.split("---")
-        const sortedEntries = entries
+        const sorted_entries = entries
             .filter((e) => e.date && e.best_time)
             .map((e) => ({
                 date: new Date(e.date),
@@ -89,84 +89,84 @@ function groupByDriver(data: BestTimeEntry[]): DriverSeries[] {
             driver_name,
             car_name,
             driving_model,
-            color: colors[colorIndex++ % colors.length],
-            data: sortedEntries,
+            color: colors[color_index++ % colors.length],
+            data: sorted_entries,
         })
     }
 
     return result
 }
 
-async function loadTracks() {
+async function load_tracks() {
     try {
         tracks = await fetch_tracks()
         if (tracks.length > 0) {
-            selectedTrackId = tracks[0].id
+            selected_track_id = tracks[0].id
         }
     } catch (error) {
         console.error("Failed to load tracks:", error)
     }
 }
 
-async function loadTimes() {
-    isLoading = true
+async function load_times() {
+    is_loading = true
     try {
-        const startDate = getStartDate(dateRange)
-        bestTimes = await fetch_times(selectedTrackId, startDate)
+        const start_date = get_start_date(date_range)
+        best_times = await fetch_times(selected_track_id, start_date)
     } catch (error) {
         console.error("Failed to load times:", error)
     } finally {
-        isLoading = false
+        is_loading = false
     }
 }
 
-function handleMouseMove(event: MouseEvent) {
-    const chartArea = (event.currentTarget as HTMLElement).querySelector(".chart-container")
-    if (!chartArea) {
+function handle_mouse_move(event: MouseEvent) {
+    const chart_area = (event.currentTarget as HTMLElement).querySelector(".chart-container")
+    if (!chart_area) {
         return
     }
 
-    const rect = chartArea.getBoundingClientRect()
+    const rect = chart_area.getBoundingClientRect()
     const x = event.clientX - rect.left
     const percentage = x / rect.width
 
-    const allDates = bestTimes
+    const all_dates = best_times
         .filter((t) => t.date)
         .map((t) => new Date(t.date))
         .sort((a, b) => a.getTime() - b.getTime())
 
-    if (allDates.length === 0) {
-        hoveredDate = null
+    if (all_dates.length === 0) {
+        hovered_date = null
         return
     }
 
-    const minDate = allDates[0].getTime()
-    const maxDate = allDates[allDates.length - 1].getTime()
-    const targetTime = minDate + (maxDate - minDate) * percentage
+    const min_date = all_dates[0].getTime()
+    const max_date = all_dates[all_dates.length - 1].getTime()
+    const target_time = min_date + (max_date - min_date) * percentage
 
-    hoveredDate = new Date(targetTime)
+    hovered_date = new Date(target_time)
 }
 
-function handleMouseLeave() {
-    hoveredDate = null
+function handle_mouse_leave() {
+    hovered_date = null
 }
 
-let series: DriverSeries[] = $derived(groupByDriver(bestTimes))
+let series: DriverSeries[] = $derived(group_by_driver(best_times))
 
 onMount(() => {
-    loadTracks()
+    load_tracks()
 })
 
 $effect(() => {
-    if (selectedTrackId !== undefined) {
-        loadTimes()
+    if (selected_track_id !== undefined) {
+        load_times()
     }
 })
 
 $effect(() => {
-    dateRange
-    if (selectedTrackId !== undefined) {
-        loadTimes()
+    date_range
+    if (selected_track_id !== undefined) {
+        load_times()
     }
 })
 </script>
@@ -184,7 +184,7 @@ $effect(() => {
             <select
                 id="track-select"
                 class="input"
-                bind:value={selectedTrackId}
+                bind:value={selected_track_id}
                 disabled={tracks.length === 0}
             >
                 {#each tracks as track}
@@ -198,8 +198,8 @@ $effect(() => {
             {#each DATE_RANGE_PRESETS as preset}
                 <button
                     class="btn-secondary"
-                    class:btn-primary={dateRange === preset.value}
-                    onclick={() => (dateRange = preset.value)}
+                    class:btn-primary={date_range === preset.value}
+                    onclick={() => (date_range = preset.value)}
                 >
                     {preset.label}
                 </button>
@@ -207,34 +207,34 @@ $effect(() => {
         </div>
     </div>
 
-    {#if isLoading}
+    {#if is_loading}
         <div class="flex items-center justify-center p-8"><span>Loading...</span></div>
-    {:else if bestTimes.length === 0}
+    {:else if best_times.length === 0}
         <div class="text-center p-8 text-gray-500">No data available for the selected track and period.</div>
     {:else}
         <div
             class="chart-wrapper mb-6 border border-gray-300 rounded p-4"
-            onmousemove={handleMouseMove}
-            onmouseleave={handleMouseLeave}
+            onmousemove={handle_mouse_move}
+            onmouseleave={handle_mouse_leave}
             role="img"
             aria-label="Best times line chart"
         >
             <BestTimeChart
                 {series}
-                {hoveredDate}
+                {hovered_date}
             />
         </div>
 
         <div class="legend mb-6 flex flex-wrap gap-4">
-            {#each series as driverSeries}
+            {#each series as driver_series}
                 <div class="legend-item flex items-center gap-2">
                     <div
                         class="legend-color w-4 h-4 rounded"
-                        style="background-color: {driverSeries.color}"
+                        style="background-color: {driver_series.color}"
                     ></div>
                     <span class="text-sm">
-                        {driverSeries.driver_name}
-                        <span class="text-gray-500">({driverSeries.car_name})</span>
+                        {driver_series.driver_name}
+                        <span class="text-gray-500">({driver_series.car_name})</span>
                     </span>
                 </div>
             {/each}
