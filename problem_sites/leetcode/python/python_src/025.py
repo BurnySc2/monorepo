@@ -3,7 +3,6 @@ Given a non-negative integer numRows, generate the first numRows of Pascal's tri
 
 https://leetcode.com/problems/pascals-triangle/
 """
-from typing import List, Tuple
 
 
 class ListNode:
@@ -48,7 +47,7 @@ class ListNode:
         return l
 
     @classmethod
-    def from_list(cls, my_list: List[int]) -> "ListNode":
+    def from_list(cls, my_list: list[int]) -> "ListNode":
         assert my_list
         start = cls(my_list[0])
         cur = start
@@ -82,8 +81,8 @@ class Solution:
             # print()
         return head
 
-    def reverse_k(self, head: ListNode, k: int) -> Tuple[ListNode, ListNode]:
-        """ Return the new start of listnode and last element that was reverted """
+    def reverse_k(self, head: ListNode, k: int) -> tuple[ListNode, ListNode]:
+        """Return the new start of listnode and last element that was reverted"""
         start = head
         first = head
         second = first.next
@@ -143,6 +142,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.reverseKGroup(*test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

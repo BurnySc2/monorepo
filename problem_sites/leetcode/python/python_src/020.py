@@ -5,10 +5,6 @@ https://leetcode.com/problems/valid-parentheses/
 """
 
 
-from typing import Set, Tuple, List, Generator, Dict
-from collections import Counter
-
-
 class Solution:
     def isValid(self, s: str) -> bool:
         stack = []

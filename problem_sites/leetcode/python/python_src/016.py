@@ -3,14 +3,13 @@ Given a non-negative integer numRows, generate the first numRows of Pascal's tri
 
 https://leetcode.com/problems/pascals-triangle/
 """
-from typing import List
 
 # TOO SLOW rust equivalent works though
 import math
 
 
 class Solution:
-    def threeSumClosest(self, nums: List[int], target: int) -> int:
+    def threeSumClosest(self, nums: list[int], target: int) -> int:
         closest = math.inf
         closest_value = None
         for index1, i1 in enumerate(nums):
@@ -40,6 +39,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.threeSumClosest(*test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

@@ -4,13 +4,12 @@ Given a positive integer N, how many ways can we write it as a sum of consecutiv
 https://leetcode.com/problems/consecutive-numbers-sum/
 """
 
-
-from typing import Set, Tuple, List, Generator, Dict
+from collections.abc import Generator
 
 
 class Solution:
-    def get_triangle_numbers(self) -> Generator[Tuple[int, int], None, None]:
-        """ Endless generator for triangle numbers: [(1, 1), (2, 3), (3, 6), (4, 10) ... """
+    def get_triangle_numbers(self) -> Generator[tuple[int, int], None, None]:
+        """Endless generator for triangle numbers: [(1, 1), (2, 3), (3, 6), (4, 10) ..."""
         i = 1
         n = 1
         while True:

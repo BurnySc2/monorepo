@@ -24,7 +24,7 @@ def permutation(my_list: list[Any]) -> list[Any]:
     return result
 
 
-def permutation_generator(my_list: list[Any]) -> Generator[Any, None, None]:
+def permutation_generator(my_list: list[Any]) -> Generator[Any]:
     assert len(my_list) > 0
     if len(my_list) == 1:
         yield my_list
@@ -35,7 +35,7 @@ def permutation_generator(my_list: list[Any]) -> Generator[Any, None, None]:
             yield [middle] + p
 
 
-def permutation_backwards_generator(my_list: list[Any]) -> Generator[Any, None, None]:
+def permutation_backwards_generator(my_list: list[Any]) -> Generator[Any]:
     assert len(my_list) > 0
     if len(my_list) == 1:
         yield my_list

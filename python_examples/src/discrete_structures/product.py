@@ -4,7 +4,7 @@ from collections.abc import Generator, Iterable
 from typing import Any
 
 
-def product_generator(*args: Iterable[Any], repeat: int = 1) -> Generator[Any, None, None]:
+def product_generator(*args: Iterable[Any], repeat: int = 1) -> Generator[Any]:
     # product('ABCD', 'xy') --> Ax Ay Bx By Cx Cy Dx Dy
     # product(range(2), repeat=3) --> 000 001 010 011 100 101 110 111
     pools = [tuple(pool) for pool in args] * repeat

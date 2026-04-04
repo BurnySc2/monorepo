@@ -1,14 +1,12 @@
+from heapq import heapify, heappop, heappush
 from string import ascii_lowercase, ascii_uppercase, digits
-from heapq import heapify, heappush, heappop
-from typing import List
 
 
 class Solution:
-
     def strongPasswordChecker(self, password: str) -> int:
-        previous_letters: List[str] = []
+        previous_letters: list[str] = []
         # Groups of same-letters
-        repeated_letters: List[int] = []
+        repeated_letters: list[int] = []
 
         # Analyse password
         has_lowercase = False
@@ -40,7 +38,7 @@ class Solution:
 
         return remove_operations + max(min_edit_add_operations_required, add_operations + edit_operations)
 
-    def handle_repeated_letters_to_reduce_pw_length(self, repeated_letters: List[int], pw_length: int) -> int:
+    def handle_repeated_letters_to_reduce_pw_length(self, repeated_letters: list[int], pw_length: int) -> int:
         operations = 0
         if pw_length <= 20:
             return operations
@@ -92,7 +90,7 @@ class Solution:
 
         return operations
 
-    def handle_repeated_letters_to_increase_pw_length(self, repeated_letters: List[int], pw_length: int) -> int:
+    def handle_repeated_letters_to_increase_pw_length(self, repeated_letters: list[int], pw_length: int) -> int:
         operations = 0
         while pw_length < 6:
             if repeated_letters:
@@ -105,7 +103,7 @@ class Solution:
 
         return operations
 
-    def handle_remaining_repeated_letters(self, repeated_letters: List[int]) -> int:
+    def handle_remaining_repeated_letters(self, repeated_letters: list[int]) -> int:
         operations = 0
 
         while repeated_letters:
@@ -127,8 +125,8 @@ if __name__ == "__main__":
         ["1111111111", 3],
     ]
     app = Solution()
-    for (test_case, correct_result) in test_cases_and_results:
+    for test_case, correct_result in test_cases_and_results:
         my_result = app.strongPasswordChecker(test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

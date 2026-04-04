@@ -6,13 +6,11 @@ A mapping of digit to letters (just like on the telephone buttons) is given belo
 https://leetcode.com/problems/letter-combinations-of-a-phone-number/
 """
 
-
-from typing import Set, Tuple, List, Generator
-from collections import Counter
+from collections.abc import Generator
 
 
 class Solution:
-    def letterCombinations(self, digits: str) -> List[str]:
+    def letterCombinations(self, digits: str) -> list[str]:
         if not digits:
             return []
 
@@ -40,7 +38,7 @@ class Solution:
                 increment_at_index(my_list, index - 1, strings)
             return True
 
-        def my_generator(strings) -> Generator[List[int], None, None]:
+        def my_generator(strings) -> Generator[list[int], None, None]:
             indices = [0 for _ in strings]
             limit = [len(string) - 1 for string in strings]
             yield indices

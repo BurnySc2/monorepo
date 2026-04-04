@@ -1,8 +1,3 @@
-from heapq import heappop
-
-from typing import List, DefaultDict
-from collections import defaultdict
-
 from string import ascii_uppercase
 
 uppercases = set(ascii_uppercase)

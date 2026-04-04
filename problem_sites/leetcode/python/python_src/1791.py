@@ -1,11 +1,10 @@
-from typing import List
 from collections import Counter
 
 
 class Solution:
-    def findCenter(self, edges: List[List[int]]) -> int:
+    def findCenter(self, edges: list[list[int]]) -> int:
         my_counter = Counter()
-        for (u, v) in edges:
+        for u, v in edges:
             my_counter[u] += 1
             my_counter[v] += 1
             if my_counter[u] > 1:

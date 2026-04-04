@@ -1,10 +1,10 @@
-from typing import Dict, Optional, Any
+from typing import Any
 
 
 class Node:
     def __init__(self) -> None:
-        self.children: Dict[str, Node] = {}
-        self.value: Optional[Any] = None
+        self.children: dict[str, Node] = {}
+        self.value: Any | None = None
 
 
 class WordDictionary:
@@ -30,8 +30,8 @@ class WordDictionary:
             node = node.children[char]
         return True
 
-    def search(self, word: str, start_node: Optional[Node] = None) -> bool:
-        """ Word can be 'asd' or 'a.d' which should match the same. """
+    def search(self, word: str, start_node: Node | None = None) -> bool:
+        """Word can be 'asd' or 'a.d' which should match the same."""
         if start_node is not None:
             node = start_node
         else:
@@ -40,7 +40,7 @@ class WordDictionary:
             if char != "." and char not in node.children:
                 return False
             if char == ".":
-                return any(self.search(f"{key}{word[1+index:]}", node) for key in node.children.keys())
+                return any(self.search(f"{key}{word[1 + index :]}", node) for key in node.children.keys())
             node = node.children[char]
         return bool(node.value)
 

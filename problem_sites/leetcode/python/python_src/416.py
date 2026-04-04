@@ -1,8 +1,5 @@
-from typing import List
-
-
 class Solution:
-    def rebuild_sum(self, lookup: List[int], target: int):
+    def rebuild_sum(self, lookup: list[int], target: int):
         assert lookup[target] > -1
         my_summands = []
         while target != 0:
@@ -10,7 +7,7 @@ class Solution:
             target -= lookup[target]
         return my_summands
 
-    def canPartition(self, nums: List[int]) -> bool:
+    def canPartition(self, nums: list[int]) -> bool:
         nums_sum = sum(nums)
         if nums_sum % 2 == 1:
             return False
@@ -103,6 +100,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.canPartition(test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

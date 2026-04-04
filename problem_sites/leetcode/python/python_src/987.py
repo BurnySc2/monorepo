@@ -1,5 +1,3 @@
-from heapq import heappop
-
 # Definition for a binary tree node.
 class TreeNode:
     def __init__(self, val: int = 0, left: "TreeNode" = None, right: "TreeNode" = None):
@@ -8,12 +6,12 @@ class TreeNode:
         self.right = right
 
 
-from typing import List, DefaultDict
 from collections import defaultdict
+from typing import DefaultDict
 
 
 class Solution:
-    def verticalTraversal(self, root: TreeNode) -> List[List[int]]:
+    def verticalTraversal(self, root: TreeNode) -> list[list[int]]:
         my_dict = defaultdict(list)
         my_dict[0] = []
         self.verticalTraversal2([root], [0], my_dict)
@@ -22,7 +20,7 @@ class Solution:
             results.append(my_dict[i])
         return results
 
-    def verticalTraversal2(self, nodes: List[TreeNode], x_values: List[int], my_dict: DefaultDict[int, List[int]]):
+    def verticalTraversal2(self, nodes: list[TreeNode], x_values: list[int], my_dict: DefaultDict[int, list[int]]):
         new_nodes = []
         new_x_values = []
         row = defaultdict(list)

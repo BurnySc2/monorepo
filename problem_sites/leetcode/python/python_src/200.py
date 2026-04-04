@@ -1,18 +1,15 @@
-from typing import List, Set, Tuple
-
-
 class Solution:
-    def numIslands(self, grid: List[List[str]]) -> int:
+    def numIslands(self, grid: list[list[str]]) -> int:
         color = 1
         new_grid = [[0 for _x in range(len(grid[0]))] for _y in range(len(grid))]
 
         def flood_fill(
-            islands_grid: List[List[str]],
-            color_grid: List[List[int]],
+            islands_grid: list[list[str]],
+            color_grid: list[list[int]],
             index_y: int,
             index_x: int,
             my_color: int,
-            already_checked_set: Set[Tuple[int, int]],
+            already_checked_set: set[tuple[int, int]],
         ) -> None:
             # Check boundaries
             if index_y < 0 or len(islands_grid) <= index_y:
@@ -55,7 +52,7 @@ class Solution:
             for x, _cell_value in enumerate(row):
                 cell_value = grid[y][x]
                 if cell_value == "1" and new_grid[y][x] == 0:
-                    already_checked: Set[Tuple[int, int]] = set()
+                    already_checked: set[tuple[int, int]] = set()
                     flood_fill(grid, new_grid, y, x, color, already_checked)
                     color += 1
 

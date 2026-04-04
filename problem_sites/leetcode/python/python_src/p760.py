@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import math
+from dataclasses import dataclass
 
 
 @dataclass
@@ -178,7 +178,7 @@ def main():
             partial_sum.append(a.compute())
         my_sum.append(partial_sum)
 
-    print(f"g(k, n-k)")
+    print("g(k, n-k)")
     for row in my_sum:
         print(" ".join(map(str, row)))
 
@@ -209,6 +209,7 @@ def main():
     assert result_1000 == 580_621_308, f"{result_1000} != 580_621_308"
 
     import time
+
     t1 = time.perf_counter()
     solution = compute_fastest(10**18) % 1_000_000_007
     t2 = time.perf_counter()

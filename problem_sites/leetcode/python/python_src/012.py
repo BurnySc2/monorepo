@@ -97,6 +97,6 @@ results = ["III", "IV", "IX", "LVIII", "MCMXCIV"]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.intToRoman(test_case) == correct_result
-        ), f"My result: {app.intToRoman(test_case)}, correct result: {correct_result}"
+        assert app.intToRoman(test_case) == correct_result, (
+            f"My result: {app.intToRoman(test_case)}, correct result: {correct_result}"
+        )

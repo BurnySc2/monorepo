@@ -1,8 +1,5 @@
-from typing import List
-
-
 class Solution:
-    def is_valid_square(self, board: List[List[str]], rows: List[int], columns: List[int]) -> bool:
+    def is_valid_square(self, board: list[list[str]], rows: list[int], columns: list[int]) -> bool:
         seen = set()
         for row in board[rows[0] : rows[1]]:
             for value in row[columns[0] : columns[1]]:
@@ -13,7 +10,7 @@ class Solution:
                 seen.add(value)
         return True
 
-    def is_valid_row(self, board: List[List[str]], row_number: int):
+    def is_valid_row(self, board: list[list[str]], row_number: int):
         seen = set()
         for row in board[row_number]:
             for value in row:
@@ -24,7 +21,7 @@ class Solution:
                 seen.add(value)
         return True
 
-    def is_valid_col(self, board: List[List[str]], col_number: int):
+    def is_valid_col(self, board: list[list[str]], col_number: int):
         seen = set()
         for row_number in range(9):
             value = board[row_number][col_number]
@@ -35,7 +32,7 @@ class Solution:
             seen.add(value)
         return True
 
-    def isValidSudoku(self, board: List[List[str]]) -> bool:
+    def isValidSudoku(self, board: list[list[str]]) -> bool:
         return (
             all(self.is_valid_square(board, [y, y + 3], [x, x + 3]) for y in range(0, 9, 3) for x in range(0, 9, 3))
             and all(self.is_valid_row(board, y) for y in range(0, 9))
@@ -86,6 +83,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.isValidSudoku(test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

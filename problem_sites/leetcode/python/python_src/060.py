@@ -3,12 +3,13 @@ Given a non-negative integer numRows, generate the first numRows of Pascal's tri
 
 https://leetcode.com/problems/pascals-triangle/
 """
-from typing import List, Any, Generator
+
 from math import factorial
+from typing import Any
 
 
-def get_permutation_at_index(original: List[Any], index: int) -> List[Any]:
-    """ Returns lexicographically ordered permutation at index 'index'.
+def get_permutation_at_index(original: list[Any], index: int) -> list[Any]:
+    """Returns lexicographically ordered permutation at index 'index'.
     assert get_permutation_at_index(list("ABC"), 0) == list("ABC")
     assert get_permutation_at_index(list("ABC"), 5) == list("CBA")
     assert get_permutation_at_index(list("ABCD"), 23) == list("DCBA")
@@ -38,6 +39,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.getPermutation(*test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

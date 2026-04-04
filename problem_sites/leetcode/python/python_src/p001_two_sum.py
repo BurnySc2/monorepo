@@ -6,11 +6,9 @@
 #                 if a + b == target:
 #                     return [i, index_offset+j]
 
-from typing import List
-
 
 class Solution:
-    def twoSum(self, nums: List[int], target: int) -> List[int]:
+    def twoSum(self, nums: list[int], target: int) -> list[int]:
         my_set = set(nums)
         for i, value1 in enumerate(nums):
             index_offset = i + 1

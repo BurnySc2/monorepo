@@ -4,11 +4,11 @@ Given a collection of distinct integers, return all possible permutations.
 https://leetcode.com/problems/permutations/
 """
 
+from collections.abc import Generator
+from typing import Any
 
-from typing import List, Generator, Any
 
-
-def permutation_generator(my_list: List[Any]) -> Generator[Any, None, None]:
+def permutation_generator(my_list: list[Any]) -> Generator[Any, None, None]:
     # Length of list: at least 1
     if len(my_list) == 1:
         yield my_list
@@ -20,7 +20,7 @@ def permutation_generator(my_list: List[Any]) -> Generator[Any, None, None]:
 
 
 class Solution:
-    def permute(self, nums: List[int]) -> List[List[int]]:
+    def permute(self, nums: list[int]) -> list[list[int]]:
         return list(permutation_generator(nums))
 
 

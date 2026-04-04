@@ -1,12 +1,11 @@
 # NOT SOLVED! Memory limit exceeded
-from typing import List  # noqa: UP035
 import sys
 
 
 class Tree:
     def __init__(self, value: int) -> None:
         self.value = value
-        self.children: List[Tree] = []  # noqa: UP006
+        self.children: list[Tree] = []  # noqa: UP006
 
     def add_child(self, value: int) -> None:
         smallest = 10**4
@@ -32,7 +31,7 @@ class Tree:
 
 
 class Solution:
-    def lengthOfLIS(self, nums: List[int]) -> int:  # noqa: N802, UP006
+    def lengthOfLIS(self, nums: list[int]) -> int:  # noqa: N802, UP006
         if len(nums) == 1:
             return 1
         trees = []

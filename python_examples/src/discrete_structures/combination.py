@@ -6,7 +6,7 @@ from typing import Any
 from discrete_structures.product import product_generator
 
 
-def combination_generator(my_list: list[Any], n: int) -> Generator[Any, None, None]:
+def combination_generator(my_list: list[Any], n: int) -> Generator[Any]:
     if n == 0:
         yield []
     for i, middle in enumerate(my_list):

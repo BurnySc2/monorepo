@@ -3,7 +3,7 @@ Given a binary tree, check whether it is a mirror of itself (ie, symmetric aroun
 
 https://leetcode.com/problems/symmetric-tree/
 """
-from typing import Optional
+
 
 # Definition for a binary tree node.
 class TreeNode:
@@ -14,15 +14,20 @@ class TreeNode:
 
 
 class Solution:
-    def isSymmetric(self, root: Optional[TreeNode]) -> bool:
-        def compare_trees(left: Optional[TreeNode], right: Optional[TreeNode]) -> bool:
+    def isSymmetric(self, root: TreeNode | None) -> bool:
+        def compare_trees(left: TreeNode | None, right: TreeNode | None) -> bool:
             if left is None and right is None:
                 return True
             if left is None or right is None:
                 return False
             if left.val != right.val:
                 return False
-            return all([compare_trees(left.left, right.right), compare_trees(left.right, right.left),])
+            return all(
+                [
+                    compare_trees(left.left, right.right),
+                    compare_trees(left.right, right.left),
+                ]
+            )
 
         if root is None:
             return True
@@ -36,6 +41,6 @@ results = [True]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.isSymmetric(test_case) == correct_result
-        ), f"My result: {app.isSymmetric(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert app.isSymmetric(test_case) == correct_result, (
+            f"My result: {app.isSymmetric(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

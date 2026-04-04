@@ -91,7 +91,7 @@ async def loop_function() -> None:
         await my_reminder.tick()
 
 
-async def get_text_channels_of_server(server: OwnGuild) -> AsyncGenerator[GuildTextChannel, None]:
+async def get_text_channels_of_server(server: OwnGuild) -> AsyncGenerator[GuildTextChannel]:
     assert isinstance(server, OwnGuild), type(server)
     for channel in await bot.rest.fetch_guild_channels(server):
         if channel.type not in {ChannelType.GUILD_TEXT}:
