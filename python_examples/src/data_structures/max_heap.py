@@ -14,7 +14,7 @@ class MaxHeap:
         self.tree: list[int] = [0]
 
     def __repr__(self):
-        return_list = []
+        return_list: list[int | str] = []
         multiples_of_two = {2**n for n in range(1, 1 + int(math.log(len(self.tree), 2)))}
         for index, value in enumerate(self.tree[1:], start=1):
             if index in multiples_of_two:
