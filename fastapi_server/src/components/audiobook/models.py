@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from stat import S_IFREG
 
 import arrow
-from dataclasses import dataclass
 from pydantic import BaseModel
 from stream_zip import NO_COMPRESSION_64, async_stream_zip
 

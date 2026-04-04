@@ -1,8 +1,8 @@
 <script lang="ts">
+import { Spinner } from "@repo/ui"
 import * as api from "$lib/api/audiobook"
 import BookCard from "$lib/components/BookCard.svelte"
 import BookUpload from "$lib/components/BookUpload.svelte"
-import Spinner from "$lib/components/Spinner.svelte"
 import type { AudiobookBook } from "$lib/types/audiobook"
 
 let books: AudiobookBook[] = $state([])
@@ -72,7 +72,7 @@ $effect(() => {
         </div>
 
         {#if is_loading}
-            <div class="flex justify-center py-12"><Spinner size="lg" /></div>
+            <div class="flex justify-center py-12"><Spinner /></div>
         {:else if books.length === 0}
             <p class="text-center text-gray-500 py-8">Your uploaded books will appear here.</p>
         {:else}

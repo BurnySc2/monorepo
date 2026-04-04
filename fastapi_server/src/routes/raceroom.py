@@ -6,7 +6,7 @@ import arrow
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
 
-from models.raceroom import RRREBestTime, RRREPlayer, RRRETrack
+from models.raceroom import RRREBestTime, RRRETrack
 
 raceroom_router = APIRouter()
 

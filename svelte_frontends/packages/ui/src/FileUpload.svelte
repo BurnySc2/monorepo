@@ -1,13 +1,12 @@
 <script lang="ts">
-import { Spinner } from "@repo/ui"
-
 interface Props {
     label: string
     on_upload: (files: FileList) => void
     disabled?: boolean
+    accept?: string
 }
 
-let { label, on_upload, disabled = false }: Props = $props()
+let { label, on_upload, disabled = false, accept = "" }: Props = $props()
 
 let is_dragging = $state(false)
 let file_input: HTMLInputElement
@@ -23,6 +22,22 @@ function handle_dragleave() {
     is_dragging = false
 }
 
+function filter_files(files: FileList): FileList {
+    if (!accept) {
+        return files
+    }
+    const ext = accept.replace(".", "")
+    const valid_files = Array.from(files).filter((file) => file.name.endsWith(`.${ext}`))
+    if (valid_files.length === 0) {
+        return files
+    }
+    const dt = new DataTransfer()
+    for (const file of valid_files) {
+        dt.items.add(file)
+    }
+    return dt.files
+}
+
 function handle_drop(e: DragEvent) {
     e.preventDefault()
     is_dragging = false
@@ -32,7 +47,7 @@ function handle_drop(e: DragEvent) {
 
     const files = e.dataTransfer?.files
     if (files && files.length > 0) {
-        on_upload(files)
+        on_upload(filter_files(files))
     }
 }
 
@@ -46,9 +61,8 @@ function handle_file_change(e: Event) {
     const target = e.target as HTMLInputElement
     const files = target.files
     if (files && files.length > 0) {
-        on_upload(files)
+        on_upload(filter_files(files))
     }
-    // Reset input so same file can be selected again
     target.value = ""
 }
 </script>
@@ -72,7 +86,7 @@ function handle_file_change(e: Event) {
         bind:this={file_input}
         type="file"
         class="hidden-input"
-        accept=".SC2Replay"
+        accept={accept || undefined}
         onchange={handle_file_change}
     >
 </div>

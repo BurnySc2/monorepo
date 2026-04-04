@@ -7,7 +7,7 @@ from components.replay_pack_builder.models import ParsedReplayFile
 
 
 async def parse_replay(data: BytesIO, md5_hash: str) -> ParsedReplayFile:
-    replay: Replay = sc2reader.load_replay(data, load_level=2)
+    replay: Replay = sc2reader.load_replay(data, load_level=2)  # pyrefly: ignore[missing-attribute]
     parsed = {
         "teams": [
             {
@@ -32,7 +32,7 @@ async def parse_replay(data: BytesIO, md5_hash: str) -> ParsedReplayFile:
         "is_private": replay.is_private,
         "resume_from_replay": replay.resume_from_replay,
         "played_timestamp": replay.unix_timestamp * 1000,
-        "game_length_seconds": replay.length.seconds,
+        "game_length_seconds": replay.length.seconds if replay.length else 0,  # pyrefly: ignore[missing-attribute]
         "game_base_build": replay.base_build,
         "game_version": ".".join(map(str, replay.versions[1:4])),
         "game_type": replay.type,
@@ -44,5 +44,5 @@ async def parse_replay(data: BytesIO, md5_hash: str) -> ParsedReplayFile:
     parsed["user_id"] = ""
     parsed["size"] = 0
     parsed["status"] = "processed"
-    parsed_checked = ParsedReplayFile(**parsed)
+    parsed_checked = ParsedReplayFile(**parsed)  # pyrefly: ignore[missing-argument,bad-argument-type]
     return parsed_checked

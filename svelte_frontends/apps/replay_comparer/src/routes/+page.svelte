@@ -1,7 +1,6 @@
 <script lang="ts">
-import { Spinner } from "@repo/ui"
+import { FileUpload, Spinner } from "@repo/ui"
 import { onMount } from "svelte"
-import FileUpload from "$lib/components/FileUpload.svelte"
 import ReplayComparison from "$lib/components/ReplayComparison.svelte"
 import { type ReplayData, type SavedIdealReplay, TIMELINE_OPTIONS, type TimelineOption } from "$lib/types"
 

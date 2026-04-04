@@ -1,10 +1,8 @@
-import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from pytest_httpx import HTTPXMock
 
-from components.login.cookies import COOKIES, github_get_user
-from components.login.github import github_verify_code
+from components.login.cookies import COOKIES
 from test.conftest import test_client  # noqa: F401
 
 _test_client = test_client

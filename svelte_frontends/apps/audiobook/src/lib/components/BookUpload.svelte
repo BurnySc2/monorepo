@@ -1,5 +1,5 @@
 <script lang="ts">
-import Spinner from "./Spinner.svelte"
+import { Spinner } from "@repo/ui"
 
 interface Props {
     on_upload: (file: File) => Promise<void>
@@ -83,7 +83,7 @@ async function handle_click() {
     }}
 >
     {#if is_uploading}
-        <Spinner size="lg" />
+        <Spinner />
         <p class="mt-4 text-gray-600">Processing book...</p>
     {:else}
         <svg

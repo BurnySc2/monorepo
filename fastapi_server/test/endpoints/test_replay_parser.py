@@ -63,9 +63,11 @@ async def test_parse_replay_success():
 
 @pytest.mark.asyncio
 async def test_parse_replay_invalid_data():
-    with patch("sc2reader.load_replay", side_effect=Exception("Invalid replay data")):
-        with pytest.raises(Exception, match="Invalid replay data"):
-            await parse_replay(BytesIO(b"invalid"), "abc123")
+    with (
+        patch("sc2reader.load_replay", side_effect=Exception("Invalid replay data")),
+        pytest.raises(Exception, match="Invalid replay data"),
+    ):
+        await parse_replay(BytesIO(b"invalid"), "abc123")
 
 
 def test_parse_replay_file_success(client: TestClient):

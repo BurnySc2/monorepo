@@ -22,7 +22,7 @@ async def parse_replay_file(file: UploadFile = File(...)) -> JSONResponse:
         file_md5 = md5(contents).hexdigest()
         replay_data: ParsedReplayFile = await parse_replay(BytesIO(contents), file_md5)
         return JSONResponse(replay_data.model_dump())
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return JSONResponse(
             {"error": str(e)},
             status_code=400,

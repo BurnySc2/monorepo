@@ -1,8 +1,7 @@
 <script lang="ts">
-import { Spinner } from "@repo/ui"
+import { FileUpload, Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { parse_replay_file } from "$lib/api_client"
-import FileUpload from "$lib/components/FileUpload.svelte"
 import FilterPanel from "$lib/components/FilterPanel.svelte"
 import ReplayTable from "$lib/components/ReplayTable.svelte"
 import {
@@ -190,7 +189,9 @@ $effect(() => {
                 </div>
             {:else}
                 <FileUpload
-                    {is_processing}
+                    label="Drag & drop .SC2Replay files here"
+                    accept=".SC2Replay"
+                    disabled={is_processing}
                     on_upload={handle_file_upload}
                 />
             {/if}

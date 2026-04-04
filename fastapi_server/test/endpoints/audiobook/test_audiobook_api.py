@@ -18,7 +18,7 @@ def _garage_available() -> bool:
         result = sock.connect_ex((host, int(port)))
         sock.close()
         return result == 0
-    except Exception:
+    except Exception:  # noqa: BLE001
         return False
 
 

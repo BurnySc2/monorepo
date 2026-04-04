@@ -66,7 +66,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
                 chapter_title = epub_html.id
             else:
                 # pyrefly: ignore
-                epub_html: EpubHtml = c.book.get_item_with_href(chapter.href.split("#")[0])
+                epub_html: EpubHtml = c.book.get_item_with_href(chapter.href.split("#")[0])  # noqa: F821
                 chapter_title = chapter.title
                 # Might be missing in some books
                 if epub_html is None:

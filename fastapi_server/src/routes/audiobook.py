@@ -32,7 +32,7 @@ async def list_books() -> JSONResponse:
     return JSONResponse(
         [
             {
-                "id": book.id,
+                "id": book.id,  # pyrefly: ignore[missing-attribute]
                 "uploaded_by": book.uploaded_by,
                 "book_title": book.book_title,
                 "book_author": book.book_author,
@@ -54,7 +54,7 @@ async def get_book(book_id: int) -> JSONResponse:
     Generates presigned URLs for chapters with audio.
     Uses optimized SQL query to get global queue position.
     """
-    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()  # pyrefly: ignore[missing-attribute]
 
     if book is None or book.deleted:
         return JSONResponse({"error": "Book not found"}, status_code=404)
@@ -99,7 +99,7 @@ async def get_book(book_id: int) -> JSONResponse:
     return JSONResponse(
         {
             "book": {
-                "id": book.id,
+                "id": book.id,  # pyrefly: ignore[missing-attribute]
                 "uploaded_by": book.uploaded_by,
                 "book_title": book.book_title,
                 "book_author": book.book_author,
@@ -147,7 +147,7 @@ async def upload_epub(file: UploadFile = File(...)) -> JSONResponse:
         # Create chapter records
         for chapter in chapters:
             chapter_record = AudiobookChapter(
-                book=book.id,
+                book=book.id,  # pyrefly: ignore[missing-attribute]
                 chapter_title=chapter.chapter_title,
                 chapter_number=chapter.chapter_number,
                 word_count=chapter.word_count,
@@ -156,7 +156,7 @@ async def upload_epub(file: UploadFile = File(...)) -> JSONResponse:
             )
             await chapter_record.save()
 
-        return JSONResponse({"id": book.id, "title": book.book_title}, status_code=201)
+        return JSONResponse({"id": book.id, "title": book.book_title}, status_code=201)  # pyrefly: ignore[missing-attribute]
 
     except OSError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
@@ -168,7 +168,7 @@ async def delete_book(book_id: int) -> JSONResponse:
     Soft delete a book and clear queued status on its chapters.
     Returns 404 if not found.
     """
-    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()  # pyrefly: ignore[missing-attribute]
 
     if book is None or book.deleted:
         return JSONResponse({"error": "Book not found"}, status_code=404)
@@ -205,13 +205,13 @@ async def queue_chapter(book_id: int, chapter_id: int, settings: QueueChapterReq
     Queue a chapter for audio conversion.
     Sets queued timestamp and stores audio settings.
     """
-    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()  # pyrefly: ignore[missing-attribute]
     if book is None or book.deleted:
         return JSONResponse({"error": "Book not found"}, status_code=404)
 
     chapter = (
         await AudiobookChapter.objects()
-        .where(AudiobookChapter.id == chapter_id)
+        .where(AudiobookChapter.id == chapter_id)  # pyrefly: ignore[missing-attribute]
         .where(AudiobookChapter.book == book_id)
         .first()
     )
@@ -238,13 +238,13 @@ async def cancel_queued_chapter(book_id: int, chapter_id: int) -> JSONResponse:
     Cancel a queued chapter conversion.
     Clears the queued timestamp and audio settings.
     """
-    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()  # pyrefly: ignore[missing-attribute]
     if book is None or book.deleted:
         return JSONResponse({"error": "Book not found"}, status_code=404)
 
     chapter = (
         await AudiobookChapter.objects()
-        .where(AudiobookChapter.id == chapter_id)
+        .where(AudiobookChapter.id == chapter_id)  # pyrefly: ignore[missing-attribute]
         .where(AudiobookChapter.book == book_id)
         .first()
     )
@@ -252,7 +252,7 @@ async def cancel_queued_chapter(book_id: int, chapter_id: int) -> JSONResponse:
         return JSONResponse({"error": "Chapter not found"}, status_code=404)
 
     chapter.queued = None
-    chapter.audio_settings = None
+    chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
     await chapter.save()
 
     return JSONResponse({"cancelled": True})
@@ -264,13 +264,13 @@ async def delete_chapter_audio(book_id: int, chapter_id: int) -> JSONResponse:
     Delete the generated audio for a chapter.
     Removes the audio from Garage and clears the minio_object_name.
     """
-    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    book = await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()  # pyrefly: ignore[missing-attribute]
     if book is None or book.deleted:
         return JSONResponse({"error": "Book not found"}, status_code=404)
 
     chapter = (
         await AudiobookChapter.objects()
-        .where(AudiobookChapter.id == chapter_id)
+        .where(AudiobookChapter.id == chapter_id)  # pyrefly: ignore[missing-attribute]
         .where(AudiobookChapter.book == book_id)
         .first()
     )
