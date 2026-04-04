@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 from collections import Counter
-from collections import Counter as TypingCounter
 
 
 def sieve_of_eratosthenes(limit: int) -> list[int]:
@@ -22,11 +21,11 @@ def sieve_of_eratosthenes(limit: int) -> list[int]:
     return primes
 
 
-def prime_factors(n: int, primes: list[int] | None = None) -> Counter:
+def prime_factors(n: int, primes: list[int] | None = None) -> Counter[int]:
     if primes is None:
         primes = sieve_of_eratosthenes(int(n**0.5 + 1))
     i = 0
-    factors: TypingCounter[int] = Counter()
+    factors: Counter[int] = Counter()
     while n > 1 and i < len(primes):
         prime = primes[i]
         assert prime <= n
@@ -73,57 +72,57 @@ def test_prime_functions():
         assert not is_prime(i), (i, is_prime(i))
 
     prime_factors_dict = {
-        0: Counter(),
-        1: Counter(),
-        2: Counter({2: 1}),
-        3: Counter({3: 1}),
-        4: Counter({2: 2}),
-        5: Counter({5: 1}),
-        6: Counter(
+        0: Counter(),  # type: ignore[misc]
+        1: Counter(),  # type: ignore[misc]
+        2: Counter({2: 1}),  # type: ignore[misc]
+        3: Counter({3: 1}),  # type: ignore[misc]
+        4: Counter({2: 2}),  # type: ignore[misc]
+        5: Counter({5: 1}),  # type: ignore[misc]
+        6: Counter(  # type: ignore[misc]
             {
                 2: 1,
                 3: 1,
             }
         ),
-        7: Counter({7: 1}),
-        8: Counter({2: 3}),
-        9: Counter({3: 2}),
-        10: Counter(
+        7: Counter({7: 1}),  # type: ignore[misc]
+        8: Counter({2: 3}),  # type: ignore[misc]
+        9: Counter({3: 2}),  # type: ignore[misc]
+        10: Counter(  # type: ignore[misc]
             {
                 2: 1,
                 5: 1,
             }
         ),
-        11: Counter({11: 1}),
-        12: Counter(
+        11: Counter({11: 1}),  # type: ignore[misc]
+        12: Counter(  # type: ignore[misc]
             {
                 2: 2,
                 3: 1,
             }
         ),
-        13: Counter({13: 1}),
-        14: Counter(
+        13: Counter({13: 1}),  # type: ignore[misc]
+        14: Counter(  # type: ignore[misc]
             {
                 2: 1,
                 7: 1,
             }
         ),
-        15: Counter(
+        15: Counter(  # type: ignore[misc]
             {
                 3: 1,
                 5: 1,
             }
         ),
-        16: Counter({2: 4}),
-        17: Counter({17: 1}),
-        18: Counter(
+        16: Counter({2: 4}),  # type: ignore[misc]
+        17: Counter({17: 1}),  # type: ignore[misc]
+        18: Counter(  # type: ignore[misc]
             {
                 3: 2,
                 2: 1,
             }
         ),
-        19: Counter({19: 1}),
-        20: Counter(
+        19: Counter({19: 1}),  # type: ignore[misc]
+        20: Counter(  # type: ignore[misc]
             {
                 2: 2,
                 5: 1,

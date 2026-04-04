@@ -69,6 +69,7 @@ allow_split_before_dict_value = false
 
 [tool.pyrefly]
 project_includes = ["src"]
+project_excludes = ["src/examples/databases/**", "src/examples/movies/**", "src/examples/other/**", "src/examples/plot_data/**"]
 
 [tool.ruff]
 target-version = 'py310'

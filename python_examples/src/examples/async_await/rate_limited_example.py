@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import time
 
-from aiohttp import ClientSession, TCPConnector
+from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from loguru import logger
 
 REQUEST_PER_SECOND = 2000
@@ -31,8 +31,7 @@ async def do_stuff(session: ClientSession, url: str, retry: int, results: list) 
     try:
         response = await session.get(
             url,
-            # How long each request can at most take
-            timeout=0.005,
+            timeout=ClientTimeout(total=0.005),  # type: ignore
         )
         if response.ok:
             response_json = await response.json()

@@ -28,7 +28,7 @@ class Node:
 
 class Tree:
     def __init__(self):
-        self.root: Node = None
+        self.root: Node | None = None
         self.size: int = 0
 
     def add(self, value: int):
@@ -70,21 +70,27 @@ class Tree:
 
     # TODO: Export tree to latex TIKZ
 
-    def in_order_traversal(self, node: Node):
+    def in_order_traversal(self, node: Node | None):
+        if node is None:
+            return
         if node.left:
             self.in_order_traversal(node.left)
         print(f"Value: {node.value}")
         if node.right:
             self.in_order_traversal(node.right)
 
-    def pre_order_traversal(self, node: Node):
+    def pre_order_traversal(self, node: Node | None):
+        if node is None:
+            return
         print(f"Value: {node.value}")
         if node.left:
             self.pre_order_traversal(node.left)
         if node.right:
             self.pre_order_traversal(node.right)
 
-    def post_order_traversal(self, node: Node):
+    def post_order_traversal(self, node: Node | None):
+        if node is None:
+            return
         if node.left:
             self.post_order_traversal(node.left)
         if node.right:
