@@ -1,47 +1,161 @@
-# Turborepo Svelte starter
+# Turborepo Svelte Monorepo
 
-This Turborepo starter is maintained by the Turborepo core team
-on [GitHub](https://github.com/vercel/turborepo/tree/main/examples/with-svelte/packages)
-.
+A monorepo containing multiple Svelte 5/SvelteKit frontend applications for StarCraft 2 utilities and other projects.
 
-## Using this example
+## Project Structure
 
-Run the following command:
+```mermaid
+flowchart TB
+    subgraph svelte_frontends["svelte_frontends"]
+        subgraph apps["Apps (9)"]
+            buildorder[buildorder]
+            matchinfo[matchinfo]
+            replay_comparer[replay_comparer]
+            replay_pack_builder[replay_pack_builder]
+            raceroom[raceroom]
+            audiobook[audiobook]
+            tts[tts]
+            telegram[telegram]
+            login[login]
+        end
 
-```sh
-npx create-turbo@latest -e with-svelte
+        subgraph packages["Packages (3)"]
+            ui[ui]
+            sc2_utils[sc2-utils]
+            typescript_config[typescript-config]
+        end
+    end
+
+    apps --> packages
+    buildorder --> sc2_utils
+    matchinfo --> sc2_utils
+    audiobook --> ui
+    login --> ui
+    telegram --> ui
+    raceroom --> ui
 ```
 
-## What's inside?
+## Apps Overview
 
-This Turborepo includes the following packages/apps:
+```mermaid
+flowchart LR
+    subgraph SC2_Apps["SC2 Utilities"]
+        buildorder["buildorder<br/>Build order overlay<br/>Polls SC2 game API"]
+        matchinfo["matchinfo<br/>Match info display<br/>MMR, race, opponent"]
+        replay_comparer["replay_comparer<br/>Compare replays<br/>with charts"]
+        replay_pack_builder["replay_pack_builder<br/>Upload, filter, rename<br/>SC2 replays"]
+    end
 
-### Apps
+    subgraph Gaming_Apps["Gaming"]
+        raceroom["raceroom<br/>Track RaceRoom<br/>best times"]
+    end
 
-### Packages
+    subgraph Media_Apps["Media"]
+        audiobook["audiobook<br/>Upload/manage<br/>audiobook files"]
+        tts["tts<br/>Text-to-speech<br/>OBS overlay support"]
+        telegram["telegram<br/>Search Telegram<br/>messages/media"]
+    end
 
-#### `eslint-config`
+    subgraph Auth_Apps["Auth"]
+        login["login<br/>OAuth login<br/>status page"]
+    end
+```
 
-`eslint` configurations (includes `eslint-plugin-svelte` and `eslint-config-prettier`)
+## External API Connections
 
-#### `typescript-config`
+```mermaid
+flowchart TB
+    subgraph Frontend_Apps["Svelte Apps"]
+        SC2_Apps[SC2 Apps]
+        Other_Apps[Other Apps]
+    end
 
-A package containing a custom `tsconfig` file.
+    subgraph External_APIs["External Services"]
+        SC2_Game_API["SC2 Game API<br/>localhost:6119"]
+        Nephest_API["nephest.com<br/>MMR/rank data"]
+        FastAPI["FastAPI Server<br/>localhost:8000"]
+    end
 
-#### `ui`
+    subgraph FastAPI_Routes["FastAPI Routes"]
+        Audiobook_API["/api/audiobook/*"]
+        Raceroom_API["/api/raceroom/*"]
+        Replay_API["/api/parse_replay"]
+        TTS_WS["/tts-api/ws/*"]
+        Login_API["/login/*"]
+    end
 
-A Svelte component library shared by the applications. The package supports Svelte components and
-runes in `.svelte.ts` files, which are not supported in the svelte-kit generated tsconfig.
+    SC2_Apps --> SC2_Game_API
+    SC2_Apps --> Nephest_API
+    Other_Apps --> FastAPI
+    FastAPI --> Audiobook_API
+    FastAPI --> Raceroom_API
+    FastAPI --> Replay_API
+    FastAPI --> TTS_WS
+    FastAPI --> Login_API
+```
 
-Please refer to the [packaging](https://svelte.dev/docs/kit/packaging) page of the svelte documentation for additional
-information about svelte component libraries.
+## SC2 App Integration Flow
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+```mermaid
+sequenceDiagram
+    participant SC2 as SC2 Game
+    participant App as buildorder/matchinfo
+    participant Utils as @repo/sc2-utils
+    participant Nephest as nephest.com API
 
-### Utilities
+    App->>SC2: Poll /game endpoint
+    SC2-->>App: Game state data
 
-This Turborepo has some additional tools already setup for you:
+    App->>SC2: Poll /ui endpoint
+    SC2-->>App: Active screen data
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+    App->>Utils: getCurrentScene(gameData, uiData)
+    Utils-->>App: Scene: game|menu|replay
+
+    alt Scene changed to new game
+        App->>Nephest: GET /sc2/api/characters?name=XXX
+        Nephest-->>App: MMR, rank data
+        App->>App: Display overlay
+    end
+```
+
+## Deployment / Subdomain Mapping
+
+```mermaid
+flowchart LR
+    subgraph DNS["Subdomains"]
+        burnysc2_xyz["burnysc2.xyz"]
+    end
+
+    burnysc2_xyz --> buildorder["build.burnysc2.xyz"]
+    burnysc2_xyz --> matchinfo["match.burnysc2.xyz"]
+    burnysc2_xyz --> raceroom["race.burnysc2.xyz"]
+    burnysc2_xyz --> audiobook["book.burnysc2.xyz"]
+    burnysc2_xyz --> tts["tts.burnysc2.xyz"]
+    burnysc2_xyz --> telegram["tg.burnysc2.xyz"]
+    burnysc2_xyz --> login["login.burnysc2.xyz"]
+```
+
+## Tech Stack
+
+- **Framework**: Svelte 5 / SvelteKit 2
+- **Build Tool**: Turborepo 2
+- **Language**: TypeScript 5.9
+- **Linting**: Biome
+- **Testing**: Vitest, Playwright
+
+## Commands
+
+```sh
+# Development
+npm run dev              # Run all apps in dev mode
+npm run build            # Build all apps
+npm run check            # Type-check all apps
+npm run lint             # Lint all apps
+npm run lint:fix         # Fix lint issues
+
+# Testing
+npm run test             # Run all tests
+npm run test:unit        # Unit tests only
+npm run test:integration # Integration tests only
+```

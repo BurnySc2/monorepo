@@ -75,3 +75,127 @@ or inside docker via
 # Find games that match the specific criteria
 !aoe4bo --race english --condition 2towncenter<400s,wheelbarrow<900s,feudal<360s,castle<660s
 ```
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    Start[Bot Starts] --> on_start[on_start Event]
+    on_start --> loop_function[Background Loop<br/>Checks Reminders Every Second]
+    on_start --> get_all_servers[Fetch All Servers]
+
+    subgraph handle_new_message[Message Event Handler]
+        MSG[New Message] --> CHECK{Is Human<br/>& Has Content?}
+        CHECK -->|No| SKIP[Ignore]
+        CHECK -->|Yes| PREFIX{Starts with<br/>'!'?}
+        PREFIX -->|No| SKIP2[Ignore]
+        PREFIX -->|Yes| handle_commands[Parse Command]
+    end
+
+    subgraph Commands
+        handle_commands --> CMD{Command Type}
+        CMD -->|reminder| Remind[Remind Class]
+        CMD -->|mmr| MMR[public_mmr]
+        CMD -->|leaderboard| LB[public_leaderboard]
+        CMD -->|twss| TWSS[public_twss]
+        CMD -->|aoe4*| AOE4[AoE4 Commands]
+    end
+
+    subgraph Database[(PostgreSQL)]
+        Reminder[(Reminder)]
+        DiscordMessage[(DiscordMessage)]
+        DiscordQuote[(DiscordQuote)]
+    end
+
+    Remind --> Database
+    MMR --> Database
+    TWSS --> Database
+    get_all_servers --> insert_task[Async Insert<br/>Messages to DB]
+    insert_task --> DiscordMessage
+```
+
+```mermaid
+flowchart LR
+    subgraph External_APIs[External APIs]
+        nephest[nephest.com<br/>MMR API]
+        aoe4world[aoe4world.com<br/>Player/Game API]
+    end
+
+    subgraph Bot_Commands
+        MMR_CMD[!mmr] --> nephest
+        AOE4_CMD1[!aoe4find<br/>!aoe4search] --> aoe4world
+        AOE4_CMD2[!aoe4bo<br/>!aoe4analyse] --> aoe4world
+    end
+
+    nephest --> MMR_RESP[Player Data]
+    aoe4world --> AOE4_RESP[Game/Build Order Data]
+```
+
+```mermaid
+erDiagram
+    REMINDER {
+        timestamptz reminder_utc PK
+        int user_id FK
+        text user_name
+        int guild_id FK
+        int channel_id FK
+        text message
+        int message_id PK
+    }
+
+    DISCORD_MESSAGE {
+        int guild_id FK
+        int channel_id FK
+        int author_id FK
+        int message_id PK
+        text who
+        timestamptz when
+        text what
+    }
+
+    DISCORD_QUOTE {
+        int guild_id FK
+        int channel_id FK
+        int author_id FK
+        int message_id PK
+        text who
+        timestamptz when
+        text what
+        text emoji_name
+    }
+```
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Discord
+    participant Bot
+    participant DB
+    participant External
+
+    User->>Discord: !reminder 2m do something
+    Discord->>Bot: Message Event
+
+    Bot->>Bot: Parse command<br/>reminder 2m do something
+
+    Bot->>DB: Insert Reminder<br/>reminder_utc = now + 2m
+    DB-->>Bot: Success
+
+    Note over Bot: 2 minutes pass...
+
+    Bot->>DB: Check due reminders
+    DB-->>Bot: Due reminders
+
+    Bot->>Discord: Send reminder<br/>to original channel
+    Discord-->>User: Reminder message
+
+    User->>Discord: !mmr burny
+    Discord->>Bot: Message Event
+
+    Bot->>External: GET nephest.com/sc2/api<br/>?name=burny
+    External-->>Bot: MMR data
+    Bot-->>Discord: Embed with<br/>MMR info
+    Discord-->>User: Response
+```
