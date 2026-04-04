@@ -128,9 +128,10 @@ async def convert_one(chapter: AudiobookChapter) -> None:
 
         # Save result to MinIO
         try:
-            # pyrefly: ignore
             async with get_s3_client() as s3:
-                await object_upload(s3, GARAGE_AUDIOBOOK_BUCKET, context.minio_object_name, audio)
+                await object_upload(
+                    s3, GARAGE_AUDIOBOOK_BUCKET, context.minio_object_name, audio
+                )  # pyrefly: ignore[bad-argument-type]
             logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
         except Exception as e:
             logger.error(f"Failed to save audio to MinIO: {e}")

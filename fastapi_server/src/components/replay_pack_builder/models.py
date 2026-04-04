@@ -8,7 +8,6 @@ import arrow
 from pydantic import BaseModel
 
 
-
 @dataclass
 class ReplayPlayer:
     clan_tag: str  # Empty string if not in clan
