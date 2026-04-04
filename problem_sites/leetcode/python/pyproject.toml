@@ -6,6 +6,7 @@ dependencies = ["loguru>=0.7.2", "numpy>=2.2.1"]
 
 [dependency-groups]
 dev = [
+  "pre-commit>=4.5.1",
   "pyre-check>=0.9.23",
   "pyright>=1.1.391",
   "pytest-benchmark>=5.1.0",
