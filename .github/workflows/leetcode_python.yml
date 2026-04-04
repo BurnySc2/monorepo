@@ -1,0 +1,44 @@
+name: Test Leetcode Python
+
+on:
+  push:
+    paths:
+      - problem_sites/leetcode/python/**
+      - .github/workflows/leetcode_python.yml
+  pull_request:
+    branches:
+      - master
+      - develop
+
+env:
+  SUBDIRECTORY: problem_sites/leetcode/python
+
+jobs:
+  run_pre_commit_checks:
+    name: pre_commit_check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.12"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv sync --frozen --no-cache --no-install-project
+
+      - name: Run pre-commit hooks
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv run pre-commit run --all-files --hook-stage push
