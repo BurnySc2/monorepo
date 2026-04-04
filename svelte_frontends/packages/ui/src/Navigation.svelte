@@ -10,7 +10,6 @@
         { name: "Audiobook", subdomain: "audiobooks", devPort: 5178 },
         { name: "TTS", subdomain: "tts", devPort: 5174 },
         { name: "Raceroom", subdomain: "raceroom", devPort: 5180 },
-        { name: "Telegram", subdomain: "tbrowser", devPort: 5179 },
         { name: "Replay Pack Builder", subdomain: "replaypack", devPort: 5175 },
     ]
 
