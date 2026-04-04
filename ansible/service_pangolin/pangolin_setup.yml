@@ -32,7 +32,7 @@
     - name: Tear down existing services
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
-        state: absent
+        state: stopped
       ignore_errors: true
     - name: Copy docker-compose.yml file
       template:
