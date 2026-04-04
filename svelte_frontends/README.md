@@ -18,14 +18,7 @@ This Turborepo includes the following packages/apps:
 
 ### Apps
 
-Build app via
 
-```sh
-cd svelte_frontends/apps/web && npm run build
-```
-
-- `docs`: a [svelte-kit](https://kit.svelte.dev/) app
-- `web`: another [svelte-kit](https://kit.svelte.dev/) app
 
 ### Packages
 
@@ -39,7 +32,7 @@ A package containing a custom `tsconfig` file.
 
 #### `ui`
 
-A stub Svelte component library shared by both `web` and `docs` applications. The package supports Svelte components and
+A Svelte component library shared by the applications. The package supports Svelte components and
 runes in `.svelte.ts` files, which are not supported in the svelte-kit generated tsconfig.
 
 Please refer to the [packaging](https://svelte.dev/docs/kit/packaging) page of the svelte documentation for additional
