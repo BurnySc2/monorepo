@@ -1,24 +1,17 @@
 ---
-# https://coder.com/docs/code-server
-# https://hub.docker.com/r/linuxserver/code-server
+# https://github.com/agent0ai/agent-zero
 # Execute with
-# ansible-playbook code_server_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook agent_zero_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: server_group1
   vars:
-    USERNAME: '{{ secrets.CODESERVER.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.CODESERVER.SUBDOMAIN }}'
-    PREVIEW1: '{{ secrets.CODESERVER.PREVIEW1 }}'
-    PREVIEW2: '{{ secrets.CODESERVER.PREVIEW2 }}'
-    APPLICATION_PORT: '8443'
-    PREVIEW1_PORT: '8000'
-    PREVIEW2_PORT: '8001'
+    USERNAME: '{{ secrets.AGENTZERO.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.AGENTZERO.SUBDOMAIN }}'
+    APPLICATION_PORT: '80'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
         - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
-        - hostname: '{{ PREVIEW1 }}.{{ secrets.MY_DOMAIN }}'
-        - hostname: '{{ PREVIEW2 }}.{{ secrets.MY_DOMAIN }}'
       loop_control:
         loop_var: item
     - name: Create group
@@ -32,16 +25,15 @@
           - '{{ USERNAME }}'
           - docker
         shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: docker-compose stop
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        # Reload config files
-        state: stopped
-      failed_when: false
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: docker-compose stop
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: stopped
+      failed_when: false
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

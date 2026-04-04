@@ -50,7 +50,7 @@
     #     state: stopped
     #     services:
     #       - wireguard
-    #   ignore_errors: true
+    #   failed_when: false
     - name: Create directories traefik
       file:
         path: /home/{{ USERNAME }}/traefik
@@ -71,7 +71,7 @@
         services:
           - traefik
       when: traefik_config_changed is changed
-      ignore_errors: true
+      failed_when: false
     - name: Copy dynamic.yml
       template:
         src: dynamic.yml

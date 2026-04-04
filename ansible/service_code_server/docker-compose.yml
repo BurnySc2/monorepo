@@ -7,8 +7,8 @@ services:
     image: lscr.io/linuxserver/code-server:latest
     container_name: code-server
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=0
+      - PGID=0
       - TZ=Etc/UTC
       - PASSWORD={{ secrets.CODESERVER.PASSWORD }}  # optional
       - HASHED_PASSWORD=  # optional
@@ -18,7 +18,8 @@ services:
       - DEFAULT_WORKSPACE=/config/workspace  # optional
       - PWA_APPNAME=code-server  # optional
     volumes:
-      - ./config:/config
+      - /media/ssd480/codeserver:/config
+      - /media/ssd480/shared/workspace:/config/workspace
     restart: unless-stopped
     networks:
       - pangolin_newt

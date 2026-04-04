@@ -70,7 +70,7 @@
         state: present
     - name: Mount 480gb ssd
       ansible.posix.mount:
-        path: /home/syncthing/data1/media-pinchflat
+        path: /media/ssd480
         src: UUID=cdc98894-8eb6-4239-a639-424fa9009b9f
         fstype: ext4
         opts: noatime

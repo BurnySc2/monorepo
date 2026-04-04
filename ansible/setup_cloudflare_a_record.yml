@@ -1,8 +1,8 @@
 ---
 - name: Check if "A-record" exists for {{ item.hostname }}
   ansible.builtin.uri:
-    url: https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records?name={{ item.hostname
-      }}&type=A
+    url: https://api.cloudflare.com/client/v4/zones/{{ secrets.CLOUDFLARE.DNS_ZONE_ID }}/dns_records?type=A&name={{ item.hostname
+      }}
     method: GET
     headers:
       Content-Type: application/json

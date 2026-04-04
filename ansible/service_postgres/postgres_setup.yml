@@ -19,7 +19,7 @@
         - hostname: db2.{{ secrets.MY_DOMAIN }}
       loop_control:
         loop_var: item
-      when: "'remote_servers' in group_names"
+
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'
