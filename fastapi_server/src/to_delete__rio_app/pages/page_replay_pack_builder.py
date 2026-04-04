@@ -1,5 +1,4 @@
 import rio
-
 from rio_app.components.replay_pack_builder.component_filter import FilterComponent
 from rio_app.components.replay_pack_builder.component_name_template import NameTemplateComponent
 from rio_app.components.replay_pack_builder.component_upload import UploadComponent

@@ -1,6 +1,5 @@
 import arrow
 import rio
-
 from rio_app.components.replay_pack_builder.settings import FilterSettings
 
 

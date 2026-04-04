@@ -1,8 +1,8 @@
 import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from components.tts.websocket_handler import TTSQueue
 from src.main import app

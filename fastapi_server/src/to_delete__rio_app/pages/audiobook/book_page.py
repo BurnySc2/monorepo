@@ -1,13 +1,6 @@
 from pathlib import Path
 
 import rio
-
-from minio_helper import (
-    GARAGE_AUDIOBOOK_BUCKET,
-    get_s3_client,
-    object_create_presigned_url,
-)
-from models.audiobook import AudiobookBook, AudiobookChapter
 from rio_app.components.audiobook.book_page.component_audiobook_settings import AudiobookSettingsComponent
 from rio_app.components.audiobook.book_page.component_book import BookComponent
 from rio_app.components.audiobook.book_page.component_chapter import AudiobookChapterComponent
@@ -18,6 +11,13 @@ from rio_app.components.audiobook.models import (
     delete_audio_for_chapters,
 )
 from rio_app.components.login.cookies import LoggedInUser, logged_in_guard
+
+from minio_helper import (
+    GARAGE_AUDIOBOOK_BUCKET,
+    get_s3_client,
+    object_create_presigned_url,
+)
+from models.audiobook import AudiobookBook, AudiobookChapter
 
 queries_directory = Path(__file__).parents[3] / "queries"
 query_get_chapters = (queries_directory / "audiobook_get_chapters.sql").read_text()

@@ -5,9 +5,7 @@ from pytest_httpx import HTTPXMock
 
 from components.login.cookies import COOKIES, LoggedInUser, TwitchUser, twitch_get_user
 from components.login.twitch import twitch_verify_code
-
 from test.conftest import test_client  # noqa: F401
-
 
 _test_client = test_client
 

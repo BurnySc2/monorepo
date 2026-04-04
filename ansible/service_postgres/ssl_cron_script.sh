@@ -1,6 +1,6 @@
 # ===================================================================
 # SSL Certificate Renewal Script
-# 
+#
 # crontab -e
 #
 # Cron job to run every 7 days:

@@ -2,6 +2,13 @@ from io import BytesIO
 
 import rio
 from loguru import logger
+from rio_app.components.replay_pack_builder.models import (
+    ParsedReplayFile,
+    ReplayData,
+    ReplayFile,
+)
+from rio_app.components.replay_pack_builder.replay_parser import parse_replay
+from rio_app.components.replay_pack_builder.settings import FilterSettings
 
 from minio_helper import (
     GARAGE_SC2_REPLAYS_BUCKET,
@@ -12,13 +19,6 @@ from minio_helper import (
     object_upload,
     objects_delete_with_prefix,
 )
-from rio_app.components.replay_pack_builder.models import (
-    ParsedReplayFile,
-    ReplayData,
-    ReplayFile,
-)
-from rio_app.components.replay_pack_builder.replay_parser import parse_replay
-from rio_app.components.replay_pack_builder.settings import FilterSettings
 
 
 class UploadComponent(rio.Component):

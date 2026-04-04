@@ -1,13 +1,5 @@
 import arrow
 import rio
-
-from minio_helper import (
-    GARAGE_AUDIOBOOK_BUCKET,
-    get_s3_client,
-    object_create_presigned_url,
-)
-from models.audiobook import AudiobookBook, AudiobookChapter
-from piccolo_conf import DB
 from rio_app.components.audiobook.models import (
     AudiobookChapterQueryResult,
     AudioSettings,
@@ -17,6 +9,14 @@ from rio_app.components.audiobook.models import (
     normalize_title,
     upload_multipart_book,
 )
+
+from minio_helper import (
+    GARAGE_AUDIOBOOK_BUCKET,
+    get_s3_client,
+    object_create_presigned_url,
+)
+from models.audiobook import AudiobookBook, AudiobookChapter
+from piccolo_conf import DB
 
 
 class AudiobookSettingsComponent(rio.Component):

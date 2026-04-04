@@ -6,16 +6,7 @@ from typing import Literal
 
 import rio
 from dotenv import load_dotenv
-
 from rio.cli import app as app2
-from minio_helper import (
-    GARAGE_AUDIOBOOK_BUCKET,
-    GARAGE_SC2_REPLAYS_BUCKET,
-    bucket_create,
-    bucket_set_expiration,
-    get_s3_client,
-)
-from models.audiobook import AudiobookBook, AudiobookChapter
 from rio_app import data_models, theme
 from rio_app.components.audiobook.models import AudioSettings
 from rio_app.components.login.cookies import LoggedInUser, LoginSettings, provide_logged_in_user
@@ -25,6 +16,15 @@ from rio_app.routes.index import IndexRouter
 from rio_app.routes.login import login_router
 from rio_app.routes.replay_parser import replay_parser_router
 from rio_app.routes.tts_websocket import TTSRouter
+
+from minio_helper import (
+    GARAGE_AUDIOBOOK_BUCKET,
+    GARAGE_SC2_REPLAYS_BUCKET,
+    bucket_create,
+    bucket_set_expiration,
+    get_s3_client,
+)
+from models.audiobook import AudiobookBook, AudiobookChapter
 
 _ = load_dotenv()
 

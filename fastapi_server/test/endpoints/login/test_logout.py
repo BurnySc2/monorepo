@@ -2,9 +2,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 
 from components.login.cookies import COOKIES
-
 from test.conftest import test_client  # noqa: F401
-
 
 _test_client = test_client
 

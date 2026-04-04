@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import rio
-
 from rio_app.components.login.cookies import LoginSettings
 from rio_app.components.login.github import github_verify_code
 

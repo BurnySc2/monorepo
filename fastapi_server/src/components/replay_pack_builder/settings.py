@@ -2,7 +2,6 @@ from uuid import uuid4
 
 import arrow
 import rio
-
 from rio_app.components.replay_pack_builder.models import ParsedReplayFile
 
 DEFAULT_REPLAY_NAME_PATTERN = r"{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}"

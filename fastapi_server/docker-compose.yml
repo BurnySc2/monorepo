@@ -163,8 +163,8 @@ services:
     hostname: fastapi_dev_garage
     restart: unless-stopped
     ports:
-      - 3900:3900  # S3 API
-      - 3903:3903  # Admin API
+      - 3900:3900 # S3 API
+      - 3903:3903 # Admin API
     volumes:
       - dev_garage_data:/var/lib/garage/data
       - dev_garage_meta:/var/lib/garage/meta

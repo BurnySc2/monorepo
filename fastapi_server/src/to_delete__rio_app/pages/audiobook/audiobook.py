@@ -5,12 +5,12 @@ from functools import partial
 
 import arrow
 import rio
+from rio_app.components.audiobook.epub_reader import EpubChapter, EpubMetadata, extract_chapters, extract_metadata
+from rio_app.components.login.cookies import LoggedInUser
 
 from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_delete
 from models.audiobook import AudiobookBook, AudiobookChapter
 from piccolo_conf import DB
-from rio_app.components.audiobook.epub_reader import EpubChapter, EpubMetadata, extract_chapters, extract_metadata
-from rio_app.components.login.cookies import LoggedInUser
 
 
 class AudiobookBooksOverview(rio.Component):

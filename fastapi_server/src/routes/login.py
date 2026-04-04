@@ -1,27 +1,23 @@
 from __future__ import annotations
-import os
 
-from typing import Literal
+import os
 
 import httpx
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
+
 from components.login.cookies import (
+    BACKEND_SERVER_URL,
     COOKIES,
-    GithubUser,
-    LoggedInUser,
+    GITHUB_CLIENT_ID,
+    TWITCH_CLIENT_ID,
     LoginSettings,
-    TwitchUser,
     github_get_user,
     provide_logged_in_user,
     twitch_get_user,
 )
 from components.login.github import github_verify_code
 from components.login.twitch import twitch_verify_code
-
-from components.login.cookies import BACKEND_SERVER_URL, TWITCH_CLIENT_ID
-
-from components.login.cookies import GITHUB_CLIENT_ID
 
 login_router = APIRouter()
 

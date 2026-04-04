@@ -16,13 +16,13 @@ from minio_helper import (
     bucket_create,
     get_s3_client,
 )
+from routes.audiobook import audiobook_router
 from routes.index import IndexRouter
 from routes.login import login_router
-from routes.replay_parser import replay_parser_router
-from routes.tts_websocket import TTSRouter
-from routes.audiobook import audiobook_router
 from routes.raceroom import raceroom_router
 from routes.replay_comparer import replay_comparer_router
+from routes.replay_parser import replay_parser_router
+from routes.tts_websocket import TTSRouter
 
 GARAGE_AUDIOBOOK_BUCKET = os.getenv("GARAGE_AUDIOBOOK_BUCKET", "garage-audiobook-bucket")
 GARAGE_AUDIOBOOK_MAX_SIZE_MB = int(os.getenv("GARAGE_AUDIOBOOK_MAX_SIZE_MB", "100000"))

@@ -1,9 +1,9 @@
 import asyncio
 import ssl
 from contextlib import suppress
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from components.tts.irc_bot_async import IRCClient
 

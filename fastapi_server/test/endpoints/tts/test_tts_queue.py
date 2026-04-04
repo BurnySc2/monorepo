@@ -1,7 +1,7 @@
 import asyncio
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from unittest.mock import AsyncMock, MagicMock
 
 from components.tts.generate_tts import Voices
 from components.tts.websocket_handler import TTSQueue

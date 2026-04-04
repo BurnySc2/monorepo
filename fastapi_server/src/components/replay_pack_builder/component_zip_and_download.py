@@ -2,6 +2,8 @@ from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import rio
+from rio_app.components.replay_pack_builder.models import ParsedReplayFile, ReplayFile
+from rio_app.components.replay_pack_builder.settings import FilterSettings
 
 from minio_helper import (
     GARAGE_SC2_REPLAYS_BUCKET,
@@ -10,8 +12,6 @@ from minio_helper import (
     object_download,
     object_upload,
 )
-from rio_app.components.replay_pack_builder.models import ParsedReplayFile, ReplayFile
-from rio_app.components.replay_pack_builder.settings import FilterSettings
 
 
 class ZipAndDownloadComponent(rio.Component):

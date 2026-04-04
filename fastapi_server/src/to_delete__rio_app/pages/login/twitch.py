@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import rio
-
 from rio_app.components.login.cookies import (
     LoginSettings,
 )

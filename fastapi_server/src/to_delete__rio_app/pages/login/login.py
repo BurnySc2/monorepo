@@ -1,6 +1,5 @@
 import httpx
 import rio
-
 from rio_app.components.login.cookies import (
     BACKEND_SERVER_URL,
     GITHUB_CLIENT_ID,

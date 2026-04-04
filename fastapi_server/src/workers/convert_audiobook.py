@@ -8,10 +8,10 @@ import arrow
 from dotenv import load_dotenv
 from loguru import logger
 
-from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_upload
-from models.audiobook import AudiobookChapter
 from components.audiobook.generate_tts import generate_text_to_speech
 from components.audiobook.models import AudioSettingsBaseModel, get_chapter_combined_text
+from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_upload
+from models.audiobook import AudiobookChapter
 
 load_dotenv()
 
