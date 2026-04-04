@@ -31,7 +31,7 @@ async def do_stuff(session: ClientSession, url: str, retry: int, results: list) 
     try:
         response = await session.get(
             url,
-            timeout=ClientTimeout(total=0.005),  # type: ignore
+            timeout=ClientTimeout(total=0.005),
         )
         if response.ok:
             response_json = await response.json()
