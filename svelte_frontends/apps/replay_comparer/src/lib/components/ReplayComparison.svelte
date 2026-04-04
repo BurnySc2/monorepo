@@ -1,9 +1,15 @@
 <script lang="ts">
 import Highcharts from "highcharts"
 import highchartsMore from "highcharts/highcharts-more.js"
-import { type ReplayData, TIMELINE_OPTIONS, type TimelineData, type TimelineOption } from "$lib/types"
+import {
+    EVENT_TIMELINE_OPTIONS,
+    type ReplayData,
+    SPENDING_OPTIONS,
+    TIMELINE_OPTIONS,
+    type TimelineData,
+    type TimelineOption,
+} from "$lib/types"
 
-// Init "arearange" plot
 highchartsMore(Highcharts)
 
 interface Props {
@@ -48,7 +54,6 @@ function gameloopToTimeString(gameloop: number): string {
 }
 
 function mergeTimelines() {
-    // Merge events of selected players from each replay
     const merged: Array<TimelineData & { _id: number }> = []
 
     real_replay_data.timeline.forEach((item) => {
@@ -60,7 +65,6 @@ function mergeTimelines() {
 
     sortByKey(merged, "gameloop")
 
-    // Pick players from merged timelines
     let playerData1: TimelineData = real_replay_data.timeline[0][real_replay_selected_player_id]
     let playerData2: TimelineData = ideal_replay_data.timeline[0][ideal_replay_selected_player_id]
 
@@ -78,12 +82,28 @@ function mergeTimelines() {
     })
 }
 
+function isEventTimeline(option: TimelineOption): boolean {
+    return (EVENT_TIMELINE_OPTIONS as readonly string[]).includes(option)
+}
+
+function isSpendingOption(option: TimelineOption): boolean {
+    return (SPENDING_OPTIONS as readonly string[]).includes(option)
+}
+
 function plotData() {
     const chartElement = document.getElementById("timelinePlot")
     if (!chartElement) {
         return
     }
 
+    if (isSpendingOption(timelineSelected)) {
+        plotSpendingChart(chartElement)
+    } else {
+        plotArearangeChart(chartElement)
+    }
+}
+
+function plotArearangeChart(chartElement: HTMLElement) {
     const seriesData = mergedTimelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[1][timelineSelected], item[2][timelineSelected]]
@@ -98,20 +118,75 @@ function plotData() {
         return { value: gameloop, fillColor }
     })
 
-    // Highcharts chart call with type workaround for Highcharts strict typing
+    const series: object[] = [
+        {
+            type: "arearange",
+            name: timelineSelected,
+            data: seriesData,
+            zoneAxis: "x",
+            zones,
+        },
+    ]
+
+    if (isEventTimeline(timelineSelected)) {
+        const scatterData = mergedTimelines
+            .filter((item) => item[1][timelineSelected] !== item[2][timelineSelected])
+            .map((item) => {
+                const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
+                const value = Math.max(item[1][timelineSelected], item[2][timelineSelected])
+                return { x: gameloop, y: value }
+            })
+        series.push({
+            type: "scatter",
+            name: "Events",
+            data: scatterData,
+            marker: { radius: 4, symbol: "circle" },
+            color: "#000",
+        })
+    }
+
     const hc = Highcharts as unknown as {
         chart: (element: HTMLElement | string, options: object) => object
     }
     hc.chart(chartElement, {
-        chart: {
-            zoomType: "x",
-            type: "arearange",
+        chart: { zoomType: "x", type: "arearange" },
+        title: { text: "" },
+        plotOptions: { series: { animation: false } },
+        xAxis: {
+            labels: {
+                formatter: function () {
+                    return gameloopToTimeString((this as unknown as { value: number }).value)
+                },
+            },
         },
+        tooltip: {},
+        series,
+    })
+}
+
+function plotSpendingChart(chartElement: HTMLElement) {
+    const econData = mergedTimelines.map((item) => {
+        const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
+        return [gameloop, item[1].spending_econ, item[2].spending_econ]
+    })
+    const techData = mergedTimelines.map((item) => {
+        const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
+        return [gameloop, item[1].spending_tech, item[2].spending_tech]
+    })
+    const armyData = mergedTimelines.map((item) => {
+        const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
+        return [gameloop, item[1].spending_army, item[2].spending_army]
+    })
+
+    const hc = Highcharts as unknown as {
+        chart: (element: HTMLElement | string, options: object) => object
+    }
+    hc.chart(chartElement, {
+        chart: { zoomType: "x", type: "area" },
         title: { text: "" },
         plotOptions: {
-            series: {
-                animation: false,
-            },
+            series: { animation: false },
+            area: { stacking: "normal" },
         },
         xAxis: {
             labels: {
@@ -122,13 +197,12 @@ function plotData() {
         },
         tooltip: {},
         series: [
-            {
-                type: "arearange",
-                name: timelineSelected,
-                data: seriesData,
-                zoneAxis: "x",
-                zones,
-            },
+            { type: "area", name: "Real - Econ", data: econData.map((d) => [d[0], d[1]]), stack: "real" },
+            { type: "area", name: "Real - Tech", data: techData.map((d) => [d[0], d[1]]), stack: "real" },
+            { type: "area", name: "Real - Army", data: armyData.map((d) => [d[0], d[1]]), stack: "real" },
+            { type: "area", name: "Ideal - Econ", data: econData.map((d) => [d[0], d[2]]), stack: "ideal" },
+            { type: "area", name: "Ideal - Tech", data: techData.map((d) => [d[0], d[2]]), stack: "ideal" },
+            { type: "area", name: "Ideal - Army", data: armyData.map((d) => [d[0], d[2]]), stack: "ideal" },
         ],
     })
 }
@@ -143,7 +217,6 @@ function handleTimelineChange() {
 }
 
 $effect(() => {
-    // Re-run when these values change
     real_replay_selected_player_id
     ideal_replay_selected_player_id
     if (real_replay_data && ideal_replay_data) {
@@ -152,7 +225,6 @@ $effect(() => {
 })
 
 $effect(() => {
-    // Re-run when timeline selection changes
     timelineSelected
     if (mergedTimelines.length > 0) {
         handleTimelineChange()

@@ -31,3 +31,6 @@ yarn-error.log*
 .turbo
 
 dist
+
+# build outputs
+build

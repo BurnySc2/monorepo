@@ -9,6 +9,7 @@
         "format": "biome format .",
         "check": "turbo run check",
         "check-types": "turbo run check-types",
+        "precommit": "npm run build && npm run lint && npm run check",
         "test": "turbo run test",
         "test:unit": "turbo run test:unit",
         "test:integration": "turbo run test:integration"
