@@ -43,7 +43,7 @@ class Solution:
             limit = [len(string) - 1 for string in strings]
             yield indices
             while True:
-                result: bool = increment_at_index(indices, len(indices) - 1, strings)
+                _ = increment_at_index(indices, len(indices) - 1, strings)
                 # Limit reached: break
                 yield indices
                 if indices == limit:

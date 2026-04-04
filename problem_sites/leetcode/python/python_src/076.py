@@ -1,7 +1,7 @@
 class Solution:
     def minWindow(self, s: str, t: str) -> str:
-        start_index = None
-        end_index = None
+        _start_index = None
+        _end_index = None
         best_word: str = None
         test_set = set(t)
         current = set()

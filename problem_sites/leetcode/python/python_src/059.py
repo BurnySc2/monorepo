@@ -17,7 +17,7 @@ class Solution:
 
         checked_indices: set[tuple[int, int]] = {(0, 0)}
         x, y = 0, 0
-        output: list[int] = [matrix[0][0]]
+        _output: list[int] = [matrix[0][0]]
 
         height, width = len(matrix), len(matrix[0])
         limit = height * width

@@ -1,5 +1,5 @@
 class Solution:
-    def numMovesStones(self, a: int, b: int, c: int) -> List[int]:
+    def numMovesStones(self, a: int, b: int, c: int) -> list[int]:
         a, b, c = sorted([a, b, c])
         max_moves = c - a - 2
         min_moves = 2
