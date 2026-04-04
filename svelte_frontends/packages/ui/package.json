@@ -30,6 +30,9 @@
     "peerDependencies": {
         "svelte": "^5.0.0"
     },
+    "dependencies": {
+        "esm-env": "^1.2.1"
+    },
     "devDependencies": {
         "@repo/typescript-config": "*",
         "@sveltejs/adapter-static": "^3.0.0",

@@ -1,5 +1,6 @@
 <script lang="ts">
-/// <reference types="vite/client" />
+import { DEV } from "esm-env"
+
 interface App {
     name: string
     subdomain: string
@@ -24,7 +25,7 @@ interface Props {
 let { currentApp = "" }: Props = $props()
 
 function getUrl(app: App): string {
-    if (typeof window !== "undefined" && import.meta.env.DEV) {
+    if (typeof window !== "undefined" && DEV) {
         return `http://localhost:${app.devPort}`
     }
     return `https://${app.subdomain}.${BASE_DOMAIN}`
