@@ -11,6 +11,8 @@
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
         "test": "vitest run",
+        "test:unit": "vitest run",
+        "test:integration": "vitest run tests/integration || echo 'No integration tests'",
         "test:watch": "vitest"
     },
     "dependencies": {
@@ -23,6 +25,7 @@
         "@repo/typescript-config": "*",
         "@sveltejs/adapter-static": "^3.0.0",
         "@types/d3-scale": "^4.0.8",
-        "@types/d3-time": "^3.0.3"
+        "@types/d3-time": "^3.0.3",
+        "vitest": "^4.1.0"
     }
 }

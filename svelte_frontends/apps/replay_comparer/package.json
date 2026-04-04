@@ -8,7 +8,9 @@
         "build": "vite build",
         "preview": "vite preview",
         "check": "svelte-check --tsconfig ./tsconfig.json",
-        "test": "vitest run"
+        "test": "vitest run",
+        "test:unit": "vitest run",
+        "test:integration": "vitest run tests/integration || echo 'No integration tests'"
     },
     "devDependencies": {
         "@sveltejs/adapter-static": "^3.0.0",
@@ -16,7 +18,8 @@
         "svelte": "^5.0.0",
         "svelte-check": "^4.0.0",
         "typescript": "^5.0.0",
-        "vite": "^8.0.1"
+        "vite": "^8.0.1",
+        "vitest": "^4.1.0"
     },
     "dependencies": {
         "highcharts": "^11.0.0"

@@ -8,6 +8,8 @@
         "build": "svelte-kit sync && vite build",
         "preview": "vite preview",
         "test": "echo 'No tests configured'",
+        "test:unit": "echo 'No unit tests'",
+        "test:integration": "echo 'No integration tests'",
         "check-types": "tsc --noEmit",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
