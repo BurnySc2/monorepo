@@ -34,17 +34,48 @@
     }
 </script>
 
-<nav class="flex justify-center space-x-1 p-2 bg-gray-100 border-b border-gray-200">
+<nav class="nav">
     {#each APPS as app}
         {@const url = getUrl(app)}
         {@const active = isActive(app)}
         <a
             href={url}
-            class="px-3 py-1 rounded text-sm transition-colors {active
-                ? 'bg-blue-500 text-white font-bold underline'
-                : 'text-blue-600 hover:bg-blue-100'}"
+            class="nav-link {active ? 'active' : ''}"
+            data-sveltekit-preload-data="hover"
         >
             {app.name}
         </a>
     {/each}
 </nav>
+
+<style>
+    .nav {
+        display: flex;
+        justify-content: center;
+        padding: 0.5rem;
+        background-color: #f3f4f6;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .nav-link {
+        margin: 0 0.125rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        color: #2563eb;
+        background-color: transparent;
+        text-decoration: none;
+        transition: background-color 0.15s, color 0.15s;
+    }
+
+    .nav-link:hover {
+        background-color: #dbeafe;
+    }
+
+    .nav-link.active {
+        color: white;
+        background-color: #3b82f6;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+</style>

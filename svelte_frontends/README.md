@@ -18,8 +18,6 @@ This Turborepo includes the following packages/apps:
 
 ### Apps
 
-
-
 ### Packages
 
 #### `eslint-config`
