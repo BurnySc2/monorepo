@@ -30,8 +30,8 @@ dependencies = [
     "whisperx>=3.7.0",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     # Type checker
     "pyrefly>=0.18.0",
     "pytest>=8.4.0",
