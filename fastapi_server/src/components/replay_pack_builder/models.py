@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from hashlib import md5
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import arrow
 from pydantic import BaseModel
-from rio import FileInfo
 from types_aiobotocore_s3.type_defs import ObjectTypeDef
+
+if TYPE_CHECKING:
+    from rio import FileInfo
 
 
 @dataclass

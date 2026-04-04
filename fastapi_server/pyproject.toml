@@ -38,9 +38,6 @@ dependencies = [
     "humanize>=4.11.0",
     # SC2 Replay Parser
     "sc2reader>=1.8.0",
-    # "reflex==0.8.24.post1",
-    # "streamlit>=1.52.2",
-    "rio-ui>=0.11.1",
     # Async access to minio client
     "aioboto3>=15.5.0",
     "types-aioboto3[full]>=15.5.0",

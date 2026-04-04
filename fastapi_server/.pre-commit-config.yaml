@@ -58,10 +58,15 @@ repos:
 
   - repo: local
     hooks:
+      - id: sqlfluff-lint-queries
+        name: Lint sql queries with sqlfluff
+        entry: uv run --directory fastapi_server sqlfluff lint src/queries
+        language: system
+        types: [sql]
+        pass_filenames: false
+
       - id: sqlfluff-fix-queries
         name: Fix sql queries with sqlfluff
-        # To lint, use:
-        # uv run sqlfluff lint src/queries
         entry: uv run --directory fastapi_server sqlfluff fix src/queries
         language: system
         types: [sql]

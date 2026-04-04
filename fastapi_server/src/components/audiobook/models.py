@@ -4,7 +4,7 @@ import re
 from stat import S_IFREG
 
 import arrow
-import rio
+from dataclasses import dataclass
 from pydantic import BaseModel
 from stream_zip import NO_COMPRESSION_64, async_stream_zip
 
@@ -19,7 +19,8 @@ from models.audiobook import AudiobookBook, AudiobookChapter
 from piccolo_conf import DB
 
 
-class AudioSettings(rio.UserSettings):
+@dataclass
+class AudioSettings:
     voice: str = ""
     rate: int = 0
     volume: int = 0

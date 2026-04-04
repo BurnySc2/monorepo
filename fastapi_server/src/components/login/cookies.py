@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 import httpx
-import rio
+from dataclasses import dataclass
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
@@ -110,10 +110,11 @@ class LoggedInUser:
 #         assert self.service in VALID_SERVICES, self.service
 
 
-class LoginSettings(rio.UserSettings):
-    twitch_access_token: rio.HttpOnly[str | None] = None
-    github_access_token: rio.HttpOnly[str | None] = None
-    google_access_token: rio.HttpOnly[str | None] = None
+@dataclass
+class LoginSettings:
+    twitch_access_token: str | None = None
+    github_access_token: str | None = None
+    google_access_token: str | None = None
     user: LoggedInUser | None = None
 
 
@@ -176,11 +177,12 @@ async def provide_logged_in_user(loggin_settings: LoginSettings) -> LoggedInUser
     return LoggedInUser.from_service(user)
 
 
-def logged_in_guard(event: rio.GuardEvent) -> str | None:
-    """
-    Check if the user is logged in at all
-    """
-    try:
-        _logged_in_user = event.session[LoggedInUser]
-    except KeyError:
-        return "/login"
+# TODO: this was used by rio app, may be needed later for FastAPI sessions
+# def logged_in_guard(event: rio.GuardEvent) -> str | None:
+#     """
+#     Check if the user is logged in at all
+#     """
+#     try:
+#         _logged_in_user = event.session[LoggedInUser]
+#     except KeyError:
+#         return "/login"
