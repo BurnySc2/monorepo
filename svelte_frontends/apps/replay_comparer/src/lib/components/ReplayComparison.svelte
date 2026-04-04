@@ -9,6 +9,7 @@ import {
     type TimelineData,
     type TimelineOption,
 } from "$lib/types"
+import TimingsTable from "./TimingsTable.svelte"
 
 highchartsMore(Highcharts)
 
@@ -262,3 +263,12 @@ $effect(() => {
     </select>
 </div>
 <div id="timelinePlot"></div>
+
+<TimingsTable
+    real_building_events={real_replay_data.building_events?.[real_replay_selected_player_id - 1] ?? []}
+    ideal_building_events={ideal_replay_data.building_events?.[ideal_replay_selected_player_id - 1] ?? []}
+    real_upgrade_events={real_replay_data.upgrade_events?.[real_replay_selected_player_id - 1] ?? []}
+    ideal_upgrade_events={ideal_replay_data.upgrade_events?.[ideal_replay_selected_player_id - 1] ?? []}
+    real_unit_events={real_replay_data.unit_events?.[real_replay_selected_player_id - 1] ?? []}
+    ideal_unit_events={ideal_replay_data.unit_events?.[ideal_replay_selected_player_id - 1] ?? []}
+/>
