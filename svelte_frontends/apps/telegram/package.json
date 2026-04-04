@@ -9,13 +9,16 @@
         "preview": "vite preview",
         "check-types": "tsc --noEmit",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@repo/ui": "*"
     },
     "devDependencies": {
         "@repo/typescript-config": "*",
-        "@sveltejs/adapter-static": "^3.0.0"
+        "@sveltejs/adapter-static": "^3.0.0",
+        "vitest": "^4.1.0"
     }
 }

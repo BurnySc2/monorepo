@@ -21,6 +21,7 @@
         "@repo/typescript-config": "*",
         "@sveltejs/adapter-static": "^3.0.0",
         "@types/jszip": "^3.4.0",
+        "@vitest/coverage-v8": "^4.1.2",
         "vitest": "^4.1.0"
     }
 }
