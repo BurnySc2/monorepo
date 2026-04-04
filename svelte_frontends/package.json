@@ -10,6 +10,7 @@
         "check": "turbo run check",
         "check-types": "turbo run check-types",
         "precommit": "npm run build && npm run lint && npm run check",
+        "prepush": "npm run precommit && npm run test:unit && npm run test:integration",
         "test": "turbo run test",
         "test:unit": "turbo run test:unit",
         "test:integration": "turbo run test:integration"
