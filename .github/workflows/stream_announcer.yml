@@ -27,9 +27,9 @@ jobs:
       - uses: earthly/actions-setup@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          version: "latest" # or pin to an specific version, e.g. "0.8.1"
+          version: latest
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install
         working-directory: ${{ env.SUBDIRECTORY }}
