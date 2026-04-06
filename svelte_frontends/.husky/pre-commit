@@ -1,0 +1,19 @@
+#!/bin/sh
+# Pre-commit hook: format → build → lint → check
+# Stops on first failure
+
+set -e
+
+echo "[pre-commit] 1/4 Formatting..."
+npm run format -- --write
+
+echo "[pre-commit] 2/4 Building..."
+npm run build
+
+echo "[pre-commit] 3/4 Linting..."
+npm run lint
+
+echo "[pre-commit] 4/4 Type checking..."
+npm run check
+
+echo "[pre-commit] All checks passed!"
