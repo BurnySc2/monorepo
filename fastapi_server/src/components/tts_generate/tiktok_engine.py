@@ -10,6 +10,7 @@ import os
 from collections import OrderedDict
 from dataclasses import dataclass
 from io import BytesIO
+from pathlib import Path
 
 import httpx
 from mutagen.mp3 import MP3
@@ -18,6 +19,7 @@ from mutagen.mp3 import MP3
 @dataclass
 class VoiceInfo:
     """Information about a voice."""
+
     name: str
     code: str
     language: str
@@ -100,6 +102,7 @@ async def generate_audio_async(
     """
     if output_path is None:
         import tempfile
+
         output_path = tempfile.mktemp(suffix=".mp3")
 
     key = (voice, text)
@@ -109,11 +112,15 @@ async def generate_audio_async(
         cached_path, cached_duration = _tts_cache[key]
         # Copy cached file to requested output
         import shutil
+
         shutil.copy(cached_path, output_path)
         return output_path, cached_duration
 
     headers = {
-        "User-Agent": "com.zhiliaoapp.musically/2022600030 (Linux; U; Android 7.1.2; es_ES; SM-G988N; Build/NRD90M;tt-ok/3.12.13.1)",
+        "User-Agent": (
+            "com.zhiliaoapp.musically/2022600030 "
+            "(Linux; U; Android 7.1.2; es_ES; SM-G988N; Build/NRD90M;tt-ok/3.12.13.1)"
+        ),
         "Cookie": f"sessionid={SESSION_ID}",
     }
 
@@ -144,8 +151,7 @@ async def generate_audio_async(
     audio_stream.seek(0)
 
     # Write to output file
-    with open(output_path, "wb") as f:
-        f.write(b64data_decoded)
+    Path(output_path).write_bytes(b64data_decoded)
 
     # Update cache
     if len(_tts_cache) > CACHE_LIMIT:

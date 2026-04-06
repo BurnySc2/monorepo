@@ -37,10 +37,6 @@ class TestEdgeTTSMocked:
     @pytest.mark.asyncio
     async def test_generate_audio_calls_edge_tts(self, tmp_path):
         """Edge TTS generate should use edge_tts.Communicate."""
-        output_path = str(tmp_path / "test_edge.mp3")
-        text = "Test text"
-        voice = "en-US-AriaNeural"
-
         with patch("edge_tts.Communicate") as mock_communicate:
             mock_instance = MagicMock()
             mock_communicate.return_value = mock_instance
@@ -72,6 +68,7 @@ class TestTikTokTTSMocked:
 
         assert hasattr(tiktok_engine, "httpx")
         assert hasattr(tiktok_engine, "generate_audio_async")
+
 
 class TestEngineValidation:
     """Tests for engine name validation."""
@@ -109,6 +106,7 @@ class TestLocalEnginesModuleStructure:
         assert hasattr(kokoro_engine, "list_voices_async")
         assert hasattr(kokoro_engine, "generate_audio_async")
         assert hasattr(kokoro_engine, "VOICES")
+
     @pytest.mark.asyncio
     async def test_kitten_has_required_functions(self):
         from components.tts_generate import kitten_engine
@@ -116,6 +114,7 @@ class TestLocalEnginesModuleStructure:
         assert hasattr(kitten_engine, "list_voices_async")
         assert hasattr(kitten_engine, "generate_audio_async")
         assert hasattr(kitten_engine, "VOICES")
+
     @pytest.mark.asyncio
     async def test_pocket_has_required_functions(self):
         from components.tts_generate import pocket_engine
@@ -123,6 +122,7 @@ class TestLocalEnginesModuleStructure:
         assert hasattr(pocket_engine, "list_voices_async")
         assert hasattr(pocket_engine, "generate_audio_async")
         assert hasattr(pocket_engine, "VOICES")
+
     @pytest.mark.asyncio
     async def test_supertonic_has_required_functions(self):
         from components.tts_generate import supertonic_engine
@@ -130,6 +130,7 @@ class TestLocalEnginesModuleStructure:
         assert hasattr(supertonic_engine, "list_voices_async")
         assert hasattr(supertonic_engine, "generate_audio_async")
         assert hasattr(supertonic_engine, "VOICES")
+
 
 class TestUnifiedAPIIntegration:
     """Integration tests for unified API."""

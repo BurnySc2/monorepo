@@ -13,6 +13,7 @@ import edge_tts
 @dataclass
 class VoiceInfo:
     """Information about a voice."""
+
     name: str
     short_name: str
     gender: str

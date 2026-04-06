@@ -5,9 +5,9 @@ Voice names: af_bella, af_nicole, af_sarah, af_sky, bf_alice, bf_emma, bf_isabel
 
 from __future__ import annotations
 
-import os
 import tempfile
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import soundfile as sf
@@ -17,6 +17,7 @@ from huggingface_hub import snapshot_download
 @dataclass
 class VoiceInfo:
     """Information about a voice."""
+
     name: str
     gender: str
     description: str
@@ -55,12 +56,12 @@ async def _get_kokoro_model():
     global _kokoro_model, _model_dir
 
     if _kokoro_model is None:
-        from kokoro_onnx import Kokoro, EspeakConfig
+        from kokoro_onnx import EspeakConfig, Kokoro
 
         # Download model if not cached
         _model_dir = snapshot_download(repo_id="adrianlyjak/kokoro-onnx")
-        model_path = os.path.join(_model_dir, "kokoro-v1.0.onnx")
-        voices_path = os.path.join(_model_dir, "voices.bin")
+        model_path = str(Path(_model_dir) / "kokoro-v1.0.onnx")
+        voices_path = str(Path(_model_dir) / "voices.bin")
 
         # Configure espeak-ng
         espeak_data = "/usr/lib/x86_64-linux-gnu/espeak-ng-data"
@@ -111,7 +112,7 @@ async def generate_audio_async(
 
     audio_segment = AudioSegment.from_wav(wav_path)
     audio_segment.export(output_path, format="mp3")
-    os.unlink(wav_path)
+    Path(wav_path).unlink()
 
     # Calculate duration
     duration = len(audio) / sample_rate

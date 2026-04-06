@@ -11,6 +11,7 @@ from dataclasses import dataclass
 @dataclass
 class VoiceInfo:
     """Information about a voice."""
+
     name: str
     language: str
     description: str

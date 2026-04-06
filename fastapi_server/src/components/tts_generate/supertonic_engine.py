@@ -4,14 +4,15 @@ Supertonic TTS - 66M params, CPU-optimized, 167x real-time, 10 languages.
 
 from __future__ import annotations
 
-import os
 import tempfile
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
 class VoiceInfo:
     """Information about a voice."""
+
     name: str
     gender: str
     description: str
@@ -92,7 +93,7 @@ async def generate_audio_async(
 
     audio_segment = AudioSegment.from_wav(wav_path)
     audio_segment.export(output_path, format="mp3")
-    os.unlink(wav_path)
+    Path(wav_path).unlink()
 
     # Calculate duration
     duration = len(audio_data) / sample_rate

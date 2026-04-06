@@ -15,17 +15,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-from . import edge_engine
-from . import kokoro_engine
-from . import kitten_engine
-from . import pocket_engine
-from . import supertonic_engine
-from . import tiktok_engine
+from . import edge_engine, kitten_engine, kokoro_engine, pocket_engine, supertonic_engine, tiktok_engine
 
 
 @dataclass
 class VoiceInfo:
     """Information about a TTS voice."""
+
     name: str
     language: str | None = None
     gender: str | None = None
@@ -68,20 +64,21 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
         voices = await tiktok_engine.list_voices_async()
     else:
         raise ValueError(
-            f"Unknown TTS engine: {engine}. "
-            f"Supported engines: edge, kokoro, kitten, pocket, supertonic, tiktok"
+            f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, pocket, supertonic, tiktok"
         )
 
     # Normalize to VoiceInfo
     result = []
     for v in voices:
         if hasattr(v, "name"):
-            result.append(VoiceInfo(
-                name=v.name,
-                language=getattr(v, "language", None),
-                gender=getattr(v, "gender", None),
-                description=getattr(v, "description", None),
-            ))
+            result.append(
+                VoiceInfo(
+                    name=v.name,
+                    language=getattr(v, "language", None),
+                    gender=getattr(v, "gender", None),
+                    description=getattr(v, "description", None),
+                )
+            )
         else:
             result.append(VoiceInfo(name=str(v)))
 
@@ -125,8 +122,7 @@ async def generate_audio(
         return await tiktok_engine.generate_audio_async(voice, text, output_path)
     else:
         raise ValueError(
-            f"Unknown TTS engine: {engine}. "
-            f"Supported engines: edge, kokoro, kitten, pocket, supertonic, tiktok"
+            f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, pocket, supertonic, tiktok"
         )
 
 

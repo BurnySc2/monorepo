@@ -28,9 +28,9 @@ DEFAULT_VOICES = {
 CLOUD_ENGINES = ["edge", "tiktok"]
 
 
-
 class MockCommunicate:
     """Mock edge_tts.Communicate object."""
+
     def __init__(self, text, voice):
         self.text = text
         self.voice = voice
@@ -40,10 +40,10 @@ class MockCommunicate:
         # Write a minimal valid MP3 file
         # MP3 frame header (11111111 11111011 = 0xFF 0xFB) + padding
         mp3_data = b"\xff\xfb\x90\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        with open(output_path, "wb") as f:
-            f.write(b"ID3")  # ID3 tag
-            f.write(b"\x04\x00\x00\x00\x00\x00\x00")  # ID3 header
-            f.write(mp3_data * 10)  # Some MP3 frames
+        Path(output_path).write_bytes(
+            b"ID3"  # ID3 tag
+            b"\x04\x00\x00\x00\x00\x00\x00" + mp3_data * 10  # ID3 header  # Some MP3 frames
+        )
 
     async def get_audio(self, audio_obj):
         # Edge TTS doesn't have Audio class, it sets duration directly
@@ -130,7 +130,7 @@ async def test_generate_audio_with_default_voice(engine, tmp_path, mock_edge_tts
         assert Path(path).exists()
         assert Path(path).stat().st_size > 0
         assert duration > 0
-    except Exception as e:
+    except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
 
 
@@ -150,11 +150,10 @@ async def test_generate_audio_creates_mp3_file(engine, tmp_path, mock_edge_tts, 
         assert Path(path).stat().st_size > 0
 
         # Verify it's a valid audio file by checking header
-        with open(path, "rb") as f:
-            header = f.read(4)
-            # MP3 files start with ID3 or \xff\xfb
-            assert header[:3] == b"ID3" or header[0] == 0xFF
-    except Exception as e:
+        header = Path(path).read_bytes()[:4]
+        # MP3 files start with ID3 or \xff\xfb
+        assert header[:3] == b"ID3" or header[0] == 0xFF
+    except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
 
 
@@ -169,7 +168,7 @@ async def test_generate_audio_returns_positive_duration(engine, mock_edge_tts, m
         _, duration = await generate_audio(engine, voice, text)
         assert duration > 0
         assert isinstance(duration, (int, float))
-    except Exception as e:
+    except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
 
 
@@ -180,7 +179,8 @@ async def test_generate_audio_with_different_text_lengths(engine, tmp_path, mock
     texts = [
         "Short.",
         "Medium length text here.",
-        "This is a much longer text that contains multiple sentences and should test how the engine handles longer inputs.",
+        "This is a much longer text that contains multiple sentences "
+        "and should test how the engine handles longer inputs.",
     ]
     voice = DEFAULT_VOICES.get(engine, "default")
 
@@ -190,7 +190,7 @@ async def test_generate_audio_with_different_text_lengths(engine, tmp_path, mock
             path, duration = await generate_audio(engine, voice, text, output_path)
             assert Path(path).exists()
             assert duration > 0
-    except Exception as e:
+    except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
 
 
@@ -205,7 +205,7 @@ async def test_generate_audio_output_path_returned(engine, tmp_path, mock_edge_t
     try:
         returned_path, _ = await generate_audio(engine, voice, text, output_path)
         assert returned_path == output_path
-    except Exception as e:
+    except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
 
 

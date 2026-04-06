@@ -4,9 +4,9 @@ Pocket TTS - 100M params, CPU-only, voice cloning support.
 
 from __future__ import annotations
 
-import os
 import tempfile
 from dataclasses import dataclass
+from pathlib import Path
 
 from scipy.io import wavfile
 
@@ -14,6 +14,7 @@ from scipy.io import wavfile
 @dataclass
 class VoiceInfo:
     """Information about a voice."""
+
     name: str
     description: str
 
@@ -97,7 +98,7 @@ async def generate_audio_async(
 
     audio_segment = AudioSegment.from_wav(wav_path)
     audio_segment.export(output_path, format="mp3")
-    os.unlink(wav_path)
+    Path(wav_path).unlink()
 
     # Calculate duration
     duration = len(audio_data) / sample_rate
