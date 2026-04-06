@@ -1,0 +1,27 @@
+{
+    "name": "@app/replay-comparer",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "vite build",
+        "preview": "vite preview",
+        "check": "svelte-check --tsconfig ./tsconfig.json",
+        "test": "vitest run",
+        "test:unit": "vitest run",
+        "test:integration": "vitest run tests/integration || echo 'No integration tests'"
+    },
+    "devDependencies": {
+        "@sveltejs/adapter-static": "^3.0.0",
+        "@sveltejs/kit": "^2.0.0",
+        "svelte": "^5.0.0",
+        "svelte-check": "^4.0.0",
+        "typescript": "^5.0.0",
+        "vite": "^8.0.1",
+        "vitest": "^4.1.0"
+    },
+    "dependencies": {
+        "highcharts": "^11.0.0"
+    }
+}

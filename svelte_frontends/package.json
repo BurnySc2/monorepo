@@ -1,0 +1,44 @@
+{
+    "name": "with-svelte",
+    "private": true,
+    "scripts": {
+        "dev": "turbo run dev",
+        "build": "turbo run build",
+        "lint": "biome check .",
+        "lint:fix": "biome check . --write",
+        "format": "biome format .",
+        "check": "turbo run check",
+        "check-types": "turbo run check-types",
+        "precommit": "npm run build && npm run lint && npm run check",
+        "prepush": "npm run precommit && npm run test:unit && npm run test:integration",
+        "test": "turbo run test",
+        "test:unit": "turbo run test:unit",
+        "test:integration": "turbo run test:integration"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.4.6",
+        "@sveltejs/adapter-static": "^3.0.0",
+        "@sveltejs/kit": "^2.55.0",
+        "@sveltejs/vite-plugin-svelte": "^7.0.0",
+        "@tailwindcss/vite": "^4.0.0",
+        "playwright": "^1.58.2",
+        "svelte": "^5.54.1",
+        "svelte-check": "^4.4.5",
+        "tslib": "^2.8.1",
+        "turbo": "^2.9.1",
+        "typescript": "5.9.3",
+        "vite": "^8.0.1",
+        "vitest": "^4.1.0"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "packageManager": "npm@11.11.1",
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "dependencies": {
+        "@repo/ui": "*"
+    }
+}

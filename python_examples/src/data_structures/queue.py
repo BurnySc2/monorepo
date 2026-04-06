@@ -31,14 +31,12 @@ class Queue:
 
         self.size += 1
 
-    def dequeue(self):
+    def dequeue(self) -> int:
         if self.front is None:
             raise IndexError("queue is empty")
 
-        return_value = None
-        if self.front is not None:
-            return_value: int = self.front.value
-            self.front = self.front.next
+        return_value: int = self.front.value
+        self.front = self.front.next
 
         if self.size == 2:
             self.tail = None

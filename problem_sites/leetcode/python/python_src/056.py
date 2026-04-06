@@ -1,8 +1,5 @@
-from typing import List
-
-
 class Solution:
-    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+    def merge(self, intervals: list[list[int]]) -> list[list[int]]:
         if len(intervals) < 2:
             return intervals
         intervals.sort()
@@ -30,6 +27,6 @@ results = [[[1, 6], [8, 10], [15, 18]], [[1, 5]], [[0, 4]], [[1, 4]]]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.merge(test_case) == correct_result
-        ), f"My result: {app.merge(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert app.merge(test_case) == correct_result, (
+            f"My result: {app.merge(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

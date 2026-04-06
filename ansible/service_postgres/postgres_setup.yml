@@ -47,6 +47,11 @@
         # pgadmin user
         owner: '5050'
         group: '5050'
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: stopped
+      ignore_errors: true
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
@@ -68,6 +73,20 @@
         dest: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
         # owner: '{{ USER_ID.stdout }}'
         # group: '{{ GROUP_ID.stdout }}'
+    - name: Copy SSL renewal script file
+      template:
+        src: ssl_cron_script.sh
+        dest: /home/{{ USERNAME }}/ssl_cron_script.sh
+    - name: Create cron job for SSL certificate renewal
+      ansible.builtin.cron:
+        name: Renew SSL certificate for postgres.burnysc2.xyz
+        job: bash /home/{{ USERNAME }}/ssl_cron_script.sh >> /home/{{ USERNAME }}/ssl_renewal.log 2>&1
+        minute: '0'
+        hour: '3'
+        day: '*'
+        month: '*'
+        weekday: '0'
+        user: root
     - name: Create cron job for database 'stream_announcer'
       ansible.builtin.cron:
         name: Run postgres backup database 'stream_announcer'

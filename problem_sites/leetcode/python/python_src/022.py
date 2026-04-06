@@ -1,8 +1,5 @@
-from typing import List
-
-
 class Solution:
-    def generateParenthesis(self, n: int) -> List[str]:
+    def generateParenthesis(self, n: int) -> list[str]:
         listbro = [[], ["()"]]
         for i1 in range(2, n + 1):
             new_set = set()
@@ -27,7 +24,6 @@ app = Solution()
 sol = app.generateParenthesis(4)
 print()
 
-from typing import List
 
 #
 # class Solution:

@@ -1,6 +1,3 @@
-from typing import List
-
-
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val = val
@@ -18,7 +15,7 @@ class Solution:
         return self.amount
 
     def traverse_tree(self, node: TreeNode, target: int):
-        """ Vertical recursive traversal. """
+        """Vertical recursive traversal."""
         if node is None:
             return
         self.find_sum_from_node(node, node.val, target)
@@ -28,7 +25,7 @@ class Solution:
         self.traverse_tree(node.right, target)
 
     def find_sum_from_node(self, node: TreeNode, current_sum: int, target: int):
-        """ Traverses the current node and tries to find all the sums from its leaves. """
+        """Traverses the current node and tries to find all the sums from its leaves."""
         if node is None:
             return
         if node.left:

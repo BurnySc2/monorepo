@@ -9,7 +9,7 @@ https://leetcode.com/problems/swap-nodes-in-pairs/
 # Given 1->2->3->4, you should return the list as 2->1->4->3.
 # Definition for singly-linked list.
 
-from typing import Generator
+from collections.abc import Generator
 
 
 class ListNode:
@@ -93,6 +93,6 @@ results = [output_node, output_node2]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.swapPairs(test_case) == correct_result
-        ), f"My result: {app.swapPairs(test_case)}, correct result: {correct_result}"
+        assert app.swapPairs(test_case) == correct_result, (
+            f"My result: {app.swapPairs(test_case)}, correct result: {correct_result}"
+        )

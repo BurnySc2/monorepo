@@ -5,17 +5,16 @@ Given an array nums of n integers, are there elements a, b, c in nums such that 
 https://leetcode.com/problems/3sum/
 """
 
-from typing import Set, Tuple, List
 from collections import Counter
 
 
 class Solution:
-    def threeSum(self, nums: List[int]) -> List[List[int]]:
+    def threeSum(self, nums: list[int]) -> list[list[int]]:
         if len(nums) < 3:
             return []
         counter: Counter = Counter(nums)
-        sorted_list: List[int] = sorted(counter.keys())
-        solutions: List[List[int]] = []
+        sorted_list: list[int] = sorted(counter.keys())
+        solutions: list[list[int]] = []
         for i, a in enumerate(sorted_list):
             if a > 0:
                 break
@@ -63,6 +62,6 @@ if __name__ == "__main__":
         my_result = app.threeSum(test_case)
         sorted_my_result = sorted([sorted(solution) for solution in my_result])
         sorted_correct_result = sorted([sorted(solution) for solution in correct_result])
-        assert (
-            sorted_my_result == sorted_correct_result
-        ), f"My result ({len(sorted_my_result)}): {sorted_my_result}\n, correct result ({len(sorted_correct_result)}): {sorted_correct_result}"
+        assert sorted_my_result == sorted_correct_result, (
+            f"My result ({len(sorted_my_result)}): {sorted_my_result}\n, correct result ({len(sorted_correct_result)}): {sorted_correct_result}"
+        )

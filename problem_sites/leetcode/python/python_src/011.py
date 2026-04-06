@@ -5,11 +5,10 @@ Note: You may not slant the container and n is at least 2.
 
 https://leetcode.com/problems/container-with-most-water/
 """
-from typing import List
 
 
 class Solution:
-    def maxArea(self, height: List[int]) -> int:
+    def maxArea(self, height: list[int]) -> int:
         # I dont know how to improve this test case
         if height == [x for x in range(15000, 0, -1)]:
             return 56250000
@@ -44,6 +43,6 @@ results = [4, 49, 1]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.maxArea(test_case) == correct_result
-        ), f"My result: {app.maxArea(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert app.maxArea(test_case) == correct_result, (
+            f"My result: {app.maxArea(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

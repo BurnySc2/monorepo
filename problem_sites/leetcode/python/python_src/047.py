@@ -1,7 +1,7 @@
-from typing import Generator, List, Any, Dict
+from typing import Any
 
 
-def permutation(my_list: List[Any]) -> List[Any]:
+def permutation(my_list: list[Any]) -> list[Any]:
     # Length of list: at least 1
     if len(my_list) <= 1:
         return [my_list]
@@ -15,5 +15,5 @@ def permutation(my_list: List[Any]) -> List[Any]:
 
 
 class Solution:
-    def permuteUnique(self, nums: List[int]) -> List[List[int]]:
+    def permuteUnique(self, nums: list[int]) -> list[list[int]]:
         return list({tuple(perm) for perm in permutation(nums)})

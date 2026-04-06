@@ -1,7 +1,7 @@
-from typing import Generator, List, Any, Dict
+from typing import Any
 
 
-def get_previous_permutation(perm: List[Any]):
+def get_previous_permutation(perm: list[Any]):
     if len(perm) <= 1:
         return perm
     for i in reversed(range(len(perm) - 1)):
@@ -15,7 +15,7 @@ def get_previous_permutation(perm: List[Any]):
 
 
 class Solution:
-    def prevPermOpt1(self, A: List[int]) -> List[int]:
+    def prevPermOpt1(self, A: list[int]) -> list[int]:
         return get_previous_permutation(A)
 
 

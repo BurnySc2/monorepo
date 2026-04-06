@@ -38,13 +38,11 @@ dependencies = [
     "humanize>=4.11.0",
     # SC2 Replay Parser
     "sc2reader>=1.8.0",
-    # "reflex==0.8.24.post1",
-    # "streamlit>=1.52.2",
-    "rio-ui>=0.11.1",
     # Async access to minio client
     "aioboto3>=15.5.0",
     "types-aioboto3[full]>=15.5.0",
     "cachetools>=6.2.4",
+    "fastapi[standard]>=0.128.8",
 ]
 
 [tool.uv]
@@ -149,7 +147,7 @@ apply_dbt_builtins = true
 capitalisation_policy = "upper"
 
 [tool.pytest.ini_options]
-pythonpath = "src"
+pythonpath = ["src", "."]
 testpaths = ["test"]
 
 [tool.pytest_env]
@@ -157,8 +155,10 @@ testpaths = ["test"]
 STAGE = "test"
 POSTGRES_CONNECTION_STRING = "postgresql://test:test@localhost:5433/test"
 BACKEND_SERVER_URL = "http://localhost:8000"
-MINIO_URL = "localhost:9000"
-MINIO_ACCESS_TOKEN = "mylocaldevkey"
-MINIO_SECRET_KEY = "mylocaldevpassword"
-MINIO_AUDIOBOOK_BUCKET = "audiobooks-test"
-MINIO_TELEGRAM_FILES_BUCKET = "telegram-files"
+GARAGE_S3_URL = "http://localhost:3900"
+GARAGE_ADMIN_URL = "http://localhost:3903"
+GARAGE_KEY_NAME = "abc123"
+GARAGE_ACCESS_KEY = "abc123"
+GARAGE_SECRET_KEY = "rootroot"
+GARAGE_AUDIOBOOK_BUCKET = "audiobooks-test"
+GARAGE_TELEGRAM_FILES_BUCKET = "telegram-files"

@@ -1,8 +1,5 @@
-from typing import List
-
-
 class Solution:
-    def longestSubarray(self, nums: List[int]) -> int:
+    def longestSubarray(self, nums: list[int]) -> int:
         largest_number = 0
         longest_sequence = 0
         current_sequence = 0

@@ -1,0 +1,42 @@
+name: Test Stream Announcer
+
+on:
+  push:
+    paths:
+      - twitch_stream_announcer/**
+      - .github/workflows/stream_announcer.yml
+  pull_request:
+    branches: [master, develop]
+
+env:
+  SUBDIRECTORY: twitch_stream_announcer
+  DOCKER_IMAGE_NAME: burnysc2/twitch_stream_announcer
+  DOCKER_IMAGE_VERSION: 1.0.0
+
+jobs:
+  test_stream_announcer:
+    name: test_stream_announcer_nim-${{ matrix.nim-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        nim-version: ["2.2.0-alpine", "2.2.0-ubuntu"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: earthly/actions-setup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version: "latest" # or pin to an specific version, e.g. "0.8.1"
+
+      - uses: actions/checkout@v4
+
+      - name: Install
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: |
+          earthly +setup --verbose true --NIMVERSION=${{ matrix.nim-version }}
+
+      - name: Compile
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: |
+          earthly +compile --verbose true --NIMVERSION=${{ matrix.nim-version }}

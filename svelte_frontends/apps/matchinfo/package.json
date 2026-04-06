@@ -1,0 +1,23 @@
+{
+    "name": "matchinfo",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "svelte-kit sync && vite build",
+        "preview": "vite preview",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "test": "echo 'No tests configured'",
+        "test:unit": "echo 'No unit tests'",
+        "test:integration": "echo 'No integration tests'"
+    },
+    "dependencies": {
+        "@repo/sc2-utils": "*",
+        "@repo/ui": "*"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "*",
+        "@sveltejs/adapter-static": "^3.0.0"
+    }
+}

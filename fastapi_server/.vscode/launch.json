@@ -5,22 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Rio Server: Start server",
-            "type": "debugpy",
-            "request": "launch",
-            "cwd": "${workspaceFolder}/src",
-            "module": "rio",
-            "args": [
-                "run"
-            ],
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "env": {
-                "PYDEVD_DISABLE_FILE_VALIDATION": "1",
-                "PYTHONPATH": "${workspaceFolder}/src",
-            }
-        },
-        {
             "name": "Fastapi Server: Run Current File",
             "type": "debugpy",
             "request": "launch",
@@ -32,29 +16,24 @@
             }
         },
         {
-            "name": "Fastapi Server: Start LiteStar",
+            "name": "Fastapi Server: Start uvicorn",
             "type": "debugpy",
             "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "module": "litestar",
+            "module": "uvicorn",
             "args": [
-                "--app-dir",
-                "src",
-                "run",
+                "src.main:app",
                 "--reload",
                 "--host",
                 "0.0.0.0",
-                "--wc",
-                "1",
-                "--reload-include",
-                "*.sql"
+                "--port",
+                "8000"
             ],
-            "console": "integratedTerminal",
-            "justMyCode": true,
+            "cwd": "${workspaceFolder}",
             "env": {
-                "PYDEVD_DISABLE_FILE_VALIDATION": "1",
-                "PYTHONPATH": "${workspaceFolder}/src",
-            }
+                "PYTHONPATH": "${workspaceFolder}/src"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": true
         },
         {
             "name": "Fastapi Server: Run Tests",
@@ -66,7 +45,7 @@
                 "test",
             ],
             "console": "integratedTerminal",
-            "justMyCode": true
-        }
+            "justMyCode": true,
+        },
     ]
 }

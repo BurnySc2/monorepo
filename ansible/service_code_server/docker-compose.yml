@@ -20,6 +20,7 @@ services:
     volumes:
       - /media/ssd480/codeserver:/config
       - /media/ssd480/shared/workspace:/config/workspace
+      - /media/ssd480/shared/a0projects:/config/a0projects
     restart: unless-stopped
     networks:
       - pangolin_newt

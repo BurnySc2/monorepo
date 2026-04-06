@@ -3,7 +3,6 @@ Given a non-negative integer numRows, generate the first numRows of Pascal's tri
 
 https://leetcode.com/problems/pascals-triangle/
 """
-from typing import List
 
 
 class ListNode:
@@ -48,7 +47,7 @@ class ListNode:
         return l
 
     @classmethod
-    def from_list(cls, my_list: List[int]) -> "ListNode":
+    def from_list(cls, my_list: list[int]) -> "ListNode":
         assert my_list
         start = cls(my_list[0])
         cur = start
@@ -57,7 +56,7 @@ class ListNode:
             cur = cur.next
         return start
 
-    def to_list(self) -> List[int]:
+    def to_list(self) -> list[int]:
         l = []
         cur = self
         while cur:
@@ -82,7 +81,7 @@ if __name__ == "__main__":
 
 
 class Solution:
-    def generate(self, numRows: int) -> List[List[int]]:
+    def generate(self, numRows: int) -> list[list[int]]:
         if numRows == 0:
             return []
         pascal = [[1]]
@@ -111,6 +110,6 @@ if __name__ == "__main__":
     for test_case, correct_result in zip(test_cases, results):
         test_case_copy = test_case.copy() if hasattr(test_case, "copy") else test_case
         my_result = app.generate(test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case_copy}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case_copy}"
+        )

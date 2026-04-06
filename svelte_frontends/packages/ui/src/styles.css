@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+/* Shared UI styles - use Tailwind's @apply for consistency across apps */
+
+.btn {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    transition:
+        opacity 0.2s,
+        box-shadow 0.2s;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    transition:
+        opacity 0.2s,
+        box-shadow 0.2s;
+    @apply shadow-sm;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+.btn-secondary {
+    background-color: #6b7280;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    transition:
+        opacity 0.2s,
+        box-shadow 0.2s;
+    @apply shadow-sm;
+}
+
+.btn-secondary:hover {
+    opacity: 0.9;
+}
+
+.btn-success {
+    background-color: #27ae60;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    transition:
+        opacity 0.2s,
+        box-shadow 0.2s;
+    @apply shadow-sm;
+}
+
+.btn-success:hover {
+    opacity: 0.9;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    transition:
+        opacity 0.2s,
+        box-shadow 0.2s;
+    @apply shadow-sm;
+}
+
+.btn-danger:hover {
+    opacity: 0.9;
+}
+
+.btn:disabled {
+    @apply opacity-60 cursor-not-allowed;
+}
+
+.input {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.input:focus {
+    @apply outline-none border-blue-500 ring-1 ring-blue-500;
+}
+
+.checkbox {
+    @apply w-4 h-4 cursor-pointer accent-blue-500;
+}
+
+/* File drop zone */
+.drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition:
+        border-color 0.2s,
+        background-color 0.2s;
+}
+
+.drop-zone:hover:not(.disabled) {
+    border-color: #666;
+    background-color: #f9f9f9;
+}
+
+.drop-zone.dragging {
+    border-color: #3498db;
+    background-color: #e3f2fd;
+}
+
+.drop-zone.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.drop-zone-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.drop-zone-text {
+    font-size: 1rem;
+    color: #333;
+    margin: 0;
+}
+
+.drop-zone-hint {
+    font-size: 0.875rem;
+    color: #888;
+    margin: 0.25rem 0 0;
+}
+
+.hidden-input {
+    display: none;
+}

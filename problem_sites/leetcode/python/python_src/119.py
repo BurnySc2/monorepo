@@ -1,5 +1,3 @@
-from typing import List
-
 from math import factorial
 
 
@@ -8,7 +6,7 @@ class Solution:
     def ncr(n: int, k: int):
         return factorial(n) // (factorial(n - k) * factorial(k))
 
-    def getRow(self, rowIndex: int) -> List[int]:
+    def getRow(self, rowIndex: int) -> list[int]:
         return [self.ncr(rowIndex, k) for k in range(rowIndex + 1)]
 
 
@@ -33,6 +31,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.getRow(test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

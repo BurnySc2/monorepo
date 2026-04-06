@@ -1,0 +1,20 @@
+name: Test Transcriber Backend
+
+on:
+  push:
+    paths:
+      - transcribe_website/transcriber_backend/**
+      - .github/workflows/transcriber_backend.yml
+  pull_request:
+    branches: [master, develop]
+
+jobs:
+  install-packages:
+    name: uv sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - name: Run uv sync
+        run: uv sync
+        working-directory: transcribe_website/transcriber_backend

@@ -4,8 +4,6 @@ Given an array of strings, group anagrams together.
 https://leetcode.com/problems/group-anagrams/
 """
 
-
-from typing import Set, Tuple, List, Generator, Dict
 from collections import Counter
 
 
@@ -21,8 +19,8 @@ class MyCounter(Counter):
 
 
 class Solution:
-    def groupAnagrams(self, strs: List[str]) -> List[List[str]]:
-        anagrams: Dict[str, List[str]] = {}
+    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:
+        anagrams: dict[str, list[str]] = {}
 
         for anagram in strs:
             anagram_as_counter = MyCounter(anagram)
@@ -32,7 +30,7 @@ class Solution:
             else:
                 anagrams[repr_string].append(anagram)
         print(anagrams)
-        return_list: List[str] = [value for value in anagrams.values()]
+        return_list: list[str] = [value for value in anagrams.values()]
         return return_list
 
 

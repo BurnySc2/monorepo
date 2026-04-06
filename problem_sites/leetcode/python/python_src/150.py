@@ -6,14 +6,12 @@ Valid operators are +, -, *, /. Each operand may be an integer or another expres
 https://leetcode.com/problems/evaluate-reverse-polish-notation/
 """
 
-
-from typing import Set, Tuple, List, Generator, Dict
-from operator import mul, add, sub
 import math
+from operator import add, mul, sub
 
 
 class Solution:
-    def evalRPN(self, tokens: List[str]) -> int:
+    def evalRPN(self, tokens: list[str]) -> int:
         def floordiv(a, b):
             result = a / b
             if result >= 0:

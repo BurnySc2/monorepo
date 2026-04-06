@@ -4,7 +4,7 @@ import asyncio
 from dataclasses import dataclass
 
 import hikari
-from hikari import GatewayBot, GuildMessageCreateEvent, Member  # pyrefly: ignore
+from hikari import GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 from loguru import logger
 from simple_parsing import ArgumentParser, field
 from table2ascii import Alignment, PresetStyle
@@ -96,7 +96,7 @@ async def public_leaderboard(
 
     # Map message author_id's to nicknames
     map_author_id_to_server_nickname: dict[int, str] = {}
-    server_members: list[Member] = await bot.rest.fetch_members(event.guild_id)
+    server_members = await bot.rest.fetch_members(event.guild_id)
     for member in server_members:
         map_author_id_to_server_nickname[member.id] = member.display_name
 

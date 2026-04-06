@@ -28,7 +28,7 @@
       register: GROUP_ID
     - name: Copy docker-compose.yml file
       template:
-        src: docker-compose.yml
+        src: docker-compose.yml.j2
         dest: /home/{{ USERNAME }}/docker-compose.yml
       when: "'local_servers' in group_names"
     - name: Copy docker-compose_remote.yml file

@@ -50,6 +50,6 @@ results = [2, 4, 6, 6, 6, 2, 4]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.longestValidParentheses(test_case) == correct_result
-        ), f"My result: {app.longestValidParentheses(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert app.longestValidParentheses(test_case) == correct_result, (
+            f"My result: {app.longestValidParentheses(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

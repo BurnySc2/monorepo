@@ -1,0 +1,35 @@
+{
+    "$schema": "https://turborepo.dev/schema.json",
+    "ui": "tui",
+    "concurrency": "20",
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", ".env*"],
+            "outputs": [".svelte-kit/**", ".vercel/**", "dist/**"]
+        },
+        "check": {
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", "src/**"]
+        },
+        "check-types": {
+            "dependsOn": ["^check-types"]
+        },
+        "test": {
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", "tests/**", "src/**"]
+        },
+        "test:unit": {
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", "tests/**", "src/**"]
+        },
+        "test:integration": {
+            "dependsOn": ["^build"],
+            "inputs": ["$TURBO_DEFAULT$", "tests/**", "src/**"]
+        },
+        "dev": {
+            "cache": false,
+            "persistent": true
+        }
+    }
+}

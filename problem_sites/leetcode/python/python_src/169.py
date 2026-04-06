@@ -1,9 +1,9 @@
 # 169
 # https://leetcode.com/problems/majority-element/
-from typing import List
+
 
 class Solution:
-    def majorityElement(self, nums: List[int]) -> int:
+    def majorityElement(self, nums: list[int]) -> int:
         cache = {}
         for i in nums:
             count = cache.get(i, 0) + 1

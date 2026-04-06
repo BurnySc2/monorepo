@@ -50,7 +50,7 @@ class Sc2LadderResult(BaseModel):
             race = "Zerg"
         mmr = str(current_stats.rating or previous_stats.rating or "-")
         games_played = current_stats.games_played or 0
-        clan_tag = (members.clan and members.clan.tag) or ""
+        clan_tag = str((members.clan and members.clan.tag) or "")
         bnet_id = character.name
         return Sc2LadderResult(
             realm=character.realm,

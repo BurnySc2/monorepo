@@ -3,11 +3,11 @@ Given a non-negative integer numRows, generate the first numRows of Pascal's tri
 
 https://leetcode.com/problems/pascals-triangle/
 """
-from typing import List
+
 
 # TO SLOW but the identical rust version works
 class Solution:
-    def largestRectangleArea(self, heights: List[int]) -> int:
+    def largestRectangleArea(self, heights: list[int]) -> int:
         # O(n^2) solution
         biggest_area = 0
         previous_value = 0
@@ -40,6 +40,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.largestRectangleArea(test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

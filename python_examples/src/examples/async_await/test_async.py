@@ -11,7 +11,7 @@ from examples.async_await.asyncio_download_upload import download_all_sites, dow
 async def test_download_all_sites():
     urls = ["http://www.jython.org"] * 2
     results = await download_all_sites(urls)
-    assert sum(result.content_length for result in results) > 0
+    assert sum(result.content_length or 0 for result in results) > 0
 
 
 @pytest.mark.xfail(reason="If download bandwidth is low, then this test may fail.")
@@ -55,4 +55,4 @@ async def test_download_site():
     url = "http://www.jython.org"
     async with aiohttp.ClientSession() as session:
         res = await download_site(session, url)
-    assert res.content_length > 0
+    assert res.content_length is not None and res.content_length > 0

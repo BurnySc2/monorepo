@@ -39,6 +39,12 @@ networks:
 #   Restore data
 #     docker compose exec postgres bash
 #     psql -U postgres -f dump.sql
+###############################################################################
+# Install certbot for ssl cert using cloudflare plugin
+# sudo apt install python3-certbot-dns-cloudflare
+# Create api token in cloudflare, save it to .cloudflare.ini
+# Then run the "ssl_cron_script.sh"
+###############################################################################
 services:
   postgres:
     container_name: postgres_postgres

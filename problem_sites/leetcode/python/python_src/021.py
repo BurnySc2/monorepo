@@ -4,7 +4,6 @@ Merge two sorted linked lists and return it as a new list. The new list should b
 https://leetcode.com/problems/merge-two-sorted-lists/
 """
 
-from typing import Optional
 
 # Definition for singly-linked list.
 class ListNode:
@@ -23,7 +22,7 @@ class ListNode:
 
 
 class Solution:
-    def mergeTwoLists(self, l1: ListNode, l2: ListNode) -> Optional[ListNode]:
+    def mergeTwoLists(self, l1: ListNode, l2: ListNode) -> ListNode | None:
         if not l1 and not l2:
             return
         if l1 and not l2 or l1 and l1.val < l2.val:

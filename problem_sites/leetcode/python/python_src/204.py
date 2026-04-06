@@ -1,7 +1,4 @@
-from typing import List
-
-
-def sieve_of_eratosthenes(limit: int) -> List[int]:
+def sieve_of_eratosthenes(limit: int) -> list[int]:
     if limit < 2:
         return [False, False][:limit]
     sieve = [True for _ in range(0, limit)]
@@ -13,7 +10,7 @@ def sieve_of_eratosthenes(limit: int) -> List[int]:
     while value < limit:
         if sieve[value]:
             primes.append(value)
-            sieve[value ** 2 :: value] = [False] * len(sieve[value ** 2 :: value])
+            sieve[value**2 :: value] = [False] * len(sieve[value**2 :: value])
         value += 2
     return primes
 

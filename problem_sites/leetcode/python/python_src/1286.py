@@ -1,8 +1,9 @@
-from typing import List, Any, Generator
+from collections.abc import Generator
 from math import factorial
+from typing import Any
 
 
-def combination_generator(my_list: List[Any], n: int) -> Generator[Any, None, None]:
+def combination_generator(my_list: list[Any], n: int) -> Generator[Any, None, None]:
     if n == 0:
         yield []
     for i, middle in enumerate(my_list):

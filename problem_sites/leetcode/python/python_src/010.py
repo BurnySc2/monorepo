@@ -14,7 +14,6 @@ Note:
 
 https://leetcode.com/problems/regular-expression-matching/
 """
-from typing import List
 
 
 class Solution:
@@ -93,6 +92,6 @@ results = [False, True, True, False, True, True]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.isMatch(*test_case) == correct_result
-        ), f"My result: {app.isMatch(*test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert app.isMatch(*test_case) == correct_result, (
+            f"My result: {app.isMatch(*test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

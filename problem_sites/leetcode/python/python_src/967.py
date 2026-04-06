@@ -1,9 +1,5 @@
-from typing import List, Tuple
-import math
-
-
 class Solution:
-    def generate_number(self, string: str, length: int, difference: int) -> List[int]:
+    def generate_number(self, string: str, length: int, difference: int) -> list[int]:
         if len(string) == length:
             return [int(string)]
         number = int(string[-1])
@@ -14,7 +10,7 @@ class Solution:
             numbers.extend(self.generate_number(string + str(number - difference), length, difference))
         return numbers
 
-    def numsSameConsecDiff(self, N: int, K: int) -> List[int]:
+    def numsSameConsecDiff(self, N: int, K: int) -> list[int]:
         if N == 1:
             return list(range(10))
         numbers = []
@@ -45,6 +41,6 @@ if __name__ == "__main__":
         test_case_copy = test_case.copy()
         my_result = app.numsSameConsecDiff(*test_case)
         my_result.sort()
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case_copy}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case_copy}"
+        )

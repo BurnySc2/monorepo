@@ -1,7 +1,7 @@
-from typing import List, Any
+from typing import Any
 
 
-def get_next_permutation(perm: List[Any]):
+def get_next_permutation(perm: list[Any]):
     for i in reversed(range(len(perm) - 1)):
         last = perm[i]
         for j in reversed(range(i + 1, len(perm))):
@@ -15,5 +15,5 @@ def get_next_permutation(perm: List[Any]):
 
 
 class Solution:
-    def nextPermutation(self, nums: List[int]) -> None:
+    def nextPermutation(self, nums: list[int]) -> None:
         get_next_permutation(nums)

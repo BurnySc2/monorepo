@@ -1,8 +1,5 @@
-from typing import List
-
-
 class Solution:
-    def trap(self, height: List[int]) -> int:
+    def trap(self, height: list[int]) -> int:
         if not height:
             return 0
         left_index = -1
@@ -40,6 +37,6 @@ results = [6, 2, 23]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.trap(test_case) == correct_result
-        ), f"My result: {app.trap(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert app.trap(test_case) == correct_result, (
+            f"My result: {app.trap(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

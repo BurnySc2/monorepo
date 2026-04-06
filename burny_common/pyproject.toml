@@ -1,11 +1,16 @@
 [project]
 name = "burny_common"
-version = "0.0.15"
+version = "0.0.16"
 requires-python = ">=3.9, <3.14"
 dependencies = ["click>=8.1.7", "loguru>=0.7.3", "paramiko>=3.5.0"]
 
 [dependency-groups]
-dev = ["pyrefly>=0.18.0", "pyright>=1.1.391", "ruff>=0.8.3"]
+dev = [
+    "pre-commit>=4.3.0",
+    "pyrefly>=0.18.0",
+    "pyright>=1.1.391",
+    "ruff>=0.8.3",
+]
 
 [tool.yapf]
 based_on_style = "pep8"

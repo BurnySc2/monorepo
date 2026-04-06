@@ -36,7 +36,7 @@ roman_numbers = {
 
 class Solution:
     def romanToInt(self, s: str) -> int:
-        """ Assuming the incoming string is an actual roman number. """
+        """Assuming the incoming string is an actual roman number."""
         return_value = 0
         previous_value = None
         for symbol in s[::-1]:
@@ -55,6 +55,6 @@ results = [3, 4, 9, 58, 1994]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.romanToInt(test_case) == correct_result
-        ), f"My result: {app.romanToInt(test_case)}, correct result: {correct_result}"
+        assert app.romanToInt(test_case) == correct_result, (
+            f"My result: {app.romanToInt(test_case)}, correct result: {correct_result}"
+        )

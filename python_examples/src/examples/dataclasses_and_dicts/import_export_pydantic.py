@@ -70,7 +70,7 @@ class PersonModel(BaseModel):
 def test_pydantic():
     person = PersonModel(
         name="This works",
-        email=EmailStr("some@email.com"),
+        email="some@email.com",
         # Also works:
         # credit_card={"card_number": 123456},
         credit_card=CreditCardModel(card_number=123456),

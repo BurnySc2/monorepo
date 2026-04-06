@@ -1,8 +1,5 @@
-from typing import List
-
-
 class Solution:
-    def rebuild_sum(self, lookup: List[int], target: int):
+    def rebuild_sum(self, lookup: list[int], target: int):
         assert lookup[target] > -1
         my_summands = []
         while target != 0:
@@ -10,7 +7,7 @@ class Solution:
             target -= lookup[target]
         return my_summands
 
-    def can_partition(self, nums: List[int], target: int):
+    def can_partition(self, nums: list[int], target: int):
         my_lookup = [-1 for _ in range(target + 1)]
         my_lookup[0] = 0
         nums.sort(reverse=True)
@@ -36,7 +33,7 @@ class Solution:
                             return summands
         return []
 
-    def canPartitionKSubsets(self, nums: List[int], k: int) -> bool:
+    def canPartitionKSubsets(self, nums: list[int], k: int) -> bool:
         nums = nums.copy()
         nums_sum = sum(nums)
         if nums_sum % k == 1:
@@ -73,6 +70,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.canPartitionKSubsets(*test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

@@ -1,0 +1,29 @@
+{
+    "name": "replay_pack_builder",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "svelte-kit sync && vite build",
+        "preview": "vite preview",
+        "check-types": "tsc --noEmit",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+        "test": "vitest run",
+        "test:unit": "vitest run",
+        "test:integration": "vitest run tests/integration || echo 'No integration tests'",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@repo/ui": "*",
+        "jszip": "^3.10.1"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "*",
+        "@sveltejs/adapter-static": "^3.0.0",
+        "@types/jszip": "^3.4.0",
+        "@vitest/coverage-v8": "^4.1.2",
+        "vitest": "^4.1.0"
+    }
+}

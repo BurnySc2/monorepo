@@ -1,0 +1,90 @@
+name: Test Fastapi Server
+
+on:
+  push:
+    paths:
+      - fastapi_server/**
+      - .github/workflows/fastapi_server.yml
+  pull_request:
+    branches: [master, develop]
+
+env:
+  SUBDIRECTORY: fastapi_server
+
+jobs:
+  run_pre_commit_checks:
+    name: pre_commit_check_py${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.12", "3.13", "3.14"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install dependencies
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv sync --frozen --no-cache --no-install-project
+
+      - name: Run pre-commit hooks
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv run pre-commit run --all-files --hook-stage push
+
+  test_backend:
+    name: test_backend_py${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up postgres and minio test instances
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: docker compose --profile test up -d
+
+      - name: Initialize garage
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: |
+          timeout=30
+          until docker exec fastapi_dev_garage /garage node id > /dev/null 2>&1; do
+            sleep 1
+            timeout=$((timeout - 1))
+            if [ $timeout -le 0 ]; then
+              echo "Garage failed to start within 30 seconds"
+              exit 1
+            fi
+          done
+          chmod +x garage-init.sh
+          ./garage-init.sh
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install packages
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv sync --frozen --no-cache --no-install-project
+
+      - name: Run pytest
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv run pytest test --random-order

@@ -180,8 +180,8 @@ help_string = get_help_string()
 
 # END OF ARGPARSER
 async def public_search_aoe4_players(
-    bot: GatewayBot,
-    event: GuildMessageCreateEvent,
+    bot: GatewayBot | None,
+    event: GuildMessageCreateEvent | None,
     message: str,
 ):
     """Given a name, the bot will attempt to find matching profiles."""
@@ -211,8 +211,8 @@ async def public_search_aoe4_players(
 
 
 async def public_analyse_aoe4_game(
-    bot: GatewayBot,
-    event: GuildMessageCreateEvent,
+    bot: GatewayBot | None,
+    event: GuildMessageCreateEvent | None,
     message: str,
 ) -> str:
     """Needs to be able to parse
@@ -254,8 +254,8 @@ async def public_analyse_aoe4_game(
 
 
 async def public_fetch_aoe4_bo(
-    bot: GatewayBot,
-    event: GuildMessageCreateEvent,
+    bot: GatewayBot | None,
+    event: GuildMessageCreateEvent | None,
     message: str,
 ) -> str:
     """Using arg parser as helper, allow multiple arguments and then send multiple requests to the aoe4world API.
@@ -483,7 +483,7 @@ class BuildOrderItem(BaseModel):
         v = v.strip()
         if not v.isnumeric():
             # id has weird signs in them
-            digits_collected = []
+            digits_collected: list[str] = []
             for digit in v:
                 if digit.isnumeric():
                     digits_collected.append(digit)

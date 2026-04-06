@@ -1,8 +1,5 @@
-from typing import List
-
-
 class Solution:
-    def merge(self, nums1: List[int], m: int, nums2: List[int], n: int):
+    def merge(self, nums1: list[int], m: int, nums2: list[int], n: int):
         """
         Do not return anything, modify nums1 in-place instead.
         """
@@ -42,6 +39,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.merge(*test_case)
-        assert (
-            my_result == correct_result
-        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        assert my_result == correct_result, (
+            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
+        )

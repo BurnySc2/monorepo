@@ -10,11 +10,9 @@ You have to rotate the image in-place, which means you have to modify the input 
 https://leetcode.com/problems/rotate-image/
 """
 
-from typing import List
-
 
 class Solution:
-    def rotate(self, matrix: List[List[int]]) -> List[List[int]]:
+    def rotate(self, matrix: list[list[int]]) -> list[list[int]]:
         """
         Do not return anything, modify matrix in-place instead.
         Clockwise-rotation
@@ -79,6 +77,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_solution = app.rotate(test_case)
-        assert repr(my_solution) == repr(
-            correct_result
-        ), f"My result: {app.rotate(test_case)}, correct result: {correct_result}"
+        assert repr(my_solution) == repr(correct_result), (
+            f"My result: {app.rotate(test_case)}, correct result: {correct_result}"
+        )

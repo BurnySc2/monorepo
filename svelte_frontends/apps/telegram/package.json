@@ -1,0 +1,26 @@
+{
+    "name": "telegram",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "svelte-kit sync && vite build",
+        "preview": "vite preview",
+        "check-types": "tsc --noEmit",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+        "test": "vitest run",
+        "test:unit": "vitest run",
+        "test:integration": "vitest run tests/integration || echo 'No integration tests'",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@repo/ui": "*"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "*",
+        "@sveltejs/adapter-static": "^3.0.0",
+        "vitest": "^4.1.0"
+    }
+}

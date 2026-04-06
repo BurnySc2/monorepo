@@ -36,8 +36,8 @@ class Solution:
         except:
             return 0
 
-        min_value = -(2 ** 31)
-        max_value = 2 ** 31 - 1
+        min_value = -(2**31)
+        max_value = 2**31 - 1
 
         if return_number < min_value:
             return min_value
@@ -61,6 +61,6 @@ results = [-88827, 12345678, 42, -42, 4193, 0, -2147483648]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.myAtoi(test_case) == correct_result
-        ), f"My result: {app.myAtoi(test_case)}, correct result: {correct_result}"
+        assert app.myAtoi(test_case) == correct_result, (
+            f"My result: {app.myAtoi(test_case)}, correct result: {correct_result}"
+        )

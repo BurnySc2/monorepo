@@ -19,6 +19,6 @@ results = [True, False, False]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert (
-            app.isPalindrome(test_case) == correct_result
-        ), f"My result: {app.isPalindrome(test_case)}, correct result: {correct_result}"
+        assert app.isPalindrome(test_case) == correct_result, (
+            f"My result: {app.isPalindrome(test_case)}, correct result: {correct_result}"
+        )

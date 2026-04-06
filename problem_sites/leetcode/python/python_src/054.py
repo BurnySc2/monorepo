@@ -5,21 +5,17 @@ https://leetcode.com/problems/spiral-matrix/
 """
 
 
-from typing import Set, Tuple, List, Generator, Dict
-from collections import Counter
-
-
 class Solution:
-    def spiralOrder(self, matrix: List[List[int]]) -> List[int]:
+    def spiralOrder(self, matrix: list[list[int]]) -> list[int]:
         if not matrix:
             return []
 
         vectors = [[1, 0], [0, 1], [-1, 0], [0, -1]]
         vector_index = 0
 
-        checked_indices: Set[Tuple[int, int]] = {(0, 0)}
+        checked_indices: set[tuple[int, int]] = {(0, 0)}
         x, y = 0, 0
-        output: List[int] = [matrix[0][0]]
+        output: list[int] = [matrix[0][0]]
 
         height, width = len(matrix), len(matrix[0])
         limit = height * width

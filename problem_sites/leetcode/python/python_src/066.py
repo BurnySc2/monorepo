@@ -5,13 +5,9 @@ https://leetcode.com/problems/spiral-matrix-ii/
 """
 
 
-from typing import Set, Tuple, List, Generator, Dict
-from collections import Counter
-
-
 class Solution:
-    def plusOne(self, digits: List[int]) -> List[int]:
-        def increment_at_index(my_list: List[int], index: int):
+    def plusOne(self, digits: list[int]) -> list[int]:
+        def increment_at_index(my_list: list[int], index: int):
             if index < 0:
                 return False
             my_list[index] += 1
