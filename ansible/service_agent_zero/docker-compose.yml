@@ -1,4 +1,5 @@
 ---
+# On upgrade, copy over folders: .env, settings.json, chats, knowledge, memory, plugins, skills
 networks:
   pangolin_newt:
     external: true
