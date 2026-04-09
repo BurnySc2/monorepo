@@ -262,3 +262,23 @@ async def test_engine_lowercase_handling(engine):
     voices_lower = await list_voices(engine.lower())
     voices_upper = await list_voices(engine.upper())
     assert len(voices_lower) == len(voices_upper)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("engine", ["kokoro", "kitten", "pocket"])
+async def test_invalid_voice_raises_valueerror(engine):
+    """Invalid voice should raise ValueError."""
+    from components.tts_generate import kitten_engine, kokoro_engine, pocket_engine
+
+    invalid_voice = "nonexistent_voice_xyz"
+    text = "Hello test."
+
+    if engine == "kitten":
+        with pytest.raises(ValueError, match="not found"):
+            await kitten_engine.generate_audio_async(invalid_voice, text)
+    elif engine == "kokoro":
+        with pytest.raises(ValueError, match="not found"):
+            await kokoro_engine.generate_audio_async(invalid_voice, text)
+    elif engine == "pocket":
+        with pytest.raises(ValueError, match="not found"):
+            await pocket_engine.generate_audio_async(invalid_voice, text)

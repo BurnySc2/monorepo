@@ -64,7 +64,9 @@ async def generate_audio_async(
         Tuple of (audio_bytes, duration_seconds)
     """
     voice_info = _get_voice_by_short(voice)
-    actual_voice = voice_info.name if voice_info else voice
+    if voice_info is None:
+        raise ValueError(f"Voice '{voice}' not found. Available: {[v.short_name for v in VOICES]}")
+    actual_voice = voice_info.name
 
     voice_state = _tts_model.get_state_for_audio_prompt(actual_voice)
     audio_tensor = _tts_model.generate_audio(voice_state, text)

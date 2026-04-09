@@ -76,6 +76,14 @@ async def list_voices_async() -> list[VoiceInfo]:
     return _voice_cache["voices"]
 
 
+def _get_voice_by_short(short_name: str) -> VoiceInfo | None:
+    if "voices" in _voice_cache:
+        for v in _voice_cache["voices"]:
+            if v.short_name == short_name or v.name == short_name:
+                return v
+    return None
+
+
 async def generate_audio_async(
     voice: str,
     text: str,
@@ -90,8 +98,14 @@ async def generate_audio_async(
     Returns:
         Tuple of (audio_bytes, duration_seconds)
     """
+    voice_info = _get_voice_by_short(voice)
+    if voice_info is None:
+        available = [(v.short_name or v.name) for v in (_voice_cache.get("voices") or [])]
+        raise ValueError(f"Voice '{voice}' not found. Available: {available}")
+    actual_voice = voice_info.name
+    lang = voice_info.locale or "en-us"
 
-    samples, sample_rate = kokoro.create(text, voice=voice, speed=1.0, lang="en-us")
+    samples, sample_rate = kokoro.create(text, voice=actual_voice, speed=1.0, lang=lang)
 
     wav_io = BytesIO()
     sf.write(wav_io, samples, sample_rate, format="WAV")
