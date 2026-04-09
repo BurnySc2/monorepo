@@ -76,19 +76,34 @@ async function handle_edit_author() {
 }
 
 async function handle_queue_chapter(chapter_id: number) {
+    if (!book_data) return
+    const chapter = book_data.chapters.find((c) => c.id === chapter_id)
+    if (!chapter) return
+
+    chapter.number_in_queue = -1
+    chapter.is_converting = false
+
     try {
-        await api.queue_chapter_audio(chapter_id)
-        await load_book()
+        await api.queue_chapter_audio(book_id, chapter_id)
     } catch (e) {
+        chapter.number_in_queue = null
         console.error("Failed to queue chapter:", e)
     }
 }
 
 async function handle_delete_chapter_audio(chapter_id: number) {
+    if (!book_data) return
+    const chapter = book_data.chapters.find((c) => c.id === chapter_id)
+    if (!chapter) return
+
+    const had_audio = chapter.has_audio
+    chapter.has_audio = false
+    chapter.minio_presigned_url = ""
+
     try {
-        await api.delete_chapter_audio(chapter_id)
-        await load_book()
+        await api.delete_chapter_audio(book_id, chapter_id)
     } catch (e) {
+        chapter.has_audio = had_audio
         console.error("Failed to delete chapter audio:", e)
     }
 }

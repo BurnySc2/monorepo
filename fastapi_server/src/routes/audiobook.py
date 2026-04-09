@@ -307,3 +307,152 @@ async def delete_chapter_audio(
         await chapter.save()
 
     return DeleteResponse(deleted=True)
+
+
+@audiobook_router.put("/books/{book_id}/title", response_model=BookListItem)
+async def update_book_title(
+    book_id: int,
+    title: str,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> BookListItem:
+    """
+    Update the custom title for a book.
+    """
+    book = (
+        # pyrefly: ignore[missing-attribute]
+        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    )
+    if book is None or book.deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    book.custom_book_title = title
+    await book.save()
+
+    return BookListItem(
+        id=book.id,  # pyrefly: ignore[missing-attribute]
+        uploaded_by=book.uploaded_by,
+        book_title=book.book_title,
+        book_author=book.book_author,
+        custom_book_title=book.custom_book_title,
+        custom_book_author=book.custom_book_author,
+        chapter_count=book.chapter_count,
+        upload_date=book.upload_date,
+    )
+
+
+@audiobook_router.put("/books/{book_id}/author", response_model=BookListItem)
+async def update_book_author(
+    book_id: int,
+    author: str,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> BookListItem:
+    """
+    Update the custom author for a book.
+    """
+    book = (
+        # pyrefly: ignore[missing-attribute]
+        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    )
+    if book is None or book.deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    book.custom_book_author = author
+    await book.save()
+
+    return BookListItem(
+        id=book.id,  # pyrefly: ignore[missing-attribute]
+        uploaded_by=book.uploaded_by,
+        book_title=book.book_title,
+        book_author=book.book_author,
+        custom_book_title=book.custom_book_title,
+        custom_book_author=book.custom_book_author,
+        chapter_count=book.chapter_count,
+        upload_date=book.upload_date,
+    )
+
+
+@audiobook_router.post("/books/{book_id}/queue-all", status_code=201)
+async def queue_all_chapters(
+    book_id: int,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> QueueResponse:
+    """
+    Queue all chapters of a book for audio conversion.
+    """
+    book = (
+        # pyrefly: ignore[missing-attribute]
+        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    )
+    if book is None or book.deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    chapters = (
+        await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
+    )
+
+    for chapter in chapters:
+        chapter.queued = arrow.utcnow().naive
+        chapter.audio_settings = None
+        await chapter.save()
+
+    return QueueResponse(queued=True)
+
+
+@audiobook_router.get("/books/{book_id}/download")
+async def download_book(
+    book_id: int,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> dict:
+    """
+    Get a download URL for the entire book (all chapters as a single audio file).
+    Returns 400 if not all chapters have audio.
+    """
+    book = (
+        # pyrefly: ignore[missing-attribute]
+        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    )
+    if book is None or book.deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    chapters = (
+        await AudiobookChapter.objects()
+        .where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
+        .where(AudiobookChapter.minio_object_name != None)
+    )
+
+    if len(chapters) != book.chapter_count:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Not all chapters have audio generated. {len(chapters)}/{book.chapter_count} ready.",
+        )
+
+    return {"download_url": f"/api/audiobook/books/{book_id}/audio.zip"}
+
+
+@audiobook_router.delete("/books/{book_id}/audio", response_model=DeleteResponse)
+async def delete_all_audio(
+    book_id: int,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> DeleteResponse:
+    """
+    Delete all generated audio for a book.
+    """
+    book = (
+        # pyrefly: ignore[missing-attribute]
+        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    )
+    if book is None or book.deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    chapters = (
+        await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
+    )
+
+    async with get_s3_client() as s3:
+        for chapter in chapters:
+            if chapter.minio_object_name:
+                await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+                chapter.minio_object_name = None
+                await chapter.save()
+
+    return DeleteResponse(deleted=True)

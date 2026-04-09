@@ -1,0 +1,13 @@
+{
+  "lsp": {
+    "python": { "disabled": true },
+    "ruff": {
+      "command": ["uv", "ruff", "lsp"],
+      "extensions": [".py"]
+    },
+    "pyrefly": {
+      "command": ["uv", "pyrefly", "lsp"],
+      "extensions": [".py", ".pyi"]
+    }
+  }
+}
