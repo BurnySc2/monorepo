@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import base64
 import sys
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -161,9 +160,8 @@ async def test_list_voices_idempotent(engine):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_with_default_voice(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
+async def test_generate_audio_with_default_voice(engine, mock_edge_tts, mock_tiktok_httpx):
     """Each engine should generate audio with its default voice."""
-    output_path = str(tmp_path / f"test_{engine}.mp3")
     text = "Hello, this is a test."
 
     voice = DEFAULT_VOICES.get(engine, "default")
@@ -178,9 +176,8 @@ async def test_generate_audio_with_default_voice(engine, tmp_path, mock_edge_tts
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_creates_mp3_file(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
+async def test_generate_audio_creates_mp3_file(engine, mock_edge_tts, mock_tiktok_httpx):
     """Generated file should be a valid MP3 with positive size."""
-    output_path = str(tmp_path / f"test_{engine}_mp3.mp3")
     text = "Testing audio file creation."
     voice = DEFAULT_VOICES.get(engine, "default")
 
@@ -236,9 +233,8 @@ async def test_generate_audio_with_different_text_lengths(engine, tmp_path, mock
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_output_path_returned(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
-    """generate_audio should return the output path."""
-    output_path = str(tmp_path / "specific_path.mp3")
+async def test_generate_audio_output_path_returned(engine, mock_edge_tts, mock_tiktok_httpx):
+    """generate_audio should return audio bytes."""
     text = "Testing output path return."
     voice = DEFAULT_VOICES.get(engine, "default")
 
