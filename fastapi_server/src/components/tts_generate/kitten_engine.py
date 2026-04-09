@@ -104,11 +104,6 @@ async def generate_audio_async(
         wav_file.writeframes(samples_int16.tobytes())
     wav_io.seek(0)
 
-    wav_debug_path = Path(__file__).parent / "debug_kitten.wav"
-    with wav_debug_path.open("wb") as f:
-        f.write(wav_io.read())
-    wav_io.seek(0)
-
     audio = AudioSegment.from_wav(wav_io)
     mp3_io = io.BytesIO()
     audio.export(mp3_io, format="mp3")

@@ -50,6 +50,7 @@ dependencies = [
     "kokoro-onnx>=0.5.0",
     "audioop-lts; python_version >= '3.13'",
     "kittentts>=0.8.1",
+    "pocket-tts>=1.1.1",
 ]
 
 [tool.uv]
