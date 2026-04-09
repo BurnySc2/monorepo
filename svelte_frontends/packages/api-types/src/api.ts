@@ -317,6 +317,26 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    "/api/audiobook/books/{book_id}/audio": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        post?: never
+        /**
+         * Delete All Audio
+         * @description Delete all generated audio for a book.
+         */
+        delete: operations["delete_all_audio_api_audiobook_books__book_id__audio_delete"]
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     "/api/audiobook/books/{book_id}/chapters/{chapter_id}/queue": {
         parameters: {
             query?: never
@@ -435,26 +455,6 @@ export interface paths {
         put?: never
         post?: never
         delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
-    "/api/audiobook/books/{book_id}/audio": {
-        parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
-        post?: never
-        /**
-         * Delete All Audio
-         * @description Delete all generated audio for a book.
-         */
-        delete: operations["delete_all_audio_api_audiobook_books__book_id__audio_delete"]
         options?: never
         head?: never
         patch?: never
@@ -593,11 +593,6 @@ export interface components {
             chapters: components["schemas"]["ChapterDetail"][]
             /** Available Voices */
             available_voices: string[]
-        }
-        /** CancelQueueResponse */
-        CancelQueueResponse: {
-            /** Cancelled */
-            cancelled: boolean
         }
         /** ChapterDetail */
         ChapterDetail: {
@@ -1143,6 +1138,41 @@ export interface operations {
             }
         }
     }
+    delete_all_audio_api_audiobook_books__book_id__audio_delete: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                book_id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["DeleteResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
     queue_chapter_api_audiobook_books__book_id__chapters__chapter_id__queue_post: {
         parameters: {
             query?: never
@@ -1170,42 +1200,6 @@ export interface operations {
                 }
                 content: {
                     "application/json": components["schemas"]["QueueResponse"]
-                }
-            }
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown
-                }
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
-    cancel_queued_chapter_api_audiobook_books__book_id__chapters__chapter_id__queue_delete: {
-        parameters: {
-            query?: never
-            header?: never
-            path: {
-                book_id: number
-                chapter_id: number
-            }
-            cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown
-                }
-                content: {
-                    "application/json": components["schemas"]["CancelQueueResponse"]
                 }
             }
             /** @description Validation Error */
@@ -1350,7 +1344,11 @@ export interface operations {
                 google_access_token?: string | null
             }
         }
-        requestBody?: never
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QueueChapterRequest"]
+            }
+        }
         responses: {
             /** @description Successful Response */
             201: {
@@ -1396,41 +1394,6 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown
                     }
-                }
-            }
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown
-                }
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
-    delete_all_audio_api_audiobook_books__book_id__audio_delete: {
-        parameters: {
-            query?: never
-            header?: never
-            path: {
-                book_id: number
-            }
-            cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown
-                }
-                content: {
-                    "application/json": components["schemas"]["DeleteResponse"]
                 }
             }
             /** @description Validation Error */
