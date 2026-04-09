@@ -15,7 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from . import edge_engine, kitten_engine, kokoro_engine, pocket_engine, tiktok_engine
+from . import edge_engine, kitten_engine, kokoro_engine, tiktok_engine
 from ._voice_info import VoiceInfo
 
 # Supported TTS engines
