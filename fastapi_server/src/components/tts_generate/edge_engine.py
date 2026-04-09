@@ -11,7 +11,7 @@ from pathlib import Path
 import edge_tts
 from cachetools import TTLCache
 
-from components.tts_generate._voice_info import VoiceInfo
+from schemas.tts import VoiceInfo
 
 _voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
 

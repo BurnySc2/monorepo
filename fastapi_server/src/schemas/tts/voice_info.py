@@ -1,13 +1,15 @@
-from dataclasses import dataclass
+from __future__ import annotations
+
+from pydantic import BaseModel
 
 
-@dataclass
-class VoiceInfo:
-    """Information about a TTS voice."""
-
+class VoiceInfo(BaseModel):
     name: str
     short_name: str | None = None
     gender: str | None = None
     locale: str | None = None
     language: str | None = None
     description: str | None = None
+
+
+__all__ = ["VoiceInfo"]

@@ -8,8 +8,11 @@ import arrow
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
-from components.audiobook.models import (
-    AudioSettingsBaseModel,
+from components.login.cookies import LoggedInUser, get_current_user
+from components.tts_generate import VoiceOption, list_all_voices
+from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
+from schemas.audiobook import (
+    AudioSettings,
     BookListItem,
     BookWithChapters,
     CancelQueueResponse,
@@ -19,10 +22,7 @@ from components.audiobook.models import (
     QueueResponse,
     UploadSuccess,
 )
-from components.login.cookies import LoggedInUser, get_current_user
-from components.tts_generate import VoiceOption, list_all_voices
-from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
-from models.audiobook import AudiobookBook, AudiobookChapter
+from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
 
 _queries_directory = Path(__file__).parent.parent / "queries"
 _query_get_chapters = (_queries_directory / "audiobook_get_chapters.sql").read_text()
@@ -228,7 +228,7 @@ async def queue_chapter(
     if chapter is None:
         raise HTTPException(status_code=404, detail="Chapter not found")
 
-    audio_settings = AudioSettingsBaseModel(
+    audio_settings = AudioSettings(
         voice=settings.voice,
         rate=settings.rate,
         volume=settings.volume,

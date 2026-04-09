@@ -18,7 +18,7 @@ import httpx
 from cachetools import TTLCache
 from mutagen.mp3 import MP3
 
-from components.tts_generate._voice_info import VoiceInfo
+from schemas.tts import VoiceInfo
 
 _voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
 

@@ -15,7 +15,7 @@ from kokoro_onnx import Kokoro
 from pydub import audio_segment
 
 from components.tts_generate._download import download_file
-from components.tts_generate._voice_info import VoiceInfo
+from schemas.tts import VoiceInfo
 
 _voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
 

@@ -17,7 +17,7 @@ from piccolo.table import Table, create_db_tables, drop_db_tables
 from piccolo.utils.sync import run_sync
 
 from src.main import app
-from src.models.audiobook import AudiobookBook, AudiobookChapter
+from src.schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
 
 TABLES: list[type[Table]] = [AudiobookBook, AudiobookChapter]
 

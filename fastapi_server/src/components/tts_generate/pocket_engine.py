@@ -10,7 +10,7 @@ from pathlib import Path
 import soundfile as sf
 from pydub import AudioSegment
 
-from components.tts_generate._voice_info import VoiceInfo
+from schemas.tts import VoiceInfo
 from pocket_tts import TTSModel
 
 

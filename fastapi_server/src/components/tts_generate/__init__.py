@@ -11,17 +11,9 @@ Provides a unified API for multiple TTS engines:
 
 from __future__ import annotations
 
-from typing import Literal
+from schemas.tts import ENGINES, TTSEngine, VoiceInfo, VoiceOption
 
 from . import edge_engine, kitten_engine, kokoro_engine, pocket_engine, tiktok_engine
-from ._types import VoiceOption
-from ._voice_info import VoiceInfo
-
-# Supported TTS engines
-TTSEngine = Literal["edge", "kokoro", "kitten", "pocket", "tiktok"]
-
-# List of all engine names for convenience
-ENGINES: list[TTSEngine] = ["edge", "kokoro", "kitten", "pocket", "tiktok"]
 
 
 async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:

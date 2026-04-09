@@ -1,17 +1,11 @@
-"""
-Voice types for TTS generation.
-"""
-
 from __future__ import annotations
 
 from pydantic import BaseModel
 
-from components.tts_generate._voice_info import VoiceInfo
+from schemas.tts.voice_info import VoiceInfo
 
 
 class VoiceOption(BaseModel):
-    """Voice option for frontend select."""
-
     value: str
     label: str
     engine: str
@@ -20,7 +14,6 @@ class VoiceOption(BaseModel):
 
     @classmethod
     def from_voice_info(cls, voice_info: VoiceInfo, engine: str) -> VoiceOption:
-        """Create VoiceOption from VoiceInfo."""
         locale = voice_info.locale or "unknown"
         gender = voice_info.gender or "unknown"
         short_name = voice_info.short_name or voice_info.name
@@ -36,3 +29,6 @@ class VoiceOption(BaseModel):
             locale=locale,
             gender=gender,
         )
+
+
+__all__ = ["VoiceOption", "VoiceInfo"]

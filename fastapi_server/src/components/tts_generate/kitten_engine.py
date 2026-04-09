@@ -19,7 +19,7 @@ import numpy as np
 from pydub import AudioSegment
 
 from components.tts_generate._download import download_file
-from components.tts_generate._voice_info import VoiceInfo
+from schemas.tts import VoiceInfo
 from kittentts.onnx_model import KittenTTS_1_Onnx
 
 _local_dir = Path(__file__).parents[3] / "data" / "kitten-tts-mini-0.8"

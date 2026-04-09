@@ -9,9 +9,10 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from components.audiobook.generate_tts import generate_text_to_speech
-from components.audiobook.models import AudioSettingsBaseModel, get_chapter_combined_text
+from components.audiobook.models import get_chapter_combined_text
 from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_upload
-from models.audiobook import AudiobookChapter
+from schemas.audiobook import AudioSettings
+from schemas.audiobook.db_models import AudiobookChapter
 
 load_dotenv()
 
@@ -106,7 +107,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
 
     async with AudiobookConversionContext(chapter) as context:
         # Generate tts from the book
-        audio_settings: AudioSettingsBaseModel = AudioSettingsBaseModel.model_validate_json(chapter.audio_settings)
+        audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
         audio: io.BytesIO = await generate_text_to_speech(
             chapter.content,
             voice=audio_settings.voice,
@@ -129,9 +130,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         # Save result to MinIO
         try:
             async with get_s3_client() as s3:
-                await object_upload(
-                    s3, GARAGE_AUDIOBOOK_BUCKET, context.minio_object_name, audio
-                )  # pyrefly: ignore[bad-argument-type]
+                await object_upload(s3, GARAGE_AUDIOBOOK_BUCKET, context.minio_object_name, audio)  # pyrefly: ignore[bad-argument-type]
             logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
         except Exception as e:
             logger.error(f"Failed to save audio to MinIO: {e}")
