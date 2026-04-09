@@ -14,8 +14,8 @@ from minio_helper import (
     object_upload_async_iterable,
 )
 from piccolo_conf import DB
-from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
 from schemas.audiobook.api_models import AudiobookChapterQueryResult
+from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
 
 
 def get_book_minio_zip_name(book_id: int) -> str:

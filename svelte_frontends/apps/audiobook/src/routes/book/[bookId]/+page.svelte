@@ -49,15 +49,28 @@ async function load_book() {
 }
 
 async function refresh_chapters(chapter_numbers: number[]) {
-    // TODO: Call API to refresh specific chapters
-    console.log("[UI] Refreshing chapters:", chapter_numbers)
+    if (!book_data) {
+        return
+    }
+    try {
+        const updated_chapters = await api.refresh_chapters(book_id, chapter_numbers)
+        for (const updated of updated_chapters) {
+            const idx = book_data.chapters.findIndex((c) => c.id === updated.id)
+            if (idx !== -1) {
+                book_data.chapters[idx] = updated
+            }
+        }
+    } catch (e) {
+        console.error("Failed to refresh chapters:", e)
+    }
 }
 
 async function handle_edit_title() {
     is_editing_title = !is_editing_title
-    if (!is_editing_title && custom_book_title) {
+    if (!is_editing_title && custom_book_title && book_data) {
         try {
             await api.update_book_title(book_id, custom_book_title)
+            book_data.book.custom_book_title = custom_book_title
         } catch (e) {
             console.error("Failed to update title:", e)
         }
@@ -66,9 +79,10 @@ async function handle_edit_title() {
 
 async function handle_edit_author() {
     is_editing_author = !is_editing_author
-    if (!is_editing_author && custom_book_author) {
+    if (!is_editing_author && custom_book_author && book_data) {
         try {
             await api.update_book_author(book_id, custom_book_author)
+            book_data.book.custom_book_author = custom_book_author
         } catch (e) {
             console.error("Failed to update author:", e)
         }
@@ -76,15 +90,19 @@ async function handle_edit_author() {
 }
 
 async function handle_queue_chapter(chapter_id: number) {
-    if (!book_data) return
+    if (!book_data) {
+        return
+    }
     const chapter = book_data.chapters.find((c) => c.id === chapter_id)
-    if (!chapter) return
+    if (!chapter) {
+        return
+    }
 
     chapter.number_in_queue = -1
     chapter.is_converting = false
 
     try {
-        await api.queue_chapter_audio(book_id, chapter_id)
+        await api.queue_chapter_audio(book_id, chapter_id, audio_settings)
     } catch (e) {
         chapter.number_in_queue = null
         console.error("Failed to queue chapter:", e)
@@ -92,9 +110,13 @@ async function handle_queue_chapter(chapter_id: number) {
 }
 
 async function handle_delete_chapter_audio(chapter_id: number) {
-    if (!book_data) return
+    if (!book_data) {
+        return
+    }
     const chapter = book_data.chapters.find((c) => c.id === chapter_id)
-    if (!chapter) return
+    if (!chapter) {
+        return
+    }
 
     const had_audio = chapter.has_audio
     chapter.has_audio = false
@@ -158,9 +180,10 @@ $effect(() => {
     // Set up periodic refresh every 10 seconds
     refresh_interval = setInterval(() => {
         if (!is_loading && book_data) {
-            const has_queued = book_data.chapters.some((c) => c.number_in_queue !== null || c.is_converting)
-            if (has_queued) {
-                load_book()
+            const queued_chapters = book_data.chapters.filter((c) => c.number_in_queue !== null || c.is_converting)
+            if (queued_chapters.length > 0) {
+                const chapter_numbers = queued_chapters.map((c) => c.chapter_number)
+                refresh_chapters(chapter_numbers)
             }
         }
     }, 10000)

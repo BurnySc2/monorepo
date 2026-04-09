@@ -126,3 +126,6 @@ main.log
 db.json
 sqlite_asyncio_example.db
 todos.db
+
+# npm
+package-lock.json

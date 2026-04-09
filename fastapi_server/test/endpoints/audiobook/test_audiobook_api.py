@@ -48,7 +48,7 @@ def test_upload_non_epub_file(test_client_db_reset: TestClient) -> None:
     fake_file = io.BytesIO(b"not an epub")
     response = test_client_db_reset.post("/api/audiobook/upload", files={"file": ("test.txt", fake_file, "text/plain")})
     assert response.status_code == 400
-    assert "error" in response.json()
+    assert "detail" in response.json()
 
 
 def test_upload_missing_file(test_client_db_reset: TestClient) -> None:
@@ -95,7 +95,7 @@ def test_get_book_not_found(test_client_db_reset: TestClient) -> None:
     """GET /api/audiobook/books/999 returns 404."""
     response = test_client_db_reset.get("/api/audiobook/books/999")
     assert response.status_code == 404
-    assert response.json() == {"error": "Book not found"}
+    assert response.json() == {"detail": "Book not found"}
 
 
 def test_delete_book(test_client_db_reset: TestClient) -> None:
@@ -117,7 +117,7 @@ def test_delete_book_not_found(test_client_db_reset: TestClient) -> None:
     """DELETE /api/audiobook/books/999 returns 404."""
     response = test_client_db_reset.delete("/api/audiobook/books/999")
     assert response.status_code == 404
-    assert response.json() == {"error": "Book not found"}
+    assert response.json() == {"detail": "Book not found"}
 
 
 def test_delete_book_twice(test_client_db_reset: TestClient) -> None:
@@ -128,7 +128,7 @@ def test_delete_book_twice(test_client_db_reset: TestClient) -> None:
 
     response = test_client_db_reset.delete(f"/api/audiobook/books/{book_id}")
     assert response.status_code == 404
-    assert response.json() == {"error": "Book not found"}
+    assert response.json() == {"detail": "Book not found"}
 
 
 def test_deleted_book_not_in_list(test_client_db_reset: TestClient) -> None:
@@ -157,7 +157,7 @@ def test_queue_chapter(test_client_db_reset: TestClient) -> None:
     book_id = _upload_book(test_client_db_reset)
     response = test_client_db_reset.post(
         f"/api/audiobook/books/{book_id}/chapters/1/queue",
-        json={"voice": "en-GB-SoniaNeural", "rate": 0, "volume": 0, "pitch": 0},
+        json={"voice": "en-GB-SoniaNeural"},
     )
     assert response.status_code == 200
     assert response.json() == {"queued": True}
@@ -173,10 +173,10 @@ def test_queue_chapter_book_not_found(test_client_db_reset: TestClient) -> None:
     """POST /api/audiobook/books/999/chapters/1/queue returns 404."""
     response = test_client_db_reset.post(
         "/api/audiobook/books/999/chapters/1/queue",
-        json={"voice": "en-GB-SoniaNeural", "rate": 0, "volume": 0, "pitch": 0},
+        json={"voice": "en-GB-SoniaNeural"},
     )
     assert response.status_code == 404
-    assert response.json() == {"error": "Book not found"}
+    assert response.json() == {"detail": "Book not found"}
 
 
 def test_queue_chapter_chapter_not_found(test_client_db_reset: TestClient) -> None:
@@ -184,10 +184,10 @@ def test_queue_chapter_chapter_not_found(test_client_db_reset: TestClient) -> No
     _upload_book(test_client_db_reset)
     response = test_client_db_reset.post(
         "/api/audiobook/books/1/chapters/999/queue",
-        json={"voice": "en-GB-SoniaNeural", "rate": 0, "volume": 0, "pitch": 0},
+        json={"voice": "en-GB-SoniaNeural"},
     )
     assert response.status_code == 404
-    assert response.json() == {"error": "Chapter not found"}
+    assert response.json() == {"detail": "Chapter not found"}
 
 
 def test_cancel_queued_chapter(test_client_db_reset: TestClient) -> None:
@@ -195,7 +195,7 @@ def test_cancel_queued_chapter(test_client_db_reset: TestClient) -> None:
     book_id = _upload_book(test_client_db_reset)
     test_client_db_reset.post(
         f"/api/audiobook/books/{book_id}/chapters/1/queue",
-        json={"voice": "en-GB-SoniaNeural", "rate": 0, "volume": 0, "pitch": 0},
+        json={"voice": "en-GB-SoniaNeural"},
     )
     response = test_client_db_reset.delete(f"/api/audiobook/books/{book_id}/chapters/1/queue")
     assert response.status_code == 200
@@ -214,7 +214,7 @@ def test_delete_chapter_audio_book_not_found(test_client_db_reset: TestClient) -
     """DELETE /api/audiobook/books/999/chapters/1/audio returns 404."""
     response = test_client_db_reset.delete("/api/audiobook/books/999/chapters/1/audio")
     assert response.status_code == 404
-    assert response.json() == {"error": "Book not found"}
+    assert response.json() == {"detail": "Book not found"}
 
 
 def test_delete_chapter_audio_chapter_not_found(test_client_db_reset: TestClient) -> None:
@@ -222,4 +222,4 @@ def test_delete_chapter_audio_chapter_not_found(test_client_db_reset: TestClient
     _upload_book(test_client_db_reset)
     response = test_client_db_reset.delete("/api/audiobook/books/1/chapters/999/audio")
     assert response.status_code == 404
-    assert response.json() == {"error": "Chapter not found"}
+    assert response.json() == {"detail": "Chapter not found"}

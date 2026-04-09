@@ -126,14 +126,18 @@ export async function update_book_author(book_id: number, author: string): Promi
     }
 }
 
-export async function queue_chapter_audio(book_id: number, chapter_id: number, audio_settings?: AudioSettings): Promise<void> {
+export async function queue_chapter_audio(
+    book_id: number,
+    chapter_id: number,
+    audio_settings?: AudioSettings,
+): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/chapters/${chapter_id}/queue`, {
         method: "POST",
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ audio_settings }),
+        body: JSON.stringify(audio_settings),
     })
 
     if (!response.ok) {
@@ -196,4 +200,23 @@ export async function delete_all_audio(book_id: number): Promise<void> {
     if (!response.ok) {
         throw new Error("Failed to delete all audio")
     }
+}
+
+export async function refresh_chapters(
+    book_id: number,
+    chapter_numbers: number[],
+): Promise<AudiobookChapterQueryResult[]> {
+    const response = await fetch(
+        `${API_BASE_URL}/api/audiobook/books/${book_id}/chapters/status?chapter_numbers=${chapter_numbers.join(",")}`,
+        {
+            credentials: "include",
+        },
+    )
+
+    if (!response.ok) {
+        throw new Error("Failed to refresh chapter status")
+    }
+
+    const data: AudiobookChapterQueryResult[] = await response.json()
+    return data
 }

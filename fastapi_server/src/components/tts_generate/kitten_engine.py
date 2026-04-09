@@ -16,11 +16,11 @@ import wave
 from pathlib import Path
 
 import numpy as np
+from kittentts.onnx_model import KittenTTS_1_Onnx
 from pydub import AudioSegment
 
 from components.tts_generate._download import download_file
 from schemas.tts import VoiceInfo
-from kittentts.onnx_model import KittenTTS_1_Onnx
 
 _local_dir = Path(__file__).parents[3] / "data" / "kitten-tts-mini-0.8"
 _CONFIG_URL = "https://huggingface.co/KittenML/kitten-tts-mini-0.8/resolve/main/config.json"

@@ -93,8 +93,7 @@ class CancelQueueResponse(BaseModel):
 
 
 class QueueChapterRequest(BaseModel):
-    engine_name: str
-    voice_name: str
+    voice: str
 
 
 __all__ = [

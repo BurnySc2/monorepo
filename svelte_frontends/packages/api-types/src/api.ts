@@ -254,6 +254,28 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    "/api/audiobook/books/{book_id}/chapters/status": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Get Chapter Status
+         * @description Get status for specific chapters without full book data.
+         *     Accepts comma-separated chapter numbers via query param 'chapter_numbers'.
+         *     Returns only the status fields (queue position, converting, has_audio).
+         */
+        get: operations["get_chapter_status_api_audiobook_books__book_id__chapters_status_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     "/api/audiobook/upload": {
         parameters: {
             query?: never
@@ -337,6 +359,107 @@ export interface paths {
          *     Removes the audio from Garage and clears the minio_object_name.
          */
         delete: operations["delete_chapter_audio_api_audiobook_books__book_id__chapters__chapter_id__audio_delete"]
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/api/audiobook/books/{book_id}/title": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        /**
+         * Update Book Title
+         * @description Update the custom title for a book.
+         */
+        put: operations["update_book_title_api_audiobook_books__book_id__title_put"]
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/api/audiobook/books/{book_id}/author": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        /**
+         * Update Book Author
+         * @description Update the custom author for a book.
+         */
+        put: operations["update_book_author_api_audiobook_books__book_id__author_put"]
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/api/audiobook/books/{book_id}/queue-all": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * Queue All Chapters
+         * @description Queue all chapters of a book for audio conversion.
+         */
+        post: operations["queue_all_chapters_api_audiobook_books__book_id__queue_all_post"]
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/api/audiobook/books/{book_id}/download": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Download Book
+         * @description Get a download URL for the entire book (all chapters as a single audio file).
+         *     Returns 400 if not all chapters have audio.
+         */
+        get: operations["download_book_api_audiobook_books__book_id__download_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/api/audiobook/books/{book_id}/audio": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        post?: never
+        /**
+         * Delete All Audio
+         * @description Delete all generated audio for a book.
+         */
+        delete: operations["delete_all_audio_api_audiobook_books__book_id__audio_delete"]
         options?: never
         head?: never
         patch?: never
@@ -457,9 +580,9 @@ export interface components {
             /** Book Author */
             book_author: string
             /** Custom Book Title */
-            custom_book_title: string | null
+            custom_book_title?: string | null
             /** Custom Book Author */
-            custom_book_author: string | null
+            custom_book_author?: string | null
             /** Chapter Count */
             chapter_count: number
             /**
@@ -488,7 +611,7 @@ export interface components {
             /** Book Id */
             book_id: number
             /** Number In Queue */
-            number_in_queue: number | null
+            number_in_queue?: number | null
             /** Is Converting */
             is_converting: boolean
             /** Has Audio */
@@ -500,8 +623,11 @@ export interface components {
             /** Sentence Count */
             sentence_count: number
             /** Minio Object Name */
-            minio_object_name: string | null
-            /** Minio Presigned Url */
+            minio_object_name?: string | null
+            /**
+             * Minio Presigned Url
+             * @default
+             */
             minio_presigned_url: string
         }
         /** DeleteResponse */
@@ -518,21 +644,6 @@ export interface components {
         QueueChapterRequest: {
             /** Voice */
             voice: string
-            /**
-             * Rate
-             * @default 0
-             */
-            rate: number
-            /**
-             * Volume
-             * @default 0
-             */
-            volume: number
-            /**
-             * Pitch
-             * @default 0
-             */
-            pitch: number
         }
         /** QueueResponse */
         QueueResponse: {
@@ -559,10 +670,7 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>
         }
-        /**
-         * VoiceOption
-         * @description Voice option for frontend select.
-         */
+        /** VoiceOption */
         VoiceOption: {
             /** Value */
             value: string
@@ -933,6 +1041,43 @@ export interface operations {
             }
         }
     }
+    get_chapter_status_api_audiobook_books__book_id__chapters_status_get: {
+        parameters: {
+            query: {
+                chapter_numbers: string
+            }
+            header?: never
+            path: {
+                book_id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["ChapterDetail"][]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
     upload_epub_api_audiobook_upload_post: {
         parameters: {
             query?: never
@@ -1086,6 +1231,195 @@ export interface operations {
             path: {
                 book_id: number
                 chapter_id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["DeleteResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    update_book_title_api_audiobook_books__book_id__title_put: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                book_id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown
+                }
+            }
+        }
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["BookListItem"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    update_book_author_api_audiobook_books__book_id__author_put: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                book_id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown
+                }
+            }
+        }
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["BookListItem"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    queue_all_chapters_api_audiobook_books__book_id__queue_all_post: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                book_id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["QueueResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    download_book_api_audiobook_books__book_id__download_get: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                book_id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": {
+                        [key: string]: unknown
+                    }
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    delete_all_audio_api_audiobook_books__book_id__audio_delete: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                book_id: number
             }
             cookie?: {
                 twitch_access_token?: string | null

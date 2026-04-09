@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Annotated
 
 import arrow
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
 from components.login.cookies import LoggedInUser, get_current_user
@@ -123,6 +123,70 @@ async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(g
     )
 
 
+@audiobook_router.get("/books/{book_id}/chapters/status", response_model=list[ChapterDetail])
+async def get_chapter_status(
+    book_id: int,
+    chapter_numbers: Annotated[str, ...],
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> list[ChapterDetail]:
+    """
+    Get status for specific chapters without full book data.
+    Accepts comma-separated chapter numbers via query param 'chapter_numbers'.
+    Returns only the status fields (queue position, converting, has_audio).
+    """
+    book = (
+        # pyrefly: ignore[missing-attribute]
+        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    )
+
+    if book is None or book.deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    if chapter_numbers is None:
+        raise HTTPException(status_code=400, detail="chapter_numbers query param required")
+
+    try:
+        chapter_num_list = [int(x.strip()) for x in chapter_numbers.split(",")]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="chapter_numbers must be comma-separated integers")
+
+    chapters_rows: list[dict] = await AudiobookChapter.raw(_query_get_chapters, book_id, chapter_num_list)
+
+    chapters_data = []
+    async with get_s3_client() as s3:
+        for row in chapters_rows:
+            presigned_url = ""
+            if row["minio_object_name"]:
+                presigned_url = (
+                    await object_create_presigned_url(
+                        session=s3,
+                        bucket=GARAGE_AUDIOBOOK_BUCKET,
+                        key=row["minio_object_name"],
+                        file_name=f"{row['chapter_title']}.mp3",
+                        expires_in_seconds=3600,
+                        verify_object_exists=False,
+                    )
+                    or ""
+                )
+
+            chapters_data.append(
+                ChapterDetail(
+                    id=row["id"],
+                    book_id=row["book_id"],
+                    number_in_queue=row["number_in_queue"],
+                    is_converting=row["is_converting"],
+                    has_audio=row["has_audio"],
+                    chapter_title=row["chapter_title"],
+                    chapter_number=row["chapter_number"],
+                    sentence_count=row["sentence_count"],
+                    minio_object_name=row["minio_object_name"],
+                    minio_presigned_url=presigned_url,
+                )
+            )
+
+    return chapters_data
+
+
 @audiobook_router.post("/upload", response_model=UploadSuccess, status_code=201)
 async def upload_epub(
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
@@ -229,8 +293,7 @@ async def queue_chapter(
         raise HTTPException(status_code=404, detail="Chapter not found")
 
     audio_settings = AudioSettings(
-        engine_name=settings.engine_name,
-        voice_name=settings.voice_name,
+        voice_name=settings.voice,
     )
 
     chapter.queued = arrow.utcnow().naive
@@ -312,7 +375,7 @@ async def delete_chapter_audio(
 @audiobook_router.put("/books/{book_id}/title", response_model=BookListItem)
 async def update_book_title(
     book_id: int,
-    title: str,
+    body: Annotated[dict, Body()],
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
 ) -> BookListItem:
     """
@@ -325,7 +388,7 @@ async def update_book_title(
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    book.custom_book_title = title
+    book.custom_book_title = body["title"]
     await book.save()
 
     return BookListItem(
@@ -343,7 +406,7 @@ async def update_book_title(
 @audiobook_router.put("/books/{book_id}/author", response_model=BookListItem)
 async def update_book_author(
     book_id: int,
-    author: str,
+    body: Annotated[dict, Body()],
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
 ) -> BookListItem:
     """
@@ -356,7 +419,7 @@ async def update_book_author(
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    book.custom_book_author = author
+    book.custom_book_author = body["author"]
     await book.save()
 
     return BookListItem(
@@ -417,7 +480,7 @@ async def download_book(
     chapters = (
         await AudiobookChapter.objects()
         .where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
-        .where(AudiobookChapter.minio_object_name != None)
+        .where(AudiobookChapter.minio_object_name != None)  # noqa: E711
     )
 
     if len(chapters) != book.chapter_count:

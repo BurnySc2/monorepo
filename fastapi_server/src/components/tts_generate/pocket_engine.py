@@ -8,11 +8,10 @@ from io import BytesIO
 from pathlib import Path
 
 import soundfile as sf
+from pocket_tts import TTSModel
 from pydub import AudioSegment
 
 from schemas.tts import VoiceInfo
-from pocket_tts import TTSModel
-
 
 _local_dir = Path(__file__).parents[3] / "data" / "pocket-tts"
 _local_dir.mkdir(parents=True, exist_ok=True)

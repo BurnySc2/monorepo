@@ -78,9 +78,7 @@ class TestConvertOne:
         mock_chapter.chapter_number = 1
         mock_chapter.book = 1
         mock_chapter.content = "Test chapter content"
-        mock_chapter.audio_settings = (
-            '{"engine_name": "kokoro", "voice_name": "bella", "rate": 0, "volume": 0, "pitch": 0}'
-        )
+        mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
         mock_chapter.minio_object_name = None
 
         mock_audio = io.BytesIO(b"fake audio data")
@@ -118,9 +116,7 @@ class TestConvertOne:
         """Test that conversion is skipped when chapter is deleted during conversion."""
         mock_chapter = MagicMock()
         mock_chapter.id = 42
-        mock_chapter.audio_settings = (
-            '{"engine_name": "kokoro", "voice_name": "bella", "rate": 0, "volume": 0, "pitch": 0}'
-        )
+        mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
 
         mock_audio = io.BytesIO(b"fake audio data")
 
@@ -150,9 +146,7 @@ class TestConvertOne:
         """Test that conversion is skipped when audio settings changed during conversion."""
         mock_chapter = MagicMock()
         mock_chapter.id = 42
-        mock_chapter.audio_settings = (
-            '{"engine_name": "kokoro", "voice_name": "bella", "rate": 0, "volume": 0, "pitch": 0}'
-        )
+        mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
 
         mock_audio = io.BytesIO(b"fake audio data")
 
@@ -171,9 +165,7 @@ class TestConvertOne:
 
             with patch("src.workers.convert_audiobook.AudiobookChapter.objects") as mock_objects:
                 mock_chapter2 = MagicMock()
-                mock_chapter2.audio_settings = (
-                    '{"engine_name": "kokoro", "voice_name": "joey", "rate": 1, "volume": 1, "pitch": 1}'
-                )
+                mock_chapter2.audio_settings = '{"engine_name": "kokoro", "voice_name": "joey"}'
                 mock_objects.return_value.where.return_value.first = AsyncMock(return_value=mock_chapter2)
 
                 with patch("src.workers.convert_audiobook.get_s3_client") as mock_s3:
