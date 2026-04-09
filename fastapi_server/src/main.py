@@ -29,30 +29,11 @@ GARAGE_AUDIOBOOK_MAX_SIZE_MB = int(os.getenv("GARAGE_AUDIOBOOK_MAX_SIZE_MB", "10
 GARAGE_KEY_NAME = os.getenv("GARAGE_KEY_NAME", "audiobook-key")
 
 
-async def init_garage() -> None:
-    bucket_name = GARAGE_AUDIOBOOK_BUCKET
-    max_size_bytes = GARAGE_AUDIOBOOK_MAX_SIZE_MB * 1024 * 1024
-
-    async with get_s3_client() as s3:
-        await bucket_create(s3, bucket_name)
-
-    try:
-        bucket_id = await GarageInit.bucket_id(bucket_name)
-        if bucket_id is None:
-            print(f"[init] Garage: bucket '{bucket_name}' created, quota not set (Admin API unavailable)")
-        else:
-            await GarageInit.set_quota(bucket_id, max_size_bytes)
-            key = await GarageInit.create_key(GARAGE_KEY_NAME)
-            await GarageInit.allow_bucket(key["accessKeyId"], bucket_id)
-            print(f"[init] Garage: bucket={bucket_name}, key_id={key['accessKeyId']}")
-    except (httpx.HTTPError, KeyError) as e:
-        print(f"[init] Garage: bucket '{bucket_name}' created, skip quota/key setup ({type(e).__name__}: {e})")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_garage()
+    # Startup
     yield
+    # End
 
 
 app = FastAPI(lifespan=lifespan)

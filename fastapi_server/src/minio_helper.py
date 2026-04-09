@@ -91,8 +91,8 @@ async def get_s3_client() -> AsyncGenerator[S3Client, None]:
     async with session.client(
         "s3",
         endpoint_url=GARAGE_S3_URL,
-        aws_access_key_id=GARAGE_ACCESS_KEY,
-        aws_secret_access_key=GARAGE_SECRET_KEY,
+        aws_access_key_id=GARAGE_SECRET_KEY,
+        aws_secret_access_key=GARAGE_ACCESS_KEY,
     ) as s3:
         yield s3  # This yields the client to the endpoint and closes it automatically afterward
 
@@ -190,11 +190,7 @@ async def object_create_presigned_url(
 
 
 async def bucket_create(session: S3Client, bucket: str) -> None:
-    try:  # noqa: SIM105
-        _ = await session.create_bucket(Bucket=bucket)
-    # BucketAlreadyOwnedByYou - where to import that from?!
-    except Exception:  # noqa: BLE001
-        pass
+    _ = await session.create_bucket(Bucket=bucket)
 
 
 async def bucket_set_expiration(session: S3Client, bucket: str, days: int) -> None:
