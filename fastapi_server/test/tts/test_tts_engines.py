@@ -19,7 +19,6 @@ DEFAULT_VOICES = {
     "kokoro": "af_bella",
     "kitten": "default",
     "pocket": "alba",
-    "supertonic": "F1",
     "tiktok": "en_us_002",
 }
 

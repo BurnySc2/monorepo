@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 CLOUD_ENGINES = ["edge", "tiktok"]
 
 # Local engines (require model loading)
-LOCAL_ENGINES = ["kokoro", "kitten", "pocket", "supertonic"]
+LOCAL_ENGINES = ["kokoro", "kitten", "pocket"]
 
 
 @pytest.fixture
@@ -55,12 +55,6 @@ def kokoro_voice():
 def tiktok_voice():
     """Default voice for TikTok TTS."""
     return "en_us_002"
-
-
-@pytest.fixture
-def supertonic_voice():
-    """Default voice for Supertonic TTS."""
-    return "F1"
 
 
 @pytest.fixture

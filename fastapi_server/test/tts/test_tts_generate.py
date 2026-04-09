@@ -103,7 +103,6 @@ class TestTTSEngine:
             "kokoro",
             "kitten",
             "pocket",
-            "supertonic",
             "tiktok",
         ]
         assert len(valid_engines) == 6

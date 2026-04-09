@@ -121,13 +121,6 @@ class TestLocalEnginesModuleStructure:
         assert hasattr(pocket_engine, "list_voices_async")
         assert hasattr(pocket_engine, "generate_audio_async")
 
-    @pytest.mark.asyncio
-    async def test_supertonic_has_required_functions(self):
-        from components.tts_generate import supertonic_engine
-
-        assert hasattr(supertonic_engine, "list_voices_async")
-        assert hasattr(supertonic_engine, "generate_audio_async")
-
 
 class TestUnifiedAPIIntegration:
     """Integration tests for unified API."""
@@ -137,7 +130,7 @@ class TestUnifiedAPIIntegration:
         """All engines should be listed in ENGINES constant."""
         from components.tts_generate import ENGINES
 
-        expected_engines = ["edge", "kokoro", "kitten", "pocket", "supertonic", "tiktok"]
+        expected_engines = ["edge", "kokoro", "kitten", "pocket", "tiktok"]
         assert sorted(ENGINES) == sorted(expected_engines)
 
     @pytest.mark.asyncio
@@ -150,7 +143,6 @@ class TestUnifiedAPIIntegration:
             "kokoro",
             "kitten",
             "pocket",
-            "supertonic",
             "tiktok",
         ]
         assert len(valid_engines) == 6
