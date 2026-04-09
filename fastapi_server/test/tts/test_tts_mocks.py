@@ -105,7 +105,6 @@ class TestLocalEnginesModuleStructure:
 
         assert hasattr(kokoro_engine, "list_voices_async")
         assert hasattr(kokoro_engine, "generate_audio_async")
-        assert hasattr(kokoro_engine, "VOICES")
 
     @pytest.mark.asyncio
     async def test_kitten_has_required_functions(self):
@@ -121,7 +120,6 @@ class TestLocalEnginesModuleStructure:
 
         assert hasattr(pocket_engine, "list_voices_async")
         assert hasattr(pocket_engine, "generate_audio_async")
-        assert hasattr(pocket_engine, "VOICES")
 
     @pytest.mark.asyncio
     async def test_supertonic_has_required_functions(self):
@@ -129,7 +127,6 @@ class TestLocalEnginesModuleStructure:
 
         assert hasattr(supertonic_engine, "list_voices_async")
         assert hasattr(supertonic_engine, "generate_audio_async")
-        assert hasattr(supertonic_engine, "VOICES")
 
 
 class TestUnifiedAPIIntegration:

@@ -1,82 +1,279 @@
 """
 TikTok TTS - Unofficial TikTok voice API using session authentication.
-Get sessionid via "sessionid" cookie after logging in on TikTok.
+
+Get sessionid via "sessionid" cookie after logging in on tiktok.
+With cookie name "store-idc" you can find the server name your sessionid works with.
+
+https://github.com/oscie57/tiktok-voice/issues/1
+https://github.com/oscie57/tiktok-voice/wiki/Voice-Codes
 """
 
 from __future__ import annotations
 
 import base64
 import os
-from collections import OrderedDict
-from dataclasses import dataclass
 from io import BytesIO
-from pathlib import Path
 
 import httpx
+from cachetools import TTLCache
 from mutagen.mp3 import MP3
 
+from components.tts_generate._voice_info import VoiceInfo
 
-@dataclass
-class VoiceInfo:
-    """Information about a voice."""
+_voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
 
-    name: str
-    code: str
-    language: str
-    description: str
-
-
-VOICES = [
-    # English
-    VoiceInfo("ENGLISH_AU_FEMALE_METRO_EDDIE", "en_au_001", "English (AU)", "Australian Female - Eddie"),
-    VoiceInfo("ENGLISH_AU_MALE_SMOOTH_ALEX", "en_au_002", "English (AU)", "Australian Male - Smooth Alex"),
-    VoiceInfo("ENGLISH_UK_MALE_1", "en_uk_001", "English (UK)", "UK Male 1"),
-    VoiceInfo("ENGLISH_UK_MALE_2", "en_uk_003", "English (UK)", "UK Male 2"),
-    VoiceInfo("ENGLISH_US_FEMALE_JESSIE", "en_us_002", "English (US)", "US Female - Jessie"),
-    VoiceInfo("ENGLISH_US_MALE_JOEY", "en_us_006", "English (US)", "US Male - Joey"),
-    VoiceInfo("ENGLISH_US_MALE_PROFESSOR", "en_us_007", "English (US)", "US Male - Professor"),
-    VoiceInfo("ENGLISH_US_MALE_SCIENTIST", "en_us_009", "English (US)", "US Male - Scientist"),
-    VoiceInfo("ENGLISH_US_MALE_CONFIDENCE", "en_us_010", "English (US)", "US Male - Confidence"),
-    # Disney voices
-    VoiceInfo("GHOST_FACE", "en_us_ghostface", "English (US)", "Ghost Face (Scream)"),
-    VoiceInfo("CHEWBACCA", "en_us_chewbacca", "English (US)", "Chewbacca"),
-    VoiceInfo("C3PO", "en_us_c3po", "English (US)", "C-3PO"),
-    VoiceInfo("STITCH", "en_us_stitch", "English (US)", "Stitch"),
-    VoiceInfo("STORMTROOPER", "en_us_stormtrooper", "English (US)", "Stormtrooper"),
-    VoiceInfo("ROCKET", "en_us_rocket", "English (US)", "Rocket (Guardians of the Galaxy)"),
-    # French
-    VoiceInfo("FRENCH_MALE_1", "fr_001", "French", "French Male 1"),
-    VoiceInfo("FRENCH_MALE_2", "fr_002", "French", "French Male 2"),
-    # German
-    VoiceInfo("GERMAN_FEMALE", "de_001", "German", "German Female"),
-    VoiceInfo("GERMAN_MALE", "de_002", "German", "German Male"),
-    # Spanish
-    VoiceInfo("SPANISH_MALE", "es_002", "Spanish", "Spanish Male"),
-    VoiceInfo("SPANISH_MALE_JULIO", "es_male_m3", "Spanish", "Spanish Male - Julio"),
-    VoiceInfo("SPANISH_FEMALE_ALEJANDRA", "es_female_f6", "Spanish", "Spanish Female - Alejandra"),
-    VoiceInfo("SPANISH_FEMALE_MARIANA", "es_female_fp1", "Spanish", "Spanish Female - Mariana"),
-    # Japanese
-    VoiceInfo("JAPANESE_FEMALE_1", "jp_001", "Japanese", "Japanese Female 1"),
-    VoiceInfo("JAPANESE_FEMALE_2", "jp_003", "Japanese", "Japanese Female 2"),
-    VoiceInfo("JAPANESE_FEMALE_3", "jp_005", "Japanese", "Japanese Female 3"),
-    VoiceInfo("JAPANESE_MALE", "jp_006", "Japanese", "Japanese Male"),
-    # Korean
-    VoiceInfo("KOREAN_MALE_1", "kr_002", "Korean", "Korean Male 1"),
-    VoiceInfo("KOREAN_FEMALE", "kr_003", "Korean", "Korean Female"),
-    VoiceInfo("KOREAN_MALE_2", "kr_004", "Korean", "Korean Male 2"),
-]
+# Cache: (voice_code, text) -> (audio_bytes, duration)
+_audio_cache: TTLCache = TTLCache(maxsize=1000, ttl=3600)
 
 SESSION_ID = os.getenv("TIKTOK_SESSION_ID")
-CACHE_LIMIT = 1000
 
-# Cache: (voice_code, text) -> (audio_path, duration)
-_tts_cache: OrderedDict[tuple[str, str], tuple[str, float]] = OrderedDict()
-
-# API domains for TikTok TTS
 API_DOMAINS = [
     "https://api16-normal-c-useast2a.tiktokv.com",
 ]
 API_PATH = "/media/api/text/speech/invoke/"
+
+VOICES = [
+    VoiceInfo(
+        name="en_au_001",
+        short_name="Eddie",
+        gender="Female",
+        locale="en-au",
+        language="English (AU)",
+        description="Australian Female - Eddie",
+    ),
+    VoiceInfo(
+        name="en_au_002",
+        short_name="Alex",
+        gender="Male",
+        locale="en-au",
+        language="English (AU)",
+        description="Australian Male - Smooth Alex",
+    ),
+    VoiceInfo(
+        name="en_uk_001",
+        short_name="UK Male 1",
+        gender="Male",
+        locale="en-uk",
+        language="English (UK)",
+        description="UK Male 1",
+    ),
+    VoiceInfo(
+        name="en_uk_003",
+        short_name="UK Male 2",
+        gender="Male",
+        locale="en-uk",
+        language="English (UK)",
+        description="UK Male 2",
+    ),
+    VoiceInfo(
+        name="en_us_002",
+        short_name="Jessie",
+        gender="Female",
+        locale="en-us",
+        language="English (US)",
+        description="US Female - Jessie",
+    ),
+    VoiceInfo(
+        name="en_us_006",
+        short_name="Joey",
+        gender="Male",
+        locale="en-us",
+        language="English (US)",
+        description="US Male - Joey",
+    ),
+    VoiceInfo(
+        name="en_us_007",
+        short_name="Professor",
+        gender="Male",
+        locale="en-us",
+        language="English (US)",
+        description="US Male - Professor",
+    ),
+    VoiceInfo(
+        name="en_us_009",
+        short_name="Scientist",
+        gender="Male",
+        locale="en-us",
+        language="English (US)",
+        description="US Male - Scientist",
+    ),
+    VoiceInfo(
+        name="en_us_010",
+        short_name="Confidence",
+        gender="Male",
+        locale="en-us",
+        language="English (US)",
+        description="US Male - Confidence",
+    ),
+    VoiceInfo(
+        name="en_us_ghostface",
+        short_name="Ghost Face",
+        gender="Unknown",
+        locale="en-us",
+        language="English (US)",
+        description="Ghost Face (Scream)",
+    ),
+    VoiceInfo(
+        name="en_us_chewbacca",
+        short_name="Chewbacca",
+        gender="Unknown",
+        locale="en-us",
+        language="English (US)",
+        description="Chewbacca",
+    ),
+    VoiceInfo(
+        name="en_us_c3po",
+        short_name="C-3PO",
+        gender="Unknown",
+        locale="en-us",
+        language="English (US)",
+        description="C-3PO",
+    ),
+    VoiceInfo(
+        name="en_us_stitch",
+        short_name="Stitch",
+        gender="Unknown",
+        locale="en-us",
+        language="English (US)",
+        description="Stitch",
+    ),
+    VoiceInfo(
+        name="en_us_stormtrooper",
+        short_name="Stormtrooper",
+        gender="Unknown",
+        locale="en-us",
+        language="English (US)",
+        description="Stormtrooper",
+    ),
+    VoiceInfo(
+        name="en_us_rocket",
+        short_name="Rocket",
+        gender="Unknown",
+        locale="en-us",
+        language="English (US)",
+        description="Rocket (Guardians of the Galaxy)",
+    ),
+    VoiceInfo(
+        name="fr_001",
+        short_name="French Male 1",
+        gender="Male",
+        locale="fr-fr",
+        language="French",
+        description="French Male 1",
+    ),
+    VoiceInfo(
+        name="fr_002",
+        short_name="French Male 2",
+        gender="Male",
+        locale="fr-fr",
+        language="French",
+        description="French Male 2",
+    ),
+    VoiceInfo(
+        name="de_001",
+        short_name="German Female",
+        gender="Female",
+        locale="de-de",
+        language="German",
+        description="German Female",
+    ),
+    VoiceInfo(
+        name="de_002",
+        short_name="German Male",
+        gender="Male",
+        locale="de-de",
+        language="German",
+        description="German Male",
+    ),
+    VoiceInfo(
+        name="es_002",
+        short_name="Spanish Male",
+        gender="Male",
+        locale="es-es",
+        language="Spanish",
+        description="Spanish Male",
+    ),
+    VoiceInfo(
+        name="es_male_m3",
+        short_name="Julio",
+        gender="Male",
+        locale="es-es",
+        language="Spanish",
+        description="Spanish Male - Julio",
+    ),
+    VoiceInfo(
+        name="es_female_f6",
+        short_name="Alejandra",
+        gender="Female",
+        locale="es-es",
+        language="Spanish",
+        description="Spanish Female - Alejandra",
+    ),
+    VoiceInfo(
+        name="es_female_fp1",
+        short_name="Mariana",
+        gender="Female",
+        locale="es-es",
+        language="Spanish",
+        description="Spanish Female - Mariana",
+    ),
+    VoiceInfo(
+        name="jp_001",
+        short_name="Japanese Female 1",
+        gender="Female",
+        locale="ja-jp",
+        language="Japanese",
+        description="Japanese Female 1",
+    ),
+    VoiceInfo(
+        name="jp_003",
+        short_name="Japanese Female 2",
+        gender="Female",
+        locale="ja-jp",
+        language="Japanese",
+        description="Japanese Female 2",
+    ),
+    VoiceInfo(
+        name="jp_005",
+        short_name="Japanese Female 3",
+        gender="Female",
+        locale="ja-jp",
+        language="Japanese",
+        description="Japanese Female 3",
+    ),
+    VoiceInfo(
+        name="jp_006",
+        short_name="Japanese Male",
+        gender="Male",
+        locale="ja-jp",
+        language="Japanese",
+        description="Japanese Male",
+    ),
+    VoiceInfo(
+        name="kr_002",
+        short_name="Korean Male 1",
+        gender="Male",
+        locale="ko-kr",
+        language="Korean",
+        description="Korean Male 1",
+    ),
+    VoiceInfo(
+        name="kr_003",
+        short_name="Korean Female",
+        gender="Female",
+        locale="ko-kr",
+        language="Korean",
+        description="Korean Female",
+    ),
+    VoiceInfo(
+        name="kr_004",
+        short_name="Korean Male 2",
+        gender="Male",
+        locale="ko-kr",
+        language="Korean",
+        description="Korean Male 2",
+    ),
+]
 
 
 async def list_voices_async() -> list[VoiceInfo]:
@@ -87,34 +284,20 @@ async def list_voices_async() -> list[VoiceInfo]:
 async def generate_audio_async(
     voice: str,
     text: str,
-    output_path: str | None = None,
-) -> tuple[str, float]:
+) -> tuple[bytes, float]:
     """
     Generate audio using TikTok TTS.
 
     Args:
         voice: Voice code (e.g., "en_us_002")
         text: Text to synthesize
-        output_path: Optional output path. If None, a temp file is created.
 
     Returns:
-        Tuple of (output_path, duration_seconds)
+        Tuple of (audio_bytes, duration_seconds)
     """
-    if output_path is None:
-        import tempfile
-
-        output_path = tempfile.mktemp(suffix=".mp3")
-
     key = (voice, text)
-    if key in _tts_cache:
-        # Refresh cache order
-        _tts_cache[key] = _tts_cache.pop(key)
-        cached_path, cached_duration = _tts_cache[key]
-        # Copy cached file to requested output
-        import shutil
-
-        shutil.copy(cached_path, output_path)
-        return output_path, cached_duration
+    if key in _audio_cache:
+        return _audio_cache[key]
 
     headers = {
         "User-Agent": (
@@ -140,22 +323,41 @@ async def generate_audio_async(
     if status_code != 0:
         raise RuntimeError(f"TikTok TTS failed: {data}")
 
-    # Decode base64 audio
     b64data = data["data"]["v_str"]
-    b64data_decoded = base64.b64decode(b64data)
-    audio_stream = BytesIO(b64data_decoded)
+    audio_bytes = base64.b64decode(b64data)
 
-    # Get duration
-    mp3_info = MP3(audio_stream)
+    mp3_info = MP3(BytesIO(audio_bytes))
     duration = mp3_info.info.length
-    audio_stream.seek(0)
 
-    # Write to output file
-    Path(output_path).write_bytes(b64data_decoded)
+    _audio_cache[key] = (audio_bytes, duration)
 
-    # Update cache
-    if len(_tts_cache) > CACHE_LIMIT:
-        _tts_cache.popitem(last=False)
-    _tts_cache[key] = (output_path, duration)
+    return audio_bytes, duration
 
-    return output_path, duration
+
+async def main() -> None:
+    """Run to list all voices and generate a sample MP3."""
+    from pathlib import Path
+
+    from loguru import logger
+
+    voices = await list_voices_async()
+    logger.info(f"Found {len(voices)} voices:")
+    for voice in voices:
+        display = voice.short_name or voice.name
+        logger.info(f"  {display} ({voice.gender}, {voice.locale}) - {voice.description}")
+
+    sample_voice = "en_us_002"
+    sample_text = "Hello from TikTok TTS! This is a test."
+    output_path = Path(__file__).parent / "sample_tiktok.mp3"
+
+    logger.info(f"Generating sample audio with voice '{sample_voice}'...")
+    audio_bytes, duration = await generate_audio_async(sample_voice, sample_text)
+    with output_path.open("wb") as f:
+        f.write(audio_bytes)
+    logger.success(f"Audio saved to: {output_path} (duration: {duration:.1f}s)")
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(main())

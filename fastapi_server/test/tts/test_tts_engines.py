@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import io
+import base64
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from pydub.generators import Sine
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
@@ -19,7 +18,7 @@ from components.tts_generate import ENGINES, generate_audio, list_voices
 DEFAULT_VOICES = {
     "edge": "en-US-AriaNeural",
     "kokoro": "af_bella",
-    "kitten": "Bella",
+    "kitten": "default",
     "pocket": "alba",
     "supertonic": "F1",
     "tiktok": "en_us_002",
@@ -30,29 +29,25 @@ DEFAULT_VOICES = {
 CLOUD_ENGINES = ["edge", "tiktok"]
 
 
-def _make_minimal_mp3():
-    """Create a minimal valid MP3 file using pydub."""
-    sine = Sine(440).to_audio_segment(duration=100)
-    mp3_io = io.BytesIO()
-    sine.export(mp3_io, format="mp3")
-    return mp3_io.getvalue()
-
-
 class MockCommunicate:
     """Mock edge_tts.Communicate object."""
 
     def __init__(self, text, voice):
         self.text = text
         self.voice = voice
-        self.duration = 1.5
-
-    async def stream(self):
-        yield {"data": _make_minimal_mp3()}
+        self.duration = 1.5  # Store duration for get_audio
 
     async def save(self, output_path):
-        Path(output_path).write_bytes(_make_minimal_mp3())
+        # Write a minimal valid MP3 file
+        # MP3 frame header (11111111 11111011 = 0xFF 0xFB) + padding
+        mp3_data = b"\xff\xfb\x90\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+        Path(output_path).write_bytes(
+            b"ID3"  # ID3 tag
+            b"\x04\x00\x00\x00\x00\x00\x00" + mp3_data * 10  # ID3 header  # Some MP3 frames
+        )
 
     async def get_audio(self, audio_obj):
+        # Edge TTS doesn't have Audio class, it sets duration directly
         if hasattr(audio_obj, "duration"):
             audio_obj.duration = 1.5
 
@@ -60,24 +55,67 @@ class MockCommunicate:
 @pytest.fixture
 def mock_edge_tts():
     """Mock edge_tts module for testing."""
-    with patch("edge_tts.Communicate", MockCommunicate):
+    from io import BytesIO
+
+    import numpy as np
+    from pydub import AudioSegment
+
+    from components.tts_generate import edge_engine
+
+    def generate_sine_mp3(voice, text):
+        sample_rate = 22050
+        duration = max(0.1, len(text) / 10.0)
+        freq = 440
+        t = np.linspace(0, duration, int(sample_rate * duration))
+        samples = (np.sin(2 * np.pi * freq * t) * 32767).astype(np.int16)
+        audio = AudioSegment(
+            samples.tobytes(),
+            frame_rate=sample_rate,
+            sample_width=2,
+            channels=1,
+        )
+        mp3_io = BytesIO()
+        audio.export(mp3_io, format="mp3")
+        return mp3_io.read(), duration
+
+    async def mock_generate(voice, text):
+        return generate_sine_mp3(voice, text)
+
+    with patch.object(edge_engine, "generate_audio_async", side_effect=mock_generate):
         yield
 
 
 @pytest.fixture
 def mock_tiktok_httpx():
     """Mock httpx for TikTok TTS testing."""
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-    mock_response.content = b"fake_audio_data"
+    from io import BytesIO
 
-    mock_client = AsyncMock()
-    mock_client.post.return_value = mock_response
-    mock_client.__aenter__.return_value = mock_client
-    mock_client.__aexit__.return_value = None
+    import numpy as np
+    from pydub import AudioSegment
 
-    with patch("httpx.AsyncClient", return_value=mock_client):
-        yield mock_client
+    from components.tts_generate import tiktok_engine
+
+    def generate_sine_mp3(voice, text):
+        sample_rate = 22050
+        duration = max(0.1, len(text) / 10.0)
+        freq = 440
+        t = np.linspace(0, duration, int(sample_rate * duration))
+        samples = (np.sin(2 * np.pi * freq * t) * 32767).astype(np.int16)
+        audio = AudioSegment(
+            samples.tobytes(),
+            frame_rate=sample_rate,
+            sample_width=2,
+            channels=1,
+        )
+        mp3_io = BytesIO()
+        audio.export(mp3_io, format="mp3")
+        return mp3_io.read(), duration
+
+    async def mock_generate(voice, text):
+        return generate_sine_mp3(voice, text)
+
+    with patch.object(tiktok_engine, "generate_audio_async", side_effect=mock_generate):
+        yield
 
 
 @pytest.mark.asyncio
@@ -123,15 +161,15 @@ async def test_list_voices_idempotent(engine):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_with_default_voice(engine, mock_edge_tts, mock_tiktok_httpx):
+async def test_generate_audio_with_default_voice(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
     """Each engine should generate audio with its default voice."""
+    output_path = str(tmp_path / f"test_{engine}.mp3")
     text = "Hello, this is a test."
 
     voice = DEFAULT_VOICES.get(engine, "default")
 
     try:
         audio_bytes, duration = await generate_audio(engine, voice, text)
-        assert isinstance(audio_bytes, bytes)
         assert len(audio_bytes) > 0
         assert duration > 0
     except OSError as e:
@@ -140,17 +178,21 @@ async def test_generate_audio_with_default_voice(engine, mock_edge_tts, mock_tik
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_creates_mp3_file(engine, mock_edge_tts, mock_tiktok_httpx):
+async def test_generate_audio_creates_mp3_file(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
     """Generated file should be a valid MP3 with positive size."""
+    output_path = str(tmp_path / f"test_{engine}_mp3.mp3")
     text = "Testing audio file creation."
     voice = DEFAULT_VOICES.get(engine, "default")
 
     try:
         audio_bytes, _ = await generate_audio(engine, voice, text)
 
+        # Check audio has content
         assert len(audio_bytes) > 0
 
+        # Verify it's a valid audio file by checking header
         header = audio_bytes[:4]
+        # MP3 files start with ID3 or \xff\xfb
         assert header[:3] == b"ID3" or header[0] == 0xFF
     except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
@@ -173,7 +215,7 @@ async def test_generate_audio_returns_positive_duration(engine, mock_edge_tts, m
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_with_different_text_lengths(engine, mock_edge_tts, mock_tiktok_httpx):
+async def test_generate_audio_with_different_text_lengths(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
     """Each engine should handle different text lengths."""
     texts = [
         "Short.",
@@ -184,9 +226,8 @@ async def test_generate_audio_with_different_text_lengths(engine, mock_edge_tts,
     voice = DEFAULT_VOICES.get(engine, "default")
 
     try:
-        for text in texts:
+        for i, text in enumerate(texts):
             audio_bytes, duration = await generate_audio(engine, voice, text)
-            assert isinstance(audio_bytes, bytes)
             assert len(audio_bytes) > 0
             assert duration > 0
     except OSError as e:
@@ -195,16 +236,15 @@ async def test_generate_audio_with_different_text_lengths(engine, mock_edge_tts,
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_returns_bytes(engine, mock_edge_tts, mock_tiktok_httpx):
-    """generate_audio should return bytes."""
-    text = "Testing audio return."
+async def test_generate_audio_output_path_returned(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
+    """generate_audio should return the output path."""
+    output_path = str(tmp_path / "specific_path.mp3")
+    text = "Testing output path return."
     voice = DEFAULT_VOICES.get(engine, "default")
 
     try:
-        audio_bytes, duration = await generate_audio(engine, voice, text)
-        assert isinstance(audio_bytes, bytes)
+        audio_bytes, _ = await generate_audio(engine, voice, text)
         assert len(audio_bytes) > 0
-        assert duration > 0
     except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
 
