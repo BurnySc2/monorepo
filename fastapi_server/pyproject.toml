@@ -49,6 +49,7 @@ dependencies = [
     "pydub>=0.25.1",
     "phonemizer>=3.3.0",
     "audioop-lts>=0.2.2",
+    "kittentts>=0.1.3",
 ]
 
 [tool.uv]

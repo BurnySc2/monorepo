@@ -1,30 +1,45 @@
 """
 KittenTTS - Ultra-lightweight CPU-friendly TTS (15-80M params).
+https://github.com/KittenML/KittenTTS
+https://kittenml-kittentts.mintlify.app/concepts/voices
+
+Requires espeak-ng installed on system
 """
 
 from __future__ import annotations
 
+import io
 import tempfile
-from dataclasses import dataclass
+import wave
 
+import numpy as np
+from pydub import AudioSegment
 
-@dataclass
-class VoiceInfo:
-    """Information about a voice."""
-
-    name: str
-    language: str
-    description: str
+from components.tts_generate._voice_info import VoiceInfo
 
 
 VOICES = [
-    VoiceInfo("default", "en", "Default English voice"),
+    VoiceInfo(name="expr-voice-2-f", short_name="Bella", gender="Female", locale="en-us"),
+    VoiceInfo(name="expr-voice-2-m", short_name="Jasper", gender="Male", locale="en-us"),
+    VoiceInfo(name="expr-voice-3-f", short_name="Luna", gender="Female", locale="en-us"),
+    VoiceInfo(name="expr-voice-3-m", short_name="Bruno", gender="Male", locale="en-us"),
+    VoiceInfo(name="expr-voice-4-f", short_name="Rosie", gender="Female", locale="en-us"),
+    VoiceInfo(name="expr-voice-4-m", short_name="Hugo", gender="Male", locale="en-us"),
+    VoiceInfo(name="expr-voice-5-f", short_name="Kiki", gender="Female", locale="en-us"),
+    VoiceInfo(name="expr-voice-5-m", short_name="Leo", gender="Male", locale="en-us"),
 ]
 
 
 async def list_voices_async() -> list[VoiceInfo]:
     """List all available KittenTTS voices."""
     return VOICES
+
+
+def _get_voice_by_short(short_name: str) -> VoiceInfo | None:
+    for v in VOICES:
+        if v.short_name == short_name:
+            return v
+    return None
 
 
 async def generate_audio_async(
@@ -48,8 +63,27 @@ async def generate_audio_async(
     if output_path is None:
         output_path = tempfile.mktemp(suffix=".mp3")
 
+    voice_info = _get_voice_by_short(voice)
+    actual_voice = voice_info.name if voice_info else voice
+
     tts = KittenTTS()
-    tts.generate_to_file(text, output_path)
+    samples = tts.generate(text, voice=actual_voice, speed=1.0)
+
+    wav_io = io.BytesIO()
+    with wave.open(wav_io, "wb") as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(24000)
+        wav_file.writeframes(samples.tobytes())
+    wav_io.seek(0)
+
+    audio = AudioSegment.from_wav(wav_io)
+    mp3_io = io.BytesIO()
+    audio.export(mp3_io, format="mp3")
+    mp3_io.seek(0)
+
+    with open(output_path, "wb") as f:
+        f.write(mp3_io.read())
 
     # Get duration using mutagen
     from mutagen.mp3 import MP3
@@ -58,3 +92,30 @@ async def generate_audio_async(
     duration = audio.info.length
 
     return output_path, duration
+
+
+async def main() -> None:
+    """Run to list all voices and generate a sample MP3."""
+    from pathlib import Path
+
+    from loguru import logger
+
+    voices = await list_voices_async()
+    logger.info(f"Found {len(voices)} voices:")
+    for voice in voices:
+        display = voice.short_name or voice.name
+        logger.info(f"  {display} ({voice.gender}, {voice.locale}) - {voice.name}")
+
+    sample_voice = "Jasper"
+    sample_text = "Hello from KittenTTS! This is a test."
+    output_path = Path(__file__).parent / "sample_kitten.mp3"
+
+    logger.info(f"Generating sample audio with voice '{sample_voice}'...")
+    audio_path, duration = await generate_audio_async(sample_voice, sample_text)
+    logger.success(f"Audio saved to: {audio_path} (duration: {duration:.1f}s)")
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(main())
