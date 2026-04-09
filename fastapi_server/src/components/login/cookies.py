@@ -3,10 +3,11 @@ from __future__ import annotations
 import os
 import typing
 from dataclasses import dataclass
-from typing import Literal
+from typing import Annotated, Literal
 
 import httpx
 from dotenv import load_dotenv
+from fastapi import Cookie, HTTPException
 from pydantic import BaseModel
 
 _ = load_dotenv()
@@ -176,12 +177,17 @@ async def provide_logged_in_user(loggin_settings: LoginSettings) -> LoggedInUser
     return LoggedInUser.from_service(user)
 
 
-# TODO: this was used by rio app, may be needed later for FastAPI sessions
-# def logged_in_guard(event: rio.GuardEvent) -> str | None:
-#     """
-#     Check if the user is logged in at all
-#     """
-#     try:
-#         _logged_in_user = event.session[LoggedInUser]
-#     except KeyError:
-#         return "/login"
+async def get_current_user(
+    twitch_access_token: Annotated[str | None, Cookie()] = None,
+    github_access_token: Annotated[str | None, Cookie()] = None,
+    google_access_token: Annotated[str | None, Cookie()] = None,
+) -> LoggedInUser:
+    login_settings = LoginSettings(
+        twitch_access_token=twitch_access_token,
+        github_access_token=github_access_token,
+        google_access_token=google_access_token,
+    )
+    user = await provide_logged_in_user(login_settings)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    return user

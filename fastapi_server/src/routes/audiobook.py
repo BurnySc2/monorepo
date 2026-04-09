@@ -1,14 +1,16 @@
 import io
 from pathlib import Path
+from typing import Annotated
 
 import arrow
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
 from components.audiobook.generate_tts import get_supported_voices
 from components.audiobook.models import AudioSettingsBaseModel
+from components.login.cookies import LoggedInUser, get_current_user
 from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from models.audiobook import AudiobookBook, AudiobookChapter
 
@@ -19,7 +21,7 @@ audiobook_router = APIRouter()
 
 
 @audiobook_router.get("/books")
-async def list_books() -> JSONResponse:
+async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> JSONResponse:
     """
     List all non-deleted books with chapter counts.
     """
@@ -47,7 +49,7 @@ async def list_books() -> JSONResponse:
 
 
 @audiobook_router.get("/books/{book_id}")
-async def get_book(book_id: int) -> JSONResponse:
+async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> JSONResponse:
     """
     Get a single book with its chapters.
     Returns 404 if not found.
@@ -118,7 +120,10 @@ async def get_book(book_id: int) -> JSONResponse:
 
 
 @audiobook_router.post("/upload")
-async def upload_epub(file: UploadFile = File(...)) -> JSONResponse:
+async def upload_epub(
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+    file: UploadFile = File(...),
+) -> JSONResponse:
     """
     Upload an epub file, parse it, and create book/chapter records.
     Returns 400 if not an epub, 201 on success.
@@ -139,7 +144,7 @@ async def upload_epub(file: UploadFile = File(...)) -> JSONResponse:
 
         # Create book record
         book = AudiobookBook(
-            uploaded_by="system",  # TODO: get from auth
+            uploaded_by=current_user.db_name,
             book_title=metadata.title,
             book_author=metadata.author,
             chapter_count=len(chapters),
@@ -170,7 +175,7 @@ async def upload_epub(file: UploadFile = File(...)) -> JSONResponse:
 
 
 @audiobook_router.delete("/books/{book_id}")
-async def delete_book(book_id: int) -> JSONResponse:
+async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> JSONResponse:
     """
     Soft delete a book and clear queued status on its chapters.
     Returns 404 if not found.
@@ -194,7 +199,7 @@ async def delete_book(book_id: int) -> JSONResponse:
 
 
 @audiobook_router.get("/voices")
-async def list_voices() -> JSONResponse:
+async def list_voices(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> JSONResponse:
     """
     List all available TTS voices.
     """
@@ -210,7 +215,12 @@ class QueueChapterRequest(BaseModel):
 
 
 @audiobook_router.post("/books/{book_id}/chapters/{chapter_id}/queue")
-async def queue_chapter(book_id: int, chapter_id: int, settings: QueueChapterRequest) -> JSONResponse:
+async def queue_chapter(
+    book_id: int,
+    chapter_id: int,
+    settings: QueueChapterRequest,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> JSONResponse:
     """
     Queue a chapter for audio conversion.
     Sets queued timestamp and stores audio settings.
@@ -246,7 +256,11 @@ async def queue_chapter(book_id: int, chapter_id: int, settings: QueueChapterReq
 
 
 @audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/queue")
-async def cancel_queued_chapter(book_id: int, chapter_id: int) -> JSONResponse:
+async def cancel_queued_chapter(
+    book_id: int,
+    chapter_id: int,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> JSONResponse:
     """
     Cancel a queued chapter conversion.
     Clears the queued timestamp and audio settings.
@@ -275,7 +289,11 @@ async def cancel_queued_chapter(book_id: int, chapter_id: int) -> JSONResponse:
 
 
 @audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/audio")
-async def delete_chapter_audio(book_id: int, chapter_id: int) -> JSONResponse:
+async def delete_chapter_audio(
+    book_id: int,
+    chapter_id: int,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> JSONResponse:
     """
     Delete the generated audio for a chapter.
     Removes the audio from Garage and clears the minio_object_name.

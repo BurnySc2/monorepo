@@ -1,14 +1,23 @@
 <script lang="ts">
 import { Spinner } from "@repo/ui"
 import * as api from "$lib/api/audiobook"
+import { check_login_status } from "$lib/api/auth"
 import BookCard from "$lib/components/BookCard.svelte"
 import BookUpload from "$lib/components/BookUpload.svelte"
 import type { AudiobookBook } from "$lib/types/audiobook"
 
 let books: AudiobookBook[] = $state([])
 let is_loading = $state(true)
-let is_logged_in = $state(true) // TODO: Check auth status
+let is_checking_auth = $state(true)
+let is_logged_in = $state(false)
 let is_uploading = $state(false)
+
+async function check_auth() {
+    is_checking_auth = true
+    const state = await check_login_status()
+    is_logged_in = state.is_logged_in
+    is_checking_auth = false
+}
 
 async function load_books() {
     is_loading = true
@@ -44,8 +53,9 @@ async function handle_delete_book(book_id: number) {
     }
 }
 
-// Load books on mount
+// Load auth status and books on mount
 $effect(() => {
+    check_auth()
     load_books()
 })
 </script>
@@ -57,8 +67,18 @@ $effect(() => {
         storage.
     </p>
 
-    {#if !is_loading && !is_logged_in}
-        <p class="text-center text-gray-600">Log in before you can upload books.</p>
+    {#if is_checking_auth}
+        <div class="flex justify-center py-12"><Spinner /></div>
+    {:else if !is_logged_in}
+        <div class="text-center py-12">
+            <p class="text-lg text-gray-700 mb-4">You need to log in to proceed.</p>
+            <a
+                href="/login"
+                class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            >
+                Log In
+            </a>
+        </div>
     {:else}
         <div class="mb-8">
             <BookUpload
