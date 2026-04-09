@@ -47,6 +47,8 @@ dependencies = [
     "soundfile>=0.13.1",
     "huggingface-hub>=1.9.0",
     "scipy>=1.15.3",
+    "kokoro-onnx>=0.5.0",
+    "pydub>=0.25.1",
 ]
 
 [tool.uv]
@@ -87,6 +89,13 @@ allow_split_before_dict_value = false
 [tool.pyrefly]
 project_includes = ["src"]
 project-excludes = [
+    # Cache and temp files
+    # "**/tests/**",
+    "**/.venv/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/__pycache__/**",
+    "**/*.pyc",
     # Temp disable for those files and folders
     "**/workers/prevent_overflowing_audiobook_bucket.py",
     "**/workers/convert_audiobook.py",

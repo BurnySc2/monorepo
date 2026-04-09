@@ -1,5 +1,6 @@
 """
 Edge TTS - Microsoft free cloud TTS, 74+ languages, 322 voices.
+https://github.com/rany2/edge-tts
 """
 
 from __future__ import annotations
@@ -8,9 +9,8 @@ from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
-from cachetools import TTLCache
-
 import edge_tts
+from cachetools import TTLCache
 
 
 @dataclass
@@ -59,8 +59,8 @@ async def generate_audio_async(
     communicate = edge_tts.Communicate(text, voice)
     audio_io = BytesIO()
     async for chunk in communicate.stream():
-        if "data" in chunk:
-            audio_io.write(chunk["data"])
+        if chunk:
+            audio_io.write(chunk)
     audio_io.seek(0)
 
     duration = max(0.1, len(text) / 10.0)
