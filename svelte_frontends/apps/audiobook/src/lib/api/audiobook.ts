@@ -129,7 +129,7 @@ export async function update_book_author(book_id: number, author: string): Promi
 export async function queue_chapter_audio(
     book_id: number,
     chapter_id: number,
-    audio_settings?: AudioSettings,
+    audio_settings: AudioSettings,
 ): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/chapters/${chapter_id}/queue`, {
         method: "POST",
@@ -156,10 +156,14 @@ export async function delete_chapter_audio(book_id: number, chapter_id: number):
     }
 }
 
-export async function queue_all_chapters(book_id: number): Promise<void> {
+export async function queue_all_chapters(book_id: number, audio_settings: AudioSettings): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/queue-all`, {
         method: "POST",
         credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(audio_settings),
     })
 
     if (!response.ok) {

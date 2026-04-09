@@ -104,7 +104,6 @@ async function handle_queue_chapter(chapter_id: number) {
     try {
         await api.queue_chapter_audio(book_id, chapter_id, audio_settings)
     } catch (e) {
-        chapter.number_in_queue = null
         console.error("Failed to queue chapter:", e)
     }
 }
@@ -119,12 +118,8 @@ async function handle_delete_chapter_audio(chapter_id: number) {
     }
 
     try {
+        reset_chapters_audio([chapter_id])
         await api.delete_chapter_audio(book_id, chapter_id)
-        chapter.has_audio = false
-        chapter.number_in_queue = null
-        chapter.is_converting = false
-        const index = book_data.chapters.findIndex((c) => c.chapter_number === chapter_id)
-        book_data.chapters[index] = chapter
     } catch (e) {
         console.error("Failed to delete chapter audio:", e)
     }
@@ -132,8 +127,13 @@ async function handle_delete_chapter_audio(chapter_id: number) {
 
 async function handle_queue_all() {
     try {
-        await api.queue_all_chapters(book_id)
-        await load_book()
+        if (book_data) {
+            book_data.chapters.forEach((c) => {
+                c.number_in_queue = -1
+                c.is_converting = false
+            })
+        }
+        await api.queue_all_chapters(book_id, audio_settings)
     } catch (e) {
         console.error("Failed to queue all chapters:", e)
     }
@@ -149,13 +149,29 @@ async function handle_download_book() {
     }
 }
 
+function reset_chapters_audio(chapter_ids: number[]) {
+    if (!book_data) {
+        return
+    }
+    for (const chapter of book_data.chapters) {
+        if (chapter_ids.includes(chapter.chapter_number)) {
+            chapter.has_audio = false
+            chapter.number_in_queue = null
+            chapter.is_converting = false
+            chapter.minio_presigned_url = ""
+        }
+    }
+}
+
 async function handle_delete_all_audio() {
     if (!confirm("Are you sure you want to delete all audio for this book?")) {
         return
     }
     try {
+        if (book_data) {
+            reset_chapters_audio(book_data.chapters.map((c) => c.chapter_number))
+        }
         await api.delete_all_audio(book_id)
-        await load_book()
     } catch (e) {
         console.error("Failed to delete all audio:", e)
     }

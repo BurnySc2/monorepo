@@ -264,6 +264,38 @@ async def list_voices(current_user: Annotated[LoggedInUser, Depends(get_current_
     return voices
 
 
+@audiobook_router.delete("/books/{book_id}/audio", response_model=DeleteResponse)
+async def delete_all_audio(
+    book_id: int,
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> DeleteResponse:
+    """
+    Delete all generated audio for a book.
+    """
+    book = (
+        # pyrefly: ignore[missing-attribute]
+        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    )
+    if book is None or book.deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+
+    chapters = (
+        await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
+    )
+
+    async with get_s3_client() as s3:
+        for chapter in chapters:
+            if chapter.minio_object_name:
+                await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+            chapter.minio_object_name = None
+            chapter.queued = None
+            chapter.started_converting = None
+            chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
+            await chapter.save()
+
+    return DeleteResponse(deleted=True)
+
+
 @audiobook_router.post("/books/{book_id}/chapters/{chapter_id}/queue", response_model=QueueResponse)
 async def queue_chapter(
     book_id: int,
@@ -406,6 +438,7 @@ async def update_book_author(
 @audiobook_router.post("/books/{book_id}/queue-all", status_code=201)
 async def queue_all_chapters(
     book_id: int,
+    settings: QueueChapterRequest,
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
 ) -> QueueResponse:
     """
@@ -422,9 +455,13 @@ async def queue_all_chapters(
         await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
     )
 
+    audio_settings = AudioSettings(
+        voice_name=settings.voice,
+    )
+
     for chapter in chapters:
         chapter.queued = arrow.utcnow().naive
-        chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
+        chapter.audio_settings = audio_settings.model_dump_json()
         await chapter.save()
 
     return QueueResponse(queued=True)
@@ -459,32 +496,3 @@ async def download_book(
         )
 
     return {"download_url": f"/api/audiobook/books/{book_id}/audio.zip"}
-
-
-@audiobook_router.delete("/books/{book_id}/audio", response_model=DeleteResponse)
-async def delete_all_audio(
-    book_id: int,
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
-) -> DeleteResponse:
-    """
-    Delete all generated audio for a book.
-    """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-    if book is None or book.deleted:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    chapters = (
-        await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
-    )
-
-    async with get_s3_client() as s3:
-        for chapter in chapters:
-            if chapter.minio_object_name:
-                await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
-                chapter.minio_object_name = None
-                await chapter.save()
-
-    return DeleteResponse(deleted=True)
