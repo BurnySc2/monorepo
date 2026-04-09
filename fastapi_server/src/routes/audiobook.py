@@ -229,10 +229,8 @@ async def queue_chapter(
         raise HTTPException(status_code=404, detail="Chapter not found")
 
     audio_settings = AudioSettings(
-        voice=settings.voice,
-        rate=settings.rate,
-        volume=settings.volume,
-        pitch=settings.pitch,
+        engine_name=settings.engine_name,
+        voice_name=settings.voice_name,
     )
 
     chapter.queued = arrow.utcnow().naive

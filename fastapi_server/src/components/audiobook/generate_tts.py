@@ -42,47 +42,20 @@ def parse_voice_value(value: str) -> tuple[str, str]:
 
 async def generate_text_to_speech(
     text: str,
+    engine: str,
     voice: str,
-    rate: int = 0,
-    volume: int = 0,
-    pitch: int = 0,
 ) -> io.BytesIO:
-    import edge_tts
-
     from components.tts_generate import generate_audio
 
-    rate_str = f"+{rate}%" if rate >= 0 else f"-{rate}%"
-    volume_str = f"+{volume}%" if volume >= 0 else f"-{volume}%"
-    pitch_str = f"+{pitch}Hz" if pitch >= 0 else f"-{pitch}Hz"
-
-    if "|" in voice:
-        engine, voice_name = parse_voice_value(voice)
-        audio_bytes, _ = await generate_audio(engine, voice_name, text)
-        return io.BytesIO(audio_bytes)
-
-    result = io.BytesIO()
-    communicate = edge_tts.Communicate(text.strip(), voice, rate=rate_str, volume=volume_str, pitch=pitch_str)
-    async for chunk in communicate.stream():
-        if chunk["type"] == "audio":
-            result.write(chunk["data"])
-    result.seek(0)
-    return result
+    audio_bytes, _ = await generate_audio(engine, voice, text)
+    return io.BytesIO(audio_bytes)
 
 
 async def main():
     voices = await get_supported_voices()  # noqa: F841
     text = "Hello World! This is one sentence. What is the second sentence?"
-    text = """
-Title: The Enduring Legacy of\nStarCraft II: A Saga of Strategy, Esports, and Innovation
-
-Introduction:
-
-Since its release in 2010, StarCraft II\nhas etched its place in gaming history as one of the most iconic real-time strategy (RTS) games of all time. Developed by Blizzard\nEntertainment, StarCraft II is the\nsequel to the original StarCraft, a game\nthat revolutionized the RTS genre in the late 1990s. In this essay, we will delve into the multifaceted world of StarCraft II, exploring its gameplay mechanics, its impact on esports, its enduring legacy, and its contributions to the gaming industry.
-"""  # noqa: E501
-    voice = "en-GB-SoniaNeural"
-    result = await generate_text_to_speech(text, voice)  # noqa: F841
-    # with Path("asd.mp3").open("wb") as f:
-    #     f.write(result.getvalue())
+    voice = voices[0]
+    result = await generate_text_to_speech(text, voice.engine, voice.voice)  # noqa: F841
 
 
 if __name__ == "__main__":

@@ -110,10 +110,8 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
         audio: io.BytesIO = await generate_text_to_speech(
             chapter.content,
-            voice=audio_settings.voice,
-            rate=audio_settings.rate,
-            volume=audio_settings.volume,
-            pitch=audio_settings.pitch,
+            engine=audio_settings.engine_name,
+            voice=audio_settings.voice_name,
         )
 
         # Get data from db, user may have clicked "delete" button on book or chapter

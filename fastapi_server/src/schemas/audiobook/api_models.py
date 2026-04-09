@@ -6,10 +6,8 @@ from pydantic import BaseModel
 
 
 class AudioSettings(BaseModel):
-    voice: str = ""
-    rate: int = 0
-    volume: int = 0
-    pitch: int = 0
+    engine_name: str = ""
+    voice_name: str = ""
 
 
 class Book(BaseModel):
@@ -95,10 +93,8 @@ class CancelQueueResponse(BaseModel):
 
 
 class QueueChapterRequest(BaseModel):
-    voice: str
-    rate: int = 0
-    volume: int = 0
-    pitch: int = 0
+    engine_name: str
+    voice_name: str
 
 
 __all__ = [
