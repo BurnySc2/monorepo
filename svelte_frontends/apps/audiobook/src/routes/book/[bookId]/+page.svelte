@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Spinner } from "@repo/ui"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
 import type { AudiobookChapterQueryResult, AudioSettings, BookWithChapters, VoiceOption } from "$lib/types/audiobook"
@@ -288,13 +289,13 @@ $effect(() => {
                     Download book
                 </button>
                 <button
-                    class="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:opacity-90 cursor-pointer"
+                    class="flex-1 btn btn-danger"
                     onclick={handle_delete_all_audio}
                 >
                     Delete all audio
                 </button>
                 <button
-                    class="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:opacity-90 cursor-pointer"
+                    class="flex-1 btn btn-danger"
                     onclick={handle_delete_book}
                 >
                     Delete book
@@ -330,6 +331,7 @@ $effect(() => {
                                 </button>
                             {:else if chapter.number_in_queue !== null}
                                 <div class="status">
+                                    <Spinner />
                                     {#if chapter.number_in_queue > 0}
                                         Queued ({chapter.number_in_queue})
                                     {:else}
@@ -337,7 +339,7 @@ $effect(() => {
                                     {/if}
                                 </div>
                                 <button
-                                    class="action-button"
+                                    class="btn btn-danger"
                                     onclick={() => handle_delete_chapter_audio(chapter.chapter_number)}
                                 >
                                     Remove
@@ -426,6 +428,7 @@ $effect(() => {
 }
 
 .edit-input {
+    flex: 1;
     font-size: 1.5rem;
     padding: 0.5rem;
     border: 1px solid #ccc;
