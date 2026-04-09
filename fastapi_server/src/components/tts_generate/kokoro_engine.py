@@ -67,7 +67,7 @@ async def list_voices_async() -> list[VoiceInfo]:
         _voice_cache["voices"] = [
             VoiceInfo(
                 name=v,
-                short_name=v.split("_", 1)[1].capitalize() if "_" in v else v,
+                short_name=v.split("_", 1)[1].lower() if "_" in v else v,
                 gender=_parse_voice_info(v)[1],
                 locale=_parse_voice_info(v)[0],
             )

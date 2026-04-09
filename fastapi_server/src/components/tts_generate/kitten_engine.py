@@ -17,14 +17,14 @@ from pydub import AudioSegment
 from components.tts_generate._voice_info import VoiceInfo
 
 VOICES = [
-    VoiceInfo(name="expr-voice-2-f", short_name="Bella", gender="Female", locale="en-us"),
-    VoiceInfo(name="expr-voice-2-m", short_name="Jasper", gender="Male", locale="en-us"),
-    VoiceInfo(name="expr-voice-3-f", short_name="Luna", gender="Female", locale="en-us"),
-    VoiceInfo(name="expr-voice-3-m", short_name="Bruno", gender="Male", locale="en-us"),
-    VoiceInfo(name="expr-voice-4-f", short_name="Rosie", gender="Female", locale="en-us"),
-    VoiceInfo(name="expr-voice-4-m", short_name="Hugo", gender="Male", locale="en-us"),
-    VoiceInfo(name="expr-voice-5-f", short_name="Kiki", gender="Female", locale="en-us"),
-    VoiceInfo(name="expr-voice-5-m", short_name="Leo", gender="Male", locale="en-us"),
+    VoiceInfo(name="expr-voice-2-f", short_name="bella", gender="Female", locale="en-us"),
+    VoiceInfo(name="expr-voice-2-m", short_name="jasper", gender="Male", locale="en-us"),
+    VoiceInfo(name="expr-voice-3-f", short_name="luna", gender="Female", locale="en-us"),
+    VoiceInfo(name="expr-voice-3-m", short_name="bruno", gender="Male", locale="en-us"),
+    VoiceInfo(name="expr-voice-4-f", short_name="rosie", gender="Female", locale="en-us"),
+    VoiceInfo(name="expr-voice-4-m", short_name="hugo", gender="Male", locale="en-us"),
+    VoiceInfo(name="expr-voice-5-f", short_name="kiki", gender="Female", locale="en-us"),
+    VoiceInfo(name="expr-voice-5-m", short_name="leo", gender="Male", locale="en-us"),
 ]
 
 
