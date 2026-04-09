@@ -90,7 +90,7 @@ async def generate_audio_async(
         Tuple of (audio_bytes, duration_seconds)
     """
     voice_info = _get_voice_by_short(voice)
-    actual_voice = voice_info.name if voice_info else voice
+    actual_voice = voice_info.name
 
     samples = _tts_model.generate(text, voice=actual_voice, speed=1.0)
 

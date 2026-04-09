@@ -17,7 +17,7 @@ from components.tts_generate import ENGINES, generate_audio, list_voices
 DEFAULT_VOICES = {
     "edge": "en-US-AriaNeural",
     "kokoro": "af_bella",
-    "kitten": "default",
+    "kitten": "bella",
     "pocket": "alba",
     "tiktok": "en_us_002",
 }
