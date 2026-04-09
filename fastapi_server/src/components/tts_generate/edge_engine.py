@@ -4,8 +4,11 @@ Edge TTS - Microsoft free cloud TTS, 74+ languages, 322 voices.
 
 from __future__ import annotations
 
-import tempfile
 from dataclasses import dataclass
+from io import BytesIO
+from pathlib import Path
+
+from cachetools import TTLCache
 
 import edge_tts
 
@@ -20,58 +23,72 @@ class VoiceInfo:
     locale: str
 
 
-VOICES = [
-    VoiceInfo("en-US-AriaNeural", "Aria", "Female", "en-US"),
-    VoiceInfo("en-US-GuyNeural", "Guy", "Male", "en-US"),
-    VoiceInfo("en-US-JennyNeural", "Jenny", "Female", "en-US"),
-    VoiceInfo("en-GB-SoniaNeural", "Sonia", "Female", "en-GB"),
-    VoiceInfo("en-GB-RyanNeural", "Ryan", "Male", "en-GB"),
-    VoiceInfo("de-DE-KatjaNeural", "Katja", "Female", "de-DE"),
-    VoiceInfo("de-DE-ConradNeural", "Conrad", "Male", "de-DE"),
-    VoiceInfo("fr-FR-DeniseNeural", "Denise", "Female", "fr-FR"),
-    VoiceInfo("fr-FR-HenriNeural", "Henri", "Male", "fr-FR"),
-    VoiceInfo("es-ES-ElviraNeural", "Elvira", "Female", "es-ES"),
-    VoiceInfo("es-MX-DaliaNeural", "Dalia", "Female", "es-MX"),
-    VoiceInfo("ja-JP-NanamiNeural", "Nanami", "Female", "ja-JP"),
-    VoiceInfo("ja-JP-KeitaNeural", "Keita", "Male", "ja-JP"),
-    VoiceInfo("ko-KR-SunHiNeural", "SunHi", "Female", "ko-KR"),
-    VoiceInfo("zh-CN-XiaoxiaoNeural", "Xiaoxiao", "Female", "zh-CN"),
-    VoiceInfo("zh-CN-YunxiNeural", "Yunxi", "Male", "zh-CN"),
-    VoiceInfo("pt-BR-FranciscaNeural", "Francisca", "Female", "pt-BR"),
-    VoiceInfo("pt-BR-AntonioNeural", "Antonio", "Male", "pt-BR"),
-    VoiceInfo("it-IT-ElsaNeural", "Elsa", "Female", "it-IT"),
-    VoiceInfo("it-IT-DiegoNeural", "Diego", "Male", "it-IT"),
-]
+_voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
 
 
 async def list_voices_async() -> list[VoiceInfo]:
     """List all available Edge TTS voices."""
-    return VOICES
+    if "voices" not in _voice_cache:
+        raw_voices = await edge_tts.list_voices()
+        _voice_cache["voices"] = [
+            VoiceInfo(
+                name=v["Name"],
+                short_name=v["ShortName"],
+                gender=v["Gender"],
+                locale=v["Locale"],
+            )
+            for v in raw_voices
+        ]
+    return _voice_cache["voices"]
 
 
 async def generate_audio_async(
     voice: str,
     text: str,
-    output_path: str | None = None,
-) -> tuple[str, float]:
+) -> tuple[bytes, float]:
     """
     Generate audio using Edge TTS.
 
     Args:
         voice: Voice name (e.g., "en-US-AriaNeural")
         text: Text to synthesize
-        output_path: Optional output path. If None, a temp file is created.
 
     Returns:
-        Tuple of (output_path, duration_seconds)
+        Tuple of (audio_bytes, duration_seconds)
     """
-    if output_path is None:
-        output_path = tempfile.mktemp(suffix=".mp3")
-
     communicate = edge_tts.Communicate(text, voice)
-    await communicate.save(output_path)
+    audio_io = BytesIO()
+    async for chunk in communicate.stream():
+        if "data" in chunk:
+            audio_io.write(chunk["data"])
+    audio_io.seek(0)
 
-    # Calculate duration based on text length (approximate: ~10 chars/second)
     duration = max(0.1, len(text) / 10.0)
 
-    return output_path, duration
+    return audio_io.read(), duration
+
+
+async def main() -> None:
+    """Run to list all voices and generate a sample MP3."""
+    from loguru import logger
+
+    voices = await list_voices_async()
+    logger.info(f"Found {len(voices)} voices:")
+    for voice in voices:
+        logger.info(f"  {voice.name} ({voice.gender}, {voice.locale})")
+
+    sample_voice = "en-US-AriaNeural"
+    sample_text = "Hello from Edge TTS! This is a test."
+    output_path = Path(__file__).parent / "sample_edge.mp3"
+
+    logger.info(f"Generating sample audio with voice '{sample_voice}'...")
+    audio_bytes, duration = await generate_audio_async(sample_voice, sample_text)
+    with output_path.open("wb") as f:
+        f.write(audio_bytes)
+    logger.success(f"Audio saved to: {output_path} (duration: {duration:.1f}s)")
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(main())
