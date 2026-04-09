@@ -93,7 +93,7 @@ async function handle_queue_chapter(chapter_id: number) {
     if (!book_data) {
         return
     }
-    const chapter = book_data.chapters.find((c) => c.id === chapter_id)
+    const chapter = book_data.chapters.find((c) => c.chapter_number === chapter_id)
     if (!chapter) {
         return
     }
@@ -113,19 +113,19 @@ async function handle_delete_chapter_audio(chapter_id: number) {
     if (!book_data) {
         return
     }
-    const chapter = book_data.chapters.find((c) => c.id === chapter_id)
+    const chapter = book_data.chapters.find((c) => c.chapter_number === chapter_id)
     if (!chapter) {
         return
     }
 
-    const had_audio = chapter.has_audio
-    chapter.has_audio = false
-    chapter.minio_presigned_url = ""
-
     try {
         await api.delete_chapter_audio(book_id, chapter_id)
+        chapter.has_audio = false
+        chapter.number_in_queue = null
+        chapter.is_converting = false
+        const index = book_data.chapters.findIndex((c) => c.chapter_number === chapter_id)
+        book_data.chapters[index] = chapter
     } catch (e) {
-        chapter.has_audio = had_audio
         console.error("Failed to delete chapter audio:", e)
     }
 }
@@ -308,7 +308,7 @@ $effect(() => {
                                 </audio>
                                 <button
                                     class="action-button"
-                                    onclick={() => handle_delete_chapter_audio(chapter.id)}
+                                    onclick={() => handle_delete_chapter_audio(chapter.chapter_number)}
                                 >
                                     Delete
                                 </button>
@@ -322,7 +322,7 @@ $effect(() => {
                                 </div>
                                 <button
                                     class="action-button"
-                                    onclick={() => handle_delete_chapter_audio(chapter.id)}
+                                    onclick={() => handle_delete_chapter_audio(chapter.chapter_number)}
                                 >
                                     Remove
                                 </button>
@@ -331,7 +331,7 @@ $effect(() => {
                             {:else}
                                 <button
                                     class="btn btn-success"
-                                    onclick={() => handle_queue_chapter(chapter.id)}
+                                    onclick={() => handle_queue_chapter(chapter.chapter_number)}
                                 >
                                     Generate audio
                                 </button>
@@ -397,6 +397,7 @@ $effect(() => {
 .title-row h1,
 .author-row h2 {
     margin: 0;
+    flex: 1;
 }
 
 .title-row h1 {

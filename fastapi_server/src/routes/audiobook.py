@@ -15,7 +15,6 @@ from schemas.audiobook import (
     AudioSettings,
     BookListItem,
     BookWithChapters,
-    CancelQueueResponse,
     ChapterDetail,
     DeleteResponse,
     QueueChapterRequest,
@@ -285,7 +284,7 @@ async def queue_chapter(
 
     chapter = (
         await AudiobookChapter.objects()
-        .where(AudiobookChapter.id == chapter_id)  # pyrefly: ignore[missing-attribute]
+        .where(AudiobookChapter.chapter_number == chapter_id)  # pyrefly: ignore[missing-attribute]
         .where(AudiobookChapter.book == book_id)
         .first()
     )
@@ -303,40 +302,7 @@ async def queue_chapter(
     return QueueResponse(queued=True)
 
 
-@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/queue", response_model=CancelQueueResponse)
-async def cancel_queued_chapter(
-    book_id: int,
-    chapter_id: int,
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
-) -> CancelQueueResponse:
-    """
-    Cancel a queued chapter conversion.
-    Clears the queued timestamp and audio settings.
-    """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-    if book is None or book.deleted:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    chapter = (
-        await AudiobookChapter.objects()
-        .where(AudiobookChapter.id == chapter_id)  # pyrefly: ignore[missing-attribute]
-        .where(AudiobookChapter.book == book_id)
-        .first()
-    )
-    if chapter is None:
-        raise HTTPException(status_code=404, detail="Chapter not found")
-
-    chapter.queued = None
-    chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
-    await chapter.save()
-
-    return CancelQueueResponse(cancelled=True)
-
-
-@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/audio", response_model=DeleteResponse)
+@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}", response_model=DeleteResponse)
 async def delete_chapter_audio(
     book_id: int,
     chapter_id: int,
@@ -344,7 +310,7 @@ async def delete_chapter_audio(
 ) -> DeleteResponse:
     """
     Delete the generated audio for a chapter.
-    Removes the audio from Garage and clears the minio_object_name.
+    Removes the audio from Garage and clears the queued/audio fields.
     """
     book = (
         # pyrefly: ignore[missing-attribute]
@@ -355,7 +321,7 @@ async def delete_chapter_audio(
 
     chapter = (
         await AudiobookChapter.objects()
-        .where(AudiobookChapter.id == chapter_id)  # pyrefly: ignore[missing-attribute]
+        .where(AudiobookChapter.chapter_number == chapter_id)  # pyrefly: ignore[missing-attribute]
         .where(AudiobookChapter.book == book_id)
         .first()
     )
@@ -366,8 +332,11 @@ async def delete_chapter_audio(
         async with get_s3_client() as s3:
             await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
 
-        chapter.minio_object_name = None
-        await chapter.save()
+    chapter.minio_object_name = None
+    chapter.queued = None
+    chapter.started_converting = None
+    chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
+    await chapter.save()
 
     return DeleteResponse(deleted=True)
 
@@ -455,7 +424,7 @@ async def queue_all_chapters(
 
     for chapter in chapters:
         chapter.queued = arrow.utcnow().naive
-        chapter.audio_settings = None
+        chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
         await chapter.save()
 
     return QueueResponse(queued=True)

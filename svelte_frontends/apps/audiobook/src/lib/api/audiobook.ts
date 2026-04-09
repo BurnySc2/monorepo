@@ -146,7 +146,7 @@ export async function queue_chapter_audio(
 }
 
 export async function delete_chapter_audio(book_id: number, chapter_id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/chapters/${chapter_id}/audio`, {
+    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/chapters/${chapter_id}`, {
         method: "DELETE",
         credentials: "include",
     })
