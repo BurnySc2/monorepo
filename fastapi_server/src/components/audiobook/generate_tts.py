@@ -1,25 +1,43 @@
-import asyncio
+from __future__ import annotations
+
 import io
 
-import edge_tts
 from cachetools import TTLCache
 
-ttl_cache = TTLCache[str, list[str]](1024, 3600)  # 3600 seconds
+from components.tts_generate import VoiceOption, list_all_voices
+
+ttl_cache: TTLCache[str, list[VoiceOption]] = TTLCache(1024, 3600)  # 3600 seconds
 
 
-async def get_supported_voices() -> list[str]:
-    # Cache result for at least 1h
+async def get_supported_voices() -> list[VoiceOption]:
+    """
+    Get all voices from all TTS engines with caching.
+    """
     global ttl_cache
     # pyrefly: ignore
     result_from_cache = ttl_cache.get("voices")
     if result_from_cache is not None:
         return result_from_cache
 
-    voices = await edge_tts.list_voices()
-    result = [voice["ShortName"] for voice in sorted(voices, key=lambda voice: voice["ShortName"])]
+    result = await list_all_voices()
     # pyrefly: ignore
     ttl_cache["voices"] = result
     return result
+
+
+def parse_voice_value(value: str) -> tuple[str, str]:
+    """
+    Parse voice value into (engine, voice_name).
+
+    Value format: "locale|engine|voice_name|gender"
+    Example: "en-us|kokoro|bella|female" -> ("kokoro", "bella")
+    """
+    parts = value.split("|")
+    if len(parts) != 4:
+        raise ValueError(f"Invalid voice value format: {value}")
+    engine = parts[1]
+    voice_name = parts[2]
+    return engine, voice_name
 
 
 async def generate_text_to_speech(
@@ -29,30 +47,25 @@ async def generate_text_to_speech(
     volume: int = 0,
     pitch: int = 0,
 ) -> io.BytesIO:
+    import edge_tts
+
+    from components.tts_generate import generate_audio
+
     rate_str = f"+{rate}%" if rate >= 0 else f"-{rate}%"
     volume_str = f"+{volume}%" if volume >= 0 else f"-{volume}%"
     pitch_str = f"+{pitch}Hz" if pitch >= 0 else f"-{pitch}Hz"
 
+    if "|" in voice:
+        engine, voice_name = parse_voice_value(voice)
+        audio_bytes, _ = await generate_audio(engine, voice_name, text)
+        return io.BytesIO(audio_bytes)
+
     result = io.BytesIO()
-    meta_info = []
     communicate = edge_tts.Communicate(text.strip(), voice, rate=rate_str, volume=volume_str, pitch=pitch_str)
     async for chunk in communicate.stream():
         if chunk["type"] == "audio":
             result.write(chunk["data"])
-        elif chunk["type"] == "WordBoundary":
-            extracted = {
-                "start": chunk["offset"] / 10**7,
-                "duration": chunk["duration"] / 10**7,
-                "text": chunk["text"],
-            }
-            meta_info.append(extracted)
-            # print(f"WordBoundary: {extracted}")
     result.seek(0)
-    # decoded_chunk = AudioSegment.from_mp3(temp_chunk)
-    # try except: decoded_chunk = AudioSegment.silent(0, 24000)
-    # return decoded_chunk.raw_data
-    # with Path("asd.mp3").open("wb") as f:
-    #     f.write(result.getvalue())
     return result
 
 
@@ -73,4 +86,6 @@ Since its release in 2010, StarCraft II\nhas etched its place in gaming history 
 
 
 if __name__ == "__main__":
+    import asyncio
+
     asyncio.run(main())

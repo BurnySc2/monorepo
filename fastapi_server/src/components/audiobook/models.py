@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from stat import S_IFREG
 
 import arrow
@@ -74,6 +75,60 @@ class AudiobookChapterQueryResult(BaseModel):
     minio_object_name: str | None
     # Filled after query
     minio_presigned_url: str = ""
+
+
+class BookListItem(BaseModel):
+    id: int
+    uploaded_by: str
+    book_title: str
+    book_author: str
+    custom_book_title: str | None
+    custom_book_author: str | None
+    chapter_count: int
+    upload_date: datetime
+
+
+class ChapterDetail(BaseModel):
+    id: int
+    book_id: int
+    number_in_queue: int | None
+    is_converting: bool
+    has_audio: bool
+    chapter_title: str
+    chapter_number: int
+    sentence_count: int
+    minio_object_name: str | None
+    minio_presigned_url: str
+
+
+class BookWithChapters(BaseModel):
+    book: BookListItem
+    chapters: list[ChapterDetail]
+    available_voices: list[str]
+
+
+class UploadSuccess(BaseModel):
+    id: int
+    title: str
+
+
+class DeleteResponse(BaseModel):
+    deleted: bool
+
+
+class QueueResponse(BaseModel):
+    queued: bool
+
+
+class CancelQueueResponse(BaseModel):
+    cancelled: bool
+
+
+class QueueChapterRequest(BaseModel):
+    voice: str
+    rate: int = 0
+    volume: int = 0
+    pitch: int = 0
 
 
 def get_book_minio_zip_name(book_id: int) -> str:

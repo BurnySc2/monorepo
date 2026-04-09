@@ -1,5 +1,11 @@
 // API service for Audiobook feature
-import type { AudiobookBook, AudiobookChapterQueryResult, AudioSettings, BookWithChapters } from "$lib/types/audiobook"
+import type {
+    AudiobookBook,
+    AudiobookChapterQueryResult,
+    AudioSettings,
+    BookWithChapters,
+    VoiceOption,
+} from "$lib/types/audiobook"
 import { mock_book_data } from "./mock_data"
 
 const API_BASE_URL = import.meta.env?.VITE_BACKEND_URL || "http://localhost:8000"
@@ -80,7 +86,7 @@ export async function upload_epub(file: File): Promise<void> {
     }
 }
 
-export async function get_available_voices(): Promise<string[]> {
+export async function get_available_voices(): Promise<VoiceOption[]> {
     const response = await fetch(`${API_BASE_URL}/api/audiobook/voices`, {
         credentials: "include",
     })

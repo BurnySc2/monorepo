@@ -1,11 +1,12 @@
 <script lang="ts">
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
-import type { AudiobookChapterQueryResult, AudioSettings, BookWithChapters } from "$lib/types/audiobook"
+import type { AudiobookChapterQueryResult, AudioSettings, BookWithChapters, VoiceOption } from "$lib/types/audiobook"
 
 let book_id = $derived(Number(page.params.bookId))
 
 let book_data = $state<BookWithChapters | null>(null)
+let available_voices = $state<VoiceOption[]>([])
 let is_loading = $state(true)
 let user_has_access = $state(false)
 
@@ -16,11 +17,8 @@ let custom_book_title = $state("")
 let custom_book_author = $state("")
 
 // Audio settings
-let audio_settings = $state<AudioSettings>({
+let audio_settings = $state<{ voice: string }>({
     voice: "",
-    rate: 0,
-    volume: 0,
-    pitch: 0,
 })
 
 // Refresh interval
@@ -30,13 +28,14 @@ async function load_book() {
     is_loading = true
     try {
         book_data = await api.get_book(book_id)
+        available_voices = await api.get_available_voices()
         if (book_data) {
             user_has_access = true
             custom_book_title = book_data.book.custom_book_title || book_data.book.book_title
             custom_book_author = book_data.book.custom_book_author || book_data.book.book_author
 
-            if (book_data.available_voices.length > 0 && !audio_settings.voice) {
-                audio_settings.voice = book_data.available_voices[0]
+            if (available_voices.length > 0 && !audio_settings.voice) {
+                audio_settings.voice = available_voices[0].value
             }
         } else {
             user_has_access = false
@@ -209,57 +208,39 @@ $effect(() => {
         <div class="settings-box">
             <h3>Settings</h3>
             <div class="settings-grid">
-                <div class="setting-row">
-                    <label>Voice</label>
-                    <select bind:value={audio_settings.voice}>
-                        {#each book_data.available_voices as voice}
-                            <option value={voice}>{voice}</option>
+                <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                    <label class="font-bold whitespace-nowrap">Voice</label>
+                    <select
+                        bind:value={audio_settings.voice}
+                        class="flex-1 min-w-[200px] px-2 py-1 border border-gray-300 rounded"
+                    >
+                        {#each available_voices as voice}
+                            <option value={voice.value}>{voice.label}</option>
                         {/each}
                     </select>
                 </div>
-                <div class="setting-row">
-                    <label>Rate</label>
-                    <input
-                        type="number"
-                        bind:value={audio_settings.rate}
-                    >
-                </div>
-                <div class="setting-row">
-                    <label>Volume</label>
-                    <input
-                        type="number"
-                        bind:value={audio_settings.volume}
-                    >
-                </div>
-                <div class="setting-row">
-                    <label>Pitch</label>
-                    <input
-                        type="number"
-                        bind:value={audio_settings.pitch}
-                    >
-                </div>
             </div>
-            <div class="button-row">
+            <div class="flex flex-col md:flex-row gap-2 flex-wrap">
                 <button
-                    class="primary-button"
+                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer"
                     onclick={handle_queue_all}
                 >
                     Generate audio for all chapters
                 </button>
                 <button
-                    class="primary-button"
+                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer"
                     onclick={handle_download_book}
                 >
                     Download book
                 </button>
                 <button
-                    class="danger-button"
+                    class="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:opacity-90 cursor-pointer"
                     onclick={handle_delete_all_audio}
                 >
                     Delete all audio
                 </button>
                 <button
-                    class="danger-button"
+                    class="flex-1 px-3 py-2 bg-red-500 text-white rounded hover:opacity-90 cursor-pointer"
                     onclick={handle_delete_book}
                 >
                     Delete book
@@ -311,7 +292,7 @@ $effect(() => {
                                 <div class="status">Generating audio ...</div>
                             {:else}
                                 <button
-                                    class="success-button"
+                                    class="btn btn-success"
                                     onclick={() => handle_queue_chapter(chapter.id)}
                                 >
                                     Generate audio
@@ -424,67 +405,7 @@ $effect(() => {
 }
 
 .settings-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
     margin-bottom: 1rem;
-}
-
-.setting-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.setting-row label {
-    font-weight: bold;
-}
-
-.setting-row input,
-.setting-row select {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.button-row {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-
-.primary-button,
-.success-button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    flex: 1;
-}
-
-.success-button {
-    background-color: #27ae60;
-}
-
-.primary-button:hover,
-.success-button:hover {
-    opacity: 0.9;
-}
-
-.danger-button {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    flex: 1;
-}
-
-.danger-button:hover {
-    opacity: 0.9;
 }
 
 .chapters-list {

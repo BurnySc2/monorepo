@@ -2,6 +2,7 @@
     "name": "with-svelte",
     "private": true,
     "scripts": {
+        "generate-types": "npm run generate-types -w @repo/api-types",
         "dev": "turbo run dev",
         "build": "turbo run build",
         "lint": "biome check .",

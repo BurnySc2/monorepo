@@ -1,12 +1,8 @@
-// Types for Audiobook feature - mirrors backend models
-// These will be replaced with generated types from OpenAPI when backend is running
+// Types for Audiobook feature
+import type { VoiceOption as ApiVoiceOption, QueueChapterRequest } from "@repo/api-types"
 
-export interface AudioSettings {
-    voice: string
-    rate: number
-    volume: number
-    pitch: number
-}
+export type AudioSettings = QueueChapterRequest
+export type VoiceOption = ApiVoiceOption
 
 export interface AudiobookBook {
     id: number

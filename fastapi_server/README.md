@@ -25,6 +25,40 @@ Now you can go to http://0.0.0.0:8000 or http://0.0.0.0:8000/schema to check out
 
 Under http://pgadmin.localhost you can `register` the postgres instance with host name `fastapi_dev_postgres`, port `5432`, username `root` and password `root` and keep database as `postgres` and now click on `save`. You will now be able to browse the database tables and data.
 
+# Fastapi allowed response types
+Pydantic
+```py
+from pydantic import BaseModel
+
+class Item(BaseModel):
+    name: str
+    price: float
+    is_offer: bool | None = None
+
+@app.get("/items/{item_id}", response_model=Item)
+async def get_item(item_id: int):
+    return {"name": "Widget", "price": 19.99}
+
+@app.get("/items", response_model=list[Item])
+async def get_items():
+    return [
+        {"name": "Foo", "price": 50.2},
+        {"name": "Bar", "price": 62.0}
+    ]
+```
+
+Response type vs response model
+```py
+# Both approaches work identically for documentation
+@app.get("/items/{item_id}", response_model=Item)
+async def get_item(item_id: int) -> Item:
+    return Item(name="Foo", price=50.2)
+
+@app.get("/items/{item_id}")
+async def get_item(item_id: int) -> Item:
+    return {"name": "Foo", "price": 50.2}
+```
+
 # Ideal structure of the project
 ```mermaid
 ---

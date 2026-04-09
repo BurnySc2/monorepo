@@ -1,16 +1,26 @@
+from __future__ import annotations
+
 import io
 from pathlib import Path
 from typing import Annotated
 
 import arrow
-from fastapi import APIRouter, Depends, File, UploadFile
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
-from components.audiobook.generate_tts import get_supported_voices
-from components.audiobook.models import AudioSettingsBaseModel
+from components.audiobook.models import (
+    AudioSettingsBaseModel,
+    BookListItem,
+    BookWithChapters,
+    CancelQueueResponse,
+    ChapterDetail,
+    DeleteResponse,
+    QueueChapterRequest,
+    QueueResponse,
+    UploadSuccess,
+)
 from components.login.cookies import LoggedInUser, get_current_user
+from components.tts_generate import VoiceOption, list_all_voices
 from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from models.audiobook import AudiobookBook, AudiobookChapter
 
@@ -20,8 +30,8 @@ _query_get_chapters = (_queries_directory / "audiobook_get_chapters.sql").read_t
 audiobook_router = APIRouter()
 
 
-@audiobook_router.get("/books")
-async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> JSONResponse:
+@audiobook_router.get("/books", response_model=list[BookListItem])
+async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> list[BookListItem]:
     """
     List all non-deleted books with chapter counts.
     """
@@ -31,25 +41,23 @@ async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_u
         .order_by(AudiobookBook.upload_date, ascending=False)
     )
 
-    return JSONResponse(
-        [
-            {
-                "id": book.id,  # pyrefly: ignore[missing-attribute]
-                "uploaded_by": book.uploaded_by,
-                "book_title": book.book_title,
-                "book_author": book.book_author,
-                "custom_book_title": book.custom_book_title,
-                "custom_book_author": book.custom_book_author,
-                "chapter_count": book.chapter_count,
-                "upload_date": arrow.get(book.upload_date).isoformat(),
-            }
-            for book in books
-        ]
-    )
+    return [
+        BookListItem(
+            id=book.id,  # pyrefly: ignore[missing-attribute]
+            uploaded_by=book.uploaded_by,
+            book_title=book.book_title,
+            book_author=book.book_author,
+            custom_book_title=book.custom_book_title,
+            custom_book_author=book.custom_book_author,
+            chapter_count=book.chapter_count,
+            upload_date=book.upload_date,
+        )
+        for book in books
+    ]
 
 
-@audiobook_router.get("/books/{book_id}")
-async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> JSONResponse:
+@audiobook_router.get("/books/{book_id}", response_model=BookWithChapters)
+async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> BookWithChapters:
     """
     Get a single book with its chapters.
     Returns 404 if not found.
@@ -62,7 +70,7 @@ async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(g
     )
 
     if book is None or book.deleted:
-        return JSONResponse({"error": "Book not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Book not found")
 
     chapter_numbers = list(range(1, book.chapter_count + 1))
     chapters_rows: list[dict] = await AudiobookChapter.raw(_query_get_chapters, book_id, chapter_numbers)
@@ -85,64 +93,57 @@ async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(g
                 )
 
             chapters_data.append(
-                {
-                    "id": row["id"],
-                    "book_id": row["book_id"],
-                    "number_in_queue": row["number_in_queue"],
-                    "is_converting": row["is_converting"],
-                    "has_audio": row["has_audio"],
-                    "chapter_title": row["chapter_title"],
-                    "chapter_number": row["chapter_number"],
-                    "sentence_count": row["sentence_count"],
-                    "minio_object_name": row["minio_object_name"],
-                    "minio_presigned_url": presigned_url,
-                }
+                ChapterDetail(
+                    id=row["id"],
+                    book_id=row["book_id"],
+                    number_in_queue=row["number_in_queue"],
+                    is_converting=row["is_converting"],
+                    has_audio=row["has_audio"],
+                    chapter_title=row["chapter_title"],
+                    chapter_number=row["chapter_number"],
+                    sentence_count=row["sentence_count"],
+                    minio_object_name=row["minio_object_name"],
+                    minio_presigned_url=presigned_url,
+                )
             )
 
-    available_voices: list[str] = []
-
-    return JSONResponse(
-        {
-            "book": {
-                "id": book.id,  # pyrefly: ignore[missing-attribute]
-                "uploaded_by": book.uploaded_by,
-                "book_title": book.book_title,
-                "book_author": book.book_author,
-                "custom_book_title": book.custom_book_title,
-                "custom_book_author": book.custom_book_author,
-                "chapter_count": book.chapter_count,
-                "upload_date": arrow.get(book.upload_date).isoformat(),
-            },
-            "chapters": chapters_data,
-            "available_voices": available_voices,
-        }
+    return BookWithChapters(
+        book=BookListItem(
+            id=book.id,  # pyrefly: ignore[missing-attribute]
+            uploaded_by=book.uploaded_by,
+            book_title=book.book_title,
+            book_author=book.book_author,
+            custom_book_title=book.custom_book_title,
+            custom_book_author=book.custom_book_author,
+            chapter_count=book.chapter_count,
+            upload_date=book.upload_date,
+        ),
+        chapters=chapters_data,
+        available_voices=[],
     )
 
 
-@audiobook_router.post("/upload")
+@audiobook_router.post("/upload", response_model=UploadSuccess, status_code=201)
 async def upload_epub(
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
     file: UploadFile = File(...),
-) -> JSONResponse:
+) -> UploadSuccess:
     """
     Upload an epub file, parse it, and create book/chapter records.
     Returns 400 if not an epub, 201 on success.
     """
     if not file.filename or not file.filename.lower().endswith(".epub"):
-        return JSONResponse({"error": "File must be an epub"}, status_code=400)
+        raise HTTPException(status_code=400, detail="File must be an epub")
 
     try:
         contents = await file.read()
         data = io.BytesIO(contents)
 
-        # Extract metadata and chapters
         metadata = extract_metadata(data)
         chapters = extract_chapters(data)
 
-        # Reset file position for re-reading if needed
         data.seek(0)
 
-        # Create book record
         book = AudiobookBook(
             uploaded_by=current_user.db_name,
             book_title=metadata.title,
@@ -152,7 +153,6 @@ async def upload_epub(
         )
         await book.save()
 
-        # Create chapter records
         for chapter in chapters:
             chapter_record = AudiobookChapter(
                 book=book.id,  # pyrefly: ignore[missing-attribute]
@@ -164,18 +164,14 @@ async def upload_epub(
             )
             await chapter_record.save()
 
-        return JSONResponse(
-            # pyrefly: ignore[missing-attribute]
-            {"id": book.id, "title": book.book_title},
-            status_code=201,
-        )
+        return UploadSuccess(id=book.id, title=book.book_title)  # pyrefly: ignore[missing-attribute]
 
     except OSError as e:
-        return JSONResponse({"error": str(e)}, status_code=400)
+        raise HTTPException(status_code=400, detail=str(e))
 
 
-@audiobook_router.delete("/books/{book_id}")
-async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> JSONResponse:
+@audiobook_router.delete("/books/{book_id}", response_model=DeleteResponse)
+async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> DeleteResponse:
     """
     Soft delete a book and clear queued status on its chapters.
     Returns 404 if not found.
@@ -186,41 +182,32 @@ async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depend
     )
 
     if book is None or book.deleted:
-        return JSONResponse({"error": "Book not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Book not found")
 
-    # Soft delete the book
     book.deleted = True
     await book.save()
 
-    # Clear queued status on all chapters
     await AudiobookChapter.update({AudiobookChapter.queued: None}).where(AudiobookChapter.book == book_id)
 
-    return JSONResponse({"deleted": True})
+    return DeleteResponse(deleted=True)
 
 
-@audiobook_router.get("/voices")
-async def list_voices(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> JSONResponse:
+@audiobook_router.get("/voices", response_model=list[VoiceOption])
+async def list_voices(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> list[VoiceOption]:
     """
     List all available TTS voices.
     """
-    voices = await get_supported_voices()
-    return JSONResponse(voices)
+    voices = await list_all_voices()
+    return voices
 
 
-class QueueChapterRequest(BaseModel):
-    voice: str
-    rate: int = 0
-    volume: int = 0
-    pitch: int = 0
-
-
-@audiobook_router.post("/books/{book_id}/chapters/{chapter_id}/queue")
+@audiobook_router.post("/books/{book_id}/chapters/{chapter_id}/queue", response_model=QueueResponse)
 async def queue_chapter(
     book_id: int,
     chapter_id: int,
     settings: QueueChapterRequest,
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
-) -> JSONResponse:
+) -> QueueResponse:
     """
     Queue a chapter for audio conversion.
     Sets queued timestamp and stores audio settings.
@@ -230,7 +217,7 @@ async def queue_chapter(
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
     if book is None or book.deleted:
-        return JSONResponse({"error": "Book not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Book not found")
 
     chapter = (
         await AudiobookChapter.objects()
@@ -239,7 +226,7 @@ async def queue_chapter(
         .first()
     )
     if chapter is None:
-        return JSONResponse({"error": "Chapter not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Chapter not found")
 
     audio_settings = AudioSettingsBaseModel(
         voice=settings.voice,
@@ -252,15 +239,15 @@ async def queue_chapter(
     chapter.audio_settings = audio_settings.model_dump_json()
     await chapter.save()
 
-    return JSONResponse({"queued": True})
+    return QueueResponse(queued=True)
 
 
-@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/queue")
+@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/queue", response_model=CancelQueueResponse)
 async def cancel_queued_chapter(
     book_id: int,
     chapter_id: int,
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
-) -> JSONResponse:
+) -> CancelQueueResponse:
     """
     Cancel a queued chapter conversion.
     Clears the queued timestamp and audio settings.
@@ -270,7 +257,7 @@ async def cancel_queued_chapter(
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
     if book is None or book.deleted:
-        return JSONResponse({"error": "Book not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Book not found")
 
     chapter = (
         await AudiobookChapter.objects()
@@ -279,21 +266,21 @@ async def cancel_queued_chapter(
         .first()
     )
     if chapter is None:
-        return JSONResponse({"error": "Chapter not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Chapter not found")
 
     chapter.queued = None
     chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
     await chapter.save()
 
-    return JSONResponse({"cancelled": True})
+    return CancelQueueResponse(cancelled=True)
 
 
-@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/audio")
+@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}/audio", response_model=DeleteResponse)
 async def delete_chapter_audio(
     book_id: int,
     chapter_id: int,
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
-) -> JSONResponse:
+) -> DeleteResponse:
     """
     Delete the generated audio for a chapter.
     Removes the audio from Garage and clears the minio_object_name.
@@ -303,7 +290,7 @@ async def delete_chapter_audio(
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
     if book is None or book.deleted:
-        return JSONResponse({"error": "Book not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Book not found")
 
     chapter = (
         await AudiobookChapter.objects()
@@ -312,7 +299,7 @@ async def delete_chapter_audio(
         .first()
     )
     if chapter is None:
-        return JSONResponse({"error": "Chapter not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Chapter not found")
 
     if chapter.minio_object_name:
         async with get_s3_client() as s3:
@@ -321,4 +308,4 @@ async def delete_chapter_audio(
         chapter.minio_object_name = None
         await chapter.save()
 
-    return JSONResponse({"deleted": True})
+    return DeleteResponse(deleted=True)

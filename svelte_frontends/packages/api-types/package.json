@@ -1,0 +1,16 @@
+{
+    "name": "@repo/api-types",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "generate-types": "openapi-typescript http://localhost:8000/openapi.json --output src/api.ts"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "*",
+        "openapi-typescript": "^7.6.0"
+    }
+}

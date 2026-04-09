@@ -14,6 +14,7 @@ from __future__ import annotations
 from typing import Literal
 
 from . import edge_engine, kitten_engine, kokoro_engine, pocket_engine, tiktok_engine
+from ._types import VoiceOption
 from ._voice_info import VoiceInfo
 
 # Supported TTS engines
@@ -71,6 +72,17 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
     return result
 
 
+async def list_all_voices() -> list[VoiceOption]:
+    """List all available voices from all TTS engines as VoiceOption objects."""
+    result: list[VoiceOption] = []
+    for engine in ENGINES:
+        voices = await list_voices(engine)
+        for voice in voices:
+            result.append(VoiceOption.from_voice_info(voice, engine))
+    result.sort(key=lambda v: v.label)
+    return result
+
+
 async def generate_audio(
     engine: TTSEngine,
     voice: str,
@@ -119,9 +131,11 @@ async def generate_audio(
 # Export all engines for direct access
 __all__ = [
     "VoiceInfo",
+    "VoiceOption",
     "TTSEngine",
     "ENGINES",
     "list_voices",
+    "list_all_voices",
     "generate_audio",
     "edge_engine",
     "kokoro_engine",
