@@ -12,11 +12,9 @@ import io
 import tempfile
 import wave
 
-import numpy as np
 from pydub import AudioSegment
 
 from components.tts_generate._voice_info import VoiceInfo
-
 
 VOICES = [
     VoiceInfo(name="expr-voice-2-f", short_name="Bella", gender="Female", locale="en-us"),
@@ -77,15 +75,15 @@ async def generate_audio_async(
         wav_file.writeframes(samples.tobytes())
     wav_io.seek(0)
 
+    from pathlib import Path
+
     audio = AudioSegment.from_wav(wav_io)
     mp3_io = io.BytesIO()
     audio.export(mp3_io, format="mp3")
     mp3_io.seek(0)
 
-    with open(output_path, "wb") as f:
-        f.write(mp3_io.read())
+    Path(output_path).write_bytes(mp3_io.read())
 
-    # Get duration using mutagen
     from mutagen.mp3 import MP3
 
     audio = MP3(output_path)
@@ -96,8 +94,6 @@ async def generate_audio_async(
 
 async def main() -> None:
     """Run to list all voices and generate a sample MP3."""
-    from pathlib import Path
-
     from loguru import logger
 
     voices = await list_voices_async()
@@ -108,7 +104,6 @@ async def main() -> None:
 
     sample_voice = "Jasper"
     sample_text = "Hello from KittenTTS! This is a test."
-    output_path = Path(__file__).parent / "sample_kitten.mp3"
 
     logger.info(f"Generating sample audio with voice '{sample_voice}'...")
     audio_path, duration = await generate_audio_async(sample_voice, sample_text)

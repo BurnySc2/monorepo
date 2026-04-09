@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import io
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from pydub.generators import Sine
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
@@ -17,7 +19,7 @@ from components.tts_generate import ENGINES, generate_audio, list_voices
 DEFAULT_VOICES = {
     "edge": "en-US-AriaNeural",
     "kokoro": "af_bella",
-    "kitten": "default",
+    "kitten": "Bella",
     "pocket": "alba",
     "supertonic": "F1",
     "tiktok": "en_us_002",
@@ -28,25 +30,29 @@ DEFAULT_VOICES = {
 CLOUD_ENGINES = ["edge", "tiktok"]
 
 
+def _make_minimal_mp3():
+    """Create a minimal valid MP3 file using pydub."""
+    sine = Sine(440).to_audio_segment(duration=100)
+    mp3_io = io.BytesIO()
+    sine.export(mp3_io, format="mp3")
+    return mp3_io.getvalue()
+
+
 class MockCommunicate:
     """Mock edge_tts.Communicate object."""
 
     def __init__(self, text, voice):
         self.text = text
         self.voice = voice
-        self.duration = 1.5  # Store duration for get_audio
+        self.duration = 1.5
+
+    async def stream(self):
+        yield {"data": _make_minimal_mp3()}
 
     async def save(self, output_path):
-        # Write a minimal valid MP3 file
-        # MP3 frame header (11111111 11111011 = 0xFF 0xFB) + padding
-        mp3_data = b"\xff\xfb\x90\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-        Path(output_path).write_bytes(
-            b"ID3"  # ID3 tag
-            b"\x04\x00\x00\x00\x00\x00\x00" + mp3_data * 10  # ID3 header  # Some MP3 frames
-        )
+        Path(output_path).write_bytes(_make_minimal_mp3())
 
     async def get_audio(self, audio_obj):
-        # Edge TTS doesn't have Audio class, it sets duration directly
         if hasattr(audio_obj, "duration"):
             audio_obj.duration = 1.5
 
@@ -117,18 +123,16 @@ async def test_list_voices_idempotent(engine):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_with_default_voice(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
+async def test_generate_audio_with_default_voice(engine, mock_edge_tts, mock_tiktok_httpx):
     """Each engine should generate audio with its default voice."""
-    output_path = str(tmp_path / f"test_{engine}.mp3")
     text = "Hello, this is a test."
 
     voice = DEFAULT_VOICES.get(engine, "default")
 
     try:
-        path, duration = await generate_audio(engine, voice, text, output_path)
-        assert path == output_path
-        assert Path(path).exists()
-        assert Path(path).stat().st_size > 0
+        audio_bytes, duration = await generate_audio(engine, voice, text)
+        assert isinstance(audio_bytes, bytes)
+        assert len(audio_bytes) > 0
         assert duration > 0
     except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
@@ -136,22 +140,17 @@ async def test_generate_audio_with_default_voice(engine, tmp_path, mock_edge_tts
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_creates_mp3_file(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
+async def test_generate_audio_creates_mp3_file(engine, mock_edge_tts, mock_tiktok_httpx):
     """Generated file should be a valid MP3 with positive size."""
-    output_path = str(tmp_path / f"test_{engine}_mp3.mp3")
     text = "Testing audio file creation."
     voice = DEFAULT_VOICES.get(engine, "default")
 
     try:
-        path, _ = await generate_audio(engine, voice, text, output_path)
+        audio_bytes, _ = await generate_audio(engine, voice, text)
 
-        # Check file exists and has content
-        assert Path(path).exists()
-        assert Path(path).stat().st_size > 0
+        assert len(audio_bytes) > 0
 
-        # Verify it's a valid audio file by checking header
-        header = Path(path).read_bytes()[:4]
-        # MP3 files start with ID3 or \xff\xfb
+        header = audio_bytes[:4]
         assert header[:3] == b"ID3" or header[0] == 0xFF
     except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
@@ -174,7 +173,7 @@ async def test_generate_audio_returns_positive_duration(engine, mock_edge_tts, m
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_with_different_text_lengths(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
+async def test_generate_audio_with_different_text_lengths(engine, mock_edge_tts, mock_tiktok_httpx):
     """Each engine should handle different text lengths."""
     texts = [
         "Short.",
@@ -185,10 +184,10 @@ async def test_generate_audio_with_different_text_lengths(engine, tmp_path, mock
     voice = DEFAULT_VOICES.get(engine, "default")
 
     try:
-        for i, text in enumerate(texts):
-            output_path = str(tmp_path / f"test_{engine}_len{i}.mp3")
-            path, duration = await generate_audio(engine, voice, text, output_path)
-            assert Path(path).exists()
+        for text in texts:
+            audio_bytes, duration = await generate_audio(engine, voice, text)
+            assert isinstance(audio_bytes, bytes)
+            assert len(audio_bytes) > 0
             assert duration > 0
     except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
@@ -196,15 +195,16 @@ async def test_generate_audio_with_different_text_lengths(engine, tmp_path, mock
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_generate_audio_output_path_returned(engine, tmp_path, mock_edge_tts, mock_tiktok_httpx):
-    """generate_audio should return the output path."""
-    output_path = str(tmp_path / "specific_path.mp3")
-    text = "Testing output path return."
+async def test_generate_audio_returns_bytes(engine, mock_edge_tts, mock_tiktok_httpx):
+    """generate_audio should return bytes."""
+    text = "Testing audio return."
     voice = DEFAULT_VOICES.get(engine, "default")
 
     try:
-        returned_path, _ = await generate_audio(engine, voice, text, output_path)
-        assert returned_path == output_path
+        audio_bytes, duration = await generate_audio(engine, voice, text)
+        assert isinstance(audio_bytes, bytes)
+        assert len(audio_bytes) > 0
+        assert duration > 0
     except OSError as e:
         pytest.skip(f"Engine {engine} not available: {e}")
 

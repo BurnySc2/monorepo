@@ -6,13 +6,9 @@ https://github.com/thewh1teagle/kokoro-onnx
 
 from __future__ import annotations
 
-import shutil
-import tempfile
-from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
 
-import httpx
 import soundfile as sf
 from cachetools import TTLCache
 from kokoro_onnx import Kokoro
@@ -20,7 +16,6 @@ from pydub import audio_segment
 
 from components.tts_generate._download import download_file
 from components.tts_generate._voice_info import VoiceInfo
-from kokoro_onnx import Kokoro  # noqa: E402
 
 _voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
 
@@ -35,7 +30,7 @@ _local_dir.mkdir(parents=True, exist_ok=True)
 download_file(_MODEL_URL, _model_path)
 download_file(_VOICES_URL, _voices_path)
 
-kokoro = Kokoro(_model_path, _voices_path)
+kokoro = Kokoro(str(_model_path), str(_voices_path))
 
 
 _VOICE_PREFIX_MAP = {

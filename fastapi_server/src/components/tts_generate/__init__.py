@@ -12,11 +12,11 @@ Provides a unified API for multiple TTS engines:
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Literal
 
-from . import edge_engine, kokoro_engine, pocket_engine, supertonic_engine, tiktok_engine
+from . import edge_engine, kitten_engine, kokoro_engine, pocket_engine, supertonic_engine, tiktok_engine
 from ._voice_info import VoiceInfo
-
 
 # Supported TTS engines
 TTSEngine = Literal["edge", "kokoro", "kitten", "pocket", "supertonic", "tiktok"]
@@ -81,8 +81,7 @@ async def generate_audio(
     engine: TTSEngine,
     voice: str,
     text: str,
-    output_path: str | None = None,
-) -> tuple[str, float]:
+) -> tuple[bytes, float]:
     """
     Generate audio using the specified TTS engine.
 
@@ -90,32 +89,42 @@ async def generate_audio(
         engine: TTS engine name (edge, kokoro, kitten, pocket, supertonic, tiktok)
         voice: Voice name/code (engine-specific)
         text: Text to synthesize
-        output_path: Optional output path. If None, a temp file is created.
 
     Returns:
-        Tuple of (output_path, duration_seconds)
+        Tuple of (audio_bytes, duration_seconds)
 
     Raises:
         ValueError: If engine is not supported
     """
+    from io import BytesIO
+
+    from mutagen.mp3 import MP3
+
     engine = engine.lower()
 
-    if engine == "edge":
-        return await edge_engine.generate_audio_async(voice, text, output_path)
+    if engine == "kitten":
+        output_path, duration = await kitten_engine.generate_audio_async(voice, text)
+        audio_bytes = Path(output_path).read_bytes()
+    elif engine == "edge":
+        audio_bytes, _ = await edge_engine.generate_audio_async(voice, text)
     elif engine == "kokoro":
-        return await kokoro_engine.generate_audio_async(voice, text, output_path)
-    elif engine == "kitten":
-        return await kitten_engine.generate_audio_async(voice, text, output_path)
+        audio_bytes, _ = await kokoro_engine.generate_audio_async(voice, text)
     elif engine == "pocket":
-        return await pocket_engine.generate_audio_async(voice, text, output_path)
+        audio_bytes, _ = await pocket_engine.generate_audio_async(voice, text)
     elif engine == "supertonic":
-        return await supertonic_engine.generate_audio_async(voice, text, output_path)
+        audio_bytes, _ = await supertonic_engine.generate_audio_async(voice, text)
     elif engine == "tiktok":
-        return await tiktok_engine.generate_audio_async(voice, text, output_path)
+        audio_bytes, _ = await tiktok_engine.generate_audio_async(voice, text)
     else:
         raise ValueError(
             f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, pocket, supertonic, tiktok"
         )
+
+    mp3_io = BytesIO(audio_bytes)
+    audio = MP3(mp3_io)
+    duration = audio.info.length
+
+    return audio_bytes, duration
 
 
 # Export all engines for direct access
