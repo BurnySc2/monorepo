@@ -12,20 +12,10 @@ Provides a unified API for multiple TTS engines:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Literal
 
-from . import edge_engine, kitten_engine, kokoro_engine, pocket_engine, supertonic_engine, tiktok_engine
-
-
-@dataclass
-class VoiceInfo:
-    """Information about a TTS voice."""
-
-    name: str
-    language: str | None = None
-    gender: str | None = None
-    description: str | None = None
+from . import edge_engine, kokoro_engine, pocket_engine, supertonic_engine, tiktok_engine
+from ._voice_info import VoiceInfo
 
 
 # Supported TTS engines
@@ -74,8 +64,10 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
             result.append(
                 VoiceInfo(
                     name=v.name,
-                    language=getattr(v, "language", None),
+                    short_name=getattr(v, "short_name", None),
                     gender=getattr(v, "gender", None),
+                    locale=getattr(v, "locale", None),
+                    language=getattr(v, "language", None),
                     description=getattr(v, "description", None),
                 )
             )

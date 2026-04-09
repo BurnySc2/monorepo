@@ -18,16 +18,9 @@ from cachetools import TTLCache
 from kokoro_onnx import Kokoro
 from pydub import audio_segment
 
-
-@dataclass
-class VoiceInfo:
-    """Information about a voice."""
-
-    name: str
-    short_name: str
-    gender: str
-    locale: str
-
+from components.tts_generate._download import download_file
+from components.tts_generate._voice_info import VoiceInfo
+from kokoro_onnx import Kokoro  # noqa: E402
 
 _voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
 
@@ -38,23 +31,9 @@ _MODEL_URL = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/mode
 _VOICES_URL = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin"
 
 
-def _download_file(url: str, target: Path) -> None:
-    """Download file to a temp dir, then move to target on completion."""
-    if target.exists():
-        return
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        tmp_path = Path(tmp_dir) / target.name
-        with httpx.Client() as client:
-            response = client.get(url, follow_redirects=True)
-            response.raise_for_status()
-            with tmp_path.open("wb") as f:
-                f.write(response.content)
-        shutil.move(tmp_path, target)
-
-
 _local_dir.mkdir(parents=True, exist_ok=True)
-_download_file(_MODEL_URL, _model_path)
-_download_file(_VOICES_URL, _voices_path)
+download_file(_MODEL_URL, _model_path)
+download_file(_VOICES_URL, _voices_path)
 
 kokoro = Kokoro(_model_path, _voices_path)
 
@@ -93,7 +72,7 @@ async def list_voices_async() -> list[VoiceInfo]:
         _voice_cache["voices"] = [
             VoiceInfo(
                 name=v,
-                short_name=v,
+                short_name=v.split("_", 1)[1].capitalize() if "_" in v else v,
                 gender=_parse_voice_info(v)[1],
                 locale=_parse_voice_info(v)[0],
             )
