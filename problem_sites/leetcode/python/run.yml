@@ -15,17 +15,14 @@ jobs:
         python-version: [3.7, 3.8, 3.9]
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v6
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+      - uses: astral-sh/setup-uv@v7
         with:
-          python-version: ${{ matrix.python-version }}
+          enable-cache: true
 
       - name: Install dependencies
-        run: |
-          pip install uv --no-cache-dir
-          uv sync
+        run: uv sync
 
       - name: Run pytest benchmarks
         run: |
@@ -44,7 +41,7 @@ jobs:
 
     steps:
       # https://github.com/actions-rs/toolchain
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v6
 
       # Cache
       - name: Cache cargo registry
