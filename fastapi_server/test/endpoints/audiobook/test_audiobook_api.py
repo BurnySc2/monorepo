@@ -223,3 +223,136 @@ def test_delete_chapter_audio_chapter_not_found(test_client_db_reset: TestClient
     response = test_client_db_reset.delete("/api/audiobook/books/1/chapters/999")
     assert response.status_code == 404
     assert response.json() == {"detail": "Chapter not found"}
+
+
+def test_get_chapter_status(test_client_db_reset: TestClient) -> None:
+    """GET /api/audiobook/books/1/chapters/status returns chapter status."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.get(
+        f"/api/audiobook/books/{book_id}/chapters/status",
+        params={"chapter_numbers": "1,2,3"},
+    )
+    assert response.status_code == 200
+    chapters = response.json()
+    assert len(chapters) == 3
+    assert chapters[0]["chapter_number"] == 1
+    assert chapters[1]["chapter_number"] == 2
+    assert chapters[2]["chapter_number"] == 3
+
+
+def test_get_chapter_status_single_chapter(test_client_db_reset: TestClient) -> None:
+    """GET /api/audiobook/books/1/chapters/status with single chapter."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.get(
+        f"/api/audiobook/books/{book_id}/chapters/status",
+        params={"chapter_numbers": "1"},
+    )
+    assert response.status_code == 200
+    chapters = response.json()
+    assert len(chapters) == 1
+
+
+def test_get_chapter_status_book_not_found(test_client_db_reset: TestClient) -> None:
+    """GET /api/audiobook/books/999/chapters/status returns 404."""
+    response = test_client_db_reset.get(
+        "/api/audiobook/books/999/chapters/status",
+        params={"chapter_numbers": "1"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Book not found"}
+
+
+def test_get_chapter_status_invalid_chapter_numbers(test_client_db_reset: TestClient) -> None:
+    """GET /api/audiobook/books/1/chapters/status with non-integer returns 400."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.get(
+        f"/api/audiobook/books/{book_id}/chapters/status",
+        params={"chapter_numbers": "a,b,c"},
+    )
+    assert response.status_code == 400
+    assert "chapter_numbers must be comma-separated integers" in response.json()["detail"]
+
+
+def test_update_book_title(test_client_db_reset: TestClient) -> None:
+    """PUT /api/audiobook/books/1/title updates custom book title."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.put(
+        f"/api/audiobook/books/{book_id}/title",
+        json={"title": "My Custom Title"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["custom_book_title"] == "My Custom Title"
+    assert data["book_title"] == "Frankenstein; Or, The Modern Prometheus"
+
+
+def test_update_book_title_book_not_found(test_client_db_reset: TestClient) -> None:
+    """PUT /api/audiobook/books/999/title returns 404."""
+    response = test_client_db_reset.put(
+        "/api/audiobook/books/999/title",
+        json={"title": "My Custom Title"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Book not found"}
+
+
+def test_update_book_author(test_client_db_reset: TestClient) -> None:
+    """PUT /api/audiobook/books/1/author updates custom book author."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.put(
+        f"/api/audiobook/books/{book_id}/author",
+        json={"author": "Mary Shelley"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["custom_book_author"] == "Mary Shelley"
+
+
+def test_update_book_author_book_not_found(test_client_db_reset: TestClient) -> None:
+    """PUT /api/audiobook/books/999/author returns 404."""
+    response = test_client_db_reset.put(
+        "/api/audiobook/books/999/author",
+        json={"author": "Mary Shelley"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Book not found"}
+
+
+def test_delete_all_audio(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books/1/audio deletes all audio for a book."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.delete(f"/api/audiobook/books/{book_id}/audio")
+    assert response.status_code == 200
+    assert response.json() == {"deleted": True}
+
+
+def test_delete_all_audio_book_not_found(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books/999/audio returns 404."""
+    response = test_client_db_reset.delete("/api/audiobook/books/999/audio")
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Book not found"}
+
+
+def test_queue_all_chapters(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/1/queue-all queues all chapters."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.post(
+        f"/api/audiobook/books/{book_id}/queue-all",
+        json={"value": "af-ZA|edge|af-ZA-AdriNeural|Female"},
+    )
+    assert response.status_code == 201
+    assert response.json() == {"queued": True}
+
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+    chapters = response.json()["chapters"]
+    assert all(c["number_in_queue"] is not None for c in chapters)
+
+
+def test_queue_all_chapters_book_not_found(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/999/queue-all returns 404."""
+    response = test_client_db_reset.post(
+        "/api/audiobook/books/999/queue-all",
+        json={"value": "af-ZA|edge|af-ZA-AdriNeural|Female"},
+    )
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Book not found"}
