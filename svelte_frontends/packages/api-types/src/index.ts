@@ -13,3 +13,8 @@ export type ChapterDetail = components["schemas"]["ChapterDetail"]
 export type BookWithChapters = components["schemas"]["BookWithChapters"]
 export type DeleteResponse = components["schemas"]["DeleteResponse"]
 export type QueueResponse = components["schemas"]["QueueResponse"]
+export type ParsedReplayFile = components["schemas"]["ParsedReplayFile"]
+export type ReplayPlayer = components["schemas"]["ReplayPlayer"]
+export type ReplayTeam = components["schemas"]["ReplayTeam"]
+export type ParseReplayResponse =
+    operations["parse_replay_file_api_parse_replay_post"]["responses"]["200"]["content"]["application/json"]

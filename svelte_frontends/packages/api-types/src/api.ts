@@ -631,6 +631,51 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][]
         }
+        /** ParsedReplayFile */
+        ParsedReplayFile: {
+            /** User Id */
+            user_id: string
+            /** Size */
+            size: number
+            /** Md5 */
+            md5: string
+            /**
+             * Status
+             * @default uploaded
+             * @enum {string}
+             */
+            status: "uploaded" | "processing" | "processed" | "error"
+            /** Teams */
+            teams: components["schemas"]["ReplayTeam"][]
+            /** Played Timestamp */
+            played_timestamp: number
+            /** Game Length Seconds */
+            game_length_seconds: number
+            /** Map Name */
+            map_name: string
+            /**
+             * Region Short
+             * @enum {string}
+             */
+            region_short: "us" | "eu" | "kr" | "cn"
+            /**
+             * Expansion
+             * @enum {string}
+             */
+            expansion: "WoL" | "HotS" | "LotV"
+            /** Game Base Build */
+            game_base_build: number
+            /** Game Version */
+            game_version: string
+            /** Game Type */
+            game_type: string
+            /** Is Ladder */
+            is_ladder: boolean
+            /** Is Private */
+            is_private: boolean
+            /** Resume From Replay */
+            resume_from_replay: boolean
+        }
         /** QueueChapterRequest */
         QueueChapterRequest: {
             /** Value */
@@ -640,6 +685,34 @@ export interface components {
         QueueResponse: {
             /** Queued */
             queued: boolean
+        }
+        /** ReplayPlayer */
+        ReplayPlayer: {
+            /** Clan Tag */
+            clan_tag: string
+            /** Name */
+            name: string
+            /**
+             * Pick Race
+             * @enum {string}
+             */
+            pick_race: "Random" | "Protoss" | "Terran" | "Zerg"
+            /**
+             * Play Race
+             * @enum {string}
+             */
+            play_race: "Protoss" | "Terran" | "Zerg"
+            /** Is Human */
+            is_human: boolean
+            /** Mmr */
+            mmr: number | null
+        }
+        /** ReplayTeam */
+        ReplayTeam: {
+            /** Result */
+            result: ("Win" | "Loss") | null
+            /** Players */
+            players: components["schemas"]["ReplayPlayer"][]
         }
         /** TTSGenerateRequest */
         TTSGenerateRequest: {
@@ -922,7 +995,7 @@ export interface operations {
                     [name: string]: unknown
                 }
                 content: {
-                    "application/json": unknown
+                    "application/json": components["schemas"]["ParsedReplayFile"]
                 }
             }
             /** @description Validation Error */

@@ -1,4 +1,4 @@
-import type { ParsedReplayFile } from "./replay_types"
+import type { ParsedReplayFile } from "$lib/replay_types"
 
 const API_BASE = "/api"
 

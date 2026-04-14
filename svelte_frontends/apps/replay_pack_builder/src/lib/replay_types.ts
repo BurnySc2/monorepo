@@ -1,47 +1,16 @@
-// Types for replay pack builder - mirrors the Python models
+import type { ParsedReplayFile as ApiParsedReplayFile, ReplayPlayer as ApiReplayPlayer, ReplayTeam as ApiReplayTeam } from "@repo/api-types"
 
-export type Race = "Random" | "Protoss" | "Terran" | "Zerg"
-export type Region = "us" | "eu" | "kr" | "cn"
-export type Expansion = "WoL" | "HotS" | "LotV"
-export type Result = "Win" | "Loss" | null
+// Re-export from api-types for external use
+export type { ReplayPlayer, ReplayTeam } from "@repo/api-types"
 
-export interface ReplayPlayer {
-    clan_tag: string
-    name: string
-    pick_race: Race
-    play_race: Race
-    is_human: boolean
-    mmr: number | null
-}
-
-export interface ReplayTeam {
-    result: Result
-    players: ReplayPlayer[]
-}
-
-export interface ParsedReplayFile {
-    // From ReplayFile
-    user_id: string
-    size: number
-    md5: string
-    status: string
-    // From ReplayData
-    teams: ReplayTeam[]
-    played_timestamp: number
-    game_length_seconds: number
-    map_name: string
-    region_short: Region
-    expansion: Expansion
-    game_base_build: number
-    game_version: string
-    game_type: string
-    is_ladder: boolean
-    is_private: boolean
-    resume_from_replay: boolean
-    // Client-side only
+// Client-side extended type (adds file_data and file_name)
+export interface ParsedReplayFile extends ApiParsedReplayFile {
     file_data?: ArrayBuffer
     file_name?: string
 }
+export type Region = "us" | "eu" | "kr" | "cn"
+export type Expansion = "WoL" | "HotS" | "LotV"
+export type Result = "Win" | "Loss" | null
 
 export interface FilterSettings {
     filter_enabled: boolean

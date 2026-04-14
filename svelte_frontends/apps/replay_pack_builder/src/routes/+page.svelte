@@ -3,6 +3,7 @@ import { FileUpload, Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { parse_replay_file } from "$lib/api_client"
 import FilterPanel from "$lib/components/FilterPanel.svelte"
+import FolderUpload from "$lib/components/FolderUpload.svelte"
 import ReplayTable from "$lib/components/ReplayTable.svelte"
 import {
     DEFAULT_REPLAY_NAME_PATTERN,
@@ -20,7 +21,6 @@ let is_processing = $state(false)
 let filter_settings: FilterSettings = $state(get_default_filter_settings())
 let replay_name_pattern: string = $state(DEFAULT_REPLAY_NAME_PATTERN)
 let preview_name: string = $state("")
-let selected_md5s: string[] = $state([])
 
 // Example replay for preview
 const example_replay: ParsedReplayFile = {
@@ -81,27 +81,24 @@ async function handle_file_upload(files: FileList) {
     is_processing = true
     try {
         for (const file of files) {
-            // Check for duplicates
-            const is_duplicate = parsed_files.some((r) => r.file_name === file.name)
-            if (is_duplicate) {
-                continue
-            }
-
-            // 100MB limit
             if (file.size > 100 * 1024 * 1024) {
                 console.warn(`File ${file.name} exceeds 100MB limit`)
                 continue
             }
 
-            const parsed = await parse_replay_file(file)
-            parsed.file_data = await file.arrayBuffer()
-            parsed.file_name = file.name
-            parsed_files = [...parsed_files, parsed]
+            try {
+                const parsed = await parse_replay_file(file)
+                if (parsed_files.some((r) => r.md5 === parsed.md5)) {
+                    continue
+                }
+                parsed.file_data = await file.arrayBuffer()
+                parsed.file_name = file.name
+                parsed_files = [...parsed_files, parsed]
+            } catch (error) {
+                console.warn(`Failed to parse ${file.name}:`, error)
+            }
         }
         update_filters()
-    } catch (error) {
-        console.error("Error parsing replay:", error)
-        alert(`Error parsing replay: ${error}`)
     } finally {
         is_processing = false
     }
@@ -115,7 +112,6 @@ function remove_replay(md5: string) {
 function clear_all_files() {
     parsed_files = []
     filtered_replays = []
-    selected_md5s = []
 }
 
 function reset_pattern() {
@@ -188,12 +184,19 @@ $effect(() => {
                     <span class="ml-3 text-gray-600">Processing replays...</span>
                 </div>
             {:else}
-                <FileUpload
-                    label="Drag & drop .SC2Replay files here"
-                    accept=".SC2Replay"
-                    disabled={is_processing}
-                    on_upload={handle_file_upload}
-                />
+                <div class="flex gap-4 items-center">
+                    <FileUpload
+                        label="Drag & drop .SC2Replay files here"
+                        accept=".SC2Replay"
+                        disabled={is_processing}
+                        on_upload={handle_file_upload}
+                    />
+                    <FolderUpload
+                        label="Select folder..."
+                        disabled={is_processing}
+                        on_upload={handle_file_upload}
+                    />
+                </div>
             {/if}
         </div>
     </section>
@@ -260,7 +263,7 @@ $effect(() => {
             <h2 class="mt-0 mb-4">Uploaded Replays ({filtered_replays.length} passing filters)</h2>
             <ReplayTable
                 replays={parsed_files}
-                bind:selected_md5s
+                {replay_name_pattern}
                 on_remove={remove_replay}
             />
         </section>
