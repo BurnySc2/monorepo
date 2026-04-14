@@ -1,10 +1,10 @@
 <script lang="ts">
+import type { BookWithChapters, VoiceOption } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import JSZip from "jszip"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
 import ChapterList from "$lib/components/ChapterList.svelte"
-import type { BookWithChapters, VoiceOption } from "$lib/types/audiobook"
 
 let book_id = $derived(Number(page.params.bookId))
 

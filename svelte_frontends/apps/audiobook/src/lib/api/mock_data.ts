@@ -1,4 +1,4 @@
-import type { BookWithChapters } from "$lib/types/audiobook"
+import type { BookWithChapters } from "@repo/api-types"
 
 export const mock_book_data: BookWithChapters = {
     book: {

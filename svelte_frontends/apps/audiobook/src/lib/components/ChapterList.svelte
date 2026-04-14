@@ -1,6 +1,6 @@
 <script lang="ts">
+import type { ChapterDetail as AudiobookChapterQueryResult } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
-import type { AudiobookChapterQueryResult } from "$lib/types/audiobook"
 
 interface Props {
     chapters: AudiobookChapterQueryResult[]
@@ -61,7 +61,7 @@ function handle_delete(chapter_id: number) {
                     <div class="flex items-center gap-2">
                         <Spinner />
                         <span class="text-sm">
-                            {#if chapter.number_in_queue > 0}
+                            {#if (chapter.number_in_queue ?? 0) > 0}
                                 Queued ({chapter.number_in_queue})
                             {:else}
                                 Queued...

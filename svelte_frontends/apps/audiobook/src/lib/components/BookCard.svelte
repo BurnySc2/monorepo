@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { AudiobookBook } from "$lib/types/audiobook"
+import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
 
 interface Props {
     book: AudiobookBook

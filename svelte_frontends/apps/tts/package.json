@@ -14,7 +14,9 @@
         "test:unit": "vitest run",
         "test:integration": "vitest run tests/integration || echo 'No integration tests'"
     },
-    "dependencies": {},
+    "dependencies": {
+        "@repo/api-types": "*"
+    },
     "devDependencies": {
         "vitest": "^4.1.0"
     }

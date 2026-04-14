@@ -1,7 +1,8 @@
 <script lang="ts">
+import type { VoiceOption } from "@repo/api-types"
 import { onMount } from "svelte"
 
-const voices_list: string[] = []
+let voices = $state<VoiceOption[]>([])
 let selected_voice = $state("")
 let user_text = $state("")
 let audio_b64 = $state("")
@@ -10,22 +11,30 @@ let is_generating = $state(false)
 let twitch_channel = $state("burnysc2")
 let twitch_volume = $state(15)
 
-// Load voices on mount (you could fetch from an endpoint if available)
-onMount(() => {
-    const available = ["alice", "bob", "charlie"]
-    voices_list.push(...available.sort())
-    if (voices_list.length > 0) {
-        selected_voice = voices_list[0]
+async function load_voices() {
+    try {
+        const resp = await fetch("/tts-generate/voices")
+        if (resp.ok) {
+            voices = await resp.json()
+            if (voices.length > 0) {
+                selected_voice = voices[0].value
+            }
+        }
+    } catch (e) {
+        console.error("Failed to load voices", e)
     }
+}
+
+onMount(() => {
+    load_voices()
 })
 
-// Generate audio by calling the FastAPI TTS endpoint
 async function generate_audio() {
     is_generating = true
     const voice = selected_voice
     const text = user_text
     try {
-        const resp = await fetch("/tts-api/generate", {
+        const resp = await fetch("/tts-generate/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ voice, text }),
@@ -59,8 +68,8 @@ const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_chann
             bind:value={selected_voice}
             class="border rounded w-full p-1"
         >
-            {#each voices_list as voice}
-                <option value={voice}>{voice}</option>
+            {#each voices as voice}
+                <option value={voice.value}>{voice.label}</option>
             {/each}
         </select>
     </label>

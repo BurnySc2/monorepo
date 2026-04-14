@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { delete_book, download_book, get_available_voices, get_book, get_books, upload_epub } from "./audiobook"
+import { delete_book, get_available_voices, get_book, get_books, upload_epub } from "./audiobook"
 
 const mockFetch = vi.fn()
 global.fetch = mockFetch
@@ -17,8 +17,8 @@ describe("audiobook API", () => {
                     uploaded_by: "user1",
                     book_title: "Test Book",
                     book_author: "Author",
-                    custom_book_title: "",
-                    custom_book_author: "",
+                    custom_book_title: null,
+                    custom_book_author: null,
                     chapter_count: 10,
                     upload_date: "2024-01-01",
                 },
@@ -30,7 +30,7 @@ describe("audiobook API", () => {
 
             const result = await get_books()
             expect(result).toHaveLength(1)
-            expect(result[0].book_title).toBe("Test Book")
+            expect(result[0].id).toBe(1)
         })
 
         it("throws on fetch failure", async () => {
@@ -147,27 +147,6 @@ describe("audiobook API", () => {
             })
 
             await expect(get_available_voices()).rejects.toThrow("Failed to fetch voices")
-        })
-    })
-
-    describe("download_book", () => {
-        it("returns download_url on success", async () => {
-            mockFetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => ({ download_url: "http://example.com/download" }),
-            })
-
-            const result = await download_book(123)
-            expect(result).toBe("http://example.com/download")
-        })
-
-        it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-            })
-
-            await expect(download_book(123)).rejects.toThrow("Failed to get download URL")
         })
     })
 })

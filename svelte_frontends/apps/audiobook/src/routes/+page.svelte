@@ -1,10 +1,10 @@
 <script lang="ts">
+import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import * as api from "$lib/api/audiobook"
 import { check_login_status } from "$lib/api/auth"
 import BookCard from "$lib/components/BookCard.svelte"
 import BookUpload from "$lib/components/BookUpload.svelte"
-import type { AudiobookBook } from "$lib/types/audiobook"
 
 let books: AudiobookBook[] = $state([])
 let is_loading = $state(true)

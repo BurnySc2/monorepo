@@ -9,7 +9,6 @@ from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
 from components.login.cookies import LoggedInUser, check_book_ownership, get_current_user
-from components.tts_generate import VoiceOption, list_all_voices
 from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.audiobook import (
     AudioSettings,
@@ -262,15 +261,6 @@ async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depend
     await AudiobookChapter.update({AudiobookChapter.queued: None}).where(AudiobookChapter.book == book_id)
 
     return DeleteResponse(deleted=True)
-
-
-@audiobook_router.get("/voices", response_model=list[VoiceOption])
-async def list_voices(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> list[VoiceOption]:
-    """
-    List all available TTS voices.
-    """
-    voices = await list_all_voices()
-    return voices
 
 
 @audiobook_router.delete("/books/{book_id}/audio", response_model=DeleteResponse)

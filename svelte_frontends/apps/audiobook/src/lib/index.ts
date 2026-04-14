@@ -1,4 +1,3 @@
-// Re-export types and API
+// Re-export API
 
 export * from "./api/audiobook"
-export * from "./types/audiobook"

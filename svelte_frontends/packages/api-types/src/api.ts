@@ -206,6 +206,48 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    "/tts-generate/voices": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * List Voices
+         * @description List all available TTS voices.
+         */
+        get: operations["list_voices_tts_generate_voices_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/tts-generate/generate": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * Generate Tts
+         * @description Generate TTS audio for the given voice and text.
+         *     Voice should be in format: {locale}|{engine}|{voice_name}|{gender}
+         *     Returns base64-encoded MP3 audio.
+         */
+        post: operations["generate_tts_tts_generate_generate_post"]
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     "/api/audiobook/books": {
         parameters: {
             query?: never
@@ -291,26 +333,6 @@ export interface paths {
          *     Returns 400 if not an epub, 201 on success.
          */
         post: operations["upload_epub_api_audiobook_upload_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
-    "/api/audiobook/voices": {
-        parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        /**
-         * List Voices
-         * @description List all available TTS voices.
-         */
-        get: operations["list_voices_api_audiobook_voices_get"]
-        put?: never
-        post?: never
         delete?: never
         options?: never
         head?: never
@@ -433,27 +455,6 @@ export interface paths {
          * @description Queue all chapters of a book for audio conversion.
          */
         post: operations["queue_all_chapters_api_audiobook_books__book_id__queue_all_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
-    "/api/audiobook/books/{book_id}/download": {
-        parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        /**
-         * Download Book
-         * @description Get a download URL for the entire book (all chapters as a single audio file).
-         *     Returns 400 if not all chapters have audio.
-         */
-        get: operations["download_book_api_audiobook_books__book_id__download_get"]
-        put?: never
-        post?: never
         delete?: never
         options?: never
         head?: never
@@ -639,6 +640,13 @@ export interface components {
         QueueResponse: {
             /** Queued */
             queued: boolean
+        }
+        /** TTSGenerateRequest */
+        TTSGenerateRequest: {
+            /** Voice */
+            voice: string
+            /** Text */
+            text: string
         }
         /** UploadSuccess */
         UploadSuccess: {
@@ -928,6 +936,61 @@ export interface operations {
             }
         }
     }
+    list_voices_tts_generate_voices_get: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["VoiceOption"][]
+                }
+            }
+        }
+    }
+    generate_tts_tts_generate_generate_post: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TTSGenerateRequest"]
+            }
+        }
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": {
+                        [key: string]: unknown
+                    }
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
     list_books_api_audiobook_books_get: {
         parameters: {
             query?: never
@@ -1092,39 +1155,6 @@ export interface operations {
                 }
                 content: {
                     "application/json": components["schemas"]["UploadSuccess"]
-                }
-            }
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown
-                }
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
-    list_voices_api_audiobook_voices_get: {
-        parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown
-                }
-                content: {
-                    "application/json": components["schemas"]["VoiceOption"][]
                 }
             }
             /** @description Validation Error */
@@ -1357,43 +1387,6 @@ export interface operations {
                 }
                 content: {
                     "application/json": components["schemas"]["QueueResponse"]
-                }
-            }
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown
-                }
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
-    download_book_api_audiobook_books__book_id__download_get: {
-        parameters: {
-            query?: never
-            header?: never
-            path: {
-                book_id: number
-            }
-            cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown
-                }
-                content: {
-                    "application/json": {
-                        [key: string]: unknown
-                    }
                 }
             }
             /** @description Validation Error */
