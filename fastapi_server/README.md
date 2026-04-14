@@ -7,7 +7,7 @@
 
 ## Launch local dev server
 
-Start database (postgres) and minio
+Start database (postgres) and rustfs
 ```
 docker compose up
 ```

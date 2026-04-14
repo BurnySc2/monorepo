@@ -34,7 +34,6 @@ dependencies = [
     # Zip files with low memory footprint
     "stream-zip>=0.0.83",
     # AWS S3
-    # "minio>=7.2.15",
     "humanize>=4.11.0",
     # SC2 Replay Parser
     "sc2reader>=1.8.0",
@@ -178,10 +177,9 @@ testpaths = ["test"]
 STAGE = "test"
 POSTGRES_CONNECTION_STRING = "postgresql://test:test@localhost:5433/test"
 BACKEND_SERVER_URL = "http://localhost:8000"
-RUSTFS_S3_URL = "http://localhost:3900"
-RUSTFS_ADMIN_URL = "http://localhost:3903"
-RUSTFS_KEY_NAME = "abc123"
-RUSTFS_ACCESS_KEY = "abc123"
-RUSTFS_SECRET_KEY = "rootroot"
-RUSTFS_AUDIOBOOK_BUCKET = "audiobooks-test"
-RUSTFS_TELEGRAM_FILES_BUCKET = "telegram-files"
+RUSTFS_S3_URL = "http://localhost:9000"
+RUSTFS_ADMIN_URL = "http://localhost:9000"
+RUSTFS_ACCESS_KEY = "rustfsadmin"
+RUSTFS_SECRET_KEY = "rustfsadmin"
+RUSTFS_AUDIOBOOK_BUCKET = "rustfs-audiobook-bucket-test"
+RUSTFS_TELEGRAM_FILES_BUCKET = "telegram-files-bucket-test"
