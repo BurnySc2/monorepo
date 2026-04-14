@@ -46,7 +46,9 @@ function get_players(replay: ParsedReplayFile): string {
 }
 
 async function download_replay(replay: ParsedReplayFile) {
-    if (!replay.file_data) {return}
+    if (!replay.file_data) {
+        return
+    }
     const new_name = rename_file_according_to_template(replay, replay_name_pattern)
     const blob = new Blob([replay.file_data])
     const url = URL.createObjectURL(blob)

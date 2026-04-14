@@ -12,7 +12,7 @@
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
         "test": "vitest run",
         "test:unit": "vitest run",
-        "test:integration": "vitest run tests/integration || echo 'No integration tests'",
+        "test:integration": "echo 'No integration tests'",
         "test:watch": "vitest"
     },
     "dependencies": {

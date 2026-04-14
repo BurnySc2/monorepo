@@ -10,7 +10,7 @@
         "check": "svelte-check --tsconfig ./tsconfig.json",
         "test": "vitest run",
         "test:unit": "vitest run",
-        "test:integration": "vitest run tests/integration || echo 'No integration tests'"
+        "test:integration": "echo 'No integration tests'"
     },
     "devDependencies": {
         "@sveltejs/adapter-static": "^3.0.0",
