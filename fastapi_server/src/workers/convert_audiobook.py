@@ -10,7 +10,7 @@ from loguru import logger
 
 from components.audiobook.generate_tts import generate_text_to_speech
 from components.audiobook.models import get_chapter_combined_text
-from minio_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_upload
+from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_upload
 from schemas.audiobook import AudioSettings
 from schemas.audiobook.db_models import AudiobookChapter
 

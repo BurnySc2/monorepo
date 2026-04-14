@@ -6,12 +6,11 @@ from typing import Annotated
 
 import arrow
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
-from loguru import logger
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
 from components.login.cookies import LoggedInUser, check_book_ownership, get_current_user
 from components.tts_generate import VoiceOption, list_all_voices
-from minio_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
+from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.audiobook import (
     AudioSettings,
     BookListItem,

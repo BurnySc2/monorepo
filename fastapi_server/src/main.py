@@ -10,7 +10,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from minio_helper import initialize_rustfs
 from routes.audiobook import audiobook_router
 from routes.index import IndexRouter
 from routes.login import login_router
@@ -18,6 +17,7 @@ from routes.raceroom import raceroom_router
 from routes.replay_comparer import replay_comparer_router
 from routes.replay_parser import replay_parser_router
 from routes.tts_websocket import TTSRouter
+from s3_helper import initialize_rustfs
 
 RUSTFS_AUDIOBOOK_BUCKET = os.getenv("RUSTFS_AUDIOBOOK_BUCKET", "garage-audiobook-bucket")
 RUSTFS_AUDIOBOOK_MAX_SIZE_MB = int(os.getenv("RUSTFS_AUDIOBOOK_MAX_SIZE_MB", "100000"))

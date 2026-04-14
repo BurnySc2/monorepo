@@ -6,14 +6,14 @@ from stat import S_IFREG
 import arrow
 from stream_zip import NO_COMPRESSION_64, async_stream_zip
 
-from minio_helper import (
+from piccolo_conf import DB
+from s3_helper import (
     RUSTFS_AUDIOBOOK_BUCKET,
     get_s3_client,
     object_delete,
     object_download,
     object_upload_async_iterable,
 )
-from piccolo_conf import DB
 from schemas.audiobook.api_models import AudiobookChapterQueryResult
 from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
 

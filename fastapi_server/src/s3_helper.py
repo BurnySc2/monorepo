@@ -1,4 +1,3 @@
-# TODO Rename to "RUSTFS_helper" or "s3_helper"
 import asyncio
 import os
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator
@@ -6,11 +5,11 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 
 import aioboto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from types_aiobotocore_s3 import S3Client
 from types_aiobotocore_s3.service_resource import Bucket, S3ServiceResource
 from types_aiobotocore_s3.type_defs import HeadObjectOutputTypeDef, ObjectTypeDef
-from botocore.config import Config
 
 RUSTFS_S3_URL = os.getenv("RUSTFS_S3_URL", "http://0.0.0.0:9000")
 RUSTFS_ACCESS_KEY = os.getenv("RUSTFS_ACCESS_KEY")
@@ -32,7 +31,7 @@ async def initialize_rustfs():
 @asynccontextmanager
 async def get_s3_client() -> AsyncGenerator[S3Client, None]:
     session = aioboto3.Session()
-    async with session.client(
+    async with session.client(  # pyrefly: ignore
         "s3",
         endpoint_url=RUSTFS_S3_URL,
         aws_access_key_id=RUSTFS_ACCESS_KEY,
