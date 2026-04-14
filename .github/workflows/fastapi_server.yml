@@ -54,21 +54,6 @@ jobs:
         working-directory: ${{ env.SUBDIRECTORY }}
         run: docker compose --profile test up -d
 
-      - name: Initialize garage
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: |
-          timeout=30
-          until docker exec fastapi_dev_garage /garage node id > /dev/null 2>&1; do
-            sleep 1
-            timeout=$((timeout - 1))
-            if [ $timeout -le 0 ]; then
-              echo "Garage failed to start within 30 seconds"
-              exit 1
-            fi
-          done
-          chmod +x garage-init.sh
-          ./garage-init.sh
-
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
