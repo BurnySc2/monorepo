@@ -1,4 +1,5 @@
 <script lang="ts">
+import { Spinner } from "@repo/ui"
 import type { AudiobookChapterQueryResult } from "$lib/types/audiobook"
 
 interface Props {
@@ -14,9 +15,7 @@ function handle_queue(chapter_id: number) {
 }
 
 function handle_delete(chapter_id: number) {
-    if (confirm("Delete audio for this chapter?")) {
-        on_delete_chapter_audio?.(chapter_id)
-    }
+    on_delete_chapter_audio?.(chapter_id)
 }
 </script>
 
@@ -45,14 +44,15 @@ function handle_delete(chapter_id: number) {
                     </audio>
                     <button
                         type="button"
-                        class="px-3 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
-                        onclick={() => handle_delete(chapter.id)}
+                        class="btn btn-danger"
+                        onclick={() => handle_delete(chapter.chapter_number)}
                     >
                         Delete
                     </button>
                 {:else if chapter.number_in_queue !== null}
                     <div class="flex items-center gap-2">
-                        <span class="text-sm text-amber-600">
+                        <Spinner />
+                        <span class="text-sm">
                             {#if chapter.number_in_queue > 0}
                                 Queued ({chapter.number_in_queue})
                             {:else}
@@ -61,8 +61,8 @@ function handle_delete(chapter_id: number) {
                         </span>
                         <button
                             type="button"
-                            class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-colors"
-                            onclick={() => handle_delete(chapter.id)}
+                            class="btn btn-danger"
+                            onclick={() => handle_delete(chapter.chapter_number)}
                         >
                             Remove
                         </button>
@@ -93,8 +93,8 @@ function handle_delete(chapter_id: number) {
                 {:else}
                     <button
                         type="button"
-                        class="px-4 py-2 text-sm text-white bg-green-600 hover:bg-green-700 rounded transition-colors"
-                        onclick={() => handle_queue(chapter.id)}
+                        class="btn btn-success"
+                        onclick={() => handle_queue(chapter.chapter_number)}
                     >
                         Generate audio
                     </button>

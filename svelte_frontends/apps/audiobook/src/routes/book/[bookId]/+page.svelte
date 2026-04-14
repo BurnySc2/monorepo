@@ -2,7 +2,8 @@
 import { Spinner } from "@repo/ui"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
-import type { AudiobookChapterQueryResult, AudioSettings, BookWithChapters, VoiceOption } from "$lib/types/audiobook"
+import ChapterList from "$lib/components/ChapterList.svelte"
+import type { BookWithChapters, VoiceOption } from "$lib/types/audiobook"
 
 let book_id = $derived(Number(page.params.bookId))
 
@@ -215,9 +216,7 @@ $effect(() => {
 
 <div class="container">
     {#if is_loading}
-        <div class="loading">
-            <div class="spinner"></div>
-        </div>
+        <div class="flex justify-center"><Spinner /></div>
     {:else if !user_has_access}
         <p class="message">You don't have access to this book!</p>
     {:else if book_data}
@@ -267,7 +266,7 @@ $effect(() => {
                     <label class="font-bold whitespace-nowrap">Voice</label>
                     <select
                         bind:value={audio_settings.voice}
-                        class="flex-1 min-w-[200px] px-2 py-1 border border-gray-300 rounded"
+                        class="flex-1 min-w-50 px-2 py-1 border border-gray-300 rounded"
                     >
                         {#each available_voices as voice}
                             <option value={voice.value}>{voice.label}</option>
@@ -306,58 +305,11 @@ $effect(() => {
         <!-- Chapters -->
         <div class="chapters-box">
             <h3>Table of Contents</h3>
-            <div class="chapters-list">
-                {#each book_data.chapters as chapter}
-                    <div class="chapter-row">
-                        <div class="chapter-info">
-                            <span class="chapter-title"
-                                >'{chapter.chapter_title}' with {chapter.sentence_count} sentences</span
-                            >
-                        </div>
-                        <div class="chapter-actions">
-                            {#if chapter.has_audio}
-                                <audio
-                                    controls
-                                    src={chapter.minio_presigned_url}
-                                    preload="metadata"
-                                >
-                                    <track kind="captions">
-                                </audio>
-                                <button
-                                    class="action-button"
-                                    onclick={() => handle_delete_chapter_audio(chapter.chapter_number)}
-                                >
-                                    Delete
-                                </button>
-                            {:else if chapter.number_in_queue !== null}
-                                <div class="status">
-                                    <Spinner />
-                                    {#if chapter.number_in_queue > 0}
-                                        Queued ({chapter.number_in_queue})
-                                    {:else}
-                                        Queued ...
-                                    {/if}
-                                </div>
-                                <button
-                                    class="btn btn-danger"
-                                    onclick={() => handle_delete_chapter_audio(chapter.chapter_number)}
-                                >
-                                    Remove
-                                </button>
-                            {:else if chapter.is_converting}
-                                <div class="status">Generating audio ...</div>
-                            {:else}
-                                <button
-                                    class="btn btn-success"
-                                    onclick={() => handle_queue_chapter(chapter.chapter_number)}
-                                >
-                                    Generate audio
-                                </button>
-                            {/if}
-                        </div>
-                    </div>
-                {/each}
-            </div>
+            <ChapterList
+                chapters={book_data.chapters}
+                on_queue_chapter={handle_queue_chapter}
+                on_delete_chapter_audio={handle_delete_chapter_audio}
+            />
         </div>
     {/if}
 </div>
@@ -370,34 +322,10 @@ $effect(() => {
     font-family: system-ui, -apple-system, sans-serif;
 }
 
-.loading {
-    display: flex;
-    justify-content: center;
-    padding: 2rem;
-}
-
 .message {
     text-align: center;
     color: #666;
     padding: 2rem;
-}
-
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
 }
 
 .book-header {
@@ -464,54 +392,5 @@ $effect(() => {
 
 .settings-grid {
     margin-bottom: 1rem;
-}
-
-.chapters-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.chapter-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem;
-    border-bottom: 1px solid #eee;
-}
-
-.chapter-info {
-    flex: 1;
-}
-
-.chapter-title {
-    word-break: break-word;
-}
-
-.chapter-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.chapter-actions audio {
-    max-width: 200px;
-}
-
-.action-button {
-    background: none;
-    border: none;
-    color: #cc0000;
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
-}
-
-.action-button:hover {
-    color: #990000;
-}
-
-.status {
-    color: #666;
-    min-width: 120px;
 }
 </style>
