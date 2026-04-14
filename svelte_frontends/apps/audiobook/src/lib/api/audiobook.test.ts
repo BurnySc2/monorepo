@@ -218,9 +218,9 @@ describe("audiobook API", () => {
                 status: 500,
             })
 
-            await expect(
-                queue_chapter_audio(123, 1, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" }),
-            ).rejects.toThrow("Failed to queue chapter audio")
+            await expect(queue_chapter_audio(123, 1, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" })).rejects.toThrow(
+                "Failed to queue chapter audio",
+            )
         })
     })
 
@@ -260,9 +260,9 @@ describe("audiobook API", () => {
                 status: 500,
             })
 
-            await expect(
-                queue_all_chapters(123, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" }),
-            ).rejects.toThrow("Failed to queue all chapters")
+            await expect(queue_all_chapters(123, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" })).rejects.toThrow(
+                "Failed to queue all chapters",
+            )
         })
     })
 
