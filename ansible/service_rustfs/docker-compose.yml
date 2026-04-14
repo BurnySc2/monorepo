@@ -1,0 +1,40 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+services:
+  rustfs:
+    container_name: rustfs
+    hostname: rustfs
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    user: "10001:10001"
+    networks:
+      - pangolin_newt
+    labels:
+      - pangolin.public-resources.rustfs-s3.name=RustFS S3 API
+      - pangolin.public-resources.rustfs-s3.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.rustfs-s3.protocol=http
+      - pangolin.public-resources.rustfs-s3.auth.sso-enabled=false
+      - pangolin.public-resources.rustfs-s3.targets[0].site=local
+      - pangolin.public-resources.rustfs-s3.targets[0].method=http
+      - pangolin.public-resources.rustfs-s3.targets[0].port=9000
+      - pangolin.public-resources.rustfs-admin.name=RustFS Admin Console
+      - pangolin.public-resources.rustfs-admin.full-domain={{ ADMINSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.rustfs-admin.protocol=http
+      - pangolin.public-resources.rustfs-admin.auth.sso-enabled=true
+      - pangolin.public-resources.rustfs-admin.targets[0].site=local
+      - pangolin.public-resources.rustfs-admin.targets[0].method=http
+      - pangolin.public-resources.rustfs-admin.targets[0].port=9001
+    volumes:
+      # sudo chown -R 10001:10001 data logs
+      - ./data:/data
+      - ./logs:/logs
+    environment:
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+      - RUSTFS_EXTERNAL_ADDRESS=:9000
+      - RUSTFS_ACCESS_KEY={{ secrets.RUSTFS.RUSTFS_ACCESS_KEY }}
+      - RUSTFS_SECRET_KEY={{ secrets.RUSTFS.RUSTFS_SECRET_KEY }}
+      - RUSTFS_CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*

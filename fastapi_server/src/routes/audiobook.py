@@ -6,11 +6,12 @@ from typing import Annotated
 
 import arrow
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
+from loguru import logger
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
 from components.login.cookies import LoggedInUser, check_book_ownership, get_current_user
 from components.tts_generate import VoiceOption, list_all_voices
-from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
+from minio_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.audiobook import (
     AudioSettings,
     BookListItem,
@@ -85,7 +86,7 @@ async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(g
                 presigned_url = (
                     await object_create_presigned_url(
                         session=s3,
-                        bucket=GARAGE_AUDIOBOOK_BUCKET,
+                        bucket=RUSTFS_AUDIOBOOK_BUCKET,
                         key=row["minio_object_name"],
                         file_name=f"{row['chapter_title']}.mp3",
                         expires_in_seconds=3600,
@@ -165,7 +166,7 @@ async def get_chapter_status(
                 presigned_url = (
                     await object_create_presigned_url(
                         session=s3,
-                        bucket=GARAGE_AUDIOBOOK_BUCKET,
+                        bucket=RUSTFS_AUDIOBOOK_BUCKET,
                         key=row["minio_object_name"],
                         file_name=f"{row['chapter_title']}.mp3",
                         expires_in_seconds=3600,
@@ -298,7 +299,7 @@ async def delete_all_audio(
     async with get_s3_client() as s3:
         for chapter in chapters:
             if chapter.minio_object_name:
-                await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+                await object_delete(s3, RUSTFS_AUDIOBOOK_BUCKET, chapter.minio_object_name)
             chapter.minio_object_name = None
             chapter.queued = None
             chapter.started_converting = None
@@ -378,7 +379,7 @@ async def delete_chapter_audio(
 
     if chapter.minio_object_name:
         async with get_s3_client() as s3:
-            await object_delete(s3, GARAGE_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+            await object_delete(s3, RUSTFS_AUDIOBOOK_BUCKET, chapter.minio_object_name)
 
     chapter.minio_object_name = None
     chapter.queued = None

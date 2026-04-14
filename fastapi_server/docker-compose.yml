@@ -108,7 +108,7 @@ services:
     depends_on:
       - traefik
       - local_dev_minio
-      - local_dev_garage
+      - local_dev_rustfs
       - local_dev_postgres
     labels:
       - traefik.enable=true
@@ -127,54 +127,61 @@ services:
     network_mode: host
     profiles:
       - local_dev
-  local_dev_minio:
-    container_name: fastapi_dev_minio
-    hostname: fastapi_dev_minio
-    # image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
-    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
-    pull_policy: always
-    command: minio server data --console-address ":9001"
+  # local_dev_minio:
+  #   container_name: fastapi_dev_minio
+  #   hostname: fastapi_dev_minio
+  #   # image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+  #   image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+  #   pull_policy: always
+  #   command: minio server data --console-address ":9001"
+  #   restart: unless-stopped
+  #   labels:
+  #     - traefik.enable=true
+  #     # API
+  #     - traefik.http.routers.minio.rule=Host(`minio.localhost`)
+  #     - traefik.http.routers.minio.service=minio
+  #     - traefik.http.services.minio.loadbalancer.server.port=9000
+  #     # ADMIN LOGIN
+  #     - traefik.http.routers.minioadmin.rule=Host(`minioadmin.localhost`)
+  #     - traefik.http.routers.minioadmin.service=minioadmin
+  #     - traefik.http.services.minioadmin.loadbalancer.server.port=9001
+  #   ports:
+  #     - 9000:9000
+  #     - 9001:9001
+  #   volumes:
+  #     - dev_minio_data:/data
+  #   environment:
+  #     - MINIO_ROOT_USER=root
+  #     - MINIO_ROOT_PASSWORD=rootroot
+  #   profiles:
+  #     - ""
+  #     - local_dev
+  #     - test
+  local_dev_rustfs:
+    image: rustfs/rustfs:latest
+    container_name: fastapi_dev_rustfs
+    hostname: fastapi_dev_rustfs
     restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      # API
-      - traefik.http.routers.minio.rule=Host(`minio.localhost`)
-      - traefik.http.routers.minio.service=minio
-      - traefik.http.services.minio.loadbalancer.server.port=9000
-      # ADMIN LOGIN
-      - traefik.http.routers.minioadmin.rule=Host(`minioadmin.localhost`)
-      - traefik.http.routers.minioadmin.service=minioadmin
-      - traefik.http.services.minioadmin.loadbalancer.server.port=9001
+    user: "10001:10001"
     ports:
-      - 9000:9000
-      - 9001:9001
+      - 9000:9000 # S3 API
+      - 9001:9001 # Admin API
     volumes:
-      - dev_minio_data:/data
-    environment:
-      - MINIO_ROOT_USER=root
-      - MINIO_ROOT_PASSWORD=rootroot
+      - dev_rustfs_data:/data
+      - dev_rustfs_logs:/logs
     profiles:
       - ""
       - local_dev
       - test
-  local_dev_garage:
-    image: dxflrs/garage:v2.2.0
-    container_name: fastapi_dev_garage
-    hostname: fastapi_dev_garage
-    restart: unless-stopped
-    ports:
-      - 3900:3900 # S3 API
-      - 3903:3903 # Admin API
-    volumes:
-      - dev_garage_data:/var/lib/garage/data
-      - dev_garage_meta:/var/lib/garage/meta
-      - ./garage.toml:/etc/garage.toml:ro
     environment:
-      - GARAGE_ADMIN_TOKEN=${GARAGE_ADMIN_TOKEN:-rootroot}
-    profiles:
-      - ""
-      - local_dev
-      - test
+      - CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+      - RUSTFS_EXTERNAL_ADDRESS=:9000
+      - RUSTFS_CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*
+      - RUSTFS_ACCESS_KEY=rustfsadmin
+      - RUSTFS_SECRET_KEY=rustfsadmin
   local_dev_postgres:
     container_name: fastapi_dev_postgres
     hostname: fastapi_dev_postgres
@@ -250,5 +257,5 @@ volumes:
   dev_minio_data: null
   dev_postgres_data: null
   dev_pgadmin_data: null
-  dev_garage_data: null
-  dev_garage_meta: null
+  dev_rustfs_data: null
+  dev_rustfs_logs: null

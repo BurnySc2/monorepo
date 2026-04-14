@@ -263,8 +263,13 @@ $effect(() => {
             <h3>Settings</h3>
             <div class="settings-grid">
                 <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                    <label class="font-bold whitespace-nowrap">Voice</label>
+                    <label
+                        for="voice-select"
+                        class="font-bold whitespace-nowrap"
+                        >Voice</label
+                    >
                     <select
+                        id="voice-select"
                         bind:value={audio_settings.value}
                         class="flex-1 min-w-50 px-2 py-1 border border-gray-300 rounded"
                     >

@@ -1,13 +1,12 @@
 ---
-
 # Execute with
-# ansible-playbook garage_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start garage service
+# ansible-playbook rustfs_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start rustfs service
   hosts: server_group4
   vars:
-    USERNAME: '{{ secrets.GARAGE.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.GARAGE.SUBDOMAIN }}'
-    ADMINSUBDOMAIN: '{{ secrets.GARAGE.ADMINSUBDOMAIN }}'
+    USERNAME: '{{ secrets.RUSTFS.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.RUSTFS.SUBDOMAIN }}'
+    ADMINSUBDOMAIN: '{{ secrets.RUSTFS.ADMINSUBDOMAIN }}'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
@@ -33,16 +32,10 @@
     - name: docker-compose stop
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
-        # Reload config files
         state: stopped
       failed_when: false
 
-    - name: Copy garage.toml file
-      template:
-        src: garage.toml
-        dest: /home/{{ USERNAME }}/garage.toml
-
-    - name: Copy docker-compose.yml file
+    - name: Copy rustfs docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
@@ -51,17 +44,3 @@
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
         pull: always
-
-    - name: Wait for garage to be ready
-      ansible.builtin.wait_for:
-        timeout: 30
-
-    - name: Copy garage-init.sh
-      template:
-        src: garage-init.sh
-        dest: /home/{{ USERNAME }}/garage-init.sh
-        mode: '0755'
-
-    - name: Run garage initialization
-      ansible.builtin.shell:
-        cmd: /home/{{ USERNAME }}/garage-init.sh

@@ -26,7 +26,6 @@ function handle_keydown(event: KeyboardEvent) {
     class="fixed inset-0 z-50 flex h-full w-full items-center justify-center bg-black/50 backdrop-blur-sm"
     onclick={handle_close}
     onkeydown={handle_keydown}
-    role="dialog"
     aria-modal="true"
 >
     <!-- svelte-ignore a11y_click_events_have_key_events -->

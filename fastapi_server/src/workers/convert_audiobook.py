@@ -10,7 +10,7 @@ from loguru import logger
 
 from components.audiobook.generate_tts import generate_text_to_speech
 from components.audiobook.models import get_chapter_combined_text
-from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_upload
+from minio_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_upload
 from schemas.audiobook import AudioSettings
 from schemas.audiobook.db_models import AudiobookChapter
 
@@ -129,7 +129,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         try:
             async with get_s3_client() as s3:
                 await object_upload(
-                    s3, GARAGE_AUDIOBOOK_BUCKET, context.minio_object_name, audio
+                    s3, RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio
                 )  # pyrefly: ignore[bad-argument-type]
             logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
         except Exception as e:
