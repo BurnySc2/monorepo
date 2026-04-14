@@ -8,7 +8,7 @@ import arrow
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
-from components.login.cookies import LoggedInUser, get_current_user
+from components.login.cookies import LoggedInUser, check_book_ownership, get_current_user
 from components.tts_generate import VoiceOption, list_all_voices
 from minio_helper import GARAGE_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.audiobook import (
@@ -70,6 +70,9 @@ async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(g
 
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
+
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
     chapter_numbers = list(range(1, book.chapter_count + 1))
     chapters_rows: list[dict] = await AudiobookChapter.raw(_query_get_chapters, book_id, chapter_numbers)
@@ -140,6 +143,9 @@ async def get_chapter_status(
 
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
+
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
     if chapter_numbers is None:
         raise HTTPException(status_code=400, detail="chapter_numbers query param required")
@@ -247,6 +253,9 @@ async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depend
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
 
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to modify this book")
+
     book.deleted = True
     await book.save()
 
@@ -278,6 +287,9 @@ async def delete_all_audio(
     )
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
+
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
     chapters = (
         await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
@@ -314,6 +326,9 @@ async def queue_chapter(
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
 
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+
     chapter = (
         await AudiobookChapter.objects()
         .where(AudiobookChapter.chapter_number == chapter_id)  # pyrefly: ignore[missing-attribute]
@@ -325,6 +340,7 @@ async def queue_chapter(
 
     audio_settings = AudioSettings(
         voice_name=settings.voice,
+        engine_name=settings.engine,
     )
 
     chapter.queued = arrow.utcnow().naive
@@ -350,6 +366,9 @@ async def delete_chapter_audio(
     )
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
+
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
     chapter = (
         await AudiobookChapter.objects()
@@ -389,6 +408,9 @@ async def update_book_title(
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
 
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+
     book.custom_book_title = body["title"]
     await book.save()
 
@@ -419,6 +441,9 @@ async def update_book_author(
     )
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
+
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
     book.custom_book_author = body["author"]
     await book.save()
@@ -451,12 +476,16 @@ async def queue_all_chapters(
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
 
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+
     chapters = (
         await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
     )
 
     audio_settings = AudioSettings(
         voice_name=settings.voice,
+        engine_name=settings.engine,
     )
 
     for chapter in chapters:
@@ -482,6 +511,9 @@ async def download_book(
     )
     if book is None or book.deleted:
         raise HTTPException(status_code=404, detail="Book not found")
+
+    if not await check_book_ownership(book, current_user):
+        raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
     chapters = (
         await AudiobookChapter.objects()

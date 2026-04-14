@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from fastapi import Cookie, HTTPException
 from pydantic import BaseModel
 
+from schemas.audiobook.db_models import AudiobookBook
+
 _ = load_dotenv()
 
 BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://localhost:8000")
@@ -175,6 +177,12 @@ async def provide_logged_in_user(loggin_settings: LoginSettings) -> LoggedInUser
         user = await github_get_user(loggin_settings.github_access_token)
     # TODO Add google
     return LoggedInUser.from_service(user)
+
+
+async def check_book_ownership(book: AudiobookBook, user: LoggedInUser) -> bool:
+    if book.deleted:
+        return False
+    return book.uploaded_by == user.db_name
 
 
 async def get_current_user(
