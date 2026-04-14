@@ -30,14 +30,14 @@ async function collect_sc2replay_files(dirHandle: FileSystemDirectoryHandle): Pr
     const valid_files: File[] = []
 
     async function walkDir(handle: FileSystemDirectoryHandle) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for await (const entry of (handle as any).values()) {
+        for await (const entry of (
+            handle as unknown as { values: () => AsyncIterableIterator<FileSystemHandle> }
+        ).values()) {
             if (entry.kind === "file" && entry.name.endsWith(".SC2Replay")) {
-                const file = await entry.getFile()
+                const file = await (entry as FileSystemFileHandle).getFile()
                 valid_files.push(file)
             } else if (entry.kind === "directory") {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await walkDir(entry as any)
+                await walkDir(entry as unknown as FileSystemDirectoryHandle)
             }
         }
     }

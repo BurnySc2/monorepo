@@ -345,7 +345,7 @@ async def delete_chapter_audio(
 ) -> DeleteResponse:
     """
     Delete the generated audio for a chapter.
-    Removes the audio from Garage and clears the queued/audio fields.
+    Removes the audio from rustfs and clears the queued/audio fields.
     """
     book = (
         # pyrefly: ignore[missing-attribute]

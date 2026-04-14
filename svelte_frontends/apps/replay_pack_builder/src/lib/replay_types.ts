@@ -1,8 +1,4 @@
-import type {
-    ParsedReplayFile as ApiParsedReplayFile,
-    ReplayPlayer as ApiReplayPlayer,
-    ReplayTeam as ApiReplayTeam,
-} from "@repo/api-types"
+import type { ParsedReplayFile as ApiParsedReplayFile } from "@repo/api-types"
 
 // Re-export from api-types for external use
 export type { ReplayPlayer, ReplayTeam } from "@repo/api-types"

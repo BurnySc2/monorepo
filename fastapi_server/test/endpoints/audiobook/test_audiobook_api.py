@@ -6,9 +6,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 
-def _garage_available() -> bool:
-    garage_url = os.getenv("GARAGE_S3_URL", "http://localhost:3900")
-    url = garage_url.removeprefix("http://").removeprefix("https://")
+def _rustfs_available() -> bool:
+    rustfs_url = os.getenv("RUSTFS_S3_URL", "http://localhost:9000")
+    url = rustfs_url.removeprefix("http://").removeprefix("https://")
     host, port = url.split(":")
     import socket
 
@@ -77,9 +77,9 @@ def test_uploaded_book_chapter_count(test_client_db_reset: TestClient) -> None:
     assert len(json_data["chapters"]) == 31
 
 
-@pytest.mark.skipif(not _garage_available(), reason="Garage not available")
+@pytest.mark.skipif(not _rustfs_available(), reason="RustFS not available")
 def test_get_book(test_client_db_reset: TestClient) -> None:
-    """GET /api/audiobook/books/{id} returns book with chapters array. Requires Garage."""
+    """GET /api/audiobook/books/{id} returns book with chapters array. Requires rustfs."""
     book_id = _upload_book(test_client_db_reset)
     response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
     assert response.status_code == 200
@@ -144,8 +144,8 @@ def test_deleted_book_not_in_list(test_client_db_reset: TestClient) -> None:
 
 
 def test_list_voices(test_client_db_reset: TestClient) -> None:
-    """GET /api/audiobook/voices returns a list of voices."""
-    response = test_client_db_reset.get("/api/audiobook/voices")
+    """GET /tts-generate/voices returns a list of voices."""
+    response = test_client_db_reset.get("/tts-generate/voices")
     assert response.status_code == 200
     voices = response.json()
     assert isinstance(voices, list)

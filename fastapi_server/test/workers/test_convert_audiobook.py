@@ -6,7 +6,6 @@ require a real database for full coverage of check_queued_chapters.
 """
 
 import asyncio
-import io
 from contextlib import suppress
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -81,7 +80,7 @@ class TestConvertOne:
         mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
         mock_chapter.minio_object_name = None
 
-        mock_audio = io.BytesIO(b"fake audio data")
+        mock_audio = b"fake audio data"
 
         mock_context = MagicMock()
         mock_context.chapter = mock_chapter
@@ -92,7 +91,7 @@ class TestConvertOne:
 
         with (
             patch("src.workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
-            patch("src.workers.convert_audiobook.generate_text_to_speech", new_callable=AsyncMock) as mock_tts,
+            patch("src.workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
         ):
             mock_tts.return_value = mock_audio
 
@@ -118,7 +117,7 @@ class TestConvertOne:
         mock_chapter.id = 42
         mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
 
-        mock_audio = io.BytesIO(b"fake audio data")
+        mock_audio = b"fake audio data"
 
         mock_context = MagicMock()
         mock_context.chapter = mock_chapter
@@ -129,7 +128,7 @@ class TestConvertOne:
 
         with (
             patch("src.workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
-            patch("src.workers.convert_audiobook.generate_text_to_speech", new_callable=AsyncMock) as mock_tts,
+            patch("src.workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
         ):
             mock_tts.return_value = mock_audio
 
@@ -148,7 +147,7 @@ class TestConvertOne:
         mock_chapter.id = 42
         mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
 
-        mock_audio = io.BytesIO(b"fake audio data")
+        mock_audio = b"fake audio data"
 
         mock_context = MagicMock()
         mock_context.chapter = mock_chapter
@@ -159,7 +158,7 @@ class TestConvertOne:
 
         with (
             patch("src.workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
-            patch("src.workers.convert_audiobook.generate_text_to_speech", new_callable=AsyncMock) as mock_tts,
+            patch("src.workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
         ):
             mock_tts.return_value = mock_audio
 

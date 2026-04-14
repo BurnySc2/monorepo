@@ -20,7 +20,7 @@ from routes.tts_generate import tts_generate_router
 from routes.tts_websocket import TTSRouter
 from s3_helper import initialize_rustfs
 
-RUSTFS_AUDIOBOOK_BUCKET = os.getenv("RUSTFS_AUDIOBOOK_BUCKET", "garage-audiobook-bucket")
+RUSTFS_AUDIOBOOK_BUCKET = os.getenv("RUSTFS_AUDIOBOOK_BUCKET", "rustfs-audiobook-bucket")
 RUSTFS_AUDIOBOOK_MAX_SIZE_MB = int(os.getenv("RUSTFS_AUDIOBOOK_MAX_SIZE_MB", "100000"))
 RUSTFS_KEY_NAME = os.getenv("RUSTFS_KEY_NAME", "audiobook-key")
 

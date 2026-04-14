@@ -91,4 +91,4 @@ def test_parse_replay_file_invalid_replay(client: TestClient):
             files={"file": ("test.SC2Replay", invalid_file, "application/octet-stream")},
         )
         assert response.status_code == 400
-        assert "error" in response.json()
+        assert "detail" in response.json()
