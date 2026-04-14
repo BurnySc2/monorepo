@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Spinner } from "@repo/ui"
+import JSZip from "jszip"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
 import ChapterList from "$lib/components/ChapterList.svelte"
@@ -10,6 +11,7 @@ let book_id = $derived(Number(page.params.bookId))
 let book_data = $state<BookWithChapters | null>(null)
 let available_voices = $state<VoiceOption[]>([])
 let is_loading = $state(true)
+let is_downloading = $state(false)
 let user_has_access = $state(false)
 
 // Edit state
@@ -22,6 +24,16 @@ let custom_book_author = $state("")
 import { load_audio_settings, save_audio_settings } from "$lib/audio_settings.svelte"
 
 let audio_settings = $state(load_audio_settings())
+
+let all_chapters_have_audio = $derived(book_data?.chapters.every((c) => c.has_audio && c.minio_presigned_url) ?? false)
+
+let all_chapters_queued_or_have_audio = $derived(
+    book_data?.chapters.every((c) => c.number_in_queue !== null || c.has_audio || c.is_converting) ?? false,
+)
+
+let no_chapters_have_audio_or_queued = $derived(
+    book_data?.chapters.every((c) => c.number_in_queue === null && !c.has_audio) ?? true,
+)
 
 $effect(() => {
     save_audio_settings(audio_settings)
@@ -149,12 +161,47 @@ async function handle_queue_all() {
 }
 
 async function handle_download_book() {
+    if (!book_data || is_downloading) {
+        return
+    }
+
+    const chapters_with_audio = book_data.chapters.filter((c) => c.has_audio && c.minio_presigned_url)
+    if (chapters_with_audio.length === 0) {
+        alert("No chapters with audio to download")
+        return
+    }
+
+    is_downloading = true
+
+    const zip = new JSZip()
+    const folder = zip.folder(`${custom_book_author.slice(0, 100)}/${custom_book_title.slice(0, 200)}`)
+
+    if (!folder) {
+        is_downloading = false
+        throw new Error("Failed to create zip folder")
+    }
+
     try {
-        const download_url = await api.download_book(book_id)
-        window.location.href = download_url
+        for (const chapter of chapters_with_audio) {
+            const response = await fetch(chapter.minio_presigned_url)
+            const blob = await response.blob()
+            const chapter_num = chapter.chapter_number.toString().padStart(4, "0")
+            const chapter_title = chapter.chapter_title.replace(/\s+/g, "_")
+            folder.file(`${chapter_num}_${chapter_title}.mp3`, blob)
+        }
+
+        const content = await zip.generateAsync({ type: "blob" })
+        const url = URL.createObjectURL(content)
+        const a = document.createElement("a")
+        a.href = url
+        a.download = `${custom_book_title.slice(0, 200)}.zip`
+        a.click()
+        URL.revokeObjectURL(url)
+        is_downloading = false
     } catch (e) {
         console.error("Failed to download book:", e)
-        alert("Failed to download book - make sure all chapters have audio generated")
+        alert("Failed to download book")
+        is_downloading = false
     }
 }
 
@@ -290,18 +337,29 @@ $effect(() => {
                 <button
                     class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer"
                     onclick={handle_queue_all}
+                    disabled={all_chapters_queued_or_have_audio}
+                    title={all_chapters_queued_or_have_audio ? "All chapters already have audio" : ""}
                 >
                     Generate audio for all chapters
                 </button>
                 <button
-                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer"
+                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer relative  flex space-x-2 justify-center items-center"
                     onclick={handle_download_book}
+                    disabled={is_downloading || !all_chapters_have_audio}
+                    title={!all_chapters_have_audio ? "All chapters require audio" : ""}
                 >
-                    Download book
+                    {#if is_downloading}
+                        <Spinner />
+                    {:else if !all_chapters_have_audio && all_chapters_queued_or_have_audio}
+                        <Spinner />
+                    {/if}
+                    <div>Download book</div>
                 </button>
                 <button
                     class="flex-1 btn btn-danger"
                     onclick={handle_delete_all_audio}
+                    disabled={no_chapters_have_audio_or_queued}
+                    title={no_chapters_have_audio_or_queued ? "No chapters have audio" : ""}
                 >
                     Delete all audio
                 </button>
@@ -385,6 +443,11 @@ $effect(() => {
 
 .edit-button:hover {
     background-color: #f0f0f0;
+}
+
+.settings-box > div > button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .settings-box,

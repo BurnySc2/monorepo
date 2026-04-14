@@ -490,37 +490,3 @@ async def queue_all_chapters(
         await chapter.save()
 
     return QueueResponse(queued=True)
-
-
-@audiobook_router.get("/books/{book_id}/download")
-async def download_book(
-    book_id: int,
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
-) -> dict:
-    """
-    Get a download URL for the entire book (all chapters as a single audio file).
-    Returns 400 if not all chapters have audio.
-    """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-    if book is None or book.deleted:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
-
-    chapters = (
-        await AudiobookChapter.objects()
-        .where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
-        .where(AudiobookChapter.minio_object_name != None)  # noqa: E711
-    )
-
-    if len(chapters) != book.chapter_count:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Not all chapters have audio generated. {len(chapters)}/{book.chapter_count} ready.",
-        )
-
-    return {"download_url": f"/api/audiobook/books/{book_id}/audio.zip"}

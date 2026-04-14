@@ -3,13 +3,13 @@ from __future__ import annotations
 import asyncio
 import io
 import os
+import re
 
 import arrow
 from dotenv import load_dotenv
 from loguru import logger
 
-from components.audiobook.generate_tts import generate_text_to_speech
-from components.audiobook.models import get_chapter_combined_text
+from components.tts_generate import generate_audio
 from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_upload
 from schemas.audiobook import AudioSettings
 from schemas.audiobook.db_models import AudiobookChapter
@@ -23,6 +23,11 @@ ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR", "0.3"))
 
 # Maximum number of concurrent chapter conversions
 MAX_CONCURRENT_CONVERSIONS = int(os.getenv("AUDIOBOOK_MAX_CONCURRENT_CONVERSIONS", "1"))
+
+
+def get_chapter_combined_text(text: str) -> str:
+    combined = " ".join(row for row in text)
+    return re.sub(r"\s+", " ", combined)
 
 
 class AudiobookConversionContext:
@@ -57,7 +62,7 @@ class AudiobookConversionContext:
             raise
 
 
-async def check_queued_chapters() -> None:
+async def check_queued_chapters() -> bool:
     # Reset those that have failed to convert in time
     await AudiobookChapter.update({AudiobookChapter.started_converting: None}).where(
         AudiobookChapter.started_converting <= arrow.utcnow().naive
@@ -78,7 +83,7 @@ async def check_queued_chapters() -> None:
     )
     first_chapter = await query.first()
     if first_chapter is None:
-        return
+        return False
 
     # Check active conversions count
     # pyrefly: ignore
@@ -86,13 +91,14 @@ async def check_queued_chapters() -> None:
         arrow.utcnow().naive < AudiobookChapter.started_converting
     )
     if MAX_CONCURRENT_CONVERSIONS <= active_conversions:
-        return
+        return False
 
     count_more_conversion_possible = MAX_CONCURRENT_CONVERSIONS - active_conversions
     chapters = await query.limit(count_more_conversion_possible)
     for chapter in chapters:
         # Launch convert_one in a new asyncio task
         asyncio.create_task(convert_one(chapter))
+    return True
 
 
 async def convert_one(chapter: AudiobookChapter) -> None:
@@ -108,10 +114,13 @@ async def convert_one(chapter: AudiobookChapter) -> None:
     async with AudiobookConversionContext(chapter) as context:
         # Generate tts from the book
         audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
-        audio: io.BytesIO = await generate_text_to_speech(
-            chapter.content,
-            engine=audio_settings.engine_name,
-            voice=audio_settings.voice_name,
+
+        audio = io.BytesIO(
+            await generate_audio(
+                audio_settings.engine_name,
+                audio_settings.voice_name,
+                chapter.content,
+            )
         )
 
         # Get data from db, user may have clicked "delete" button on book or chapter
@@ -128,7 +137,9 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         # Save result to MinIO
         try:
             async with get_s3_client() as s3:
-                await object_upload(s3, RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio)  # pyrefly: ignore[bad-argument-type]
+                await object_upload(
+                    s3, RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio
+                )  # pyrefly: ignore[bad-argument-type]
             logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
         except Exception as e:
             logger.error(f"Failed to save audio to MinIO: {e}")
@@ -145,8 +156,9 @@ async def keep_converting():
     logger.info("Starting audiobook conversion worker")
     while True:
         try:
-            await check_queued_chapters()
-            await asyncio.sleep(30)
+            converted_one = await check_queued_chapters()
+            if not converted_one:
+                await asyncio.sleep(30)
         except Exception as e:  # noqa: BLE001
             logger.error(f"Error in conversion loop: {e}")
             await asyncio.sleep(5)  # Brief pause before retrying

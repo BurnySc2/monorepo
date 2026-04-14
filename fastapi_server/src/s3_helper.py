@@ -25,6 +25,7 @@ RUSTFS_ADMIN_TOKEN = os.getenv("RUSTFS_ADMIN_TOKEN", "rootroot")
 async def initialize_rustfs():
     async with get_s3_client() as s3:
         await bucket_create(s3, RUSTFS_AUDIOBOOK_BUCKET)
+        await bucket_set_cors(s3, RUSTFS_AUDIOBOOK_BUCKET)
         await bucket_set_expiration(s3, RUSTFS_AUDIOBOOK_BUCKET, days=30)
 
 
@@ -136,6 +137,21 @@ async def object_create_presigned_url(
 
 async def bucket_create(session: S3Client, bucket: str) -> None:
     _ = await session.create_bucket(Bucket=bucket)
+
+
+async def bucket_set_cors(session: S3Client, bucket: str) -> None:
+    cors_config = {
+        "CORSRules": [
+            {
+                "AllowedOrigins": ["*"],
+                "AllowedMethods": ["GET"],
+                "AllowedHeaders": ["*"],
+                "ExposeHeaders": ["*"],
+                "MaxAgeSeconds": 3600,
+            }
+        ]
+    }
+    _ = await session.put_bucket_cors(Bucket=bucket, CORSConfiguration=cors_config)
 
 
 async def bucket_set_expiration(session: S3Client, bucket: str, days: int) -> None:
