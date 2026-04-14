@@ -41,9 +41,9 @@ async function load_book() {
             custom_book_author = book_data.book.custom_book_author || book_data.book.book_author
 
             if (available_voices.length > 0) {
-                const voice_exists = available_voices.some((v) => v.value === audio_settings.voice_value)
-                if (!audio_settings.voice_value || !voice_exists) {
-                    audio_settings.voice_value = available_voices[0].value
+                const voice_exists = available_voices.some((v) => v.value === audio_settings.value)
+                if (!audio_settings.value || !voice_exists) {
+                    audio_settings.value = available_voices[0].value
                 }
             }
         } else {
@@ -277,7 +277,7 @@ $effect(() => {
                     >
                     <select
                         id="voice-select"
-                        bind:value={audio_settings.voice_value}
+                        bind:value={audio_settings.value}
                         class="flex-1 min-w-50 px-2 py-1 border border-gray-300 rounded"
                     >
                         {#each available_voices as voice}

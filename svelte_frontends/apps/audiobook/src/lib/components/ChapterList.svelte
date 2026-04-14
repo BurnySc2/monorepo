@@ -33,7 +33,7 @@ function handle_delete(chapter_id: number) {
             </div>
 
             <div class="flex items-center gap-2 ml-4">
-                    {#if chapter.has_audio}
+                {#if chapter.has_audio}
                     <audio
                         controls
                         src={chapter.minio_presigned_url}

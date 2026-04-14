@@ -2,10 +2,7 @@ import { z } from "zod"
 import { browser } from "$app/environment"
 
 export const AudioSettingsSchema = z.object({
-    voice_value: z.string().default(""),
-    rate: z.number().optional(),
-    pitch: z.number().optional(),
-    volume: z.number().optional(),
+    value: z.string().default(""),
 })
 
 export type AudioSettings = z.infer<typeof AudioSettingsSchema>
@@ -14,7 +11,7 @@ const STORAGE_KEY = "audiobook_settings"
 
 export function load_audio_settings(): AudioSettings {
     if (!browser) {
-        return { voice_value: "" }
+        return { value: "" }
     }
     try {
         const stored = localStorage.getItem(STORAGE_KEY)
@@ -22,9 +19,9 @@ export function load_audio_settings(): AudioSettings {
             return AudioSettingsSchema.parse(JSON.parse(stored))
         }
     } catch {
-        return { voice_value: "" }
+        return { value: "" }
     }
-    return { voice_value: "" }
+    return { value: "" }
 }
 
 export function save_audio_settings(settings: AudioSettings): void {
@@ -33,6 +30,5 @@ export function save_audio_settings(settings: AudioSettings): void {
     }
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-    } catch {
-    }
+    } catch {}
 }
