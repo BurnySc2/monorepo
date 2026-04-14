@@ -477,7 +477,9 @@ async def queue_all_chapters(
         raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
     chapters = (
-        await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
+        await AudiobookChapter.objects()
+        .where(AudiobookChapter.book == book_id)
+        .order_by(AudiobookChapter.chapter_number)
     )
 
     audio_settings = AudioSettings.from_value(settings.value)
