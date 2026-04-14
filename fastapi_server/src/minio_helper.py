@@ -91,8 +91,8 @@ async def get_s3_client() -> AsyncGenerator[S3Client, None]:
     async with session.client(
         "s3",
         endpoint_url=GARAGE_S3_URL,
-        aws_access_key_id=GARAGE_SECRET_KEY,
-        aws_secret_access_key=GARAGE_ACCESS_KEY,
+        aws_access_key_id=GARAGE_ACCESS_KEY,
+        aws_secret_access_key=GARAGE_SECRET_KEY,
     ) as s3:
         yield s3  # This yields the client to the endpoint and closes it automatically afterward
 
@@ -217,7 +217,7 @@ async def objects_delete_with_prefix(bucket_name: str, prefix: str):
 
 async def main():
     async with get_s3_client() as s3:
-        _a = await bucket_list_objects(s3, "my-test-bucket")
+        _a = await bucket_list_objects(s3, GARAGE_AUDIOBOOK_BUCKET)
 
 
 if __name__ == "__main__":

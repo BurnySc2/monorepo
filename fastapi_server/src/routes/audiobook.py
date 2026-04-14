@@ -338,10 +338,7 @@ async def queue_chapter(
     if chapter is None:
         raise HTTPException(status_code=404, detail="Chapter not found")
 
-    audio_settings = AudioSettings(
-        voice_name=settings.voice,
-        engine_name=settings.engine,
-    )
+    audio_settings = AudioSettings.from_value(settings.value)
 
     chapter.queued = arrow.utcnow().naive
     chapter.audio_settings = audio_settings.model_dump_json()
@@ -483,10 +480,7 @@ async def queue_all_chapters(
         await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
     )
 
-    audio_settings = AudioSettings(
-        voice_name=settings.voice,
-        engine_name=settings.engine,
-    )
+    audio_settings = AudioSettings.from_value(settings.value)
 
     for chapter in chapters:
         chapter.queued = arrow.utcnow().naive

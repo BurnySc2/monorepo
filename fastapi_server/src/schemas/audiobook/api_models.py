@@ -8,6 +8,16 @@ from pydantic import BaseModel
 class AudioSettings(BaseModel):
     engine_name: str = ""
     voice_name: str = ""
+    locale: str = ""
+    gender: str = ""
+
+    @classmethod
+    def from_value(cls, value: str) -> AudioSettings:
+        parts = value.split("|")
+        if len(parts) != 4:
+            return cls()
+        locale, engine, voice_name, gender = parts
+        return cls(engine_name=engine, voice_name=voice_name, locale=locale, gender=gender)
 
 
 class Book(BaseModel):
@@ -93,8 +103,7 @@ class CancelQueueResponse(BaseModel):
 
 
 class QueueChapterRequest(BaseModel):
-    voice: str
-    engine: str
+    value: str
 
 
 __all__ = [

@@ -19,8 +19,8 @@ let custom_book_title = $state("")
 let custom_book_author = $state("")
 
 // Audio settings
-let audio_settings = $state<{ voice: string }>({
-    voice: "",
+let audio_settings = $state<{ value: string }>({
+    value: "",
 })
 
 // Refresh interval
@@ -36,8 +36,8 @@ async function load_book() {
             custom_book_title = book_data.book.custom_book_title || book_data.book.book_title
             custom_book_author = book_data.book.custom_book_author || book_data.book.book_author
 
-            if (available_voices.length > 0 && !audio_settings.voice) {
-                audio_settings.voice = available_voices[0].value
+            if (available_voices.length > 0 && !audio_settings.value) {
+                audio_settings.value = available_voices[0].value
             }
         } else {
             user_has_access = false
@@ -265,7 +265,7 @@ $effect(() => {
                 <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
                     <label class="font-bold whitespace-nowrap">Voice</label>
                     <select
-                        bind:value={audio_settings.voice}
+                        bind:value={audio_settings.value}
                         class="flex-1 min-w-50 px-2 py-1 border border-gray-300 rounded"
                     >
                         {#each available_voices as voice}

@@ -9,6 +9,7 @@ docker exec fastapi_dev_garage /garage layout apply --version "$NEXT_VERSION"
 # Create key
 docker exec fastapi_dev_garage /garage key create fastapi
 docker exec fastapi_dev_garage /garage key list
+# docker exec fastapi_dev_garage /garage key delete --yes <keyname>
 # Allow create bucket
 docker exec fastapi_dev_garage /garage key allow --create-bucket fastapi
 

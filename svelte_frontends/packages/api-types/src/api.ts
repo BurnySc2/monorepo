@@ -632,8 +632,8 @@ export interface components {
         }
         /** QueueChapterRequest */
         QueueChapterRequest: {
-            /** Voice */
-            voice: string
+            /** Value */
+            value: string
         }
         /** QueueResponse */
         QueueResponse: {
