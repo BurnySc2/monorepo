@@ -68,8 +68,8 @@ async def list_voices_async() -> list[VoiceInfo]:
     return VOICES
 
 
-def _get_voice_by_short(short_name: str) -> VoiceInfo | None:
-    for v in VOICES:
+async def _get_voice_by_short(short_name: str) -> VoiceInfo | None:
+    for v in await list_voices_async():
         if v.short_name == short_name:
             return v
     return None
@@ -89,7 +89,7 @@ async def generate_audio_async(
     Returns:
         Tuple of (audio_bytes, duration_seconds)
     """
-    voice_info = _get_voice_by_short(voice)
+    voice_info = await _get_voice_by_short(voice)
     if voice_info is None:
         raise ValueError(f"Voice '{voice}' not found. Available: {[v.short_name for v in VOICES]}")
     actual_voice = voice_info.name

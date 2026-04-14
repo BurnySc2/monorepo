@@ -11,9 +11,13 @@ Provides a unified API for multiple TTS engines:
 
 from __future__ import annotations
 
+from cachetools import TTLCache
+
 from schemas.tts import ENGINES, TTSEngine, VoiceInfo, VoiceOption
 
 from . import edge_engine, kitten_engine, kokoro_engine, pocket_engine, tiktok_engine
+
+_all_voices_cache: TTLCache = TTLCache(maxsize=50, ttl=600)
 
 
 async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
@@ -66,13 +70,15 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
 
 async def list_all_voices() -> list[VoiceOption]:
     """List all available voices from all TTS engines as VoiceOption objects."""
-    result: list[VoiceOption] = []
-    for engine in ENGINES:
-        voices = await list_voices(engine)
-        for voice in voices:
-            result.append(VoiceOption.from_voice_info(voice, engine))
-    result.sort(key=lambda v: v.label)
-    return result
+    if "voices" not in _all_voices_cache:
+        result: list[VoiceOption] = []
+        for engine in ENGINES:
+            voices = await list_voices(engine)
+            for voice in voices:
+                result.append(VoiceOption.from_voice_info(voice, engine))
+        result.sort(key=lambda v: v.label)
+        _all_voices_cache["voices"] = result
+    return _all_voices_cache["voices"]
 
 
 async def generate_audio(

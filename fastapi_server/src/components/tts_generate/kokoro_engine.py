@@ -76,11 +76,11 @@ async def list_voices_async() -> list[VoiceInfo]:
     return _voice_cache["voices"]
 
 
-def _get_voice_by_short(short_name: str) -> VoiceInfo | None:
-    if "voices" in _voice_cache:
-        for v in _voice_cache["voices"]:
-            if v.short_name == short_name or v.name == short_name:
-                return v
+async def _get_voice_by_short(short_name: str) -> VoiceInfo | None:
+    voices = await list_voices_async()
+    for v in voices:
+        if v.short_name == short_name or v.name == short_name:
+            return v
     return None
 
 
@@ -98,9 +98,10 @@ async def generate_audio_async(
     Returns:
         Tuple of (audio_bytes, duration_seconds)
     """
-    voice_info = _get_voice_by_short(voice)
+    voice_info = await _get_voice_by_short(voice)
     if voice_info is None:
-        available = [(v.short_name or v.name) for v in (_voice_cache.get("voices") or [])]
+        voices = await list_voices_async()
+        available = [(v.short_name or v.name) for v in voices]
         raise ValueError(f"Voice '{voice}' not found. Available: {available}")
     actual_voice = voice_info.name
     lang = voice_info.locale or "en-us"

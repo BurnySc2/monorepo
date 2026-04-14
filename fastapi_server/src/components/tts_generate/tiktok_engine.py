@@ -20,8 +20,6 @@ from mutagen.mp3 import MP3
 
 from schemas.tts import VoiceInfo
 
-_voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
-
 # Cache: (voice_code, text) -> (audio_bytes, duration)
 _audio_cache: TTLCache = TTLCache(maxsize=1000, ttl=3600)
 
