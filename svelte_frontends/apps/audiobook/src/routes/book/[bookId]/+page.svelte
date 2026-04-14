@@ -19,8 +19,12 @@ let custom_book_title = $state("")
 let custom_book_author = $state("")
 
 // Audio settings
-let audio_settings = $state<{ value: string }>({
-    value: "",
+import { load_audio_settings, save_audio_settings } from "$lib/audio_settings.svelte"
+
+let audio_settings = $state(load_audio_settings())
+
+$effect(() => {
+    save_audio_settings(audio_settings)
 })
 
 // Refresh interval
@@ -36,8 +40,11 @@ async function load_book() {
             custom_book_title = book_data.book.custom_book_title || book_data.book.book_title
             custom_book_author = book_data.book.custom_book_author || book_data.book.book_author
 
-            if (available_voices.length > 0 && !audio_settings.value) {
-                audio_settings.value = available_voices[0].value
+            if (available_voices.length > 0) {
+                const voice_exists = available_voices.some((v) => v.value === audio_settings.voice_value)
+                if (!audio_settings.voice_value || !voice_exists) {
+                    audio_settings.voice_value = available_voices[0].value
+                }
             }
         } else {
             user_has_access = false
@@ -270,7 +277,7 @@ $effect(() => {
                     >
                     <select
                         id="voice-select"
-                        bind:value={audio_settings.value}
+                        bind:value={audio_settings.voice_value}
                         class="flex-1 min-w-50 px-2 py-1 border border-gray-300 rounded"
                     >
                         {#each available_voices as voice}
