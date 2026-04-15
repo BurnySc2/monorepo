@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { BookWithChapters, VoiceOption } from "@repo/api-types"
+import type { BookWithChapters, VoiceInfo } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import JSZip from "jszip"
 import { page } from "$app/state"
@@ -9,7 +9,7 @@ import ChapterList from "$lib/components/ChapterList.svelte"
 let book_id = $derived(Number(page.params.bookId))
 
 let book_data = $state<BookWithChapters | null>(null)
-let available_voices = $state<VoiceOption[]>([])
+let available_voices = $state<VoiceInfo[]>([])
 let is_loading = $state(true)
 let is_downloading = $state(false)
 let user_has_access = $state(false)
@@ -53,9 +53,10 @@ async function load_book() {
             custom_book_author = book_data.book.custom_book_author || book_data.book.book_author
 
             if (available_voices.length > 0) {
-                const voice_exists = available_voices.some((v) => v.value === audio_settings.value)
+                const voice_value = (v: VoiceInfo) => `${v.engine}_${v.label}`
+                const voice_exists = available_voices.some((v) => voice_value(v) === audio_settings.value)
                 if (!audio_settings.value || !voice_exists) {
-                    audio_settings.value = available_voices[0].value
+                    audio_settings.value = voice_value(available_voices[0])
                 }
             }
         } else {
@@ -328,7 +329,9 @@ $effect(() => {
                         class="flex-1 min-w-50 px-2 py-1 border border-gray-300 rounded"
                     >
                         {#each available_voices as voice}
-                            <option value={voice.value}>{voice.label}</option>
+                            <option value={`${voice.engine}_${voice.label}`}>
+                                {voice.locale} {voice.engine} {voice.label} ({voice.gender})
+                            </option>
                         {/each}
                     </select>
                 </div>

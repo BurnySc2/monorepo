@@ -1,10 +1,10 @@
 <script lang="ts">
-import type { VoiceOption } from "@repo/api-types"
+import type { VoiceInfo } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 
-let voices = $state<VoiceOption[]>([])
-let selected_voice = $state("")
+let voices = $state<VoiceInfo[]>([])
+let selected_voice_index = $state(0)
 let user_text = $state("")
 let audio_b64 = $state("")
 let is_generating = $state(false)
@@ -17,9 +17,6 @@ async function load_voices() {
         const resp = await fetch("/tts-generate/voices")
         if (resp.ok) {
             voices = await resp.json()
-            if (voices.length > 0) {
-                selected_voice = voices[0].value
-            }
         }
     } catch (e) {
         console.error("Failed to load voices", e)
@@ -33,13 +30,13 @@ onMount(() => {
 async function generate_audio() {
     is_generating = true
     audio_b64 = ""
-    const voice = selected_voice
+    const voice = voices[selected_voice_index]
     const text = user_text
     try {
         const resp = await fetch("/tts-generate/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ voice, text }),
+            body: JSON.stringify({ voice: `${voice.engine}_${voice.label.replace(/ /g, "_")}`, text }),
         })
         if (resp.ok) {
             const data = await resp.json()
@@ -58,7 +55,13 @@ async function copy_to_clipboard(text: string) {
     await navigator.clipboard.writeText(text)
 }
 
-const preview_text = $derived(`${selected_voice.toLowerCase()}: ${user_text}`)
+const preview_text = $derived.by(() => {
+    if (voices.length === 0) {
+        return ""
+    }
+
+    return `${voices[selected_voice_index].engine}_${voices[selected_voice_index].label.toLowerCase().replaceAll(" ", "_")}: ${user_text}`
+})
 const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_channel}?volume=${twitch_volume}`)
 </script>
 
@@ -67,11 +70,11 @@ const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_chann
     <label class="block mb-2"
         >Voice:
         <select
-            bind:value={selected_voice}
+            bind:value={selected_voice_index}
             class="border rounded w-full p-1"
         >
-            {#each voices as voice}
-                <option value={voice.value}>{voice.label}</option>
+            {#each voices as voice, index}
+                <option value={index}>{voice.locale} {voice.engine} {voice.label} ({voice.gender})</option>
             {/each}
         </select>
     </label>

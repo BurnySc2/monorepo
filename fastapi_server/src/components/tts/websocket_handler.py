@@ -1,4 +1,5 @@
 import asyncio
+import base64
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import ClassVar
@@ -8,11 +9,8 @@ from fastapi import WebSocket, WebSocketDisconnect
 from loguru import logger
 from websockets import ConnectionClosedError, ConnectionClosedOK
 
-from components.tts.generate_tts import Voices, generate_tts
 from components.tts.irc_bot_async import ALLOWED_NAME_LANGUAGES, IRCClient, ReadNameLang
-
-# pyrefly: ignore
-VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
+from components.tts_generate import generate_audio, get_voice_by_label
 
 
 @dataclass
@@ -45,33 +43,24 @@ class TTSQueue:
     @classmethod
     def irc_client_add_text_method(cls, stream_name: str, read_name_lang: ReadNameLang, username: str, message: str):
         """Callback function for irc client on new message."""
-        # Sanity check: has voice in message
-        message_lowercase = message.lower()
-        if ":" in message_lowercase:
-            message_voice, *content = message_lowercase.split(":")
-            if message_voice not in VOICE_NAMES_LOWERCASE:
-                return
-
-        # Find voice name
-        voice: Voices | None = None
-        loop_voice: Voices
-        for loop_voice in Voices.__iter__():
-            if message_lowercase.startswith(f"{loop_voice.name.lower()}:"):
-                voice = loop_voice
-                break
-        if voice is None:
-            # No voice found
+        if ":" not in message:
             return
-        message = message[len(voice.name) + 1 :].strip()
-        if message == "":
-            # Message is empty
+        message_lowercase = message.lower()
+        voice_label, _, text = message_lowercase.partition(":")
+        engine, voice_internal = voice_label.strip().split("_", 1)
+        voice = get_voice_by_label(voice_internal)
+        if voice is None:
+            return
+        text = text.strip()
+        if text == "":
             return
         if read_name_lang != "none":
             username_says_voice, username_says_text = ALLOWED_NAME_LANGUAGES[read_name_lang]
-            cls.text_queue[(stream_name, read_name_lang)].put_nowait(
-                (username_says_voice, f"{username} {username_says_text}")
-            )
-        cls.text_queue[(stream_name, read_name_lang)].put_nowait((voice, message))
+            if username_says_voice and username_says_text:
+                cls.text_queue[(stream_name, read_name_lang)].put_nowait(
+                    (f"tiktok_{username_says_voice}", f"{username} {username_says_text}")
+                )
+        cls.text_queue[(stream_name, read_name_lang)].put_nowait((f"tiktok_{voice.label}", text))
 
     @classmethod
     def add_websocket(cls, stream_name: str, read_name_lang: str, socket: WebSocket) -> None:
@@ -149,7 +138,7 @@ class TTSQueueRunner:
     tts_is_playing_till: arrow.Arrow = field(default_factory=arrow.utcnow)
 
     @property
-    def text_queue(self) -> asyncio.Queue[tuple[Voices, str]] | None:
+    def text_queue(self) -> asyncio.Queue[tuple[str, str]] | None:
         return TTSQueue.get_text_queue(self.stream_name, self.read_name_lang)
 
     @property
@@ -180,12 +169,12 @@ class TTSQueueRunner:
             # Generate tts
             # pyrefly: ignore
             voice, text = await self.text_queue.get()
+            engine, internal_voice = voice.split("_", 1)
             logger.info(f"Generating tts: {self.stream_name}: ({voice}) {text}")
 
             # Generate audio from text
             try:
-                # TODO Intercept: tiktok session key api thing missing
-                mp3_b64_data, duration = await generate_tts(voice, text)
+                mp3_bytes, duration = await generate_audio(engine, internal_voice, text)
             # logger.info(f"{duration}s: {text}")
             except AssertionError as e:
                 logger.error(e)
@@ -194,7 +183,8 @@ class TTSQueueRunner:
             # pyrefly: ignore
             self.text_queue.task_done()
             tasks = [
-                asyncio.create_task(self.send_mp3_data_to_ws(ws, mp3_b64_data)) for ws in self.connected_websockets
+                asyncio.create_task(self.send_mp3_data_to_ws(ws, base64.b64encode(mp3_bytes).decode()))
+                for ws in self.connected_websockets
             ]
             for task in asyncio.as_completed(tasks):
                 await task

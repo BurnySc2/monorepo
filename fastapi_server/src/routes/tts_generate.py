@@ -2,12 +2,12 @@ import base64
 from typing import cast
 
 from fastapi import APIRouter, HTTPException
-from loguru import logger
 from pydantic import BaseModel
 
 from components.tts_generate import generate_audio, list_all_voices
-from schemas.tts import ENGINES, VoiceOption
+from schemas.tts import ENGINES
 from schemas.tts.engine import TTSEngine
+from schemas.tts.voice_info import VoiceInfo
 
 
 class TTSGenerateRequest(BaseModel):
@@ -18,27 +18,25 @@ class TTSGenerateRequest(BaseModel):
 tts_generate_router = APIRouter()
 
 
-@tts_generate_router.get("/voices", response_model=list[VoiceOption])
-async def list_voices() -> list[VoiceOption]:
+@tts_generate_router.get("/voices", response_model=list[VoiceInfo])
+async def list_voices() -> list[VoiceInfo]:
     """
     List all available TTS voices.
     """
-    voices = await list_all_voices()
-    return voices
+    return await list_all_voices()
 
 
 @tts_generate_router.post("/generate")
 async def generate_tts(request: TTSGenerateRequest) -> dict:
     """
     Generate TTS audio for the given voice and text.
-    Voice should be in format: {locale}|{engine}|{voice_name}|{gender}
+    Voice should be in format: {engine}_{voice_name}
     Returns base64-encoded MP3 audio.
     """
-    parts = request.voice.split("|")
-    if len(parts) != 4:
+    parts = request.voice.split("_", 1)
+    if len(parts) != 2:
         raise HTTPException(status_code=400, detail="Invalid voice format")
-    logger.info(parts)
-    _, engine_str, voice_name, _ = parts
+    engine_str, voice_name = parts
 
     if engine_str not in ENGINES:
         raise HTTPException(status_code=400, detail=f"Unknown engine: {engine_str}. Supported: {ENGINES}")

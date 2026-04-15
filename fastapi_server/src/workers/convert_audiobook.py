@@ -115,13 +115,12 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         # Generate tts from the book
         audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
 
-        audio = io.BytesIO(
-            await generate_audio(
-                audio_settings.engine_name,
-                audio_settings.voice_name,
-                chapter.content,
-            )
+        result = await generate_audio(
+            audio_settings.engine_name,
+            audio_settings.voice_name,
+            chapter.content,
         )
+        audio = io.BytesIO(result[0])
 
         # Get data from db, user may have clicked "delete" button on book or chapter
         # pyrefly: ignore

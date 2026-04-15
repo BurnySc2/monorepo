@@ -1,12 +1,5 @@
 """
 IRC Client Implementation for Twitch chat using asyncio
-
-TODO:
-4. Testing Requirements:
-   - External test file: test/endpoints/tts/test_irc_bot.py
-   - Mock IRC server for testing
-   - Test connection/reconnection scenarios
-   - Verify message parsing and callback invocation
 """
 
 import asyncio
@@ -19,17 +12,12 @@ from typing import Literal
 
 from loguru import logger
 
-from components.tts.generate_tts import Voices
-
 # pyrefly: ignore
-VOICE_NAMES_LOWERCASE: set[str] = {voice.name.lower() for voice in Voices}
-
-# pyrefly: ignore
-ALLOWED_NAME_LANGUAGES: dict[str, tuple[Voices | None, str | None]] = {
-    # {str: (Voice, suffix 'says')}
+ALLOWED_NAME_LANGUAGES: dict[str, tuple[str | None, str | None]] = {
+    # {str: (Voice label, suffix 'says')}
     "none": (None, None),
-    "en": (Voices.STORY_TELLER, "says"),
-    "de": (Voices.GERMAN_FEMALE, "sagt"),
+    "en": ("Narrator", "says"),
+    "de": ("German Female", "sagt"),
 }
 
 # If no ping received by this time, reconnect

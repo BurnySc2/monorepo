@@ -238,7 +238,7 @@ export interface paths {
         /**
          * Generate Tts
          * @description Generate TTS audio for the given voice and text.
-         *     Voice should be in format: {locale}|{engine}|{voice_name}|{gender}
+         *     Voice should be in format: {engine}_{voice_name}
          *     Returns base64-encoded MP3 audio.
          */
         post: operations["generate_tts_tts_generate_generate_post"]
@@ -741,18 +741,21 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>
         }
-        /** VoiceOption */
-        VoiceOption: {
-            /** Value */
-            value: string
+        /** VoiceInfo */
+        VoiceInfo: {
+            /**
+             * Engine
+             * @enum {string}
+             */
+            engine: "edge" | "kokoro" | "kitten" | "tiktok"
+            /** Internal Name */
+            internal_name: string
             /** Label */
             label: string
-            /** Engine */
-            engine: string
-            /** Locale */
-            locale: string
             /** Gender */
-            gender: string
+            gender?: string | null
+            /** Locale */
+            locale?: string | null
         }
     }
     responses: never
@@ -1024,7 +1027,7 @@ export interface operations {
                     [name: string]: unknown
                 }
                 content: {
-                    "application/json": components["schemas"]["VoiceOption"][]
+                    "application/json": components["schemas"]["VoiceInfo"][]
                 }
             }
         }

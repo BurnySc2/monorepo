@@ -12,6 +12,7 @@ from pathlib import Path
 import soundfile as sf
 from cachetools import TTLCache
 from kokoro_onnx import Kokoro
+from loguru import logger
 from pydub import audio_segment
 
 from components.tts_generate._download import download_file
@@ -66,22 +67,15 @@ async def list_voices_async() -> list[VoiceInfo]:
         raw_voices = kokoro.get_voices()
         _voice_cache["voices"] = [
             VoiceInfo(
-                name=v,
-                short_name=v.split("_", 1)[1].lower() if "_" in v else v,
+                engine="kokoro",
+                internal_name=v,
+                label=v.rsplit("_", 1)[-1].capitalize(),
                 gender=_parse_voice_info(v)[1],
                 locale=_parse_voice_info(v)[0],
             )
             for v in raw_voices
         ]
     return _voice_cache["voices"]
-
-
-async def _get_voice_by_short(short_name: str) -> VoiceInfo | None:
-    voices = await list_voices_async()
-    for v in voices:
-        if v.short_name == short_name or v.name == short_name:
-            return v
-    return None
 
 
 async def generate_audio_async(
@@ -98,15 +92,11 @@ async def generate_audio_async(
     Returns:
         Tuple of (audio_bytes, duration_seconds)
     """
-    voice_info = await _get_voice_by_short(voice)
-    if voice_info is None:
-        voices = await list_voices_async()
-        available = [(v.short_name or v.name) for v in voices]
-        raise ValueError(f"Voice '{voice}' not found. Available: {available}")
-    actual_voice = voice_info.name
+    logger.info(voice)
+    voice_info = next(v for v in await list_voices_async() if v.internal_name == voice)
     lang = voice_info.locale or "en-us"
 
-    samples, sample_rate = kokoro.create(text, voice=actual_voice, speed=1.0, lang=lang)
+    samples, sample_rate = kokoro.create(text, voice=voice, speed=1.0, lang=lang)
 
     wav_io = BytesIO()
     sf.write(wav_io, samples, sample_rate, format="WAV")
@@ -132,7 +122,7 @@ async def main() -> None:
     voices = await list_voices_async()
     logger.info(f"Found {len(voices)} voices:")
     for voice in voices:
-        logger.info(f"  {voice.name} ({voice.gender}, {voice.locale})")
+        logger.info(f"  {voice.internal_name} ({voice.gender}, {voice.locale})")
 
     sample_voice = "af_bella"
     sample_text = "Hello from Kokoro TTS! This is a test."

@@ -13,11 +13,11 @@ class AudioSettings(BaseModel):
 
     @classmethod
     def from_value(cls, value: str) -> AudioSettings:
-        parts = value.split("|")
-        if len(parts) != 4:
+        parts = value.split("_", 1)
+        if len(parts) != 2:
             return cls()
-        locale, engine, voice_name, gender = parts
-        return cls(engine_name=engine, voice_name=voice_name, locale=locale, gender=gender)
+        engine, voice_name = parts
+        return cls(engine_name=engine, voice_name=voice_name)
 
 
 class Book(BaseModel):

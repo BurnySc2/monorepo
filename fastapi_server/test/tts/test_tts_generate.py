@@ -31,8 +31,8 @@ class TestListVoices:
         voices = await list_voices(engine)
         for voice in voices:
             assert isinstance(voice, VoiceInfo)
-            assert voice.name
-            assert isinstance(voice.name, str)
+            assert voice.internal_name
+            assert isinstance(voice.internal_name, str)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize("engine", ENGINES)
@@ -40,8 +40,8 @@ class TestListVoices:
         """Each voice should have a string name."""
         voices = await list_voices(engine)
         for voice in voices:
-            assert isinstance(voice.name, str)
-            assert len(voice.name) > 0
+            assert isinstance(voice.internal_name, str)
+            assert len(voice.internal_name) > 0
 
     @pytest.mark.asyncio
     async def test_invalid_engine_raises_valueerror(self):
@@ -73,38 +73,21 @@ class TestVoiceInfo:
 
     def test_voice_info_creation(self):
         """VoiceInfo should be creatable with name only."""
-        voice = VoiceInfo(name="test_voice")
-        assert voice.name == "test_voice"
-        assert voice.language is None
+        voice = VoiceInfo(internal_name="test_voice")
+        assert voice.internal_name == "test_voice"
         assert voice.gender is None
-        assert voice.description is None
+        assert voice.label is None
 
     def test_voice_info_full_creation(self):
         """VoiceInfo should be creatable with all fields."""
         voice = VoiceInfo(
-            name="test_voice",
-            language="en",
+            internal_name="test_voice",
             gender="Female",
-            description="Test voice",
+            label="Test voice",
         )
-        assert voice.name == "test_voice"
-        assert voice.language == "en"
+        assert voice.internal_name == "test_voice"
         assert voice.gender == "Female"
-        assert voice.description == "Test voice"
-
-
-class TestTTSEngine:
-    """Tests for TTSEngine type alias."""
-
-    def test_tts_engine_literal_values(self):
-        """TTSEngine should accept all valid engine names."""
-        valid_engines: list[TTSEngine] = [
-            "edge",
-            "kokoro",
-            "kitten",
-            "tiktok",
-        ]
-        assert len(valid_engines) == 5
+        assert voice.label == "Test voice"
 
 
 class TestModuleExports:

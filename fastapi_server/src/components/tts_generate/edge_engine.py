@@ -10,6 +10,7 @@ from pathlib import Path
 
 import edge_tts
 from cachetools import TTLCache
+from loguru import logger
 
 from schemas.tts import VoiceInfo
 
@@ -22,13 +23,15 @@ async def list_voices_async() -> list[VoiceInfo]:
         raw_voices = await edge_tts.list_voices()
         _voice_cache["voices"] = [
             VoiceInfo(
-                name=v["Name"],
-                short_name=v["ShortName"],
+                engine="edge",
+                internal_name=v["Name"],
+                label=v["ShortName"].rsplit("-", 1)[-1].capitalize(),
                 gender=v["Gender"],
-                locale=v["Locale"],
+                locale=v["Locale"].lower(),
             )
             for v in raw_voices
         ]
+        logger.info(_voice_cache["voices"][0])
     return _voice_cache["voices"]
 
 
@@ -65,7 +68,7 @@ async def main() -> None:
     voices = await list_voices_async()
     logger.info(f"Found {len(voices)} voices:")
     for voice in voices:
-        logger.info(f"  {voice.name} ({voice.gender}, {voice.locale})")
+        logger.info(f"  {voice.internal_name} ({voice.gender}, {voice.locale})")
 
     sample_voice = "en-US-AriaNeural"
     sample_text = "Hello from Edge TTS! This is a test."

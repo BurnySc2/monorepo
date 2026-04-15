@@ -52,27 +52,20 @@ _tts_model = KittenTTS_1_Onnx(
 )
 
 VOICES = [
-    VoiceInfo(name="expr-voice-2-f", short_name="bella", gender="Female", locale="en-us"),
-    VoiceInfo(name="expr-voice-2-m", short_name="jasper", gender="Male", locale="en-us"),
-    VoiceInfo(name="expr-voice-3-f", short_name="luna", gender="Female", locale="en-us"),
-    VoiceInfo(name="expr-voice-3-m", short_name="bruno", gender="Male", locale="en-us"),
-    VoiceInfo(name="expr-voice-4-f", short_name="rosie", gender="Female", locale="en-us"),
-    VoiceInfo(name="expr-voice-4-m", short_name="hugo", gender="Male", locale="en-us"),
-    VoiceInfo(name="expr-voice-5-f", short_name="kiki", gender="Female", locale="en-us"),
-    VoiceInfo(name="expr-voice-5-m", short_name="leo", gender="Male", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="expr-voice-2-f", label="Bella", gender="Female", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="expr-voice-2-m", label="Jasper", gender="Male", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="expr-voice-3-f", label="Luna", gender="Female", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="expr-voice-3-m", label="Bruno", gender="Male", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="expr-voice-4-f", label="Rosie", gender="Female", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="expr-voice-4-m", label="Hugo", gender="Male", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="expr-voice-5-f", label="Kiki", gender="Female", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="expr-voice-5-m", label="Leo", gender="Male", locale="en-us"),
 ]
 
 
 async def list_voices_async() -> list[VoiceInfo]:
     """List all available KittenTTS voices."""
     return VOICES
-
-
-async def _get_voice_by_short(short_name: str) -> VoiceInfo | None:
-    for v in await list_voices_async():
-        if v.short_name == short_name:
-            return v
-    return None
 
 
 async def generate_audio_async(
@@ -89,12 +82,8 @@ async def generate_audio_async(
     Returns:
         Tuple of (audio_bytes, duration_seconds)
     """
-    voice_info = await _get_voice_by_short(voice)
-    if voice_info is None:
-        raise ValueError(f"Voice '{voice}' not found. Available: {[v.short_name for v in VOICES]}")
-    actual_voice = voice_info.name
 
-    samples = _tts_model.generate(text, voice=actual_voice, speed=1.0)
+    samples = _tts_model.generate(text, voice=voice, speed=1.0)
 
     samples_int16 = (samples * 32767).astype(np.int16)
 
@@ -123,8 +112,7 @@ async def main() -> None:
     voices = await list_voices_async()
     logger.info(f"Found {len(voices)} voices:")
     for voice in voices:
-        display = voice.short_name or voice.name
-        logger.info(f"  {display} ({voice.gender}, {voice.locale}) - {voice.name}")
+        logger.info(f"  {voice.label or voice.internal_name} ({voice.gender}, {voice.locale}) - {voice.internal_name}")
 
     sample_voice = "jasper"
     sample_text = "Hello from KittenTTS! This is a test."

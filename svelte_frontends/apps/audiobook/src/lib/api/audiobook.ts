@@ -4,7 +4,7 @@ import type {
     ChapterDetail as AudiobookChapterQueryResult,
     QueueChapterRequest as AudioSettings,
     BookWithChapters,
-    VoiceOption,
+    VoiceInfo,
 } from "@repo/api-types"
 import { mock_book_data } from "./mock_data"
 
@@ -56,7 +56,7 @@ export async function upload_epub(file: File): Promise<void> {
     }
 }
 
-export async function get_available_voices(): Promise<VoiceOption[]> {
+export async function get_available_voices(): Promise<VoiceInfo[]> {
     const response = await fetch(`${API_BASE_URL}/tts-generate/voices`, {
         credentials: "include",
     })

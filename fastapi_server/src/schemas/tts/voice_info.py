@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from schemas.tts.engine import TTSEngine
+
 
 class VoiceInfo(BaseModel):
-    name: str
-    short_name: str | None = None
+    engine: TTSEngine
+    internal_name: str
+    label: str
     gender: str | None = None
     locale: str | None = None
-    language: str | None = None
-    description: str | None = None
 
 
 __all__ = ["VoiceInfo"]

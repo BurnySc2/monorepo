@@ -11,11 +11,14 @@ Provides a unified API for multiple TTS engines:
 from __future__ import annotations
 
 from cachetools import TTLCache
-from schemas.tts import ENGINES, TTSEngine, VoiceInfo, VoiceOption
+from loguru import logger
+
+from schemas.tts import ENGINES, TTSEngine, VoiceInfo
 
 from . import edge_engine, kitten_engine, kokoro_engine, tiktok_engine
 
 _all_voices_cache: TTLCache = TTLCache(maxsize=50, ttl=600)
+_label_to_voice_info: dict[str, VoiceInfo] = {}
 
 
 async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
@@ -44,42 +47,30 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
     else:
         raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, tiktok")
 
-    # Normalize to VoiceInfo
-    result = []
-    for v in voices:
-        if hasattr(v, "name"):
-            result.append(
-                VoiceInfo(
-                    name=v.name,
-                    short_name=getattr(v, "short_name", None),
-                    gender=getattr(v, "gender", None),
-                    locale=getattr(v, "locale", None),
-                    language=getattr(v, "language", None),
-                    description=getattr(v, "description", None),
-                )
-            )
-        else:
-            result.append(VoiceInfo(name=str(v)))
-
-    return result
+    return voices
 
 
-async def list_all_voices() -> list[VoiceOption]:
-    """List all available voices from all TTS engines as VoiceOption objects."""
+async def list_all_voices() -> list[VoiceInfo]:
+    """List all available voices from all TTS engines as VoiceInfo objects."""
     if "voices" not in _all_voices_cache:
-        result: list[VoiceOption] = []
+        result: list[VoiceInfo] = []
         for engine in ENGINES:
             voices = await list_voices(engine)
-            for voice in voices:
-                result.append(VoiceOption.from_voice_info(voice, engine))
-        result.sort(key=lambda v: v.label)
+            result.extend(voices)
+        result.sort(key=lambda v: f"{v.locale} {v.engine} {v.label} ({v.gender})")
         _all_voices_cache["voices"] = result
+        global _label_to_voice_info
+        _label_to_voice_info = {}
+        for engine in ENGINES:
+            engine_voices = await list_voices(engine)
+            for vi in engine_voices:
+                _label_to_voice_info[vi.label.lower()] = vi
     return _all_voices_cache["voices"]
 
 
 async def generate_audio(
     engine: TTSEngine,
-    voice: str,
+    voice_label: str,
     text: str,
 ) -> tuple[bytes, float]:
     """
@@ -102,15 +93,20 @@ async def generate_audio(
 
     engine = engine.lower()
 
+    # Populate or update the cache
+    _voices = await list_all_voices()
+    voice = get_voice_by_label(voice_label)
+    logger.info(voice_label)
+    assert voice is not None, f"{engine} {voice_label}"
+
     if engine == "edge":
-        audio_bytes, _ = await edge_engine.generate_audio_async(voice, text)
+        audio_bytes, _ = await edge_engine.generate_audio_async(voice.internal_name, text)
     elif engine == "kokoro":
-        audio_bytes, _ = await kokoro_engine.generate_audio_async(voice, text)
+        audio_bytes, _ = await kokoro_engine.generate_audio_async(voice.internal_name, text)
     elif engine == "kitten":
-        audio_bytes, _ = await kitten_engine.generate_audio_async(voice, text)
+        audio_bytes, _ = await kitten_engine.generate_audio_async(voice.internal_name, text)
     elif engine == "tiktok":
-        voice_info = next(v for v in await tiktok_engine.list_voices_async() if v.short_name == voice)
-        audio_bytes, _ = await tiktok_engine.generate_audio_async(voice_info.name, text)
+        audio_bytes, _ = await tiktok_engine.generate_audio_async(voice.internal_name, text)
     else:
         raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, tiktok")
 
@@ -121,15 +117,24 @@ async def generate_audio(
     return audio_bytes, duration
 
 
+def get_voice_by_label(label: str) -> VoiceInfo | None:
+    """Look up a VoiceInfo by its label."""
+
+    def normalize_from_frontend(v: str) -> str:
+        return v.lower().replace("_", " ")
+
+    return _label_to_voice_info.get(normalize_from_frontend(label))
+
+
 # Export all engines for direct access
 __all__ = [
     "VoiceInfo",
-    "VoiceOption",
     "TTSEngine",
     "ENGINES",
     "list_voices",
     "list_all_voices",
     "generate_audio",
+    "get_voice_by_label",
     "edge_engine",
     "kokoro_engine",
     "kitten_engine",

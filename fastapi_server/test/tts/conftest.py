@@ -57,8 +57,6 @@ def tiktok_voice():
     return "en_us_002"
 
 
-
-
 @pytest.fixture
 def kitten_voice():
     """Default voice for Kitten TTS."""

@@ -2,7 +2,7 @@ import type { components, operations } from "./api.js"
 
 export type { components, operations } from "./api.js"
 
-export type VoiceOption = components["schemas"]["VoiceOption"]
+export type VoiceInfo = components["schemas"]["VoiceInfo"]
 export type QueueChapterRequest = components["schemas"]["QueueChapterRequest"]
 export type HTTPValidationError = components["schemas"]["HTTPValidationError"]
 export type ValidationError = components["schemas"]["ValidationError"]

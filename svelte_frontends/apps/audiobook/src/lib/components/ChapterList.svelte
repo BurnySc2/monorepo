@@ -80,6 +80,13 @@ function handle_delete(chapter_id: number) {
                         <Spinner />
                         <span class="text-sm">Generating audio...</span>
                     </div>
+                    <button
+                        type="button"
+                        class="btn btn-danger"
+                        onclick={() => handle_delete(chapter.chapter_number)}
+                    >
+                        Delete
+                    </button>
                 {:else}
                     <button
                         type="button"
