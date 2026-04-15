@@ -18,7 +18,8 @@
       - spotify
       - spotify-adblock
       - anydesk-bin  # remote maintenance
-      - earthly-bin  # development helper
+      - rustdesk
+      - aur/google-chrome
       # - docker-slim-bin  # slimify docker images by stripping them to files that are required
       - choosenim  # nim installer
       - jdownloader2

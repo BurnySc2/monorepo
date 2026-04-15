@@ -2,6 +2,7 @@ import base64
 from typing import cast
 
 from fastapi import APIRouter, HTTPException
+from loguru import logger
 from pydantic import BaseModel
 
 from components.tts_generate import generate_audio, list_all_voices
@@ -36,6 +37,7 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
     parts = request.voice.split("|")
     if len(parts) != 4:
         raise HTTPException(status_code=400, detail="Invalid voice format")
+    logger.info(parts)
     _, engine_str, voice_name, _ = parts
 
     if engine_str not in ENGINES:

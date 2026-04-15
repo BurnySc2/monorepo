@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { VoiceOption } from "@repo/api-types"
+import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 
 let voices = $state<VoiceOption[]>([])
@@ -31,6 +32,7 @@ onMount(() => {
 
 async function generate_audio() {
     is_generating = true
+    audio_b64 = ""
     const voice = selected_voice
     const text = user_text
     try {
@@ -60,7 +62,7 @@ const preview_text = $derived(`${selected_voice.toLowerCase()}: ${user_text}`)
 const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_channel}?volume=${twitch_volume}`)
 </script>
 
-<main class="p-4 max-w-xl mx-auto">
+<main class="flex flex-col p-4 max-w-xl mx-auto">
     <h1 class="text-2xl font-bold mb-4">Text‑to‑Speech Generator</h1>
     <label class="block mb-2"
         >Voice:
@@ -88,7 +90,9 @@ const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_chann
     >
         {is_generating ? 'Generating...' : 'Generate audio'}
     </button>
-    {#if audio_b64}
+    {#if is_generating}
+        <div class="self-center"><Spinner /></div>
+    {:else if audio_b64}
         <audio
             controls
             class="w-full mb-4"
@@ -145,7 +149,7 @@ const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_chann
         >
     </label>
     <label class="block mb-4"
-        >Volume (0‑100):
+        >Volume (0-100):
         <input
             type="number"
             min="0"

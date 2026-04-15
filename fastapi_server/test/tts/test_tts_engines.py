@@ -18,7 +18,6 @@ DEFAULT_VOICES = {
     "edge": "en-US-AriaNeural",
     "kokoro": "af_bella",
     "kitten": "bella",
-    "pocket": "alba",
     "tiktok": "en_us_002",
 }
 
@@ -265,10 +264,10 @@ async def test_engine_lowercase_handling(engine):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("engine", ["kokoro", "kitten", "pocket"])
+@pytest.mark.parametrize("engine", ["kokoro", "kitten"])
 async def test_invalid_voice_raises_valueerror(engine):
     """Invalid voice should raise ValueError."""
-    from components.tts_generate import kitten_engine, kokoro_engine, pocket_engine
+    from components.tts_generate import kitten_engine, kokoro_engine
 
     invalid_voice = "nonexistent_voice_xyz"
     text = "Hello test."
@@ -279,6 +278,3 @@ async def test_invalid_voice_raises_valueerror(engine):
     elif engine == "kokoro":
         with pytest.raises(ValueError, match="not found"):
             await kokoro_engine.generate_audio_async(invalid_voice, text)
-    elif engine == "pocket":
-        with pytest.raises(ValueError, match="not found"):
-            await pocket_engine.generate_audio_async(invalid_voice, text)

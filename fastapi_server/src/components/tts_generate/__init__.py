@@ -5,17 +5,15 @@ Provides a unified API for multiple TTS engines:
 - edge: Microsoft Edge TTS (cloud, free)
 - kokoro: Kokoro TTS (local, CPU-friendly)
 - kitten: KittenTTS (local, ultra-lightweight)
-- pocket: Pocket TTS (local, voice cloning)
 - tiktok: TikTok TTS (cloud, unofficial)
 """
 
 from __future__ import annotations
 
 from cachetools import TTLCache
-
 from schemas.tts import ENGINES, TTSEngine, VoiceInfo, VoiceOption
 
-from . import edge_engine, kitten_engine, kokoro_engine, pocket_engine, tiktok_engine
+from . import edge_engine, kitten_engine, kokoro_engine, tiktok_engine
 
 _all_voices_cache: TTLCache = TTLCache(maxsize=50, ttl=600)
 
@@ -25,7 +23,7 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
     List all available voices for a given TTS engine.
 
     Args:
-        engine: TTS engine name (edge, kokoro, kitten, pocket, supertonic, tiktok)
+        engine: TTS engine name (edge, kokoro, kitten, supertonic, tiktok)
 
     Returns:
         List of VoiceInfo objects
@@ -41,12 +39,10 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
         voices = await kokoro_engine.list_voices_async()
     elif engine == "kitten":
         voices = await kitten_engine.list_voices_async()
-    elif engine == "pocket":
-        voices = await pocket_engine.list_voices_async()
     elif engine == "tiktok":
         voices = await tiktok_engine.list_voices_async()
     else:
-        raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, pocket, tiktok")
+        raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, tiktok")
 
     # Normalize to VoiceInfo
     result = []
@@ -90,7 +86,7 @@ async def generate_audio(
     Generate audio using the specified TTS engine.
 
     Args:
-        engine: TTS engine name (edge, kokoro, kitten, pocket, supertonic, tiktok)
+        engine: TTS engine name (edge, kokoro, kitten, supertonic, tiktok)
         voice: Voice name/code (engine-specific)
         text: Text to synthesize
 
@@ -112,12 +108,11 @@ async def generate_audio(
         audio_bytes, _ = await kokoro_engine.generate_audio_async(voice, text)
     elif engine == "kitten":
         audio_bytes, _ = await kitten_engine.generate_audio_async(voice, text)
-    elif engine == "pocket":
-        audio_bytes, _ = await pocket_engine.generate_audio_async(voice, text)
     elif engine == "tiktok":
-        audio_bytes, _ = await tiktok_engine.generate_audio_async(voice, text)
+        voice_info = next(v for v in await tiktok_engine.list_voices_async() if v.short_name == voice)
+        audio_bytes, _ = await tiktok_engine.generate_audio_async(voice_info.name, text)
     else:
-        raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, pocket, tiktok")
+        raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, tiktok")
 
     mp3_io = BytesIO(audio_bytes)
     audio = MP3(mp3_io)
@@ -138,6 +133,5 @@ __all__ = [
     "edge_engine",
     "kokoro_engine",
     "kitten_engine",
-    "pocket_engine",
     "tiktok_engine",
 ]

@@ -16,6 +16,7 @@ from io import BytesIO
 
 import httpx
 from cachetools import TTLCache
+from loguru import logger
 from mutagen.mp3 import MP3
 
 from schemas.tts import VoiceInfo
@@ -743,6 +744,7 @@ async def generate_audio_async(
     status_code = 1
     async with httpx.AsyncClient() as client:
         for domain in API_DOMAINS:
+            logger.info(voice)
             url = f"{domain}{API_PATH}?text_speaker={voice}&req_text={text}&speaker_map_type=0&aid=1233"
             response = await client.post(url, headers=headers)
             if response.is_error:
