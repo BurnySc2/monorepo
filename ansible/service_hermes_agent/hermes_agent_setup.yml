@@ -1,0 +1,45 @@
+---
+# https://github.com/nousresearch/hermes-agent
+# https://hermes-agent.nousresearch.com/docs/user-guide/messaging/
+# Execute with
+# ansible-playbook hermes_agent_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service
+  hosts: server_group1
+  vars:
+    USERNAME: '{{ secrets.HERMES.USERNAME }}'
+    WEBSUBDOMAIN: '{{ secrets.HERMES.WEBSUBDOMAIN }}'
+    DASHBOARDSUBDOMAIN: '{{ secrets.HERMES.DASHBOARDSUBDOMAIN }}'
+    GATEWAYSUBDOMAIN: '{{ secrets.HERMES.GATEWAYSUBDOMAIN }}'
+  tasks:
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ WEBSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+        - hostname: '{{ DASHBOARDSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+        - hostname: '{{ GATEWAYSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+      loop_control:
+        loop_var: item
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: docker-compose stop
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: stopped
+      failed_when: false
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        pull: always
+

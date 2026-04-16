@@ -1,0 +1,115 @@
+---
+# Assign keys in hermes_dashboard website
+# Add connection in open-webui using http://hermes:8642/v1 and use "local" not external to drop ssl
+
+# To give hermes sudo rights to install software:
+# apt install sudo && echo "hermes ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/hermes
+
+networks:
+  pangolin_newt:
+    external: true
+  hermes-net:
+    driver: bridge
+
+services:
+  hermes:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes
+    hostname: hermes
+    networks:
+      - pangolin_newt
+      - hermes-net
+    restart: unless-stopped
+    # Install sudo and give hermes root rights to install software
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update -qq && \
+        apt-get install -y --no-install-recommends sudo && \
+        echo "hermes ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/hermes && \
+        chmod 0440 /etc/sudoers.d/hermes && \
+        exec /opt/hermes/docker/entrypoint.sh gateway run
+    volumes:
+      - /media/ssd480/hermes_agent:/opt/data
+      - /media/ssd480/shared/workspace:/workspace
+    environment:
+      - API_SERVER_ENABLED=true
+      - API_SERVER_KEY={{ secrets.HERMES.OPENAPIKEY }}
+      - API_SERVER_HOST=0.0.0.0
+      - API_SERVER_PORT=8642
+      - HERMES_YOLO_MODE=1
+    # labels:
+    #   - pangolin.public-resources.apihermes.name=HermesAgent
+    #   - pangolin.public-resources.apihermes.full-domain={{ GATEWAYSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+    #   - pangolin.public-resources.apihermes.protocol=http
+    #   - pangolin.public-resources.apihermes.auth.sso-enabled=true
+    #   - pangolin.public-resources.apihermes.targets[0].method=http
+    #   - pangolin.public-resources.apihermes.targets[0].port=8642
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    volumes:
+      - /media/ssd480/open_webui:/app/backend/data
+    environment:
+      - OPENAI_API_BASE_URL=http://hermes:8642/v1
+      - OPENAI_API_KEY={{ secrets.HERMES.OPENAPIKEY }}
+      - CHAT_STREAM_RESPONSE_CHUNK_MAX_BUFFER_SIZE=20971520 # Fix "Chunk too big" error
+      - WEBUI_AUTH=False # Disable login
+      # Set default admin account
+      # - WEBUI_ADMIN_EMAIL=admin@example.com
+      # - WEBUI_ADMIN_PASSWORD=your_secure_password
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - pangolin_newt
+      - hermes-net
+    labels:
+      - pangolin.public-resources.webui.name=OpenWebUI
+      - pangolin.public-resources.webui.full-domain={{ WEBSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.webui.protocol=http
+      - pangolin.public-resources.webui.auth.sso-enabled=true
+      - pangolin.public-resources.webui.targets[0].method=http
+      - pangolin.public-resources.webui.targets[0].port=8080
+    depends_on:
+      - hermes
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+
+  hermes_dashboard:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes-dashboard
+    restart: unless-stopped
+    command: dashboard --host 0.0.0.0 --insecure
+    volumes:
+      - /media/ssd480/hermes_agent:/opt/data
+    environment:
+      - GATEWAY_HEALTH_URL=http://hermes:8642
+      - HERMES_YOLO_MODE=1
+    networks:
+      - pangolin_newt
+      - hermes-net
+    labels:
+      - pangolin.public-resources.hermes.name=HermesDashboard
+      - pangolin.public-resources.hermes.full-domain={{ DASHBOARDSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.hermes.protocol=http
+      - pangolin.public-resources.hermes.auth.sso-enabled=true
+      - pangolin.public-resources.hermes.targets[0].method=http
+      - pangolin.public-resources.hermes.targets[0].port=9119
+    depends_on:
+      - hermes
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
