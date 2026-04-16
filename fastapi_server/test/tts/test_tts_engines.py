@@ -15,10 +15,10 @@ from components.tts_generate import ENGINES, generate_audio, list_voices
 
 # Default voices for each engine
 DEFAULT_VOICES = {
-    "edge": "en-US-AriaNeural",
-    "kokoro": "af_bella",
+    "edge": "arianeural",
+    "kokoro": "alloy",
     "kitten": "bella",
-    "tiktok": "en_us_002",
+    "tiktok": "ghost_face",
 }
 
 
@@ -126,13 +126,13 @@ async def test_list_voices_returns_non_empty_list(engine):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("engine", ENGINES)
-async def test_voices_have_name_attribute(engine):
-    """Each voice should have a non-empty name."""
+async def test_voices_have_label_attribute(engine):
+    """Each voice should have a non-empty label."""
     voices = await list_voices(engine)
     for voice in voices:
-        assert hasattr(voice, "name")
-        assert isinstance(voice.name, str)
-        assert len(voice.name) > 0
+        assert hasattr(voice, "label")
+        assert isinstance(voice.label, str)
+        assert len(voice.label) > 0
 
 
 @pytest.mark.asyncio
@@ -141,7 +141,7 @@ async def test_first_voice_is_valid(engine):
     """The first voice should be valid and usable."""
     voices = await list_voices(engine)
     first_voice = voices[0]
-    assert first_voice.name
+    assert first_voice.label
 
 
 @pytest.mark.asyncio
@@ -151,8 +151,8 @@ async def test_list_voices_idempotent(engine):
     voices1 = await list_voices(engine)
     voices2 = await list_voices(engine)
     assert len(voices1) == len(voices2)
-    names1 = [v.name for v in voices1]
-    names2 = [v.name for v in voices2]
+    names1 = [v.label for v in voices1]
+    names2 = [v.label for v in voices2]
     assert names1 == names2
 
 

@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from components.tts.generate_tts import Voices
 from components.tts.websocket_handler import TTSQueue
 
 
@@ -126,12 +125,12 @@ class TestIrcClientAddTextMethod:
     def test_add_text_valid_voice(self):
         """Test parsing valid 'voice:text' message and adding to queue."""
         TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
-        TTSQueue.irc_client_add_text_method("stream1", "none", "user", "STORY_TELLER:Hello world")
+        TTSQueue.irc_client_add_text_method("stream1", "none", "user", "tiktok_narrator:Hello world")
         queue = TTSQueue.get_text_queue("stream1", "none")
         assert queue is not None
         item = queue.get_nowait()
-        assert item[0] == Voices.STORY_TELLER
-        assert item[1] == "Hello world"
+        assert item[0] == "tiktok_Narrator"
+        assert item[1] == "hello world"
 
     def test_add_text_invalid_voice(self):
         """Test that invalid voice names are ignored."""
@@ -144,7 +143,7 @@ class TestIrcClientAddTextMethod:
     def test_add_text_empty_message(self):
         """Test that empty messages after voice are ignored."""
         TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
-        TTSQueue.irc_client_add_text_method("stream1", "none", "user", "STORY_TELLER:")
+        TTSQueue.irc_client_add_text_method("stream1", "none", "user", "tiktok_narrator:")
         queue = TTSQueue.get_text_queue("stream1", "none")
         assert queue is not None
         assert queue.empty()
@@ -152,31 +151,31 @@ class TestIrcClientAddTextMethod:
     def test_add_text_with_lang_prefix_en(self):
         """Test that username prefix is added for English language."""
         TTSQueue.text_queue[("stream1", "en")] = asyncio.Queue()
-        TTSQueue.irc_client_add_text_method("stream1", "en", "testuser", "STORY_TELLER:Hello")
+        TTSQueue.irc_client_add_text_method("stream1", "en", "testuser", "tiktok_narrator:Hello")
         queue = TTSQueue.get_text_queue("stream1", "en")
         assert queue is not None
         item1 = queue.get_nowait()
         assert item1[1] == "testuser says"
         item2 = queue.get_nowait()
-        assert item2[1] == "Hello"
+        assert item2[1] == "hello"
 
     def test_add_text_with_lang_prefix_de(self):
         """Test that username prefix is added for German language."""
         TTSQueue.text_queue[("stream1", "de")] = asyncio.Queue()
-        TTSQueue.irc_client_add_text_method("stream1", "de", "testuser", "GERMAN_FEMALE:Hallo")
+        TTSQueue.irc_client_add_text_method("stream1", "de", "testuser", "tiktok_german_female:Hallo")
         queue = TTSQueue.get_text_queue("stream1", "de")
         assert queue is not None
         item1 = queue.get_nowait()
         assert item1[1] == "testuser sagt"
         item2 = queue.get_nowait()
-        assert item2[1] == "Hallo"
+        assert item2[1] == "hallo"
 
     def test_add_text_with_lang_none(self):
         """Test that no prefix is added when lang is 'none'."""
         TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
-        TTSQueue.irc_client_add_text_method("stream1", "none", "testuser", "STORY_TELLER:Hello")
+        TTSQueue.irc_client_add_text_method("stream1", "none", "testuser", "tiktok_narrator:Hello")
         queue = TTSQueue.get_text_queue("stream1", "none")
         assert queue is not None
         item = queue.get_nowait()
-        assert item[1] == "Hello"
+        assert item[1] == "hello"
         assert queue.empty()

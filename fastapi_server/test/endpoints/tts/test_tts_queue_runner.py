@@ -1,11 +1,11 @@
 import asyncio
+import base64
 import json
 from contextlib import suppress
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from components.tts.generate_tts import Voices
 from components.tts.websocket_handler import TTSQueue, TTSQueueRunner
 
 
@@ -43,10 +43,9 @@ class TestTTSQueueRunnerRun:
 
         runner = TTSQueueRunner("stream1", "none")
 
-        mock_b64_data = "test_base64_data"
-        with patch("components.tts.websocket_handler.generate_tts", new_callable=AsyncMock) as mock_generate:
-            mock_generate.return_value = (mock_b64_data, 1.0)
-            TTSQueue.text_queue[("stream1", "none")].put_nowait((Voices.STORY_TELLER, "Hello"))
+        with patch("components.tts.websocket_handler.generate_audio", new_callable=AsyncMock) as mock_generate:
+            mock_generate.return_value = (b"mock_mp3_bytes", 1.0)
+            TTSQueue.text_queue[("stream1", "none")].put_nowait(("tiktok_narrator", "Hello"))
 
             async def run_task():
                 await runner.run()
@@ -57,10 +56,10 @@ class TestTTSQueueRunnerRun:
             with suppress(asyncio.CancelledError):
                 await task
 
-            mock_generate.assert_called_once_with(Voices.STORY_TELLER, "Hello")
+            mock_generate.assert_called_once_with("tiktok", "narrator", "Hello")
 
             sent_data = json.loads(mock_ws.send_text.call_args[0][0])
-            assert sent_data["data"] == mock_b64_data
+            assert sent_data["data"] == base64.b64encode(b"mock_mp3_bytes").decode()
 
 
 class TestSendMp3DataToWs:

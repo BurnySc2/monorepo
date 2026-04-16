@@ -31,8 +31,8 @@ class TestEdgeTTSMocked:
         assert len(voices) > 0
         # Check that voices have expected attributes
         for voice in voices:
-            assert hasattr(voice, "name")
-            assert hasattr(voice, "language")
+            assert hasattr(voice, "label")
+            assert hasattr(voice, "locale")
 
     @pytest.mark.asyncio
     async def test_generate_audio_calls_edge_tts(self, tmp_path):
@@ -59,7 +59,7 @@ class TestTikTokTTSMocked:
         voices = await list_voices("tiktok")
         assert len(voices) > 0
         for voice in voices:
-            assert hasattr(voice, "language")
+            assert hasattr(voice, "locale")
 
     @pytest.mark.asyncio
     async def test_tiktok_uses_httpx(self):

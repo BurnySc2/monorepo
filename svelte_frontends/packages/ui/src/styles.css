@@ -151,3 +151,7 @@
 .hidden-input {
     display: none;
 }
+
+.card {
+    @apply rounded-xl border shadow-sm p-4;
+}

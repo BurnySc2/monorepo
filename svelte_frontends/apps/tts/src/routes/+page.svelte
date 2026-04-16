@@ -2,15 +2,21 @@
 import type { VoiceInfo } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
+import { load_tts_settings, save_tts_settings } from "$lib/tts_settings.svelte"
 
 let voices = $state<VoiceInfo[]>([])
-let selected_voice_index = $state(0)
+let tts_settings = $state(load_tts_settings())
 let user_text = $state("")
 let audio_b64 = $state("")
 let is_generating = $state(false)
+let is_loading_voices = $state(true)
 
 let twitch_channel = $state("burnysc2")
 let twitch_volume = $state(15)
+
+$effect(() => {
+    save_tts_settings(tts_settings)
+})
 
 async function load_voices() {
     try {
@@ -20,6 +26,8 @@ async function load_voices() {
         }
     } catch (e) {
         console.error("Failed to load voices", e)
+    } finally {
+        is_loading_voices = false
     }
 }
 
@@ -30,7 +38,7 @@ onMount(() => {
 async function generate_audio() {
     is_generating = true
     audio_b64 = ""
-    const voice = voices[selected_voice_index]
+    const voice = voices[tts_settings.selected_voice_index]
     const text = user_text
     try {
         const resp = await fetch("/tts-generate/generate", {
@@ -60,111 +68,122 @@ const preview_text = $derived.by(() => {
         return ""
     }
 
-    return `${voices[selected_voice_index].engine}_${voices[selected_voice_index].label.toLowerCase().replaceAll(" ", "_")}: ${user_text}`
+    return `${voices[tts_settings.selected_voice_index].engine}_${voices[tts_settings.selected_voice_index].label.toLowerCase().replaceAll(" ", "_")}: ${user_text}`
 })
 const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_channel}?volume=${twitch_volume}`)
 </script>
 
-<main class="flex flex-col p-4 max-w-xl mx-auto">
-    <h1 class="text-2xl font-bold mb-4">Text‑to‑Speech Generator</h1>
-    <label class="block mb-2"
-        >Voice:
-        <select
-            bind:value={selected_voice_index}
-            class="border rounded w-full p-1"
-        >
-            {#each voices as voice, index}
-                <option value={index}>{voice.locale} {voice.engine} {voice.label} ({voice.gender})</option>
-            {/each}
-        </select>
-    </label>
-    <label class="block mb-2"
-        >Text to convert:
-        <textarea
-            bind:value={user_text}
-            rows="3"
-            class="border rounded w-full p-1"
-        ></textarea>
-    </label>
-    <button
-        onclick={generate_audio}
-        disabled={user_text.trim() === '' || is_generating}
-        class="bg-blue-600 text-white py-1 px-3 rounded disabled:opacity-50 mb-4"
-    >
-        {is_generating ? 'Generating...' : 'Generate audio'}
-    </button>
-    {#if is_generating}
-        <div class="self-center"><Spinner /></div>
-    {:else if audio_b64}
-        <audio
-            controls
-            class="w-full mb-4"
-        >
-            <track
-                kind="captions"
-                src=""
-                srclang="en"
-                label="English"
+<main class="flex flex-col p-4 max-w-xl mx-auto gap-4">
+    <h1 class="text-2xl font-bold">Text-to-Speech Generator</h1>
+    {#if is_loading_voices}
+        <div class="flex justify-center p-8"><Spinner /></div>
+    {:else}
+        <div class="card">
+            <label class="block mb-2"
+                >Voice:
+                <select
+                    bind:value={tts_settings.selected_voice_index}
+                    class="input w-full"
+                >
+                    {#each voices as voice, index}
+                        <option value={index}>{voice.locale} {voice.engine} {voice.label} ({voice.gender})</option>
+                    {/each}
+                </select>
+            </label>
+            <label class="block mb-2"
+                >Text to convert:
+                <textarea
+                    bind:value={user_text}
+                    rows="3"
+                    class="input w-full"
+                ></textarea>
+            </label>
+            <button
+                onclick={generate_audio}
+                disabled={user_text.trim() === '' || is_generating}
+                class="btn-primary w-full"
             >
-            <source
-                src="data:audio/mpeg;base64,{audio_b64}"
-                type="audio/mpeg"
-            >
-            Your browser does not support the audio element.
-        </audio>
-    {/if}
-    <div class="flex items-center mb-2">
-        <input
-            type="text"
-            readonly
-            value={preview_text}
-            class="flex-1 border rounded p-1"
-        >
-        <button
-            onclick={() => copy_to_clipboard(preview_text)}
-            class="ml-2 bg-gray-200 p-1 rounded"
-        >
-            Copy
-        </button>
-    </div>
-    <h2 class="text-xl font-semibold mt-6 mb-2">OBS Overlay Setup</h2>
-    <p class="mb-2">Add the following URL as a browser source in OBS (replace the channel name if needed):</p>
-    <div class="flex items-center mb-2">
-        <input
-            type="text"
-            readonly
-            value={overlay_url}
-            class="flex-1 border rounded p-1"
-        >
-        <button
-            onclick={() => copy_to_clipboard(overlay_url)}
-            class="ml-2 bg-gray-200 p-1 rounded"
-        >
-            Copy
-        </button>
-    </div>
-    <label class="block mb-2"
-        >Twitch channel name:
-        <input
-            type="text"
-            bind:value={twitch_channel}
-            class="border rounded w-full p-1"
-        >
-    </label>
-    <label class="block mb-4"
-        >Volume (0-100):
-        <input
-            type="number"
-            min="0"
-            max="100"
-            bind:value={twitch_volume}
-            class="border rounded w-full p-1"
-        >
-    </label>
-</main>
+                {is_generating ? 'Generating...' : 'Generate audio'}
+            </button>
+        </div>
 
-<style>
-main {
-    font-family: system-ui, sans-serif;
-}
-</style>
+        {#if is_generating}
+            <div class="self-center"><Spinner /></div>
+        {:else if audio_b64}
+            <div class="card">
+                <audio
+                    controls
+                    class="w-full"
+                >
+                    <track
+                        kind="captions"
+                        src=""
+                        srclang="en"
+                        label="English"
+                    >
+                    <source
+                        src="data:audio/mpeg;base64,{audio_b64}"
+                        type="audio/mpeg"
+                    >
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+        {/if}
+
+        <div class="card">
+            <div class="flex items-center mb-2">
+                <input
+                    type="text"
+                    readonly
+                    value={preview_text}
+                    class="input flex-1"
+                >
+                <button
+                    onclick={() => copy_to_clipboard(preview_text)}
+                    class="btn-secondary ml-2"
+                >
+                    Copy
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-2">OBS Overlay Setup</h2>
+            <p class="text-sm text-gray-600 mb-2">
+                Add the following URL as a browser source in OBS (replace the channel name if needed):
+            </p>
+            <div class="flex items-center mb-2">
+                <input
+                    type="text"
+                    readonly
+                    value={overlay_url}
+                    class="input flex-1"
+                >
+                <button
+                    onclick={() => copy_to_clipboard(overlay_url)}
+                    class="btn-secondary ml-2"
+                >
+                    Copy
+                </button>
+            </div>
+            <label class="block mb-2"
+                >Twitch channel name:
+                <input
+                    type="text"
+                    bind:value={twitch_channel}
+                    class="input w-full"
+                >
+            </label>
+            <label class="block"
+                >Volume (0-100):
+                <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    bind:value={twitch_volume}
+                    class="input w-full"
+                >
+            </label>
+        </div>
+    {/if}
+</main>
