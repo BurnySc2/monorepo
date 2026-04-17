@@ -112,8 +112,10 @@ async def generate_audio_async(
             str(binary),
             str(_model_dir),
             text,
-            "--voice", voice,
-            "--output", str(tmp_path),
+            "--voice",
+            voice,
+            "--output",
+            str(tmp_path),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )

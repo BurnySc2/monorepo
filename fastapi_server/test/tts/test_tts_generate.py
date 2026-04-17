@@ -102,7 +102,5 @@ class TestModuleExports:
 
     def test_engines_list_defined(self):
         """ENGINES list should be defined."""
-        from components.tts_generate import ENGINES
-
         assert isinstance(ENGINES, list)
         assert len(ENGINES) > 0

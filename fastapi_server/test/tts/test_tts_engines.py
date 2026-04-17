@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
-import sys
+from io import BytesIO
 from pathlib import Path
 from unittest.mock import patch
 
+import numpy as np
 import pytest
+from pydub import AudioSegment
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-
-from components.tts_generate import ENGINES, generate_audio, list_voices
+from components.tts_generate import (
+    ENGINES,
+    edge_engine,
+    generate_audio,
+    kitten_engine,
+    kokoro_engine,
+    list_voices,
+    tiktok_engine,
+)
 
 # Default voices for each engine
 DEFAULT_VOICES = {
@@ -52,12 +59,6 @@ class MockCommunicate:
 @pytest.fixture
 def mock_edge_tts():
     """Mock edge_tts module for testing."""
-    from io import BytesIO
-
-    import numpy as np
-    from pydub import AudioSegment
-
-    from components.tts_generate import edge_engine
 
     def generate_sine_mp3(voice, text):
         sample_rate = 22050
@@ -85,12 +86,6 @@ def mock_edge_tts():
 @pytest.fixture
 def mock_tiktok_httpx():
     """Mock httpx for TikTok TTS testing."""
-    from io import BytesIO
-
-    import numpy as np
-    from pydub import AudioSegment
-
-    from components.tts_generate import tiktok_engine
 
     def generate_sine_mp3(voice, text):
         sample_rate = 22050
@@ -266,8 +261,6 @@ async def test_engine_lowercase_handling(engine):
 @pytest.mark.parametrize("engine", ["kokoro", "kitten"])
 async def test_invalid_voice_raises_valueerror(engine):
     """Invalid voice should raise ValueError."""
-    from components.tts_generate import kitten_engine, kokoro_engine
-
     invalid_voice = "nonexistent_voice_xyz"
     text = "Hello test."
 

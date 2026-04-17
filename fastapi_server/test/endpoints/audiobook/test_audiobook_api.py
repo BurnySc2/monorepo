@@ -1,5 +1,6 @@
 import io
 import os
+import socket
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,6 @@ def _rustfs_available() -> bool:
     rustfs_url = os.getenv("RUSTFS_S3_URL", "http://localhost:9000")
     url = rustfs_url.removeprefix("http://").removeprefix("https://")
     host, port = url.split(":")
-    import socket
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(1)

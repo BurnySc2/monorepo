@@ -5,6 +5,7 @@ from contextlib import suppress
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from websockets import ConnectionClosedError
 
 from components.tts.websocket_handler import TTSQueue, TTSQueueRunner
 
@@ -77,8 +78,6 @@ class TestSendMp3DataToWs:
     @pytest.mark.asyncio
     async def test_send_mp3_data_removes_ws_on_disconnect(self):
         """Test that WebSocket is removed on disconnect."""
-        from websockets import ConnectionClosedError
-
         mock_ws = MagicMock()
         mock_ws.send_text = AsyncMock(side_effect=ConnectionClosedError(None, None))
         runner = TTSQueueRunner("stream1", "none")

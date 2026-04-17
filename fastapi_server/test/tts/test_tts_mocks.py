@@ -12,8 +12,13 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from components.tts_generate import (
+    ENGINES,
+    edge_engine,
     generate_audio,
+    kitten_engine,
+    kokoro_engine,
     list_voices,
+    tiktok_engine,
 )
 
 # Cloud engines that use HTTP
@@ -42,9 +47,6 @@ class TestEdgeTTSMocked:
             mock_instance.save = AsyncMock()
             mock_instance.get_audio = AsyncMock()
 
-            # Import and call directly
-            from components.tts_generate import edge_engine
-
             assert hasattr(edge_engine, "generate_audio_async")
             assert hasattr(edge_engine, "list_voices_async")
 
@@ -63,8 +65,6 @@ class TestTikTokTTSMocked:
     @pytest.mark.asyncio
     async def test_tiktok_uses_httpx(self):
         """TikTok TTS should use httpx for HTTP requests."""
-        from components.tts_generate import tiktok_engine
-
         assert hasattr(tiktok_engine, "httpx")
         assert hasattr(tiktok_engine, "generate_audio_async")
 
@@ -100,15 +100,13 @@ class TestLocalEnginesModuleStructure:
 
     @pytest.mark.asyncio
     async def test_kokoro_has_required_functions(self):
-        from components.tts_generate import kokoro_engine
-
+        """Kokoro engine should have required async functions."""
         assert hasattr(kokoro_engine, "list_voices_async")
         assert hasattr(kokoro_engine, "generate_audio_async")
 
     @pytest.mark.asyncio
     async def test_kitten_has_required_functions(self):
-        from components.tts_generate import kitten_engine
-
+        """Kitten engine should have required async functions and VOICES."""
         assert hasattr(kitten_engine, "list_voices_async")
         assert hasattr(kitten_engine, "generate_audio_async")
         assert hasattr(kitten_engine, "VOICES")
@@ -120,7 +118,5 @@ class TestUnifiedAPIIntegration:
     @pytest.mark.asyncio
     async def test_all_engines_listed_in_engines_constant(self):
         """All engines should be listed in ENGINES constant."""
-        from components.tts_generate import ENGINES
-
         expected_engines = ["edge", "kokoro", "kitten", "tiktok"]
         assert sorted(ENGINES) == sorted(expected_engines)
