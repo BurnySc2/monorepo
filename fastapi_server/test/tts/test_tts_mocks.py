@@ -12,7 +12,6 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
 
 from components.tts_generate import (
-    TTSEngine,
     generate_audio,
     list_voices,
 )
@@ -125,16 +124,3 @@ class TestUnifiedAPIIntegration:
 
         expected_engines = ["edge", "kokoro", "kitten", "tiktok"]
         assert sorted(ENGINES) == sorted(expected_engines)
-
-    @pytest.mark.asyncio
-    async def test_tts_engine_literal_allows_all_engines(self):
-        """TTSEngine literal should accept all engine names."""
-
-        # This is a type hint check - if it passes, the literal is correct
-        valid_engines: list[TTSEngine] = [
-            "edge",
-            "kokoro",
-            "kitten",
-            "tiktok",
-        ]
-        assert len(valid_engines) == 5

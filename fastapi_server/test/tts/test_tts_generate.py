@@ -72,18 +72,25 @@ class TestVoiceInfo:
     """Tests for VoiceInfo dataclass."""
 
     def test_voice_info_creation(self):
-        """VoiceInfo should be creatable with name only."""
-        voice = VoiceInfo(internal_name="test_voice")
+        """VoiceInfo should be creatable with required fields."""
+        voice = VoiceInfo(
+            engine="kokoro",
+            internal_name="test_voice",
+            label="Test Voice",
+            gender="Female",
+            locale="en-us",
+        )
         assert voice.internal_name == "test_voice"
-        assert voice.gender is None
-        assert voice.label is None
+        assert voice.label == "Test Voice"
 
     def test_voice_info_full_creation(self):
         """VoiceInfo should be creatable with all fields."""
         voice = VoiceInfo(
+            engine="kokoro",
             internal_name="test_voice",
-            gender="Female",
             label="Test voice",
+            gender="Female",
+            locale="en-us",
         )
         assert voice.internal_name == "test_voice"
         assert voice.gender == "Female"

@@ -9,8 +9,8 @@ class VoiceInfo(BaseModel):
     engine: TTSEngine
     internal_name: str
     label: str
-    gender: str | None = None
-    locale: str | None = None
+    gender: str
+    locale: str
 
 
 __all__ = ["VoiceInfo"]

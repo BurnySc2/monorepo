@@ -93,7 +93,9 @@ async def generate_audio_async(
         Tuple of (audio_bytes, duration_seconds)
     """
     logger.info(voice)
-    voice_info = next(v for v in await list_voices_async() if v.internal_name == voice)
+    voice_info = next((v for v in await list_voices_async() if v.internal_name == voice), None)
+    if voice_info is None:
+        raise ValueError(f"Voice '{voice}' not found")
     lang = voice_info.locale or "en-us"
 
     samples, sample_rate = kokoro.create(text, voice=voice, speed=1.0, lang=lang)

@@ -93,11 +93,15 @@ async def generate_audio(
 
     engine = engine.lower()
 
+    if engine not in ("edge", "kokoro", "kitten", "tiktok"):
+        raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, tiktok")
+
     # Populate or update the cache
     _voices = await list_all_voices()
     voice = get_voice_by_label(voice_label)
     logger.info(voice_label)
-    assert voice is not None, f"{engine} {voice_label}"
+    if voice is None:
+        raise ValueError(f"Voice '{voice_label}' not found")
 
     if engine == "edge":
         audio_bytes, _ = await edge_engine.generate_audio_async(voice.internal_name, text)

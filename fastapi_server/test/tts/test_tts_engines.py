@@ -249,9 +249,8 @@ async def test_list_voices_contains_string_names(engine):
     """Voice names should be strings."""
     voices = await list_voices(engine)
     for voice in voices:
-        assert isinstance(voice.name, str)
-        # Voice names should typically not be empty
-        assert len(voice.name.strip()) > 0
+        assert isinstance(voice.label, str)
+        assert len(voice.label.strip()) > 0
 
 
 @pytest.mark.asyncio

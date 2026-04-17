@@ -48,7 +48,7 @@ dependencies = [
     "phonemizer>=3.3.0",
     "kokoro-onnx>=0.5.0",
     "audioop-lts; python_version >= '3.13'",
-    "kittentts>=0.8.1",
+    # "kittentts>=0.8.1",
 ]
 
 [tool.uv]

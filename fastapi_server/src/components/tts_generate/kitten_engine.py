@@ -2,64 +2,81 @@
 KittenTTS - Ultra-lightweight CPU-friendly TTS (15-80M params).
 https://github.com/KittenML/KittenTTS
 https://kittenml-kittentts.mintlify.app/concepts/voices
-
-TODO Use binary instead https://github.com/second-state/kitten_tts_rs
+https://github.com/second-state/kitten_tts_rs
 
 Requires espeak-ng installed on system
 """
 
 from __future__ import annotations
 
+import asyncio
 import io
-import json
+import tarfile
+import tempfile
+import urllib.request
 import wave
 from pathlib import Path
 
 import numpy as np
-from kittentts.onnx_model import KittenTTS_1_Onnx
 from pydub import AudioSegment
 
-from components.tts_generate._download import download_file
 from schemas.tts import VoiceInfo
 
-_local_dir = Path(__file__).parents[3] / "data" / "kitten-tts-mini-0.8"
-_CONFIG_URL = "https://huggingface.co/KittenML/kitten-tts-mini-0.8/resolve/main/config.json"
-_MODEL_URL = "https://huggingface.co/KittenML/kitten-tts-mini-0.8/resolve/main/kitten_tts_mini_v0_8.onnx"
-_VOICES_URL = "https://huggingface.co/KittenML/kitten-tts-mini-0.8/resolve/main/voices.npz"
-
-_local_dir.mkdir(parents=True, exist_ok=True)
-
-
-def _get_model_paths():
-    config_path = _local_dir / "config.json"
-    download_file(_CONFIG_URL, config_path)
-    with config_path.open() as f:
-        config = json.load(f)
-    model_path = _local_dir / "kitten_tts_mini_v0_8.onnx"
-    voices_path = _local_dir / "voices.npz"
-    download_file(_MODEL_URL, model_path)
-    download_file(_VOICES_URL, voices_path)
-    return model_path, voices_path, config
+_local_dir = Path(__file__).parents[3] / "data" / "kitten-tts"
+_binary_path = _local_dir / "kitten-tts-x86_64-linux" / "kitten-tts"
+_model_dir = _local_dir / "models" / "kitten-tts-mini"
+_model_url = "https://github.com/second-state/kitten_tts_rs/releases/latest/download/kitten-tts-models.tar.gz"
+_binary_url = "https://github.com/second-state/kitten_tts_rs/releases/latest/download/kitten-tts-x86_64-linux.tar.gz"
 
 
-_model_path, _voices_path, _config = _get_model_paths()
+def _download_file(url: str, dest: Path) -> None:
+    urllib.request.urlretrieve(url, dest)
 
-_tts_model = KittenTTS_1_Onnx(
-    model_path=str(_model_path),
-    voices_path=str(_voices_path),
-    speed_priors=_config.get("speed_priors", {}),
-    voice_aliases=_config.get("voice_aliases", {}),
-)
+
+def _get_binary_path() -> Path:
+    if _binary_path.exists():
+        return _binary_path
+    _local_dir.mkdir(parents=True, exist_ok=True)
+    tmp_tar = _local_dir / "kitten-tts.tar.gz"
+    _download_file(_binary_url, tmp_tar)
+    with tarfile.open(tmp_tar) as tf:
+        tf.extractall(_local_dir)
+    tmp_tar.unlink()
+    return _binary_path
+
+
+def _ensure_models() -> Path:
+    if _model_dir.exists() and (_model_dir / "config.json").exists():
+        return _model_dir
+    _local_dir.mkdir(parents=True, exist_ok=True)
+    tmp_tar = _local_dir / "kitten-tts-models.tar.gz"
+    _download_file(_model_url, tmp_tar)
+    with tarfile.open(tmp_tar) as tf:
+        tf.extractall(_local_dir)
+    tmp_tar.unlink()
+    return _model_dir
+
+
+_binary_exe: Path | None = None
+
+
+async def _get_binary() -> Path:
+    global _binary_exe
+    if _binary_exe is None:
+        _binary_exe = _get_binary_path()
+        _ensure_models()
+    return _binary_exe
+
 
 VOICES = [
-    VoiceInfo(engine="kitten", internal_name="expr-voice-2-f", label="Bella", gender="Female", locale="en-us"),
-    VoiceInfo(engine="kitten", internal_name="expr-voice-2-m", label="Jasper", gender="Male", locale="en-us"),
-    VoiceInfo(engine="kitten", internal_name="expr-voice-3-f", label="Luna", gender="Female", locale="en-us"),
-    VoiceInfo(engine="kitten", internal_name="expr-voice-3-m", label="Bruno", gender="Male", locale="en-us"),
-    VoiceInfo(engine="kitten", internal_name="expr-voice-4-f", label="Rosie", gender="Female", locale="en-us"),
-    VoiceInfo(engine="kitten", internal_name="expr-voice-4-m", label="Hugo", gender="Male", locale="en-us"),
-    VoiceInfo(engine="kitten", internal_name="expr-voice-5-f", label="Kiki", gender="Female", locale="en-us"),
-    VoiceInfo(engine="kitten", internal_name="expr-voice-5-m", label="Leo", gender="Male", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="Bella", label="Bella", gender="Female", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="Jasper", label="Jasper", gender="Male", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="Luna", label="Luna", gender="Female", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="Bruno", label="Bruno", gender="Male", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="Rosie", label="Rosie", gender="Female", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="Hugo", label="Hugo", gender="Male", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="Kiki", label="Kiki", gender="Female", locale="en-us"),
+    VoiceInfo(engine="kitten", internal_name="Leo", label="Leo", gender="Male", locale="en-us"),
 ]
 
 
@@ -73,19 +90,43 @@ async def generate_audio_async(
     text: str,
 ) -> tuple[bytes, float]:
     """
-    Generate audio using KittenTTS.
+    Generate audio using KittenTTS binary.
 
     Args:
-        voice: Voice name (e.g., "jasper")
+        voice: Voice name (e.g., "Jasper")
         text: Text to synthesize
 
     Returns:
         Tuple of (audio_bytes, duration_seconds)
     """
+    voices = await list_voices_async()
+    if voice not in [v.internal_name for v in voices]:
+        raise ValueError(f"Voice '{voice}' not found. Available: {[v.internal_name for v in voices]}")
 
-    samples = _tts_model.generate(text, voice=voice, speed=1.0)
+    binary = await _get_binary()
 
-    samples_int16 = (samples * 32767).astype(np.int16)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir) / "output.wav"
+
+        proc = await asyncio.create_subprocess_exec(
+            str(binary),
+            str(_model_dir),
+            text,
+            "--voice", voice,
+            "--output", str(tmp_path),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await proc.communicate()
+
+        if proc.returncode != 0:
+            raise RuntimeError(f"kitten-tts failed: {stderr.decode()}")
+
+        with wave.open(str(tmp_path), "rb") as wf:
+            duration = wf.getnframes() / wf.getframerate()
+            frames = wf.readframes(wf.getnframes())
+
+    samples_int16 = np.frombuffer(frames, dtype=np.int16)
 
     wav_io = io.BytesIO()
     with wave.open(wav_io, "wb") as wav_file:
@@ -100,8 +141,6 @@ async def generate_audio_async(
     audio.export(mp3_io, format="mp3")
     mp3_io.seek(0)
 
-    duration = len(samples) / 24000
-
     return mp3_io.read(), duration
 
 
@@ -114,7 +153,7 @@ async def main() -> None:
     for voice in voices:
         logger.info(f"  {voice.label or voice.internal_name} ({voice.gender}, {voice.locale}) - {voice.internal_name}")
 
-    sample_voice = "jasper"
+    sample_voice = "Jasper"
     sample_text = "Hello from KittenTTS! This is a test."
     output_path = Path(__file__).parent / "sample_kitten.mp3"
 
@@ -126,6 +165,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())
