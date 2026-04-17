@@ -5,6 +5,8 @@
 # docker run --rm -it burnysc2/litestar_server:latest_dev /bin/sh -c "apk add gdu && gdu /"
 FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
 
+RUN apk add --no-cache espeak-ng
+
 # Add ffmpeg from
 # https://github.com/wader/static-ffmpeg
 # COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/

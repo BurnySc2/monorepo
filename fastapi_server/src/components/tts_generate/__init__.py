@@ -10,8 +10,11 @@ Provides a unified API for multiple TTS engines:
 
 from __future__ import annotations
 
+from io import BytesIO
+
 from cachetools import TTLCache
 from loguru import logger
+from mutagen.mp3 import MP3
 
 from schemas.tts import ENGINES, TTSEngine, VoiceInfo
 
@@ -87,9 +90,6 @@ async def generate_audio(
     Raises:
         ValueError: If engine is not supported
     """
-    from io import BytesIO
-
-    from mutagen.mp3 import MP3
 
     engine = engine.lower()
 

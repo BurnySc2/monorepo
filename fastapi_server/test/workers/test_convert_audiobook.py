@@ -80,7 +80,7 @@ class TestConvertOne:
         mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
         mock_chapter.minio_object_name = None
 
-        mock_audio = b"fake audio data"
+        mock_audio = (b"fake audio data", 10.5)
 
         mock_context = MagicMock()
         mock_context.chapter = mock_chapter
@@ -117,7 +117,7 @@ class TestConvertOne:
         mock_chapter.id = 42
         mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
 
-        mock_audio = b"fake audio data"
+        mock_audio = (b"fake audio data", 10.5)
 
         mock_context = MagicMock()
         mock_context.chapter = mock_chapter
@@ -147,7 +147,7 @@ class TestConvertOne:
         mock_chapter.id = 42
         mock_chapter.audio_settings = '{"engine_name": "kokoro", "voice_name": "bella"}'
 
-        mock_audio = b"fake audio data"
+        mock_audio = (b"fake audio data", 10.5)
 
         mock_context = MagicMock()
         mock_context.chapter = mock_chapter
