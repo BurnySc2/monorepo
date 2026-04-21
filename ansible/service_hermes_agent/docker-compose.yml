@@ -16,6 +16,7 @@ services:
     image: nousresearch/hermes-agent:latest
     container_name: hermes
     hostname: hermes
+    user: root # Be root user first, then switch to hermes user when running 'gateway run'
     networks:
       - pangolin_newt
       - hermes-net
@@ -25,11 +26,12 @@ services:
       - /bin/bash
       - -c
       - |
-        apt-get update -qq && \
+        apt-get update && \
         apt-get install -y --no-install-recommends sudo && \
-        echo "hermes ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/hermes && \
+        rm -rf /var/lib/apt/lists/* && \
+        echo 'hermes ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/hermes && \
         chmod 0440 /etc/sudoers.d/hermes && \
-        exec /opt/hermes/docker/entrypoint.sh gateway run
+        exec gosu hermes /opt/hermes/docker/entrypoint.sh gateway run
     volumes:
       - /media/ssd480/hermes_agent:/opt/data
       - /media/ssd480/shared/workspace:/workspace
