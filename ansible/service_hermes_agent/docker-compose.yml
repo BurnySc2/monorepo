@@ -27,7 +27,7 @@ services:
       - /bin/bash
       - -c
       - |
-        rm -f /opt/data/gateway.pid
+        rm -f /opt/data/gateway.pid &&
         apt-get update && \
         apt-get install -y --no-install-recommends sudo curl && \
         rm -rf /var/lib/apt/lists/* && \
@@ -163,6 +163,7 @@ services:
       HERMES_DASHBOARD_URL: http://hermes_dashboard:9119
       # HERMES_API_URL: https://gatewayhermes.burnysc2.xyz
       HERMES_API_TOKEN: {{ secrets.HERMES.OPENAPIKEY }}
+      HERMES_ALLOW_INSECURE_REMOTE: 1
 
     # If you've already started the workspace, you can update both URLs from Settings → Connection without restarting. The values are persisted to ~/.hermes/workspace-overrides.json and take effect immediately (gateway capabilities are reprobed on save). Editing .env still works for pre-start config and for CI/containers.
     depends_on:
@@ -178,3 +179,31 @@ services:
       - pangolin.public-resources.chathermes.auth.sso-enabled=true
       - pangolin.public-resources.chathermes.targets[0].method=http
       - pangolin.public-resources.chathermes.targets[0].port=3000
+
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ollama
+  #   volumes:
+  #     - ./data:/root/.ollama
+  #   networks:
+  #     - pangolin_newt
+  #     - hermes-net
+  #   # ports:
+  #   #   - "11434:11434"
+  #   environment:
+  #     # Connect via:
+  #     # http://ollama:11434/v1
+  #     - OLLAMA_HOST=0.0.0.0   
+  #     - OLLAMA_NUM_CTX=128000
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         # cpus: '16'
+  #         memory: 15G
+  #   # Run the model on container start
+  #   entrypoint: >
+  #     bash -c "ollama serve &
+  #     sleep 3 &&
+  #     ollama pull gemma4:e4b &&
+  #     wait"
+  #   restart: unless-stopped
