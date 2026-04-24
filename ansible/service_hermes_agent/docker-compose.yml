@@ -21,13 +21,15 @@ services:
       - pangolin_newt
       - hermes-net
     restart: unless-stopped
-    # Install sudo and give hermes root rights to install software
     entrypoint:
+      # Remove gateway.pid to restart gateway properly
+      # Then install sudo and give hermes root rights to install software
       - /bin/bash
       - -c
       - |
+        rm -f /opt/data/gateway.pid
         apt-get update && \
-        apt-get install -y --no-install-recommends sudo && \
+        apt-get install -y --no-install-recommends sudo curl && \
         rm -rf /var/lib/apt/lists/* && \
         echo 'hermes ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/hermes && \
         chmod 0440 /etc/sudoers.d/hermes && \
@@ -41,18 +43,24 @@ services:
       - API_SERVER_HOST=0.0.0.0
       - API_SERVER_PORT=8642
       - HERMES_YOLO_MODE=1
-    # labels:
-    #   - pangolin.public-resources.apihermes.name=HermesAgent
-    #   - pangolin.public-resources.apihermes.full-domain={{ GATEWAYSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
-    #   - pangolin.public-resources.apihermes.protocol=http
-    #   - pangolin.public-resources.apihermes.auth.sso-enabled=true
-    #   - pangolin.public-resources.apihermes.targets[0].method=http
-    #   - pangolin.public-resources.apihermes.targets[0].port=8642
+    labels:
+      - pangolin.public-resources.apihermes.name=HermesAgent
+      - pangolin.public-resources.apihermes.full-domain={{ GATEWAYSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.apihermes.protocol=http
+      - pangolin.public-resources.apihermes.auth.sso-enabled=false
+      - pangolin.public-resources.apihermes.targets[0].method=http
+      - pangolin.public-resources.apihermes.targets[0].port=8642
     deploy:
       resources:
         limits:
           memory: 4G
           cpus: "2.0"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8642/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -81,7 +89,8 @@ services:
       - pangolin.public-resources.webui.targets[0].method=http
       - pangolin.public-resources.webui.targets[0].port=8080
     depends_on:
-      - hermes
+      hermes:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -90,7 +99,8 @@ services:
 
   hermes_dashboard:
     image: nousresearch/hermes-agent:latest
-    container_name: hermes-dashboard
+    container_name: hermes_dashboard
+    hostname: hermes_dashboard
     restart: unless-stopped
     command: dashboard --host 0.0.0.0 --insecure
     volumes:
@@ -109,9 +119,62 @@ services:
       - pangolin.public-resources.hermes.targets[0].method=http
       - pangolin.public-resources.hermes.targets[0].port=9119
     depends_on:
-      - hermes
+      hermes:
+        condition: service_healthy
     deploy:
       resources:
         limits:
           memory: 512M
           cpus: "0.5"
+
+  # mission-control:
+  #   image: ghcr.io/builderz-labs/mission-control:latest
+  #   volumes:
+  #     # Needs "sudo chown -R 1001:1001 mission_control_data"
+  #     - /media/ssd480/mission_control_data:/app/.data
+  #   environment:
+  #     - NEXT_PUBLIC_GATEWAY_OPTIONAL=true
+  #     - PORT=3000
+  #     # - NEXT_PUBLIC_GATEWAY_SSL=false
+  #     # - NEXT_PUBLIC_GATEWAY_HOST=hermes
+  #     # - NEXT_PUBLIC_GATEWAY_PORT=8642
+  #     - NEXT_PUBLIC_GATEWAY_HOST=gatewayhermes.burnysc2.xyz
+  #     - NEXT_PUBLIC_GATEWAY_PORT=443
+  #     # - OPENCLAW_GATEWAY_HOST=hermes
+  #     # - OPENCLAW_GATEWAY_PORT=8642
+  #   networks:
+  #     - pangolin_newt
+  #     - hermes-net
+  #   labels:
+  #     - pangolin.public-resources.chathermes.name=Hermes Workspace
+  #     - pangolin.public-resources.chathermes.full-domain={{ CHATHERMESSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+  #     - pangolin.public-resources.chathermes.protocol=http
+  #     - pangolin.public-resources.chathermes.auth.sso-enabled=true
+  #     - pangolin.public-resources.chathermes.targets[0].method=http
+  #     - pangolin.public-resources.chathermes.targets[0].port=3000
+
+  hermes-workspace:
+    image: ghcr.io/outsourc-e/hermes-workspace:latest
+    user: root
+    volumes:
+      - /media/ssd480/hermes_workspace:/root
+    environment:
+      HERMES_API_URL: http://hermes:8642
+      HERMES_DASHBOARD_URL: http://hermes_dashboard:9119
+      # HERMES_API_URL: https://gatewayhermes.burnysc2.xyz
+      HERMES_API_TOKEN: {{ secrets.HERMES.OPENAPIKEY }}
+
+    # If you've already started the workspace, you can update both URLs from Settings → Connection without restarting. The values are persisted to ~/.hermes/workspace-overrides.json and take effect immediately (gateway capabilities are reprobed on save). Editing .env still works for pre-start config and for CI/containers.
+    depends_on:
+      hermes:
+        condition: service_healthy
+    networks:
+      - pangolin_newt
+      - hermes-net
+    labels:
+      - pangolin.public-resources.chathermes.name=Hermes Workspace
+      - pangolin.public-resources.chathermes.full-domain={{ CHATHERMESSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.chathermes.protocol=http
+      - pangolin.public-resources.chathermes.auth.sso-enabled=true
+      - pangolin.public-resources.chathermes.targets[0].method=http
+      - pangolin.public-resources.chathermes.targets[0].port=3000

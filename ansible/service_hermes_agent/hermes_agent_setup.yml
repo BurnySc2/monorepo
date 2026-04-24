@@ -10,12 +10,14 @@
     WEBSUBDOMAIN: '{{ secrets.HERMES.WEBSUBDOMAIN }}'
     DASHBOARDSUBDOMAIN: '{{ secrets.HERMES.DASHBOARDSUBDOMAIN }}'
     GATEWAYSUBDOMAIN: '{{ secrets.HERMES.GATEWAYSUBDOMAIN }}'
+    CHATHERMESSUBDOMAIN: '{{ secrets.HERMES.CHATHERMESSUBDOMAIN }}'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
         - hostname: '{{ WEBSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
         - hostname: '{{ DASHBOARDSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
         - hostname: '{{ GATEWAYSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+        - hostname: '{{ CHATHERMESSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
       loop_control:
         loop_var: item
     - name: Create group
@@ -33,13 +35,17 @@
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: docker-compose stop
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        state: stopped
-      failed_when: false
+    # - name: docker-compose stop
+    #   community.docker.docker_compose_v2:
+    #     project_src: /home/{{ USERNAME }}
+    #     state: stopped
+    #   failed_when: false
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
         pull: always
-
+    - name: Remove dangling images
+      community.docker.docker_prune:
+        images: true
+        images_filters:
+          dangling: true
