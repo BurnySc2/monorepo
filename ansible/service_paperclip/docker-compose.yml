@@ -1,0 +1,54 @@
+---
+# https://github.com/paperclipai/paperclip
+# 
+# Run once at start:
+# docker compose exec -it paperclip pnpm paperclipai onboard
+# docker compose exec -it paperclip pnpm paperclipai auth bootstrap-ceo
+
+# List available models:
+# docker compose exec -it paperclip /usr/local/bin/opencode models
+networks:
+  pangolin_newt:
+    external: true
+  paperclip-net:
+    driver: bridge
+
+services:
+  # Paperclip AI Main Workspace
+  paperclip:
+    build:
+      context: ./paperclip
+    container_name: paperclip
+    hostname: paperclip
+    networks:
+      - pangolin_newt
+      - paperclip-net
+    restart: unless-stopped
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3100
+      - PAPERCLIP_HOME=/paperclip/
+      - PAPERCLIP_DEPLOYMENT_MODE=authenticated
+      - PAPERCLIP_DEPLOYMENT_EXPOSURE=public
+      # The url seen by the agents for API access:
+      - PAPERCLIP_PUBLIC_URL=http://localhost:3100
+      - BETTER_AUTH_SECRET={{ secrets.PAPERCLIP.AUTH_SECRET }}
+    volumes:
+      # Opencode auth: 
+      # /paperclip/.local/share/opencode/
+      # Opencode config:
+      # /paperclip/.config/opencode/
+      - '{{ PAPERCLIP_CONFIG }}:/paperclip'
+      - '{{ PAPERCLIP_WORKSPACE }}:/paperclip/instances/default/workspaces'
+    labels:
+      - pangolin.public-resources.paperclip.name=Paperclip
+      - pangolin.public-resources.paperclip.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.paperclip.protocol=http
+      - pangolin.public-resources.paperclip.auth.sso-enabled=true
+      - pangolin.public-resources.paperclip.targets[0].method=http
+      - pangolin.public-resources.paperclip.targets[0].port=3100
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          # cpus: "2.0"

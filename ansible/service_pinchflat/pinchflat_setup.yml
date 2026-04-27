@@ -2,7 +2,6 @@
 # https://github.com/kieraneglin/pinchflat
 # Execute with
 # ansible-playbook pinchflat_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-# TODO Need to add crontab which sets owner to syncthing of downloaded files
 - name: Create service
   hosts: server_group1
   vars:

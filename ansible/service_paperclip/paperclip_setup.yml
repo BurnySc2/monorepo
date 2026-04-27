@@ -1,0 +1,76 @@
+---
+# https://github.com/paperclipai/paperclip
+# Execute with
+# ansible-playbook paperclip_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service
+  hosts: server_group1
+  vars:
+    USERNAME: '{{ secrets.PAPERCLIP.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.PAPERCLIP.SUBDOMAIN }}'
+    PAPERCLIP_DIR: "/home/{{ secrets.PAPERCLIP.USERNAME }}/paperclip"
+    PAPERCLIP_CONFIG: '/media/ssd480/paperclip'
+    PAPERCLIP_WORKSPACE: '/media/ssd480/shared/workspace_paperclip'
+  tasks:
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+      loop_control:
+        loop_var: item
+
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
+
+    - name: Create paperclip directories
+      ansible.builtin.file:
+        path: '{{ item }}'
+        state: directory
+        owner: '1000'
+        group: '1000'
+        recurse: true
+      loop:
+        - '{{ PAPERCLIP_CONFIG }}'
+        - '{{ PAPERCLIP_WORKSPACE }}'
+
+    # - name: Ensure paperclip dir is absent
+    #   ansible.builtin.file:
+    #     path: '{{ PAPERCLIP_DIR }}'
+    #     state: absent
+
+    # - name: Clone paperclip repository
+    #   ansible.builtin.git:
+    #     repo: https://github.com/paperclipai/paperclip
+    #     dest: '{{ PAPERCLIP_DIR }}'
+    #     update: no
+
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+
+    - name: docker-compose stop
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: absent
+      failed_when: false
+
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        pull: always
+        build: always
+
+    - name: Remove dangling images
+      community.docker.docker_prune:
+        images: true
+        images_filters:
+          dangling: true
