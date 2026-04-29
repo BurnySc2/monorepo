@@ -1,7 +1,7 @@
 """Entry point for the FastAPI server.
 
 Provides a minimal FastAPI application that can be started via the
-VS Code launch configuration added above.
+VS Code launch configuration added above.
 """
 
 import os

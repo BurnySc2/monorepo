@@ -2,21 +2,18 @@
 import type { VoiceInfo } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
-import { load_tts_settings, save_tts_settings } from "$lib/tts_settings.svelte"
+import { tts_settings } from "$lib/tts_settings.svelte"
 
 let voices = $state<VoiceInfo[]>([])
-let tts_settings = $state(load_tts_settings())
 let user_text = $state("")
 let audio_b64 = $state("")
 let is_generating = $state(false)
 let is_loading_voices = $state(true)
+let copied_preview = $state(false)
+let copied_overlay = $state(false)
 
 let twitch_channel = $state("burnysc2")
 let twitch_volume = $state(15)
-
-$effect(() => {
-    save_tts_settings(tts_settings)
-})
 
 async function load_voices() {
     try {
@@ -61,6 +58,22 @@ async function generate_audio() {
 
 async function copy_to_clipboard(text: string) {
     await navigator.clipboard.writeText(text)
+}
+
+async function handle_copy_preview() {
+    await navigator.clipboard.writeText(preview_text)
+    copied_preview = true
+    setTimeout(() => {
+        copied_preview = false
+    }, 2500)
+}
+
+async function handle_copy_overlay() {
+    await navigator.clipboard.writeText(overlay_url)
+    copied_overlay = true
+    setTimeout(() => {
+        copied_overlay = false
+    }, 2500)
 }
 
 const preview_text = $derived.by(() => {
@@ -114,6 +127,12 @@ const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_chann
                 <audio
                     controls
                     class="w-full"
+                    volume={tts_settings.audio_volume / 100}
+                    onvolumechange={(e) => {
+                        const target = e.currentTarget as HTMLAudioElement;
+                        const volume = Math.round(target.volume * 100);
+                        tts_settings.audio_volume = Math.min(100, Math.max(0, volume));
+                    }}
                 >
                     <track
                         kind="captions"
@@ -131,6 +150,7 @@ const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_chann
         {/if}
 
         <div class="card">
+            <div>Text copyable to twitch chat:</div>
             <div class="flex items-center mb-2">
                 <input
                     type="text"
@@ -139,10 +159,10 @@ const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_chann
                     class="input flex-1"
                 >
                 <button
-                    onclick={() => copy_to_clipboard(preview_text)}
+                    onclick={handle_copy_preview}
                     class="btn-secondary ml-2"
                 >
-                    Copy
+                    {copied_preview ? 'Copied!' : 'Copy'}
                 </button>
             </div>
         </div>
@@ -160,10 +180,10 @@ const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_chann
                     class="input flex-1"
                 >
                 <button
-                    onclick={() => copy_to_clipboard(overlay_url)}
+                    onclick={handle_copy_overlay}
                     class="btn-secondary ml-2"
                 >
-                    Copy
+                    {copied_overlay ? 'Copied!' : 'Copy'}
                 </button>
             </div>
             <label class="block mb-2"
