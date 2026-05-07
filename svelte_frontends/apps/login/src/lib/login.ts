@@ -1,5 +1,3 @@
-const backend_url = import.meta.env.VITE_API_TARGET || "http://localhost:8000"
-
 export interface User {
     id: number
     name: string
@@ -25,7 +23,7 @@ export async function check_login_status(): Promise<{
     let error_message: string | null = null
 
     try {
-        const response = await fetch(`${backend_url}/login`, {
+        const response = await fetch(`/login`, {
             credentials: "include",
         })
         const data = await response.json()
@@ -44,16 +42,16 @@ export async function check_login_status(): Promise<{
 }
 
 export function start_twitch_login() {
-    window.location.href = `${backend_url}/login/twitch/start`
+    window.location.href = `/login/twitch/start`
 }
 
 export function start_github_login() {
-    window.location.href = `${backend_url}/login/github/start`
+    window.location.href = `/login/github/start`
 }
 
 export async function handle_logout(): Promise<void> {
     try {
-        const response = await fetch(`${backend_url}/logout`, {
+        const response = await fetch(`/logout`, {
             credentials: "include",
             redirect: "manual",
         })

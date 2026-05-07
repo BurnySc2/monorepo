@@ -2,16 +2,18 @@ import { sveltekit } from "@sveltejs/kit/vite"
 import tailwindcss from "@tailwindcss/vite"
 import { defineConfig } from "vite"
 
+const api_target = process.env.VITE_API_TARGET ? `https://${process.env.VITE_API_TARGET}` : "http://localhost:8000"
+
 export default defineConfig({
+    plugins: [tailwindcss(), sveltekit()],
     server: {
         port: 5180,
         strictPort: true,
         proxy: {
             "/api": {
-                target: "http://0.0.0.0:8000",
+                target: api_target,
                 changeOrigin: true,
             },
         },
     },
-    plugins: [tailwindcss(), sveltekit()],
 })

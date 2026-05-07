@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { check_login_status, handle_logout, start_github_login, start_twitch_login } from "./login"
 
-const backend_url = import.meta.env.VITE_API_TARGET || "http://localhost:8000"
-
 function createMockLocation() {
     return {
         href: "",
@@ -99,7 +97,7 @@ describe("start_twitch_login", () => {
     it("redirects to twitch login URL", () => {
         start_twitch_login()
 
-        expect(window.location.href).toBe(`${backend_url}/login/twitch/start`)
+        expect(window.location.href).toBe(`/login/twitch/start`)
     })
 })
 
@@ -117,7 +115,7 @@ describe("start_github_login", () => {
     it("redirects to github login URL", () => {
         start_github_login()
 
-        expect(window.location.href).toBe(`${backend_url}/login/github/start`)
+        expect(window.location.href).toBe(`/login/github/start`)
     })
 })
 

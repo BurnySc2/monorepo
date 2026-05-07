@@ -8,6 +8,7 @@ export default defineConfig({
     plugins: [tailwindcss(), sveltekit()],
     server: {
         port: 5178,
+        strictPort: true,
         proxy: {
             "/api": {
                 target: api_target,

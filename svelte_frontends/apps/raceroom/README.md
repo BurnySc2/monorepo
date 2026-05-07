@@ -1,16 +1,16 @@
 # Cloudflare config
 
 ### Name
-monorepo-login-frontend
+monorepo-raceroom-frontend
 
 ### Build command
 ```sh
-cd packages/ui && npm run build && cd ../../apps/login && npm run build
+cd packages/ui && npm run build && cd ../../apps/raceroom && npm run build
 ```
 
 ### Build output directory
 ```sh
-apps/login/build
+apps/raceroom/build
 ```
 
 ### Path

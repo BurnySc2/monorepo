@@ -2,9 +2,6 @@
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 
-// Backend URL from environment or default
-const backend_url = import.meta.env.VITE_API_TARGET || "http://localhost:8000"
-
 // State variables using snake_case
 let is_loading = $state(true)
 let is_logged_in = $state(false)
@@ -14,7 +11,7 @@ let error_message: string | null = $state(null)
 // Check login status on mount
 async function check_login_status() {
     try {
-        const response = await fetch(`${backend_url}/login`, {
+        const response = await fetch(`/login`, {
             credentials: "include",
         })
         const data = await response.json()
@@ -32,18 +29,18 @@ async function check_login_status() {
 
 // Start Twitch OAuth flow
 function start_twitch_login() {
-    window.location.href = `${backend_url}/login/twitch/start`
+    window.location.href = `/login/twitch/start`
 }
 
 // Start GitHub OAuth flow
 function start_github_login() {
-    window.location.href = `${backend_url}/login/github/start`
+    window.location.href = `/login/github/start`
 }
 
 // Logout function
 async function handle_logout() {
     try {
-        const response = await fetch(`${backend_url}/logout`, {
+        const response = await fetch(`/logout`, {
             credentials: "include",
             redirect: "manual",
         })

@@ -1,5 +1,3 @@
-const backend_url = import.meta.env.VITE_API_TARGET || "http://localhost:8000"
-
 export interface User {
     id: number
     name: string
@@ -25,7 +23,7 @@ export async function check_login_status(): Promise<{
     let error_message: string | null = null
 
     try {
-        const response = await fetch(`${backend_url}/login`, {
+        const response = await fetch(`/login`, {
             credentials: "include",
         })
         const data = await response.json()

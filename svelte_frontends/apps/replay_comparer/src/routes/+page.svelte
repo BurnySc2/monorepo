@@ -5,9 +5,6 @@ import ReplayComparison from "$lib/components/ReplayComparison.svelte"
 import { type ReplayData, type SavedIdealReplay, TIMELINE_OPTIONS, type TimelineOption } from "$lib/types"
 
 const is_dev = true
-const ip = "http://localhost:8000"
-const replay_parse_endpoint = "parse_replay"
-const replay_events_endpoint = "get_replay_events"
 const local_storage_key = "saved_ideal_replays"
 
 let real_replay_data: ReplayData | null = $state(null)
@@ -29,7 +26,7 @@ async function parse_replay(replay_file: File): Promise<ReplayData> {
     formData.append("replay_tick", `${second * 10}`)
     formData.append("replay_file", replay_file)
 
-    const response = await fetch(`${ip}/${replay_parse_endpoint}`, {
+    const response = await fetch(`/parse_replay`, {
         method: "POST",
         body: formData,
     })
@@ -43,7 +40,7 @@ async function parse_replay_events(replay_file: File): Promise<ReplayData> {
     const formData = new FormData()
     formData.append("replay_file", replay_file)
 
-    const response = await fetch(`${ip}/${replay_events_endpoint}`, {
+    const response = await fetch(`/get_replay_events`, {
         method: "POST",
         body: formData,
     })

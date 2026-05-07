@@ -8,12 +8,10 @@ import type {
 } from "@repo/api-types"
 import { mock_book_data } from "./mock_data"
 
-const API_BASE_URL = import.meta.env?.VITE_API_TARGET || "http://localhost:8000"
-
 const USE_MOCK = typeof import.meta.env !== "undefined" && import.meta.env.VITE_USE_MOCK === "true"
 
 export async function get_books(): Promise<AudiobookBook[]> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books`, {
+    const response = await fetch(`/api/audiobook/books`, {
         credentials: "include",
     })
     if (!response.ok) {
@@ -28,7 +26,7 @@ export async function get_book(book_id: number): Promise<BookWithChapters | null
         return mock_book_data
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}`, {
+    const response = await fetch(`/api/audiobook/books/${book_id}`, {
         credentials: "include",
     })
     if (response.status === 404) {
@@ -44,7 +42,7 @@ export async function upload_epub(file: File): Promise<void> {
     const formData = new FormData()
     formData.append("file", file)
 
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/upload`, {
+    const response = await fetch(`/api/audiobook/upload`, {
         method: "POST",
         credentials: "include",
         body: formData,
@@ -57,7 +55,7 @@ export async function upload_epub(file: File): Promise<void> {
 }
 
 export async function get_available_voices(): Promise<VoiceInfo[]> {
-    const response = await fetch(`${API_BASE_URL}/tts-generate/voices`, {
+    const response = await fetch(`/tts-generate/voices`, {
         credentials: "include",
     })
     if (!response.ok) {
@@ -67,7 +65,7 @@ export async function get_available_voices(): Promise<VoiceInfo[]> {
 }
 
 export async function update_book_title(book_id: number, title: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/title`, {
+    const response = await fetch(`/api/audiobook/books/${book_id}/title`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -82,7 +80,7 @@ export async function update_book_title(book_id: number, title: string): Promise
 }
 
 export async function update_book_author(book_id: number, author: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/author`, {
+    const response = await fetch(`/api/audiobook/books/${book_id}/author`, {
         method: "PUT",
         credentials: "include",
         headers: {
@@ -101,7 +99,7 @@ export async function queue_chapter_audio(
     chapter_id: number,
     audio_settings: AudioSettings,
 ): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/chapters/${chapter_id}/queue`, {
+    const response = await fetch(`/api/audiobook/books/${book_id}/chapters/${chapter_id}/queue`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -116,7 +114,7 @@ export async function queue_chapter_audio(
 }
 
 export async function delete_chapter_audio(book_id: number, chapter_id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/chapters/${chapter_id}`, {
+    const response = await fetch(`/api/audiobook/books/${book_id}/chapters/${chapter_id}`, {
         method: "DELETE",
         credentials: "include",
     })
@@ -127,7 +125,7 @@ export async function delete_chapter_audio(book_id: number, chapter_id: number):
 }
 
 export async function queue_all_chapters(book_id: number, audio_settings: AudioSettings): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/queue-all`, {
+    const response = await fetch(`/api/audiobook/books/${book_id}/queue-all`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -142,7 +140,7 @@ export async function queue_all_chapters(book_id: number, audio_settings: AudioS
 }
 
 export async function delete_book(book_id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}`, {
+    const response = await fetch(`/api/audiobook/books/${book_id}`, {
         method: "DELETE",
         credentials: "include",
     })
@@ -153,7 +151,7 @@ export async function delete_book(book_id: number): Promise<void> {
 }
 
 export async function delete_all_audio(book_id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/audiobook/books/${book_id}/audio`, {
+    const response = await fetch(`/api/audiobook/books/${book_id}/audio`, {
         method: "DELETE",
         credentials: "include",
     })
@@ -168,7 +166,7 @@ export async function refresh_chapters(
     chapter_numbers: number[],
 ): Promise<AudiobookChapterQueryResult[]> {
     const response = await fetch(
-        `${API_BASE_URL}/api/audiobook/books/${book_id}/chapters/status?chapter_numbers=${chapter_numbers.join(",")}`,
+        `/api/audiobook/books/${book_id}/chapters/status?chapter_numbers=${chapter_numbers.join(",")}`,
         {
             credentials: "include",
         },
