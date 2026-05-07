@@ -1,6 +1,12 @@
 import type { BestTimeEntry, Track } from "$lib/types"
 
-const API_BASE = "/api/raceroom"
+const get_api_base = () => {
+    const target = import.meta.env.VITE_API_TARGET
+    const protocol = target?.includes("localhost") ? "http" : "https"
+    return target ? `${protocol}://${target}` : "http://localhost:8000"
+}
+
+const API_BASE = `${get_api_base()}/api/raceroom`
 
 export async function fetch_tracks(): Promise<Track[]> {
     const response = await fetch(`${API_BASE}/tracks`)

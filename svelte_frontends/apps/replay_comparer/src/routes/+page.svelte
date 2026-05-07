@@ -1,6 +1,7 @@
 <script lang="ts">
 import { FileUpload, Spinner } from "@repo/ui"
 import { onMount } from "svelte"
+import { fetch_parse_replay, fetch_replay_events } from "$lib/api"
 import ReplayComparison from "$lib/components/ReplayComparison.svelte"
 import { type ReplayData, type SavedIdealReplay, TIMELINE_OPTIONS, type TimelineOption } from "$lib/types"
 
@@ -22,32 +23,11 @@ let new_ideal_name_input: string = $state("")
 
 async function parse_replay(replay_file: File): Promise<ReplayData> {
     const second = 22.4
-    const formData = new FormData()
-    formData.append("replay_tick", `${second * 10}`)
-    formData.append("replay_file", replay_file)
-
-    const response = await fetch(`/parse_replay`, {
-        method: "POST",
-        body: formData,
-    })
-    if (response.ok) {
-        return await response.json()
-    }
-    return {} as ReplayData
+    return await fetch_parse_replay(replay_file, `${second * 10}`)
 }
 
 async function parse_replay_events(replay_file: File): Promise<ReplayData> {
-    const formData = new FormData()
-    formData.append("replay_file", replay_file)
-
-    const response = await fetch(`/get_replay_events`, {
-        method: "POST",
-        body: formData,
-    })
-    if (response.ok) {
-        return await response.json()
-    }
-    return {} as ReplayData
+    return await fetch_replay_events(replay_file)
 }
 
 function load_saved_ideals(): SavedIdealReplay[] {

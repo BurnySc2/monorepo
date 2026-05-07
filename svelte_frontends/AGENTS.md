@@ -278,19 +278,6 @@ npm run preview
 
 Output is generated in `build/` directory for each app.
 
-### Vite Proxy
-
-Some apps proxy API calls to the FastAPI backend via Vite proxy in `vite.config.ts`:
-
-```typescript
-proxy: {
-  '/api': {
-    target: 'http://localhost:8000',
-    changeOrigin: true
-  }
-}
-```
-
 ---
 
 ## API Types Generation
@@ -327,26 +314,6 @@ npm run precommit
 npm run prepush
 # Runs: precommit → test:unit → test:integration
 ```
-
----
-
-## Git Conventions
-
-### Commit Message Format
-
-```
-<type>: <subject>
-
-<body>
-```
-
-Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
-
-### Branch Naming
-
-- Feature: `feature/<description>`
-- Fix: `fix/<description>`
-- Refactor: `refactor/<description>`
 
 ---
 
@@ -407,6 +374,139 @@ npm run build -- --force
 ### Type Generation Fails
 
 Ensure FastAPI backend is running at `localhost:8000` with OpenAPI docs available.
+
+---
+
+## Naming Conventions
+
+This project uses consistent naming conventions across all apps.
+
+### Variables and State
+
+Use `snake_case` for all variables and Svelte state:
+
+```typescript
+let is_loading = $state(false);
+let user_text = $state("");
+let selected_track_id = $state(undefined);
+let error_message = $state(null);
+```
+
+### Functions
+
+Use `snake_case` for all function names (both local and exported):
+
+```typescript
+function check_login_status() { ... }
+async function generate_audio() { ... }
+async function load_voices() { ... }
+export async function fetch_login_status() { ... }
+export async function fetch_voices() { ... }
+```
+
+### Interface and Type Properties
+
+Use `snake_case` for all interface and type properties:
+
+```typescript
+interface SearchFilters {
+    search_text: string;
+    channel_name: string;
+    datetime_min: string;
+    datetime_max: string;
+    reactions_min: number;
+}
+```
+
+### Constants
+
+Use `UPPER_CASE` with underscores for constants:
+
+```typescript
+const DEFAULT_REPLAY_NAME_PATTERN = "*.SC2Replay";
+const STORAGE_KEY = "user_settings";
+const MAX_UPLOAD_SIZE = 50 * 1024 * 1024;
+```
+
+### Type and Interface Names
+
+Use `PascalCase` for type and interface names:
+
+```typescript
+interface SearchFilters { ... }
+interface FilterSettings { ... }
+type UserProfile = { ... };
+```
+
+---
+
+## API File Structure
+
+Each app should have a dedicated API file for backend requests.
+
+### File Location
+
+Store API code in `src/lib/` with one of these naming patterns:
+
+- `src/lib/api.ts`
+- `src/lib/api_client.ts`
+- `src/lib/api/*.ts` (for larger APIs)
+
+### Required get_api_base() Helper
+
+Every API file should include this helper function:
+
+```typescript
+const get_api_base = () => {
+    const target = import.meta.env.VITE_API_TARGET;
+    const protocol = target?.includes("localhost") ? "http" : "https";
+    return target ? `${protocol}://${target}` : "http://localhost:8000";
+};
+```
+
+### API Function Naming
+
+Use `snake_case` with `fetch_` prefix for API functions:
+
+```typescript
+export async function fetch_login_status() {
+    const resp = await fetch(`${get_api_base()}/auth/status`);
+    if (!resp.ok) {
+        throw new Error(`Failed to fetch login status: ${resp.statusText}`);
+    }
+    return resp.json();
+}
+
+export async function fetch_voices() {
+    const resp = await fetch(`${get_api_base()}/tts-generate/voices`);
+    if (!resp.ok) {
+        throw new Error(`Failed to fetch voices: ${resp.statusText}`);
+    }
+    return resp.json();
+}
+```
+
+### Error Handling Pattern
+
+Always check `resp.ok` and throw descriptive errors:
+
+```typescript
+if (!resp.ok) {
+    throw new Error(`Failed to ${action}: ${resp.statusText}`);
+}
+```
+
+### Current API Files by App
+
+| App | API File | Functions |
+|-----|----------|------------|
+| login | `src/lib/api.ts` | `fetch_login_status`, `fetch_logout` |
+| tts | `src/lib/api.ts` | `fetch_voices`, `fetch_generate_tts` |
+| telegram | `src/lib/api.ts` | `fetch_search`, `fetch_queue_file`, `fetch_delete_file` |
+| replay_pack_builder | `src/lib/api_client.ts` | `parse_replay_file` |
+| replay_comparer | `src/lib/api.ts` | `fetch_parse_replay`, `fetch_replay_events` |
+| raceroom | `src/lib/api_client.ts` | `fetch_tracks`, `fetch_times` |
+| audiobook | `src/lib/api/*.ts` | `get_books`, `upload_epub`, `get_available_voices` |
 
 ---
 

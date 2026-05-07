@@ -2,6 +2,7 @@
 import type { VoiceInfo } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
+import { fetch_generate_tts, fetch_voices } from "$lib/api"
 import { tts_settings } from "$lib/tts_settings.svelte"
 
 let voices = $state<VoiceInfo[]>([])
@@ -17,10 +18,7 @@ let twitch_volume = $state(15)
 
 async function load_voices() {
     try {
-        const resp = await fetch("/tts-generate/voices")
-        if (resp.ok) {
-            voices = await resp.json()
-        }
+        voices = await fetch_voices()
     } catch (e) {
         console.error("Failed to load voices", e)
     } finally {
@@ -38,17 +36,8 @@ async function generate_audio() {
     const voice = voices[tts_settings.selected_voice_index]
     const text = user_text
     try {
-        const resp = await fetch("/tts-generate/generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ voice: `${voice.engine}_${voice.label.replace(/ /g, "_")}`, text }),
-        })
-        if (resp.ok) {
-            const data = await resp.json()
-            audio_b64 = data.audio_b64
-        } else {
-            console.error("TTS request failed", resp.status)
-        }
+        const data = await fetch_generate_tts({ voice: `${voice.engine}_${voice.label.replace(/ /g, "_")}`, text })
+        audio_b64 = data.audio_b64 as string
     } catch (e) {
         console.error("Error generating TTS", e)
     } finally {

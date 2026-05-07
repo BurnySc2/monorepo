@@ -64,7 +64,7 @@ describe("fetch_tracks", () => {
 
         await fetch_tracks()
 
-        expect(mock_fetch).toHaveBeenCalledWith("/api/raceroom/tracks")
+        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/tracks")
     })
 })
 
@@ -103,7 +103,7 @@ describe("fetch_times", () => {
 
         await fetch_times()
 
-        expect(mock_fetch).toHaveBeenCalledWith("/api/raceroom/times")
+        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/times")
     })
 
     it("appends track_id query param when provided", async () => {
@@ -114,7 +114,7 @@ describe("fetch_times", () => {
 
         await fetch_times(5)
 
-        expect(mock_fetch).toHaveBeenCalledWith("/api/raceroom/times?track_id=5")
+        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/times?track_id=5")
     })
 
     it("appends start_date query param when provided", async () => {
@@ -125,7 +125,7 @@ describe("fetch_times", () => {
 
         await fetch_times(undefined, "2024-01-01")
 
-        expect(mock_fetch).toHaveBeenCalledWith("/api/raceroom/times?start_date=2024-01-01")
+        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/times?start_date=2024-01-01")
     })
 
     it("appends end_date query param when provided", async () => {
@@ -136,7 +136,7 @@ describe("fetch_times", () => {
 
         await fetch_times(undefined, undefined, "2024-12-31")
 
-        expect(mock_fetch).toHaveBeenCalledWith("/api/raceroom/times?end_date=2024-12-31")
+        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/times?end_date=2024-12-31")
     })
 
     it("combines multiple query params", async () => {
@@ -148,7 +148,7 @@ describe("fetch_times", () => {
         await fetch_times(3, "2024-01-01", "2024-12-31")
 
         expect(mock_fetch).toHaveBeenCalledWith(
-            "/api/raceroom/times?track_id=3&start_date=2024-01-01&end_date=2024-12-31",
+            "http://localhost:8000/api/raceroom/times?track_id=3&start_date=2024-01-01&end_date=2024-12-31",
         )
     })
 

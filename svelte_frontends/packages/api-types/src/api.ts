@@ -753,9 +753,9 @@ export interface components {
             /** Label */
             label: string
             /** Gender */
-            gender?: string | null
+            gender: string
             /** Locale */
-            locale?: string | null
+            locale: string
         }
     }
     responses: never

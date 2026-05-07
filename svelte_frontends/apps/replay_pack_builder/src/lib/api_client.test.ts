@@ -108,7 +108,7 @@ describe("parse_replay_file", () => {
         await parse_replay_file(file)
 
         expect(mock_fetch).toHaveBeenCalledWith(
-            "/api/parse_replay",
+            "http://localhost:8000/api/parse_replay",
             expect.objectContaining({
                 method: "POST",
             }),

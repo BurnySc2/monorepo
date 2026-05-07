@@ -1,3 +1,5 @@
+import { fetch_login_status, get_api_base } from "./api"
+
 export interface User {
     id: number
     name: string
@@ -23,13 +25,10 @@ export async function check_login_status(): Promise<{
     let error_message: string | null = null
 
     try {
-        const response = await fetch(`/login`, {
-            credentials: "include",
-        })
-        const data = await response.json()
+        const data = await fetch_login_status()
         is_logged_in = data.logged_in
         if (data.logged_in && data.user) {
-            logged_in_user = data.user
+            logged_in_user = { id: 0, name: data.user, service: "unknown" }
         }
     } catch (error) {
         console.error("Failed to check login status:", error)
@@ -51,7 +50,7 @@ export function start_github_login() {
 
 export async function handle_logout(): Promise<void> {
     try {
-        const response = await fetch(`/logout`, {
+        const response = await fetch(`${get_api_base()}/logout`, {
             credentials: "include",
             redirect: "manual",
         })

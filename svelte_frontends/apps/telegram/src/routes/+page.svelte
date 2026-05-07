@@ -1,4 +1,5 @@
 <script lang="ts">
+import { fetch_delete_file, fetch_queue_file, fetch_search, fetch_view_file } from "$lib/api"
 import ColumnReorderDialog from "$lib/components/ColumnReorderDialog.svelte"
 import MediaDialog from "$lib/components/MediaDialog.svelte"
 import ResultsGrid from "$lib/components/ResultsGrid.svelte"
@@ -64,13 +65,9 @@ let filters = $state<SearchFilters>({
 async function handle_search() {
     is_searching = true
     try {
-        const resp = await fetch("/telegram-browser/search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(filters),
-        })
-        if (resp.ok) {
-            results = await resp.json()
+        const resp = await fetch_search(new URLSearchParams(filters as unknown as Record<string, string>).toString())
+        if (resp) {
+            results = resp
         }
     } catch (e) {
         console.error("Search failed", e)
@@ -80,18 +77,17 @@ async function handle_search() {
 }
 
 async function handle_queue_file(id: string) {
-    await fetch(`/telegram-browser/queue-file/${id}`, { method: "POST" })
+    await fetch_queue_file(id)
 }
 
 async function handle_delete_file(id: string) {
-    await fetch(`/telegram-browser/delete-file/${id}`, { method: "POST" })
+    await fetch_delete_file(id)
 }
 
 async function handle_view_file(id: string) {
     try {
-        const resp = await fetch(`/telegram-browser/view-file/${id}`)
-        if (resp.ok) {
-            const data = await resp.json()
+        const data = await fetch_view_file(id)
+        if (data) {
             media_url = data.minio_url
             media_mime = data.mime_type
             show_media_dialog = true

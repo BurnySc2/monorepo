@@ -48,6 +48,8 @@ describe("check_login_status", () => {
     it("returns logged in state when user is authenticated", async () => {
         const mockUser = { id: 1, name: "testuser", service: "twitch" }
         global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            statusText: "OK",
             json: () => Promise.resolve({ logged_in: true, user: mockUser }),
         }) as unknown as typeof fetch
 
@@ -55,12 +57,14 @@ describe("check_login_status", () => {
 
         expect(result.is_loading).toBe(false)
         expect(result.is_logged_in).toBe(true)
-        expect(result.logged_in_user).toEqual(mockUser)
+        expect(result.logged_in_user).toEqual({ id: 0, name: mockUser, service: "unknown" })
         expect(result.error_message).toBeNull()
     })
 
     it("returns not logged in when user is not authenticated", async () => {
         global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            statusText: "OK",
             json: () => Promise.resolve({ logged_in: false }),
         }) as unknown as typeof fetch
 

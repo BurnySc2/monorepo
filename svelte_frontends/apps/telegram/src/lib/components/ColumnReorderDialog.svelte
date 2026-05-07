@@ -1,4 +1,6 @@
 <script lang="ts">
+import { fetch_save_active_columns } from "$lib/api"
+
 interface Props {
     onclose: () => void
 }
@@ -98,12 +100,8 @@ function handle_drop_to_empty(target_list: "active" | "disabled") {
 
 async function handle_save() {
     try {
-        const columns_order = active_columns.map((c) => c.key).join(";")
-        await fetch("/telegram-browser/save-active-columns", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ "columns-order": columns_order }),
-        })
+        const columns_order = active_columns.map((c) => c.key)
+        await fetch_save_active_columns(columns_order)
         onclose()
     } catch (e) {
         console.error("Failed to save columns", e)
