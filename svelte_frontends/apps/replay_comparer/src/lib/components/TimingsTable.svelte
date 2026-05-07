@@ -20,7 +20,7 @@ let {
 }: Props = $props()
 
 type TimingCategory = "expansions" | "upgrades" | "tech_buildings" | "special_units"
-let selectedCategory: TimingCategory = $state("expansions")
+let selected_category: TimingCategory = $state("expansions")
 
 const SECOND = 22.4
 
@@ -44,14 +44,14 @@ interface TimingRow {
     idealTime: number | null
 }
 
-function gameloopToTime(gameloop: number): string {
+function gameloop_to_time(gameloop: number): string {
     const seconds = gameloop / SECOND
     const minutes = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${minutes}:${secs.toString().padStart(2, "0")}`
 }
 
-function getDiff(realTime: number | null, idealTime: number | null): string {
+function get_diff(realTime: number | null, idealTime: number | null): string {
     if (realTime === null || idealTime === null) {
         return "-"
     }
@@ -63,7 +63,7 @@ function getDiff(realTime: number | null, idealTime: number | null): string {
     return diff >= 0 ? `+${formatted}` : `-${formatted}`
 }
 
-function getDiffClass(realTime: number | null, idealTime: number | null): string {
+function get_diff_class(realTime: number | null, idealTime: number | null): string {
     if (realTime === null || idealTime === null) {
         return "text-gray-400"
     }
@@ -71,7 +71,7 @@ function getDiffClass(realTime: number | null, idealTime: number | null): string
     return diff < 0 ? "text-green-600" : diff > 0 ? "text-red-600" : "text-gray-600"
 }
 
-function getExpansions(events: BuildingEvent[]): TimingRow[] {
+function get_expansions(events: BuildingEvent[]): TimingRow[] {
     const rows: TimingRow[] = []
     const expansions = events.filter((e) => EXPANSION_TYPES.some((t) => e.building_type.includes(t)))
 
@@ -88,7 +88,7 @@ function getExpansions(events: BuildingEvent[]): TimingRow[] {
     return rows
 }
 
-function getTechBuildings(events: BuildingEvent[]): TimingRow[] {
+function get_tech_buildings(events: BuildingEvent[]): TimingRow[] {
     return events
         .filter((e) => TECH_BUILDING_TYPES.some((t) => e.building_type.includes(t)))
         .map((e) => ({
@@ -98,7 +98,7 @@ function getTechBuildings(events: BuildingEvent[]): TimingRow[] {
         }))
 }
 
-function getUpgrades(events: UpgradeEvent[]): TimingRow[] {
+function get_upgrades(events: UpgradeEvent[]): TimingRow[] {
     return events.map((e) => ({
         name: e.upgrade_type.replace(/([A-Z])/g, " $1").trim(),
         realTime: e.gameloop,
@@ -106,7 +106,7 @@ function getUpgrades(events: UpgradeEvent[]): TimingRow[] {
     }))
 }
 
-function getSpecialUnits(events: UnitEvent[]): TimingRow[] {
+function get_special_units(events: UnitEvent[]): TimingRow[] {
     const rows: TimingRow[] = []
     for (const type of SPECIAL_UNIT_TYPES) {
         const first = events.find((e) => e.unit_type.includes(type))
@@ -121,7 +121,7 @@ function getSpecialUnits(events: UnitEvent[]): TimingRow[] {
     return rows
 }
 
-function mergeTimings(
+function merge_timings(
     realRows: TimingRow[],
     idealRows: TimingRow[],
 ): { name: string; realTime: number | null; idealTime: number | null }[] {
@@ -146,37 +146,37 @@ let timings: TimingRow[] = $derived.by(() => {
     let real: TimingRow[] = []
     let ideal: TimingRow[] = []
 
-    switch (selectedCategory) {
+    switch (selected_category) {
         case "expansions": {
-            real = getExpansions(real_building_events)
-            ideal = getExpansions(ideal_building_events)
+            real = get_expansions(real_building_events)
+            ideal = get_expansions(ideal_building_events)
             break
         }
         case "tech_buildings": {
-            real = getTechBuildings(real_building_events)
-            ideal = getTechBuildings(ideal_building_events)
+            real = get_tech_buildings(real_building_events)
+            ideal = get_tech_buildings(ideal_building_events)
             break
         }
         case "upgrades": {
-            real = getUpgrades(real_upgrade_events)
-            ideal = getUpgrades(ideal_upgrade_events)
+            real = get_upgrades(real_upgrade_events)
+            ideal = get_upgrades(ideal_upgrade_events)
             break
         }
         case "special_units": {
-            real = getSpecialUnits(real_unit_events)
-            ideal = getSpecialUnits(ideal_unit_events)
+            real = get_special_units(real_unit_events)
+            ideal = get_special_units(ideal_unit_events)
             break
         }
     }
 
-    return mergeTimings(real, ideal)
+    return merge_timings(real, ideal)
 })
 </script>
 
 <div class="timings-table-container mt-4">
     <div class="mb-2">
         <select
-            bind:value={selectedCategory}
+            bind:value={selected_category}
             class="border px-2 py-1 rounded"
         >
             <option value="expansions">Expansions</option>
@@ -201,19 +201,19 @@ let timings: TimingRow[] = $derived.by(() => {
                     <tr class="border-b hover:bg-gray-50">
                         <td class="py-1 px-2">{row.name}</td>
                         <td class="text-center py-1 px-2 font-mono">
-                            {row.realTime !== null ? gameloopToTime(row.realTime) : "-"}
+                            {row.realTime !== null ? gameloop_to_time(row.realTime) : "-"}
                         </td>
                         <td class="text-center py-1 px-2 font-mono">
-                            {row.idealTime !== null ? gameloopToTime(row.idealTime) : "-"}
+                            {row.idealTime !== null ? gameloop_to_time(row.idealTime) : "-"}
                         </td>
-                        <td class="text-center py-1 px-2 font-mono {getDiffClass(row.realTime, row.idealTime)}">
-                            {getDiff(row.realTime, row.idealTime)}
+                        <td class="text-center py-1 px-2 font-mono {get_diff_class(row.realTime, row.idealTime)}">
+                            {get_diff(row.realTime, row.idealTime)}
                         </td>
                     </tr>
                 {/each}
             </tbody>
         </table>
     {:else}
-        <p class="text-gray-500 text-sm py-4 text-center">No {selectedCategory} found in replay data</p>
+        <p class="text-gray-500 text-sm py-4 text-center">No {selected_category} found in replay data</p>
     {/if}
 </div>

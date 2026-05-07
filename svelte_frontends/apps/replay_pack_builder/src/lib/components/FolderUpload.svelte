@@ -29,7 +29,7 @@ async function handle_click() {
 async function collect_sc2replay_files(dirHandle: FileSystemDirectoryHandle): Promise<FileList> {
     const valid_files: File[] = []
 
-    async function walkDir(handle: FileSystemDirectoryHandle) {
+    async function walk_dir(handle: FileSystemDirectoryHandle) {
         for await (const entry of (
             handle as unknown as { values: () => AsyncIterableIterator<FileSystemHandle> }
         ).values()) {
@@ -37,12 +37,12 @@ async function collect_sc2replay_files(dirHandle: FileSystemDirectoryHandle): Pr
                 const file = await (entry as FileSystemFileHandle).getFile()
                 valid_files.push(file)
             } else if (entry.kind === "directory") {
-                await walkDir(entry as unknown as FileSystemDirectoryHandle)
+                await walk_dir(entry as unknown as FileSystemDirectoryHandle)
             }
         }
     }
 
-    await walkDir(dirHandle)
+    await walk_dir(dirHandle)
 
     const dt = new DataTransfer()
     for (const file of valid_files) {

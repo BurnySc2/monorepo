@@ -37,21 +37,21 @@ let params = $derived({
 })
 
 let info = $state<IMatchInfo>(resetInfo())
-let runningData = $state<IRunningData>({ scene: "unknown" })
-let sc2Accounts = $state<ISC2Account[]>([])
+let running_data = $state<IRunningData>({ scene: "unknown" })
+let sc2_accounts = $state<ISC2Account[]>([])
 let running = $state(false)
 let loading = $state(true)
 let error = $state<string | null>(null)
 
-let pollInterval: ReturnType<typeof setTimeout> | null = null
+let poll_interval: ReturnType<typeof setTimeout> | null = null
 
 $effect(() => {
     if (params.twitchUser && params.server && running) {
         pollSc2Api()
     }
     return () => {
-        if (pollInterval) {
-            clearTimeout(pollInterval)
+        if (poll_interval) {
+            clearTimeout(poll_interval)
         }
     }
 })
@@ -61,7 +61,7 @@ const pollSc2Api = async () => {
         return
     }
 
-    pollInterval = setTimeout(() => {
+    poll_interval = setTimeout(() => {
         pollSc2Api()
     }, params.sc2PollFrequency)
 
@@ -71,9 +71,9 @@ const pollSc2Api = async () => {
         if (!gameDataResponse.ok) {
             return
         }
-        const gameData: IGameData = await gameDataResponse.json()
-        let validGame = validateGameFromGameData(gameData)
-        if (validGame === "other") {
+        const game_data: IGameData = await gameDataResponse.json()
+        let valid_game = validateGameFromGameData(game_data)
+        if (valid_game === "other") {
             return
         }
 
@@ -82,47 +82,47 @@ const pollSc2Api = async () => {
         if (!uiDataResponse.ok) {
             return
         }
-        const uiData: IUiData = await uiDataResponse.json()
-        const currentScene: ISceneNames = getCurrentScene(gameData, uiData)
+        const ui_data: IUiData = await uiDataResponse.json()
+        const current_scene: ISceneNames = getCurrentScene(game_data, ui_data)
 
         // Find player account
-        let myIndex = -1
-        for (let i = 0; i < sc2Accounts.length; i++) {
-            const account = sc2Accounts[i]
-            if (account.name === gameData.players[0].name) {
-                myIndex = 0
+        let my_index = -1
+        for (let i = 0; i < sc2_accounts.length; i++) {
+            const account = sc2_accounts[i]
+            if (account.name === game_data.players[0].name) {
+                my_index = 0
                 break
-            } else if (account.name === gameData.players[1].name) {
-                myIndex = 1
+            } else if (account.name === game_data.players[1].name) {
+                my_index = 1
                 break
             }
         }
-        if (myIndex === -1) {
+        if (my_index === -1) {
             return
         }
 
-        const sceneChange: ISceneChange = getSceneChange(runningData.scene, currentScene, myIndex !== -1)
-        if (currentScene === "loading") {
+        const scene_change: ISceneChange = getSceneChange(running_data.scene, current_scene, my_index !== -1)
+        if (current_scene === "loading") {
             return
         }
-        runningData.scene = currentScene
-        if (sceneChange !== "toNewGameFromMenu") {
+        running_data.scene = current_scene
+        if (scene_change !== "toNewGameFromMenu") {
             return
         }
 
-        const opponentIndex = 1 - myIndex
+        const opponent_index = 1 - my_index
 
-        if (gameData.players[opponentIndex].type === "computer") {
-            validGame = "vsComputer"
+        if (game_data.players[opponent_index].type === "computer") {
+            valid_game = "vsComputer"
         }
         // Clear and set info
         info = resetInfo()
         info = {
             ...info,
-            myName: gameData.players[myIndex].name,
-            myRace: gameResponseRaces[gameData.players[myIndex].race] as ISc2Race,
-            opponentName: gameData.players[opponentIndex].name,
-            opponentRace: gameResponseRaces[gameData.players[opponentIndex].race] as ISc2Race,
+            myName: game_data.players[my_index].name,
+            myRace: gameResponseRaces[game_data.players[my_index].race] as ISc2Race,
+            opponentName: game_data.players[opponent_index].name,
+            opponentRace: gameResponseRaces[game_data.players[opponent_index].race] as ISc2Race,
         }
         if (dev) {
             info.opponentName = "Sonic"
@@ -133,7 +133,7 @@ const pollSc2Api = async () => {
         if (info.myName && info.myRace && params.server) {
             await nephestQuery(info.myName, info.myRace, params.server)
             if (
-                (validGame === "1v1" || validGame === "vsComputer") &&
+                (valid_game === "1v1" || valid_game === "vsComputer") &&
                 info.myMmr !== -1 &&
                 info.opponentName &&
                 info.opponentRace
@@ -212,7 +212,7 @@ $effect(() => {
     const init = async () => {
         // In production, this would fetch from backend
         // For now, using mock data for development
-        sc2Accounts = []
+        sc2_accounts = []
         loading = false
         running = true
     }
@@ -276,7 +276,7 @@ $effect(() => {
             <!-- Scene indicator -->
             <div class="mt-6 pt-4 border-t border-gray-600">
                 <p class="text-center text-sm text-gray-500">
-                    Scene: <span class="text-white">{runningData.scene}</span>
+                    Scene: <span class="text-white">{running_data.scene}</span>
                 </p>
             </div>
         </div>

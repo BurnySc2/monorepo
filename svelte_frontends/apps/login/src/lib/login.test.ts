@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { check_login_status, handle_logout, start_github_login, start_twitch_login } from "./login"
 
-function createMockLocation() {
+function create_mock_location() {
     return {
         href: "",
         assign: vi.fn(),
@@ -27,8 +27,8 @@ function createMockLocation() {
     }
 }
 
-function createMockWindow() {
-    const location = createMockLocation()
+function create_mock_window() {
+    const location = create_mock_location()
     return {
         location,
         fetch: global.fetch,
@@ -90,7 +90,7 @@ describe("check_login_status", () => {
 describe("start_twitch_login", () => {
     beforeEach(() => {
         vi.stubEnv("VITE_API_TARGET", "http://localhost:8000")
-        const mockWindow = createMockWindow()
+        const mockWindow = create_mock_window()
         vi.stubGlobal("window", mockWindow)
     })
 
@@ -108,7 +108,7 @@ describe("start_twitch_login", () => {
 describe("start_github_login", () => {
     beforeEach(() => {
         vi.stubEnv("VITE_API_TARGET", "http://localhost:8000")
-        const mockWindow = createMockWindow()
+        const mockWindow = create_mock_window()
         vi.stubGlobal("window", mockWindow)
     })
 
@@ -134,9 +134,9 @@ describe("handle_logout", () => {
 
     it("reloads page when logout redirects", async () => {
         const reloadSpy = vi.fn()
-        const location = createMockLocation()
+        const location = create_mock_location()
         location.reload = reloadSpy
-        const mockWindow = createMockWindow()
+        const mockWindow = create_mock_window()
         mockWindow.location = location
         vi.stubGlobal("window", mockWindow)
 

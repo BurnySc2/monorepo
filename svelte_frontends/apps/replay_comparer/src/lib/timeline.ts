@@ -7,7 +7,7 @@ export interface MergedTimelineItem {
     2: TimelineData
 }
 
-export function sortByKey<T extends object>(array: T[], key: keyof T): void {
+export function sort_by_key<T extends object>(array: T[], key: keyof T): void {
     array.sort((a, b) => {
         const aVal = a[key] as number
         const bVal = b[key] as number
@@ -15,7 +15,7 @@ export function sortByKey<T extends object>(array: T[], key: keyof T): void {
     })
 }
 
-export function gameloopToTimeString(gameloop: number): string {
+export function gameloop_to_time_string(gameloop: number): string {
     const seconds = gameloop / SECOND
     const minutes = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
@@ -23,7 +23,7 @@ export function gameloopToTimeString(gameloop: number): string {
     return `${minutes}:${secondsString}`
 }
 
-export function mergeTimelines(
+export function merge_timelines(
     realReplayTimeline: TimelineData[][],
     idealReplayTimeline: TimelineData[][],
     realPlayerId: number,
@@ -38,7 +38,7 @@ export function mergeTimelines(
         merged.push({ ...item[idealPlayerId], _id: 2 })
     })
 
-    sortByKey(merged, "gameloop")
+    sort_by_key(merged, "gameloop")
 
     let playerData1: TimelineData = realReplayTimeline[0][realPlayerId]
     let playerData2: TimelineData = idealReplayTimeline[0][idealPlayerId]
@@ -58,10 +58,10 @@ export function mergeTimelines(
     return mergedTimelines
 }
 
-export function isEventTimeline(option: TimelineOption): boolean {
+export function is_event_timeline(option: TimelineOption): boolean {
     return (EVENT_TIMELINE_OPTIONS as readonly string[]).includes(option)
 }
 
-export function isSpendingOption(option: TimelineOption): boolean {
+export function is_spending_option(option: TimelineOption): boolean {
     return (SPENDING_OPTIONS as readonly string[]).includes(option)
 }

@@ -4,7 +4,7 @@ import type { Counter } from "./types"
  * An example store based on the svelte tutorial for custom stores:
  * https://svelte.dev/blog/runes#Beyond-components
  */
-export function newCounter(): Counter {
+export function new_counter(): Counter {
     let _count = $state(0)
     return {
         get count() {

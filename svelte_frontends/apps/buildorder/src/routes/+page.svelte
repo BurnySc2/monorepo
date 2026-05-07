@@ -33,29 +33,29 @@ let params = $derived({
     sc2PollFrequency: parseInt(page.url.searchParams.get("sc2PollFrequency") || "1000", 10),
 })
 
-let buildOrderTitle = $state("Current Build Order Title")
-let currentItem = $state<IBuildOrderItem>({ time: 85, text: "Supply Depot" })
-let nextItem = $state<IBuildOrderItem>({ time: 105, text: "Barracks" })
+let build_order_title = $state("Current Build Order Title")
+let current_item = $state<IBuildOrderItem>({ time: 85, text: "Supply Depot" })
+let next_item = $state<IBuildOrderItem>({ time: 105, text: "Barracks" })
 
-let sc2Accounts = $state<ISC2Account[]>([])
+let sc2_accounts = $state<ISC2Account[]>([])
 let info = $state<IMatchInfo>(resetInfo())
-let runningData = $state<IRunningData>({ scene: "unknown" })
-let buildOrders = $state<IBuildOrderDbRow[]>([])
-let activeBuildOrder = $state<IBuildOrderItem[] | null>(null)
+let running_data = $state<IRunningData>({ scene: "unknown" })
+let build_orders = $state<IBuildOrderDbRow[]>([])
+let active_build_order = $state<IBuildOrderItem[] | null>(null)
 let running = $state(false)
 let loading = $state(true)
-let endOfBuildOrderReached = $state(true)
-let gameTime = $state(0)
+let end_of_build_order_reached = $state(true)
+let game_time = $state(0)
 
-let pollInterval: ReturnType<typeof setTimeout> | null = null
+let poll_interval: ReturnType<typeof setTimeout> | null = null
 
 $effect(() => {
     if (params.twitchUser && params.server && running) {
         pollSc2Api()
     }
     return () => {
-        if (pollInterval) {
-            clearTimeout(pollInterval)
+        if (poll_interval) {
+            clearTimeout(poll_interval)
         }
     }
 })
@@ -65,7 +65,7 @@ const pollSc2Api = async () => {
         return
     }
 
-    pollInterval = setTimeout(() => {
+    poll_interval = setTimeout(() => {
         pollSc2Api()
     }, params.sc2PollFrequency)
 
@@ -75,91 +75,91 @@ const pollSc2Api = async () => {
         if (!gameDataResponse.ok) {
             return
         }
-        const gameData: IGameData = await gameDataResponse.json()
-        let validGame = validateGameFromGameData(gameData)
-        if (validGame === "other") {
+        const game_data: IGameData = await gameDataResponse.json()
+        let valid_game = validateGameFromGameData(game_data)
+        if (valid_game === "other") {
             return
         }
 
-        gameTime = gameData.displayTime
+        game_time = game_data.displayTime
 
         // /ui
         const uiDataResponse = await fetch(sc2UiUrl)
         if (!uiDataResponse.ok) {
             return
         }
-        const uiData: IUiData = await uiDataResponse.json()
-        const currentScene: ISceneNames = getCurrentScene(gameData, uiData)
+        const ui_data: IUiData = await uiDataResponse.json()
+        const current_scene: ISceneNames = getCurrentScene(game_data, ui_data)
 
         // Find player account
-        let myIndex = -1
-        for (let i = 0; i < sc2Accounts.length; i++) {
-            const account = sc2Accounts[i]
-            if (account.name === gameData.players[0].name) {
-                myIndex = 0
+        let my_index = -1
+        for (let i = 0; i < sc2_accounts.length; i++) {
+            const account = sc2_accounts[i]
+            if (account.name === game_data.players[0].name) {
+                my_index = 0
                 break
-            } else if (account.name === gameData.players[1].name) {
-                myIndex = 1
+            } else if (account.name === game_data.players[1].name) {
+                my_index = 1
                 break
             }
         }
-        if (myIndex === -1) {
+        if (my_index === -1) {
             return
         }
 
-        const sceneChange: ISceneChange = getSceneChange(runningData.scene, currentScene, myIndex !== -1)
-        if (currentScene === "loading") {
+        const scene_change: ISceneChange = getSceneChange(running_data.scene, current_scene, my_index !== -1)
+        if (current_scene === "loading") {
             return
         }
-        runningData.scene = currentScene
+        running_data.scene = current_scene
 
-        if (sceneChange === "toNewGameFromMenu") {
-            const opponentIndex = 1 - myIndex
+        if (scene_change === "toNewGameFromMenu") {
+            const opponent_index = 1 - my_index
 
-            if (gameData.players[opponentIndex].type === "computer") {
-                validGame = "vsComputer"
+            if (game_data.players[opponent_index].type === "computer") {
+                valid_game = "vsComputer"
             }
             // Clear and set info
             info = resetInfo()
             info = {
                 ...info,
-                myName: gameData.players[myIndex].name,
-                myRace: gameResponseRaces[gameData.players[myIndex].race] as ISc2Race,
-                opponentName: gameData.players[opponentIndex].name,
-                opponentRace: gameResponseRaces[gameData.players[opponentIndex].race] as ISc2Race,
+                myName: game_data.players[my_index].name,
+                myRace: gameResponseRaces[game_data.players[my_index].race] as ISc2Race,
+                opponentName: game_data.players[opponent_index].name,
+                opponentRace: gameResponseRaces[game_data.players[opponent_index].race] as ISc2Race,
             }
             if (dev) {
                 info.opponentName = "Sonic"
                 info.opponentRace = "Terran"
             }
             // Get matchup, then get first build order matching matchup
-            if (activeBuildOrder === null && info.myRace && info.opponentRace) {
+            if (active_build_order === null && info.myRace && info.opponentRace) {
                 const matchup = `${info.myRace[0]}v${info.opponentRace[0]}`
-                const buildOrder = buildOrders.find((item) => item.matchup === matchup)
-                if (buildOrder) {
-                    buildOrderTitle = buildOrder.title
-                    activeBuildOrder = buildOrder.buildOrder
-                    endOfBuildOrderReached = false
+                const build_order = build_orders.find((item) => item.matchup === matchup)
+                if (build_order) {
+                    build_order_title = build_order.title
+                    active_build_order = build_order.buildOrder
+                    end_of_build_order_reached = false
                 }
             }
         }
 
         // Update current/next items based on game time
-        if (activeBuildOrder && !endOfBuildOrderReached) {
-            let currentIdx = -1
-            for (let i = 0; i < activeBuildOrder.length; i++) {
-                if (activeBuildOrder[i].time <= gameTime) {
-                    currentIdx = i
+        if (active_build_order && !end_of_build_order_reached) {
+            let current_idx = -1
+            for (let i = 0; i < active_build_order.length; i++) {
+                if (active_build_order[i].time <= game_time) {
+                    current_idx = i
                 } else {
                     break
                 }
             }
 
-            if (currentIdx >= activeBuildOrder.length - 1) {
-                endOfBuildOrderReached = true
+            if (current_idx >= active_build_order.length - 1) {
+                end_of_build_order_reached = true
             } else {
-                currentItem = activeBuildOrder[currentIdx >= 0 ? currentIdx : 0]
-                nextItem = activeBuildOrder[currentIdx + 1]
+                current_item = active_build_order[current_idx >= 0 ? current_idx : 0]
+                next_item = active_build_order[current_idx + 1]
             }
         }
     } catch (e) {
@@ -172,7 +172,7 @@ $effect(() => {
     const init = async () => {
         // In production, this would fetch from backend
         // For now, using mock build order data for development
-        buildOrders = [
+        build_orders = [
             {
                 id: 1,
                 enabled: true,
@@ -189,7 +189,7 @@ $effect(() => {
                 ],
             },
         ]
-        sc2Accounts = []
+        sc2_accounts = []
         loading = false
         running = true
     }
@@ -206,32 +206,32 @@ $effect(() => {
         <div class="flex justify-center items-center h-64"><Spinner /></div>
     {:else}
         <div class="bg-gray-800 rounded-xl p-6 shadow-lg">
-            <h1 class="text-2xl font-bold mb-2 text-center">{buildOrderTitle}</h1>
+            <h1 class="text-2xl font-bold mb-2 text-center">{build_order_title}</h1>
             <p class="text-center text-gray-400 mb-6">{info.myRace || "?"} vs {info.opponentRace || "?"}</p>
 
             <!-- Current time -->
             <div class="text-center mb-8">
-                <span class="text-5xl font-mono font-bold text-yellow-400"> {formatTime(gameTime)} </span>
+                <span class="text-5xl font-mono font-bold text-yellow-400"> {formatTime(game_time)} </span>
             </div>
 
-            {#if endOfBuildOrderReached}
+            {#if end_of_build_order_reached}
                 <div class="text-center py-8">
                     <p class="text-2xl text-gray-400">Build order complete!</p>
                 </div>
-            {:else if activeBuildOrder}
+            {:else if active_build_order}
                 <div class="grid grid-cols-2 gap-8">
                     <!-- Current item -->
                     <div class="bg-green-900/50 border-2 border-green-500 rounded-xl p-6">
                         <h2 class="text-sm uppercase tracking-wider text-green-400 mb-2">Current</h2>
-                        <p class="text-3xl font-bold mb-2">{currentItem.text}</p>
-                        <p class="text-xl text-gray-400">{formatTime(currentItem.time)}</p>
+                        <p class="text-3xl font-bold mb-2">{current_item.text}</p>
+                        <p class="text-xl text-gray-400">{formatTime(current_item.time)}</p>
                     </div>
 
                     <!-- Next item -->
                     <div class="bg-gray-700 rounded-xl p-6">
                         <h2 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Next</h2>
-                        <p class="text-3xl font-bold mb-2">{nextItem.text}</p>
-                        <p class="text-xl text-gray-400">{formatTime(nextItem.time)}</p>
+                        <p class="text-3xl font-bold mb-2">{next_item.text}</p>
+                        <p class="text-xl text-gray-400">{formatTime(next_item.time)}</p>
                     </div>
                 </div>
             {:else}
@@ -241,7 +241,7 @@ $effect(() => {
             <!-- Scene indicator -->
             <div class="mt-6 pt-4 border-t border-gray-600">
                 <p class="text-center text-sm text-gray-500">
-                    Scene: <span class="text-white">{runningData.scene}</span>
+                    Scene: <span class="text-white">{running_data.scene}</span>
                 </p>
             </div>
         </div>

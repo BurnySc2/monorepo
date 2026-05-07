@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { gameloopToTimeString, isEventTimeline, isSpendingOption, mergeTimelines, sortByKey } from "./timeline"
+import {
+    gameloop_to_time_string,
+    is_event_timeline,
+    is_spending_option,
+    merge_timelines,
+    sort_by_key,
+} from "./timeline"
 import { EVENT_TIMELINE_OPTIONS, SPENDING_OPTIONS, TIMELINE_OPTIONS, type TimelineData } from "./types"
 
 const createTimelineData = (overrides: Partial<TimelineData> = {}): TimelineData => ({
@@ -29,14 +35,14 @@ const createTimelineData = (overrides: Partial<TimelineData> = {}): TimelineData
     ...overrides,
 })
 
-describe("sortByKey", () => {
+describe("sort_by_key", () => {
     it("sorts array by numeric key in ascending order", () => {
         const arr = [
             { gameloop: 448, value: 3 },
             { gameloop: 0, value: 1 },
             { gameloop: 224, value: 2 },
         ]
-        sortByKey(arr, "gameloop")
+        sort_by_key(arr, "gameloop")
         expect(arr.map((a) => a.gameloop)).toEqual([0, 224, 448])
     })
 
@@ -46,95 +52,95 @@ describe("sortByKey", () => {
             { id: 1, name: "a" },
             { id: 2, name: "b" },
         ]
-        const result = sortByKey(arr, "id")
+        const result = sort_by_key(arr, "id")
         expect(arr[0].id).toBe(1)
         expect(result).toBeUndefined()
     })
 })
 
-describe("gameloopToTimeString", () => {
+describe("gameloop_to_time_string", () => {
     it("converts gameloop 0 to 0:00", () => {
-        expect(gameloopToTimeString(0)).toBe("0:00")
+        expect(gameloop_to_time_string(0)).toBe("0:00")
     })
 
     it("converts gameloop 224 to 0:10", () => {
-        expect(gameloopToTimeString(224)).toBe("0:10")
+        expect(gameloop_to_time_string(224)).toBe("0:10")
     })
 
     it("converts gameloop 2240 to 1:40", () => {
-        expect(gameloopToTimeString(2240)).toBe("1:40")
+        expect(gameloop_to_time_string(2240)).toBe("1:40")
     })
 
     it("pads seconds with leading zero", () => {
-        expect(gameloopToTimeString(112)).toBe("0:05")
+        expect(gameloop_to_time_string(112)).toBe("0:05")
     })
 
     it("handles large gameloops", () => {
-        expect(gameloopToTimeString(22400)).toBe("16:40")
+        expect(gameloop_to_time_string(22400)).toBe("16:40")
     })
 })
 
-describe("isEventTimeline", () => {
+describe("is_event_timeline", () => {
     it("returns true for buildings_started", () => {
-        expect(isEventTimeline("buildings_started")).toBe(true)
+        expect(is_event_timeline("buildings_started")).toBe(true)
     })
 
     it("returns true for upgrades_completed", () => {
-        expect(isEventTimeline("upgrades_completed")).toBe(true)
+        expect(is_event_timeline("upgrades_completed")).toBe(true)
     })
 
     it("returns false for workers_active", () => {
-        expect(isEventTimeline("workers_active")).toBe(false)
+        expect(is_event_timeline("workers_active")).toBe(false)
     })
 
     it("returns false for spending_econ", () => {
-        expect(isEventTimeline("spending_econ")).toBe(false)
+        expect(is_event_timeline("spending_econ")).toBe(false)
     })
 
     it.each(EVENT_TIMELINE_OPTIONS)("returns true for %s", (option) => {
-        expect(isEventTimeline(option)).toBe(true)
+        expect(is_event_timeline(option)).toBe(true)
     })
 
     it.each(
         TIMELINE_OPTIONS.filter((o) => !EVENT_TIMELINE_OPTIONS.includes(o as (typeof EVENT_TIMELINE_OPTIONS)[number])),
     )("returns false for non-event options like %s", (option) => {
-        expect(isEventTimeline(option)).toBe(false)
+        expect(is_event_timeline(option)).toBe(false)
     })
 })
 
-describe("isSpendingOption", () => {
+describe("is_spending_option", () => {
     it("returns true for spending_econ", () => {
-        expect(isSpendingOption("spending_econ")).toBe(true)
+        expect(is_spending_option("spending_econ")).toBe(true)
     })
 
     it("returns true for spending_tech", () => {
-        expect(isSpendingOption("spending_tech")).toBe(true)
+        expect(is_spending_option("spending_tech")).toBe(true)
     })
 
     it("returns true for spending_army", () => {
-        expect(isSpendingOption("spending_army")).toBe(true)
+        expect(is_spending_option("spending_army")).toBe(true)
     })
 
     it("returns false for workers_active", () => {
-        expect(isSpendingOption("workers_active")).toBe(false)
+        expect(is_spending_option("workers_active")).toBe(false)
     })
 
     it("returns false for buildings_started", () => {
-        expect(isSpendingOption("buildings_started")).toBe(false)
+        expect(is_spending_option("buildings_started")).toBe(false)
     })
 
     it.each(SPENDING_OPTIONS)("returns true for %s", (option) => {
-        expect(isSpendingOption(option)).toBe(true)
+        expect(is_spending_option(option)).toBe(true)
     })
 
     it.each(
         TIMELINE_OPTIONS.filter((o) => !SPENDING_OPTIONS.includes(o as (typeof SPENDING_OPTIONS)[number])),
     )("returns false for non-spending options like %s", (option) => {
-        expect(isSpendingOption(option)).toBe(false)
+        expect(is_spending_option(option)).toBe(false)
     })
 })
 
-describe("mergeTimelines", () => {
+describe("merge_timelines", () => {
     it("merges timelines with correct interleaving by gameloop", () => {
         const realTimeline: TimelineData[][] = [
             [
@@ -157,7 +163,7 @@ describe("mergeTimelines", () => {
             ],
         ]
 
-        const result = mergeTimelines(realTimeline, idealTimeline, 1, 1)
+        const result = merge_timelines(realTimeline, idealTimeline, 1, 1)
 
         expect(result.length).toBe(4)
         expect(result[0][1].gameloop).toBe(0)
@@ -180,7 +186,7 @@ describe("mergeTimelines", () => {
             ],
         ]
 
-        const result = mergeTimelines(realTimeline, idealTimeline, 0, 1)
+        const result = merge_timelines(realTimeline, idealTimeline, 0, 1)
 
         expect(result[0][1].workers_active).toBe(12)
         expect(result[0][2].workers_active).toBe(200)
@@ -208,7 +214,7 @@ describe("mergeTimelines", () => {
             ],
         ]
 
-        const result = mergeTimelines(realTimeline, idealTimeline, 0, 0)
+        const result = merge_timelines(realTimeline, idealTimeline, 0, 0)
 
         expect(result[0][1].workers_active).toBe(12)
         expect(result[1][1].workers_active).toBe(12)

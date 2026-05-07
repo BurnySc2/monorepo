@@ -12,7 +12,7 @@ let real_replay_data: ReplayData | null = $state(null)
 let ideal_replay_data: ReplayData | null = $state(null)
 let real_replay_selected_player_id = $state(1)
 let ideal_replay_selected_player_id = $state(1)
-let timelineSelected: TimelineOption = $state(TIMELINE_OPTIONS[0])
+let timeline_selected: TimelineOption = $state(TIMELINE_OPTIONS[0])
 let swapped = $state(false)
 let loading = $state(false)
 let saved_ideals: SavedIdealReplay[] = $state([])
@@ -422,7 +422,7 @@ onMount(() => {
                 {ideal_replay_data}
                 bind:real_replay_selected_player_id
                 bind:ideal_replay_selected_player_id
-                bind:timelineSelected
+                bind:timeline_selected
             />
         {:else}
             <ReplayComparison
@@ -430,7 +430,7 @@ onMount(() => {
                 ideal_replay_data={real_replay_data}
                 bind:real_replay_selected_player_id={ideal_replay_selected_player_id}
                 bind:ideal_replay_selected_player_id={real_replay_selected_player_id}
-                bind:timelineSelected
+                bind:timeline_selected
             />
         {/if}
     {:else}

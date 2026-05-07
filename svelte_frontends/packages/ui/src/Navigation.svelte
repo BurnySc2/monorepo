@@ -24,22 +24,22 @@ interface Props {
 
 let { currentApp = "" }: Props = $props()
 
-function getUrl(app: App): string {
+function get_url(app: App): string {
     if (typeof window !== "undefined" && DEV) {
         return `http://localhost:${app.devPort}`
     }
     return `https://${app.subdomain}.${BASE_DOMAIN}`
 }
 
-function isActive(app: App): boolean {
+function is_active(app: App): boolean {
     return currentApp === app.name
 }
 </script>
 
 <nav class="nav">
     {#each APPS as app}
-        {@const url = getUrl(app)}
-        {@const active = isActive(app)}
+        {@const url = get_url(app)}
+        {@const active = is_active(app)}
         <a
             href={url}
             class="nav-link {active ? 'active' : ''}"

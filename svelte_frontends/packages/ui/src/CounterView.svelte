@@ -1,7 +1,7 @@
 <script lang="ts">
-import { newCounter } from "./counter.svelte"
+import { new_counter } from "./counter.svelte"
 
-let _counter = newCounter()
+let _counter = new_counter()
 </script>
 
 <button onclick={() => _counter.decrement()}>-</button>

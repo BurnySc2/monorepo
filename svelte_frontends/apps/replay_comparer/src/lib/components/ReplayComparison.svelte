@@ -18,7 +18,7 @@ interface Props {
     ideal_replay_data: ReplayData
     real_replay_selected_player_id: number
     ideal_replay_selected_player_id: number
-    timelineSelected: TimelineOption
+    timeline_selected: TimelineOption
 }
 
 let {
@@ -26,7 +26,7 @@ let {
     ideal_replay_data,
     real_replay_selected_player_id = $bindable(),
     ideal_replay_selected_player_id = $bindable(),
-    timelineSelected = $bindable(),
+    timeline_selected = $bindable(),
 }: Props = $props()
 
 const SECOND = 22.4
@@ -36,9 +36,9 @@ interface MergedTimelineItem {
     2: TimelineData
 }
 
-let mergedTimelines: MergedTimelineItem[] = $state([])
+let merged_timelines: MergedTimelineItem[] = $state([])
 
-function sortByKey<T extends object>(array: T[], key: keyof T): void {
+function sort_by_key<T extends object>(array: T[], key: keyof T): void {
     array.sort((a, b) => {
         const aVal = a[key] as number
         const bVal = b[key] as number
@@ -46,7 +46,7 @@ function sortByKey<T extends object>(array: T[], key: keyof T): void {
     })
 }
 
-function gameloopToTimeString(gameloop: number): string {
+function gameloop_to_time_string(gameloop: number): string {
     const seconds = gameloop / SECOND
     const minutes = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
@@ -54,7 +54,7 @@ function gameloopToTimeString(gameloop: number): string {
     return `${minutes}:${secondsString}`
 }
 
-function mergeTimelines() {
+function merge_timelines() {
     const merged: Array<TimelineData & { _id: number }> = []
 
     real_replay_data.timeline.forEach((item) => {
@@ -64,56 +64,56 @@ function mergeTimelines() {
         merged.push({ ...item[ideal_replay_selected_player_id], _id: 2 })
     })
 
-    sortByKey(merged, "gameloop")
+    sort_by_key(merged, "gameloop")
 
     let playerData1: TimelineData = real_replay_data.timeline[0][real_replay_selected_player_id]
     let playerData2: TimelineData = ideal_replay_data.timeline[0][ideal_replay_selected_player_id]
 
-    mergedTimelines = []
+    merged_timelines = []
     merged.forEach((item) => {
         if (item._id === 1) {
             playerData1 = item
         } else {
             playerData2 = item
         }
-        mergedTimelines.push({
+        merged_timelines.push({
             1: { ...playerData1 },
             2: { ...playerData2 },
         })
     })
 }
 
-function isEventTimeline(option: TimelineOption): boolean {
+function is_event_timeline(option: TimelineOption): boolean {
     return (EVENT_TIMELINE_OPTIONS as readonly string[]).includes(option)
 }
 
-function isSpendingOption(option: TimelineOption): boolean {
+function is_spending_option(option: TimelineOption): boolean {
     return (SPENDING_OPTIONS as readonly string[]).includes(option)
 }
 
-function plotData() {
+function plot_data() {
     const chartElement = document.getElementById("timelinePlot")
     if (!chartElement) {
         return
     }
 
-    if (isSpendingOption(timelineSelected)) {
-        plotSpendingChart(chartElement)
+    if (is_spending_option(timeline_selected)) {
+        plot_spending_chart(chartElement)
     } else {
-        plotArearangeChart(chartElement)
+        plot_arearange_chart(chartElement)
     }
 }
 
-function plotArearangeChart(chartElement: HTMLElement) {
-    const seriesData = mergedTimelines.map((item) => {
+function plot_arearange_chart(chartElement: HTMLElement) {
+    const seriesData = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
-        return [gameloop, item[1][timelineSelected], item[2][timelineSelected]]
+        return [gameloop, item[1][timeline_selected], item[2][timeline_selected]]
     })
 
-    const zones = mergedTimelines.map((item) => {
+    const zones = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
-        const realValue = item[1][timelineSelected]
-        const idealValue = item[2][timelineSelected]
+        const realValue = item[1][timeline_selected]
+        const idealValue = item[2][timeline_selected]
         const betterThanIdeal = realValue > idealValue
         const fillColor = betterThanIdeal ? "#C0D890" : "#ED4337"
         return { value: gameloop, fillColor }
@@ -122,19 +122,19 @@ function plotArearangeChart(chartElement: HTMLElement) {
     const series: object[] = [
         {
             type: "arearange",
-            name: timelineSelected,
+            name: timeline_selected,
             data: seriesData,
             zoneAxis: "x",
             zones,
         },
     ]
 
-    if (isEventTimeline(timelineSelected)) {
-        const scatterData = mergedTimelines
-            .filter((item) => item[1][timelineSelected] !== item[2][timelineSelected])
+    if (is_event_timeline(timeline_selected)) {
+        const scatterData = merged_timelines
+            .filter((item) => item[1][timeline_selected] !== item[2][timeline_selected])
             .map((item) => {
                 const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
-                const value = Math.max(item[1][timelineSelected], item[2][timelineSelected])
+                const value = Math.max(item[1][timeline_selected], item[2][timeline_selected])
                 return { x: gameloop, y: value }
             })
         series.push({
@@ -156,7 +156,7 @@ function plotArearangeChart(chartElement: HTMLElement) {
         xAxis: {
             labels: {
                 formatter: function () {
-                    return gameloopToTimeString((this as unknown as { value: number }).value)
+                    return gameloop_to_time_string((this as unknown as { value: number }).value)
                 },
             },
         },
@@ -165,16 +165,16 @@ function plotArearangeChart(chartElement: HTMLElement) {
     })
 }
 
-function plotSpendingChart(chartElement: HTMLElement) {
-    const econData = mergedTimelines.map((item) => {
+function plot_spending_chart(chartElement: HTMLElement) {
+    const econData = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[1].spending_econ, item[2].spending_econ]
     })
-    const techData = mergedTimelines.map((item) => {
+    const techData = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[1].spending_tech, item[2].spending_tech]
     })
-    const armyData = mergedTimelines.map((item) => {
+    const armyData = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[1].spending_army, item[2].spending_army]
     })
@@ -192,7 +192,7 @@ function plotSpendingChart(chartElement: HTMLElement) {
         xAxis: {
             labels: {
                 formatter: function () {
-                    return gameloopToTimeString((this as unknown as { value: number }).value)
+                    return gameloop_to_time_string((this as unknown as { value: number }).value)
                 },
             },
         },
@@ -208,27 +208,27 @@ function plotSpendingChart(chartElement: HTMLElement) {
     })
 }
 
-function handlePlayerChange() {
-    mergeTimelines()
-    plotData()
+function handle_player_change() {
+    merge_timelines()
+    plot_data()
 }
 
-function handleTimelineChange() {
-    plotData()
+function handle_timeline_change() {
+    plot_data()
 }
 
 $effect(() => {
     real_replay_selected_player_id
     ideal_replay_selected_player_id
     if (real_replay_data && ideal_replay_data) {
-        handlePlayerChange()
+        handle_player_change()
     }
 })
 
 $effect(() => {
-    timelineSelected
-    if (mergedTimelines.length > 0) {
-        handleTimelineChange()
+    timeline_selected
+    if (merged_timelines.length > 0) {
+        handle_timeline_change()
     }
 })
 </script>
@@ -237,7 +237,7 @@ $effect(() => {
     <div class="grid grid-cols-3 text-center">
         <select
             bind:value={real_replay_selected_player_id}
-            onchange={handlePlayerChange}
+            onchange={handle_player_change}
         >
             {#each [real_replay_data.player1.name, real_replay_data.player2.name] as playerName, index}
                 <option value={index + 1}>{playerName}</option>
@@ -246,7 +246,7 @@ $effect(() => {
         <div></div>
         <select
             bind:value={ideal_replay_selected_player_id}
-            onchange={handlePlayerChange}
+            onchange={handle_player_change}
         >
             {#each [ideal_replay_data.player1.name, ideal_replay_data.player2.name] as playerName, index}
                 <option value={index + 1}>{playerName}</option>
@@ -255,7 +255,7 @@ $effect(() => {
     </div>
     <select
         class="my-2"
-        bind:value={timelineSelected}
+        bind:value={timeline_selected}
     >
         {#each TIMELINE_OPTIONS as option}
             <option value={option}>{option}</option>
