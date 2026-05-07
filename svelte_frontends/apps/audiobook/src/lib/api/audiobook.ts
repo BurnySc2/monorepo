@@ -8,7 +8,7 @@ import type {
 } from "@repo/api-types"
 import { mock_book_data } from "./mock_data"
 
-const API_BASE_URL = import.meta.env?.VITE_BACKEND_URL || "http://localhost:8000"
+const API_BASE_URL = import.meta.env?.VITE_API_TARGET || "http://localhost:8000"
 
 const USE_MOCK = typeof import.meta.env !== "undefined" && import.meta.env.VITE_USE_MOCK === "true"
 

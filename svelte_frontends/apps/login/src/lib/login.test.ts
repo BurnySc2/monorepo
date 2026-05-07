@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { check_login_status, handle_logout, start_github_login, start_twitch_login } from "./login"
 
-const backend_url = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000"
+const backend_url = import.meta.env.VITE_API_TARGET || "http://localhost:8000"
 
 function createMockLocation() {
     return {
@@ -40,7 +40,7 @@ function createMockWindow() {
 
 describe("check_login_status", () => {
     beforeEach(() => {
-        vi.stubEnv("VITE_BACKEND_URL", "http://localhost:8000")
+        vi.stubEnv("VITE_API_TARGET", "http://localhost:8000")
     })
 
     afterEach(() => {
@@ -87,7 +87,7 @@ describe("check_login_status", () => {
 
 describe("start_twitch_login", () => {
     beforeEach(() => {
-        vi.stubEnv("VITE_BACKEND_URL", "http://localhost:8000")
+        vi.stubEnv("VITE_API_TARGET", "http://localhost:8000")
         const mockWindow = createMockWindow()
         vi.stubGlobal("window", mockWindow)
     })
@@ -105,7 +105,7 @@ describe("start_twitch_login", () => {
 
 describe("start_github_login", () => {
     beforeEach(() => {
-        vi.stubEnv("VITE_BACKEND_URL", "http://localhost:8000")
+        vi.stubEnv("VITE_API_TARGET", "http://localhost:8000")
         const mockWindow = createMockWindow()
         vi.stubGlobal("window", mockWindow)
     })
@@ -123,7 +123,7 @@ describe("start_github_login", () => {
 
 describe("handle_logout", () => {
     beforeEach(() => {
-        vi.stubEnv("VITE_BACKEND_URL", "http://localhost:8000")
+        vi.stubEnv("VITE_API_TARGET", "http://localhost:8000")
     })
 
     afterEach(() => {
