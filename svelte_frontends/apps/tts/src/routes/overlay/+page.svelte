@@ -4,11 +4,13 @@ import { onDestroy } from "svelte"
 // State initialized from URL params
 let stream_name = $state("")
 let read_name_lang = $state("")
-let volume = $state(1.0)
+let volume = $state(1.0) // 0 to 1
 let is_loaded = $state(false)
 
-const ws_backend_server_url = import.meta.env.VITE_WS_BACKEND_URL || ""
+const api_target = import.meta.env?.VITE_API_TARGET || "localhost:8000"
+const ws_backend_server_url = import.meta.env?.VITE_API_TARGET ? `wss://${api_target}` : `ws://${api_target}`
 let ws: WebSocket | null = null
+let data: string | null = $state(null)
 
 // WebSocket reconnection with exponential backoff
 function connect_ws(ws_url: string) {
@@ -19,20 +21,13 @@ function connect_ws(ws_url: string) {
     })
 
     ws.addEventListener("message", (event) => {
-        const audio_el = document.getElementById("audio") as HTMLAudioElement | null
-        if (audio_el) {
-            const message = JSON.parse(event.data)
-            audio_el.src = `data:audio/mpeg;base64,${message.data}`
-            audio_el.volume = volume
-            audio_el.play().catch(() => {
-                // Ignore autoplay errors
-            })
-        }
+        const message = JSON.parse(event.data)
+        data = `data:audio/mpeg;base64,${message.data}`
     })
 
     ws.addEventListener("close", () => {
         // Reconnect with exponential backoff
-        const max_delay = 30000 // 30 seconds
+        const max_delay = 30_000 // 30 seconds
         const stored_attempts = Number(sessionStorage.getItem("ws_reconnect_attempts") || "0")
         const delay = Math.min(1000 * 2 ** stored_attempts, max_delay)
         sessionStorage.setItem("ws_reconnect_attempts", String(stored_attempts + 1))
@@ -44,13 +39,13 @@ function connect_ws(ws_url: string) {
 $effect(() => {
     const params = new URLSearchParams(window.location.search)
     stream_name = params.get("stream_name") ?? ""
-    read_name_lang = params.get("read_name_lang") ?? ""
+    read_name_lang = params.get("read_name_lang") ?? "none"
     const vol_param = params.get("volume")
     if (vol_param) {
-        volume = Number(vol_param)
+        volume = Number(vol_param) / 100
     }
 
-    if (stream_name && read_name_lang) {
+    if (stream_name) {
         const ws_url = `${ws_backend_server_url}/tts-api/ws/${stream_name}/${read_name_lang}`
         connect_ws(ws_url)
     }
@@ -72,8 +67,11 @@ onDestroy(() => {
         class:loaded={is_loaded}
     >
         <audio
-            controls
             id="audio"
+            controls
+            autoplay
+            src={data}
+            {volume}
         >
             <track
                 kind="captions"
@@ -89,7 +87,7 @@ onDestroy(() => {
 <style>
 .fade-out-element {
     opacity: 1;
-    transition: opacity 10s ease-out 5s;
+    transition: opacity 5s ease-out 5s;
 }
 
 .fade-out-element.loaded {

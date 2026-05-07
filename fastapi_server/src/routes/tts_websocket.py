@@ -5,6 +5,7 @@ from loguru import logger
 
 from components.tts.irc_bot_async import IRCClient, ReadNameLang
 from components.tts.websocket_handler import TTSQueue, TTSQueueRunner
+from components.tts_generate import list_all_voices
 
 TTSRouter = APIRouter()
 
@@ -16,6 +17,9 @@ async def websocket_endpoint(websocket: WebSocket, stream_name: str, read_name_l
         - join twitch channel
         - create worker that checks for new items in queue
     """
+    # Cache tts voices to make them work
+    await list_all_voices()
+
     await websocket.accept()
 
     # Initialize text queue if not exists

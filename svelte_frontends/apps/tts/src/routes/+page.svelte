@@ -83,7 +83,12 @@ const preview_text = $derived.by(() => {
 
     return `${voices[tts_settings.selected_voice_index].engine}_${voices[tts_settings.selected_voice_index].label.toLowerCase().replaceAll(" ", "_")}: ${user_text}`
 })
-const overlay_url = $derived(`https://burnysc2.xyz/tts-api/twitch/${twitch_channel}?volume=${twitch_volume}`)
+const api_target = import.meta.env?.VITE_API_TARGET || "localhost:5174"
+const overlay_url = $derived(
+    import.meta.env?.VITE_API_TARGET
+        ? `https://${api_target}/overlay?stream_name=${twitch_channel}&volume=${twitch_volume}`
+        : `http://${api_target}/overlay?stream_name=${twitch_channel}&volume=${twitch_volume}`,
+)
 </script>
 
 <main class="flex flex-col p-4 max-w-xl mx-auto gap-4">

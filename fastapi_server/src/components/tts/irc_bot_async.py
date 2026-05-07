@@ -66,7 +66,7 @@ class IRCClient:
         self.writer.write(f"JOIN #{self.channel}\r\n".encode())  # join channel
         await self.writer.drain()
 
-        logger.info(f"Connected to {self.host}:{self.port} as {self.nick}")
+        logger.info(f"Connected to {self.host}:{self.port} channel {self.channel} as {self.nick}")
         self.reconnect_attempts = 0
         self.last_ping = time.time()
 

@@ -45,6 +45,7 @@ if os.getenv("STAGE") == "dev":
         allow_methods=["*"],
         allow_headers=["*"],
     )
+# TODO Allow prod server frontend?
 
 
 # Include the routers with appropriate prefixes
