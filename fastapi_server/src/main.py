@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# Enable CORS only in development mode
+# Enable CORS
 if os.getenv("STAGE") == "dev":
     # Allow the Svelte dev server to talk to the API
     app.add_middleware(
@@ -45,7 +45,15 @@ if os.getenv("STAGE") == "dev":
         allow_methods=["*"],
         allow_headers=["*"],
     )
-# TODO Allow prod server frontend?
+elif os.getenv("STAGE") == "prod":
+    # Production CORS origins
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"https://[\w-]+\.burnysc2\.xyz|https://burnysc2\.xyz",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 # Include the routers with appropriate prefixes
