@@ -18,6 +18,13 @@ from pydub import audio_segment
 from components.tts_generate._download import download_file
 from schemas.tts import VoiceInfo
 
+from phonemizer.backend.espeak.wrapper import EspeakWrapper
+import espeakng_loader
+
+# https://github.com/thewh1teagle/espeakng-loader#usage-with-phonemizer
+EspeakWrapper.set_library(espeakng_loader.get_library_path())
+EspeakWrapper.set_data_path(espeakng_loader.get_data_path())
+
 _voice_cache: TTLCache = TTLCache(maxsize=1, ttl=300)
 
 _local_dir = Path(__file__).parents[3] / "data" / "kokoro-onnx"

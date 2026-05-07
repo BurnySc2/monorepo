@@ -3,7 +3,7 @@ x-services-fragments:
   webserver: &webserver
     image: burnysc2/fastapi_server:latest_dev
     pull_policy: never
-    command: uv run --no-dev --directory src rio run --port 8000 --release --public
+    command: uv run --no-dev uvicorn src.main:app --host 0.0.0.0 --port 8000
     restart: unless-stopped
     container_name: fastapi_server
     hostname: fastapi_server
@@ -31,6 +31,9 @@ services:
   # === PROD SETUP
   webserver:
     <<: *webserver
+    volumes:
+      # tts models
+      - ./data:/root/fastapi_server/data
     networks:
       - pangolin_newt
     labels:
@@ -40,25 +43,6 @@ services:
       - pangolin.public-resources.fastapi.auth.sso-enabled=false
       - pangolin.public-resources.fastapi.targets[0].method=http
       - pangolin.public-resources.fastapi.targets[0].port=8000
-      # Old routes
-      # Redirect for www.burnysc2.xyz to burnysc2.xyz
-      - traefik.http.routers.www-fastapi.rule=Host(`www.burnysc2.xyz`)
-      - traefik.http.routers.www-fastapi.middlewares=redirect-to-non-www
-      - traefik.http.routers.www-fastapi.tls=true
-      - traefik.http.routers.www-fastapi.tls.certresolver=production
-      - traefik.http.routers.www-fastapi.entryPoints=web,websecure
-      - traefik.http.middlewares.redirect-to-non-www.redirectregex.regex=^https?://www\.burnysc2\.xyz/(.*)
-      - traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=https://burnysc2.xyz/$${1}
-      - traefik.http.middlewares.redirect-to-non-www.redirectregex.permanent=true
-      # Redirect for apidev.burnysc2.xyz to burnysc2.xyz
-      - traefik.http.routers.apidev-fastapi.rule=Host(`apidev.burnysc2.xyz`)
-      - traefik.http.routers.apidev-fastapi.middlewares=redirect-to-non-apidev
-      - traefik.http.routers.apidev-fastapi.tls=true
-      - traefik.http.routers.apidev-fastapi.tls.certresolver=production
-      - traefik.http.routers.apidev-fastapi.entryPoints=web,websecure
-      - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.regex=^https?://apidev\.burnysc2\.xyz/(.*)
-      - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.replacement=https://burnysc2.xyz/$${1}
-      - traefik.http.middlewares.redirect-to-non-apidev.redirectregex.permanent=true
     profiles:
       - prod
 
