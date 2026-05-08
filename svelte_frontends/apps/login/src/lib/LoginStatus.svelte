@@ -2,6 +2,7 @@
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { fetch_login_status, get_api_base } from "./api"
+import { start_github_login, start_twitch_login } from "./login"
 
 // State variables using snake_case
 let is_loading = $state(true)
@@ -23,16 +24,6 @@ async function check_login_status() {
     } finally {
         is_loading = false
     }
-}
-
-// Start Twitch OAuth flow
-function start_twitch_login() {
-    window.location.href = `/login/twitch/start`
-}
-
-// Start GitHub OAuth flow
-function start_github_login() {
-    window.location.href = `/login/github/start`
 }
 
 // Logout function

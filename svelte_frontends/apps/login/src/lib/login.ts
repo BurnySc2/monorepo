@@ -41,7 +41,7 @@ export async function check_login_status(): Promise<{
 }
 
 export function start_twitch_login() {
-    window.location.href = `https://burnysc2.xyz/login/twitch/start`
+    window.location.href = `${get_api_base()}/login/twitch/start`
 }
 
 export function start_github_login() {
