@@ -6,14 +6,14 @@
 FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim AS base
 
 # Required by tts engines like kokoro
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     espeak-ng \
-#     && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    espeak-ng \
+    && rm -rf /var/lib/apt/lists/*
 
 # Add ffmpeg from
 # https://github.com/wader/static-ffmpeg
-# COPY --from=mwader/static-ffmpeg:7.1 /ffmpeg /usr/local/bin/
-# COPY --from=mwader/static-ffmpeg:7.1 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:8.1.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:8.1.1 /ffprobe /usr/local/bin/
 
 WORKDIR /root/fastapi_server
 
