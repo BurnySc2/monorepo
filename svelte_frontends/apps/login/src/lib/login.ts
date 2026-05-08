@@ -1,5 +1,5 @@
-import { fetch_login_status, get_api_base } from "./api"
 import { goto } from "$app/navigation"
+import { fetch_login_status, get_api_base } from "./api"
 
 export interface User {
     id: number

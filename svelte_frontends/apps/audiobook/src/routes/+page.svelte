@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
+import { goto } from "$app/navigation"
 import * as api from "$lib/api/audiobook"
 import { check_login_status } from "$lib/api/auth"
 import BookCard from "$lib/components/BookCard.svelte"
@@ -11,6 +12,10 @@ let is_loading = $state(true)
 let is_checking_auth = $state(true)
 let is_logged_in = $state(false)
 let is_uploading = $state(false)
+
+const login_url = import.meta.env.VITE_API_TARGET?.includes("localhost")
+    ? "http://localhost:5173"
+    : "https://login.burnysc2.xyz"
 
 async function check_auth() {
     is_checking_auth = true
@@ -72,12 +77,12 @@ $effect(() => {
     {:else if !is_logged_in}
         <div class="text-center py-12">
             <p class="text-lg text-gray-700 mb-4">You need to log in to proceed.</p>
-            <a
-                href="/login"
+            <button
+                onclick={() => goto(login_url)}
                 class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
                 Log In
-            </a>
+            </button>
         </div>
     {:else}
         <div class="mb-8">
