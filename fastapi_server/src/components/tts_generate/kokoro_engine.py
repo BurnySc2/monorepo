@@ -9,17 +9,16 @@ from __future__ import annotations
 from io import BytesIO
 from pathlib import Path
 
+import espeakng_loader
 import soundfile as sf
 from cachetools import TTLCache
 from kokoro_onnx import Kokoro
 from loguru import logger
+from phonemizer.backend.espeak.wrapper import EspeakWrapper
 from pydub import audio_segment
 
 from components.tts_generate._download import download_file
 from schemas.tts import VoiceInfo
-
-from phonemizer.backend.espeak.wrapper import EspeakWrapper
-import espeakng_loader
 
 # https://github.com/thewh1teagle/espeakng-loader#usage-with-phonemizer
 EspeakWrapper.set_library(espeakng_loader.get_library_path())
