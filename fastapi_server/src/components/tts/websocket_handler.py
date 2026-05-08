@@ -60,7 +60,7 @@ class TTSQueue:
                 cls.text_queue[(stream_name, read_name_lang)].put_nowait(
                     (f"tiktok_{username_says_voice}", f"{username} {username_says_text}")
                 )
-        cls.text_queue[(stream_name, read_name_lang)].put_nowait((f"tiktok_{voice.label}", text))
+        cls.text_queue[(stream_name, read_name_lang)].put_nowait((f"{voice.engine}_{voice.label}", text))
 
     @classmethod
     def add_websocket(cls, stream_name: str, read_name_lang: str, socket: WebSocket) -> None:
