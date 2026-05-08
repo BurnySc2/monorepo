@@ -2,6 +2,7 @@
 import type { VoiceInfo } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
+import { page } from "$app/state"
 import { fetch_generate_tts, fetch_voices } from "$lib/api"
 import { tts_settings } from "$lib/tts_settings.svelte"
 
@@ -72,7 +73,7 @@ const preview_text = $derived.by(() => {
 
     return `${voices[tts_settings.selected_voice_index].engine}_${voices[tts_settings.selected_voice_index].label.toLowerCase().replaceAll(" ", "_")}: ${user_text}`
 })
-const overlay_url = $derived(`/overlay?stream_name=${twitch_channel}&volume=${twitch_volume}`)
+const overlay_url = $derived(`${page.url.origin}/overlay?stream_name=${twitch_channel}&volume=${twitch_volume}`)
 </script>
 
 <main class="flex flex-col p-4 max-w-xl mx-auto gap-4">
