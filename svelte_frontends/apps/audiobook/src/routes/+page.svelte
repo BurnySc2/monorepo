@@ -1,7 +1,6 @@
 <script lang="ts">
 import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
-import { goto } from "$app/navigation"
 import * as api from "$lib/api/audiobook"
 import { check_login_status } from "$lib/api/auth"
 import BookCard from "$lib/components/BookCard.svelte"
@@ -78,7 +77,7 @@ $effect(() => {
         <div class="text-center py-12">
             <p class="text-lg text-gray-700 mb-4">You need to log in to proceed.</p>
             <button
-                onclick={() => goto(login_url)}
+                onclick={() => window.location.href = login_url}
                 class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
                 Log In

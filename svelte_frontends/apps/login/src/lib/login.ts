@@ -1,4 +1,3 @@
-import { goto } from "$app/navigation"
 import { fetch_login_status, get_api_base } from "./api"
 
 export interface User {
@@ -29,7 +28,7 @@ export async function check_login_status(): Promise<{
         const data = await fetch_login_status()
         is_logged_in = data.logged_in
         if (data.logged_in && data.user) {
-            logged_in_user = { id: 0, name: data.user, service: "unknown" }
+            logged_in_user = { id: data.user.id, name: data.user.name, service: data.user.service }
         }
     } catch (error) {
         console.error("Failed to check login status:", error)
@@ -42,11 +41,11 @@ export async function check_login_status(): Promise<{
 }
 
 export function start_twitch_login() {
-    goto(`${get_api_base()}/login/twitch/start`)
+    window.location.href = `${get_api_base()}/login/twitch/start`
 }
 
 export function start_github_login() {
-    goto(`${get_api_base()}/login/github/start`)
+    window.location.href = `${get_api_base()}/login/github/start`
 }
 
 export async function handle_logout(): Promise<void> {

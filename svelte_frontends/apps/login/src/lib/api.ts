@@ -6,7 +6,10 @@ export const get_api_base = () => {
     return target ? `${protocol}://${target}` : "http://localhost:8000"
 }
 
-export const fetch_login_status = async (): Promise<{ logged_in: boolean; user?: string }> => {
+export const fetch_login_status = async (): Promise<{
+    logged_in: boolean
+    user?: { id: number; name: string; service: string }
+}> => {
     const resp = await fetch(`${get_api_base()}/login`, { credentials: "include" })
     if (!resp.ok) {
         throw new Error(`Failed to fetch login status: ${resp.statusText}`)

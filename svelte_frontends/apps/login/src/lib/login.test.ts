@@ -1,11 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { goto } from "$app/navigation"
 import { get_api_base } from "./api"
 import { check_login_status, handle_logout, start_github_login, start_twitch_login } from "./login"
-
-vi.mock("$app/navigation", () => ({
-    goto: vi.fn(),
-}))
 
 function create_mock_location() {
     return {
@@ -63,7 +58,7 @@ describe("check_login_status", () => {
 
         expect(result.is_loading).toBe(false)
         expect(result.is_logged_in).toBe(true)
-        expect(result.logged_in_user).toEqual({ id: 0, name: mockUser, service: "unknown" })
+        expect(result.logged_in_user).toEqual({ id: 1, name: "testuser", service: "twitch" })
         expect(result.error_message).toBeNull()
     })
 
@@ -103,9 +98,14 @@ describe("start_twitch_login", () => {
     })
 
     it("redirects to twitch login URL", () => {
+        const location = create_mock_location()
+        const mockWindow = create_mock_window()
+        mockWindow.location = location
+        vi.stubGlobal("window", mockWindow)
+
         start_twitch_login()
 
-        expect(goto).toHaveBeenCalledWith(`${get_api_base()}/login/twitch/start`)
+        expect(location.href).toBe(`${get_api_base()}/login/twitch/start`)
     })
 })
 
@@ -119,9 +119,14 @@ describe("start_github_login", () => {
     })
 
     it("redirects to github login URL", () => {
+        const location = create_mock_location()
+        const mockWindow = create_mock_window()
+        mockWindow.location = location
+        vi.stubGlobal("window", mockWindow)
+
         start_github_login()
 
-        expect(goto).toHaveBeenCalledWith(`${get_api_base()}/login/github/start`)
+        expect(location.href).toBe(`${get_api_base()}/login/github/start`)
     })
 })
 

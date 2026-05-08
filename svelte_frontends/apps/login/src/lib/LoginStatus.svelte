@@ -15,7 +15,7 @@ async function check_login_status() {
         const data = await fetch_login_status()
         is_logged_in = data.logged_in
         if (data.logged_in && data.user) {
-            logged_in_user = { id: 0, name: data.user, service: "unknown" }
+            logged_in_user = { id: data.user.id, name: data.user.name, service: data.user.service }
         }
     } catch (error) {
         console.error("Failed to check login status:", error)
