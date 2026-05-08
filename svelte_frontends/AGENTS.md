@@ -242,7 +242,7 @@ npm run test:watch
 All client-exposed environment variables must use the `VITE_` prefix:
 
 ```
-VITE_API_URL=http://localhost:8000
+VITE_API_URL=localhost:8000
 VITE_APP_NAME=my-app
 ```
 
@@ -460,7 +460,7 @@ Every API file should include this helper function:
 const get_api_base = () => {
     const target = import.meta.env.VITE_API_TARGET;
     const protocol = target?.includes("localhost") ? "http" : "https";
-    return target ? `${protocol}://${target}` : "http://localhost:8000";
+    return target ? `${protocol}://${target}` : "localhost:8000";
 };
 ```
 
