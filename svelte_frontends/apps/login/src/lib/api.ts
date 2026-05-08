@@ -7,7 +7,7 @@ export const get_api_base = () => {
 }
 
 export const fetch_login_status = async (): Promise<{ logged_in: boolean; user?: string }> => {
-    const resp = await fetch(`${get_api_base()}/login`)
+    const resp = await fetch(`${get_api_base()}/login`, { credentials: "include" })
     if (!resp.ok) {
         throw new Error(`Failed to fetch login status: ${resp.statusText}`)
     }
