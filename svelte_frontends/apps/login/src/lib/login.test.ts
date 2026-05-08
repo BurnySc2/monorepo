@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { goto } from "$app/navigation"
 import { get_api_base } from "./api"
 import { check_login_status, handle_logout, start_github_login, start_twitch_login } from "./login"
+
+vi.mock("$app/navigation", () => ({
+    goto: vi.fn(),
+}))
 
 function create_mock_location() {
     return {
@@ -91,8 +96,6 @@ describe("check_login_status", () => {
 describe("start_twitch_login", () => {
     beforeEach(() => {
         vi.stubEnv("VITE_API_TARGET", "localhost:8000")
-        const mockWindow = create_mock_window()
-        vi.stubGlobal("window", mockWindow)
     })
 
     afterEach(() => {
@@ -102,15 +105,13 @@ describe("start_twitch_login", () => {
     it("redirects to twitch login URL", () => {
         start_twitch_login()
 
-        expect(window.location.href).toBe(`${get_api_base()}/login/twitch/start`)
+        expect(goto).toHaveBeenCalledWith(`${get_api_base()}/login/twitch/start`)
     })
 })
 
 describe("start_github_login", () => {
     beforeEach(() => {
         vi.stubEnv("VITE_API_TARGET", "localhost:8000")
-        const mockWindow = create_mock_window()
-        vi.stubGlobal("window", mockWindow)
     })
 
     afterEach(() => {
@@ -120,7 +121,7 @@ describe("start_github_login", () => {
     it("redirects to github login URL", () => {
         start_github_login()
 
-        expect(window.location.href).toBe(`${get_api_base()}/login/github/start`)
+        expect(goto).toHaveBeenCalledWith(`${get_api_base()}/login/github/start`)
     })
 })
 

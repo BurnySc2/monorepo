@@ -1,4 +1,5 @@
 import { fetch_login_status, get_api_base } from "./api"
+import { goto } from "$app/navigation"
 
 export interface User {
     id: number
@@ -41,11 +42,11 @@ export async function check_login_status(): Promise<{
 }
 
 export function start_twitch_login() {
-    window.location.href = `${get_api_base()}/login/twitch/start`
+    goto(`${get_api_base()}/login/twitch/start`)
 }
 
 export function start_github_login() {
-    window.location.href = `${get_api_base()}/login/github/start`
+    goto(`${get_api_base()}/login/github/start`)
 }
 
 export async function handle_logout(): Promise<void> {
