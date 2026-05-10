@@ -175,9 +175,14 @@ class TTSQueueRunner:
             # Generate audio from text
             try:
                 mp3_bytes, duration = await generate_audio(engine, internal_voice, text)
-            # logger.info(f"{duration}s: {text}")
+                # logger.info(f"{duration}s: {text}")
+            except RuntimeError as e:
+                logger.error(e)
+                self.text_queue.task_done()
+                continue
             except AssertionError as e:
                 logger.error(e)
+                self.text_queue.task_done()
                 continue
             logger.info(f"Sending generated tts to clients: {self.stream_name}: ({voice}) {text}")
             # pyrefly: ignore
