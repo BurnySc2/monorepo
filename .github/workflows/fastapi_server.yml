@@ -54,8 +54,8 @@ jobs:
         working-directory: ${{ env.SUBDIRECTORY }}
         run: docker compose --profile test up -d
 
-      - name: Install espeak-ng
-        run: sudo apt-get update && sudo apt-get install -y espeak-ng
+      - name: Install espeak-ng and ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y espeak-ng ffmpeg
 
       - uses: astral-sh/setup-uv@v7
         with:
