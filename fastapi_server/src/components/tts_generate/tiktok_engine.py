@@ -21,6 +21,10 @@ from mutagen.mp3 import MP3
 
 from schemas.tts import VoiceInfo
 
+from ._split_long_text import (
+    generate_long_text_audio,
+)
+
 # Cache: (voice_code, text) -> (audio_bytes, duration)
 _audio_cache: TTLCache = TTLCache(maxsize=1000, ttl=3600)
 
@@ -638,12 +642,28 @@ async def generate_audio_async(
     """
     Generate audio using TikTok TTS.
 
+    Automatically handles long text by splitting into chunks and concatenating
+    with silence between them.
+
     Args:
         voice: Voice code (e.g., "en_us_002")
         text: Text to synthesize
 
     Returns:
         Tuple of (audio_bytes, duration_seconds)
+    """
+    # Use the long text helper which handles chunking automatically
+    return await generate_long_text_audio(
+        voice=voice,
+        text=text,
+        tiktok_generate=_tiktok_generate_chunk,
+    )
+
+
+async def _tiktok_generate_chunk(voice: str, text: str) -> tuple[bytes, float]:
+    """
+    Internal function to generate a single chunk of audio.
+    Used by generate_long_text_audio.
     """
     key = (voice, text)
     if key in _audio_cache:
