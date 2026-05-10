@@ -662,8 +662,13 @@ async def generate_audio_async(
     async with httpx.AsyncClient() as client:
         for domain in API_DOMAINS:
             logger.info(voice)
-            url = f"{domain}{API_PATH}?text_speaker={voice}&req_text={text}&speaker_map_type=0&aid=1233"
-            response = await client.post(url, headers=headers)
+            params = {
+                "text_speaker": voice,
+                "req_text": text,
+                "speaker_map_type": 0,
+                "aid": 1233,
+            }
+            response = await client.post(f"{domain}{API_PATH}", params=params, headers=headers)
             if response.is_error:
                 continue
             data = response.json()
@@ -697,8 +702,8 @@ async def main() -> None:
         display = voice.label or voice.internal_name
         logger.info(f"  {display} ({voice.gender}, {voice.locale}) - {voice.label}")
 
-    sample_voice = "en_us_002"
-    sample_text = "Hello from TikTok TTS! This is a test."
+    sample_voice = "en_female_richgirl"
+    sample_text = "Welcome to the Tiktok TTS testing suite. This is a comprehensive boundary condition test designed to verify that the text-to-speech engine can handle longer inputs without truncation or errors. We include various punctuation marks, multiple sentences, and diverse linguistic structures to ensure robust handling of edge cases. The quick brown fox jumps over the lazy dog while keeping your sample text interesting and varied. Numbers like 12345 and symbols like @#$% are also included. This tests all aspects of text generation including commas, periods, question marks, exclamation points, colons, semicolons, hyphens, and parentheses. Even the occasional dash or apostrophe is included to make sure the system handles them all correctly."  # noqa: E501
     output_path = Path(__file__).parent / "sample_tiktok.mp3"
 
     logger.info(f"Generating sample audio with voice '{sample_voice}'...")

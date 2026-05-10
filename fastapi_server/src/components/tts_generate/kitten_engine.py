@@ -18,7 +18,7 @@ import wave
 from pathlib import Path
 
 import numpy as np
-from pydub import AudioSegment
+from pydub import audio_segment
 
 from schemas.tts import VoiceInfo
 
@@ -138,9 +138,9 @@ async def generate_audio_async(
         wav_file.writeframes(samples_int16.tobytes())
     wav_io.seek(0)
 
-    audio = AudioSegment.from_wav(wav_io)
+    audio = audio_segment.AudioSegment.from_wav(wav_io)
     mp3_io = io.BytesIO()
-    audio.export(mp3_io, format="mp3")
+    audio_segment.AudioSegment.export(audio, mp3_io, format="mp3")
     mp3_io.seek(0)
 
     return mp3_io.read(), duration
@@ -156,7 +156,7 @@ async def main() -> None:
         logger.info(f"  {voice.label or voice.internal_name} ({voice.gender}, {voice.locale}) - {voice.internal_name}")
 
     sample_voice = "Jasper"
-    sample_text = "Hello from KittenTTS! This is a test."
+    sample_text = "Welcome to the Kitten TTS testing suite. This is a comprehensive boundary condition test designed to verify that the text-to-speech engine can handle longer inputs without truncation or errors. We include various punctuation marks, multiple sentences, and diverse linguistic structures to ensure robust handling of edge cases. The quick brown fox jumps over the lazy dog while keeping your sample text interesting and varied. Numbers like 12345 and symbols like @#$% are also included. This tests all aspects of text generation including commas, periods, question marks, exclamation points, colons, semicolons, hyphens, and parentheses. Even the occasional dash or apostrophe is included to make sure the system handles them all correctly."  # noqa: E501
     output_path = Path(__file__).parent / "sample_kitten.mp3"
 
     logger.info(f"Generating sample audio with voice '{sample_voice}'...")

@@ -71,7 +71,7 @@ async def main() -> None:
         logger.info(f"  {voice.internal_name} ({voice.gender}, {voice.locale})")
 
     sample_voice = "en-US-AriaNeural"
-    sample_text = "Hello from Edge TTS! This is a test."
+    sample_text = "Welcome to the Edge TTS testing suite. This is a comprehensive boundary condition test designed to verify that the text-to-speech engine can handle longer inputs without truncation or errors. We include various punctuation marks, multiple sentences, and diverse linguistic structures to ensure robust handling of edge cases. The quick brown fox jumps over the lazy dog while keeping your sample text interesting and varied. Numbers like 12345 and symbols like @#$% are also included. This tests all aspects of text generation including commas, periods, question marks, exclamation points, colons, semicolons, hyphens, and parentheses. Even the occasional dash or apostrophe is included to make sure the system handles them all correctly."  # noqa: E501
     output_path = Path(__file__).parent / "sample_edge.mp3"
 
     logger.info(f"Generating sample audio with voice '{sample_voice}'...")
