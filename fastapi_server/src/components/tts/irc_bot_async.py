@@ -112,7 +112,10 @@ class IRCClient:
                     # Extract username and message content
                     match = re.match(r":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)", message)
                     if match:
-                        username, content = match.groups()
+                        try:
+                            username, content = match.groups()
+                        except ValueError:
+                            continue
                         self.callback(self.channel, self.read_name_lang, username, content)
 
             except Exception as e:  # noqa: BLE001
