@@ -110,12 +110,9 @@ class IRCClient:
                     await self.writer.drain()
                 elif "PRIVMSG" in message:
                     # Extract username and message content
-                    match = re.match(r":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)", message)
+                    match = re.fullmatch(r":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)", message)
                     if match:
-                        try:
-                            username, content = match.groups()
-                        except ValueError:
-                            continue
+                        username, content = match.groups()
                         self.callback(self.channel, self.read_name_lang, username, content)
 
             except Exception as e:  # noqa: BLE001
