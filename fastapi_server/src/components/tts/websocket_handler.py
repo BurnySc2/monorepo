@@ -46,13 +46,20 @@ class TTSQueue:
         if ":" not in message:
             return
         message_lowercase = message.lower()
-        voice_label, _, text = message_lowercase.partition(":")
-        engine, voice_internal = voice_label.strip().split("_", 1)
+        try:
+            # engine_voice: text
+            voice_label, text = message_lowercase.split(":", maxsplit=1)
+            # engine name, voice name
+            _engine, voice_internal = voice_label.strip().split("_", 1)
+        except ValueError:
+            # Not in the correct format
+            return
         voice = get_voice_by_label(voice_internal)
         if voice is None:
             return
         text = text.strip()
         if text == "":
+            # No text, just voice
             return
         if read_name_lang != "none":
             username_says_voice, username_says_text = ALLOWED_NAME_LANGUAGES[read_name_lang]
