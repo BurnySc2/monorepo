@@ -8,10 +8,6 @@ interface Props {
 
 let { book, on_delete }: Props = $props()
 
-function navigate_to_book() {
-    window.location.href = `/book/${book.id}`
-}
-
 function handle_delete(event: MouseEvent) {
     event.stopPropagation()
     if (confirm("Are you sure you want to delete this book?")) {
@@ -30,16 +26,9 @@ const formatted_date = $derived(
 )
 </script>
 
-<div
-    class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-gray-200"
-    onclick={navigate_to_book}
-    onkeydown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-            navigate_to_book()
-        }
-    }}
-    role="button"
-    tabindex="0"
+<a
+    href="/book/{book.id}"
+    class="block bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200 cursor-pointer border border-gray-200 no-underline text-inherit"
 >
     <div class="flex justify-between items-start">
         <div class="flex-1 min-w-0">
@@ -103,4 +92,4 @@ const formatted_date = $derived(
             <span>{book.chapter_count} chapters</span>
         </div>
     </div>
-</div>
+</a>
