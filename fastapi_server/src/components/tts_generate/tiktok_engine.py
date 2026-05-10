@@ -10,20 +10,21 @@ https://github.com/oscie57/tiktok-voice/wiki/Voice-Codes
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import os
 from io import BytesIO
+from pathlib import Path
 
 import httpx
 from cachetools import TTLCache
 from loguru import logger
 from mutagen.mp3 import MP3
 
-from schemas.tts import VoiceInfo
-
-from ._split_long_text import (
+from components.tts_generate._split_long_text import (
     generate_long_text_audio,
 )
+from schemas.tts import VoiceInfo
 
 # Cache: (voice_code, text) -> (audio_bytes, duration)
 _audio_cache: TTLCache = TTLCache(maxsize=1000, ttl=3600)
@@ -712,9 +713,6 @@ async def _tiktok_generate_chunk(voice: str, text: str) -> tuple[bytes, float]:
 
 async def main() -> None:
     """Run to list all voices and generate a sample MP3."""
-    from pathlib import Path
-
-    from loguru import logger
 
     voices = await list_voices_async()
     logger.info(f"Found {len(voices)} voices:")
@@ -734,6 +732,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())

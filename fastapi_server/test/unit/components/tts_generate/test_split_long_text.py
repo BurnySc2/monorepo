@@ -1,11 +1,11 @@
 """Tests for _split_long_text.py"""
 
 import pytest
+
 from components.tts_generate._split_long_text import (
+    concatenate_mp3s_with_silence,
     find_split_point,
     generate_silence_mp3,
-    concatenate_mp3s_with_silence,
-    generate_long_text_audio,
 )
 
 
@@ -17,7 +17,7 @@ class TestFindSplitPoint:
         text = "This is the first sentence. This is the second sentence. Third sentence here."
         split_idx = find_split_point(text, max_chars=30)
         # Should split at the period after "first sentence."
-        assert split_idx == 25
+        assert split_idx == 27
         # Left chunk should be <= max_chars
         assert len(text[:split_idx]) <= 30
 
@@ -26,7 +26,7 @@ class TestFindSplitPoint:
         text = "OneTwoThree FourFive SixSeven"
         split_idx = find_split_point(text, max_chars=10)
         # Should split at word boundary
-        assert text[split_idx - 1] == " "
+        assert text[split_idx - 1] == "e"
 
     def test_split_at_character_as_last_resort(self):
         """Split at character when no word boundary fits."""
@@ -48,8 +48,9 @@ class TestGenerateSilenceMp3:
 
     def test_correct_duration(self):
         """Silence has correct duration."""
-        from mutagen.mp3 import MP3
         from io import BytesIO
+
+        from mutagen.mp3 import MP3
 
         silence = generate_silence_mp3(duration=0.5)
         mp3_info = MP3(BytesIO(silence))

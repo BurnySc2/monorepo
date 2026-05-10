@@ -18,6 +18,7 @@ import wave
 from pathlib import Path
 
 import numpy as np
+from loguru import logger
 from pydub import audio_segment
 
 from schemas.tts import VoiceInfo
@@ -148,7 +149,6 @@ async def generate_audio_async(
 
 async def main() -> None:
     """Run to list all voices and generate a sample MP3."""
-    from loguru import logger
 
     voices = await list_voices_async()
     logger.info(f"Found {len(voices)} voices:")

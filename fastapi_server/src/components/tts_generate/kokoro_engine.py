@@ -6,6 +6,7 @@ https://github.com/thewh1teagle/kokoro-onnx
 
 from __future__ import annotations
 
+import asyncio
 from io import BytesIO
 from pathlib import Path
 
@@ -123,9 +124,6 @@ async def generate_audio_async(
 
 async def main() -> None:
     """Run to list all voices and generate a sample MP3."""
-    from pathlib import Path
-
-    from loguru import logger
 
     voices = await list_voices_async()
     logger.info(f"Found {len(voices)} voices:")
@@ -144,6 +142,4 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())
