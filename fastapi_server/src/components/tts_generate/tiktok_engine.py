@@ -682,7 +682,6 @@ async def _tiktok_generate_chunk(voice: str, text: str) -> tuple[bytes, float]:
     status_code = 1
     async with httpx.AsyncClient() as client:
         for domain in API_DOMAINS:
-            logger.info(voice)
             params = {
                 "text_speaker": voice,
                 "req_text": text,
