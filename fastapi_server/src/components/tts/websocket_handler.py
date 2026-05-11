@@ -64,12 +64,12 @@ class TTSQueue:
             # No text, just voice
             return
         if read_name_lang != "none":
+            # Add the prefix of "Username says" before queueing the text
             username_says_voice, username_says_text = ALLOWED_NAME_LANGUAGES[read_name_lang]
             if username_says_voice and username_says_text:
                 cls.text_queue[(stream_name, read_name_lang)].put_nowait(
                     (f"tiktok_{username_says_voice}", f"{username} {username_says_text}")
                 )
-                return
         cls.text_queue[(stream_name, read_name_lang)].put_nowait((f"{voice.engine}_{voice.label}", text))
 
     @classmethod
