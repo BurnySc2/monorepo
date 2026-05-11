@@ -21,7 +21,7 @@ from schemas.tts import ENGINES, TTSEngine, VoiceInfo
 from . import edge_engine, kitten_engine, kokoro_engine, tiktok_engine
 
 _all_voices_cache: TTLCache = TTLCache(maxsize=50, ttl=600)
-_label_to_voice_info: dict[str, VoiceInfo] = {}
+_label_to_voice_info: dict[tuple[str, str], VoiceInfo] = {}
 
 
 async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
@@ -55,6 +55,7 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
 
 async def list_all_voices() -> list[VoiceInfo]:
     """List all available voices from all TTS engines as VoiceInfo objects."""
+    global _label_to_voice_info
     if "voices" not in _all_voices_cache:
         result: list[VoiceInfo] = []
         for engine in ENGINES:
@@ -62,12 +63,11 @@ async def list_all_voices() -> list[VoiceInfo]:
             result.extend(voices)
         result.sort(key=lambda v: f"{v.locale} {v.engine} {v.label} ({v.gender})")
         _all_voices_cache["voices"] = result
-        global _label_to_voice_info
         _label_to_voice_info = {}
         for engine in ENGINES:
             engine_voices = await list_voices(engine)
             for vi in engine_voices:
-                _label_to_voice_info[vi.label.lower()] = vi
+                _label_to_voice_info[(engine, vi.label.lower())] = vi
     return _all_voices_cache["voices"]
 
 
@@ -98,7 +98,7 @@ async def generate_audio(
 
     # Populate or update the cache
     _voices = await list_all_voices()
-    voice = get_voice_by_label(voice_label)
+    voice = get_voice_by_label(engine, voice_label)
     logger.info(voice_label)
     if voice is None:
         raise ValueError(f"Voice '{voice_label}' not found")
@@ -121,13 +121,13 @@ async def generate_audio(
     return audio_bytes, duration
 
 
-def get_voice_by_label(label: str) -> VoiceInfo | None:
-    """Look up a VoiceInfo by its label."""
+def get_voice_by_label(engine: str, label: str) -> VoiceInfo | None:
+    """Look up a VoiceInfo by its label and optionally by engine."""
 
     def normalize_from_frontend(v: str) -> str:
         return v.lower().replace("_", " ")
 
-    return _label_to_voice_info.get(normalize_from_frontend(label))
+    return _label_to_voice_info.get((engine, normalize_from_frontend(label)))
 
 
 # Export all engines for direct access
