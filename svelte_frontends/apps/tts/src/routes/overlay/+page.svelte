@@ -35,6 +35,10 @@ function connect_ws(ws_url: string) {
     })
 }
 
+function on_play_end() {
+    data = null
+}
+
 // Initialize from URL params and connect WebSocket
 $effect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -70,6 +74,7 @@ onDestroy(() => {
             id="audio"
             controls
             autoplay
+            onended={on_play_end}
             src={data}
             {volume}
         >
