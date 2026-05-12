@@ -1,8 +1,8 @@
-[![discord_bot](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_discord_bot.yml)
-[![fastapi_server](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/test_fastapi_server.yml)
-[![stream_announcer](https://github.com/BurnySc2/monorepo/actions/workflows/test_stream_announcer.yml/badge.svg?branch=develop)](https://github.com/BurnySc2/monorepo/actions/workflows/test_stream_announcer.yml)
-[![python_examples](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml)
-[![earthly_checks](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/earthly_project_check.yml)
+[![Discord Bot](https://github.com/BurnySc2/monorepo/actions/workflows/discord_bot.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/discord_bot.yml)
+[![Fastapi Server](https://github.com/BurnySc2/monorepo/actions/workflows/fastapi_server.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/fastapi_server.yml)
+[![Svelte Frontends](https://github.com/BurnySc2/monorepo/actions/workflows/svelte_frontends.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/svelte_frontends.yml)
+[![Stream Announcer](https://github.com/BurnySc2/monorepo/actions/workflows/stream_announcer.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/stream_announcer.yml)
+[![Python Examples](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml/badge.svg)](https://github.com/BurnySc2/monorepo/actions/workflows/python_examples.yml)
 
 # Monorepo
 My monorepo for various tools and showcases
