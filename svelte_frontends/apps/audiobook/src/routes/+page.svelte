@@ -41,7 +41,12 @@ async function handle_upload(file: File) {
         await load_books()
     } catch (e) {
         console.error("Failed to upload:", e)
-        alert("Failed to upload book")
+        const message = e instanceof Error ? e.message : String(e)
+        if (message.includes("already uploaded")) {
+            alert("This book has already been uploaded")
+        } else {
+            alert("Failed to upload book")
+        }
     } finally {
         is_uploading = false
     }

@@ -9,6 +9,7 @@ from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
 from components.login.cookies import LoggedInUser, check_book_ownership, get_current_user
+from piccolo_conf import DB
 from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.audiobook import (
     AudioSettings,
@@ -198,20 +199,32 @@ async def upload_epub(
 ) -> UploadSuccess:
     """
     Upload an epub file, parse it, and create book/chapter records.
-    Returns 400 if not an epub, 201 on success.
+    Returns 400 if not an epub, 400 if duplicate, 201 on success.
     """
     if not file.filename or not file.filename.lower().endswith(".epub"):
         raise HTTPException(status_code=400, detail="File must be an epub")
 
-    try:
-        contents = await file.read()
-        data = io.BytesIO(contents)
+    contents = await file.read()
+    data = io.BytesIO(contents)
 
-        metadata = extract_metadata(data)
-        chapters = extract_chapters(data)
+    metadata = extract_metadata(data)
+    chapters = extract_chapters(data)
 
-        data.seek(0)
+    # Check for duplicate book
+    existing_book = (
+        await AudiobookBook.objects()
+        .where(
+            (AudiobookBook.uploaded_by == current_user.db_name)
+            & (AudiobookBook.book_title == metadata.title)
+            & (AudiobookBook.book_author == metadata.author)
+            & (AudiobookBook.deleted == False)  # noqa: E712
+        )
+        .first()
+    )
+    if existing_book:
+        raise HTTPException(status_code=409, detail=f"Book '{metadata.title}' by '{metadata.author}' already uploaded")
 
+    async with DB.transaction():
         book = AudiobookBook(
             uploaded_by=current_user.db_name,
             book_title=metadata.title,
@@ -232,10 +245,7 @@ async def upload_epub(
             )
             await chapter_record.save()
 
-        return UploadSuccess(id=book.id, title=book.book_title)  # pyrefly: ignore[missing-attribute]
-
-    except OSError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    return UploadSuccess(id=book.id, title=book.book_title)  # pyrefly: ignore[missing-attribute]
 
 
 @audiobook_router.delete("/books/{book_id}", response_model=DeleteResponse)
