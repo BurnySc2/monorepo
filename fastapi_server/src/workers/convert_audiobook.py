@@ -31,6 +31,13 @@ def get_chapter_combined_text(text: str) -> str:
     return re.sub(r"\s+", " ", combined)
 
 
+# TODO Investigate why the following is better:
+# def get_chapter_combined_text(text: str) -> str:
+#     lines = text.splitlines()
+#     combined = " ".join(row.strip() for row in lines if row.strip())
+#     return re.sub(r"\s+", " ", combined).strip()
+
+
 class AudiobookConversionContext:
     def __init__(self, chapter: AudiobookChapter):
         self.chapter = chapter

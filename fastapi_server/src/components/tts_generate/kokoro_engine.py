@@ -9,15 +9,13 @@ from __future__ import annotations
 import asyncio
 from io import BytesIO
 from pathlib import Path
-from typing import cast
 
 import espeakng_loader
+import numpy as np
 import soundfile as sf
 from cachetools import TTLCache
 from kokoro_onnx import Kokoro
 from loguru import logger
-from numpy import float32
-from numpy.typing import NDArray
 from phonemizer.backend.espeak.wrapper import EspeakWrapper
 from pydub import audio_segment
 
@@ -107,8 +105,15 @@ async def generate_audio_async(
         raise ValueError(f"Voice '{voice}' not found")
     lang = voice_info.locale or "en-us"
 
-    async_task = asyncio.to_thread(kokoro.create, text, voice=voice, speed=1.0, lang=lang)
-    samples, sample_rate = cast(tuple[NDArray[float32], int], await async_task)
+    # Collect all audio chunks from the async generator
+    audio_chunks = []
+    sample_rate = 24000  # default sample rate
+    async for chunk, sr in kokoro.create_stream(text, voice=voice, speed=1.0, lang=lang):
+        audio_chunks.append(chunk)
+        sample_rate = sr
+
+    # Concatenate all chunks into a single audio array
+    samples = np.concatenate(audio_chunks) if audio_chunks else np.array([], dtype=np.float32)
 
     wav_io = BytesIO()
     sf.write(wav_io, samples, sample_rate, format="WAV")
