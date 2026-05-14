@@ -36,7 +36,7 @@ async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_u
     """
     books = (
         await AudiobookBook.objects()
-        .where((AudiobookBook.uploaded_by == current_user.db_name) & (AudiobookBook.deleted == False))  # noqa: E712
+        .where(AudiobookBook.uploaded_by == current_user.db_name)  # noqa: E712
         .order_by(AudiobookBook.upload_date, ascending=False)
     )
 
@@ -68,7 +68,7 @@ async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(g
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
 
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
@@ -141,7 +141,7 @@ async def get_chapter_status(
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
 
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
@@ -294,7 +294,7 @@ async def delete_all_audio(
         # pyrefly: ignore[missing-attribute]
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
@@ -332,7 +332,7 @@ async def queue_chapter(
         # pyrefly: ignore[missing-attribute]
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
@@ -370,7 +370,7 @@ async def delete_chapter_audio(
         # pyrefly: ignore[missing-attribute]
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
@@ -411,7 +411,7 @@ async def update_book_title(
         # pyrefly: ignore[missing-attribute]
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
@@ -445,7 +445,7 @@ async def update_book_author(
         # pyrefly: ignore[missing-attribute]
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
@@ -479,7 +479,7 @@ async def queue_all_chapters(
         # pyrefly: ignore[missing-attribute]
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
