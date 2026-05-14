@@ -66,7 +66,7 @@ class AudiobookConversionContext:
                 await self.chapter.save()
                 logger.error(f"Conversion failed: {exc_val}")
         except Exception as e:
-            logger.error(f"Error in context manager cleanup: {e}")
+            logger.exception(f"Error in context manager cleanup: {e}")
             raise
 
 
@@ -149,7 +149,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
                 )  # pyrefly: ignore[bad-argument-type]
             logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
         except Exception as e:
-            logger.error(f"Failed to save audio to MinIO: {e}")
+            logger.exception(f"Failed to save audio to MinIO: {e}")
             raise
 
         # Save result to database after exiting context
@@ -167,7 +167,7 @@ async def keep_converting():
             if not converted_one:
                 await asyncio.sleep(30)
         except Exception as e:  # noqa: BLE001
-            logger.error(f"Error in conversion loop: {e}")
+            logger.exception(f"Error in conversion loop: {e}")
             await asyncio.sleep(5)  # Brief pause before retrying
 
 

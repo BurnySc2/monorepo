@@ -63,7 +63,8 @@ def find_split_point(text: str, max_chars: int) -> int:
             nltk.data.find("tokenizers/punkt")
         except LookupError:
             nltk.download("punkt", quiet=True)
-        except Exception:  # noqa: BLE001
+        except Exception as e:  # noqa: BLE001
+            logger.exception(f"Unknown error splitting long text: {e}")
             pass
 
         sentences = nltk.sent_tokenize(text)

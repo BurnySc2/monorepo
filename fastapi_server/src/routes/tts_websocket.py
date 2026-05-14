@@ -48,4 +48,4 @@ async def websocket_endpoint(websocket: WebSocket, stream_name: str, read_name_l
     except WebSocketDisconnect:
         await TTSQueue.remove_ws(websocket, stream_name, read_name_lang)
     except Exception as e:  # noqa: BLE001
-        logger.info(f"Unexpected error: {e}")
+        logger.exception(f"Unexpected error: {e}")

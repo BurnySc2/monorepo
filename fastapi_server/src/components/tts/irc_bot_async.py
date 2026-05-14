@@ -116,7 +116,7 @@ class IRCClient:
                         self.callback(self.channel, self.read_name_lang, username, content)
 
             except Exception as e:  # noqa: BLE001
-                logger.error(f"Error receiving message: {e}")
+                logger.exception(f"Error receiving message: {e}")
                 await self.handle_reconnect()
 
     async def handle_reconnect(self):
@@ -139,7 +139,7 @@ class IRCClient:
         try:
             await self.connect()
         except Exception as e:  # noqa: BLE001
-            logger.error(f"Reconnection failed: {e}")
+            logger.exception(f"Reconnection failed: {e}")
 
     async def shutdown(self):
         # Setting channel to empty-string will end the for-loop
