@@ -15,7 +15,6 @@ from typing import TypedDict
 from components.tts_generate import generate_audio
 from schemas.tts import TTSEngine
 
-
 # 500-character coherent English test text
 BENCHMARK_TEXT = (
     "The quick brown fox jumps over the lazy dog, a timeless phrase that contains "

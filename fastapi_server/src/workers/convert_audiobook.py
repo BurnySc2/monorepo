@@ -55,15 +55,23 @@ class AudiobookConversionContext:
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
+        chapter_id = self.chapter.id
         try:
-            if exc_type is None:
+            if exc_type is None and self.minio_object_name is not None:
                 # Conversion succeeded - clear converting flag
-                self.chapter.started_converting = None
-                await self.chapter.save()
+                await AudiobookChapter.update(
+                    {
+                        AudiobookChapter.started_converting: None,
+                        AudiobookChapter.minio_object_name: self.minio_object_name,
+                    }
+                ).where(AudiobookChapter.id == chapter_id)
             else:
                 # Conversion failed - reset converting flag
-                self.chapter.started_converting = None
-                await self.chapter.save()
+                await AudiobookChapter.update(
+                    {
+                        AudiobookChapter.started_converting: None,
+                    }
+                ).where(AudiobookChapter.id == chapter_id)
                 logger.error(f"Conversion failed: {exc_val}")
         except Exception as e:
             logger.exception(f"Error in context manager cleanup: {e}")
@@ -151,9 +159,6 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         except Exception as e:
             logger.exception(f"Failed to save audio to MinIO: {e}")
             raise
-
-        # Save result to database after exiting context
-        context.chapter.minio_object_name = context.minio_object_name
 
     logger.info(f"Done converting, saved to {context.minio_object_name}")
 
