@@ -35,7 +35,7 @@ async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_u
     """
     books = (
         await AudiobookBook.objects()
-        .where(AudiobookBook.deleted == False)  # noqa: E712
+        .where((AudiobookBook.uploaded_by == current_user.db_name) & (AudiobookBook.deleted == False))  # noqa: E712
         .order_by(AudiobookBook.upload_date, ascending=False)
     )
 
