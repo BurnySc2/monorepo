@@ -9,6 +9,7 @@ interface Props {
 let { book, on_delete }: Props = $props()
 
 function handle_delete(event: MouseEvent) {
+    event.preventDefault()
     event.stopPropagation()
     if (confirm("Are you sure you want to delete this book?")) {
         on_delete?.(book.id)
