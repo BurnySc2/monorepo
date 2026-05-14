@@ -180,8 +180,6 @@ async def provide_logged_in_user(loggin_settings: LoginSettings) -> LoggedInUser
 
 
 async def check_book_ownership(book: AudiobookBook, user: LoggedInUser) -> bool:
-    if book.deleted:
-        return False
     return book.uploaded_by == user.db_name
 
 

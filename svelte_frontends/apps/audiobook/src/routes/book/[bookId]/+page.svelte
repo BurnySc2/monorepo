@@ -13,7 +13,6 @@ let available_voices = $state<VoiceInfo[]>([])
 let is_loading = $state(true)
 let is_downloading = $state(false)
 let user_has_access = $state(false)
-
 // Edit state
 let is_editing_title = $state(false)
 let is_editing_author = $state(false)
@@ -339,6 +338,19 @@ $effect(() => {
                             </option>
                         {/each}
                     </select>
+                    <div class="engine-speeds-table">
+                            <table>
+                                <thead>
+                                    <tr><th>Engine</th><th>Speed</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Edge</td><td>16.79x</td></tr>
+                                    <tr><td>TikTok</td><td>4.73x</td></tr>
+                                    <tr><td>Kokoro</td><td>1.65x</td></tr>
+                                    <tr><td>Kitten</td><td>1.00x</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                 </div>
             </div>
             <div class="flex flex-col md:flex-row gap-2 flex-wrap">
@@ -475,5 +487,35 @@ $effect(() => {
 
 .settings-grid {
     margin-bottom: 1rem;
+}
+
+.engine-speeds-table {
+    margin-top: 0.5rem;
+    margin-left: 0.5rem;
+}
+
+.engine-speeds-table table {
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.engine-speeds-table th,
+.engine-speeds-table td {
+    padding: 0.25rem 0.75rem;
+    text-align: left;
+    border: 1px solid #e5e7eb;
+}
+
+.engine-speeds-table thead th {
+    background-color: #f3f4f6;
+    font-weight: 600;
+}
+
+.engine-speeds-table tbody tr:nth-child(odd) {
+    background-color: #f9fafb;
+}
+
+.engine-speeds-table tbody tr:hover {
+    background-color: #f3f4f6;
 }
 </style>
