@@ -57,7 +57,7 @@ class AudiobookConversionContext:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         chapter_id = self.chapter.id
         try:
-            if exc_type is None and self.minio_object_name is not None:
+            if exc_type is None:
                 # Conversion succeeded - clear converting flag
                 await AudiobookChapter.update(
                     {
