@@ -25,7 +25,7 @@ x-services-fragments:
       resources:
         limits:
           cpus: "2"
-          memory: 4096M
+          memory: 8192M
     restart: always
 services:
   # === PROD SETUP
