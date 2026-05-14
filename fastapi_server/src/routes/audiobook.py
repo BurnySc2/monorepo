@@ -28,6 +28,18 @@ _query_get_chapters = (_queries_directory / "audiobook_get_chapters.sql").read_t
 
 audiobook_router = APIRouter()
 
+ALLOWED_AUDIOBOOK_ENGINES = {"tiktok", "edge"}
+
+
+def validate_audiobook_engine(settings: QueueChapterRequest) -> None:
+    """Validate that engine is allowed for audiobook generation."""
+    audio_settings = AudioSettings.from_value(settings.value)
+    if audio_settings.engine_name and audio_settings.engine_name not in ALLOWED_AUDIOBOOK_ENGINES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Engine '{audio_settings.engine_name}' not allowed for audiobook. Use tiktok or edge only.",
+        )
+
 
 @audiobook_router.get("/books", response_model=list[BookListItem])
 async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> list[BookListItem]:
@@ -347,6 +359,7 @@ async def queue_chapter(
     if chapter is None:
         raise HTTPException(status_code=404, detail="Chapter not found")
 
+    validate_audiobook_engine(settings)
     audio_settings = AudioSettings.from_value(settings.value)
 
     chapter.queued = arrow.utcnow().naive
@@ -491,6 +504,7 @@ async def queue_all_chapters(
         .order_by(AudiobookChapter.chapter_number)
     )
 
+    validate_audiobook_engine(settings)
     audio_settings = AudioSettings.from_value(settings.value)
 
     for chapter in chapters:

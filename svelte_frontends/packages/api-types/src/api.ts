@@ -206,6 +206,27 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    "/tts-generate/voices-audiobook": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * List Audiobook Voices
+         * @description List TTS voices available for audiobook generation.
+         *     Only returns voices from tiktok and edge engines (kokoro/kitten excluded - too slow for server CPU).
+         */
+        get: operations["list_audiobook_voices_tts_generate_voices_audiobook_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     "/tts-generate/voices": {
         parameters: {
             query?: never
@@ -287,7 +308,8 @@ export interface paths {
         post?: never
         /**
          * Delete Book
-         * @description Soft delete a book and clear queued status on its chapters.
+         * @description Hard delete a book and all its chapters.
+         *     Also deletes S3 audio files for each chapter.
          *     Returns 404 if not found.
          */
         delete: operations["delete_book_api_audiobook_books__book_id__delete"]
@@ -330,7 +352,7 @@ export interface paths {
         /**
          * Upload Epub
          * @description Upload an epub file, parse it, and create book/chapter records.
-         *     Returns 400 if not an epub, 201 on success.
+         *     Returns 400 if not an epub, 400 if duplicate, 201 on success.
          */
         post: operations["upload_epub_api_audiobook_upload_post"]
         delete?: never
@@ -1008,6 +1030,26 @@ export interface operations {
                 }
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    list_audiobook_voices_tts_generate_voices_audiobook_get: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["VoiceInfo"][]
                 }
             }
         }

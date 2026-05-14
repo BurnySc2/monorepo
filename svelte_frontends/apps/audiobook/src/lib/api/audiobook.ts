@@ -61,7 +61,7 @@ export async function upload_epub(file: File): Promise<void> {
 }
 
 export async function get_available_voices(): Promise<VoiceInfo[]> {
-    const response = await fetch(`${get_api_base()}/tts-generate/voices`, {
+    const response = await fetch(`${get_api_base()}/tts-generate/voices-audiobook`, {
         credentials: "include",
     })
     if (!response.ok) {

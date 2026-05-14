@@ -17,6 +17,18 @@ class TTSGenerateRequest(BaseModel):
 
 tts_generate_router = APIRouter()
 
+AUDIOBOOK_ENGINES: list[TTSEngine] = ["tiktok", "edge"]
+
+
+@tts_generate_router.get("/voices-audiobook", response_model=list[VoiceInfo])
+async def list_audiobook_voices() -> list[VoiceInfo]:
+    """
+    List TTS voices available for audiobook generation.
+    Only returns voices from tiktok and edge engines (kokoro/kitten excluded - too slow for server CPU).
+    """
+    all_voices = await list_all_voices()
+    return [v for v in all_voices if v.engine in AUDIOBOOK_ENGINES]
+
 
 @tts_generate_router.get("/voices", response_model=list[VoiceInfo])
 async def list_voices() -> list[VoiceInfo]:
