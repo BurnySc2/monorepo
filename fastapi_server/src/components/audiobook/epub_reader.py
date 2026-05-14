@@ -14,7 +14,9 @@ from nltk import word_tokenize
 from nltk.tokenize import sent_tokenize
 from pydantic import BaseModel
 
-nltk.download("punkt_tab")
+data_dir = Path(__file__).parents[3] / "data" / "nltk"
+data_dir.mkdir(parents=True, exist_ok=True)
+nltk.download("punkt_tab", download_dir=str(data_dir))
 
 
 def extract_sentences(text: str) -> list[str]:

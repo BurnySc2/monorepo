@@ -11,11 +11,15 @@ Handles text that's too long for a single TikTok TTS request by:
 from __future__ import annotations
 
 import io
+from pathlib import Path
 from typing import Protocol
 
 import nltk  # noqa: I001
 from loguru import logger
 from pydub import AudioSegment
+
+data_dir = Path(__file__).parents[3] / "data" / "nltk"
+data_dir.mkdir(parents=True, exist_ok=True)
 
 
 class TikTokGenerator(Protocol):
@@ -62,7 +66,7 @@ def find_split_point(text: str, max_chars: int) -> int:
         try:
             nltk.data.find("tokenizers/punkt")
         except LookupError:
-            nltk.download("punkt", quiet=True)
+            nltk.download("punkt", download_dir=str(data_dir), quiet=True)
         except Exception as e:  # noqa: BLE001
             logger.exception(f"Unknown error splitting long text: {e}")
             pass

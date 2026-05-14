@@ -277,7 +277,7 @@ async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depend
 
     async with DB.transaction():
         await AudiobookChapter.delete().where(AudiobookChapter.book == book_id)
-        await AudiobookBook.delete().where(AudiobookBook.id == book_id)
+        await AudiobookBook.delete().where(AudiobookBook.id == book_id)  # pyrefly: ignore[missing-attribute]
 
     return DeleteResponse(deleted=True)
 
