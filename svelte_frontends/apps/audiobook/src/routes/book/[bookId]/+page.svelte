@@ -32,7 +32,12 @@ let all_chapters_queued_or_have_audio = $derived(
 )
 
 let any_chapter_has_audio_or_queued = $derived(
-    book_data?.chapters.some((c) => c.number_in_queue !== null || c.has_audio || c.is_converting) ?? false,
+    book_data?.chapters.some(
+        (c) =>
+            (c.number_in_queue !== null && c.number_in_queue !== undefined && 0 < c.number_in_queue) ||
+            c.has_audio ||
+            c.is_converting,
+    ) ?? false,
 )
 
 $effect(() => {

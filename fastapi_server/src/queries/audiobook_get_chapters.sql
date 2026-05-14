@@ -7,7 +7,7 @@
 WITH all_queued AS (
     SELECT
         c.id,
-        -- TODO Verify this number starts with 1
+        -- This number starts with 1
         ROW_NUMBER() OVER (
             ORDER BY c.queued ASC, c.chapter_number ASC
         ) AS number_in_queue
