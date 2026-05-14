@@ -276,8 +276,8 @@ async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depend
                 await object_delete(s3, RUSTFS_AUDIOBOOK_BUCKET, chapter.minio_object_name)
 
     async with DB.transaction():
-        await AudiobookChapter.delete().where(AudiobookChapter.book == book_id).execute()
-        await AudiobookBook.delete().where(AudiobookBook.id == book_id).execute()
+        await AudiobookChapter.delete().where(AudiobookChapter.book == book_id)
+        await AudiobookBook.delete().where(AudiobookBook.id == book_id)
 
     return DeleteResponse(deleted=True)
 
