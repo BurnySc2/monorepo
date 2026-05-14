@@ -31,8 +31,8 @@ let all_chapters_queued_or_have_audio = $derived(
     book_data?.chapters.every((c) => c.number_in_queue !== null || c.has_audio || c.is_converting) ?? false,
 )
 
-let no_chapters_have_audio_or_queued = $derived(
-    book_data?.chapters.every((c) => c.number_in_queue === null && !c.has_audio) ?? true,
+let any_chapter_has_audio_or_queued = $derived(
+    book_data?.chapters.some((c) => c.number_in_queue !== null || c.has_audio || c.is_converting) ?? false,
 )
 
 $effect(() => {
@@ -361,8 +361,8 @@ $effect(() => {
                 <button
                     class="flex-1 btn btn-danger"
                     onclick={handle_delete_all_audio}
-                    disabled={no_chapters_have_audio_or_queued}
-                    title={no_chapters_have_audio_or_queued ? "No chapters have audio" : ""}
+                    disabled={any_chapter_has_audio_or_queued}
+                    title={any_chapter_has_audio_or_queued ? "Delete all audio" : "No chapters have audio"}
                 >
                     Delete all audio
                 </button>
