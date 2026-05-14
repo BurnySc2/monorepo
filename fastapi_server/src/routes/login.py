@@ -116,6 +116,8 @@ async def twitch_login_callback(
         httponly=True,
         secure=True,
         samesite="lax",
+        # 7 days
+        max_age=604800,
     )
     return response
 
@@ -157,6 +159,8 @@ async def github_login_callback(
         httponly=True,
         secure=True,
         samesite="lax",
+        # 7 days
+        max_age=604800,
     )
     return response
 
