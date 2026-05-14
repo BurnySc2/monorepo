@@ -102,13 +102,12 @@ async def generate_audio_async(
     Returns:
         Tuple of (audio_bytes, duration_seconds)
     """
-    logger.info(voice)
     voice_info = next((v for v in await list_voices_async() if v.internal_name == voice), None)
     if voice_info is None:
         raise ValueError(f"Voice '{voice}' not found")
     lang = voice_info.locale or "en-us"
 
-    async_task = asyncio.to_thread(kokoro.create(text, voice=voice, speed=1.0, lang=lang))
+    async_task = asyncio.to_thread(kokoro.create, text, voice=voice, speed=1.0, lang=lang)
     samples, sample_rate = cast(tuple[NDArray[float32], int], await async_task)
 
     wav_io = BytesIO()

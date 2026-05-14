@@ -99,7 +99,6 @@ async def generate_audio(
     # Populate or update the cache
     _voices = await list_all_voices()
     voice = get_voice_by_label(engine, voice_label)
-    logger.info(voice_label)
     if voice is None:
         raise ValueError(f"Voice '{voice_label}' not found")
 
