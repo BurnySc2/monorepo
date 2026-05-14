@@ -251,7 +251,8 @@ async def upload_epub(
 @audiobook_router.delete("/books/{book_id}", response_model=DeleteResponse)
 async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> DeleteResponse:
     """
-    Soft delete a book and clear queued status on its chapters.
+    Hard delete a book and all its chapters.
+    Also deletes S3 audio files for each chapter.
     Returns 404 if not found.
     """
     book = (
@@ -259,16 +260,24 @@ async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depend
         await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
     )
 
-    if book is None or book.deleted:
+    if book is None:
         raise HTTPException(status_code=404, detail="Book not found")
 
     if not await check_book_ownership(book, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to modify this book")
 
-    book.deleted = True
-    await book.save()
+    chapters = (
+        await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
+    )
 
-    await AudiobookChapter.update({AudiobookChapter.queued: None}).where(AudiobookChapter.book == book_id)
+    async with get_s3_client() as s3:
+        for chapter in chapters:
+            if chapter.minio_object_name:
+                await object_delete(s3, RUSTFS_AUDIOBOOK_BUCKET, chapter.minio_object_name)
+
+    async with DB.transaction():
+        await AudiobookChapter.delete().where(AudiobookChapter.book == book_id).execute()
+        await AudiobookBook.delete().where(AudiobookBook.id == book_id).execute()
 
     return DeleteResponse(deleted=True)
 
