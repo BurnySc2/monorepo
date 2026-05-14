@@ -4,6 +4,7 @@ import asyncio
 import io
 import os
 import re
+from typing import cast
 
 import arrow
 from dotenv import load_dotenv
@@ -87,8 +88,8 @@ async def check_queued_chapters() -> bool:
 
     # Check active conversions count
     # pyrefly: ignore
-    active_conversions: int = await AudiobookChapter.count().where(
-        arrow.utcnow().naive < AudiobookChapter.started_converting
+    active_conversions = cast(
+        int, await AudiobookChapter.count().where(arrow.utcnow().naive < AudiobookChapter.started_converting)
     )
     if MAX_CONCURRENT_CONVERSIONS <= active_conversions:
         return False
