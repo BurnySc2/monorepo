@@ -24,7 +24,7 @@ x-services-fragments:
       replicas: 1
       resources:
         limits:
-          cpus: "0.1"
+          cpus: "0.5"
           memory: 1024M
     restart: always
 services:
