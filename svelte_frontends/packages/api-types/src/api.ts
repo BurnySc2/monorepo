@@ -133,7 +133,8 @@ export interface paths {
         /**
          * Google Login Callback
          * @description Handle Google OAuth callback.
-         *     Currently returns a placeholder response.
+         *     If code provided, exchange for token and set cookie.
+         *     If already logged in, redirect to login page.
          */
         get: operations["google_login_callback_login_google_get"]
         put?: never
@@ -176,6 +177,26 @@ export interface paths {
          * @description Start GitHub OAuth flow - redirects to GitHub authorization page.
          */
         get: operations["start_github_login_login_github_start_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/login/google/start": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Start Google Login
+         * @description Start Google OAuth flow - redirects to Google authorization page.
+         */
+        get: operations["start_google_login_login_google_start_get"]
         put?: never
         post?: never
         delete?: never
@@ -982,6 +1003,26 @@ export interface operations {
         }
     }
     start_github_login_login_github_start_get: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": unknown
+                }
+            }
+        }
+    }
+    start_google_login_login_google_start_get: {
         parameters: {
             query?: never
             header?: never
