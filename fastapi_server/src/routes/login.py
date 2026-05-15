@@ -10,13 +10,16 @@ from components.login.cookies import (
     BACKEND_SERVER_URL,
     COOKIES,
     GITHUB_CLIENT_ID,
+    GOOGLE_CLIENT_ID,
     TWITCH_CLIENT_ID,
     LoginSettings,
     github_get_user,
+    google_get_user,
     provide_logged_in_user,
     twitch_get_user,
 )
 from components.login.github import github_verify_code
+from components.login.google import google_verify_code
 from components.login.twitch import twitch_verify_code
 
 login_router = APIRouter()
@@ -172,10 +175,40 @@ async def google_login_callback(
 ) -> RedirectResponse:
     """
     Handle Google OAuth callback.
-    Currently returns a placeholder response.
+    If code provided, exchange for token and set cookie.
+    If already logged in, redirect to login page.
     """
-    # TODO: Implement Google OAuth
-    return RedirectResponse(url=_get_frontend_url(request))
+    google_access_token = request.cookies.get(COOKIES["google"])
+
+    # Check if already logged in with google
+    if google_access_token is not None:
+        user = await google_get_user(google_access_token)
+        if user is not None:
+            return RedirectResponse(url=_get_frontend_url(request))
+
+    # No code provided, redirect to login
+    if code is None:
+        return RedirectResponse(url=_get_frontend_url(request))
+
+    # Exchange code for access token
+    access_token = await google_verify_code(code)
+
+    if isinstance(access_token, int):
+        # Error occurred
+        return RedirectResponse(url=(_get_frontend_url(request) + "/login?error=oauth_failed"))
+
+    # Set cookie and redirect
+    response = RedirectResponse(url=_get_frontend_url(request))
+    response.set_cookie(
+        key=COOKIES["google"],
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        # 7 days
+        max_age=604800,
+    )
+    return response
 
 
 @login_router.get("/login/twitch/start")
@@ -209,6 +242,24 @@ async def start_github_login() -> RedirectResponse:
             "redirect_uri": f"{BACKEND_SERVER_URL}/login/github",
             "response_type": "code",
             "scope": "read:user",
+        },
+    )
+    return RedirectResponse(url=str(oauth_url))
+
+
+@login_router.get("/login/google/start")
+async def start_google_login() -> RedirectResponse:
+    """
+    Start Google OAuth flow - redirects to Google authorization page.
+    """
+
+    oauth_url = httpx.URL(
+        "https://accounts.google.com/o/oauth2/v2/auth",
+        params={
+            "client_id": GOOGLE_CLIENT_ID,
+            "redirect_uri": f"{BACKEND_SERVER_URL}/login/google",
+            "response_type": "code",
+            "scope": "profile",
         },
     )
     return RedirectResponse(url=str(oauth_url))

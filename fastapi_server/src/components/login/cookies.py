@@ -169,13 +169,34 @@ async def github_get_user(github_access_token: str | None) -> GithubUser | None:
     return github_user
 
 
+async def google_get_user(google_access_token: str | None) -> GoogleUser | None:
+    if google_access_token is None:
+        return None
+    async with httpx.AsyncClient() as client:
+        get_response = await client.get(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            headers={
+                "Authorization": f"Bearer {google_access_token}",
+            },
+        )
+        if get_response.is_error:
+            return None
+        data = get_response.json()
+    google_user = GoogleUser(
+        id=int(data["sub"]),
+        display_name=data.get("name", "Unknown"),
+    )
+    return google_user
+
+
 async def provide_logged_in_user(loggin_settings: LoginSettings) -> LoggedInUser | None:
     user = None
     if loggin_settings.twitch_access_token is not None:
         user = await twitch_get_user(loggin_settings.twitch_access_token)
     if user is None and loggin_settings.github_access_token is not None:
         user = await github_get_user(loggin_settings.github_access_token)
-    # TODO Add google
+    if user is None and loggin_settings.google_access_token is not None:
+        user = await google_get_user(loggin_settings.google_access_token)
     return LoggedInUser.from_service(user)
 
 

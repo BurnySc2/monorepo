@@ -48,6 +48,10 @@ export function start_github_login() {
     window.location.href = `${get_api_base()}/login/github/start`
 }
 
+export function start_google_login() {
+    window.location.href = `${get_api_base()}/login/google/start`
+}
+
 export async function handle_logout(): Promise<void> {
     try {
         const response = await fetch(`${get_api_base()}/logout`, {

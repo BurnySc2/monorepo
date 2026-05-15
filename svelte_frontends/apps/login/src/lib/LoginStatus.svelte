@@ -2,7 +2,7 @@
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { fetch_login_status, get_api_base } from "./api"
-import { start_github_login, start_twitch_login } from "./login"
+import { start_github_login, start_google_login, start_twitch_login } from "./login"
 
 // State variables using snake_case
 let is_loading = $state(true)
@@ -83,7 +83,7 @@ onMount(() => {
             </button>
             <button
                 class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#4285f4] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md"
-                onclick={() => { alert('Google login not implemented yet'); }}
+                onclick={start_google_login}
             >
                 Login with Google
             </button>
