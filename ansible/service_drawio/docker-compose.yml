@@ -1,6 +1,6 @@
 ---
 # Drawio - Self-hosted diagram editor
-# https://hub.docker.com/r/drawio/docker
+# https://hub.docker.com/r/jgraph/drawio
 # Data is stored locally in the ./data volume
 # No external database needed - uses local file storage
 networks:
@@ -8,7 +8,7 @@ networks:
     external: true
 services:
   drawio:
-    # https://hub.docker.com/r/drawio/docker/tags
+    # https://hub.docker.com/r/jgraph/drawio/tags
     image: jgraph/drawio:latest
     container_name: drawio_docker
     hostname: drawio_docker
