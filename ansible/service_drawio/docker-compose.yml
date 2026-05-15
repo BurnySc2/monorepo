@@ -1,0 +1,40 @@
+---
+# Drawio - Self-hosted diagram editor
+# https://hub.docker.com/r/drawio/docker
+# Data is stored locally in the ./data volume
+# No external database needed - uses local file storage
+networks:
+  pangolin_newt:
+    external: true
+services:
+  drawio:
+    # https://hub.docker.com/r/drawio/docker/tags
+    image: jgraph/drawio:latest
+    container_name: drawio_docker
+    hostname: drawio_docker
+    networks:
+      - pangolin_newt
+    restart: unless-stopped
+    labels:
+      - pangolin.public-resources.drawio.name=Drawio
+      - pangolin.public-resources.drawio.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.drawio.protocol=http
+      - pangolin.public-resources.drawio.auth.sso-enabled=true
+      - pangolin.public-resources.drawio.targets[0].site=local
+      - pangolin.public-resources.drawio.targets[0].method=http
+      - pangolin.public-resources.drawio.targets[0].hostname=drawio_docker
+      - pangolin.public-resources.drawio.targets[0].port={{ APPLICATION_PORT }}
+    environment:
+      - DRAWIO_PERSISTENCE=data
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -q
+        - --spider
+        - http://localhost:8080
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./data:/etc/drawio/data

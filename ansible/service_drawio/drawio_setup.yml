@@ -1,0 +1,39 @@
+---
+# https://hub.docker.com/r/drawio/docker
+# https://www.drawio.com/
+# Execute with
+# ansible-playbook drawio_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service
+  hosts: server_group4
+  vars:
+    USERNAME: '{{ secrets.DRAWIO.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.DRAWIO.SUBDOMAIN }}'
+    APPLICATION_PORT: '8080'
+  tasks:
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+      loop_control:
+        loop_var: item
+
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: Run docker-compose up
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        files:
+          - docker-compose.yml
+        pull: always
