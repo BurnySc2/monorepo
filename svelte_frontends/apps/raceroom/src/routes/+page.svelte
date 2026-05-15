@@ -39,7 +39,7 @@ function group_by_driver(data: BestTimeEntry[]): DriverSeries[] {
     const groups = new Map<string, BestTimeEntry[]>()
 
     for (const entry of data) {
-        const key = `${entry.driver_name}-${entry.car_name}-${entry.driving_model}`
+        const key = `${entry.driver_name}---${entry.car_name}---${entry.driving_model}`
         if (!groups.has(key)) {
             groups.set(key, [])
         }
@@ -126,9 +126,13 @@ function handle_mouse_move(event: MouseEvent) {
         return
     }
 
+    const MARGIN_LEFT = 20
+    const MARGIN_RIGHT = 20
+
     const rect = chart_area.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const percentage = x / rect.width
+    const plot_x = event.clientX - rect.left - MARGIN_LEFT
+    const inner_width = rect.width - MARGIN_LEFT - MARGIN_RIGHT
+    const percentage = Math.max(0, Math.min(1, plot_x / inner_width))
 
     const all_dates = best_times
         .filter((t) => t.date)

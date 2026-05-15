@@ -40,9 +40,9 @@ def parse_player_id(url: str) -> int:
 
 
 def parse_laptime(laptime: str) -> float:
-    match = re.fullmatch(r"(\d+)m (\d+\.\d+)s", laptime)
+    match = re.fullmatch(r"(\d+)m (\d+\.\d+)s(?:, .+)?", laptime)
     if match is None:
-        return -1
+        raise ValueError(f"Laptime not parseable: {laptime}")
     minutes, seconds = match.groups()
     return int(minutes) * 60 + float(seconds)
 
