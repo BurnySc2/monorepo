@@ -60,7 +60,7 @@
         profiles:
           - prod
         state: stopped
-      ignore_errors: true
+      failed_when: false
 
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
