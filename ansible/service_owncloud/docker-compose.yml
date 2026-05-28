@@ -11,7 +11,7 @@ networks:
 services:
   owncloud:
     # https://hub.docker.com/r/owncloud/server/tags
-    image: owncloud/server:10.16.1
+    image: owncloud/server:10.16.2
     container_name: owncloud_server
     hostname: owncloud_server
     networks:

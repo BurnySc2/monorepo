@@ -5,31 +5,34 @@
 - name: Create service
   hosts: server_group4
   vars:
-    USERNAME: '{{ secrets.STIRLING.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.STIRLING.SUBDOMAIN }}'
-    APPLICATION_PORT: '8080'
+    USERNAME: "{{ secrets.STIRLING.USERNAME }}"
+    SUBDOMAIN: "{{ secrets.STIRLING.SUBDOMAIN }}"
+    APPLICATION_PORT: "8080"
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: '{{ USERNAME }}.{{ secrets.MY_DOMAIN }}'
+        - hostname: "{{ USERNAME }}.{{ secrets.MY_DOMAIN }}"
       loop_control:
         loop_var: item
 
     - name: Create group
       ansible.builtin.group:
-        name: '{{ USERNAME }}'
+        name: "{{ USERNAME }}"
         state: present
+
     - name: Create user
       ansible.builtin.user:
-        name: '{{ USERNAME }}'
+        name: "{{ USERNAME }}"
         groups:
-          - '{{ USERNAME }}'
+          - "{{ USERNAME }}"
           - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
+        shell: "{{ secrets.DEFAULT_SHELL }}"
+
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
+
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}

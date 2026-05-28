@@ -53,12 +53,15 @@
       file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: absent
+
     - name: Run `docker-compose down`
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
         profiles:
           - prod
         state: stopped
+      ignore_errors: true
+
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
