@@ -41,7 +41,7 @@ services:
     networks:
       - docmost-net
   redis:
-    image: redis:7.2-alpine
+    image: redis:8-alpine
     restart: unless-stopped
     volumes:
       - redis_data:/data
