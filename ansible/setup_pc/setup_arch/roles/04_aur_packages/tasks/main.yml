@@ -14,19 +14,19 @@
       - xq  # html content extractor
       - zoom
       - visual-studio-code-bin
-      - nimlangserver-bin
+      # - nimlangserver-bin
       - spotify
       - spotify-adblock
       - anydesk-bin  # remote maintenance
-      - rustdesk
+      - rustdesk  # anydesk / teamviewer alternative
       - aur/google-chrome
       # - docker-slim-bin  # slimify docker images by stripping them to files that are required
-      - choosenim  # nim installer
+      # - choosenim  # nim installer
       - jdownloader2
-      - yt-dlp-git  # Videos downloader
+      # - yt-dlp-git  # Videos downloader
       - ttf-symbola  # required by discord? https://wiki.archlinux.org/title/Discord#Emojis_are_not_rendered_correctly
       - nodejs-emmet-ls  # emmet language server for helix
-      - warp-terminal  # Modern terminal emulator
+      # - warp-terminal  # Modern terminal emulator
       # - whatsie  # Whatsapp, use web version instead https://web.whatsapp.com
       # - opera
       # - lazydocker-bin  # docker gui in terminal

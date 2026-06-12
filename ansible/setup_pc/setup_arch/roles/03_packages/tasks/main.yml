@@ -89,6 +89,8 @@
       # - taplo-cli
       # Media player command-line controller
       - playerctl
+      # Mic audio control gui (remove background noise, improve voice quality)
+      - easyeffects
     state: present
   become: true
 - name: Install bigger packages (>10mb)
