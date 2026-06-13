@@ -45,6 +45,26 @@ function get_players(replay: ParsedReplayFile): string {
     return `${winner} vs ${loser}`
 }
 
+function get_winner_display(replay: ParsedReplayFile): string {
+    const winning_team = replay.teams.find((t) => t.result === "Win")
+    if (!winning_team) {
+        return "-"
+    }
+
+    // Check if 1v1: exactly 2 teams, each with exactly 1 player
+    const is_1v1 = replay.teams.length === 2 && replay.teams.every((t) => t.players.length === 1)
+
+    if (is_1v1) {
+        const winner = winning_team.players[0]
+        const race_letter = winner.play_race[0] ?? ""
+        return `[${race_letter}] ${winner.name}`
+    }
+
+    // Not 1v1: show "Team N"
+    const team_index = replay.teams.indexOf(winning_team)
+    return `Team ${team_index + 1}`
+}
+
 async function download_replay(replay: ParsedReplayFile) {
     if (!replay.file_data) {
         return
@@ -70,7 +90,7 @@ async function download_replay(replay: ParsedReplayFile) {
                 <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Players</th>
                 <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Duration</th>
                 <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Region</th>
-                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Result</th>
+                <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Winner</th>
                 <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Actions</th>
             </tr>
         </thead>
@@ -83,12 +103,8 @@ async function download_replay(replay: ParsedReplayFile) {
                     <td class="p-3 border-b border-gray-100">{get_players(replay)}</td>
                     <td class="p-3 border-b border-gray-100">{format_duration(replay.game_length_seconds)}</td>
                     <td class="p-3 border-b border-gray-100">{replay.region_short.toUpperCase()}</td>
-                    <td
-                        class="p-3 border-b border-gray-100 font-semibold"
-                        class:text-green-600={replay.teams[0]?.result === "Win"}
-                        class:text-red-600={replay.teams[0]?.result === "Loss"}
-                    >
-                        {replay.teams[0]?.result || "-"}
+                    <td class="p-3 border-b border-gray-100 font-semibold">
+                        {get_winner_display(replay)}
                     </td>
                     <td class="p-3 border-b border-gray-100">
                         <button

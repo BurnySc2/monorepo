@@ -162,7 +162,7 @@ $effect(() => {
 })
 </script>
 
-<div class="max-w-3xl mx-auto p-8">
+<div class="mx-auto p-8">
     <h1 class="text-4xl font-bold mb-6">Replay Pack Builder</h1>
 
     <!-- Upload Section -->
