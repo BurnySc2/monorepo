@@ -1,5 +1,6 @@
 <script lang="ts">
 // Simple spinner component – no props needed
+let { hidden = false } = $props()
 </script>
 
 <style>
@@ -22,5 +23,6 @@
 
 <div
     class="spinner"
+    style={hidden ? "display: none" : ""}
     aria-label="Loading"
 ></div>

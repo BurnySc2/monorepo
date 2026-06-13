@@ -96,8 +96,8 @@ async function download_replay(replay: ParsedReplayFile) {
 }
 </script>
 
-<div class="w-full overflow-x-auto">
-    <table class="w-full border-collapse">
+<div class="w-full overflow-x-scroll">
+    <table class="w-full">
         <thead>
             <tr>
                 <th class="bg-gray-100 font-semibold p-3 text-left border-b border-gray-200 sticky top-0">Date</th>
@@ -113,16 +113,16 @@ async function download_replay(replay: ParsedReplayFile) {
         <tbody>
             {#each sorted_replays as replay (replay.md5)}
                 <tr class="hover:bg-gray-50">
-                    <td class="p-3 border-b border-gray-100">{format_date(replay.played_timestamp)}</td>
-                    <td class="p-3 border-b border-gray-100 max-w-48 truncate">{replay.map_name}</td>
-                    <td class="p-3 border-b border-gray-100 font-semibold">{get_matchup(replay)}</td>
-                    <td class="p-3 border-b border-gray-100">{get_players(replay)}</td>
-                    <td class="p-3 border-b border-gray-100">{format_duration(replay.game_length_seconds)}</td>
-                    <td class="p-3 border-b border-gray-100">{replay.region_short.toUpperCase()}</td>
-                    <td class="p-3 border-b border-gray-100 font-semibold">{get_winner_display(replay)}</td>
-                    <td class="p-3 border-b border-gray-100">
+                    <td class=" border-b border-gray-100 text-nowrap">{format_date(replay.played_timestamp)}</td>
+                    <td class=" border-b border-gray-100 max-w-48 truncate">{replay.map_name}</td>
+                    <td class=" border-b border-gray-100 font-semibold">{get_matchup(replay)}</td>
+                    <td class=" border-b border-gray-100">{get_players(replay)}</td>
+                    <td class=" border-b border-gray-100">{format_duration(replay.game_length_seconds)}</td>
+                    <td class=" border-b border-gray-100">{replay.region_short.toUpperCase()}</td>
+                    <td class=" border-b border-gray-100 font-semibold">{get_winner_display(replay)}</td>
+                    <td class=" border-b border-gray-100 flex flex-col">
                         <button
-                            class="btn-secondary mr-2"
+                            class="btn-secondary"
                             onclick={() => download_replay(replay)}
                         >
                             Download

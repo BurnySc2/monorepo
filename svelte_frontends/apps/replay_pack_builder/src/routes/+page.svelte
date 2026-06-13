@@ -162,15 +162,15 @@ $effect(() => {
 })
 </script>
 
-<div class="mx-auto p-8">
+<div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
     <h1 class="text-4xl font-bold mb-6">Replay Pack Builder</h1>
 
     <!-- Upload Section -->
-    <section class="mb-6 p-4 border border-gray-300 rounded">
+    <section class="mb-6 p-4 sm:p-6 border border-gray-300 rounded">
         <h2 class="mt-0 mb-4">Upload Replays</h2>
         {#if parsed_files.length > 0}
             <button
-                class="btn-danger"
+                class="btn-danger mb-3"
                 onclick={clear_all_files}
             >
                 Remove uploaded files
@@ -184,7 +184,7 @@ $effect(() => {
                     <span class="ml-3 text-gray-600">Processing replays...</span>
                 </div>
             {:else}
-                <div class="flex gap-4 items-center">
+                <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                     <FileUpload
                         label="Drag & drop .SC2Replay files here"
                         accept=".SC2Replay"
@@ -214,12 +214,15 @@ $effect(() => {
     <!-- Name Template Section -->
     <section class="mb-6 p-4 border border-gray-300 rounded">
         <h2 class="mt-0 mb-4">Name template</h2>
-        <p class="text-sm text-gray-500 mb-4">
-            Available placeholders: date, time, duration, map, region, REGION, version, p1name, p1race, p1r, p1mmr,
-            p2name, p2race, p2r, p2mmr
-        </p>
+        <div class="text-sm text-gray-500 mb-4">
+            <span class="font-medium text-gray-600">Available placeholders:</span>
+            <span class="ml-1"
+                >date, time, duration, map, region, REGION, version, p1name, p1race, p1r, p1mmr, p2name, p2race, p2r,
+                p2mmr</span
+            >
+        </div>
         <button
-            class="btn-secondary mb-4"
+            class="btn btn-secondary mb-3"
             onclick={reset_pattern}
             disabled={replay_name_pattern === DEFAULT_REPLAY_NAME_PATTERN}
         >
@@ -229,7 +232,7 @@ $effect(() => {
             Custom pattern
             <input
                 type="text"
-                class="input w-full mt-1"
+                class="input w-full max-w-lg mt-1"
                 bind:value={replay_name_pattern}
             >
         </label>
@@ -241,18 +244,20 @@ $effect(() => {
         <h2 class="mt-0 mb-4">Download</h2>
         {#if filtered_replays.length > 0}
             <button
-                class="btn-primary"
+                class="btn btn-primary inline-flex items-center gap-2"
                 onclick={download_zip}
                 disabled={is_processing}
             >
-                Zip and download {filtered_replays.length} replays
+                <Spinner hidden={!is_processing} />
+                <span>Zip and download {filtered_replays.length} replays</span>
             </button>
         {:else}
             <button
-                class="btn-primary"
+                class="btn btn-primary inline-flex items-center gap-2"
                 disabled
             >
-                No replays to download
+                <Spinner hidden={!is_processing} />
+                <span>No replays to download</span>
             </button>
         {/if}
     </section>
