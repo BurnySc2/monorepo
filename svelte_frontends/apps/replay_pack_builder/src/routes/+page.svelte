@@ -229,7 +229,7 @@ $effect(() => {
             Custom pattern
             <input
                 type="text"
-                class="input w-full max-w-xs mt-1"
+                class="input w-full mt-1"
                 bind:value={replay_name_pattern}
             >
         </label>

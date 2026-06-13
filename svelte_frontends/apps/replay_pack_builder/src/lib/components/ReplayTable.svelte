@@ -12,7 +12,11 @@ let { replays, replay_name_pattern, on_remove }: Props = $props()
 let sorted_replays = $derived([...replays].sort((a, b) => b.played_timestamp - a.played_timestamp))
 
 function format_date(timestamp: number): string {
-    return new Date(timestamp).toLocaleDateString()
+    const date = new Date(timestamp)
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, "0")
+    const day = date.getDate().toString().padStart(2, "0")
+    return `${year}-${month}-${day}`
 }
 
 function format_duration(seconds: number): string {
