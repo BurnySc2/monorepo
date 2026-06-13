@@ -25,10 +25,20 @@ function get_matchup(replay: ParsedReplayFile): string {
     if (replay.teams.length !== 2) {
         return "N/A"
     }
-    const players = replay.teams.flatMap((t) => t.players)
-    if (players.length !== 2) {
+    const team1_players = replay.teams[0].players.length
+    const team2_players = replay.teams[1].players.length
+
+    // Team games: 2v2, 3v3, 4v4
+    if (team1_players === team2_players && [2, 3, 4].includes(team1_players)) {
+        return `${team1_players}v${team2_players}`
+    }
+
+    // 1v1
+    if (team1_players !== 1 || team2_players !== 1) {
         return "N/A"
     }
+
+    const players = replay.teams.flatMap((t) => t.players)
     const winner = replay.teams[0].result === "Win" ? players[0] : players[1]
     const loser = replay.teams[0].result === "Win" ? players[1] : players[0]
     return `${winner.play_race[0]}v${loser.play_race[0]}`

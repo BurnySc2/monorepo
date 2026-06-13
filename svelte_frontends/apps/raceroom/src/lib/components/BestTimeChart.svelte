@@ -41,7 +41,9 @@ function min<T>(data: T[], accessor: (d: T) => number): number {
 }
 
 function render_chart() {
-    if (!svg_el || !container_el || series.length === 0) return
+    if (!svg_el || !container_el || series.length === 0) {
+        return
+    }
 
     const container_rect = container_el.getBoundingClientRect()
     const width = container_rect.width || 800
@@ -60,7 +62,9 @@ function render_chart() {
 
     // Flatten all data points for domain calculation
     const all_points = series.flatMap((s) => s.data)
-    if (all_points.length === 0) return
+    if (all_points.length === 0) {
+        return
+    }
 
     // Create scales
     const x_extent = extent(all_points, (d) => d.date)
