@@ -120,27 +120,30 @@ function plot_data() {
 }
 
 function plot_arearange_chart(chartElement: HTMLElement) {
-    const seriesData = merged_timelines.map((item) => {
+    const realData = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
-        return [gameloop, item[1][timeline_selected], item[2][timeline_selected]]
+        return [gameloop, item[1][timeline_selected]]
     })
 
-    const zones = merged_timelines.map((item) => {
+    const idealData = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
-        const realValue = item[1][timeline_selected]
-        const idealValue = item[2][timeline_selected]
-        const betterThanIdeal = realValue > idealValue
-        const fillColor = betterThanIdeal ? "#C0D890" : "#ED4337"
-        return { value: gameloop, fillColor }
+        return [gameloop, item[2][timeline_selected]]
     })
 
     const series: object[] = [
         {
-            type: "arearange",
-            name: timeline_selected,
-            data: seriesData,
-            zoneAxis: "x",
-            zones,
+            type: "area",
+            name: "Real",
+            data: realData,
+            color: "#4A90E2",
+            fillOpacity: 0.3,
+        },
+        {
+            type: "area",
+            name: "Ideal",
+            data: idealData,
+            color: "#F5A623",
+            fillOpacity: 0.3,
         },
     ]
 
@@ -165,9 +168,15 @@ function plot_arearange_chart(chartElement: HTMLElement) {
         chart: (element: HTMLElement | string, options: object) => object
     }
     current_chart = hc.chart(chartElement, {
-        chart: { zoomType: "x", type: "arearange" },
+        chart: { zoomType: "x", type: "area" },
         title: { text: "" },
-        plotOptions: { series: { animation: false } },
+        plotOptions: {
+            series: { animation: false },
+            area: { fillOpacity: 0.3 },
+        },
+        yAxis: {
+            title: { text: timeline_selected },
+        },
         xAxis: {
             labels: {
                 formatter: function () {
@@ -175,7 +184,21 @@ function plot_arearange_chart(chartElement: HTMLElement) {
                 },
             },
         },
-        tooltip: {},
+        tooltip: {
+            shared: true,
+            formatter: function () {
+                const ctx = this as unknown as {
+                    x: number
+                    points: Array<{ series: { name: string; color: string }; y: number }>
+                }
+                let html = `<b>${gameloop_to_time_string(ctx.x)}</b><br/>`
+                for (const point of ctx.points) {
+                    html += `<span style="color:${point.series.color}">●</span> ${point.series.name}: <b>${point.y}</b><br/>`
+                }
+                return html
+            },
+        },
+        legend: { enabled: true },
         series,
     }) as Highcharts.Chart
 }
@@ -241,7 +264,7 @@ $effect(() => {
             bind:value={real_replay_selected_player_id}
         >
             {#each [real_replay_data.player1.name, real_replay_data.player2.name] as playerName, index}
-                <option value={index + 1}>{playerName}</option>
+                <option value={index}>{playerName}</option>
             {/each}
         </select>
         <div></div>
@@ -250,7 +273,7 @@ $effect(() => {
             bind:value={ideal_replay_selected_player_id}
         >
             {#each [ideal_replay_data.player1.name, ideal_replay_data.player2.name] as playerName, index}
-                <option value={index + 1}>{playerName}</option>
+                <option value={index}>{playerName}</option>
             {/each}
         </select>
     </div>

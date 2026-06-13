@@ -152,7 +152,7 @@ def parse_replay_timeline(
 
     worker_events.sort(key=lambda x: x.frame)
 
-    max_gameloop = replay.length.seconds * 224 if replay.length else 0
+    max_gameloop = replay.frames
     tick_count = (max_gameloop // replay_tick) + 1
 
     timeline: list[list[TimelineDataPoint]] = []
