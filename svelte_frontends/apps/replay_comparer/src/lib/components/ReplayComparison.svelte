@@ -36,7 +36,8 @@ interface MergedTimelineItem {
     2: TimelineData
 }
 
-let merged_timelines: MergedTimelineItem[] = $state([])
+let merged_timelines: MergedTimelineItem[] = []
+let current_chart: Highcharts.Chart | null = null
 
 function sort_by_key<T extends object>(array: T[], key: keyof T): void {
     array.sort((a, b) => {
@@ -57,6 +58,10 @@ function gameloop_to_time_string(gameloop: number): string {
 function merge_timelines() {
     const merged: Array<TimelineData & { _id: number }> = []
 
+    const replay1_gameloop = real_replay_data.timeline.at(-1)![real_replay_selected_player_id].gameloop
+    const replay2_gameloop = ideal_replay_data.timeline.at(-1)![ideal_replay_selected_player_id].gameloop
+    const total_gameloop = Math.min(replay1_gameloop, replay2_gameloop)
+
     real_replay_data.timeline.forEach((item) => {
         merged.push({ ...item[real_replay_selected_player_id], _id: 1 })
     })
@@ -71,6 +76,10 @@ function merge_timelines() {
 
     merged_timelines = []
     merged.forEach((item) => {
+        // Cut off at gameloop of last gameloop of shortest replay
+        if (total_gameloop < item.gameloop) {
+            return
+        }
         if (item._id === 1) {
             playerData1 = item
         } else {
@@ -95,6 +104,12 @@ function plot_data() {
     const chartElement = document.getElementById("timelinePlot")
     if (!chartElement) {
         return
+    }
+
+    // Destroy existing chart to prevent memory leak
+    if (current_chart) {
+        current_chart.destroy()
+        current_chart = null
     }
 
     if (is_spending_option(timeline_selected)) {
@@ -149,7 +164,7 @@ function plot_arearange_chart(chartElement: HTMLElement) {
     const hc = Highcharts as unknown as {
         chart: (element: HTMLElement | string, options: object) => object
     }
-    hc.chart(chartElement, {
+    current_chart = hc.chart(chartElement, {
         chart: { zoomType: "x", type: "arearange" },
         title: { text: "" },
         plotOptions: { series: { animation: false } },
@@ -162,7 +177,7 @@ function plot_arearange_chart(chartElement: HTMLElement) {
         },
         tooltip: {},
         series,
-    })
+    }) as Highcharts.Chart
 }
 
 function plot_spending_chart(chartElement: HTMLElement) {
@@ -182,7 +197,7 @@ function plot_spending_chart(chartElement: HTMLElement) {
     const hc = Highcharts as unknown as {
         chart: (element: HTMLElement | string, options: object) => object
     }
-    hc.chart(chartElement, {
+    current_chart = hc.chart(chartElement, {
         chart: { zoomType: "x", type: "area" },
         title: { text: "" },
         plotOptions: {
@@ -205,30 +220,16 @@ function plot_spending_chart(chartElement: HTMLElement) {
             { type: "area", name: "Ideal - Tech", data: techData.map((d) => [d[0], d[2]]), stack: "ideal" },
             { type: "area", name: "Ideal - Army", data: armyData.map((d) => [d[0], d[2]]), stack: "ideal" },
         ],
-    })
-}
-
-function handle_player_change() {
-    merge_timelines()
-    plot_data()
-}
-
-function handle_timeline_change() {
-    plot_data()
+    }) as Highcharts.Chart
 }
 
 $effect(() => {
     real_replay_selected_player_id
     ideal_replay_selected_player_id
-    if (real_replay_data && ideal_replay_data) {
-        handle_player_change()
-    }
-})
-
-$effect(() => {
     timeline_selected
-    if (merged_timelines.length > 0) {
-        handle_timeline_change()
+    if (real_replay_data && ideal_replay_data) {
+        merge_timelines()
+        plot_data()
     }
 })
 </script>
@@ -236,8 +237,8 @@ $effect(() => {
 <div class="flex flex-col justify-center m-8 max-w-4xl">
     <div class="grid grid-cols-3 text-center">
         <select
+            class="border border-gray-300 rounded px-2 py-1"
             bind:value={real_replay_selected_player_id}
-            onchange={handle_player_change}
         >
             {#each [real_replay_data.player1.name, real_replay_data.player2.name] as playerName, index}
                 <option value={index + 1}>{playerName}</option>
@@ -245,8 +246,8 @@ $effect(() => {
         </select>
         <div></div>
         <select
+            class="border border-gray-300 rounded px-2 py-1"
             bind:value={ideal_replay_selected_player_id}
-            onchange={handle_player_change}
         >
             {#each [ideal_replay_data.player1.name, ideal_replay_data.player2.name] as playerName, index}
                 <option value={index + 1}>{playerName}</option>
@@ -254,7 +255,7 @@ $effect(() => {
         </select>
     </div>
     <select
-        class="my-2"
+        class="my-2 border border-gray-300 rounded px-2 py-1"
         bind:value={timeline_selected}
     >
         {#each TIMELINE_OPTIONS as option}

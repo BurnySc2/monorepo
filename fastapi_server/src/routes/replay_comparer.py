@@ -197,7 +197,7 @@ def parse_replay_timeline(
                 total_army_value = 0
                 collection_rate = 0
 
-            seconds = target_gameloop / 224.0 * 10.0
+            seconds = target_gameloop / 22.4
             spm = (state.workers_produced / seconds * 60.0) if seconds > 0 else 0.0
 
             tick_points.append(
