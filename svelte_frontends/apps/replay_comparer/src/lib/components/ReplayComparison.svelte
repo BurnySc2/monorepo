@@ -41,9 +41,9 @@ let current_chart: Highcharts.Chart | null = null
 
 function sort_by_key<T extends object>(array: T[], key: keyof T): void {
     array.sort((a, b) => {
-        const aVal = a[key] as number
-        const bVal = b[key] as number
-        return aVal - bVal
+        const a_val = a[key] as number
+        const b_val = b[key] as number
+        return a_val - b_val
     })
 }
 
@@ -51,8 +51,8 @@ function gameloop_to_time_string(gameloop: number): string {
     const seconds = gameloop / SECOND
     const minutes = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
-    const secondsString = secs.toString().padStart(2, "0")
-    return `${minutes}:${secondsString}`
+    const seconds_string = secs.toString().padStart(2, "0")
+    return `${minutes}:${seconds_string}`
 }
 
 function merge_timelines() {
@@ -71,8 +71,8 @@ function merge_timelines() {
 
     sort_by_key(merged, "gameloop")
 
-    let playerData1: TimelineData = real_replay_data.timeline[0][real_replay_selected_player_id]
-    let playerData2: TimelineData = ideal_replay_data.timeline[0][ideal_replay_selected_player_id]
+    let player_data_1: TimelineData = real_replay_data.timeline[0][real_replay_selected_player_id]
+    let player_data_2: TimelineData = ideal_replay_data.timeline[0][ideal_replay_selected_player_id]
 
     merged_timelines = []
     merged.forEach((item) => {
@@ -81,13 +81,13 @@ function merge_timelines() {
             return
         }
         if (item._id === 1) {
-            playerData1 = item
+            player_data_1 = item
         } else {
-            playerData2 = item
+            player_data_2 = item
         }
         merged_timelines.push({
-            1: { ...playerData1 },
-            2: { ...playerData2 },
+            1: { ...player_data_1 },
+            2: { ...player_data_2 },
         })
     })
 }
@@ -101,8 +101,8 @@ function is_spending_option(option: TimelineOption): boolean {
 }
 
 function plot_data() {
-    const chartElement = document.getElementById("timelinePlot")
-    if (!chartElement) {
+    const chart_element = document.getElementById("timelinePlot")
+    if (!chart_element) {
         return
     }
 
@@ -113,19 +113,19 @@ function plot_data() {
     }
 
     if (is_spending_option(timeline_selected)) {
-        plot_spending_chart(chartElement)
+        plot_spending_chart(chart_element)
     } else {
-        plot_arearange_chart(chartElement)
+        plot_arearange_chart(chart_element)
     }
 }
 
-function plot_arearange_chart(chartElement: HTMLElement) {
-    const realData = merged_timelines.map((item) => {
+function plot_arearange_chart(chart_element: HTMLElement) {
+    const real_data = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[1][timeline_selected]]
     })
 
-    const idealData = merged_timelines.map((item) => {
+    const ideal_data = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[2][timeline_selected]]
     })
@@ -134,21 +134,21 @@ function plot_arearange_chart(chartElement: HTMLElement) {
         {
             type: "area",
             name: "Real",
-            data: realData,
+            data: real_data,
             color: "#4A90E2",
             fillOpacity: 0.3,
         },
         {
             type: "area",
             name: "Ideal",
-            data: idealData,
+            data: ideal_data,
             color: "#F5A623",
             fillOpacity: 0.3,
         },
     ]
 
     if (is_event_timeline(timeline_selected)) {
-        const scatterData = merged_timelines
+        const scatter_data = merged_timelines
             .filter((item) => item[1][timeline_selected] !== item[2][timeline_selected])
             .map((item) => {
                 const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
@@ -158,7 +158,7 @@ function plot_arearange_chart(chartElement: HTMLElement) {
         series.push({
             type: "scatter",
             name: "Events",
-            data: scatterData,
+            data: scatter_data,
             marker: { radius: 4, symbol: "circle" },
             color: "#000",
         })
@@ -167,7 +167,7 @@ function plot_arearange_chart(chartElement: HTMLElement) {
     const hc = Highcharts as unknown as {
         chart: (element: HTMLElement | string, options: object) => object
     }
-    current_chart = hc.chart(chartElement, {
+    current_chart = hc.chart(chart_element, {
         chart: { zoomType: "x", type: "area" },
         title: { text: "" },
         plotOptions: {
@@ -203,16 +203,16 @@ function plot_arearange_chart(chartElement: HTMLElement) {
     }) as Highcharts.Chart
 }
 
-function plot_spending_chart(chartElement: HTMLElement) {
-    const econData = merged_timelines.map((item) => {
+function plot_spending_chart(chart_element: HTMLElement) {
+    const econ_data = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[1].spending_econ, item[2].spending_econ]
     })
-    const techData = merged_timelines.map((item) => {
+    const tech_data = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[1].spending_tech, item[2].spending_tech]
     })
-    const armyData = merged_timelines.map((item) => {
+    const army_data = merged_timelines.map((item) => {
         const gameloop = Math.max(item[1].gameloop, item[2].gameloop)
         return [gameloop, item[1].spending_army, item[2].spending_army]
     })
@@ -220,7 +220,7 @@ function plot_spending_chart(chartElement: HTMLElement) {
     const hc = Highcharts as unknown as {
         chart: (element: HTMLElement | string, options: object) => object
     }
-    current_chart = hc.chart(chartElement, {
+    current_chart = hc.chart(chart_element, {
         chart: { zoomType: "x", type: "area" },
         title: { text: "" },
         plotOptions: {
@@ -236,12 +236,12 @@ function plot_spending_chart(chartElement: HTMLElement) {
         },
         tooltip: {},
         series: [
-            { type: "area", name: "Real - Econ", data: econData.map((d) => [d[0], d[1]]), stack: "real" },
-            { type: "area", name: "Real - Tech", data: techData.map((d) => [d[0], d[1]]), stack: "real" },
-            { type: "area", name: "Real - Army", data: armyData.map((d) => [d[0], d[1]]), stack: "real" },
-            { type: "area", name: "Ideal - Econ", data: econData.map((d) => [d[0], d[2]]), stack: "ideal" },
-            { type: "area", name: "Ideal - Tech", data: techData.map((d) => [d[0], d[2]]), stack: "ideal" },
-            { type: "area", name: "Ideal - Army", data: armyData.map((d) => [d[0], d[2]]), stack: "ideal" },
+            { type: "area", name: "Real - Econ", data: econ_data.map((d) => [d[0], d[1]]), stack: "real" },
+            { type: "area", name: "Real - Tech", data: tech_data.map((d) => [d[0], d[1]]), stack: "real" },
+            { type: "area", name: "Real - Army", data: army_data.map((d) => [d[0], d[1]]), stack: "real" },
+            { type: "area", name: "Ideal - Econ", data: econ_data.map((d) => [d[0], d[2]]), stack: "ideal" },
+            { type: "area", name: "Ideal - Tech", data: tech_data.map((d) => [d[0], d[2]]), stack: "ideal" },
+            { type: "area", name: "Ideal - Army", data: army_data.map((d) => [d[0], d[2]]), stack: "ideal" },
         ],
     }) as Highcharts.Chart
 }
@@ -263,8 +263,8 @@ $effect(() => {
             class="border border-gray-300 rounded px-2 py-1"
             bind:value={real_replay_selected_player_id}
         >
-            {#each [real_replay_data.player1.name, real_replay_data.player2.name] as playerName, index}
-                <option value={index}>{playerName}</option>
+            {#each [real_replay_data.player1.name, real_replay_data.player2.name] as player_name, index}
+                <option value={index}>{player_name}</option>
             {/each}
         </select>
         <div></div>
@@ -272,8 +272,8 @@ $effect(() => {
             class="border border-gray-300 rounded px-2 py-1"
             bind:value={ideal_replay_selected_player_id}
         >
-            {#each [ideal_replay_data.player1.name, ideal_replay_data.player2.name] as playerName, index}
-                <option value={index}>{playerName}</option>
+            {#each [ideal_replay_data.player1.name, ideal_replay_data.player2.name] as player_name, index}
+                <option value={index}>{player_name}</option>
             {/each}
         </select>
     </div>
