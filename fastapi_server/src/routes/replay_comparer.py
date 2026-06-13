@@ -129,7 +129,7 @@ def parse_replay_timeline(
                 )
         elif isinstance(event, sc2reader.events.UnitDiedEvent):
             unit = getattr(event, "unit", None)
-            if unit is not None and is_worker_unit(unit.unit_type_name):
+            if unit is not None and is_worker_unit(unit.name):
                 owner_pid = getattr(unit, "owner_pid", None)
                 if owner_pid is not None:
                     worker_events.append(
@@ -137,7 +137,7 @@ def parse_replay_timeline(
                             frame=frame,
                             pid=owner_pid,
                             is_born=False,
-                            unit_type_name=unit.unit_type_name,
+                            unit_type_name=unit.name,
                         )
                     )
 
