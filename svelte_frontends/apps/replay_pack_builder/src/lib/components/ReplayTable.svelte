@@ -29,7 +29,9 @@ function get_matchup(replay: ParsedReplayFile): string {
     if (players.length !== 2) {
         return "N/A"
     }
-    return `${players[0].play_race[0]}v${players[1].play_race[0]}`
+    const winner = replay.teams[0].result === "Win" ? players[0] : players[1]
+    const loser = replay.teams[0].result === "Win" ? players[1] : players[0]
+    return `${winner.play_race[0]}v${loser.play_race[0]}`
 }
 
 function get_players(replay: ParsedReplayFile): string {
@@ -103,9 +105,7 @@ async function download_replay(replay: ParsedReplayFile) {
                     <td class="p-3 border-b border-gray-100">{get_players(replay)}</td>
                     <td class="p-3 border-b border-gray-100">{format_duration(replay.game_length_seconds)}</td>
                     <td class="p-3 border-b border-gray-100">{replay.region_short.toUpperCase()}</td>
-                    <td class="p-3 border-b border-gray-100 font-semibold">
-                        {get_winner_display(replay)}
-                    </td>
+                    <td class="p-3 border-b border-gray-100 font-semibold">{get_winner_display(replay)}</td>
                     <td class="p-3 border-b border-gray-100">
                         <button
                             class="btn-secondary mr-2"
