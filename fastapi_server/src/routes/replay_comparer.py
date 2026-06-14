@@ -240,8 +240,8 @@ async def parse_replay_file(
         data = BytesIO(contents)
         players, timeline = parse_replay_timeline(data, tick_value)
 
-        player1 = {"name": players[0].name} if len(players) > 0 else {"name": ""}
-        player2 = {"name": players[1].name} if len(players) > 1 else {"name": ""}
+        player1 = {"name": players[0].name}
+        player2 = {"name": players[1].name}
 
         timeline_serialized = [[point.__dict__ for point in tick_points] for tick_points in timeline]
 
