@@ -278,3 +278,62 @@ def test_parse_replay_burny_tech_buildings(parse_replay):
         f"but found {len(armories)}. "
         f"All buildings: {burny_player['buildings']}"
     )
+
+
+def test_parse_replay_burny_upgrades(parse_replay):
+    """Test that player BuRny has Stimpack and ShieldWall upgrades tracked."""
+    data = parse_replay()
+
+    # Find player BuRny
+    burny_player = None
+    if data["player1"]["name"] == "BuRny":
+        burny_player = data["player1"]
+    elif data["player2"]["name"] == "BuRny":
+        burny_player = data["player2"]
+
+    assert burny_player is not None, "Player BuRny not found in replay"
+    assert "upgrades" in burny_player, "upgrades not in response"
+
+    upgrades = burny_player["upgrades"]
+    assert isinstance(upgrades, list), "upgrades should be a list"
+
+    # 7:00 game time = 420 seconds = 420 * 22.4 = 9408 gameloops (LotV)
+    target_frame_stim = int(420 * 22.4)
+    # 8:00 game time = 480 seconds = 480 * 22.4 = 10752 gameloops (LotV)
+    target_frame_shield = int(480 * 22.4)
+
+    # Check Stimpack completed by 7:00
+    stimpack_upgrades = [u for u in upgrades if u["type"] == "Stimpack" and u["frame"] <= target_frame_stim]
+    assert len(stimpack_upgrades) == 1, (
+        f"Expected 1 Stimpack by 7:00 (frame {target_frame_stim}), "
+        f"but found {len(stimpack_upgrades)}. "
+        f"All upgrades: {upgrades}"
+    )
+
+    # Check ShieldWall (CombatShield) completed by 8:00
+    shieldwall_upgrades = [u for u in upgrades if u["type"] == "ShieldWall" and u["frame"] <= target_frame_shield]
+    assert len(shieldwall_upgrades) == 1, (
+        f"Expected 1 ShieldWall by 8:00 (frame {target_frame_shield}), "
+        f"but found {len(shieldwall_upgrades)}. "
+        f"All upgrades: {upgrades}"
+    )
+
+    # Check TerranInfantryWeaponsLevel1 completed by 8:00
+    infantry_weapons = [
+        u for u in upgrades if u["type"] == "TerranInfantryWeaponsLevel1" and u["frame"] <= target_frame_shield
+    ]
+    assert len(infantry_weapons) == 1, (
+        f"Expected 1 TerranInfantryWeaponsLevel1 by 8:00 (frame {target_frame_shield}), "
+        f"but found {len(infantry_weapons)}. "
+        f"All upgrades: {upgrades}"
+    )
+
+    # Check TerranInfantryArmorsLevel1 completed by 8:00
+    infantry_armors = [
+        u for u in upgrades if u["type"] == "TerranInfantryArmorsLevel1" and u["frame"] <= target_frame_shield
+    ]
+    assert len(infantry_armors) == 1, (
+        f"Expected 1 TerranInfantryArmorsLevel1 by 8:00 (frame {target_frame_shield}), "
+        f"but found {len(infantry_armors)}. "
+        f"All upgrades: {upgrades}"
+    )

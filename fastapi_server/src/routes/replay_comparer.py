@@ -81,10 +81,23 @@ class BuildingEvent:
     is_started: bool  # True for UnitInitEvent, False for UnitDoneEvent
 
 
+@dataclass
+class UpgradeEvent:
+    frame: int
+    pid: int
+    upgrade_type_name: str
+
+
 TOWN_HALL_TYPES = {"CommandCenter", "OrbitalCommand", "PlanetaryFortress"}
 TECH_BUILDING_TYPES = {"EngineeringBay", "Armory"}
 BASE_TOWN_HALL_TYPES = {"CommandCenter", "Nexus", "Hatchery"}
 TRACKED_BUILDING_TYPES = TOWN_HALL_TYPES | TECH_BUILDING_TYPES | BASE_TOWN_HALL_TYPES
+
+IGNORE_UPGRADES = {
+    "SprayTerran",
+    "SprayZerg",
+    "SprayProtoss",
+}
 
 
 def is_worker_unit(unit_type_name: str) -> bool:
@@ -93,7 +106,9 @@ def is_worker_unit(unit_type_name: str) -> bool:
 
 def parse_replay_timeline(
     data: BytesIO, replay_tick: int
-) -> tuple[list[PlayerTimelineState], list[list[TimelineDataPoint]], list[BuildingEvent], list[int]]:
+) -> tuple[
+    list[PlayerTimelineState], list[list[TimelineDataPoint]], list[BuildingEvent], list[UpgradeEvent], list[int]
+]:
     replay: sc2reader.resources.Replay = sc2reader.load_replay(data, load_level=3)  # type: ignore[attr-defined]
 
     players: list[PlayerTimelineState] = []
@@ -108,6 +123,7 @@ def parse_replay_timeline(
     stats_events: list[PlayerStatsAtFrame] = []
     worker_events: list[WorkerEvent] = []
     building_events: list[BuildingEvent] = []
+    upgrade_events: list[UpgradeEvent] = []
 
     for event in replay.tracker_events:
         frame = event.frame
@@ -179,6 +195,15 @@ def parse_replay_timeline(
                             is_started=False,
                         )
                     )
+        elif isinstance(event, sc2reader.events.UpgradeCompleteEvent) and 0 < event.frame:  # noqa: SIM102
+            if event.upgrade_type_name not in IGNORE_UPGRADES:
+                upgrade_events.append(
+                    UpgradeEvent(
+                        frame=event.frame,
+                        pid=event.pid,
+                        upgrade_type_name=event.upgrade_type_name,
+                    )
+                )
 
     stats_by_pid: dict[int, list[PlayerStatsAtFrame]] = {}
     for s in stats_events:
@@ -190,8 +215,8 @@ def parse_replay_timeline(
         stats_by_pid[pid].sort(key=lambda x: x.frame)
 
     worker_events.sort(key=lambda x: x.frame)
-
     building_events.sort(key=lambda x: x.frame)
+    upgrade_events.sort(key=lambda x: x.frame)
 
     max_gameloop = replay.frames
     tick_count = (max_gameloop // replay_tick) + 1
@@ -261,7 +286,7 @@ def parse_replay_timeline(
 
         timeline.append(tick_points)
 
-    return players, timeline, building_events, player_pids
+    return players, timeline, building_events, upgrade_events, player_pids
 
 
 @replay_comparer_router.post("/parse_replay")
@@ -279,7 +304,7 @@ async def parse_replay_file(
     try:
         contents = await replay_file.read()
         data = BytesIO(contents)
-        players, timeline, building_events, player_pids = parse_replay_timeline(data, tick_value)
+        players, timeline, building_events, upgrade_events, player_pids = parse_replay_timeline(data, tick_value)
 
         buildings_by_pid: dict[int, list[dict]] = {}
         for be in building_events:
@@ -308,15 +333,32 @@ async def parse_replay_file(
         for pid in expansion_timings_by_pid:
             expansion_timings_by_pid[pid].sort()
 
+        # Collect upgrades per player
+        upgrades_by_pid: dict[int, list[dict]] = {}
+        for ue in upgrade_events:
+            if ue.pid not in upgrades_by_pid:
+                upgrades_by_pid[ue.pid] = []
+            upgrades_by_pid[ue.pid].append(
+                {
+                    "type": ue.upgrade_type_name,
+                    "frame": ue.frame,
+                }
+            )
+
+        for pid in upgrades_by_pid:
+            upgrades_by_pid[pid].sort(key=lambda x: x["frame"])
+
         player1 = {
             "name": players[0].name,
             "buildings": buildings_by_pid.get(player_pids[0], []),
             "expansion_timings": expansion_timings_by_pid.get(player_pids[0], []),
+            "upgrades": upgrades_by_pid.get(player_pids[0], []),
         }
         player2 = {
             "name": players[1].name,
             "buildings": buildings_by_pid.get(player_pids[1], []),
             "expansion_timings": expansion_timings_by_pid.get(player_pids[1], []),
+            "upgrades": upgrades_by_pid.get(player_pids[1], []),
         }
 
         timeline_serialized = [[point.__dict__ for point in tick_points] for tick_points in timeline]
