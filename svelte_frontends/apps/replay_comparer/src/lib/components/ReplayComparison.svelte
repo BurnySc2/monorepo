@@ -39,14 +39,6 @@ interface MergedTimelineItem {
 let merged_timelines: MergedTimelineItem[] = []
 let current_chart: Highcharts.Chart | null = null
 
-function sort_by_key<T extends object>(array: T[], key: keyof T): void {
-    array.sort((a, b) => {
-        const a_val = a[key] as number
-        const b_val = b[key] as number
-        return a_val - b_val
-    })
-}
-
 function gameloop_to_time_string(gameloop: number): string {
     const seconds = gameloop / SECOND
     const minutes = Math.floor(seconds / 60)
@@ -56,48 +48,26 @@ function gameloop_to_time_string(gameloop: number): string {
 }
 
 function merge_timelines() {
-    const merged: Array<TimelineData & { _id: number }> = []
-
     // Guard: both timelines must be non-empty
     if (real_replay_data.timeline.length === 0 || ideal_replay_data.timeline.length === 0) {
         merged_timelines = []
         return
     }
 
-    const real_timeline_last = real_replay_data.timeline[real_replay_data.timeline.length - 1]
-    const ideal_timeline_last = ideal_replay_data.timeline[ideal_replay_data.timeline.length - 1]
-    const replay1_gameloop = real_timeline_last[real_replay_selected_player_id].gameloop
-    const replay2_gameloop = ideal_timeline_last[ideal_replay_selected_player_id].gameloop
-    const total_gameloop = Math.min(replay1_gameloop, replay2_gameloop)
+    // Extract player-specific timelines
+    const real_timeline = real_replay_data.timeline.map((item) => item[real_replay_selected_player_id])
+    const ideal_timeline = ideal_replay_data.timeline.map((item) => item[ideal_replay_selected_player_id])
 
-    real_replay_data.timeline.forEach((item) => {
-        merged.push({ ...item[real_replay_selected_player_id], _id: 1 })
-    })
-    ideal_replay_data.timeline.forEach((item) => {
-        merged.push({ ...item[ideal_replay_selected_player_id], _id: 2 })
-    })
-
-    sort_by_key(merged, "gameloop")
-
-    let player_data_1: TimelineData = real_replay_data.timeline[0][real_replay_selected_player_id]
-    let player_data_2: TimelineData = ideal_replay_data.timeline[0][ideal_replay_selected_player_id]
+    // Iterate up to the shorter replay's length (both have same gameloop intervals)
+    const min_length = Math.min(real_timeline.length, ideal_timeline.length)
 
     merged_timelines = []
-    merged.forEach((item) => {
-        // Cut off at gameloop of last gameloop of shortest replay
-        if (total_gameloop < item.gameloop) {
-            return
-        }
-        if (item._id === 1) {
-            player_data_1 = item
-        } else {
-            player_data_2 = item
-        }
+    for (let i = 0; i < min_length; i++) {
         merged_timelines.push({
-            1: { ...player_data_1 },
-            2: { ...player_data_2 },
+            1: { ...real_timeline[i] },
+            2: { ...ideal_timeline[i] },
         })
-    })
+    }
 }
 
 function is_event_timeline(option: TimelineOption): boolean {
