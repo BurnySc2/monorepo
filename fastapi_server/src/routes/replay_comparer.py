@@ -88,10 +88,39 @@ class UpgradeEvent:
     upgrade_type_name: str
 
 
-TOWN_HALL_TYPES = {"CommandCenter", "OrbitalCommand", "PlanetaryFortress"}
-TECH_BUILDING_TYPES = {"EngineeringBay", "Armory"}
+TOWN_HALL_TYPES = {"CommandCenter", "OrbitalCommand", "PlanetaryFortress", "Nexus", "Hatchery", "Lair", "Hive"}
+TECH_BUILDING_TYPES = {
+    "EngineeringBay",
+    "Armory",
+    "GhostAcademy",
+    "FusionCore",
+    "TwilightCouncil",
+    "DarkShrine",
+    "TemplarArchive",
+    "RoboticsBay",
+    "FleetBeacon",
+    "CyberneticsCore",
+    "Forge",
+    "SpawningPool",
+    "RoachWarren",
+    "HydraliskDen",
+    "BanelingNest",
+    "LurkerDen",
+    "Spire",
+    "GreaterSpire",
+    "InfestationPit",
+    "UltraliskCavern",
+}
 BASE_TOWN_HALL_TYPES = {"CommandCenter", "Nexus", "Hatchery"}
-TRACKED_BUILDING_TYPES = TOWN_HALL_TYPES | TECH_BUILDING_TYPES | BASE_TOWN_HALL_TYPES
+ARMY_PRODUCTION_TYPES = {
+    "Barracks",
+    "Factory",
+    "Starport",
+    "Gateway",
+    "RoboticsFacility",
+    "Stargate",
+}
+TRACKED_BUILDING_TYPES = TOWN_HALL_TYPES | TECH_BUILDING_TYPES | BASE_TOWN_HALL_TYPES | ARMY_PRODUCTION_TYPES
 
 IGNORE_UPGRADES = {
     "SprayTerran",
