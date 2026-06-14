@@ -14,6 +14,29 @@ def client():
     return TestClient(app)
 
 
+@pytest.fixture
+def example_replay_bytes():
+    """Load the example_vs_ai.SC2Replay file as bytes."""
+    replay_path = REPLAY_DIR / "example_vs_ai.SC2Replay"
+    return replay_path.read_bytes()
+
+
+@pytest.fixture
+def parse_replay(client, example_replay_bytes):
+    """Helper to parse a replay file and return the response data."""
+
+    def _parse(replay_bytes=None, replay_tick=224):
+        response = client.post(
+            "/api/replay_comparer/parse_replay",
+            data={"replay_tick": str(replay_tick)},
+            files={"replay_file": ("test.SC2Replay", replay_bytes or example_replay_bytes, "application/octet-stream")},
+        )
+        assert response.status_code == 200
+        return response.json()
+
+    return _parse
+
+
 def _make_mock_player(name, pid=1):
     player = MagicMock()
     player.clan_tag = ""
@@ -69,6 +92,10 @@ def test_parse_replay_valid_file(client: TestClient):
         assert data["player1"]["name"] == "Player1"
         assert data["player2"]["name"] == "Player2"
         assert isinstance(data["timeline"], list)
+        assert "buildings" in data["player1"]
+        assert "buildings" in data["player2"]
+        assert isinstance(data["player1"]["buildings"], list)
+        assert isinstance(data["player2"]["buildings"], list)
 
 
 def test_parse_replay_tick_zero(client: TestClient):
@@ -118,7 +145,7 @@ def test_parse_replay_malformed_file(client: TestClient):
 
 def test_parse_replay_example_vs_ai(client: TestClient):
     replay_path = REPLAY_DIR / "example_vs_ai.SC2Replay"
-    replay_bytes =  replay_path.read_bytes()
+    replay_bytes = replay_path.read_bytes()
 
     response = client.post(
         "/api/replay_comparer/parse_replay",
@@ -139,6 +166,12 @@ def test_parse_replay_example_vs_ai(client: TestClient):
     assert len(data["player1"]["name"]) > 0
     assert isinstance(data["player2"]["name"], str)
     assert len(data["player2"]["name"]) > 0
+
+    # Buildings data exists
+    assert "buildings" in data["player1"]
+    assert "buildings" in data["player2"]
+    assert isinstance(data["player1"]["buildings"], list)
+    assert isinstance(data["player2"]["buildings"], list)
 
     # Timeline is a non-empty list of ticks
     assert isinstance(data["timeline"], list)
@@ -166,3 +199,32 @@ def test_parse_replay_example_vs_ai(client: TestClient):
         for point in tick_points:
             assert isinstance(point, dict)
             assert expected_fields.issubset(point.keys())
+
+
+def test_parse_replay_burny_second_command_center(parse_replay):
+    """Test that player BuRny has a second CommandCenter by 1:40."""
+    data = parse_replay()
+
+    # Find player BuRny
+    burny_player = None
+    if data["player1"]["name"] == "BuRny":
+        burny_player = data["player1"]
+    elif data["player2"]["name"] == "BuRny":
+        burny_player = data["player2"]
+
+    assert burny_player is not None, "Player BuRny not found in replay"
+    assert "buildings" in burny_player, "Buildings data not in response"
+
+    # 1:40 game time = 100 seconds = 100 * 22.4 = 2240 gameloops (LotV)
+    target_frame = int(100 * 22.4)
+
+    # Count CommandCenters (and upgrades) started by 1:40
+    command_centers = [
+        b for b in burny_player["buildings"] if b["type"] == "CommandCenter" and b["frame"] <= target_frame
+    ]
+
+    assert len(command_centers) == 1, (
+        f"Expected at one CommandCenters on the way by 1:40 (frame {target_frame}), "
+        f"but found {len(command_centers)}. "
+        f"All buildings: {burny_player['buildings']}"
+    )

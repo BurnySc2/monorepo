@@ -73,13 +73,24 @@ class WorkerEvent:
     unit_type_name: str
 
 
+@dataclass
+class BuildingEvent:
+    frame: int
+    pid: int
+    unit_type_name: str
+    is_started: bool  # True for UnitInitEvent, False for UnitDoneEvent
+
+
+TOWN_HALL_TYPES = {"CommandCenter", "OrbitalCommand", "PlanetaryFortress"}
+
+
 def is_worker_unit(unit_type_name: str) -> bool:
     return unit_type_name in WORKER_UNIT_TYPES
 
 
 def parse_replay_timeline(
     data: BytesIO, replay_tick: int
-) -> tuple[list[PlayerTimelineState], list[list[TimelineDataPoint]]]:
+) -> tuple[list[PlayerTimelineState], list[list[TimelineDataPoint]], list[BuildingEvent], list[int]]:
     replay: sc2reader.resources.Replay = sc2reader.load_replay(data, load_level=3)  # type: ignore[attr-defined]
 
     players: list[PlayerTimelineState] = []
@@ -93,6 +104,7 @@ def parse_replay_timeline(
 
     stats_events: list[PlayerStatsAtFrame] = []
     worker_events: list[WorkerEvent] = []
+    building_events: list[BuildingEvent] = []
 
     for event in replay.tracker_events:
         frame = event.frame
@@ -140,6 +152,30 @@ def parse_replay_timeline(
                             unit_type_name=unit.name,
                         )
                     )
+        elif isinstance(event, sc2reader.events.UnitInitEvent):
+            if event.unit_type_name in TOWN_HALL_TYPES:
+                building_events.append(
+                    BuildingEvent(
+                        frame=event.frame,
+                        pid=event.upkeep_pid,
+                        unit_type_name=event.unit_type_name,
+                        is_started=True,
+                    )
+                )
+        elif isinstance(event, sc2reader.events.UnitDoneEvent):
+            unit = getattr(event, "unit", None)
+            if unit is not None and unit.name in TOWN_HALL_TYPES:
+                owner = getattr(unit, "owner", None)
+                owner_pid = owner.pid if owner is not None else None
+                if owner_pid is not None:
+                    building_events.append(
+                        BuildingEvent(
+                            frame=event.frame,
+                            pid=owner_pid,
+                            unit_type_name=unit.name,
+                            is_started=False,
+                        )
+                    )
 
     stats_by_pid: dict[int, list[PlayerStatsAtFrame]] = {}
     for s in stats_events:
@@ -151,6 +187,8 @@ def parse_replay_timeline(
         stats_by_pid[pid].sort(key=lambda x: x.frame)
 
     worker_events.sort(key=lambda x: x.frame)
+
+    building_events.sort(key=lambda x: x.frame)
 
     max_gameloop = replay.frames
     tick_count = (max_gameloop // replay_tick) + 1
@@ -220,7 +258,7 @@ def parse_replay_timeline(
 
         timeline.append(tick_points)
 
-    return players, timeline
+    return players, timeline, building_events, player_pids
 
 
 @replay_comparer_router.post("/parse_replay")
@@ -238,10 +276,31 @@ async def parse_replay_file(
     try:
         contents = await replay_file.read()
         data = BytesIO(contents)
-        players, timeline = parse_replay_timeline(data, tick_value)
+        players, timeline, building_events, player_pids = parse_replay_timeline(data, tick_value)
 
-        player1 = {"name": players[0].name}
-        player2 = {"name": players[1].name}
+        buildings_by_pid: dict[int, list[dict]] = {}
+        for be in building_events:
+            if be.pid not in buildings_by_pid:
+                buildings_by_pid[be.pid] = []
+            buildings_by_pid[be.pid].append(
+                {
+                    "type": be.unit_type_name,
+                    "frame": be.frame,
+                    "completed": not be.is_started,
+                }
+            )
+
+        for pid in buildings_by_pid:
+            buildings_by_pid[pid].sort(key=lambda x: x["frame"])
+
+        player1 = {
+            "name": players[0].name,
+            "buildings": buildings_by_pid.get(player_pids[0], []),
+        }
+        player2 = {
+            "name": players[1].name,
+            "buildings": buildings_by_pid.get(player_pids[1], []),
+        }
 
         timeline_serialized = [[point.__dict__ for point in tick_points] for tick_points in timeline]
 
