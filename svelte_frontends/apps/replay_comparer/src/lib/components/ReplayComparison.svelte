@@ -58,8 +58,16 @@ function gameloop_to_time_string(gameloop: number): string {
 function merge_timelines() {
     const merged: Array<TimelineData & { _id: number }> = []
 
-    const replay1_gameloop = real_replay_data.timeline.at(-1)![real_replay_selected_player_id].gameloop
-    const replay2_gameloop = ideal_replay_data.timeline.at(-1)![ideal_replay_selected_player_id].gameloop
+    // Guard: both timelines must be non-empty
+    if (real_replay_data.timeline.length === 0 || ideal_replay_data.timeline.length === 0) {
+        merged_timelines = []
+        return
+    }
+
+    const real_timeline_last = real_replay_data.timeline[real_replay_data.timeline.length - 1]
+    const ideal_timeline_last = ideal_replay_data.timeline[ideal_replay_data.timeline.length - 1]
+    const replay1_gameloop = real_timeline_last[real_replay_selected_player_id].gameloop
+    const replay2_gameloop = ideal_timeline_last[ideal_replay_selected_player_id].gameloop
     const total_gameloop = Math.min(replay1_gameloop, replay2_gameloop)
 
     real_replay_data.timeline.forEach((item) => {
@@ -250,7 +258,12 @@ $effect(() => {
     real_replay_selected_player_id
     ideal_replay_selected_player_id
     timeline_selected
-    if (real_replay_data && ideal_replay_data) {
+    if (
+        real_replay_data &&
+        ideal_replay_data &&
+        real_replay_data.timeline.length > 0 &&
+        ideal_replay_data.timeline.length > 0
+    ) {
         merge_timelines()
         plot_data()
     }
