@@ -82,6 +82,9 @@ class BuildingEvent:
 
 
 TOWN_HALL_TYPES = {"CommandCenter", "OrbitalCommand", "PlanetaryFortress"}
+TECH_BUILDING_TYPES = {"EngineeringBay", "Armory"}
+BASE_TOWN_HALL_TYPES = {"CommandCenter", "Nexus", "Hatchery"}
+TRACKED_BUILDING_TYPES = TOWN_HALL_TYPES | TECH_BUILDING_TYPES | BASE_TOWN_HALL_TYPES
 
 
 def is_worker_unit(unit_type_name: str) -> bool:
@@ -153,7 +156,7 @@ def parse_replay_timeline(
                         )
                     )
         elif isinstance(event, sc2reader.events.UnitInitEvent):
-            if event.unit_type_name in TOWN_HALL_TYPES:
+            if event.unit_type_name in TRACKED_BUILDING_TYPES:
                 building_events.append(
                     BuildingEvent(
                         frame=event.frame,
@@ -164,7 +167,7 @@ def parse_replay_timeline(
                 )
         elif isinstance(event, sc2reader.events.UnitDoneEvent):
             unit = getattr(event, "unit", None)
-            if unit is not None and unit.name in TOWN_HALL_TYPES:
+            if unit is not None and unit.name in TRACKED_BUILDING_TYPES:
                 owner = getattr(unit, "owner", None)
                 owner_pid = owner.pid if owner is not None else None
                 if owner_pid is not None:
@@ -293,13 +296,27 @@ async def parse_replay_file(
         for pid in buildings_by_pid:
             buildings_by_pid[pid].sort(key=lambda x: x["frame"])
 
+        # Calculate expansion timings per player (frames when town halls were started)
+        expansion_timings_by_pid: dict[int, list[int]] = {}
+        for be in building_events:
+            if be.unit_type_name in BASE_TOWN_HALL_TYPES and be.is_started:
+                if be.pid not in expansion_timings_by_pid:
+                    expansion_timings_by_pid[be.pid] = []
+                expansion_timings_by_pid[be.pid].append(be.frame)
+
+        # Sort timings by frame
+        for pid in expansion_timings_by_pid:
+            expansion_timings_by_pid[pid].sort()
+
         player1 = {
             "name": players[0].name,
             "buildings": buildings_by_pid.get(player_pids[0], []),
+            "expansion_timings": expansion_timings_by_pid.get(player_pids[0], []),
         }
         player2 = {
             "name": players[1].name,
             "buildings": buildings_by_pid.get(player_pids[1], []),
+            "expansion_timings": expansion_timings_by_pid.get(player_pids[1], []),
         }
 
         timeline_serialized = [[point.__dict__ for point in tick_points] for tick_points in timeline]

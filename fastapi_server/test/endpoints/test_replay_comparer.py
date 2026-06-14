@@ -202,7 +202,40 @@ def test_parse_replay_example_vs_ai(client: TestClient):
 
 
 def test_parse_replay_burny_second_command_center(parse_replay):
-    """Test that player BuRny has a second CommandCenter by 1:40."""
+    """Test that player BuRny has first expansion (2nd town hall) by 4:00."""
+    data = parse_replay()
+
+    # Find player BuRny
+    burny_player = None
+    if data["player1"]["name"] == "BuRny":
+        burny_player = data["player1"]
+    elif data["player2"]["name"] == "BuRny":
+        burny_player = data["player2"]
+
+    assert burny_player is not None, "Player BuRny not found in replay"
+    assert "expansion_timings" in burny_player, "expansion_timings not in response"
+
+    # 4:00 game time = 240 seconds = 240 * 22.4 = 5376 gameloops (LotV)
+    target_frame = int(240 * 22.4)
+
+    expansion_timings = burny_player["expansion_timings"]
+    assert len(expansion_timings) >= 2, (
+        f"Expected at least 2 town halls (starting base + 1 expansion), "
+        f"but found {len(expansion_timings)}. "
+        f"Expansion timings: {expansion_timings}"
+    )
+
+    # The first expansion (2nd town hall) should be before 4:00
+    first_expansion_frame = expansion_timings[1]
+    assert first_expansion_frame <= target_frame, (
+        f"Expected first expansion by 4:00 (frame {target_frame}), "
+        f"but it was at frame {first_expansion_frame}. "
+        f"All expansion timings: {expansion_timings}"
+    )
+
+
+def test_parse_replay_burny_tech_buildings(parse_replay):
+    """Test that player BuRny has tech buildings: 2 EngineeringBays by 6:00 and 1 Armory by 9:00."""
     data = parse_replay()
 
     # Find player BuRny
@@ -215,16 +248,33 @@ def test_parse_replay_burny_second_command_center(parse_replay):
     assert burny_player is not None, "Player BuRny not found in replay"
     assert "buildings" in burny_player, "Buildings data not in response"
 
-    # 1:40 game time = 100 seconds = 100 * 22.4 = 2240 gameloops (LotV)
-    target_frame = int(100 * 22.4)
+    # 6:00 game time = 360 seconds = 360 * 22.4 = 8064 gameloops (LotV)
+    target_frame_6min = int(360 * 22.4)
+    # 9:00 game time = 540 seconds = 540 * 22.4 = 12096 gameloops (LotV)
+    target_frame_9min = int(540 * 22.4)
 
-    # Count CommandCenters (and upgrades) started by 1:40
-    command_centers = [
-        b for b in burny_player["buildings"] if b["type"] == "CommandCenter" and b["frame"] <= target_frame
+    # Count EngineeringBays started by 6:00
+    engineering_bays = [
+        b
+        for b in burny_player["buildings"]
+        if b["type"] == "EngineeringBay" and b["frame"] <= target_frame_6min and b["completed"] is False
     ]
 
-    assert len(command_centers) == 1, (
-        f"Expected at one CommandCenters on the way by 1:40 (frame {target_frame}), "
-        f"but found {len(command_centers)}. "
+    assert len(engineering_bays) == 2, (
+        f"Expected 2 EngineeringBays by 6:00 (frame {target_frame_6min}), "
+        f"but found {len(engineering_bays)}. "
+        f"All buildings: {burny_player['buildings']}"
+    )
+
+    # Count Armories started by 9:00
+    armories = [
+        b
+        for b in burny_player["buildings"]
+        if b["type"] == "Armory" and b["frame"] <= target_frame_9min and b["completed"] is False
+    ]
+
+    assert len(armories) == 1, (
+        f"Expected 1 Armory by 9:00 (frame {target_frame_9min}), "
+        f"but found {len(armories)}. "
         f"All buildings: {burny_player['buildings']}"
     )
