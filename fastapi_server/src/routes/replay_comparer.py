@@ -57,12 +57,12 @@ class PlayerStatsAtFrame:
     vespene_collection_rate: int = 0
     food_used: float = 0.0
     food_made: float = 0.0
+    minerals_used_active_forces: int = 0
+    vespene_used_active_forces: int = 0
     minerals_lost: int = 0
     vespene_lost: int = 0
     minerals_killed: int = 0
     vespene_killed: int = 0
-    minerals_used_active_forces: int = 0
-    vespene_used_active_forces: int = 0
 
 
 @dataclass
@@ -71,6 +71,7 @@ class WorkerEvent:
     pid: int
     is_born: bool
     unit_type_name: str
+    supply: float = 0
 
 
 @dataclass
@@ -79,6 +80,8 @@ class BuildingEvent:
     pid: int
     unit_type_name: str
     is_started: bool  # True for UnitInitEvent, False for UnitDoneEvent
+    started_at: int = 0
+    finished_at: int = 0
 
 
 @dataclass
@@ -169,22 +172,25 @@ def parse_replay_timeline(
                     vespene_collection_rate=event.vespene_collection_rate,
                     food_used=event.food_used,
                     food_made=event.food_made,
+                    minerals_used_active_forces=event.minerals_used_active_forces,
+                    vespene_used_active_forces=event.vespene_used_active_forces,
                     minerals_lost=event.minerals_lost,
                     vespene_lost=event.vespene_lost,
                     minerals_killed=event.minerals_killed,
                     vespene_killed=event.vespene_killed,
-                    minerals_used_active_forces=event.minerals_used_active_forces,
-                    vespene_used_active_forces=event.vespene_used_active_forces,
                 )
             )
         elif isinstance(event, sc2reader.events.UnitBornEvent):
             if is_worker_unit(event.unit_type_name):
+                unit = getattr(event, "unit", None)
+                worker_supply = getattr(unit, "supply", 0) if unit is not None else 0
                 worker_events.append(
                     WorkerEvent(
                         frame=frame,
                         pid=event.upkeep_pid,
                         is_born=True,
                         unit_type_name=event.unit_type_name,
+                        supply=worker_supply,
                     )
                 )
         elif isinstance(event, sc2reader.events.UnitDiedEvent):
@@ -202,12 +208,15 @@ def parse_replay_timeline(
                     )
         elif isinstance(event, sc2reader.events.UnitInitEvent):
             if event.unit_type_name in TRACKED_BUILDING_TYPES:
+                unit = getattr(event, "unit", None)
+                building_started_at = getattr(unit, "started_at", 0) if unit is not None else 0
                 building_events.append(
                     BuildingEvent(
                         frame=event.frame,
                         pid=event.upkeep_pid,
                         unit_type_name=event.unit_type_name,
                         is_started=True,
+                        started_at=building_started_at,
                     )
                 )
         elif isinstance(event, sc2reader.events.UnitDoneEvent):
@@ -222,6 +231,8 @@ def parse_replay_timeline(
                             pid=owner_pid,
                             unit_type_name=unit.name,
                             is_started=False,
+                            started_at=getattr(unit, "started_at", 0),
+                            finished_at=getattr(unit, "finished_at", 0),
                         )
                     )
         elif isinstance(event, sc2reader.events.UpgradeCompleteEvent) and 0 < event.frame:  # noqa: SIM102
@@ -344,6 +355,8 @@ async def parse_replay_file(
                     "type": be.unit_type_name,
                     "frame": be.frame,
                     "completed": not be.is_started,
+                    "started_at": be.started_at,
+                    "finished_at": be.finished_at,
                 }
             )
 

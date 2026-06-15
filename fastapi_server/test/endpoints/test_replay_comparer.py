@@ -173,6 +173,12 @@ def test_parse_replay_example_vs_ai(client: TestClient):
     assert isinstance(data["player1"]["buildings"], list)
     assert isinstance(data["player2"]["buildings"], list)
 
+    # Each building event contains started_at and finished_at keys
+    for player_key in ("player1", "player2"):
+        for building in data[player_key]["buildings"]:
+            assert "started_at" in building, f"started_at missing in building event: {building}"
+            assert "finished_at" in building, f"finished_at missing in building event: {building}"
+
     # Timeline is a non-empty list of ticks
     assert isinstance(data["timeline"], list)
     assert len(data["timeline"]) > 0
@@ -279,6 +285,11 @@ def test_parse_replay_burny_tech_buildings(parse_replay):
         f"All buildings: {burny_player['buildings']}"
     )
 
+    # Verify started_at and finished_at fields exist on all building events
+    for building in burny_player["buildings"]:
+        assert "started_at" in building, f"started_at missing in building event: {building}"
+        assert "finished_at" in building, f"finished_at missing in building event: {building}"
+
 
 def test_parse_replay_burny_upgrades(parse_replay):
     """Test that player BuRny has Stimpack and ShieldWall upgrades tracked."""
@@ -337,3 +348,45 @@ def test_parse_replay_burny_upgrades(parse_replay):
         f"but found {len(infantry_armors)}. "
         f"All upgrades: {upgrades}"
     )
+
+
+def test_parse_replay_building_has_started_and_finished_at(parse_replay):
+    """Test that building events contain started_at and finished_at fields with correct types."""
+    data = parse_replay()
+
+    for player_key in ("player1", "player2"):
+        buildings = data[player_key]["buildings"]
+        for building in buildings:
+            # All building events must have these keys
+            assert "started_at" in building, f"started_at missing in building event: {building}"
+            assert "finished_at" in building, f"finished_at missing in building event: {building}"
+
+            # Completed buildings (UnitDoneEvent) should have non-None finished_at
+            if building["completed"] is True:
+                assert building["finished_at"] is not None, (
+                    f"Completed building should have non-None finished_at: {building}"
+                )
+                assert isinstance(building["finished_at"], int), (
+                    f"finished_at should be an int for completed building: {building}"
+                )
+
+                # started_at should also be present and <= finished_at
+                assert building["started_at"] is not None, (
+                    f"Completed building should have non-None started_at: {building}"
+                )
+                assert isinstance(building["started_at"], int), (
+                    f"started_at should be an int for completed building: {building}"
+                )
+                assert building["started_at"] <= building["finished_at"], (
+                    f"started_at ({building['started_at']}) should be <= "
+                    f"finished_at ({building['finished_at']}): {building}"
+                )
+
+            # Started-only buildings (UnitInitEvent) should have started_at set
+            if building["completed"] is False:
+                assert building["started_at"] is not None, (
+                    f"Started building should have non-None started_at: {building}"
+                )
+                assert isinstance(building["started_at"], int), (
+                    f"started_at should be an int for started building: {building}"
+                )
