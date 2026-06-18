@@ -16,6 +16,7 @@ from routes.login import login_router
 from routes.raceroom import raceroom_router
 from routes.replay_comparer import replay_comparer_router
 from routes.replay_parser import replay_parser_router
+from routes.telegram_browser import telegram_browser_router
 from routes.tts_generate import tts_generate_router
 from routes.tts_websocket import TTSRouter
 from s3_helper import initialize_rustfs
@@ -65,6 +66,7 @@ app.include_router(tts_generate_router, prefix="/tts-generate")
 app.include_router(audiobook_router, prefix="/api/audiobook")
 app.include_router(raceroom_router)
 app.include_router(replay_comparer_router, prefix="/api/replay_comparer")
+app.include_router(telegram_browser_router, prefix="/telegram-browser")
 
 
 @app.get("/")
