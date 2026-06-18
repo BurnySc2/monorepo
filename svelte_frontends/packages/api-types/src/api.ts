@@ -561,6 +561,113 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    "/telegram-browser/search": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Search Messages
+         * @description Search telegram messages with dynamic filters.
+         *     Joins with TelegramChannel for channel_title.
+         *     Returns list of SearchResult dicts (frontend expects array directly).
+         */
+        get: operations["search_messages_telegram_browser_search_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/queue-file/{id}": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Queue File
+         * @description Queue a file for download.
+         *     Only succeeds if current status is 'HasFile'.
+         */
+        get: operations["queue_file_telegram_browser_queue_file__id__get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/delete-file/{id}": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        post?: never
+        /**
+         * Delete File
+         * @description Delete a downloaded file from S3 and reset status to 'HasFile'.
+         *     Deletes from S3 if minio_object_name exists (regardless of status).
+         *     Resets status, minio_object_name, downloading_start_time, and retry attempt.
+         */
+        delete: operations["delete_file_telegram_browser_delete_file__id__delete"]
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/view-file/{id}": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * View File
+         * @description Get a presigned S3 URL for viewing a file.
+         *     Only succeeds if status is 'Downloaded' and minio_object_name exists.
+         */
+        get: operations["view_file_telegram_browser_view_file__id__get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/download-file/{id}": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Download File
+         * @description Redirect to a presigned S3 URL with Content-Disposition: attachment.
+         *     Used as an <a href> link for browser downloads.
+         */
+        get: operations["download_file_telegram_browser_download_file__id__get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     "/": {
         parameters: {
             query?: never
@@ -664,6 +771,11 @@ export interface components {
              */
             minio_presigned_url: string
         }
+        /** DeleteFileResponse */
+        DeleteFileResponse: {
+            /** Deleted */
+            deleted: boolean
+        }
         /** DeleteResponse */
         DeleteResponse: {
             /** Deleted */
@@ -724,6 +836,11 @@ export interface components {
             /** Value */
             value: string
         }
+        /** QueueFileResponse */
+        QueueFileResponse: {
+            /** Queued */
+            queued: boolean
+        }
         /** QueueResponse */
         QueueResponse: {
             /** Queued */
@@ -757,6 +874,52 @@ export interface components {
             /** Players */
             players: components["schemas"]["ReplayPlayer"][]
         }
+        /** SearchResultItem */
+        SearchResultItem: {
+            metadata: components["schemas"]["SearchResultMetadata"]
+            /** Message Date */
+            message_date?: string | null
+            /** Channel Title */
+            channel_title?: string | null
+            /** Channel Username */
+            channel_username?: string | null
+            /** Message Text */
+            message_text?: string | null
+            /**
+             * Amount Of Reactions
+             * @default 0
+             */
+            amount_of_reactions: number
+            /**
+             * Amount Of Comments
+             * @default 0
+             */
+            amount_of_comments: number
+            /** File Extension */
+            file_extension?: string | null
+            /** File Size Bytes */
+            file_size_bytes?: number | null
+            /** File Duration Seconds */
+            file_duration_seconds?: number | null
+            /** File Height */
+            file_height?: number | null
+            /** File Width */
+            file_width?: number | null
+            /** Mime Type */
+            mime_type?: string | null
+            /**
+             * Message Link
+             * @default
+             */
+            message_link: string
+        }
+        /** SearchResultMetadata */
+        SearchResultMetadata: {
+            /** Id */
+            id: string
+            /** Status */
+            status: string
+        }
         /** TTSGenerateRequest */
         TTSGenerateRequest: {
             /** Voice */
@@ -783,6 +946,13 @@ export interface components {
             input?: unknown
             /** Context */
             ctx?: Record<string, never>
+        }
+        /** ViewFileResponse */
+        ViewFileResponse: {
+            /** Minio Url */
+            minio_url: string
+            /** Mime Type */
+            mime_type: string
         }
         /** VoiceInfo */
         VoiceInfo: {
@@ -1627,6 +1797,198 @@ export interface operations {
                 "multipart/form-data": components["schemas"]["Body_parse_replay_file_api_replay_comparer_parse_replay_post"]
             }
         }
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": unknown
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    search_messages_telegram_browser_search_get: {
+        parameters: {
+            query?: {
+                search_text?: string
+                channel_name?: string
+                datetime_min?: string
+                datetime_max?: string
+                reactions_min?: number
+                reactions_max?: number
+                comments_min?: number
+                comments_max?: number
+                must_have_file?: boolean
+                file_extension?: string
+                file_duration_min?: string
+                file_duration_max?: string
+                file_size_min?: number
+                file_size_max?: number
+                file_image_width_min?: number
+                file_image_width_max?: number
+                file_image_height_min?: number
+                file_image_height_max?: number
+            }
+            header?: never
+            path?: never
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["SearchResultItem"][]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    queue_file_telegram_browser_queue_file__id__get: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["QueueFileResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    delete_file_telegram_browser_delete_file__id__delete: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["DeleteFileResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    view_file_telegram_browser_view_file__id__get: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["ViewFileResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    download_file_telegram_browser_download_file__id__get: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
         responses: {
             /** @description Successful Response */
             200: {
