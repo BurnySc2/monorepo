@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { components } from "@repo/api-types"
+import { column_settings } from "$lib/column_settings.svelte"
 import { format_duration, format_file_size } from "$lib/format"
 
 type SearchResult = components["schemas"]["SearchResultItem"]
@@ -13,18 +14,8 @@ interface Props {
 
 let { results, onqueue, ondelete, onview }: Props = $props()
 
-// Define table headers based on expected columns
-const table_headers: Record<string, string> = {
-    message_date: "Date",
-    channel_title: "Channel",
-    message_text: "Message",
-    amount_of_reactions: "Reactions",
-    amount_of_comments: "Comments",
-    file_extension: "Ext",
-    file_size_bytes: "Size",
-    file_duration_seconds: "Duration",
-    message_link: "Link",
-}
+// Derive table headers from active columns
+let table_headers = $derived(Object.fromEntries(column_settings.active_columns.map((c) => [c.key, c.name])))
 </script>
 
 <div class="w-full overflow-auto rounded-xl bg-white">

@@ -1,33 +1,12 @@
 <script lang="ts">
-import { fetch_save_active_columns } from "$lib/api"
+import type { Column } from "$lib/column_settings.svelte"
+import { column_settings } from "$lib/column_settings.svelte"
 
 interface Props {
     onclose: () => void
 }
 
 let { onclose }: Props = $props()
-
-interface Column {
-    key: string
-    name: string
-}
-
-let active_columns = $state<Column[]>([
-    { key: "message_date", name: "Date" },
-    { key: "channel_title", name: "Channel" },
-    { key: "message_text", name: "Message" },
-    { key: "amount_of_reactions", name: "Reactions" },
-    { key: "amount_of_comments", name: "Comments" },
-    { key: "file_extension", name: "Ext" },
-    { key: "file_size_bytes", name: "Size" },
-    { key: "file_duration_seconds", name: "Duration" },
-    { key: "message_link", name: "Link" },
-])
-
-let disabled_columns = $state<Column[]>([
-    { key: "views", name: "Views" },
-    { key: "forwards", name: "Forwards" },
-])
 
 let dragging_item: Column | null = $state(null)
 
@@ -46,37 +25,37 @@ function handle_drag_over(event: DragEvent, target_column: Column, target_list: 
     }
 
     // Remove from current list
-    if (active_columns.find((c) => c.key === dragging_item?.key)) {
-        active_columns = active_columns.filter((c) => c.key !== dragging_item?.key)
+    if (column_settings.active_columns.find((c) => c.key === dragging_item?.key)) {
+        column_settings.active_columns = column_settings.active_columns.filter((c) => c.key !== dragging_item?.key)
     } else {
-        disabled_columns = disabled_columns.filter((c) => c.key !== dragging_item?.key)
+        column_settings.disabled_columns = column_settings.disabled_columns.filter((c) => c.key !== dragging_item?.key)
     }
 
     // Find insert position
-    const target_list_ref = target_list === "active" ? active_columns : disabled_columns
+    const target_list_ref = target_list === "active" ? column_settings.active_columns : column_settings.disabled_columns
     const insert_index = target_list_ref.findIndex((c) => c.key === target_column.key)
 
     // Insert at position
     if (insert_index >= 0) {
         if (target_list === "active") {
-            active_columns = [
-                ...active_columns.slice(0, insert_index),
+            column_settings.active_columns = [
+                ...column_settings.active_columns.slice(0, insert_index),
                 dragging_item,
-                ...active_columns.slice(insert_index),
+                ...column_settings.active_columns.slice(insert_index),
             ]
         } else {
-            disabled_columns = [
-                ...disabled_columns.slice(0, insert_index),
+            column_settings.disabled_columns = [
+                ...column_settings.disabled_columns.slice(0, insert_index),
                 dragging_item,
-                ...disabled_columns.slice(insert_index),
+                ...column_settings.disabled_columns.slice(insert_index),
             ]
         }
     } else {
         // Append to end
         if (target_list === "active") {
-            active_columns = [...active_columns, dragging_item]
+            column_settings.active_columns = [...column_settings.active_columns, dragging_item]
         } else {
-            disabled_columns = [...disabled_columns, dragging_item]
+            column_settings.disabled_columns = [...column_settings.disabled_columns, dragging_item]
         }
     }
 }
@@ -87,25 +66,19 @@ function handle_drop_to_empty(target_list: "active" | "disabled") {
     }
 
     // Remove from current list
-    active_columns = active_columns.filter((c) => c.key !== dragging_item?.key)
-    disabled_columns = disabled_columns.filter((c) => c.key !== dragging_item?.key)
+    column_settings.active_columns = column_settings.active_columns.filter((c) => c.key !== dragging_item?.key)
+    column_settings.disabled_columns = column_settings.disabled_columns.filter((c) => c.key !== dragging_item?.key)
 
     // Add to target list
     if (target_list === "active") {
-        active_columns = [...active_columns, dragging_item]
+        column_settings.active_columns = [...column_settings.active_columns, dragging_item]
     } else {
-        disabled_columns = [...disabled_columns, dragging_item]
+        column_settings.disabled_columns = [...column_settings.disabled_columns, dragging_item]
     }
 }
 
-async function handle_save() {
-    try {
-        const columns_order = active_columns.map((c) => c.key)
-        await fetch_save_active_columns(columns_order)
-        onclose()
-    } catch (e) {
-        console.error("Failed to save columns", e)
-    }
+function handle_save() {
+    onclose()
 }
 
 function handle_cancel() {
@@ -154,7 +127,7 @@ function handle_keydown(event: KeyboardEvent) {
                             ondragover={(e) => e.preventDefault()}
                             ondrop={() => handle_drop_to_empty("active")}
                         >
-                            {#each active_columns as column (column.key)}
+                            {#each column_settings.active_columns as column (column.key)}
                                 <div
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"
@@ -180,7 +153,7 @@ function handle_keydown(event: KeyboardEvent) {
                             ondragover={(e) => e.preventDefault()}
                             ondrop={() => handle_drop_to_empty("disabled")}
                         >
-                            {#each disabled_columns as column (column.key)}
+                            {#each column_settings.disabled_columns as column (column.key)}
                                 <div
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"
