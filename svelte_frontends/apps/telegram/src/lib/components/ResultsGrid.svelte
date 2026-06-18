@@ -1,13 +1,8 @@
 <script lang="ts">
+import type { components } from "@repo/api-types"
 import { format_duration, format_file_size } from "$lib/format"
 
-interface SearchResult {
-    metadata: {
-        id: string
-        status: "HasFile" | "Queued" | "Downloading" | "Downloaded"
-    }
-    [key: string]: unknown
-}
+type SearchResult = components["schemas"]["SearchResultItem"]
 
 interface Props {
     results: SearchResult[]
@@ -121,7 +116,7 @@ const table_headers: Record<string, string> = {
 
                     <!-- Data columns -->
                     {#each Object.keys(table_headers) as col_key}
-                        {@const value = row[col_key]}
+                        {@const value = (row as Record<string, unknown>)[col_key]}
                         {#if col_key === "file_size_bytes"}
                             <td class="truncate text-center">{format_file_size(value as number)}</td>
                         {:else if col_key === "file_duration_seconds"}

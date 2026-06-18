@@ -16,6 +16,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@repo/api-types": "*",
         "@repo/ui": "*"
     },
     "devDependencies": {

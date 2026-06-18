@@ -1,17 +1,12 @@
 <script lang="ts">
+import type { components } from "@repo/api-types"
 import { fetch_delete_file, fetch_queue_file, fetch_search, fetch_view_file } from "$lib/api"
 import ColumnReorderDialog from "$lib/components/ColumnReorderDialog.svelte"
 import MediaDialog from "$lib/components/MediaDialog.svelte"
 import ResultsGrid from "$lib/components/ResultsGrid.svelte"
 import SearchPanel from "$lib/components/SearchPanel.svelte"
 
-interface SearchResult {
-    metadata: {
-        id: string
-        status: "HasFile" | "Queued" | "Downloading" | "Downloaded"
-    }
-    [key: string]: unknown
-}
+type SearchResult = components["schemas"]["SearchResultItem"]
 
 interface SearchFilters {
     search_text: string
