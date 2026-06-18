@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 
 from components.login.cookies import LoggedInUser, get_current_user
-from models.telegram_browser import Status, TelegramChannel, TelegramMessage
+from models.telegram_browser import Status, TelegramMessage
 from s3_helper import RUSTFS_TELEGRAM_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.telegram_browser import (
     DeleteFileResponse,
@@ -100,17 +100,14 @@ async def search_messages(
 ) -> list[SearchResultItem]:
     """
     Search telegram messages with dynamic filters.
-    Joins with TelegramChannel for channel_title.
+    Joins with TelegramChannel via FK traversal for channel_title.
     Returns list of SearchResult dicts (frontend expects array directly).
     """
-    # Build query with join
+    # Build query with implicit join via FK traversal
     query = TelegramMessage.select(  # pyrefly: ignore[missing-attribute]
         *TelegramMessage.all_columns(),
-        TelegramChannel.channel_title,
-        TelegramChannel.channel_username,
-    ).join(
-        TelegramChannel,
-        on=TelegramMessage.channel == TelegramChannel.id,  # pyrefly: ignore[missing-attribute]
+        TelegramMessage.channel.channel_title.as_alias("channel_title"),
+        TelegramMessage.channel.channel_username.as_alias("channel_username"),
     )
 
     # Apply filters dynamically
@@ -118,7 +115,7 @@ async def search_messages(
         query = query.where(TelegramMessage.message_text.ilike(f"%{search_text}%"))
 
     if channel_name:
-        query = query.where(TelegramChannel.channel_title.ilike(f"%{channel_name}%"))
+        query = query.where(TelegramMessage.channel.channel_title.ilike(f"%{channel_name}%"))
 
     if datetime_min:
         try:
@@ -199,9 +196,7 @@ async def queue_file(
     Queue a file for download.
     Only succeeds if current status is 'HasFile'.
     """
-    message = (
-        await TelegramMessage.objects().where(TelegramMessage.id == id).first()
-    )  # pyrefly: ignore[missing-attribute]
+    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -231,9 +226,7 @@ async def delete_file(
     Deletes from S3 if minio_object_name exists (regardless of status).
     Resets status, minio_object_name, downloading_start_time, and retry attempt.
     """
-    message = (
-        await TelegramMessage.objects().where(TelegramMessage.id == id).first()
-    )  # pyrefly: ignore[missing-attribute]
+    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -265,9 +258,7 @@ async def view_file(
     Get a presigned S3 URL for viewing a file.
     Only succeeds if status is 'Downloaded' and minio_object_name exists.
     """
-    message = (
-        await TelegramMessage.objects().where(TelegramMessage.id == id).first()
-    )  # pyrefly: ignore[missing-attribute]
+    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -278,7 +269,7 @@ async def view_file(
             detail="File not available for viewing. Must be 'Downloaded'.",
         )
 
-    file_name = f"telegram_{message.channel_id}_{message.message_id}"
+    file_name = f"telegram_{message.channel}_{message.message_id}"
     if message.file_extension:
         file_name += f".{message.file_extension}"
 
@@ -314,9 +305,7 @@ async def download_file(
     Redirect to a presigned S3 URL with Content-Disposition: attachment.
     Used as an <a href> link for browser downloads.
     """
-    message = (
-        await TelegramMessage.objects().where(TelegramMessage.id == id).first()
-    )  # pyrefly: ignore[missing-attribute]
+    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -327,7 +316,7 @@ async def download_file(
             detail="File not available for download. Must be 'Downloaded'.",
         )
 
-    file_name = f"telegram_{message.channel_id}_{message.message_id}"
+    file_name = f"telegram_{message.channel}_{message.message_id}"
     if message.file_extension:
         file_name += f".{message.file_extension}"
 

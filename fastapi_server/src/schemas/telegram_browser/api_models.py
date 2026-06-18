@@ -18,7 +18,7 @@ class SearchResultItem(BaseModel):
     amount_of_comments: int = 0
     file_extension: str | None = None
     file_size_bytes: int | None = None
-    file_duration_seconds: int | None = None
+    file_duration_seconds: float | None = None
     file_height: int | None = None
     file_width: int | None = None
     mime_type: str | None = None
