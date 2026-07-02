@@ -1,0 +1,33 @@
+---
+- name: Install packages
+  community.general.pacman:
+    name:
+      - yay
+    state: present
+  become: true
+- name: Upgrade system
+  community.general.pacman:
+    update_cache: true
+    upgrade: true
+  become: true
+
+# Set up swap memory
+# https://github.com/ansible/ansible/issues/5241#issuecomment-31438159
+- name: Create swap file
+  ansible.builtin.shell: |
+    fallocate -l 20G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+  when: ansible_swaptotal_mb < 1
+  become: true
+- name: Ensure swapfile is enabled on boot by editing /etc/fstab
+  ansible.builtin.mount:
+    name: swap
+    src: /swapfile
+    fstype: swap
+    opts: defaults
+    passno: 0
+    dump: 0
+    state: present
+  become: true
