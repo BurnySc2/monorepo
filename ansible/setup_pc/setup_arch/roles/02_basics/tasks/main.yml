@@ -64,3 +64,7 @@
     opts: noatime
     state: mounted
   become: true
+# When adding ssh connections: you might have to comment out "user_allow_other" in "/etc/fuse.conf"
+# A ssh entry in "/etc/fstab" could look like this:
+# c2:/home/cloud/data /media/contabo_cloud fuse.sshfs auto,reconnect 0 0
+# where "c2" is a shortcut entry in ~/.ssh/config

@@ -1,0 +1,30 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+services:
+  filebrowser:
+    # https://hub.docker.com/r/filebrowser/filebrowser/tags
+    image: filebrowser/filebrowser:v2.63.18-amd64
+    container_name: filebrowser
+    restart: unless-stopped
+    volumes:
+      - ./data:/srv
+      - ./database:/database
+      - ./config:/config
+    user: '{{ USER_ID.stdout }}:{{ GROUP_ID.stdout }}'
+    labels:
+      - pangolin.public-resources.filebrowser.name=Filebrowser
+      - pangolin.public-resources.filebrowser.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.filebrowser.protocol=http
+      # - pangolin.public-resources.filebrowser.auth.sso-enabled=true
+      - pangolin.public-resources.filebrowser.auth.sso-enabled=false
+      - pangolin.public-resources.filebrowser.targets[0].site=local
+      - pangolin.public-resources.filebrowser.targets[0].method=http
+      - pangolin.public-resources.filebrowser.targets[0].hostname=filebrowser
+      - pangolin.public-resources.filebrowser.targets[0].port={{ APPLICATION_PORT }}
+      # - pangolin.public-resources.filebrowser.rules[0].action=allow
+      # - pangolin.public-resources.filebrowser.rules[0].match=path
+      # - pangolin.public-resources.filebrowser.rules[0].value=share/*
+    networks:
+      - pangolin_newt
