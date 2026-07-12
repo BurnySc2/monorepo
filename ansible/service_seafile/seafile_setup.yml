@@ -2,7 +2,7 @@
 # https://hub.docker.com/_/nextcloud/
 # https://nextcloud.com/
 # Execute with
-# ansible-playbook nextcloud_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook seafile_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: server_group4
   vars:
@@ -31,6 +31,12 @@
       template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
+    # Stop to force reload .env file
+    - name: Run docker-compose stop
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: stopped
+      failed_when: false
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
