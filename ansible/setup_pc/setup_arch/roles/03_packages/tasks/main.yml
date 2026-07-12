@@ -14,14 +14,14 @@
       - xorg-xsetroot  # set background image
       # --- end of i3wm ---
       - syncthing
-      - owncloud-client  # file sharing client
       - rsync
       # Internet browser
       - vivaldi
       # Terminal
       - fish
       # Explorer
-      - thunar
+      # - thunar
+      - pcmanfm # better thunar alternative
       # Communication
       - thunderbird
       - discord
