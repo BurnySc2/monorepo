@@ -111,9 +111,6 @@ async def search_messages(
         TelegramMessage.channel.channel_username.as_alias("channel_username"),
     )
 
-    # Exclude private channels (those without a username)
-    query = query.where(TelegramMessage.channel.channel_username.is_not_null())
-
     # Apply filters dynamically
     if search_text:
         query = query.where(TelegramMessage.message_text.ilike(f"%{search_text}%"))
