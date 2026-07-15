@@ -39,22 +39,29 @@ describe("format_duration", () => {
     })
 
     it("formats seconds only", () => {
-        expect(format_duration(5)).toBe("0:05")
-        expect(format_duration(30)).toBe("0:30")
-        expect(format_duration(59)).toBe("0:59")
+        expect(format_duration(5)).toBe("0:05.000")
+        expect(format_duration(30)).toBe("0:30.000")
+        expect(format_duration(59)).toBe("0:59.000")
     })
 
     it("formats minutes and seconds", () => {
-        expect(format_duration(60)).toBe("1:00")
-        expect(format_duration(65)).toBe("1:05")
-        expect(format_duration(125)).toBe("2:05")
-        expect(format_duration(3599)).toBe("59:59")
+        expect(format_duration(60)).toBe("1:00.000")
+        expect(format_duration(65)).toBe("1:05.000")
+        expect(format_duration(125)).toBe("2:05.000")
+        expect(format_duration(3599)).toBe("59:59.000")
     })
 
     it("formats hours, minutes, and seconds", () => {
-        expect(format_duration(3600)).toBe("1:00:00")
-        expect(format_duration(3661)).toBe("1:01:01")
-        expect(format_duration(7200)).toBe("2:00:00")
-        expect(format_duration(86399)).toBe("23:59:59")
+        expect(format_duration(3600)).toBe("1:00:00.000")
+        expect(format_duration(3661)).toBe("1:01:01.000")
+        expect(format_duration(7200)).toBe("2:00:00.000")
+        expect(format_duration(86399)).toBe("23:59:59.000")
+    })
+
+    it("formats milliseconds correctly", () => {
+        expect(format_duration(46.185)).toBe("0:46.185")
+        expect(format_duration(222.75999450684)).toBe("3:42.759")
+        expect(format_duration(3661.5)).toBe("1:01:01.500")
+        expect(format_duration(3723.5)).toBe("1:02:03.500")
     })
 })

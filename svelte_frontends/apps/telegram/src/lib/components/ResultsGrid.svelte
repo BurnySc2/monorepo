@@ -125,6 +125,8 @@ let { results, onqueue, ondelete, onview }: Props = $props()
                                     >
                                 {/if}
                             </td>
+                        {:else if col.key === "message_date"}
+                            <td class="whitespace-nowrap">{value ?? ""}</td>
                         {:else}
                             <td class="break-all">{value ?? ""}</td>
                         {/if}
