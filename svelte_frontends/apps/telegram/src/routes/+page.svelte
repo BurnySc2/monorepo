@@ -111,14 +111,10 @@ function close_media_dialog() {
 
         <details open>
             <summary class="select-none pb-2">Search section</summary>
-            <SearchPanel {filters} />
-            <button
-                class="h-full grow rounded-xl border-2 border-black p-2 hover:bg-green-500"
-                type="button"
-                onclick={handle_search}
-            >
-                Search
-            </button>
+            <SearchPanel
+                {filters}
+                onsearch={handle_search}
+            />
         </details>
 
         {#if is_searching}
