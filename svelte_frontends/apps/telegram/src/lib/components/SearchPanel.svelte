@@ -22,10 +22,9 @@ interface SearchFilters {
 
 interface Props {
     filters: SearchFilters
-    onsearch: () => void
 }
 
-let { filters, onsearch }: Props = $props()
+let { filters }: Props = $props()
 
 function reset_duration() {
     filters.file_duration_min = "00:00:00"
@@ -37,17 +36,6 @@ function reset_duration() {
     id="search-section"
     class="grid grid-cols-1 gap-2 rounded-xl ring-2 ring-neutral-500 ring-offset-2"
 >
-    <!-- Search buttons -->
-    <div class="flex gap-2">
-        <button
-            class="h-full grow rounded-xl border-2 border-black p-2 hover:bg-green-500"
-            type="button"
-            onclick={onsearch}
-        >
-            Search
-        </button>
-    </div>
-
     <!-- Search text -->
     <div class="flex flex-col">
         <input

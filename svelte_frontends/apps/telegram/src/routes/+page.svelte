@@ -101,14 +101,6 @@ function close_media_dialog() {
 
 <main class="flex h-full flex-col items-center rounded-xl bg-gray-300">
     <div class="m-2 flex h-full flex-col gap-4 rounded-xl">
-        <details open>
-            <summary class="select-none pb-2">Search section</summary>
-            <SearchPanel
-                {filters}
-                onsearch={handle_search}
-            />
-        </details>
-
         <button
             class="h-full rounded-xl border-2 border-black p-2 hover:bg-yellow-500"
             type="button"
@@ -116,6 +108,18 @@ function close_media_dialog() {
         >
             Column order
         </button>
+
+        <details open>
+            <summary class="select-none pb-2">Search section</summary>
+            <SearchPanel {filters} />
+            <button
+                class="h-full grow rounded-xl border-2 border-black p-2 hover:bg-green-500"
+                type="button"
+                onclick={handle_search}
+            >
+                Search
+            </button>
+        </details>
 
         {#if is_searching}
             <div class="flex items-center justify-center p-8">
