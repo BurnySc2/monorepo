@@ -5,12 +5,10 @@ from piccolo.columns import BigInt, Bytea, DoublePrecision, ForeignKey, Integer,
 from piccolo.table import Table
 
 
-# await AudiobookBook.create_table(if_not_exists=True)
-# await AudiobookChapter.create_table(if_not_exists=True)
 class TelegramChannel(Table, tablename="litestar_telegram_channel"):
     channel_id = BigInt(required=True, unique=True)
     channel_title = Text(required=True)
-    channel_username = Text(required=False)
+    channel_username = Text(required=True)
     creation_date = Timestamp(required=True)
     participants = BigInt(required=True)
     last_parsed = Timestamp(required=True, default=datetime(2000, 1, 1))
