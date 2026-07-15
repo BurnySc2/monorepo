@@ -7,9 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 
 from components.login.cookies import LoggedInUser, get_current_user
-from models.telegram_browser import Status, TelegramMessage
+from models.telegram_browser import Status, TelegramChannel, TelegramMessage
 from s3_helper import RUSTFS_TELEGRAM_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.telegram_browser import (
+    ChannelNameItem,
     DeleteFileResponse,
     QueueFileResponse,
     SearchResultItem,
@@ -109,6 +110,9 @@ async def search_messages(
         TelegramMessage.channel.channel_title.as_alias("channel_title"),
         TelegramMessage.channel.channel_username.as_alias("channel_username"),
     )
+
+    # Exclude private channels (those without a username)
+    query = query.where(TelegramMessage.channel.channel_username.is_not_null())
 
     # Apply filters dynamically
     if search_text:
@@ -334,3 +338,32 @@ async def download_file(
         raise HTTPException(status_code=404, detail="File not found in storage")
 
     return RedirectResponse(url=presigned_url, status_code=302)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Endpoint 6: GET /channel-names
+# ──────────────────────────────────────────────────────────────────────────────
+@telegram_browser_router.get("/channel-names", response_model=list[ChannelNameItem])
+async def get_channel_names(
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> list[ChannelNameItem]:
+    """
+    Get all channels that have a username set.
+    Returns a list of channel titles and usernames, ordered alphabetically by title.
+    """
+    channels = (
+        await TelegramChannel.select(
+            TelegramChannel.channel_title,
+            TelegramChannel.channel_username,
+        )
+        .where(TelegramChannel.channel_username.is_not_null())
+        .order_by(TelegramChannel.channel_title)
+    )
+
+    return [
+        ChannelNameItem(
+            channel_title=row["channel_title"],
+            channel_username=row["channel_username"],
+        )
+        for row in channels
+    ]

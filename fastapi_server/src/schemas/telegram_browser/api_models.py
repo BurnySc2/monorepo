@@ -36,3 +36,8 @@ class DeleteFileResponse(BaseModel):
 class ViewFileResponse(BaseModel):
     minio_url: str
     mime_type: str
+
+
+class ChannelNameItem(BaseModel):
+    channel_title: str
+    channel_username: str
