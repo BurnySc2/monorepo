@@ -106,18 +106,24 @@ let { results, onqueue, ondelete, onview }: Props = $props()
                     {#each column_settings.active_columns as col}
                         {@const value = (row as Record<string, unknown>)[col.key]}
                         {#if col.key === "file_size_bytes"}
-                            <td class="truncate text-center">{format_file_size(value as number)}</td>
+                            <td class="truncate text-center">
+                                {value != null ? format_file_size(value as number) : ""}
+                            </td>
                         {:else if col.key === "file_duration_seconds"}
-                            <td class="truncate text-center">{format_duration(value as number)}</td>
+                            <td class="truncate text-center">
+                                {value != null ? format_duration(value as number) : ""}
+                            </td>
                         {:else if col.key === "message_link"}
                             <td>
-                                <a
-                                    href={value as string}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    class="truncate text-purple-600 hover:underline"
-                                    >Link</a
-                                >
+                                {#if value}
+                                    <a
+                                        href={value as string}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="truncate text-purple-600 hover:underline"
+                                        >Link</a
+                                    >
+                                {/if}
                             </td>
                         {:else}
                             <td class="break-all">{value ?? ""}</td>

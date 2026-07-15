@@ -100,7 +100,7 @@ function close_media_dialog() {
 </script>
 
 <main class="flex h-full flex-col items-center rounded-xl bg-gray-300">
-    <div class="mx-2 flex h-full flex-col gap-4 rounded-xl lg:mx-4 lg:w-9/12">
+    <div class="m-2 flex h-full flex-col gap-4 rounded-xl">
         <details open>
             <summary class="select-none pb-2">Search section</summary>
             <SearchPanel
