@@ -13,9 +13,6 @@ interface Props {
 }
 
 let { results, onqueue, ondelete, onview }: Props = $props()
-
-// Derive table headers from active columns
-let table_headers = $derived(Object.fromEntries(column_settings.active_columns.map((c) => [c.key, c.name])))
 </script>
 
 <div class="w-full overflow-auto rounded-xl bg-white">
@@ -23,8 +20,8 @@ let table_headers = $derived(Object.fromEntries(column_settings.active_columns.m
         <thead>
             <tr>
                 <th class="border bg-gray-100 p-2">Actions</th>
-                {#each Object.entries(table_headers) as [ key, header ]}
-                    <th class="whitespace-nowrap border bg-gray-100 p-2">{header}</th>
+                {#each column_settings.active_columns as col}
+                    <th class="whitespace-nowrap border bg-gray-100 p-2">{col.name}</th>
                 {/each}
             </tr>
         </thead>
@@ -106,13 +103,13 @@ let table_headers = $derived(Object.fromEntries(column_settings.active_columns.m
                     </td>
 
                     <!-- Data columns -->
-                    {#each Object.keys(table_headers) as col_key}
-                        {@const value = (row as Record<string, unknown>)[col_key]}
-                        {#if col_key === "file_size_bytes"}
+                    {#each column_settings.active_columns as col}
+                        {@const value = (row as Record<string, unknown>)[col.key]}
+                        {#if col.key === "file_size_bytes"}
                             <td class="truncate text-center">{format_file_size(value as number)}</td>
-                        {:else if col_key === "file_duration_seconds"}
+                        {:else if col.key === "file_duration_seconds"}
                             <td class="truncate text-center">{format_duration(value as number)}</td>
-                        {:else if col_key === "message_link"}
+                        {:else if col.key === "message_link"}
                             <td>
                                 <a
                                     href={value as string}
@@ -123,7 +120,7 @@ let table_headers = $derived(Object.fromEntries(column_settings.active_columns.m
                                 >
                             </td>
                         {:else}
-                            <td class="line-clamp-2 break-all">{value ?? ""}</td>
+                            <td class="break-all">{value ?? ""}</td>
                         {/if}
                     {/each}
                 </tr>
