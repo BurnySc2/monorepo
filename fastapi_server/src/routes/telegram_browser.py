@@ -235,7 +235,9 @@ async def queue_file(
     Queue a file for download.
     Only succeeds if current status is 'HasFile'.
     """
-    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    message = (
+        await TelegramMessage.objects().where(TelegramMessage.id == id).first()
+    )  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -265,7 +267,9 @@ async def delete_file(
     Deletes from S3 if s3_object_name exists (regardless of status).
     Removes the download record and resets message status.
     """
-    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    message = (
+        await TelegramMessage.objects().where(TelegramMessage.id == id).first()
+    )  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -301,7 +305,9 @@ async def view_file(
     Get a presigned S3 URL for viewing a file.
     Only succeeds if status is 'Downloaded' and s3_object_name exists.
     """
-    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    message = (
+        await TelegramMessage.objects().where(TelegramMessage.id == id).first()
+    )  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -351,7 +357,9 @@ async def download_file(
     Redirect to a presigned S3 URL with Content-Disposition: attachment.
     Used as an <a href> link for browser downloads.
     """
-    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    message = (
+        await TelegramMessage.objects().where(TelegramMessage.id == id).first()
+    )  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
