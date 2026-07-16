@@ -283,6 +283,6 @@ flowchart LR
         login["login_router<br/>/login/*<br/><br/>• GET /login/status<br/>• GET /logout<br/>• GET /login/twitch<br/>• GET /login/github<br/>• GET /login/google<br/>• GET /login/twitch/start<br/>• GET /login/github/start"]
         raceroom["raceroom_router<br/>/api/raceroom/*<br/><br/>• GET /tracks<br/>• GET /times"]
         replay["replay_parser_router<br/>/api/*<br/><br/>• POST /parse_replay"]
-        telegram["telegram_browser_router<br/>/telegram-browser/*<br/><br/>• GET /search<br/>• GET /channel-names<br/>• GET /queue-file/{id}<br/>• DELETE /delete-file/{id}<br/>• GET /view-file/{id}<br/>• GET /download-file/{id}"]
+        telegram["telegram_browser_router<br/>/telegram-browser/*<br/><br/>• GET /search<br/>• GET /channel-names<br/>• GET /queue-file/{id}<br/>• DELETE /delete-file/{id}<br/>• GET /view-file/{id}<br/>• GET /download-file/{id}<br/>• GET /downloads"]
     end
 ```

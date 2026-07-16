@@ -1,12 +1,16 @@
 <script lang="ts">
 import type { Column } from "$lib/column_settings.svelte"
 import { column_settings } from "$lib/column_settings.svelte"
+import { file_column_settings } from "$lib/file_column_settings.svelte"
 
 interface Props {
     onclose: () => void
+    column_settings_type: "messages" | "files"
 }
 
-let { onclose }: Props = $props()
+let { onclose, column_settings_type }: Props = $props()
+
+const active_settings = $derived(column_settings_type === "messages" ? column_settings : file_column_settings)
 
 let dragging_item: Column | null = $state(null)
 let drag_source_list: "active" | "disabled" | null = $state(null)
@@ -30,19 +34,19 @@ function handle_drop_on_item(event: DragEvent, target_column: Column, target_lis
     }
 
     // Get the target list and indices
-    const target = target_list === "active" ? column_settings.active_columns : column_settings.disabled_columns
+    const target = target_list === "active" ? active_settings.active_columns : active_settings.disabled_columns
     const target_index = target.findIndex((c) => c.key === target_column.key)
     const source_index = target.findIndex((c) => c.key === dragging_item?.key)
 
     // Remove from source
     if (drag_source_list === "active") {
-        column_settings.active_columns = column_settings.active_columns.filter((c) => c.key !== dragging_item?.key)
+        active_settings.active_columns = active_settings.active_columns.filter((c) => c.key !== dragging_item?.key)
     } else {
-        column_settings.disabled_columns = column_settings.disabled_columns.filter((c) => c.key !== dragging_item?.key)
+        active_settings.disabled_columns = active_settings.disabled_columns.filter((c) => c.key !== dragging_item?.key)
     }
 
     // Get fresh target list after removal
-    const fresh_target = target_list === "active" ? column_settings.active_columns : column_settings.disabled_columns
+    const fresh_target = target_list === "active" ? active_settings.active_columns : active_settings.disabled_columns
 
     // Adjust index for same-list reordering
     let insert_index = target_index
@@ -53,13 +57,13 @@ function handle_drop_on_item(event: DragEvent, target_column: Column, target_lis
 
     // Insert at adjusted position
     if (target_list === "active") {
-        column_settings.active_columns = [
+        active_settings.active_columns = [
             ...fresh_target.slice(0, insert_index),
             dragging_item,
             ...fresh_target.slice(insert_index),
         ]
     } else {
-        column_settings.disabled_columns = [
+        active_settings.disabled_columns = [
             ...fresh_target.slice(0, insert_index),
             dragging_item,
             ...fresh_target.slice(insert_index),
@@ -78,16 +82,16 @@ function handle_drop_on_empty(event: DragEvent, target_list: "active" | "disable
 
     // Remove from source
     if (drag_source_list === "active") {
-        column_settings.active_columns = column_settings.active_columns.filter((c) => c.key !== dragging_item?.key)
+        active_settings.active_columns = active_settings.active_columns.filter((c) => c.key !== dragging_item?.key)
     } else {
-        column_settings.disabled_columns = column_settings.disabled_columns.filter((c) => c.key !== dragging_item?.key)
+        active_settings.disabled_columns = active_settings.disabled_columns.filter((c) => c.key !== dragging_item?.key)
     }
 
     // Add to end of target
     if (target_list === "active") {
-        column_settings.active_columns = [...column_settings.active_columns, dragging_item]
+        active_settings.active_columns = [...active_settings.active_columns, dragging_item]
     } else {
-        column_settings.disabled_columns = [...column_settings.disabled_columns, dragging_item]
+        active_settings.disabled_columns = [...active_settings.disabled_columns, dragging_item]
     }
 
     handle_drag_end()
@@ -143,7 +147,7 @@ function handle_keydown(event: KeyboardEvent) {
                             ondragover={(e) => e.preventDefault()}
                             ondrop={(e) => handle_drop_on_empty(e, "active")}
                         >
-                            {#each column_settings.active_columns as column (column.key)}
+                            {#each active_settings.active_columns as column (column.key)}
                                 <div
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"
@@ -170,7 +174,7 @@ function handle_keydown(event: KeyboardEvent) {
                             ondragover={(e) => e.preventDefault()}
                             ondrop={(e) => handle_drop_on_empty(e, "disabled")}
                         >
-                            {#each column_settings.disabled_columns as column (column.key)}
+                            {#each active_settings.disabled_columns as column (column.key)}
                                 <div
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"

@@ -4,6 +4,7 @@ type SearchResultItem = components["schemas"]["SearchResultItem"]
 type ViewFileResponse = components["schemas"]["ViewFileResponse"]
 type QueueFileResponse = components["schemas"]["QueueFileResponse"]
 type DeleteFileResponse = components["schemas"]["DeleteFileResponse"]
+type DownloadedFileItem = components["schemas"]["DownloadedFileItem"]
 
 const get_api_base = () => {
     const target = import.meta.env.VITE_API_TARGET
@@ -47,5 +48,15 @@ export const fetch_save_active_columns = async (columns: string[]): Promise<void
         body: JSON.stringify(columns),
         credentials: "include",
     })
+    return resp.json()
+}
+
+export const fetch_downloads = async (): Promise<DownloadedFileItem[]> => {
+    const resp = await fetch(`${get_api_base()}/telegram-browser/downloads`, {
+        credentials: "include",
+    })
+    if (!resp.ok) {
+        throw new Error(`Failed to fetch downloads: ${resp.statusText}`)
+    }
     return resp.json()
 }
