@@ -30,7 +30,9 @@ async def initialize_rustfs():
         await bucket_set_expiration(s3, RUSTFS_AUDIOBOOK_BUCKET, days=30)
         await bucket_create(s3, RUSTFS_TELEGRAM_BUCKET)
         await bucket_set_cors(s3, RUSTFS_TELEGRAM_BUCKET)
-        await bucket_set_expiration(s3, RUSTFS_TELEGRAM_BUCKET, days=90)
+        await bucket_set_expiration(
+            s3, RUSTFS_TELEGRAM_BUCKET, days=int(os.getenv("RUSTFS_TELEGRAM_BUCKET_EXPIRATION_DAYS", "7"))
+        )
 
 
 @asynccontextmanager
