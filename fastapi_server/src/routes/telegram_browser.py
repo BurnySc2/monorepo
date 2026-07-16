@@ -8,7 +8,8 @@ import arrow
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 
-from components.login.cookies import LoggedInUser, get_current_user
+from components.login.allowlist import require_allowed_user
+from components.login.cookies import LoggedInUser
 from models.telegram_browser import Status, TelegramChannel, TelegramDownload, TelegramMessage
 from s3_helper import RUSTFS_TELEGRAM_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.telegram_browser import (
@@ -117,7 +118,7 @@ def _format_download_item(row: dict) -> DownloadedFileItem:
 # ──────────────────────────────────────────────────────────────────────────────
 @telegram_browser_router.get("/search", response_model=list[SearchResultItem])
 async def search_messages(
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+    current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
     search_text: str = Query(default=""),
     channel_name: str = Query(default=""),
     datetime_min: str = Query(default=""),
@@ -145,6 +146,7 @@ async def search_messages(
     # Build query with implicit join via FK traversal
     query = TelegramMessage.select(  # pyrefly: ignore[missing-attribute]
         *TelegramMessage.all_columns(),
+        TelegramMessage.channel.channel_id.as_alias("channel_id"),
         TelegramMessage.channel.channel_title.as_alias("channel_title"),
         TelegramMessage.channel.channel_username.as_alias("channel_username"),
     )
@@ -229,7 +231,7 @@ async def search_messages(
 @telegram_browser_router.get("/queue-file/{id}", response_model=QueueFileResponse)
 async def queue_file(
     id: int,
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+    current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
 ) -> QueueFileResponse:
     """
     Queue a file for download.
@@ -260,7 +262,7 @@ async def queue_file(
 @telegram_browser_router.delete("/delete-file/{id}", response_model=DeleteFileResponse)
 async def delete_file(
     id: int,
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+    current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
 ) -> DeleteFileResponse:
     """
     Delete a downloaded file from S3 and reset status to 'HasFile'.
@@ -299,7 +301,7 @@ async def delete_file(
 @telegram_browser_router.get("/view-file/{id}", response_model=ViewFileResponse)
 async def view_file(
     id: int,
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+    current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
 ) -> ViewFileResponse:
     """
     Get a presigned S3 URL for viewing a file.
@@ -351,7 +353,7 @@ async def view_file(
 @telegram_browser_router.get("/download-file/{id}")
 async def download_file(
     id: int,
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+    current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
 ) -> RedirectResponse:
     """
     Redirect to a presigned S3 URL with Content-Disposition: attachment.
@@ -398,7 +400,7 @@ async def download_file(
 # ──────────────────────────────────────────────────────────────────────────────
 @telegram_browser_router.get("/channel-names", response_model=list[ChannelNameItem])
 async def get_channel_names(
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+    current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
 ) -> list[ChannelNameItem]:
     """
     Get all channels that have a username set.
@@ -427,7 +429,7 @@ async def get_channel_names(
 # ──────────────────────────────────────────────────────────────────────────────
 @telegram_browser_router.get("/downloads", response_model=list[DownloadedFileItem])
 async def list_downloads(
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+    current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
 ) -> list[DownloadedFileItem]:
     """
     List all downloaded files from the last N days.

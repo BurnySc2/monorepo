@@ -140,6 +140,33 @@ def test_search_with_data(telegram_client: TestClient) -> None:
     assert data[0]["channel_username"] == "testchannel"
 
 
+# ─── Message link construction ───────────────────────────────────────────────
+
+
+def test_search_message_link_public_channel(telegram_client: TestClient) -> None:
+    """Channel with username → message_link is https://t.me/{username}/{message_id}."""
+    _create_channel(channel_id=5000, title="Public Channel", username="my_public_channel")
+    _create_message(channel_id=5000, message_id=21491)
+
+    response = telegram_client.get("/telegram-browser/search")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["message_link"] == "https://t.me/my_public_channel/21491"
+
+
+def test_search_message_link_private_channel(telegram_client: TestClient) -> None:
+    """Channel without username → message_link is https://t.me/c/{channel_id}/{message_id}."""
+    _create_channel(channel_id=6000, title="Private Channel", username=None)
+    _create_message(channel_id=6000, message_id=30492)
+
+    response = telegram_client.get("/telegram-browser/search")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["message_link"] == "https://t.me/c/6000/30492"
+
+
 # ─── DELETE /delete-file/{id} ────────────────────────────────────────────────
 
 

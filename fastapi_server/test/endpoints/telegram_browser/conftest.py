@@ -5,7 +5,8 @@ from fastapi.testclient import TestClient
 from piccolo.table import create_db_tables, drop_db_tables
 from piccolo.utils.sync import run_sync
 
-from components.login.cookies import LoggedInUser, get_current_user
+from components.login.allowlist import require_allowed_user
+from components.login.cookies import LoggedInUser
 from main import app
 from models.telegram_browser import TelegramChannel, TelegramDownload, TelegramMessage
 
@@ -19,7 +20,7 @@ def _mock_get_current_user() -> LoggedInUser:
 @pytest.fixture(scope="function")
 def telegram_client() -> Iterator[TestClient]:
     run_sync(create_db_tables(*TABLES, if_not_exists=True))
-    app.dependency_overrides[get_current_user] = _mock_get_current_user
+    app.dependency_overrides[require_allowed_user] = _mock_get_current_user
     try:
         with TestClient(app=app) as client:
             yield client
