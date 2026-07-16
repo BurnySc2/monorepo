@@ -237,7 +237,9 @@ async def queue_file(
     Queue a file for download.
     Only succeeds if current status is 'HasFile'.
     """
-    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    message = await (
+        TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    )
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -267,7 +269,9 @@ async def delete_file(
     Deletes from S3 if s3_object_name exists (regardless of status).
     Removes the download record and resets message status.
     """
-    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    message = await (
+        TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    )
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -303,7 +307,9 @@ async def view_file(
     Get a presigned S3 URL for viewing a file.
     Only succeeds if status is 'Downloaded' and s3_object_name exists.
     """
-    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    message = await (
+        TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    )
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -353,7 +359,9 @@ async def download_file(
     Redirect to a presigned S3 URL with Content-Disposition: attachment.
     Used as an <a href> link for browser downloads.
     """
-    message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    message = await (
+        TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    )
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
@@ -446,9 +454,15 @@ async def list_downloads(
             TelegramDownload.message.file_extension.as_alias("file_extension"),
             TelegramDownload.message.file_size_bytes.as_alias("file_size_bytes"),
             TelegramDownload.message.file_duration_seconds.as_alias("file_duration_seconds"),
-            TelegramDownload.message.channel.channel_id.as_alias("channel_id"),  # pyrefly: ignore[missing-attribute]
-            TelegramDownload.message.channel.channel_title.as_alias("channel_title"),  # pyrefly: ignore[missing-attribute]
-            TelegramDownload.message.channel.channel_username.as_alias("channel_username"),  # pyrefly: ignore[missing-attribute]
+            (
+                TelegramDownload.message.channel.channel_id  # pyrefly: ignore[missing-attribute]
+            ).as_alias("channel_id"),
+            (
+                TelegramDownload.message.channel.channel_title  # pyrefly: ignore[missing-attribute]
+            ).as_alias("channel_title"),
+            (
+                TelegramDownload.message.channel.channel_username  # pyrefly: ignore[missing-attribute]
+            ).as_alias("channel_username"),
         )
         .where(TelegramDownload.download_finished_time >= cutoff_time)
         .order_by(TelegramDownload.download_queue_time, ascending=False)
