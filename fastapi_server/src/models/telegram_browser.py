@@ -46,5 +46,6 @@ class TelegramDownload(Table, tablename="litestar_telegram_download"):
     message = ForeignKey(references=TelegramMessage)
     download_queue_time = Timestamp(default=lambda: arrow.now().naive, required=False)
     download_start_time = Timestamp(default=None, required=False, null=True)
+    download_finished_time = Timestamp(default=None, required=False, null=True)
     download_retry_attempt = Integer(default=0, required=False)
     s3_object_name = Text(default="", required=False)

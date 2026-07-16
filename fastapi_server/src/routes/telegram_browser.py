@@ -1,17 +1,20 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from typing import Annotated
 
+import arrow
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse
 
 from components.login.cookies import LoggedInUser, get_current_user
-from models.telegram_browser import Status, TelegramChannel, TelegramMessage
+from models.telegram_browser import Status, TelegramChannel, TelegramDownload, TelegramMessage
 from s3_helper import RUSTFS_TELEGRAM_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.telegram_browser import (
     ChannelNameItem,
     DeleteFileResponse,
+    DownloadedFileItem,
     QueueFileResponse,
     SearchResultItem,
     SearchResultMetadata,
@@ -70,6 +73,41 @@ def _format_search_result(row: dict) -> SearchResultItem:
         file_height=row.get("file_height"),
         file_width=row.get("file_width"),
         mime_type=row.get("mime_type"),
+        message_link=message_link,
+    )
+
+
+def _format_download_item(row: dict) -> DownloadedFileItem:
+    """Convert a raw DB row (TelegramDownload + FK traversal) into a DownloadedFileItem."""
+    channel_username = row.get("channel_username")
+    channel_id_val = row.get("channel_id")
+    message_id_val = row.get("message_id")
+
+    message_link = ""
+    if channel_id_val and message_id_val:
+        message_link = _build_message_link(channel_username, channel_id_val, message_id_val)
+
+    return DownloadedFileItem(
+        # Download metadata
+        download_queue_time=str(row["download_queue_time"]),
+        download_start_time=str(row["download_start_time"]) if row.get("download_start_time") else None,
+        download_finished_time=str(row["download_finished_time"]) if row.get("download_finished_time") else None,
+        download_retry_attempt=row.get("download_retry_attempt", 0),
+        s3_object_name=row.get("s3_object_name", ""),
+        # Message metadata
+        message_id=row.get("message_id"),
+        message_date=str(row["message_date"]),
+        message_text=row.get("message_text", ""),
+        status=row.get("status", ""),
+        # File info
+        file_mime_type=row.get("file_mime_type", ""),
+        file_extension=row.get("file_extension", ""),
+        file_size_bytes=row.get("file_size_bytes", 0),
+        file_duration_seconds=row.get("file_duration_seconds", 0.0),
+        # Channel info
+        channel_title=row.get("channel_title", ""),
+        channel_username=channel_username or "",
+        # Constructed
         message_link=message_link,
     )
 
@@ -224,24 +262,28 @@ async def delete_file(
 ) -> DeleteFileResponse:
     """
     Delete a downloaded file from S3 and reset status to 'HasFile'.
-    Deletes from S3 if minio_object_name exists (regardless of status).
-    Resets status, minio_object_name, downloading_start_time, and retry attempt.
+    Deletes from S3 if s3_object_name exists (regardless of status).
+    Removes the download record and resets message status.
     """
     message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    # Delete S3 object if it exists
-    if message.minio_object_name:
-        async with get_s3_client() as s3:
-            await object_delete(s3, RUSTFS_TELEGRAM_BUCKET, message.minio_object_name)
+    # Get the download record
+    download = await TelegramDownload.objects().where(TelegramDownload.message == id).first()
 
-    # Reset fields
+    if download is not None:
+        # Delete S3 object if it exists
+        if download.s3_object_name:
+            async with get_s3_client() as s3:
+                await object_delete(s3, RUSTFS_TELEGRAM_BUCKET, download.s3_object_name)
+
+        # Delete the download record
+        await download.remove()
+
+    # Reset message status
     message.status = Status.HasFile
-    message.minio_object_name = None
-    message.downloading_start_time = None
-    message.downloading_retry_attempt = 0
     await message.save()
 
     return DeleteFileResponse(deleted=True)
@@ -257,14 +299,17 @@ async def view_file(
 ) -> ViewFileResponse:
     """
     Get a presigned S3 URL for viewing a file.
-    Only succeeds if status is 'Downloaded' and minio_object_name exists.
+    Only succeeds if status is 'Downloaded' and s3_object_name exists.
     """
     message = await TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
 
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    if message.status != Status.Downloaded or not message.minio_object_name:
+    # Get the download record
+    download = await TelegramDownload.objects().where(TelegramDownload.message == id).first()
+
+    if message.status != Status.Downloaded or download is None or not download.s3_object_name:
         raise HTTPException(
             status_code=400,
             detail="File not available for viewing. Must be 'Downloaded'.",
@@ -278,7 +323,7 @@ async def view_file(
         presigned_url = await object_create_presigned_url(
             session=s3,
             bucket=RUSTFS_TELEGRAM_BUCKET,
-            key=message.minio_object_name,
+            key=download.s3_object_name,
             file_name=file_name,
             expires_in_seconds=3600,
             verify_object_exists=True,
@@ -290,7 +335,7 @@ async def view_file(
 
     return ViewFileResponse(
         minio_url=presigned_url,
-        mime_type=message.mime_type or "application/octet-stream",
+        mime_type=message.file_mime_type or "application/octet-stream",
     )
 
 
@@ -311,7 +356,10 @@ async def download_file(
     if message is None:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    if message.status != Status.Downloaded or not message.minio_object_name:
+    # Get the download record
+    download = await TelegramDownload.objects().where(TelegramDownload.message == id).first()
+
+    if message.status != Status.Downloaded or download is None or not download.s3_object_name:
         raise HTTPException(
             status_code=400,
             detail="File not available for download. Must be 'Downloaded'.",
@@ -325,7 +373,7 @@ async def download_file(
         presigned_url = await object_create_presigned_url(
             session=s3,
             bucket=RUSTFS_TELEGRAM_BUCKET,
-            key=message.minio_object_name,
+            key=download.s3_object_name,
             file_name=file_name,
             expires_in_seconds=3600,
             verify_object_exists=True,
@@ -364,3 +412,45 @@ async def get_channel_names(
         )
         for row in channels
     ]
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Endpoint 7: GET /downloads
+# ──────────────────────────────────────────────────────────────────────────────
+@telegram_browser_router.get("/downloads", response_model=list[DownloadedFileItem])
+async def list_downloads(
+    current_user: Annotated[LoggedInUser, Depends(get_current_user)],
+) -> list[DownloadedFileItem]:
+    """
+    List all downloaded files from the last N days.
+    Joins TelegramDownload -> TelegramMessage -> TelegramChannel via FK traversal.
+    """
+    # Get expiration period from environment (default 7 days)
+    try:
+        expiration_days = int(os.getenv("RUSTFS_TELEGRAM_BUCKET_EXPIRATION_DAYS", "7"))
+    except ValueError:
+        expiration_days = 7
+    cutoff_time = arrow.now().shift(days=-expiration_days).naive
+
+    # Query downloads completed within the expiration window
+    rows = (
+        await TelegramDownload.select(  # pyrefly: ignore[missing-attribute]
+            *TelegramDownload.all_columns(),
+            TelegramDownload.message.message_id.as_alias("message_id"),
+            TelegramDownload.message.message_date.as_alias("message_date"),
+            TelegramDownload.message.message_text.as_alias("message_text"),
+            TelegramDownload.message.status.as_alias("status"),
+            TelegramDownload.message.file_mime_type.as_alias("file_mime_type"),
+            TelegramDownload.message.file_extension.as_alias("file_extension"),
+            TelegramDownload.message.file_size_bytes.as_alias("file_size_bytes"),
+            TelegramDownload.message.file_duration_seconds.as_alias("file_duration_seconds"),
+            TelegramDownload.message.channel.channel_id.as_alias("channel_id"),
+            TelegramDownload.message.channel.channel_title.as_alias("channel_title"),
+            TelegramDownload.message.channel.channel_username.as_alias("channel_username"),
+        )
+        .where(TelegramDownload.download_finished_time >= cutoff_time)
+        .order_by(TelegramDownload.download_queue_time, ascending=False)
+        .limit(1000)
+    )
+
+    return [_format_download_item(row) for row in rows]

@@ -7,9 +7,9 @@ from piccolo.utils.sync import run_sync
 
 from components.login.cookies import LoggedInUser, get_current_user
 from main import app
-from models.telegram_browser import TelegramChannel, TelegramMessage
+from models.telegram_browser import TelegramChannel, TelegramDownload, TelegramMessage
 
-TABLES = [TelegramChannel, TelegramMessage]
+TABLES = [TelegramChannel, TelegramMessage, TelegramDownload]
 
 
 def _mock_get_current_user() -> LoggedInUser:

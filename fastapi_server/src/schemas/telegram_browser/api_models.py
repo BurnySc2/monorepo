@@ -41,3 +41,29 @@ class ViewFileResponse(BaseModel):
 class ChannelNameItem(BaseModel):
     channel_title: str
     channel_username: str
+
+
+class DownloadedFileItem(BaseModel):
+    # From TelegramDownload
+    download_queue_time: str
+    download_start_time: str | None = None
+    download_finished_time: str | None = None
+    download_retry_attempt: int
+    s3_object_name: str
+
+    # From TelegramMessage
+    message_id: int
+    message_date: str
+    message_text: str
+    status: str
+    file_mime_type: str
+    file_extension: str
+    file_size_bytes: int
+    file_duration_seconds: float
+
+    # From TelegramChannel
+    channel_title: str
+    channel_username: str
+
+    # Constructed
+    message_link: str
