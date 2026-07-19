@@ -18,13 +18,13 @@ const STORAGE_KEY = "sort_settings"
 
 export const sort_state: SortState = $state<SortState>(SortStateSchema.parse([]))
 
-const loading = $state({ value: true })
+export const is_loading = $state({ value: true })
 
 $effect.root(() => {
     $effect(() => {
         if (browser) {
-            if (loading.value) {
-                loading.value = false
+            if (is_loading.value) {
+                is_loading.value = false
                 const data = localStorage.getItem(STORAGE_KEY)
                 if (data !== null) {
                     const parsed = SortStateSchema.parse(JSON.parse(data))

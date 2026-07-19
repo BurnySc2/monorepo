@@ -31,13 +31,13 @@ export type ColumnSettings = z.infer<typeof ColumnSettingsSchema>
 const STORAGE_KEY = "column_settings"
 
 export const column_settings = $state<ColumnSettings>(ColumnSettingsSchema.parse({}))
-const loading = $state({ value: true })
+export const is_loading = $state({ value: true })
 
 $effect.root(() => {
     $effect(() => {
         if (browser) {
-            if (loading.value) {
-                loading.value = false
+            if (is_loading.value) {
+                is_loading.value = false
                 const data = localStorage.getItem(STORAGE_KEY)
                 if (data !== null) {
                     Object.assign(column_settings, ColumnSettingsSchema.parse(JSON.parse(data)))

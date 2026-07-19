@@ -36,13 +36,13 @@ export type FileColumnSettings = z.infer<typeof FileColumnSettingsSchema>
 const STORAGE_KEY = "file_column_settings"
 
 export const file_column_settings = $state<FileColumnSettings>(FileColumnSettingsSchema.parse({}))
-const loading = $state({ value: true })
+export const is_loading = $state({ value: true })
 
 $effect.root(() => {
     $effect(() => {
         if (browser) {
-            if (loading.value) {
-                loading.value = false
+            if (is_loading.value) {
+                is_loading.value = false
                 const data = localStorage.getItem(STORAGE_KEY)
                 if (data !== null) {
                     Object.assign(file_column_settings, FileColumnSettingsSchema.parse(JSON.parse(data)))
