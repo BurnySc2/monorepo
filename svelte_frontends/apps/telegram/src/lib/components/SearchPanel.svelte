@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { components } from "@repo/api-types"
-import type { SearchFilters } from "$lib/types"
-import { fetch_channel_names } from "$lib/api"
 import { onMount } from "svelte"
+import { fetch_channel_names } from "$lib/api"
+import type { SearchFilters } from "$lib/types"
 
 type ChannelNameItem = components["schemas"]["ChannelNameItem"]
 

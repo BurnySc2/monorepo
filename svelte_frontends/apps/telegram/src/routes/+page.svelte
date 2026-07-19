@@ -1,14 +1,14 @@
 <script lang="ts">
 import { fetch_delete_file, fetch_queue_file, fetch_view_file } from "$lib/api"
+import { is_loading as columns_loading } from "$lib/column_settings.svelte"
 import ColumnReorderDialog from "$lib/components/ColumnReorderDialog.svelte"
 import FilesTab from "$lib/components/FilesTab.svelte"
 import MediaDialog from "$lib/components/MediaDialog.svelte"
 import MessagesTab from "$lib/components/MessagesTab.svelte"
 import TabContainer from "$lib/components/TabContainer.svelte"
+import { is_loading as file_columns_loading } from "$lib/file_column_settings.svelte"
 import { is_loading as filters_loading } from "$lib/search_filters.svelte"
 import { is_loading as sort_loading } from "$lib/sort_settings.svelte"
-import { is_loading as columns_loading } from "$lib/column_settings.svelte"
-import { is_loading as file_columns_loading } from "$lib/file_column_settings.svelte"
 
 let is_ready = $derived(
     !filters_loading.value && !sort_loading.value && !columns_loading.value && !file_columns_loading.value,

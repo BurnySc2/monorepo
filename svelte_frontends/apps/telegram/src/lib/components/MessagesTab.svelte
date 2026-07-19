@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { components } from "@repo/api-types"
 import { fetch_search } from "$lib/api"
-import { to_sort_items } from "$lib/sort_settings.svelte"
 import { search_filters } from "$lib/search_filters.svelte"
+import { to_sort_items } from "$lib/sort_settings.svelte"
 import ResultsGrid from "./ResultsGrid.svelte"
 import SearchPanel from "./SearchPanel.svelte"
 

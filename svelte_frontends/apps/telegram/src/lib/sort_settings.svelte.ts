@@ -1,6 +1,6 @@
+import type { components } from "@repo/api-types"
 import { z } from "zod"
 import { browser } from "$app/environment"
-import type { components } from "@repo/api-types"
 
 type SortItem = components["schemas"]["SortItem"]
 
