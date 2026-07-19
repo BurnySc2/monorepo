@@ -282,7 +282,7 @@ describe("sort_settings", () => {
         })
 
         it("rejects missing column_key", () => {
-            expect(() => SortStateSchema.parse([{ direction: "asc" } as any])).toThrow()
+            expect(() => SortStateSchema.parse([{ direction: "asc" }])).toThrow()
         })
 
         it("rejects non-array input", () => {
