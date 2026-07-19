@@ -18,17 +18,17 @@ interface Props {
     onqueue: (id: string) => void
     ondelete: (id: string) => void
     onview: (id: string) => void
-    is_searching: boolean 
+    is_searching: boolean
 }
 
 let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
 </script>
 
-<div class="w-full overflow-auto rounded-xl bg-white">
+<div class="mb-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white">
     <table class="w-full border-collapse">
         <thead>
-            <tr>
-                <th class="border bg-gray-100 p-2">
+            <tr class="sticky top-0 z-10">
+                <th class="border border-gray-200 bg-gray-100 p-2">
                     <div class="flex items-center gap-1">
                         Actions
                         {#if sort_state.length > 0}
@@ -47,7 +47,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                     {@const direction = get_sort_direction(col.key)}
                     {@const priority = get_sort_priority(col.key)}
                     <th
-                        class="whitespace-nowrap cursor-pointer select-none border p-2 {direction ? 'bg-blue-100' : 'bg-gray-100'}"
+                        class="whitespace-nowrap cursor-pointer select-none border border-gray-200 p-2 {direction ? 'bg-blue-100' : 'bg-gray-100'}"
                         onclick={() => toggle_sort(col.key)}
                         title={get_sort_tooltip(col.key)}
                     >
@@ -65,17 +65,17 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
             {#if is_searching}
                 <tr>
                     <td colspan={column_settings.active_columns.length + 1}>
-                        <div class="flex items-center justify-center py-8">
+                        <div class="flex flex-col items-center justify-center gap-2 py-12">
                             <div
-                                class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"
+                                class="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"
                             ></div>
-                            <span class="ml-4">Searching...</span>
+                            <span class="text-sm text-gray-500">Searching...</span>
                         </div>
                     </td>
                 </tr>
             {/if}
             {#each results as row (row.metadata.id)}
-                <tr class="hover:bg-gray-50">
+                <tr class="border-t border-gray-100 hover:bg-gray-50">
                     <!-- Action icons -->
                     <td>
                         <div
@@ -84,7 +84,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                         >
                             {#if row.metadata.status === "HasFile"}
                                 <button
-                                    class="w-8 cursor-copy rounded-xl hover:bg-yellow-500"
+                                    class="w-8 cursor-copy rounded-lg transition-colors hover:bg-yellow-100"
                                     type="button"
                                     onclick={() => onqueue(row.metadata.id)}
                                     title="Queue file"
@@ -103,7 +103,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                     >
                                 </div>
                                 <button
-                                    class="w-8 cursor-no-drop rounded-xl hover:bg-red-500"
+                                    class="w-8 cursor-no-drop rounded-lg transition-colors hover:bg-red-100"
                                     type="button"
                                     onclick={() => ondelete(row.metadata.id)}
                                     title="Delete"
@@ -115,7 +115,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                 </button>
                             {:else if row.metadata.status === "Downloaded"}
                                 <button
-                                    class="w-8 cursor-pointer rounded-xl hover:bg-green-500"
+                                    class="w-8 cursor-pointer rounded-lg transition-colors hover:bg-green-100"
                                     type="button"
                                     onclick={() => onview(row.metadata.id)}
                                     title="View"
@@ -126,7 +126,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                     >
                                 </button>
                                 <a
-                                    class="w-8 rounded-xl hover:bg-green-500"
+                                    class="w-8 rounded-lg transition-colors hover:bg-green-100"
                                     href="/telegram-browser/download-file/{row.metadata.id}"
                                     title="Download"
                                 >
@@ -136,7 +136,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                     >
                                 </a>
                                 <button
-                                    class="w-8 cursor-no-drop rounded-xl hover:bg-red-500"
+                                    class="w-8 cursor-no-drop rounded-lg transition-colors hover:bg-red-100"
                                     type="button"
                                     onclick={() => ondelete(row.metadata.id)}
                                     title="Delete"
@@ -154,15 +154,15 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                     {#each column_settings.active_columns as col}
                         {@const value = (row as Record<string, unknown>)[col.key]}
                         {#if col.key === "file_size_bytes"}
-                            <td class="truncate text-center">
+                            <td class="truncate border-t border-gray-100 text-center">
                                 {value != null ? format_file_size(value as number) : ""}
                             </td>
                         {:else if col.key === "file_duration_seconds"}
-                            <td class="truncate text-center">
+                            <td class="truncate border-t border-gray-100 text-center">
                                 {value != null ? format_duration(value as number) : ""}
                             </td>
                         {:else if col.key === "message_link"}
-                            <td>
+                            <td class="border-t border-gray-100">
                                 {#if value}
                                     <a
                                         href={value as string}
@@ -174,9 +174,9 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                 {/if}
                             </td>
                         {:else if col.key === "message_date"}
-                            <td class="whitespace-nowrap">{value ?? ""}</td>
+                            <td class="whitespace-nowrap border-t border-gray-100">{value ?? ""}</td>
                         {:else}
-                            <td class="break-all">{value ?? ""}</td>
+                            <td class="break-all border-t border-gray-100">{value ?? ""}</td>
                         {/if}
                     {/each}
                 </tr>

@@ -61,10 +61,12 @@ async function handle_search() {
 </script>
 
 <div class="flex flex-col gap-4">
-    <SearchPanel
-        {filters}
-        onsearch={handle_search}
-    />
+    <div class="card">
+        <SearchPanel
+            {filters}
+            onsearch={handle_search}
+        />
+    </div>
 
     <ResultsGrid
         {results}
