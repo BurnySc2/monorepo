@@ -18,9 +18,10 @@ interface Props {
     onqueue: (id: string) => void
     ondelete: (id: string) => void
     onview: (id: string) => void
+    is_loading?: boolean
 }
 
-let { results, onqueue, ondelete, onview }: Props = $props()
+let { results, onqueue, ondelete, onview, is_loading = false }: Props = $props()
 </script>
 
 <div class="w-full overflow-auto rounded-xl bg-white">
@@ -168,6 +169,18 @@ let { results, onqueue, ondelete, onview }: Props = $props()
                     {/each}
                 </tr>
             {/each}
+            {#if is_loading}
+                <tr>
+                    <td colspan={column_settings.active_columns.length + 1}>
+                        <div class="flex items-center justify-center py-8">
+                            <div
+                                class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"
+                            ></div>
+                            <span class="ml-4">Searching...</span>
+                        </div>
+                    </td>
+                </tr>
+            {/if}
         </tbody>
     </table>
 </div>

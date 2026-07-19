@@ -66,17 +66,11 @@ async function handle_search() {
         onsearch={handle_search}
     />
 
-    {#if is_searching}
-        <div class="flex items-center justify-center p-8">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
-            <span class="ml-4">Searching...</span>
-        </div>
-    {:else}
-        <ResultsGrid
-            {results}
-            {onqueue}
-            {ondelete}
-            {onview}
-        />
-    {/if}
+    <ResultsGrid
+        {results}
+        {onqueue}
+        {ondelete}
+        {onview}
+        is_loading={is_searching}
+    />
 </div>
