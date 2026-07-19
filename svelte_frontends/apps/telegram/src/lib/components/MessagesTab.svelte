@@ -71,6 +71,6 @@ async function handle_search() {
         {onqueue}
         {ondelete}
         {onview}
-        is_loading={is_searching}
+        {is_searching}
     />
 </div>
