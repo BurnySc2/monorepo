@@ -1,5 +1,10 @@
 <script lang="ts">
+import type { components } from "@repo/api-types"
 import type { SearchFilters } from "$lib/types"
+import { fetch_channel_names } from "$lib/api"
+import { onMount } from "svelte"
+
+type ChannelNameItem = components["schemas"]["ChannelNameItem"]
 
 interface Props {
     filters: SearchFilters
@@ -7,6 +12,16 @@ interface Props {
 }
 
 let { filters, onsearch }: Props = $props()
+
+let available_channels = $state<ChannelNameItem[]>([])
+
+onMount(async () => {
+    try {
+        available_channels = await fetch_channel_names()
+    } catch (err) {
+        console.error("Failed to fetch channel names:", err)
+    }
+})
 
 function reset_duration() {
     filters.file_duration_min = "00:00:00"
@@ -37,6 +52,11 @@ function reset_duration() {
             bind:value={filters.channel_name}
             placeholder="Must be from this channel"
         >
+        <datalist id="channel-names">
+            {#each available_channels as channel}
+                <option value={channel.channel_title}></option>
+            {/each}
+        </datalist>
     </div>
 
     <!-- Date range -->
