@@ -85,7 +85,7 @@ def _create_download(
 
 def test_search_returns_200_empty(telegram_client: TestClient) -> None:
     """Search endpoint returns 200 with empty results when no messages exist."""
-    response = telegram_client.get("/telegram-browser/search")
+    response = telegram_client.post("/telegram-browser/search", json={})
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
@@ -114,7 +114,7 @@ def test_search_with_filters_returns_200(telegram_client: TestClient) -> None:
         "file_image_height_min": 0,
         "file_image_height_max": 1080,
     }
-    response = telegram_client.get("/telegram-browser/search", params=params)
+    response = telegram_client.post("/telegram-browser/search", json=params)
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 
@@ -130,7 +130,7 @@ def test_search_with_data(telegram_client: TestClient) -> None:
     _create_channel(channel_id=123456, title="Test Channel", username="testchannel")
     _create_message(channel_id=123456, message_id=789, status="HasFile")
 
-    response = telegram_client.get("/telegram-browser/search")
+    response = telegram_client.post("/telegram-browser/search", json={})
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
@@ -148,7 +148,7 @@ def test_search_message_link_public_channel(telegram_client: TestClient) -> None
     _create_channel(channel_id=5000, title="Public Channel", username="my_public_channel")
     _create_message(channel_id=5000, message_id=21491)
 
-    response = telegram_client.get("/telegram-browser/search")
+    response = telegram_client.post("/telegram-browser/search", json={})
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1
@@ -160,7 +160,7 @@ def test_search_message_link_private_channel(telegram_client: TestClient) -> Non
     _create_channel(channel_id=6000, title="Private Channel", username=None)
     _create_message(channel_id=6000, message_id=30492)
 
-    response = telegram_client.get("/telegram-browser/search")
+    response = telegram_client.post("/telegram-browser/search", json={})
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 1

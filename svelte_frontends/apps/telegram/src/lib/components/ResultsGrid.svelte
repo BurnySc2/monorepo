@@ -2,6 +2,14 @@
 import type { components } from "@repo/api-types"
 import { column_settings } from "$lib/column_settings.svelte"
 import { format_duration, format_file_size } from "$lib/format"
+import {
+    clear_sort,
+    get_sort_direction,
+    get_sort_priority,
+    get_sort_tooltip,
+    sort_state,
+    toggle_sort,
+} from "$lib/sort_settings.svelte"
 
 type SearchResult = components["schemas"]["SearchResultItem"]
 
@@ -19,9 +27,36 @@ let { results, onqueue, ondelete, onview }: Props = $props()
     <table class="w-full border-collapse">
         <thead>
             <tr>
-                <th class="border bg-gray-100 p-2">Actions</th>
+                <th class="border bg-gray-100 p-2">
+                    <div class="flex items-center gap-1">
+                        Actions
+                        {#if sort_state.length > 0}
+                            <button
+                                class="ml-1 rounded px-1 text-xs text-gray-500 hover:bg-red-100 hover:text-red-600"
+                                type="button"
+                                onclick={() => clear_sort()}
+                                title="Clear all sorting"
+                            >
+                                ✕
+                            </button>
+                        {/if}
+                    </div>
+                </th>
                 {#each column_settings.active_columns as col}
-                    <th class="whitespace-nowrap border bg-gray-100 p-2">{col.name}</th>
+                    {@const direction = get_sort_direction(col.key)}
+                    {@const priority = get_sort_priority(col.key)}
+                    <th
+                        class="whitespace-nowrap cursor-pointer select-none border p-2 {direction ? 'bg-blue-100' : 'bg-gray-100'}"
+                        onclick={() => toggle_sort(col.key)}
+                        title={get_sort_tooltip(col.key)}
+                    >
+                        {col.name}
+                        {#if direction !== null}
+                            <span class="ml-1 text-xs font-bold text-blue-600">
+                                {direction === "asc" ? "▲" : "▼"}{priority}
+                            </span>
+                        {/if}
+                    </th>
                 {/each}
             </tr>
         </thead>

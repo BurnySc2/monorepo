@@ -1,5 +1,6 @@
 import type { components } from "@repo/api-types"
 
+type SearchRequest = components["schemas"]["SearchRequest"]
 type SearchResultItem = components["schemas"]["SearchResultItem"]
 type ViewFileResponse = components["schemas"]["ViewFileResponse"]
 type QueueFileResponse = components["schemas"]["QueueFileResponse"]
@@ -12,10 +13,16 @@ const get_api_base = () => {
     return target ? `${protocol}://${target}` : "http://localhost:8000"
 }
 
-export const fetch_search = async (query: string): Promise<SearchResultItem[]> => {
-    const resp = await fetch(`${get_api_base()}/telegram-browser/search?${query}`, {
+export const fetch_search = async (request: SearchRequest): Promise<SearchResultItem[]> => {
+    const resp = await fetch(`${get_api_base()}/telegram-browser/search`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(request),
         credentials: "include",
     })
+    if (!resp.ok) {
+        throw new Error(`Search failed: ${resp.statusText}`)
+    }
     return resp.json()
 }
 

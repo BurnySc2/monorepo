@@ -5,8 +5,11 @@ from schemas.telegram_browser.api_models import (
     DeleteFileResponse,
     DownloadedFileItem,
     QueueFileResponse,
+    SearchRequest,
     SearchResultItem,
     SearchResultMetadata,
+    SortColumn,
+    SortItem,
     ViewFileResponse,
 )
 
@@ -15,7 +18,10 @@ __all__ = [
     "DeleteFileResponse",
     "DownloadedFileItem",
     "QueueFileResponse",
+    "SearchRequest",
     "SearchResultItem",
     "SearchResultMetadata",
+    "SortColumn",
+    "SortItem",
     "ViewFileResponse",
 ]

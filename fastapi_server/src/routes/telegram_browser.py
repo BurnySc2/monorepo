@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Annotated
 
 import arrow
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import RedirectResponse
 
 from components.login.allowlist import require_allowed_user
@@ -17,6 +17,7 @@ from schemas.telegram_browser import (
     DeleteFileResponse,
     DownloadedFileItem,
     QueueFileResponse,
+    SearchRequest,
     SearchResultItem,
     SearchResultMetadata,
     ViewFileResponse,
@@ -114,29 +115,12 @@ def _format_download_item(row: dict) -> DownloadedFileItem:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Endpoint 1: GET /search
+# Endpoint 1: POST /search
 # ──────────────────────────────────────────────────────────────────────────────
-@telegram_browser_router.get("/search", response_model=list[SearchResultItem])
+@telegram_browser_router.post("/search", response_model=list[SearchResultItem])
 async def search_messages(
     current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
-    search_text: str = Query(default=""),
-    channel_name: str = Query(default=""),
-    datetime_min: str = Query(default=""),
-    datetime_max: str = Query(default=""),
-    reactions_min: int = Query(default=0),
-    reactions_max: int = Query(default=0),
-    comments_min: int = Query(default=0),
-    comments_max: int = Query(default=0),
-    must_have_file: bool = Query(default=False),
-    file_extension: str = Query(default=""),
-    file_duration_min: str = Query(default="00:00:00"),
-    file_duration_max: str = Query(default="00:00:00"),
-    file_size_min: int = Query(default=0),
-    file_size_max: int = Query(default=0),
-    file_image_width_min: int = Query(default=0),
-    file_image_width_max: int = Query(default=0),
-    file_image_height_min: int = Query(default=0),
-    file_image_height_max: int = Query(default=0),
+    request: SearchRequest,
 ) -> list[SearchResultItem]:
     """
     Search telegram messages with dynamic filters.
@@ -152,75 +136,97 @@ async def search_messages(
     )
 
     # Apply filters dynamically
-    if search_text:
-        query = query.where(TelegramMessage.message_text.ilike(f"%{search_text}%"))
+    if request.search_text:
+        query = query.where(TelegramMessage.message_text.ilike(f"%{request.search_text}%"))
 
-    if channel_name:
-        query = query.where(TelegramMessage.channel.channel_title.ilike(f"%{channel_name}%"))
+    if request.channel_name:
+        query = query.where(TelegramMessage.channel.channel_title.ilike(f"%{request.channel_name}%"))
 
-    if datetime_min:
+    if request.datetime_min:
         try:
-            dt_min = datetime.fromisoformat(datetime_min)
+            dt_min = datetime.fromisoformat(request.datetime_min)
             query = query.where(TelegramMessage.message_date >= dt_min)
         except ValueError:
             pass
 
-    if datetime_max:
+    if request.datetime_max:
         try:
-            dt_max = datetime.fromisoformat(datetime_max)
+            dt_max = datetime.fromisoformat(request.datetime_max)
             query = query.where(TelegramMessage.message_date <= dt_max)
         except ValueError:
             pass
 
-    if reactions_min > 0:
-        query = query.where(TelegramMessage.amount_of_reactions >= reactions_min)
+    if request.reactions_min > 0:
+        query = query.where(TelegramMessage.amount_of_reactions >= request.reactions_min)
 
-    if reactions_max > 0:
-        query = query.where(TelegramMessage.amount_of_reactions <= reactions_max)
+    if request.reactions_max > 0:
+        query = query.where(TelegramMessage.amount_of_reactions <= request.reactions_max)
 
-    if comments_min > 0:
-        query = query.where(TelegramMessage.amount_of_comments >= comments_min)
+    if request.comments_min > 0:
+        query = query.where(TelegramMessage.amount_of_comments >= request.comments_min)
 
-    if comments_max > 0:
-        query = query.where(TelegramMessage.amount_of_comments <= comments_max)
+    if request.comments_max > 0:
+        query = query.where(TelegramMessage.amount_of_comments <= request.comments_max)
 
-    if must_have_file:
+    if request.must_have_file:
         query = query.where(TelegramMessage.status != Status.NoFile)
 
-    if file_extension:
-        query = query.where(TelegramMessage.file_extension.ilike(f"%{file_extension}%"))
+    if request.file_extension:
+        query = query.where(TelegramMessage.file_extension.ilike(f"%{request.file_extension}%"))
 
     # Duration filters (convert "HH:MM:SS" -> seconds)
-    duration_min_seconds = _parse_duration_to_seconds(file_duration_min)
+    duration_min_seconds = _parse_duration_to_seconds(request.file_duration_min)
     if duration_min_seconds is not None and duration_min_seconds > 0:
         query = query.where(TelegramMessage.file_duration_seconds >= duration_min_seconds)
 
-    duration_max_seconds = _parse_duration_to_seconds(file_duration_max)
+    duration_max_seconds = _parse_duration_to_seconds(request.file_duration_max)
     if duration_max_seconds is not None and duration_max_seconds > 0:
         query = query.where(TelegramMessage.file_duration_seconds <= duration_max_seconds)
 
     # File size filters (frontend sends MB -> convert to bytes)
-    if file_size_min > 0:
-        query = query.where(TelegramMessage.file_size_bytes >= file_size_min * 1024 * 1024)
+    if request.file_size_min > 0:
+        query = query.where(TelegramMessage.file_size_bytes >= request.file_size_min * 1024 * 1024)
 
-    if file_size_max > 0:
-        query = query.where(TelegramMessage.file_size_bytes <= file_size_max * 1024 * 1024)
+    if request.file_size_max > 0:
+        query = query.where(TelegramMessage.file_size_bytes <= request.file_size_max * 1024 * 1024)
 
     # Image dimension filters
-    if file_image_width_min > 0:
-        query = query.where(TelegramMessage.file_width >= file_image_width_min)
+    if request.file_image_width_min > 0:
+        query = query.where(TelegramMessage.file_width >= request.file_image_width_min)
 
-    if file_image_width_max > 0:
-        query = query.where(TelegramMessage.file_width <= file_image_width_max)
+    if request.file_image_width_max > 0:
+        query = query.where(TelegramMessage.file_width <= request.file_image_width_max)
 
-    if file_image_height_min > 0:
-        query = query.where(TelegramMessage.file_height >= file_image_height_min)
+    if request.file_image_height_min > 0:
+        query = query.where(TelegramMessage.file_height >= request.file_image_height_min)
 
-    if file_image_height_max > 0:
-        query = query.where(TelegramMessage.file_height <= file_image_height_max)
+    if request.file_image_height_max > 0:
+        query = query.where(TelegramMessage.file_height <= request.file_image_height_max)
 
-    # Apply ordering and limit (no pagination - frontend expects array)
-    rows = await query.order_by(TelegramMessage.message_date, ascending=False).limit(1000)
+    # Map SortColumn string values to Piccolo columns
+    allowed_sort_columns = {
+        "message_date": TelegramMessage.message_date,
+        "amount_of_reactions": TelegramMessage.amount_of_reactions,
+        "amount_of_comments": TelegramMessage.amount_of_comments,
+        "file_size_bytes": TelegramMessage.file_size_bytes,
+        "file_duration_seconds": TelegramMessage.file_duration_seconds,
+        "file_height": TelegramMessage.file_height,
+        "file_width": TelegramMessage.file_width,
+        "channel_title": TelegramMessage.channel.channel_title,
+        "channel_username": TelegramMessage.channel.channel_username,
+        "file_extension": TelegramMessage.file_extension,
+        "mime_type": TelegramMessage.file_mime_type,
+    }
+
+    # Apply ordering - call order_by per column to support mixed ascending/descending
+    if request.sort:
+        for item in request.sort:
+            col = allowed_sort_columns[item.column]
+            query = query.order_by(col, ascending=item.ascending)
+    else:
+        query = query.order_by(TelegramMessage.message_date, ascending=False)
+
+    rows = await query.limit(1000)
 
     return [_format_search_result(row) for row in rows]
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel
 
 
@@ -36,6 +38,48 @@ class DeleteFileResponse(BaseModel):
 class ViewFileResponse(BaseModel):
     minio_url: str
     mime_type: str
+
+
+SortColumn = Literal[
+    "message_date",
+    "amount_of_reactions",
+    "amount_of_comments",
+    "file_size_bytes",
+    "file_duration_seconds",
+    "file_height",
+    "file_width",
+    "channel_title",
+    "channel_username",
+    "file_extension",
+    "mime_type",
+]
+
+
+class SortItem(BaseModel):
+    column: SortColumn
+    ascending: bool = True
+
+
+class SearchRequest(BaseModel):
+    search_text: str = ""
+    channel_name: str = ""
+    datetime_min: str = ""
+    datetime_max: str = ""
+    reactions_min: int = 0
+    reactions_max: int = 0
+    comments_min: int = 0
+    comments_max: int = 0
+    must_have_file: bool = False
+    file_extension: str = ""
+    file_duration_min: str = "00:00:00"
+    file_duration_max: str = "00:00:00"
+    file_size_min: int = 0
+    file_size_max: int = 0
+    file_image_width_min: int = 0
+    file_image_width_max: int = 0
+    file_image_height_min: int = 0
+    file_image_height_max: int = 0
+    sort: list[SortItem] = []
 
 
 class ChannelNameItem(BaseModel):

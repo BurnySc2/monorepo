@@ -568,15 +568,15 @@ export interface paths {
             path?: never
             cookie?: never
         }
+        get?: never
+        put?: never
         /**
          * Search Messages
          * @description Search telegram messages with dynamic filters.
          *     Joins with TelegramChannel via FK traversal for channel_title.
          *     Returns list of SearchResult dicts (frontend expects array directly).
          */
-        get: operations["search_messages_telegram_browser_search_get"]
-        put?: never
-        post?: never
+        post: operations["search_messages_telegram_browser_search_post"]
         delete?: never
         options?: never
         head?: never
@@ -958,6 +958,104 @@ export interface components {
             /** Players */
             players: components["schemas"]["ReplayPlayer"][]
         }
+        /** SearchRequest */
+        SearchRequest: {
+            /**
+             * Search Text
+             * @default
+             */
+            search_text: string
+            /**
+             * Channel Name
+             * @default
+             */
+            channel_name: string
+            /**
+             * Datetime Min
+             * @default
+             */
+            datetime_min: string
+            /**
+             * Datetime Max
+             * @default
+             */
+            datetime_max: string
+            /**
+             * Reactions Min
+             * @default 0
+             */
+            reactions_min: number
+            /**
+             * Reactions Max
+             * @default 0
+             */
+            reactions_max: number
+            /**
+             * Comments Min
+             * @default 0
+             */
+            comments_min: number
+            /**
+             * Comments Max
+             * @default 0
+             */
+            comments_max: number
+            /**
+             * Must Have File
+             * @default false
+             */
+            must_have_file: boolean
+            /**
+             * File Extension
+             * @default
+             */
+            file_extension: string
+            /**
+             * File Duration Min
+             * @default 00:00:00
+             */
+            file_duration_min: string
+            /**
+             * File Duration Max
+             * @default 00:00:00
+             */
+            file_duration_max: string
+            /**
+             * File Size Min
+             * @default 0
+             */
+            file_size_min: number
+            /**
+             * File Size Max
+             * @default 0
+             */
+            file_size_max: number
+            /**
+             * File Image Width Min
+             * @default 0
+             */
+            file_image_width_min: number
+            /**
+             * File Image Width Max
+             * @default 0
+             */
+            file_image_width_max: number
+            /**
+             * File Image Height Min
+             * @default 0
+             */
+            file_image_height_min: number
+            /**
+             * File Image Height Max
+             * @default 0
+             */
+            file_image_height_max: number
+            /**
+             * Sort
+             * @default []
+             */
+            sort: components["schemas"]["SortItem"][]
+        }
         /** SearchResultItem */
         SearchResultItem: {
             metadata: components["schemas"]["SearchResultMetadata"]
@@ -1003,6 +1101,30 @@ export interface components {
             id: string
             /** Status */
             status: string
+        }
+        /** SortItem */
+        SortItem: {
+            /**
+             * Column
+             * @enum {string}
+             */
+            column:
+                | "message_date"
+                | "amount_of_reactions"
+                | "amount_of_comments"
+                | "file_size_bytes"
+                | "file_duration_seconds"
+                | "file_height"
+                | "file_width"
+                | "channel_title"
+                | "channel_username"
+                | "file_extension"
+                | "mime_type"
+            /**
+             * Ascending
+             * @default true
+             */
+            ascending: boolean
         }
         /** TTSGenerateRequest */
         TTSGenerateRequest: {
@@ -1902,28 +2024,9 @@ export interface operations {
             }
         }
     }
-    search_messages_telegram_browser_search_get: {
+    search_messages_telegram_browser_search_post: {
         parameters: {
-            query?: {
-                search_text?: string
-                channel_name?: string
-                datetime_min?: string
-                datetime_max?: string
-                reactions_min?: number
-                reactions_max?: number
-                comments_min?: number
-                comments_max?: number
-                must_have_file?: boolean
-                file_extension?: string
-                file_duration_min?: string
-                file_duration_max?: string
-                file_size_min?: number
-                file_size_max?: number
-                file_image_width_min?: number
-                file_image_width_max?: number
-                file_image_height_min?: number
-                file_image_height_max?: number
-            }
+            query?: never
             header?: never
             path?: never
             cookie?: {
@@ -1932,7 +2035,11 @@ export interface operations {
                 google_access_token?: string | null
             }
         }
-        requestBody?: never
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"]
+            }
+        }
         responses: {
             /** @description Successful Response */
             200: {

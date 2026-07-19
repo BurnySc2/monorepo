@@ -1,7 +1,8 @@
 <script lang="ts">
 import type { components } from "@repo/api-types"
-import type { SearchFilters } from "$lib/types"
 import { fetch_search } from "$lib/api"
+import { to_sort_items } from "$lib/sort_settings.svelte"
+import type { SearchFilters } from "$lib/types"
 import ResultsGrid from "./ResultsGrid.svelte"
 import SearchPanel from "./SearchPanel.svelte"
 
@@ -42,7 +43,12 @@ let filters = $state<SearchFilters>({
 async function handle_search() {
     is_searching = true
     try {
-        const resp = await fetch_search(new URLSearchParams(filters as unknown as Record<string, string>).toString())
+        const request = {
+            ...filters,
+            sort: to_sort_items(),
+        }
+
+        const resp = await fetch_search(request)
         if (resp) {
             results = resp
         }
@@ -65,16 +71,12 @@ async function handle_search() {
             <div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
             <span class="ml-4">Searching...</span>
         </div>
-    {:else if results.length > 0}
+    {:else}
         <ResultsGrid
             {results}
             {onqueue}
             {ondelete}
             {onview}
         />
-    {:else}
-        <div class="flex items-center justify-center p-8 text-gray-500">
-            No results yet. Run a search to see messages.
-        </div>
     {/if}
 </div>

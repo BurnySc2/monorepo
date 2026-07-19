@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { components } from "@repo/api-types"
+import { fetch_downloads } from "$lib/api"
 import { file_column_settings } from "$lib/file_column_settings.svelte"
 import { format_duration, format_file_size } from "$lib/format"
-import { fetch_downloads } from "$lib/api"
 
 type DownloadedFileItem = components["schemas"]["DownloadedFileItem"]
 
