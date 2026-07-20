@@ -7,6 +7,7 @@ type QueueFileResponse = components["schemas"]["QueueFileResponse"]
 type DeleteFileResponse = components["schemas"]["DeleteFileResponse"]
 type DownloadedFileItem = components["schemas"]["DownloadedFileItem"]
 type ChannelNameItem = components["schemas"]["ChannelNameItem"]
+type ChannelStatsItem = components["schemas"]["ChannelStatsItem"]
 
 const get_api_base = () => {
     const target = import.meta.env.VITE_API_TARGET
@@ -75,6 +76,16 @@ export const fetch_channel_names = async (): Promise<ChannelNameItem[]> => {
     })
     if (!resp.ok) {
         throw new Error(`Failed to fetch channel names: ${resp.statusText}`)
+    }
+    return resp.json()
+}
+
+export const fetch_channel_stats = async (): Promise<ChannelStatsItem[]> => {
+    const resp = await fetch(`${get_api_base()}/telegram-browser/channel-stats`, {
+        credentials: "include",
+    })
+    if (!resp.ok) {
+        throw new Error(`Failed to fetch channel stats: ${resp.statusText}`)
     }
     return resp.json()
 }

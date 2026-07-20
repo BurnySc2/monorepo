@@ -1,6 +1,7 @@
 <script lang="ts">
 import { fetch_delete_file, fetch_queue_file, fetch_view_file } from "$lib/api"
 import { is_loading as columns_loading } from "$lib/column_settings.svelte"
+import ChannelsTab from "$lib/components/ChannelsTab.svelte"
 import ColumnReorderDialog from "$lib/components/ColumnReorderDialog.svelte"
 import FilesTab from "$lib/components/FilesTab.svelte"
 import MediaDialog from "$lib/components/MediaDialog.svelte"
@@ -17,9 +18,10 @@ let is_ready = $derived(
 const tabs = [
     { id: "messages", label: "Messages" },
     { id: "files", label: "Files" },
+    { id: "channels", label: "Channels" },
 ]
 
-let active_tab: "messages" | "files" = $state("messages")
+let active_tab: "messages" | "files" | "channels" = $state("messages")
 let show_column_dialog = $state(false)
 let show_media_dialog = $state(false)
 let media_url = $state("")
@@ -64,13 +66,15 @@ function close_media_dialog() {
 <main class="flex h-full flex-col items-center rounded-xl bg-gray-300">
     <div class="m-2 flex h-full flex-col gap-4 rounded-xl">
         <div class="flex gap-2">
-            <button
-                class="h-full rounded-xl border-2 border-black p-2 hover:bg-yellow-500"
-                type="button"
-                onclick={() => (show_column_dialog = true)}
-            >
-                Column order
-            </button>
+            {#if active_tab !== "channels"}
+                <button
+                    class="h-full rounded-xl border-2 border-black p-2 hover:bg-yellow-500"
+                    type="button"
+                    onclick={() => (show_column_dialog = true)}
+                >
+                    Column order
+                </button>
+            {/if}
         </div>
 
         <TabContainer
@@ -87,6 +91,8 @@ function close_media_dialog() {
                     ondelete={handle_delete_file}
                     onview={handle_view_file}
                 />
+            {:else if active_tab === "channels"}
+                <ChannelsTab />
             {:else}
                 <FilesTab
                     onview={handle_view_file}
@@ -97,7 +103,7 @@ function close_media_dialog() {
     </div>
 </main>
 
-{#if show_column_dialog}
+{#if show_column_dialog && active_tab !== "channels"}
     <ColumnReorderDialog
         onclose={() => (show_column_dialog = false)}
         column_settings_type={active_tab}
