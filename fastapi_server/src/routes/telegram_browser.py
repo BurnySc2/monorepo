@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Annotated
 
 import arrow
@@ -14,6 +15,7 @@ from models.telegram_browser import Status, TelegramChannel, TelegramDownload, T
 from s3_helper import RUSTFS_TELEGRAM_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.telegram_browser import (
     ChannelNameItem,
+    ChannelStatsItem,
     DeleteFileResponse,
     DownloadedFileItem,
     QueueFileResponse,
@@ -431,7 +433,34 @@ async def get_channel_names(
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Endpoint 7: GET /downloads
+# Endpoint 7: GET /channel-stats
+# ──────────────────────────────────────────────────────────────────────────────
+@telegram_browser_router.get("/channel-stats", response_model=list[ChannelStatsItem])
+async def get_channel_stats(
+    current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
+) -> list[ChannelStatsItem]:
+    """
+    Get statistics for all telegram channels.
+    Returns channel info with message counts and file counts, sorted by total messages descending.
+    """
+    query = (Path(__file__).parent.parent / "queries" / "telegram_browser_channel_stats.sql").read_text()
+    rows: list[dict] = await TelegramChannel.raw(query)  # pyrefly: ignore[missing-attribute]
+
+    return [
+        ChannelStatsItem(
+            channel_title=row["channel_title"],
+            channel_username=row["channel_username"],
+            creation_date=str(row["creation_date"]),
+            participants=row["participants"],
+            total_messages=row["total_messages"],
+            total_files=row["total_files"],
+        )
+        for row in rows
+    ]
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Endpoint 8: GET /downloads
 # ──────────────────────────────────────────────────────────────────────────────
 @telegram_browser_router.get("/downloads", response_model=list[DownloadedFileItem])
 async def list_downloads(

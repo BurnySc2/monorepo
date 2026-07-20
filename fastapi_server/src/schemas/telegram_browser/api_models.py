@@ -87,6 +87,15 @@ class ChannelNameItem(BaseModel):
     channel_username: str
 
 
+class ChannelStatsItem(BaseModel):
+    channel_title: str
+    channel_username: str
+    creation_date: str
+    participants: int
+    total_messages: int
+    total_files: int
+
+
 class DownloadedFileItem(BaseModel):
     # From TelegramDownload
     download_queue_time: str

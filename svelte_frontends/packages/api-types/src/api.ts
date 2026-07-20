@@ -689,6 +689,27 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    "/telegram-browser/channel-stats": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Get Channel Stats
+         * @description Get statistics for all telegram channels.
+         *     Returns channel info with message counts and file counts, sorted by total messages descending.
+         */
+        get: operations["get_channel_stats_telegram_browser_channel_stats_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     "/telegram-browser/downloads": {
         parameters: {
             query?: never
@@ -793,6 +814,21 @@ export interface components {
             channel_title: string
             /** Channel Username */
             channel_username: string
+        }
+        /** ChannelStatsItem */
+        ChannelStatsItem: {
+            /** Channel Title */
+            channel_title: string
+            /** Channel Username */
+            channel_username: string
+            /** Creation Date */
+            creation_date: string
+            /** Participants */
+            participants: number
+            /** Total Messages */
+            total_messages: number
+            /** Total Files */
+            total_files: number
         }
         /** ChapterDetail */
         ChapterDetail: {
@@ -2221,6 +2257,39 @@ export interface operations {
                 }
                 content: {
                     "application/json": components["schemas"]["ChannelNameItem"][]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    get_channel_stats_telegram_browser_channel_stats_get: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["ChannelStatsItem"][]
                 }
             }
             /** @description Validation Error */

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from schemas.telegram_browser.api_models import (
     ChannelNameItem,
+    ChannelStatsItem,
     DeleteFileResponse,
     DownloadedFileItem,
     QueueFileResponse,
@@ -15,6 +16,7 @@ from schemas.telegram_browser.api_models import (
 
 __all__ = [
     "ChannelNameItem",
+    "ChannelStatsItem",
     "DeleteFileResponse",
     "DownloadedFileItem",
     "QueueFileResponse",
