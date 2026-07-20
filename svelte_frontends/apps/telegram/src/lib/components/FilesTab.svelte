@@ -1,10 +1,8 @@
 <script lang="ts">
-import type { components } from "@repo/api-types"
 import { fetch_downloads } from "$lib/api"
 import { file_column_settings } from "$lib/file_column_settings.svelte"
 import { format_duration, format_file_size } from "$lib/format"
-
-type DownloadedFileItem = components["schemas"]["DownloadedFileItem"]
+import { temp_state } from "$lib/temporary-storage.svelte"
 
 interface Props {
     onview: (id: string) => void
@@ -13,36 +11,35 @@ interface Props {
 
 let { onview, ondelete }: Props = $props()
 
-let downloaded_files = $state<DownloadedFileItem[]>([])
-let is_loading = $state(false)
-let error_message = $state<string | null>(null)
-
 $effect(() => {
-    load_downloads()
+    if (temp_state.files.list === null && !temp_state.files.is_loading) {
+        load_downloads()
+    }
 })
 
 async function load_downloads() {
-    is_loading = true
-    error_message = null
+    temp_state.files.is_loading = true
+    temp_state.files.error = null
     try {
-        downloaded_files = await fetch_downloads()
+        temp_state.files.list = await fetch_downloads()
     } catch (e) {
-        error_message = e instanceof Error ? e.message : "Failed to load downloads"
+        temp_state.files.error = e instanceof Error ? e.message : "Failed to load downloads"
+        console.error("Failed to fetch downloads", e)
     } finally {
-        is_loading = false
+        temp_state.files.is_loading = false
     }
 }
 </script>
 
 <div class="w-full">
-    {#if is_loading}
+    {#if temp_state.files.is_loading}
         <div class="flex items-center justify-center p-8">
             <div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
             <span class="ml-4">Loading downloads...</span>
         </div>
-    {:else if error_message}
+    {:else if temp_state.files.error}
         <div class="flex flex-col items-center justify-center gap-4 p-8">
-            <div class="text-red-600">{error_message}</div>
+            <div class="text-red-600">{temp_state.files.error}</div>
             <button
                 class="rounded-xl border-2 border-black bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
                 type="button"
@@ -51,7 +48,7 @@ async function load_downloads() {
                 Retry
             </button>
         </div>
-    {:else if downloaded_files.length === 0}
+    {:else if temp_state.files.list === null || temp_state.files.list.length === 0}
         <div class="flex items-center justify-center p-8 text-gray-500">No downloaded files yet.</div>
     {:else}
         <div class="w-full overflow-auto rounded-xl bg-white">
@@ -65,7 +62,7 @@ async function load_downloads() {
                     </tr>
                 </thead>
                 <tbody>
-                    {#each downloaded_files as file (file.message_id)}
+                    {#each temp_state.files.list as file (file.message_id)}
                         <tr class="hover:bg-gray-50">
                             <td>
                                 <div class="flex">

@@ -2,8 +2,12 @@ import type { components } from "@repo/api-types"
 import { z } from "zod"
 
 type ChannelStatsItem = components["schemas"]["ChannelStatsItem"]
+type SearchResultItem = components["schemas"]["SearchResultItem"]
+type DownloadedFileItem = components["schemas"]["DownloadedFileItem"]
 
 const ChannelStatsItemSchema = z.custom<ChannelStatsItem>()
+const SearchResultItemSchema = z.custom<SearchResultItem>()
+const DownloadedFileItemSchema = z.custom<DownloadedFileItem>()
 
 const TempStateSchema = z.object({
     channels: z.object({
@@ -12,12 +16,12 @@ const TempStateSchema = z.object({
         error: z.string().nullable(),
     }),
     messages: z.object({
-        results: z.array(ChannelStatsItemSchema).nullable(),
+        results: z.array(SearchResultItemSchema).nullable(),
         is_loading: z.boolean(),
         error: z.string().nullable(),
     }),
     files: z.object({
-        list: z.array(ChannelStatsItemSchema).nullable(),
+        list: z.array(DownloadedFileItemSchema).nullable(),
         is_loading: z.boolean(),
         error: z.string().nullable(),
     }),

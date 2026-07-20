@@ -1,12 +1,10 @@
 <script lang="ts">
-import type { components } from "@repo/api-types"
 import { fetch_search } from "$lib/api"
 import { search_filters } from "$lib/search_filters.svelte"
 import { to_sort_items } from "$lib/sort_settings.svelte"
+import { temp_state } from "$lib/temporary-storage.svelte"
 import ResultsGrid from "./ResultsGrid.svelte"
 import SearchPanel from "./SearchPanel.svelte"
-
-type SearchResult = components["schemas"]["SearchResultItem"]
 
 interface Props {
     onqueue: (id: string) => void
@@ -16,25 +14,23 @@ interface Props {
 
 let { onqueue, ondelete, onview }: Props = $props()
 
-let results = $state<SearchResult[]>([])
-let is_searching = $state(false)
-
 async function handle_search() {
-    is_searching = true
+    temp_state.messages.is_loading = true
+    temp_state.messages.error = null
     try {
         const request = {
             ...search_filters,
             sort: to_sort_items(),
         }
-
         const resp = await fetch_search(request)
         if (resp) {
-            results = resp
+            temp_state.messages.results = resp
         }
     } catch (e) {
+        temp_state.messages.error = e instanceof Error ? e.message : "Search failed"
         console.error("Search failed", e)
     } finally {
-        is_searching = false
+        temp_state.messages.is_loading = false
     }
 }
 </script>
@@ -48,10 +44,10 @@ async function handle_search() {
     </div>
 
     <ResultsGrid
-        {results}
+        results={temp_state.messages.results ?? []}
         {onqueue}
         {ondelete}
         {onview}
-        {is_searching}
+        is_searching={temp_state.messages.is_loading}
     />
 </div>
