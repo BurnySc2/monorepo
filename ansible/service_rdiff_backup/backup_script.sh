@@ -45,12 +45,8 @@ backup_function() {
             # Exclude files
             "-x!**data/transcodes" # jelllyfin
             "-x!**data/metadata" # jelllyfin
-            "-x!**data/files" # owncloud
-            # Exclude internal backups
-            "-x!**backup" # trillium
             # Exclude temp and log files
             "-x!**cache"
-            "-x!**log" # trillium
 
             # Target zip path
             "$TARGET_DIRECTORY/$ARCHIVE_NAME"
