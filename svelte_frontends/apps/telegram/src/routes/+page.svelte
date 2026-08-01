@@ -10,6 +10,7 @@ import TabContainer from "$lib/components/TabContainer.svelte"
 import { is_loading as file_columns_loading } from "$lib/file_column_settings.svelte"
 import { is_loading as filters_loading } from "$lib/search_filters.svelte"
 import { is_loading as sort_loading } from "$lib/sort_settings.svelte"
+import { temp_state } from "$lib/temporary-storage.svelte"
 
 let is_ready = $derived(
     !filters_loading.value && !sort_loading.value && !columns_loading.value && !file_columns_loading.value,
@@ -34,6 +35,7 @@ async function handle_queue_file(id: string) {
 async function handle_delete_file(id: string) {
     try {
         await fetch_delete_file(id)
+        temp_state.files.list = temp_state.files.list?.filter((file) => file.message_id.toString() !== id) ?? null
     } catch (e) {
         console.error("Delete file failed", e)
     }

@@ -43,6 +43,9 @@ export const fetch_delete_file = async (id: string): Promise<DeleteFileResponse>
         method: "DELETE",
         credentials: "include",
     })
+    if (!resp.ok) {
+        throw new Error(`Delete file failed: ${resp.statusText}`)
+    }
     return resp.json()
 }
 
