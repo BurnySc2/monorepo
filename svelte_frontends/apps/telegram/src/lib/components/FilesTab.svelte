@@ -73,7 +73,7 @@ async function load_downloads() {
                                         title="View"
                                     >
                                         <img
-                                            src="/static/play.svg"
+                                            src="/play.svg"
                                             alt="View"
                                         >
                                     </button>
@@ -83,7 +83,7 @@ async function load_downloads() {
                                         title="Download"
                                     >
                                         <img
-                                            src="/static/download.svg"
+                                            src="/download.svg"
                                             alt="Download"
                                         >
                                     </a>
@@ -94,7 +94,7 @@ async function load_downloads() {
                                         title="Delete"
                                     >
                                         <img
-                                            src="/static/delete.svg"
+                                            src="/delete.svg"
                                             alt="Delete"
                                         >
                                     </button>

@@ -90,14 +90,14 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                     title="Queue file"
                                 >
                                     <img
-                                        src="/static/queue.svg"
+                                        src="/queue.svg"
                                         alt="Queue"
                                     >
                                 </button>
                             {:else if row.metadata.status === "Queued" || row.metadata.status === "Downloading"}
                                 <div class="w-8">
                                     <img
-                                        src="/static/spinner.svg"
+                                        src="/spinner.svg"
                                         class="w-8 animate-spin"
                                         alt="Loading"
                                     >
@@ -109,7 +109,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                     title="Delete"
                                 >
                                     <img
-                                        src="/static/delete.svg"
+                                        src="/delete.svg"
                                         alt="Delete"
                                     >
                                 </button>
@@ -121,7 +121,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                     title="View"
                                 >
                                     <img
-                                        src="/static/play.svg"
+                                        src="/play.svg"
                                         alt="View"
                                     >
                                 </button>
@@ -131,7 +131,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                     title="Download"
                                 >
                                     <img
-                                        src="/static/download.svg"
+                                        src="/download.svg"
                                         alt="Download"
                                     >
                                 </a>
@@ -142,7 +142,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                     title="Delete"
                                 >
                                     <img
-                                        src="/static/delete.svg"
+                                        src="/delete.svg"
                                         alt="Delete"
                                     >
                                 </button>
