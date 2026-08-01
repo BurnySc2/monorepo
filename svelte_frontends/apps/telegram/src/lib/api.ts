@@ -9,7 +9,7 @@ type DownloadedFileItem = components["schemas"]["DownloadedFileItem"]
 type ChannelNameItem = components["schemas"]["ChannelNameItem"]
 type ChannelStatsItem = components["schemas"]["ChannelStatsItem"]
 
-const get_api_base = () => {
+export const get_api_base = () => {
     const target = import.meta.env.VITE_API_TARGET
     const protocol = target?.includes("localhost") ? "http" : "https"
     return target ? `${protocol}://${target}` : "http://localhost:8000"

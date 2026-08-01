@@ -342,25 +342,26 @@ async def view_file(
     Get a presigned S3 URL for viewing a file.
     Only succeeds if status is 'Downloaded' and s3_object_name exists.
     """
-    message = await (
-        TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    # Get the download record
+    download = (
+        await TelegramDownload.objects()
+        .prefetch(TelegramDownload.message)
+        .where(TelegramDownload.message.id == id)
+        .first()
     )
 
-    if message is None:
+    if download is None:
         raise HTTPException(status_code=404, detail="Message not found")
 
-    # Get the download record
-    download = await TelegramDownload.objects().where(TelegramDownload.message == id).first()
-
-    if download is None or download.status != DownloadStatus.Downloaded or not download.s3_object_name:
+    if download.status != DownloadStatus.Downloaded or not download.s3_object_name:
         raise HTTPException(
             status_code=400,
             detail="File not available for viewing. Must be 'Downloaded'.",
         )
 
-    file_name = f"telegram_{message.channel}_{message.message_id}"
-    if message.file_extension:
-        file_name += f".{message.file_extension}"
+    file_name = (
+        f"telegram_{download.message.channel}_{download.message.id}{download.message.file_extension}"
+    )
 
     async with get_s3_client() as s3:
         presigned_url = await object_create_presigned_url(
@@ -378,7 +379,7 @@ async def view_file(
 
     return ViewFileResponse(
         minio_url=presigned_url,
-        mime_type=message.file_mime_type or "application/octet-stream",
+        mime_type=download.message.file_mime_type or "application/octet-stream",
     )
 
 
@@ -394,15 +395,16 @@ async def download_file(
     Redirect to a presigned S3 URL with Content-Disposition: attachment.
     Used as an <a href> link for browser downloads.
     """
-    message = await (
-        TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
+    # Get the download record
+    download = (
+        await TelegramDownload.objects()
+        .prefetch(TelegramDownload.message)
+        .where(TelegramDownload.message == id)
+        .first()
     )
 
-    if message is None:
+    if download is None:
         raise HTTPException(status_code=404, detail="Message not found")
-
-    # Get the download record
-    download = await TelegramDownload.objects().where(TelegramDownload.message == id).first()
 
     if download is None or download.status != DownloadStatus.Downloaded or not download.s3_object_name:
         raise HTTPException(
@@ -410,9 +412,7 @@ async def download_file(
             detail="File not available for download. Must be 'Downloaded'.",
         )
 
-    file_name = f"telegram_{message.channel}_{message.message_id}"
-    if message.file_extension:
-        file_name += f".{message.file_extension}"
+    file_name = f"telegram_{download.message.channel}_{download.message.id}{download.message.file_extension}"
 
     async with get_s3_client() as s3:
         presigned_url = await object_create_presigned_url(
@@ -508,7 +508,7 @@ async def list_downloads(
     rows = (
         await TelegramDownload.select(  # pyrefly: ignore[missing-attribute]
             *TelegramDownload.all_columns(),
-            TelegramDownload.message.message_id.as_alias("message_id"),
+            TelegramDownload.message.id.as_alias("message_id"),
             TelegramDownload.message.message_date.as_alias("message_date"),
             TelegramDownload.message.message_text.as_alias("message_text"),
             TelegramDownload.status.as_alias("download_status"),

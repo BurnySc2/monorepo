@@ -127,7 +127,9 @@ function reset_duration() {
 
             <!-- File extension -->
             <fieldset class="flex flex-col rounded border border-gray-200 bg-white p-2">
-                <legend class="bg-white rounded px-1 text-xs text-gray-500">File extension ('.mp4', '.mp3', '.pdf')</legend>
+                <legend class="bg-white rounded px-1 text-xs text-gray-500">
+                    File extension ('.mp4', '.mp3', '.pdf')
+                </legend>
                 <input
                     type="search"
                     list="file-extensions"

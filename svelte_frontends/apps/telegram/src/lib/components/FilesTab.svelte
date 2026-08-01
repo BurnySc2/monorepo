@@ -1,5 +1,5 @@
 <script lang="ts">
-import { fetch_downloads } from "$lib/api"
+import { fetch_downloads, get_api_base } from "$lib/api"
 import { file_column_settings } from "$lib/file_column_settings.svelte"
 import { format_duration, format_file_size } from "$lib/format"
 import { temp_state } from "$lib/temporary-storage.svelte"
@@ -79,7 +79,7 @@ async function load_downloads() {
                                     </button>
                                     <a
                                         class="w-8 rounded-xl hover:bg-green-500"
-                                        href="/telegram-browser/download-file/{file.message_id}"
+                                        href={`${get_api_base()}/telegram-browser/download-file/${file.message_id}`}
                                         title="Download"
                                     >
                                         <img

@@ -1,8 +1,10 @@
+# DO NOT MODIFY OUTSIDE OF FASTAPI BACKEND PROJECT
 import asyncio
 import os
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from typing import Literal
 
 import aioboto3
 from botocore.config import Config
@@ -117,7 +119,7 @@ async def object_create_presigned_url(
     file_name: str,
     expires_in_seconds: int = 3600,
     verify_object_exists: bool = False,
-    disposition: str = "attachment",
+    disposition: Literal["attachment", "inline"] = "attachment",
 ) -> str | None:
     """
     verify_object_exists: if True, returns None if object doesn't exist
@@ -129,13 +131,15 @@ async def object_create_presigned_url(
             if obj is None:
                 return None
 
-        safe_file_name = file_name.replace('"', '\\"')
+        this_disposition = "inline"
+        if disposition == "attachment":
+            this_disposition = f"{disposition}; filename={file_name}"
         url = await session.generate_presigned_url(
             "get_object",
             Params={
                 "Bucket": bucket,
                 "Key": key,
-                "ResponseContentDisposition": f'{disposition}; filename="{safe_file_name}"',
+                "ResponseContentDisposition": this_disposition,
             },
             ExpiresIn=expires_in_seconds,
         )
