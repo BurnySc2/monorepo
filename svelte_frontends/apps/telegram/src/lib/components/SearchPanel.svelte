@@ -127,13 +127,13 @@ function reset_duration() {
 
             <!-- File extension -->
             <fieldset class="flex flex-col rounded border border-gray-200 bg-white p-2">
-                <legend class="bg-white rounded px-1 text-xs text-gray-500">File extension</legend>
+                <legend class="bg-white rounded px-1 text-xs text-gray-500">File extension ('.mp4', '.mp3', '.pdf')</legend>
                 <input
                     type="search"
                     list="file-extensions"
                     bind:value={filters.file_extension}
                     class="input text-center bg-white text-gray-900"
-                    placeholder="File extension"
+                    placeholder=".mp4"
                 >
             </fieldset>
 
