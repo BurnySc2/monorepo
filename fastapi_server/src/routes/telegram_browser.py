@@ -60,7 +60,7 @@ def _format_search_result(row: dict, download_status_map: dict[int, str]) -> Sea
     if channel_id_val and message_id_val:
         message_link = _build_message_link(channel_username, channel_id_val, message_id_val)
 
-    download_status = download_status_map.get(row.get("id"))
+    download_status = download_status_map.get(row.get("id"))  # pyrefly: ignore[bad-argument-type]
 
     return SearchResultItem(
         metadata=SearchResultMetadata(
@@ -359,9 +359,7 @@ async def view_file(
             detail="File not available for viewing. Must be 'Downloaded'.",
         )
 
-    file_name = (
-        f"telegram_{download.message.channel}_{download.message.id}{download.message.file_extension}"
-    )
+    file_name = f"telegram_{download.message.channel}_{download.message.id}{download.message.file_extension}"
 
     async with get_s3_client() as s3:
         presigned_url = await object_create_presigned_url(
