@@ -18,9 +18,6 @@ class TelegramChannel(Table, tablename="litestar_telegram_channel"):
 class Status(str, Enum):
     NoFile = "NoFile"
     HasFile = "HasFile"
-    Queued = "Queued"
-    Downloading = "Downloading"
-    Downloaded = "Downloaded"
 
 
 class TelegramMessage(Table, tablename="litestar_telegram_message"):
@@ -42,8 +39,18 @@ class TelegramMessage(Table, tablename="litestar_telegram_message"):
     file_width = Integer(default=0, required=False)
 
 
+class DownloadStatus(str, Enum):
+    Queued = "Queued"
+    Downloading = "Downloading"
+    Downloaded = "Downloaded"
+    Failed = "Failed"
+    GiveUp = "GiveUp"
+
+
 class TelegramDownload(Table, tablename="litestar_telegram_download"):
-    message = ForeignKey(references=TelegramMessage)
+    message = ForeignKey(references=TelegramMessage, unique=True)
+    status = Text(default=DownloadStatus.Queued, choices=DownloadStatus)
+    error_message = Text(default="", required=False, null=True)
     download_queue_time = Timestamp(default=lambda: arrow.now().naive, required=False)
     download_start_time = Timestamp(default=None, required=False, null=True)
     download_finished_time = Timestamp(default=None, required=False, null=True)

@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class SearchResultMetadata(BaseModel):
     id: str
     status: str
+    download_status: str | None = None
 
 
 class SearchResultItem(BaseModel):
@@ -103,12 +104,12 @@ class DownloadedFileItem(BaseModel):
     download_finished_time: str | None = None
     download_retry_attempt: int
     s3_object_name: str
+    download_status: str
 
     # From TelegramMessage
     message_id: int
     message_date: str
     message_text: str
-    status: str
     file_mime_type: str
     file_extension: str
     file_size_bytes: int

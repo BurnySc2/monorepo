@@ -593,7 +593,10 @@ export interface paths {
         /**
          * Queue File
          * @description Queue a file for download.
-         *     Only succeeds if current status is 'HasFile'.
+         *     Creates a TelegramDownload record with status=Queued.
+         *     Returns 409 if an active download (Queued/Downloading) already exists.
+         *     Deletes and recreates if a terminal download (Downloaded/Failed/GiveUp) exists.
+         *     Does NOT modify TelegramMessage.status.
          */
         get: operations["queue_file_telegram_browser_queue_file__id__get"]
         put?: never
@@ -616,9 +619,8 @@ export interface paths {
         post?: never
         /**
          * Delete File
-         * @description Delete a downloaded file from S3 and reset status to 'HasFile'.
-         *     Deletes from S3 if s3_object_name exists (regardless of status).
-         *     Removes the download record and resets message status.
+         * @description Delete a downloaded file from S3 and remove the download record.
+         *     Message status is no longer modified — it stays as 'HasFile'.
          */
         delete: operations["delete_file_telegram_browser_delete_file__id__delete"]
         options?: never
@@ -878,14 +880,14 @@ export interface components {
             download_retry_attempt: number
             /** S3 Object Name */
             s3_object_name: string
+            /** Download Status */
+            download_status: string
             /** Message Id */
             message_id: number
             /** Message Date */
             message_date: string
             /** Message Text */
             message_text: string
-            /** Status */
-            status: string
             /** File Mime Type */
             file_mime_type: string
             /** File Extension */
@@ -1137,6 +1139,8 @@ export interface components {
             id: string
             /** Status */
             status: string
+            /** Download Status */
+            download_status?: string | null
         }
         /** SortItem */
         SortItem: {

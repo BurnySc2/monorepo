@@ -11,7 +11,7 @@ from fastapi.responses import RedirectResponse
 
 from components.login.allowlist import require_allowed_user
 from components.login.cookies import LoggedInUser
-from models.telegram_browser import Status, TelegramChannel, TelegramDownload, TelegramMessage
+from models.telegram_browser import DownloadStatus, Status, TelegramChannel, TelegramDownload, TelegramMessage
 from s3_helper import RUSTFS_TELEGRAM_BUCKET, get_s3_client, object_create_presigned_url, object_delete
 from schemas.telegram_browser import (
     ChannelNameItem,
@@ -50,7 +50,7 @@ def _build_message_link(channel_username: str | None, channel_id: int, message_i
     return f"https://t.me/c/{channel_id}/{message_id}"
 
 
-def _format_search_result(row: dict) -> SearchResultItem:
+def _format_search_result(row: dict, download_status_map: dict[int, str]) -> SearchResultItem:
     """Convert a raw DB row into the SearchResult shape expected by frontend."""
     channel_username = row.get("channel_username")
     channel_id_val = row.get("channel_id")
@@ -60,10 +60,13 @@ def _format_search_result(row: dict) -> SearchResultItem:
     if channel_id_val and message_id_val:
         message_link = _build_message_link(channel_username, channel_id_val, message_id_val)
 
+    download_status = download_status_map.get(row.get("id"))
+
     return SearchResultItem(
         metadata=SearchResultMetadata(
             id=str(row.get("id", "")),
             status=row.get("status", Status.NoFile),
+            download_status=download_status,
         ),
         message_date=str(row["message_date"]) if row.get("message_date") else None,
         channel_title=row.get("channel_title"),
@@ -102,7 +105,7 @@ def _format_download_item(row: dict) -> DownloadedFileItem:
         message_id=row.get("message_id"),  # pyrefly: ignore[bad-argument-type]
         message_date=str(row["message_date"]),
         message_text=row.get("message_text", ""),
-        status=row.get("status", ""),
+        download_status=row.get("download_status", ""),
         # File info
         file_mime_type=row.get("file_mime_type", ""),
         file_extension=row.get("file_extension", ""),
@@ -230,7 +233,18 @@ async def search_messages(
 
     rows = await query.limit(1000)
 
-    return [_format_search_result(row) for row in rows]
+    # Batch-fetch download statuses for all returned messages
+    message_ids = [row["id"] for row in rows]
+    download_status_map: dict[int, str] = {}
+    if message_ids:
+        downloads = await TelegramDownload.select(
+            TelegramDownload.message,
+            TelegramDownload.status,
+        ).where(TelegramDownload.message.is_in(message_ids))
+        for dl in downloads:
+            download_status_map[dl["message"]] = dl["status"]
+
+    return [_format_search_result(row, download_status_map) for row in rows]
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -243,7 +257,10 @@ async def queue_file(
 ) -> QueueFileResponse:
     """
     Queue a file for download.
-    Only succeeds if current status is 'HasFile'.
+    Creates a TelegramDownload record with status=Queued.
+    Returns 409 if an active download (Queued/Downloading) already exists.
+    Deletes and recreates if a terminal download (Downloaded/Failed/GiveUp) exists.
+    Does NOT modify TelegramMessage.status.
     """
     message = await (
         TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
@@ -258,8 +275,23 @@ async def queue_file(
             detail=f"Cannot queue file with status '{message.status}'. Must be 'HasFile'.",
         )
 
-    message.status = Status.Queued
-    await message.save()
+    # Check for existing download record
+    existing_download = await TelegramDownload.objects().where(TelegramDownload.message == id).first()
+
+    if existing_download is not None:
+        if existing_download.status in (DownloadStatus.Queued, DownloadStatus.Downloading):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Download already active with status '{existing_download.status}'.",
+            )
+        # Terminal state (Downloaded/Failed/GiveUp) — delete old record and recreate
+        await existing_download.remove()
+
+    # Create new download record
+    await TelegramDownload(
+        message=id,
+        status=DownloadStatus.Queued,
+    ).save()
 
     return QueueFileResponse(queued=True)
 
@@ -273,9 +305,8 @@ async def delete_file(
     current_user: Annotated[LoggedInUser, Depends(require_allowed_user)],
 ) -> DeleteFileResponse:
     """
-    Delete a downloaded file from S3 and reset status to 'HasFile'.
-    Deletes from S3 if s3_object_name exists (regardless of status).
-    Removes the download record and resets message status.
+    Delete a downloaded file from S3 and remove the download record.
+    Message status is no longer modified — it stays as 'HasFile'.
     """
     message = await (
         TelegramMessage.objects().where(TelegramMessage.id == id).first()  # pyrefly: ignore[missing-attribute]
@@ -295,10 +326,6 @@ async def delete_file(
 
         # Delete the download record
         await download.remove()
-
-    # Reset message status
-    message.status = Status.HasFile
-    await message.save()
 
     return DeleteFileResponse(deleted=True)
 
@@ -325,7 +352,7 @@ async def view_file(
     # Get the download record
     download = await TelegramDownload.objects().where(TelegramDownload.message == id).first()
 
-    if message.status != Status.Downloaded or download is None or not download.s3_object_name:
+    if download is None or download.status != DownloadStatus.Downloaded or not download.s3_object_name:
         raise HTTPException(
             status_code=400,
             detail="File not available for viewing. Must be 'Downloaded'.",
@@ -377,7 +404,7 @@ async def download_file(
     # Get the download record
     download = await TelegramDownload.objects().where(TelegramDownload.message == id).first()
 
-    if message.status != Status.Downloaded or download is None or not download.s3_object_name:
+    if download is None or download.status != DownloadStatus.Downloaded or not download.s3_object_name:
         raise HTTPException(
             status_code=400,
             detail="File not available for download. Must be 'Downloaded'.",
@@ -484,7 +511,7 @@ async def list_downloads(
             TelegramDownload.message.message_id.as_alias("message_id"),
             TelegramDownload.message.message_date.as_alias("message_date"),
             TelegramDownload.message.message_text.as_alias("message_text"),
-            TelegramDownload.message.status.as_alias("status"),
+            TelegramDownload.status.as_alias("download_status"),
             TelegramDownload.message.file_mime_type.as_alias("file_mime_type"),
             TelegramDownload.message.file_extension.as_alias("file_extension"),
             TelegramDownload.message.file_size_bytes.as_alias("file_size_bytes"),
@@ -499,6 +526,7 @@ async def list_downloads(
                 TelegramDownload.message.channel.channel_username  # pyrefly: ignore[missing-attribute]
             ).as_alias("channel_username"),
         )
+        .where(TelegramDownload.status == DownloadStatus.Downloaded)
         .where(TelegramDownload.download_finished_time >= cutoff_time)
         .order_by(TelegramDownload.download_queue_time, ascending=False)
         .limit(1000)
