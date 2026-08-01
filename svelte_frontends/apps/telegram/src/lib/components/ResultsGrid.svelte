@@ -1,5 +1,7 @@
 <script lang="ts">
 import type { components } from "@repo/api-types"
+import { Spinner } from "@repo/ui"
+import { get_api_base } from "$lib/api"
 import { column_settings } from "$lib/column_settings.svelte"
 import { format_duration, format_file_size } from "$lib/format"
 import {
@@ -15,13 +17,25 @@ type SearchResult = components["schemas"]["SearchResultItem"]
 
 interface Props {
     results: SearchResult[]
-    onqueue: (id: string) => void
+    onqueue: (id: string) => Promise<void>
     ondelete: (id: string) => void
     onview: (id: string) => void
     is_searching: boolean
 }
 
 let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
+
+async function handle_queue(id: string) {
+    try {
+        await onqueue(id)
+        const row = results.find((r) => r.metadata.id === id)
+        if (row) {
+            row.metadata.download_status = "Queued"
+        }
+    } catch (e) {
+        console.error("Queue file failed", e)
+    }
+}
 </script>
 
 <div class="mb-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white">
@@ -80,13 +94,13 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                     <td>
                         <div
                             id="icons-{row.metadata.id}"
-                            class="flex"
+                            class="flex items-center"
                         >
-                            {#if row.metadata.status === "HasFile"}
+                            {#if row.metadata.status === "HasFile" && row.metadata.download_status === null}
                                 <button
                                     class="w-8 cursor-copy rounded-lg transition-colors hover:bg-yellow-100"
                                     type="button"
-                                    onclick={() => onqueue(row.metadata.id)}
+                                    onclick={() => handle_queue(row.metadata.id)}
                                     title="Queue file"
                                 >
                                     <img
@@ -94,14 +108,8 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                         alt="Queue"
                                     >
                                 </button>
-                            {:else if row.metadata.status === "Queued" || row.metadata.status === "Downloading"}
-                                <div class="w-8">
-                                    <img
-                                        src="/spinner.svg"
-                                        class="w-8 animate-spin"
-                                        alt="Loading"
-                                    >
-                                </div>
+                            {:else if [ "Queued", "Downloading", "Failed", "GiveUp"].includes(row.metadata.download_status as string)}
+                                <Spinner />
                                 <button
                                     class="w-8 cursor-no-drop rounded-lg transition-colors hover:bg-red-100"
                                     type="button"
@@ -113,7 +121,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                         alt="Delete"
                                     >
                                 </button>
-                            {:else if row.metadata.status === "Downloaded"}
+                            {:else if row.metadata.download_status === "Downloaded"}
                                 <button
                                     class="w-8 cursor-pointer rounded-lg transition-colors hover:bg-green-100"
                                     type="button"
@@ -127,7 +135,7 @@ let { results, onqueue, ondelete, onview, is_searching }: Props = $props()
                                 </button>
                                 <a
                                     class="w-8 rounded-lg transition-colors hover:bg-green-100"
-                                    href="/telegram-browser/download-file/{row.metadata.id}"
+                                    href={`${get_api_base()}/telegram-browser/download-file/${row.metadata.id}`}
                                     title="Download"
                                 >
                                     <img

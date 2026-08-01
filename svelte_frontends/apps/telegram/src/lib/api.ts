@@ -32,6 +32,9 @@ export const fetch_queue_file = async (id: string): Promise<QueueFileResponse> =
     const resp = await fetch(`${get_api_base()}/telegram-browser/queue-file/${id}`, {
         credentials: "include",
     })
+    if (!resp.ok) {
+        throw new Error(`Queue file failed: ${resp.statusText}`)
+    }
     return resp.json()
 }
 

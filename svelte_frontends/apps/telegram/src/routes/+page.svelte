@@ -28,11 +28,7 @@ let media_url = $state("")
 let media_mime = $state("")
 
 async function handle_queue_file(id: string) {
-    try {
-        await fetch_queue_file(id)
-    } catch (e) {
-        console.error("Queue file failed", e)
-    }
+    await fetch_queue_file(id)
 }
 
 async function handle_delete_file(id: string) {

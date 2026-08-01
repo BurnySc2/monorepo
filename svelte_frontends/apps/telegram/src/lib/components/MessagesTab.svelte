@@ -7,7 +7,7 @@ import ResultsGrid from "./ResultsGrid.svelte"
 import SearchPanel from "./SearchPanel.svelte"
 
 interface Props {
-    onqueue: (id: string) => void
+    onqueue: (id: string) => Promise<void>
     ondelete: (id: string) => void
     onview: (id: string) => void
 }
