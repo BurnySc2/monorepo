@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import arrow
 from fastapi.testclient import TestClient
 
-from models.telegram_browser import TelegramChannel, TelegramDownload, TelegramMessage
+from models.telegram_browser import DownloadStatus, TelegramChannel, TelegramDownload, TelegramMessage
 
 
 def _create_channel(
@@ -43,7 +43,7 @@ def _create_channel(
 def _create_message(
     channel_id: int,
     message_id: int,
-    status: str = "Downloaded",
+    status: str = "HasFile",
     file_extension: str = "mp4",
     file_mime_type: str = "video/mp4",
 ) -> TelegramMessage:
@@ -66,10 +66,12 @@ def _create_message(
 def _create_download(
     message_id: int,
     s3_object_name: str = "test-file.mp4",
+    status: str = DownloadStatus.Downloaded,
 ) -> TelegramDownload:
-    """Create a TelegramDownload record."""
+    """Create a TelegramDownload record (defaults to Downloaded so success tests pass)."""
     download = TelegramDownload(
         message=message_id,
+        status=status,
         download_queue_time=arrow.now().naive,
         download_start_time=arrow.now().naive,
         download_finished_time=arrow.now().naive,
@@ -180,7 +182,7 @@ def test_delete_file_not_found(telegram_client: TestClient) -> None:
 def test_delete_file_success(mock_get_s3: MagicMock, telegram_client: TestClient) -> None:
     """DELETE /delete-file/{id} with valid download → deletes S3 object and DB record."""
     _create_channel(channel_id=1000, title="Del Channel", username="del_ch")
-    msg = _create_message(channel_id=1000, message_id=1001, status="Downloaded")
+    msg = _create_message(channel_id=1000, message_id=1001, status="HasFile")
     _create_download(message_id=msg.id, s3_object_name="to-delete.mp4")
 
     # Mock S3 client context manager
@@ -209,7 +211,7 @@ def test_delete_file_success(mock_get_s3: MagicMock, telegram_client: TestClient
 def test_delete_file_without_s3_object(mock_get_s3: MagicMock, telegram_client: TestClient) -> None:
     """DELETE /delete-file/{id} with no s3_object_name → still deletes DB record."""
     _create_channel(channel_id=1010, title="No S3 Channel", username="nos3_ch")
-    msg = _create_message(channel_id=1010, message_id=1011, status="Downloaded")
+    msg = _create_message(channel_id=1010, message_id=1011, status="HasFile")
 
     # Create download with empty s3_object_name
     download = TelegramDownload(
@@ -239,28 +241,29 @@ def test_view_file_not_found(telegram_client: TestClient) -> None:
 
 
 def test_view_file_not_downloaded(telegram_client: TestClient) -> None:
-    """View file returns 400 when message status is not 'Downloaded'."""
+    """View file returns 400 when the download record status is not 'Downloaded'."""
     _create_channel(channel_id=2000, title="Not DL Channel", username="notdl_ch")
     msg = _create_message(channel_id=2000, message_id=2001, status="HasFile")
+    _create_download(message_id=msg.id, s3_object_name="pending.mp4", status=DownloadStatus.Queued)
 
     response = telegram_client.get(f"/telegram-browser/view-file/{msg.id}")
     assert response.status_code == 400
 
 
 def test_view_file_no_download_record(telegram_client: TestClient) -> None:
-    """View file returns 400 when no download record exists."""
+    """View file returns 404 when no download record exists."""
     _create_channel(channel_id=2010, title="No DL Record", username="nodelrec_ch")
-    msg = _create_message(channel_id=2010, message_id=2011, status="Downloaded")
+    msg = _create_message(channel_id=2010, message_id=2011, status="HasFile")
 
     response = telegram_client.get(f"/telegram-browser/view-file/{msg.id}")
-    assert response.status_code == 400
+    assert response.status_code == 404
 
 
 @patch("routes.telegram_browser.get_s3_client")
 def test_view_file_success(mock_get_s3: MagicMock, telegram_client: TestClient) -> None:
     """GET /view-file/{id} with valid download → returns presigned URL."""
     _create_channel(channel_id=2020, title="View Channel", username="view_ch")
-    msg = _create_message(channel_id=2020, message_id=2021, status="Downloaded")
+    msg = _create_message(channel_id=2020, message_id=2021, status="HasFile")
     _create_download(message_id=msg.id, s3_object_name="view-file.mp4")
 
     # Mock S3 client
@@ -291,9 +294,10 @@ def test_download_file_not_found(telegram_client: TestClient) -> None:
 
 
 def test_download_file_not_downloaded(telegram_client: TestClient) -> None:
-    """Download file returns 400 when message status is not 'Downloaded'."""
+    """Download file returns 400 when the download record status is not 'Downloaded'."""
     _create_channel(channel_id=3000, title="Not DL2 Channel", username="notdl2_ch")
-    msg = _create_message(channel_id=3000, message_id=3001, status="Queued")
+    msg = _create_message(channel_id=3000, message_id=3001, status="HasFile")
+    _create_download(message_id=msg.id, s3_object_name="pending.mp4", status=DownloadStatus.Queued)
 
     response = telegram_client.get(f"/telegram-browser/download-file/{msg.id}", follow_redirects=False)
     assert response.status_code == 400
@@ -303,7 +307,7 @@ def test_download_file_not_downloaded(telegram_client: TestClient) -> None:
 def test_download_file_success(mock_get_s3: MagicMock, telegram_client: TestClient) -> None:
     """GET /download-file/{id} with valid download → redirects to presigned URL."""
     _create_channel(channel_id=3020, title="DL Channel", username="dl_ch")
-    msg = _create_message(channel_id=3020, message_id=3021, status="Downloaded")
+    msg = _create_message(channel_id=3020, message_id=3021, status="HasFile")
     _create_download(message_id=msg.id, s3_object_name="download-file.mp4")
 
     # Mock S3 client
@@ -324,10 +328,11 @@ def test_download_file_success(mock_get_s3: MagicMock, telegram_client: TestClie
 def test_download_file_no_s3_object(mock_get_s3: MagicMock, telegram_client: TestClient) -> None:
     """Download file returns 400 when s3_object_name is empty."""
     _create_channel(channel_id=3030, title="Empty S3 Channel", username="emptys3_ch")
-    msg = _create_message(channel_id=3030, message_id=3031, status="Downloaded")
+    msg = _create_message(channel_id=3030, message_id=3031, status="HasFile")
 
     download = TelegramDownload(
         message=msg.id,
+        status=DownloadStatus.Downloaded,
         download_queue_time=arrow.now().naive,
         download_finished_time=arrow.now().naive,
         s3_object_name="",

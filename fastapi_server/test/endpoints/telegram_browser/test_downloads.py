@@ -5,7 +5,7 @@ from datetime import datetime
 import arrow
 from fastapi.testclient import TestClient
 
-from models.telegram_browser import TelegramChannel, TelegramDownload, TelegramMessage
+from models.telegram_browser import DownloadStatus, TelegramChannel, TelegramDownload, TelegramMessage
 
 _CHANNEL_TABLE = TelegramChannel._meta.tablename
 _MESSAGE_TABLE = TelegramMessage._meta.tablename
@@ -45,7 +45,7 @@ def _create_message(
     channel_id: int,
     message_id: int,
     message_text: str = "Test message",
-    status: str = "Downloaded",
+    status: str = "HasFile",
     file_extension: str = "mp4",
     file_mime_type: str = "video/mp4",
     file_size_bytes: int = 1024000,
@@ -72,6 +72,7 @@ def _create_message(
 def _create_download(
     message_id: int,
     s3_object_name: str = "test-file.mp4",
+    status: str = DownloadStatus.Downloaded,
     download_queue_time: datetime | None = None,
     download_start_time: datetime | None = None,
     download_finished_time: datetime | None = None,
@@ -80,12 +81,16 @@ def _create_download(
 ) -> TelegramDownload:
     """Create a TelegramDownload record and return it.
 
+    Defaults to ``DownloadStatus.Downloaded`` so download helpers work for
+    ``/downloads``, ``/view-file`` and ``/download-file`` success tests.
+
     Use ``set_null_finished=True`` to explicitly store a NULL
     ``download_finished_time`` (the default ``None`` value for the parameter
     still falls back to ``arrow.now()`` for convenience).
     """
     download = TelegramDownload(
         message=message_id,
+        status=status,
         download_queue_time=download_queue_time or arrow.now().naive,
         download_start_time=download_start_time,
         download_finished_time=None if set_null_finished else (download_finished_time or arrow.now().naive),
@@ -122,6 +127,7 @@ def test_downloads_with_data(telegram_client: TestClient) -> None:
     assert data[0]["channel_title"] == "Test Channel"
     assert data[0]["channel_username"] == "testchan"
     assert data[0]["s3_object_name"] == "test-file.mp4"
+    assert data[0]["message_id"] == msg.id  # internal TelegramMessage PK
 
 
 # ─── Filtering by finished time ──────────────────────────────────────────────
@@ -241,7 +247,7 @@ def test_downloads_includes_all_fields(telegram_client: TestClient) -> None:
         channel_id=500,
         message_id=501,
         message_text="Full test message",
-        status="Downloaded",
+        status="HasFile",
         file_extension="mp4",
         file_mime_type="video/mp4",
         file_size_bytes=5242880,
@@ -273,7 +279,7 @@ def test_downloads_includes_all_fields(telegram_client: TestClient) -> None:
     assert "message_id" in item
     assert "message_date" in item
     assert "message_text" in item
-    assert "status" in item
+    assert "download_status" in item
 
     # File info fields
     assert "file_mime_type" in item
@@ -291,7 +297,8 @@ def test_downloads_includes_all_fields(telegram_client: TestClient) -> None:
     # Verify values
     assert item["s3_object_name"] == "full-test.mp4"
     assert item["message_text"] == "Full test message"
-    assert item["status"] == "Downloaded"
+    assert item["message_id"] == msg.id
+    assert item["download_status"] == "Downloaded"
     assert item["file_extension"] == "mp4"
     assert item["file_size_bytes"] == 5242880
     assert item["file_duration_seconds"] == 180.0
@@ -309,7 +316,7 @@ def test_downloads_null_optional_fields(telegram_client: TestClient) -> None:
         channel_id=510,
         message_id=511,
         message_text="",
-        status="Downloaded",
+        status="HasFile",
         file_extension="",
         file_mime_type="",
         file_size_bytes=0,
@@ -401,34 +408,28 @@ def test_downloads_auth_required() -> None:
 # ─── Edge cases ───────────────────────────────────────────────────────────────
 
 
-def test_downloads_multiple_downloads_same_message(telegram_client: TestClient) -> None:
-    """Multiple downloads for the same message are all returned."""
+def test_downloads_unique_download_per_message_lifecycle(telegram_client: TestClient) -> None:
+    """A message has at most one TelegramDownload: queueing after a terminal state replaces the old record."""
     _create_channel(channel_id=900, title="Multi Channel", username="multi_ch")
-    msg = _create_message(channel_id=900, message_id=901, message_text="Multi download msg")
+    msg = _create_message(channel_id=900, message_id=901, message_text="Lifecycle msg")
 
-    _create_download(
-        message_id=msg.id,
-        s3_object_name="attempt1.mp4",
-        download_queue_time=arrow.now().shift(hours=-10).naive,
-        download_finished_time=arrow.now().shift(hours=-9).naive,
-        download_retry_attempt=0,
-    )
-    _create_download(
-        message_id=msg.id,
-        s3_object_name="attempt2.mp4",
-        download_queue_time=arrow.now().shift(hours=-5).naive,
-        download_finished_time=arrow.now().shift(hours=-4).naive,
-        download_retry_attempt=1,
-    )
-
-    response = telegram_client.get("/telegram-browser/downloads")
+    # First queue creates a download record
+    response = telegram_client.get(f"/telegram-browser/queue-file/{msg.id}")
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 2
 
-    s3_names = {item["s3_object_name"] for item in data}
-    assert "attempt1.mp4" in s3_names
-    assert "attempt2.mp4" in s3_names
+    # Mark the download as terminal (Downloaded), then queue again: old record is replaced
+    download = TelegramDownload.objects().where(TelegramDownload.message == msg.id).first().run_sync()
+    assert download is not None
+    download.status = DownloadStatus.Downloaded
+    download.save().run_sync()
+
+    response = telegram_client.get(f"/telegram-browser/queue-file/{msg.id}")
+    assert response.status_code == 200
+
+    # Unique FK on TelegramDownload.message: only one record survives, freshly Queued
+    downloads = TelegramDownload.objects().where(TelegramDownload.message == msg.id).run_sync()
+    assert len(downloads) == 1
+    assert downloads[0].status == DownloadStatus.Queued
 
 
 def test_downloads_boundary_exactly_7_days(telegram_client: TestClient) -> None:

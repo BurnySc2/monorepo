@@ -107,7 +107,7 @@ class DownloadedFileItem(BaseModel):
     download_status: str
 
     # From TelegramMessage
-    message_id: int
+    message_id: int  # Internal TelegramMessage PK — used by view/download/delete URLs
     message_date: str
     message_text: str
     file_mime_type: str

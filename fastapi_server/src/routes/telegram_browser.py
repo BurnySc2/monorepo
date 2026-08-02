@@ -88,11 +88,11 @@ def _format_download_item(row: dict) -> DownloadedFileItem:
     """Convert a raw DB row (TelegramDownload + FK traversal) into a DownloadedFileItem."""
     channel_username = row.get("channel_username")
     channel_id_val = row.get("channel_id")
-    message_id_val = row.get("message_id")
+    telegram_message_id_val = row.get("telegram_message_id")
 
     message_link = ""
-    if channel_id_val and message_id_val:
-        message_link = _build_message_link(channel_username, channel_id_val, message_id_val)
+    if channel_id_val and telegram_message_id_val:
+        message_link = _build_message_link(channel_username, channel_id_val, telegram_message_id_val)
 
     return DownloadedFileItem(
         # Download metadata
@@ -507,6 +507,7 @@ async def list_downloads(
         await TelegramDownload.select(  # pyrefly: ignore[missing-attribute]
             *TelegramDownload.all_columns(),
             TelegramDownload.message.id.as_alias("message_id"),
+            TelegramDownload.message.message_id.as_alias("telegram_message_id"),
             TelegramDownload.message.message_date.as_alias("message_date"),
             TelegramDownload.message.message_text.as_alias("message_text"),
             TelegramDownload.status.as_alias("download_status"),
