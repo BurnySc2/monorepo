@@ -1,111 +1,104 @@
 <script lang="ts">
-import { fetch_save_active_columns } from "$lib/api"
+import type { Column } from "$lib/column_settings.svelte"
+import { column_settings } from "$lib/column_settings.svelte"
+import { file_column_settings } from "$lib/file_column_settings.svelte"
 
 interface Props {
     onclose: () => void
+    column_settings_type: "messages" | "files"
 }
 
-let { onclose }: Props = $props()
+let { onclose, column_settings_type }: Props = $props()
 
-interface Column {
-    key: string
-    name: string
-}
-
-let active_columns = $state<Column[]>([
-    { key: "message_date", name: "Date" },
-    { key: "channel_title", name: "Channel" },
-    { key: "message_text", name: "Message" },
-    { key: "amount_of_reactions", name: "Reactions" },
-    { key: "amount_of_comments", name: "Comments" },
-    { key: "file_extension", name: "Ext" },
-    { key: "file_size_bytes", name: "Size" },
-    { key: "file_duration_seconds", name: "Duration" },
-    { key: "message_link", name: "Link" },
-])
-
-let disabled_columns = $state<Column[]>([
-    { key: "views", name: "Views" },
-    { key: "forwards", name: "Forwards" },
-])
+const active_settings = $derived(column_settings_type === "messages" ? column_settings : file_column_settings)
 
 let dragging_item: Column | null = $state(null)
+let drag_source_list: "active" | "disabled" | null = $state(null)
 
-function handle_drag_start(column: Column) {
+function handle_drag_start(column: Column, source_list: "active" | "disabled") {
     dragging_item = column
+    drag_source_list = source_list
 }
 
 function handle_drag_end() {
     dragging_item = null
+    drag_source_list = null
 }
 
-function handle_drag_over(event: DragEvent, target_column: Column, target_list: "active" | "disabled") {
+function handle_drop_on_item(event: DragEvent, target_column: Column, target_list: "active" | "disabled") {
     event.preventDefault()
-    if (!dragging_item) {
+    event.stopPropagation()
+
+    if (!dragging_item || !drag_source_list) {
         return
     }
 
-    // Remove from current list
-    if (active_columns.find((c) => c.key === dragging_item?.key)) {
-        active_columns = active_columns.filter((c) => c.key !== dragging_item?.key)
+    // Get the target list and indices
+    const target = target_list === "active" ? active_settings.active_columns : active_settings.disabled_columns
+    const target_index = target.findIndex((c) => c.key === target_column.key)
+    const source_index = target.findIndex((c) => c.key === dragging_item?.key)
+
+    // Remove from source
+    if (drag_source_list === "active") {
+        active_settings.active_columns = active_settings.active_columns.filter((c) => c.key !== dragging_item?.key)
     } else {
-        disabled_columns = disabled_columns.filter((c) => c.key !== dragging_item?.key)
+        active_settings.disabled_columns = active_settings.disabled_columns.filter((c) => c.key !== dragging_item?.key)
     }
 
-    // Find insert position
-    const target_list_ref = target_list === "active" ? active_columns : disabled_columns
-    const insert_index = target_list_ref.findIndex((c) => c.key === target_column.key)
+    // Get fresh target list after removal
+    const fresh_target = target_list === "active" ? active_settings.active_columns : active_settings.disabled_columns
 
-    // Insert at position
-    if (insert_index >= 0) {
-        if (target_list === "active") {
-            active_columns = [
-                ...active_columns.slice(0, insert_index),
-                dragging_item,
-                ...active_columns.slice(insert_index),
-            ]
-        } else {
-            disabled_columns = [
-                ...disabled_columns.slice(0, insert_index),
-                dragging_item,
-                ...disabled_columns.slice(insert_index),
-            ]
-        }
-    } else {
-        // Append to end
-        if (target_list === "active") {
-            active_columns = [...active_columns, dragging_item]
-        } else {
-            disabled_columns = [...disabled_columns, dragging_item]
-        }
-    }
-}
-
-function handle_drop_to_empty(target_list: "active" | "disabled") {
-    if (!dragging_item) {
-        return
+    // Adjust index for same-list reordering
+    let insert_index = target_index
+    if (drag_source_list === target_list && source_index < target_index) {
+        // Item was before target, so target shifted down by 1 after removal
+        insert_index -= 1
     }
 
-    // Remove from current list
-    active_columns = active_columns.filter((c) => c.key !== dragging_item?.key)
-    disabled_columns = disabled_columns.filter((c) => c.key !== dragging_item?.key)
-
-    // Add to target list
+    // Insert at adjusted position
     if (target_list === "active") {
-        active_columns = [...active_columns, dragging_item]
+        active_settings.active_columns = [
+            ...fresh_target.slice(0, insert_index),
+            dragging_item,
+            ...fresh_target.slice(insert_index),
+        ]
     } else {
-        disabled_columns = [...disabled_columns, dragging_item]
+        active_settings.disabled_columns = [
+            ...fresh_target.slice(0, insert_index),
+            dragging_item,
+            ...fresh_target.slice(insert_index),
+        ]
     }
+
+    handle_drag_end()
 }
 
-async function handle_save() {
-    try {
-        const columns_order = active_columns.map((c) => c.key)
-        await fetch_save_active_columns(columns_order)
-        onclose()
-    } catch (e) {
-        console.error("Failed to save columns", e)
+function handle_drop_on_empty(event: DragEvent, target_list: "active" | "disabled") {
+    event.preventDefault()
+
+    if (!dragging_item || !drag_source_list) {
+        return
     }
+
+    // Remove from source
+    if (drag_source_list === "active") {
+        active_settings.active_columns = active_settings.active_columns.filter((c) => c.key !== dragging_item?.key)
+    } else {
+        active_settings.disabled_columns = active_settings.disabled_columns.filter((c) => c.key !== dragging_item?.key)
+    }
+
+    // Add to end of target
+    if (target_list === "active") {
+        active_settings.active_columns = [...active_settings.active_columns, dragging_item]
+    } else {
+        active_settings.disabled_columns = [...active_settings.disabled_columns, dragging_item]
+    }
+
+    handle_drag_end()
+}
+
+function handle_save() {
+    onclose()
 }
 
 function handle_cancel() {
@@ -152,18 +145,19 @@ function handle_keydown(event: KeyboardEvent) {
                             class="droppable-container mx-2 flex h-64 w-48 flex-col gap-2 overflow-auto border border-black p-2"
                             role="listbox"
                             ondragover={(e) => e.preventDefault()}
-                            ondrop={() => handle_drop_to_empty("active")}
+                            ondrop={(e) => handle_drop_on_empty(e, "active")}
                         >
-                            {#each active_columns as column (column.key)}
+                            {#each active_settings.active_columns as column (column.key)}
                                 <div
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"
                                     draggable="true"
                                     role="option"
                                     tabindex="0"
-                                    ondragstart={() => handle_drag_start(column)}
+                                    ondragstart={() => handle_drag_start(column, "active")}
                                     ondragend={handle_drag_end}
-                                    ondragover={(e) => handle_drag_over(e, column, "active")}
+                                    ondragover={(e) => e.preventDefault()}
+                                    ondrop={(e) => handle_drop_on_item(e, column, "active")}
                                 >
                                     {column.name}
                                 </div>
@@ -178,18 +172,19 @@ function handle_keydown(event: KeyboardEvent) {
                             class="droppable-container mx-2 flex h-64 w-48 flex-col gap-2 overflow-auto border border-black p-2"
                             role="listbox"
                             ondragover={(e) => e.preventDefault()}
-                            ondrop={() => handle_drop_to_empty("disabled")}
+                            ondrop={(e) => handle_drop_on_empty(e, "disabled")}
                         >
-                            {#each disabled_columns as column (column.key)}
+                            {#each active_settings.disabled_columns as column (column.key)}
                                 <div
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"
                                     draggable="true"
                                     role="option"
                                     tabindex="0"
-                                    ondragstart={() => handle_drag_start(column)}
+                                    ondragstart={() => handle_drag_start(column, "disabled")}
                                     ondragend={handle_drag_end}
-                                    ondragover={(e) => handle_drag_over(e, column, "disabled")}
+                                    ondragover={(e) => e.preventDefault()}
+                                    ondrop={(e) => handle_drop_on_item(e, column, "disabled")}
                                 >
                                     {column.name}
                                 </div>

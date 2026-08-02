@@ -561,6 +561,178 @@ export interface paths {
         patch?: never
         trace?: never
     }
+    "/telegram-browser/search": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        /**
+         * Search Messages
+         * @description Search telegram messages with dynamic filters.
+         *     Joins with TelegramChannel via FK traversal for channel_title.
+         *     Returns list of SearchResult dicts (frontend expects array directly).
+         */
+        post: operations["search_messages_telegram_browser_search_post"]
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/queue-file/{id}": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Queue File
+         * @description Queue a file for download.
+         *     Creates a TelegramDownload record with status=Queued.
+         *     Returns 409 if an active download (Queued/Downloading) already exists.
+         *     Deletes and recreates if a terminal download (Downloaded/Failed/GiveUp) exists.
+         *     Does NOT modify TelegramMessage.status.
+         */
+        get: operations["queue_file_telegram_browser_queue_file__id__get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/delete-file/{id}": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        get?: never
+        put?: never
+        post?: never
+        /**
+         * Delete File
+         * @description Delete a downloaded file from S3 and remove the download record.
+         *     Message status is no longer modified — it stays as 'HasFile'.
+         */
+        delete: operations["delete_file_telegram_browser_delete_file__id__delete"]
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/view-file/{id}": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * View File
+         * @description Get a presigned S3 URL for viewing a file.
+         *     Only succeeds if status is 'Downloaded' and s3_object_name exists.
+         */
+        get: operations["view_file_telegram_browser_view_file__id__get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/download-file/{id}": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Download File
+         * @description Redirect to a presigned S3 URL with Content-Disposition: attachment.
+         *     Used as an <a href> link for browser downloads.
+         */
+        get: operations["download_file_telegram_browser_download_file__id__get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/channel-names": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Get Channel Names
+         * @description Get all channels that have a username set.
+         *     Returns a list of channel titles and usernames, ordered alphabetically by title.
+         */
+        get: operations["get_channel_names_telegram_browser_channel_names_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/channel-stats": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * Get Channel Stats
+         * @description Get statistics for all telegram channels.
+         *     Returns channel info with message counts and file counts, sorted by total messages descending.
+         */
+        get: operations["get_channel_stats_telegram_browser_channel_stats_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
+    "/telegram-browser/downloads": {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: never
+        }
+        /**
+         * List Downloads
+         * @description List all downloaded files from the last N days.
+         *     Joins TelegramDownload -> TelegramMessage -> TelegramChannel via FK traversal.
+         */
+        get: operations["list_downloads_telegram_browser_downloads_get"]
+        put?: never
+        post?: never
+        delete?: never
+        options?: never
+        head?: never
+        patch?: never
+        trace?: never
+    }
     "/": {
         parameters: {
             query?: never
@@ -638,6 +810,28 @@ export interface components {
             /** Available Voices */
             available_voices: string[]
         }
+        /** ChannelNameItem */
+        ChannelNameItem: {
+            /** Channel Title */
+            channel_title: string
+            /** Channel Username */
+            channel_username: string
+        }
+        /** ChannelStatsItem */
+        ChannelStatsItem: {
+            /** Channel Title */
+            channel_title: string
+            /** Channel Username */
+            channel_username: string
+            /** Creation Date */
+            creation_date: string
+            /** Participants */
+            participants: number
+            /** Total Messages */
+            total_messages: number
+            /** Total Files */
+            total_files: number
+        }
         /** ChapterDetail */
         ChapterDetail: {
             /** Id */
@@ -664,10 +858,50 @@ export interface components {
              */
             minio_presigned_url: string
         }
+        /** DeleteFileResponse */
+        DeleteFileResponse: {
+            /** Deleted */
+            deleted: boolean
+        }
         /** DeleteResponse */
         DeleteResponse: {
             /** Deleted */
             deleted: boolean
+        }
+        /** DownloadedFileItem */
+        DownloadedFileItem: {
+            /** Download Queue Time */
+            download_queue_time: string
+            /** Download Start Time */
+            download_start_time?: string | null
+            /** Download Finished Time */
+            download_finished_time?: string | null
+            /** Download Retry Attempt */
+            download_retry_attempt: number
+            /** S3 Object Name */
+            s3_object_name: string
+            /** Download Status */
+            download_status: string
+            /** Message Id */
+            message_id: number
+            /** Message Date */
+            message_date: string
+            /** Message Text */
+            message_text: string
+            /** File Mime Type */
+            file_mime_type: string
+            /** File Extension */
+            file_extension: string
+            /** File Size Bytes */
+            file_size_bytes: number
+            /** File Duration Seconds */
+            file_duration_seconds: number
+            /** Channel Title */
+            channel_title: string
+            /** Channel Username */
+            channel_username: string
+            /** Message Link */
+            message_link: string
         }
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -724,6 +958,11 @@ export interface components {
             /** Value */
             value: string
         }
+        /** QueueFileResponse */
+        QueueFileResponse: {
+            /** Queued */
+            queued: boolean
+        }
         /** QueueResponse */
         QueueResponse: {
             /** Queued */
@@ -757,6 +996,176 @@ export interface components {
             /** Players */
             players: components["schemas"]["ReplayPlayer"][]
         }
+        /** SearchRequest */
+        SearchRequest: {
+            /**
+             * Search Text
+             * @default
+             */
+            search_text: string
+            /**
+             * Channel Name
+             * @default
+             */
+            channel_name: string
+            /**
+             * Datetime Min
+             * @default
+             */
+            datetime_min: string
+            /**
+             * Datetime Max
+             * @default
+             */
+            datetime_max: string
+            /**
+             * Reactions Min
+             * @default 0
+             */
+            reactions_min: number
+            /**
+             * Reactions Max
+             * @default 0
+             */
+            reactions_max: number
+            /**
+             * Comments Min
+             * @default 0
+             */
+            comments_min: number
+            /**
+             * Comments Max
+             * @default 0
+             */
+            comments_max: number
+            /**
+             * Must Have File
+             * @default false
+             */
+            must_have_file: boolean
+            /**
+             * File Extension
+             * @default
+             */
+            file_extension: string
+            /**
+             * File Duration Min
+             * @default 00:00:00
+             */
+            file_duration_min: string
+            /**
+             * File Duration Max
+             * @default 00:00:00
+             */
+            file_duration_max: string
+            /**
+             * File Size Min
+             * @default 0
+             */
+            file_size_min: number
+            /**
+             * File Size Max
+             * @default 0
+             */
+            file_size_max: number
+            /**
+             * File Image Width Min
+             * @default 0
+             */
+            file_image_width_min: number
+            /**
+             * File Image Width Max
+             * @default 0
+             */
+            file_image_width_max: number
+            /**
+             * File Image Height Min
+             * @default 0
+             */
+            file_image_height_min: number
+            /**
+             * File Image Height Max
+             * @default 0
+             */
+            file_image_height_max: number
+            /**
+             * Sort
+             * @default []
+             */
+            sort: components["schemas"]["SortItem"][]
+        }
+        /** SearchResultItem */
+        SearchResultItem: {
+            metadata: components["schemas"]["SearchResultMetadata"]
+            /** Message Date */
+            message_date?: string | null
+            /** Channel Title */
+            channel_title?: string | null
+            /** Channel Username */
+            channel_username?: string | null
+            /** Message Text */
+            message_text?: string | null
+            /**
+             * Amount Of Reactions
+             * @default 0
+             */
+            amount_of_reactions: number
+            /**
+             * Amount Of Comments
+             * @default 0
+             */
+            amount_of_comments: number
+            /** File Extension */
+            file_extension?: string | null
+            /** File Size Bytes */
+            file_size_bytes?: number | null
+            /** File Duration Seconds */
+            file_duration_seconds?: number | null
+            /** File Height */
+            file_height?: number | null
+            /** File Width */
+            file_width?: number | null
+            /** Mime Type */
+            mime_type?: string | null
+            /**
+             * Message Link
+             * @default
+             */
+            message_link: string
+        }
+        /** SearchResultMetadata */
+        SearchResultMetadata: {
+            /** Id */
+            id: string
+            /** Status */
+            status: string
+            /** Download Status */
+            download_status?: string | null
+        }
+        /** SortItem */
+        SortItem: {
+            /**
+             * Column
+             * @enum {string}
+             */
+            column:
+                | "message_date"
+                | "amount_of_reactions"
+                | "amount_of_comments"
+                | "file_size_bytes"
+                | "file_duration_seconds"
+                | "file_height"
+                | "file_width"
+                | "channel_title"
+                | "channel_username"
+                | "file_extension"
+                | "mime_type"
+            /**
+             * Ascending
+             * @default true
+             */
+            ascending: boolean
+        }
         /** TTSGenerateRequest */
         TTSGenerateRequest: {
             /** Voice */
@@ -783,6 +1192,13 @@ export interface components {
             input?: unknown
             /** Context */
             ctx?: Record<string, never>
+        }
+        /** ViewFileResponse */
+        ViewFileResponse: {
+            /** Minio Url */
+            minio_url: string
+            /** Mime Type */
+            mime_type: string
         }
         /** VoiceInfo */
         VoiceInfo: {
@@ -1635,6 +2051,282 @@ export interface operations {
                 }
                 content: {
                     "application/json": unknown
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    search_messages_telegram_browser_search_post: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"]
+            }
+        }
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["SearchResultItem"][]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    queue_file_telegram_browser_queue_file__id__get: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["QueueFileResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    delete_file_telegram_browser_delete_file__id__delete: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["DeleteFileResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    view_file_telegram_browser_view_file__id__get: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["ViewFileResponse"]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    download_file_telegram_browser_download_file__id__get: {
+        parameters: {
+            query?: never
+            header?: never
+            path: {
+                id: number
+            }
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": unknown
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    get_channel_names_telegram_browser_channel_names_get: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["ChannelNameItem"][]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    get_channel_stats_telegram_browser_channel_stats_get: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["ChannelStatsItem"][]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    list_downloads_telegram_browser_downloads_get: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["DownloadedFileItem"][]
                 }
             }
             /** @description Validation Error */

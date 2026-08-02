@@ -1,8 +1,10 @@
+# DO NOT MODIFY OUTSIDE OF FASTAPI BACKEND PROJECT
 import asyncio
 import os
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from typing import Literal
 
 import aioboto3
 from botocore.config import Config
@@ -17,6 +19,7 @@ RUSTFS_SECRET_KEY = os.getenv("RUSTFS_SECRET_KEY")
 
 RUSTFS_SC2_REPLAYS_BUCKET = os.getenv("RUSTFS_SC2_REPLAYS_BUCKET", "sc2-replays")
 RUSTFS_AUDIOBOOK_BUCKET = os.getenv("RUSTFS_AUDIOBOOK_BUCKET", "rustfs-audiobook-bucket")
+RUSTFS_TELEGRAM_BUCKET = os.getenv("RUSTFS_TELEGRAM_BUCKET", "rustfs-telegram-bucket")
 
 RUSTFS_ADMIN_URL = os.getenv("RUSTFS_ADMIN_URL", "http://localhost:3903")
 RUSTFS_ADMIN_TOKEN = os.getenv("RUSTFS_ADMIN_TOKEN", "rootroot")
@@ -27,6 +30,11 @@ async def initialize_rustfs():
         await bucket_create(s3, RUSTFS_AUDIOBOOK_BUCKET)
         await bucket_set_cors(s3, RUSTFS_AUDIOBOOK_BUCKET)
         await bucket_set_expiration(s3, RUSTFS_AUDIOBOOK_BUCKET, days=30)
+        await bucket_create(s3, RUSTFS_TELEGRAM_BUCKET)
+        await bucket_set_cors(s3, RUSTFS_TELEGRAM_BUCKET)
+        await bucket_set_expiration(
+            s3, RUSTFS_TELEGRAM_BUCKET, days=int(os.getenv("RUSTFS_TELEGRAM_BUCKET_EXPIRATION_DAYS", "7"))
+        )
 
 
 @asynccontextmanager
@@ -111,9 +119,11 @@ async def object_create_presigned_url(
     file_name: str,
     expires_in_seconds: int = 3600,
     verify_object_exists: bool = False,
+    disposition: Literal["attachment", "inline"] = "attachment",
 ) -> str | None:
     """
     verify_object_exists: if True, returns None if object doesn't exist
+    disposition: "attachment" for download, "inline" for browser display
     """
     try:
         if verify_object_exists:
@@ -121,12 +131,15 @@ async def object_create_presigned_url(
             if obj is None:
                 return None
 
+        this_disposition = "inline"
+        if disposition == "attachment":
+            this_disposition = f"{disposition}; filename={file_name}"
         url = await session.generate_presigned_url(
             "get_object",
             Params={
                 "Bucket": bucket,
                 "Key": key,
-                "ResponseContentDisposition": f'attachment; filename="{file_name}"',
+                "ResponseContentDisposition": this_disposition,
             },
             ExpiresIn=expires_in_seconds,
         )

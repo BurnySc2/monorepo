@@ -1,87 +1,44 @@
 <script lang="ts">
-import { fetch_delete_file, fetch_queue_file, fetch_search, fetch_view_file } from "$lib/api"
+import { fetch_delete_file, fetch_queue_file, fetch_view_file } from "$lib/api"
+import { is_loading as columns_loading } from "$lib/column_settings.svelte"
+import ChannelsTab from "$lib/components/ChannelsTab.svelte"
 import ColumnReorderDialog from "$lib/components/ColumnReorderDialog.svelte"
+import FilesTab from "$lib/components/FilesTab.svelte"
 import MediaDialog from "$lib/components/MediaDialog.svelte"
-import ResultsGrid from "$lib/components/ResultsGrid.svelte"
-import SearchPanel from "$lib/components/SearchPanel.svelte"
+import MessagesTab from "$lib/components/MessagesTab.svelte"
+import TabContainer from "$lib/components/TabContainer.svelte"
+import { is_loading as file_columns_loading } from "$lib/file_column_settings.svelte"
+import { is_loading as filters_loading } from "$lib/search_filters.svelte"
+import { is_loading as sort_loading } from "$lib/sort_settings.svelte"
+import { temp_state } from "$lib/temporary-storage.svelte"
 
-interface SearchResult {
-    metadata: {
-        id: string
-        status: "HasFile" | "Queued" | "Downloading" | "Downloaded"
-    }
-    [key: string]: unknown
-}
+let is_ready = $derived(
+    !filters_loading.value && !sort_loading.value && !columns_loading.value && !file_columns_loading.value,
+)
 
-interface SearchFilters {
-    search_text: string
-    channel_name: string
-    datetime_min: string
-    datetime_max: string
-    reactions_min: number
-    reactions_max: number
-    comments_min: number
-    comments_max: number
-    must_have_file: boolean
-    file_extension: string
-    file_duration_min: string
-    file_duration_max: string
-    file_size_min: number
-    file_size_max: number
-    file_image_width_min: number
-    file_image_width_max: number
-    file_image_height_min: number
-    file_image_height_max: number
-}
+const tabs = [
+    { id: "messages", label: "Messages" },
+    { id: "files", label: "Files" },
+    { id: "channels", label: "Channels" },
+]
 
-let results = $state<SearchResult[]>([])
-let is_searching = $state(false)
+let active_tab: "messages" | "files" | "channels" = $state("messages")
 let show_column_dialog = $state(false)
 let show_media_dialog = $state(false)
 let media_url = $state("")
 let media_mime = $state("")
-
-let filters = $state<SearchFilters>({
-    search_text: "",
-    channel_name: "",
-    datetime_min: "",
-    datetime_max: "",
-    reactions_min: 0,
-    reactions_max: 0,
-    comments_min: 0,
-    comments_max: 0,
-    must_have_file: false,
-    file_extension: "",
-    file_duration_min: "00:00:00",
-    file_duration_max: "00:00:00",
-    file_size_min: 0,
-    file_size_max: 0,
-    file_image_width_min: 0,
-    file_image_width_max: 0,
-    file_image_height_min: 0,
-    file_image_height_max: 0,
-})
-
-async function handle_search() {
-    is_searching = true
-    try {
-        const resp = await fetch_search(new URLSearchParams(filters as unknown as Record<string, string>).toString())
-        if (resp) {
-            results = resp
-        }
-    } catch (e) {
-        console.error("Search failed", e)
-    } finally {
-        is_searching = false
-    }
-}
 
 async function handle_queue_file(id: string) {
     await fetch_queue_file(id)
 }
 
 async function handle_delete_file(id: string) {
-    await fetch_delete_file(id)
+    try {
+        await fetch_delete_file(id)
+        temp_state.files.list = temp_state.files.list?.filter((file) => file.message_id.toString() !== id) ?? null
+    } catch (e) {
+        console.error("Delete file failed", e)
+    }
 }
 
 async function handle_view_file(id: string) {
@@ -105,45 +62,50 @@ function close_media_dialog() {
 </script>
 
 <main class="flex h-full flex-col items-center rounded-xl bg-gray-300">
-    <div class="mx-2 flex h-full flex-col gap-4 rounded-xl lg:mx-4 lg:w-9/12">
-        <details open>
-            <summary class="select-none pb-2">Search section</summary>
-            <SearchPanel
-                {filters}
-                onsearch={handle_search}
-            />
-        </details>
+    <div class="m-2 flex h-full flex-col gap-4 rounded-xl">
+        <div class="flex gap-2">
+            {#if active_tab !== "channels"}
+                <button
+                    class="h-full rounded-xl border-2 border-black p-2 hover:bg-yellow-500"
+                    type="button"
+                    onclick={() => (show_column_dialog = true)}
+                >
+                    Column order
+                </button>
+            {/if}
+        </div>
 
-        <button
-            class="h-full rounded-xl border-2 border-black p-2 hover:bg-yellow-500"
-            type="button"
-            onclick={() => (show_column_dialog = true)}
+        <TabContainer
+            {tabs}
+            bind:active_tab
         >
-            Column order
-        </button>
-
-        {#if is_searching}
-            <div class="flex items-center justify-center p-8">
-                <div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
-                <span class="ml-4">Searching...</span>
-            </div>
-        {:else if results.length > 0}
-            <ResultsGrid
-                {results}
-                onqueue={handle_queue_file}
-                ondelete={handle_delete_file}
-                onview={handle_view_file}
-            />
-        {:else}
-            <div class="flex items-center justify-center p-8 text-gray-500">
-                No results yet. Run a search to see messages.
-            </div>
-        {/if}
+            {#if !is_ready}
+                <div class="flex items-center justify-center p-8">
+                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
+                </div>
+            {:else if active_tab === "messages"}
+                <MessagesTab
+                    onqueue={handle_queue_file}
+                    ondelete={handle_delete_file}
+                    onview={handle_view_file}
+                />
+            {:else if active_tab === "channels"}
+                <ChannelsTab />
+            {:else}
+                <FilesTab
+                    onview={handle_view_file}
+                    ondelete={handle_delete_file}
+                />
+            {/if}
+        </TabContainer>
     </div>
 </main>
 
-{#if show_column_dialog}
-    <ColumnReorderDialog onclose={() => (show_column_dialog = false)} />
+{#if show_column_dialog && active_tab !== "channels"}
+    <ColumnReorderDialog
+        onclose={() => (show_column_dialog = false)}
+        column_settings_type={active_tab}
+    />
 {/if}
 
 {#if show_media_dialog}

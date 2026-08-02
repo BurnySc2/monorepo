@@ -3,7 +3,7 @@
 # Execute with
 # ansible-playbook rdiff_backup_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create and start duplicati service
-  hosts: server_group2, server_group4
+  hosts: my_servers
   vars:
     USERNAME: root
     BACKUP_SCRIPT_PATH: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/backup_script.sh'
@@ -18,10 +18,6 @@
         LOG_NAME: backup_audiobookshelf.log
         SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_AUDIOBOOKSHELF }}'
         TARGET_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/audiobookshelf'
-      - name: changedetection
-        LOG_NAME: backup_changedetection.log
-        SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_CHANGEDETECTION }}'
-        TARGET_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/changedetection'
       - name: jellyfin
         LOG_NAME: backup_jellyfin.log
         SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_JELLYFIN }}'
@@ -30,27 +26,17 @@
         LOG_NAME: backup_navidrome.log
         SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_NAVIDROME }}'
         TARGET_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/navidrome'
-      - name: uptime_kuma
-        LOG_NAME: backup_uptime_kuma.log
-        SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_UPTIME_KUMA }}'
-        TARGET_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/uptime_kuma'
       - name: paperless
         LOG_NAME: backup_paperless.log
         SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_PAPERLESS }}'
         TARGET_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/paperless'
-      - name: owncloud
-        LOG_NAME: backup_owncloud.log
-        SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_OWNCLOUD }}'
-        TARGET_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/owncloud'
       - name: reactive_resume
         LOG_NAME: backup_reactive_resume.log
         SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_REACTIVE_RESUME }}'
         TARGET_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/reactive_resume'
-      # TODO
-      # - name: docmost
-      #   LOG_NAME: backup_docmost.log
-      #   SOURCE_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_SOURCE_TRILLIUM }}'
-      #   TARGET_DIRECTORY: '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}/trillium'
+      # TODO Docmost from docker volume
+      # TODO Filebrowser, only subfolder 'database'
+      # TODO Mealie, only subfolder 'mealie-data'
   tasks:
     - name: Get syncthing user id
       ansible.builtin.shell:

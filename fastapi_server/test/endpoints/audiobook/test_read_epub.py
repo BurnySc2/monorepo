@@ -101,14 +101,16 @@ def test_epub_reader_extract_chapters_simple():
 def test_epub_reader_extract_chapters(
     chapters: dict[str, str],
 ):
-    # 2 chapters following each other need to have different text
-    chapters = {
-        chapter_title: chapter_content
-        for (chapter_title, chapter_content), (_chapter_title2, chapter_content2) in zip(
-            chapters.items(), list(chapters.items())[1:]
-        )
-        if chapter_content != chapter_content2
-    }
+    # extract_chapters skips chapters whose combined text matches the previous
+    # kept chapter's combined text, so mirror that sequential filter here
+    filtered_chapters: dict[str, str] = {}
+    last_kept_combined_text: str | None = None
+    for chapter_title, chapter_content in chapters.items():
+        combined_text = combine_text([chapter_content])
+        if combined_text != last_kept_combined_text:
+            filtered_chapters[chapter_title] = chapter_content
+            last_kept_combined_text = combined_text
+    chapters = filtered_chapters
     if len(chapters) < 2:
         return
 

@@ -1,4 +1,11 @@
 <script lang="ts">
+import {
+    initial_media_viewer_state,
+    media_load_failed,
+    media_load_started,
+    media_loaded,
+} from "$lib/media_viewer_state"
+
 interface Props {
     url: string
     mime_type: string
@@ -6,6 +13,27 @@ interface Props {
 }
 
 let { url, mime_type, onclose }: Props = $props()
+
+let media_state = $state(initial_media_viewer_state())
+
+let previous_media_key = ""
+
+$effect(() => {
+    // Reset loading/error state whenever the dialog content (URL or type) changes.
+    const next_media_key = `${url}|${mime_type}`
+    if (next_media_key !== previous_media_key) {
+        previous_media_key = next_media_key
+        media_state = media_load_started()
+    }
+})
+
+function handle_media_error() {
+    media_state = media_load_failed()
+}
+
+function handle_media_loaded() {
+    media_state = media_loaded()
+}
 
 function handle_close() {
     onclose()
@@ -31,13 +59,33 @@ function handle_keydown(event: KeyboardEvent) {
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-        class="flex h-full w-full flex-col items-center justify-center p-1"
+        class="relative flex h-full w-full flex-col items-center justify-center p-1"
         onclick={(e) => e.stopPropagation()}
     >
-        {#if mime_type.startsWith("video/")}
+        {#if media_state.error_message}
+            <div
+                role="alert"
+                class="m-4 flex max-w-lg flex-col items-center justify-center gap-2 rounded-xl bg-gray-800/90 p-6 text-center ring-1 ring-white"
+            >
+                <div class="text-white">{media_state.error_message}</div>
+                <div class="text-sm text-gray-400">Check the file or try downloading it instead.</div>
+            </div>
+        {:else if mime_type.startsWith("video/")}
+            {#if media_state.is_loading}
+                <div
+                    role="status"
+                    class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 p-8 text-white"
+                >
+                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
+                    <span>Loading media...</span>
+                </div>
+            {/if}
             <video
                 class="grow object-contain"
+                class:hidden={media_state.is_loading}
                 controls
+                onerror={handle_media_error}
+                onloadeddata={handle_media_loaded}
             >
                 <source
                     src={url}
@@ -52,9 +100,21 @@ function handle_keydown(event: KeyboardEvent) {
                 Your browser does not support the video tag.
             </video>
         {:else if mime_type.startsWith("audio/")}
+            {#if media_state.is_loading}
+                <div
+                    role="status"
+                    class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 p-8 text-white"
+                >
+                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
+                    <span>Loading media...</span>
+                </div>
+            {/if}
             <audio
                 class="w-full"
+                class:hidden={media_state.is_loading}
                 controls
+                onerror={handle_media_error}
+                onloadeddata={handle_media_loaded}
             >
                 <source
                     src={url}

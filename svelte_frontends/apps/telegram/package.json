@@ -16,7 +16,9 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@repo/ui": "*"
+        "@repo/api-types": "*",
+        "@repo/ui": "*",
+        "zod": "^4.3.6"
     },
     "devDependencies": {
         "@repo/typescript-config": "*",
