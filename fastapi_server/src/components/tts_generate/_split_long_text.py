@@ -20,6 +20,10 @@ from pydub import AudioSegment
 
 data_dir = Path(__file__).parents[3] / "data" / "nltk"
 data_dir.mkdir(parents=True, exist_ok=True)
+nltk.download("punkt_tab", download_dir=str(data_dir))
+# Fail fast if the resource is still unavailable (e.g. offline first run)
+# instead of failing later at tokenize time with a cryptic LookupError.
+nltk.data.find("tokenizers/punkt_tab")
 
 
 class TikTokGenerator(Protocol):
@@ -62,15 +66,6 @@ def find_split_point(text: str, max_chars: int) -> int:
 
     # Try NLTK sentence tokenization first
     try:
-        # Download punkt if not available
-        try:
-            nltk.data.find("tokenizers/punkt")
-        except LookupError:
-            nltk.download("punkt", download_dir=str(data_dir), quiet=True)
-        except Exception as e:  # noqa: BLE001
-            logger.exception(f"Unknown error splitting long text: {e}")
-            pass
-
         sentences = nltk.sent_tokenize(text)
         if len(sentences) > 1:
             # Find the last sentence that fits within max_chars
@@ -83,7 +78,8 @@ def find_split_point(text: str, max_chars: int) -> int:
                         return cumulative
                     break
     except (LookupError, Exception):  # noqa: BLE001
-        pass
+        # Fall back to manual splitting, but surface that NLTK was unavailable.
+        logger.warning("NLTK sentence tokenizer unavailable; falling back to manual splitting", exc_info=True)
 
     # Try sentence boundary with punctuation + space
     for punct in (". ", "? ", "! "):

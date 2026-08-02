@@ -16,7 +16,11 @@ from pydantic import BaseModel
 
 data_dir = Path(__file__).parents[3] / "data" / "nltk"
 data_dir.mkdir(parents=True, exist_ok=True)
+nltk.data.path.insert(0, str(data_dir))
 nltk.download("punkt_tab", download_dir=str(data_dir))
+# Fail fast if the resource is still unavailable (e.g. offline first run)
+# instead of failing later at tokenize time with a cryptic LookupError.
+nltk.data.find("tokenizers/punkt_tab")
 
 
 def extract_sentences(text: str) -> list[str]:
