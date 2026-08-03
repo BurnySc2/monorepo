@@ -286,3 +286,11 @@ flowchart LR
         telegram["telegram_browser_router<br/>/telegram-browser/*<br/><br/>• POST /search<br/>• GET /channel-names<br/>• GET /queue-file/{id}<br/>• DELETE /delete-file/{id}<br/>• GET /view-file/{id}<br/>• GET /download-file/{id}<br/>• GET /downloads"]
     end
 ```
+
+### Reset currently converting audio
+Setting `started_converting` column to NULL should reset the process and audiobook_worker should pick up jobs again.
+```sql
+UPDATE litestar_audiobook_chapter 
+SET started_converting = NULL
+WHERE true
+```
