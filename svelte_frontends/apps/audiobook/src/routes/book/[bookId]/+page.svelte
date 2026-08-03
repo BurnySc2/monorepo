@@ -209,7 +209,7 @@ async function handle_download_book() {
         const url = URL.createObjectURL(content)
         const a = document.createElement("a")
         a.href = url
-        a.download = `${custom_book_title.slice(0, 200)}.zip`
+        a.download = `${custom_book_author.slice(0, 100)} - ${custom_book_title.slice(0, 200)}.zip`
         a.click()
         URL.revokeObjectURL(url)
         is_downloading = false
