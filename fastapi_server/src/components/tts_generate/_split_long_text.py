@@ -11,19 +11,11 @@ Handles text that's too long for a single TikTok TTS request by:
 from __future__ import annotations
 
 import io
-from pathlib import Path
 from typing import Protocol
 
 import nltk  # noqa: I001
 from loguru import logger
 from pydub import AudioSegment
-
-data_dir = Path(__file__).parents[3] / "data" / "nltk"
-data_dir.mkdir(parents=True, exist_ok=True)
-nltk.download("punkt_tab", download_dir=str(data_dir))
-# Fail fast if the resource is still unavailable (e.g. offline first run)
-# instead of failing later at tokenize time with a cryptic LookupError.
-nltk.data.find("tokenizers/punkt_tab")
 
 
 class TikTokGenerator(Protocol):

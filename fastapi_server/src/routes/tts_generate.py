@@ -1,6 +1,8 @@
 import base64
+from pathlib import Path
 from typing import cast
 
+import nltk
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -8,6 +10,13 @@ from components.tts_generate import generate_audio, list_all_voices
 from schemas.tts import ENGINES
 from schemas.tts.engine import TTSEngine
 from schemas.tts.voice_info import VoiceInfo
+
+data_dir = Path(__file__).parents[3] / "data" / "nltk"
+data_dir.mkdir(parents=True, exist_ok=True)
+nltk.download("punkt_tab", download_dir=str(data_dir))
+# Fail fast if the resource is still unavailable (e.g. offline first run)
+# instead of failing later at tokenize time with a cryptic LookupError.
+nltk.data.find("tokenizers/punkt_tab")
 
 
 class TTSGenerateRequest(BaseModel):
