@@ -188,7 +188,17 @@ async function handle_download_book() {
 
     try {
         for (const chapter of chapters_with_audio) {
-            const response = await fetch(chapter.minio_presigned_url)
+            const response = await fetch(chapter.minio_presigned_url, {
+                method: "GET",
+                mode: "cors",
+                cache: "no-cache",
+            })
+            if (!response.ok) {
+                // RustFS returned an XML error (403, 404, etc.)
+                const error_text = await response.text()
+                console.error("RustFS Error XML:", error_text)
+                throw new Error(`RustFS HTTP ${response.status}`)
+            }
             const blob = await response.blob()
             const chapter_num = chapter.chapter_number.toString().padStart(4, "0")
             const chapter_title = chapter.chapter_title.replace(/\s+/g, "_")
