@@ -508,7 +508,7 @@ async def queue_all_chapters(
             }
         )
         # pyrefly: ignore[missing-attribute]
-        .where(AudiobookChapter.id == book_id)
+        .where(AudiobookChapter.book == book_id)
         .where(AudiobookChapter.queued.is_null())
     )
 
