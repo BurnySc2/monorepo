@@ -498,18 +498,18 @@ async def queue_all_chapters(
     if not await check_book_ownership(book, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
-    chapters = (
-        await AudiobookChapter.objects()
-        .where(AudiobookChapter.book == book_id)
-        .order_by(AudiobookChapter.chapter_number)
-    )
-
     validate_audiobook_engine(settings)
-    audio_settings = AudioSettings.from_value(settings.value)
 
-    for chapter in chapters:
-        chapter.queued = arrow.utcnow().naive
-        chapter.audio_settings = audio_settings.model_dump_json()
-        await chapter.save()
+    await (
+        AudiobookChapter.update(
+            {
+                AudiobookChapter.audio_settings: AudioSettings.from_value(settings.value),
+                AudiobookChapter.queued: arrow.utcnow().naive,
+            }
+        )
+        # pyrefly: ignore[missing-attribute]
+        .where(AudiobookChapter.id == book_id)
+        .where(AudiobookChapter.queued.is_null())
+    )
 
     return QueueResponse(queued=True)
