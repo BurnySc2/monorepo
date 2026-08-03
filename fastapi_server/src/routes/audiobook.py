@@ -503,7 +503,7 @@ async def queue_all_chapters(
     await (
         AudiobookChapter.update(
             {
-                AudiobookChapter.audio_settings: AudioSettings.from_value(settings.value),
+                AudiobookChapter.audio_settings: AudioSettings.from_value(settings.value).model_dump_json(),
                 AudiobookChapter.queued: arrow.utcnow().naive,
             }
         )

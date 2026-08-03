@@ -290,7 +290,7 @@ flowchart LR
 ### Reset currently converting audio
 Setting `started_converting` column to NULL should reset the process and audiobook_worker should pick up jobs again.
 ```sql
-UPDATE litestar_audiobook_chapter 
+UPDATE litestar_audiobook_chapter
 SET started_converting = NULL
 WHERE true
 ```
