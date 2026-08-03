@@ -49,7 +49,7 @@ class AudiobookConversionContext:
             arrow.utcnow().shift(seconds=len(get_chapter_combined_text(self.chapter.content)) * ESTIMATE_FACTOR).naive
         )
         await self.chapter.save()
-        # Generate MinIO object name
+        # Generate s3 object name
         # pyrefly: ignore
         self.minio_object_name = f"{self.chapter.id}_audio.mp3"
         return self
@@ -155,9 +155,9 @@ async def convert_one(chapter: AudiobookChapter) -> None:
                 await object_upload(
                     s3, RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio
                 )  # pyrefly: ignore[bad-argument-type]
-            logger.debug(f"Successfully saved audio to MinIO: {context.minio_object_name}")
+            logger.debug(f"Successfully saved audio to s3 storage: {context.minio_object_name}")
         except Exception as e:
-            logger.exception(f"Failed to save audio to MinIO: {e}")
+            logger.exception(f"Failed to save audio to s3 storage: {e}")
             raise
 
     logger.info(f"Done converting, saved to {context.minio_object_name}")

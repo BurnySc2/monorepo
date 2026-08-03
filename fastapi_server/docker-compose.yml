@@ -207,7 +207,6 @@ networks:
   pangolin_newt:
     external: true
 volumes:
-  dev_minio_data: null
   dev_postgres_data: null
   dev_pgadmin_data: null
   dev_rustfs_data: null

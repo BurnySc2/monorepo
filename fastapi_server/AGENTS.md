@@ -12,7 +12,7 @@ Python FastAPI backend providing:
 - **RaceRoom Stats**: Racing game best times tracking
 - **SC2 Replays**: StarCraft II replay file parsing
 
-Stack: FastAPI + async, PostgreSQL (Piccolo ORM), S3-compatible storage (RustFS/MinIO)
+Stack: FastAPI + async, PostgreSQL (Piccolo ORM), S3-compatible storage (RustFS)
 
 ---
 
