@@ -410,7 +410,8 @@ async def download_file(
             detail="File not available for download. Must be 'Downloaded'.",
         )
 
-    file_name = f"telegram_{download.message.channel}_{download.message.id}{download.message.file_extension}"
+    file_date = arrow.get(download.message.message_date).format("YYYY_MM_DD")
+    file_name = f"{file_date}_telegram_{download.message.channel}_{download.message.message_id}{download.message.file_extension}"  # noqa: E501
 
     async with get_s3_client() as s3:
         presigned_url = await object_create_presigned_url(
