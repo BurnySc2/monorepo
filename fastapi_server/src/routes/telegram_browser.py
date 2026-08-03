@@ -528,7 +528,7 @@ async def list_downloads(
         )
         .where(TelegramDownload.status == DownloadStatus.Downloaded)
         .where(TelegramDownload.download_finished_time >= cutoff_time)
-        .order_by(TelegramDownload.download_queue_time, ascending=False)
+        .order_by(TelegramDownload.download_queue_time, ascending=True)
         .limit(1000)
     )
 
