@@ -10,7 +10,7 @@ from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
 from components.login.cookies import LoggedInUser, check_book_ownership, get_current_user
 from piccolo_conf import DB
-from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url, object_delete
+from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url
 from schemas.audiobook import (
     AudioSettings,
     BookListItem,
@@ -277,8 +277,9 @@ async def delete_all_books(current_user: Annotated[LoggedInUser, Depends(get_cur
 async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> DeleteResponse:
     """
     Hard delete a book and all its chapters.
-    Also deletes S3 audio files for each chapter.
-    Returns 404 if not found.
+    DB-only; S3 objects not deleted (auto-expire after 30 days).
+    Relies on FK ON DELETE CASCADE to remove chapters.
+    Returns 404 if not found, 403 if not owned.
     """
     book = (
         # pyrefly: ignore[missing-attribute]
@@ -291,18 +292,7 @@ async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depend
     if not await check_book_ownership(book, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to modify this book")
 
-    chapters = (
-        await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
-    )
-
-    async with get_s3_client() as s3:
-        for chapter in chapters:
-            if chapter.minio_object_name:
-                await object_delete(s3, RUSTFS_AUDIOBOOK_BUCKET, chapter.minio_object_name)
-
-    async with DB.transaction():
-        await AudiobookChapter.delete().where(AudiobookChapter.book == book_id)
-        await AudiobookBook.delete().where(AudiobookBook.id == book_id)  # pyrefly: ignore[missing-attribute]
+    await AudiobookBook.delete().where(AudiobookBook.id == book_id)  # pyrefly: ignore[missing-attribute]
 
     return DeleteResponse(deleted=True)
 
@@ -314,6 +304,8 @@ async def delete_all_audio(
 ) -> DeleteResponse:
     """
     Delete all generated audio for a book.
+    DB-only; clears audio fields via single bulk UPDATE, no S3 deletion (auto-expire).
+    Returns 404 if book not found, 403 if not owned.
     """
     book = (
         # pyrefly: ignore[missing-attribute]
@@ -325,19 +317,14 @@ async def delete_all_audio(
     if not await check_book_ownership(book, current_user):
         raise HTTPException(status_code=403, detail="Not authorized to access this book")
 
-    chapters = (
-        await AudiobookChapter.objects().where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
-    )
-
-    async with get_s3_client() as s3:
-        for chapter in chapters:
-            if chapter.minio_object_name:
-                await object_delete(s3, RUSTFS_AUDIOBOOK_BUCKET, chapter.minio_object_name)
-            chapter.minio_object_name = None
-            chapter.queued = None
-            chapter.started_converting = None
-            chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
-            await chapter.save()
+    await AudiobookChapter.update(
+        {
+            AudiobookChapter.minio_object_name: None,
+            AudiobookChapter.queued: None,
+            AudiobookChapter.started_converting: None,
+            AudiobookChapter.audio_settings: None,  # pyrefly: ignore[bad-argument-type,missing-attribute]
+        }
+    ).where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
 
     return DeleteResponse(deleted=True)
 
@@ -390,7 +377,8 @@ async def delete_chapter_audio(
 ) -> DeleteResponse:
     """
     Delete the generated audio for a chapter.
-    Removes the audio from rustfs and clears the queued/audio fields.
+    DB-only; clears audio fields via single UPDATE, no S3 deletion (auto-expire).
+    Returns 404 if book/chapter not found, 403 if not owned.
     """
     book = (
         # pyrefly: ignore[missing-attribute]
@@ -405,21 +393,20 @@ async def delete_chapter_audio(
     chapter = (
         await AudiobookChapter.objects()
         .where(AudiobookChapter.chapter_number == chapter_id)  # pyrefly: ignore[missing-attribute]
-        .where(AudiobookChapter.book == book_id)
+        .where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
         .first()
     )
     if chapter is None:
         raise HTTPException(status_code=404, detail="Chapter not found")
 
-    if chapter.minio_object_name:
-        async with get_s3_client() as s3:
-            await object_delete(s3, RUSTFS_AUDIOBOOK_BUCKET, chapter.minio_object_name)
-
-    chapter.minio_object_name = None
-    chapter.queued = None
-    chapter.started_converting = None
-    chapter.audio_settings = None  # pyrefly: ignore[bad-argument-type,missing-attribute]
-    await chapter.save()
+    await AudiobookChapter.update(
+        {
+            AudiobookChapter.minio_object_name: None,
+            AudiobookChapter.queued: None,
+            AudiobookChapter.started_converting: None,
+            AudiobookChapter.audio_settings: None,  # pyrefly: ignore[bad-argument-type,missing-attribute]
+        }
+    ).where(AudiobookChapter.id == chapter.id)  # pyrefly: ignore[missing-attribute]
 
     return DeleteResponse(deleted=True)
 
