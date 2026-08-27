@@ -23,6 +23,7 @@ from components.login.google import google_verify_code
 from components.login.twitch import twitch_verify_code
 
 login_router = APIRouter()
+LOGIN_MAX_AGE = 84_400  # 7 days in seconds
 
 
 # Frontend URL for OAuth redirects
@@ -119,8 +120,7 @@ async def twitch_login_callback(
         httponly=True,
         secure=True,
         samesite="lax",
-        # 7 days
-        max_age=604800,
+        max_age=LOGIN_MAX_AGE,
     )
     return response
 
@@ -162,8 +162,7 @@ async def github_login_callback(
         httponly=True,
         secure=True,
         samesite="lax",
-        # 7 days
-        max_age=604800,
+        max_age=LOGIN_MAX_AGE,
     )
     return response
 
@@ -205,8 +204,7 @@ async def google_login_callback(
         httponly=True,
         secure=True,
         samesite="lax",
-        # 7 days
-        max_age=604800,
+        max_age=LOGIN_MAX_AGE,
     )
     return response
 
