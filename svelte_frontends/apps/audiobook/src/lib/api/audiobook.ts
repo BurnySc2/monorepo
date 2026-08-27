@@ -156,6 +156,16 @@ export async function delete_book(book_id: number): Promise<void> {
     }
 }
 
+export async function delete_all_books(): Promise<void> {
+    const response = await fetch(`${get_api_base()}/api/audiobook/books`, {
+        method: "DELETE",
+        credentials: "include",
+    })
+    if (!response.ok) {
+        throw new Error("Failed to delete all books")
+    }
+}
+
 export async function delete_all_audio(book_id: number): Promise<void> {
     const response = await fetch(`${get_api_base()}/api/audiobook/books/${book_id}/audio`, {
         method: "DELETE",

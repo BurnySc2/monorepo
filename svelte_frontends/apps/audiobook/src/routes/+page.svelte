@@ -11,6 +11,7 @@ let is_loading = $state(true)
 let is_checking_auth = $state(true)
 let is_logged_in = $state(false)
 let is_uploading = $state(false)
+let is_deleting_all = $state(false)
 
 const login_url = import.meta.env.VITE_API_TARGET?.includes("localhost")
     ? "http://localhost:5173"
@@ -62,6 +63,22 @@ async function handle_delete_book(book_id: number) {
     }
 }
 
+async function handle_delete_all_books() {
+    if (!confirm(`Are you sure you want to delete all ${books.length} books? This cannot be undone.`)) {
+        return
+    }
+    is_deleting_all = true
+    try {
+        await api.delete_all_books()
+        books = []
+    } catch (e) {
+        console.error("Failed to delete all books:", e)
+        alert("Failed to delete all books")
+    } finally {
+        is_deleting_all = false
+    }
+}
+
 // Load auth status and books on mount
 $effect(() => {
     check_auth()
@@ -99,6 +116,24 @@ $effect(() => {
                 By uploading, you confirm that you own the rights to this content.
             </p>
         </div>
+
+        {#if books.length > 0}
+            <div class="flex justify-center my-6">
+                <button
+                    type="button"
+                    onclick={handle_delete_all_books}
+                    disabled={is_loading || is_deleting_all}
+                    aria-label="Delete all uploaded books"
+                    class="w-full md:w-auto px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                >
+                    {#if is_deleting_all}
+                        Deleting...
+                    {:else}
+                        Delete all books
+                    {/if}
+                </button>
+            </div>
+        {/if}
 
         {#if is_loading}
             <div class="flex justify-center py-12"><Spinner /></div>

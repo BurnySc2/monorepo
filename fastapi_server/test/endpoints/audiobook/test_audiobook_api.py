@@ -6,6 +6,10 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from components.login.cookies import LoggedInUser, get_current_user
+from main import app
+from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
+
 
 def _rustfs_available() -> bool:
     rustfs_url = os.getenv("RUSTFS_S3_URL", "http://localhost:9000")
@@ -356,3 +360,147 @@ def test_queue_all_chapters_book_not_found(test_client_db_reset: TestClient) -> 
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Book not found"}
+
+
+def test_delete_all_books_empty_returns_200(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books on empty DB returns 200 and leaves DB empty."""
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == []
+    assert AudiobookBook.count().run_sync() == 0
+
+    response = test_client_db_reset.delete("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == {"deleted": True}
+
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == []
+    assert AudiobookBook.count().run_sync() == 0
+    assert AudiobookChapter.count().run_sync() == 0
+
+
+def test_delete_all_books_deletes_only_own_books(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books deletes only current user's books."""
+    book_id_user1 = _upload_book(test_client_db_reset)
+    assert book_id_user1 == 1
+
+    other_user = LoggedInUser(id=2, name="otheruser", service="github")
+    app.dependency_overrides[get_current_user] = lambda: other_user
+    book_id_user2 = _upload_book(test_client_db_reset)
+    assert book_id_user2 == 2
+
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["id"] == book_id_user2
+
+    test_user = LoggedInUser(id=1, name="testuser", service="github")
+    app.dependency_overrides[get_current_user] = lambda: test_user
+
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["id"] == book_id_user1
+
+    response = test_client_db_reset.delete("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == {"deleted": True}
+
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == []
+
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id_user1}")
+    assert response.status_code == 404
+
+    books_testuser = AudiobookBook.objects().where(AudiobookBook.uploaded_by == test_user.db_name).run_sync()
+    assert len(books_testuser) == 0
+    chapters_user1 = AudiobookChapter.objects().where(AudiobookChapter.book == book_id_user1).run_sync()
+    assert len(chapters_user1) == 0
+
+    app.dependency_overrides[get_current_user] = lambda: other_user
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
+    assert response.json()[0]["id"] == book_id_user2
+
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id_user2}")
+    assert response.status_code == 200
+
+    books_other = AudiobookBook.objects().where(AudiobookBook.uploaded_by == other_user.db_name).run_sync()
+    assert len(books_other) == 1
+    assert AudiobookChapter.count().run_sync() == 31
+    chapters_user2 = AudiobookChapter.objects().where(AudiobookChapter.book == book_id_user2).run_sync()
+    assert len(chapters_user2) == 31
+
+
+def test_delete_all_books_deletes_chapters_transactionally(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books deletes chapters transactionally."""
+    book_id = _upload_book(test_client_db_reset)
+
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+    assert response.status_code == 200
+    assert len(response.json()["chapters"]) == 31
+
+    assert AudiobookBook.count().run_sync() == 1
+    assert AudiobookChapter.count().run_sync() == 31
+
+    response = test_client_db_reset.delete("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == {"deleted": True}
+
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == []
+
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+    assert response.status_code == 404
+
+    assert AudiobookBook.count().run_sync() == 0
+    assert AudiobookChapter.count().run_sync() == 0
+    remaining = AudiobookChapter.objects().where(AudiobookChapter.book == book_id).run_sync()
+    assert len(remaining) == 0
+
+
+def test_delete_all_books_unauth_401(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books without auth returns 401."""
+    original = dict(app.dependency_overrides)
+    app.dependency_overrides.clear()
+    try:
+        with TestClient(app) as unauth_client:
+            response = unauth_client.delete("/api/audiobook/books")
+            assert response.status_code == 401
+            assert "detail" in response.json()
+        # also verify fixture client now unauthenticated
+        response = test_client_db_reset.delete("/api/audiobook/books")
+        assert response.status_code == 401
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(original)
+
+
+def test_delete_all_books_twice_idempotent(test_client_db_reset: TestClient) -> None:
+    """DELETE /api/audiobook/books is idempotent — second call also returns 200."""
+    book_id = _upload_book(test_client_db_reset)
+
+    response = test_client_db_reset.delete("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == {"deleted": True}
+
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == []
+    assert AudiobookBook.count().run_sync() == 0
+    assert AudiobookChapter.count().run_sync() == 0
+
+    response = test_client_db_reset.delete("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == {"deleted": True}
+
+    response = test_client_db_reset.get("/api/audiobook/books")
+    assert response.status_code == 200
+    assert response.json() == []
+
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+    assert response.status_code == 404

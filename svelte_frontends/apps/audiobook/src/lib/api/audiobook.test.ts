@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
     delete_all_audio,
+    delete_all_books,
     delete_book,
     delete_chapter_audio,
     get_available_voices,
@@ -282,6 +283,42 @@ describe("audiobook API", () => {
             })
 
             await expect(delete_all_audio(123)).rejects.toThrow("Failed to delete all audio")
+        })
+    })
+
+    describe("delete_all_books", () => {
+        it("succeeds without error on success", async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+            })
+
+            await expect(delete_all_books()).resolves.toBeUndefined()
+        })
+
+        it("throws on failure", async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+            })
+
+            await expect(delete_all_books()).rejects.toThrow("Failed to delete all books")
+        })
+
+        it("calls fetch with DELETE and credentials include and correct URL", async () => {
+            mockFetch.mockResolvedValueOnce({
+                ok: true,
+            })
+
+            await delete_all_books()
+
+            expect(mockFetch).toHaveBeenCalledTimes(1)
+            expect(mockFetch).toHaveBeenCalledWith(
+                "http://localhost:8000/api/audiobook/books",
+                expect.objectContaining({
+                    method: "DELETE",
+                    credentials: "include",
+                }),
+            )
         })
     })
 

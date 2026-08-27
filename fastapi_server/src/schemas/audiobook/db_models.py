@@ -1,9 +1,9 @@
-from piccolo.columns import JSON, Boolean, ForeignKey, Integer, Text, Timestamp
+from piccolo.columns import JSON, Boolean, ForeignKey, Integer, OnDelete, Text, Timestamp
 from piccolo.table import Table
 
 
 class AudiobookBook(Table, tablename="litestar_audiobook_book"):
-    uploaded_by = Text(required=True)
+    uploaded_by = Text(required=True, index=True)
     book_title = Text(required=True)
     book_author = Text(required=True)
     chapter_count = Integer(required=True)
@@ -14,7 +14,7 @@ class AudiobookBook(Table, tablename="litestar_audiobook_book"):
 
 
 class AudiobookChapter(Table, tablename="litestar_audiobook_chapter"):
-    book = ForeignKey(references=AudiobookBook)
+    book = ForeignKey(references=AudiobookBook, on_delete=OnDelete.cascade)
     queued = Timestamp(required=False, null=True, default=None)
     started_converting = Timestamp(required=False, null=True, default=None)
     chapter_title = Text(required=True)

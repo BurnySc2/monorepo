@@ -304,7 +304,14 @@ export interface paths {
         get: operations["list_books_api_audiobook_books_get"]
         put?: never
         post?: never
-        delete?: never
+        /**
+         * Delete All Books
+         * @description Delete all books of the logged-in user (scoped by uploaded_by).
+         *     Idempotent — returns deleted:true even if no books exist.
+         *     DB-only; S3 objects not deleted (auto-expire after 30 days).
+         *     Relies on FK ON DELETE CASCADE to remove chapters.
+         */
+        delete: operations["delete_all_books_api_audiobook_books_delete"]
         options?: never
         head?: never
         patch?: never
@@ -1586,6 +1593,39 @@ export interface operations {
                 }
                 content: {
                     "application/json": components["schemas"]["BookListItem"][]
+                }
+            }
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"]
+                }
+            }
+        }
+    }
+    delete_all_books_api_audiobook_books_delete: {
+        parameters: {
+            query?: never
+            header?: never
+            path?: never
+            cookie?: {
+                twitch_access_token?: string | null
+                github_access_token?: string | null
+                google_access_token?: string | null
+            }
+        }
+        requestBody?: never
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown
+                }
+                content: {
+                    "application/json": components["schemas"]["DeleteResponse"]
                 }
             }
             /** @description Validation Error */

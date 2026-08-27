@@ -260,6 +260,19 @@ async def upload_epub(
     return UploadSuccess(id=book.id, title=book.book_title)  # pyrefly: ignore[missing-attribute]
 
 
+@audiobook_router.delete("/books", response_model=DeleteResponse)
+async def delete_all_books(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> DeleteResponse:
+    """Delete all books of the logged-in user (scoped by uploaded_by).
+    Idempotent — returns deleted:true even if no books exist.
+    DB-only; S3 objects not deleted (auto-expire after 30 days).
+    Relies on FK ON DELETE CASCADE to remove chapters.
+    """
+    await AudiobookBook.delete().where(
+        AudiobookBook.uploaded_by == current_user.db_name  # pyrefly: ignore[missing-attribute]
+    )
+    return DeleteResponse(deleted=True)
+
+
 @audiobook_router.delete("/books/{book_id}", response_model=DeleteResponse)
 async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> DeleteResponse:
     """
