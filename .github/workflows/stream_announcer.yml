@@ -20,23 +20,21 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        nim-version: ["2.2.0-alpine", "2.2.0-ubuntu"]
+        nim-version: ["2.2.0"]
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: earthly/actions-setup@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          version: latest
-
       - uses: actions/checkout@v6
 
-      - name: Install
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: ${{ matrix.nim-version }}
+
+      - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: |
-          earthly +setup --verbose true --NIMVERSION=${{ matrix.nim-version }}
+        run: nimble install --depsOnly -y
 
       - name: Compile
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: |
-          earthly +compile --verbose true --NIMVERSION=${{ matrix.nim-version }}
+        run: nimble c -d:ssl -d:release --opt:size -o:main src/main.nim
