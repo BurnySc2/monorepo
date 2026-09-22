@@ -88,13 +88,6 @@ dev = [
     "scalene>=2.1.4",
 ]
 
-[tool.yapf]
-based_on_style = "pep8"
-column_limit = 120
-split_arguments_when_comma_terminated = true
-dedent_closing_brackets = true
-allow_split_before_dict_value = false
-
 [tool.pyrefly]
 project_includes = ["src"]
 project-excludes = [
