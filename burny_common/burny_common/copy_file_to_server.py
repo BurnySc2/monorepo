@@ -1,24 +1,22 @@
 import sys
-from io import StringIO
 from pathlib import Path
 
 import click
-import paramiko
 from click.testing import CliRunner
 from paramiko import SSHClient
 from paramiko.sftp_client import SFTPClient
 
+from burny_common.ssh_helper import connect_ssh, ensure_remote_dir, resolve_target_path, ssh_click_options
+
 
 def generate_path(client: SSHClient, target_path: str) -> Path:
-    if target_path.startswith("/"):
-        return Path(target_path)
-    # If target path doesn't start with "/" it means it's a relative path
-    _stdin, stdout, _stderr = client.exec_command("pwd")
-    return Path(stdout.readline().strip()) / Path(target_path)
+    """Backward-compatible shim for resolve_target_path."""
+    return resolve_target_path(client, target_path)
 
 
 def create_target_dir(client: SSHClient, target_folder_path: Path):
-    _stdin, _stdout, _stderr = client.exec_command(f"mkdir -p {target_folder_path}")
+    """Backward-compatible shim for ensure_remote_dir."""
+    ensure_remote_dir(client, target_folder_path)
 
 
 def copy_file_to_server_helper(
@@ -34,11 +32,7 @@ def copy_file_to_server_helper(
 
 
 @click.command()
-@click.option("--host", default="", help="host address")
-@click.option("--port", default=22, help="port")
-@click.option("--username", default="", help="user name")
-@click.option("--password", default="", help="user password")
-@click.option("--pkey", default="", help="private key")
+@ssh_click_options
 @click.option("--sourcepath", default="", help="source file to copy")
 @click.option("--targetpath", default="", help="target path to copy the file to")
 @click.option("--createtargetdir", default=True, help="create directory if file doesnt exist")
@@ -52,19 +46,9 @@ def copy_file_to_server(
     targetpath: str,
     createtargetdir: bool = True,
 ):
-    with SSHClient() as client:
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        pkey_loaded = paramiko.RSAKey.from_private_key(StringIO(pkey))
-        client.connect(
-            hostname=host,
-            port=port,
-            username=username,
-            password=password,
-            pkey=pkey_loaded,
-        )
-
+    with connect_ssh(host, port, username, password, pkey) as client:
         path_source = Path(sourcepath)
-        path_target = generate_path(client, target_path=targetpath)
+        path_target = resolve_target_path(client, target_path=targetpath)
 
         with client.open_sftp() as sftp:
             assert path_source.is_file()

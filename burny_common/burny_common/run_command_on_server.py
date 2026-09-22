@@ -1,25 +1,16 @@
 import sys
-from io import StringIO
 
 import click
-import paramiko
 from click.testing import CliRunner
-from paramiko import SSHClient
+
+from burny_common.ssh_helper import connect_ssh, ssh_click_options
 
 
 @click.command()
-@click.option("--host", default="", help="host address")
-@click.option("--port", default=22, help="port")
-@click.option("--username", default="", help="user name")
-@click.option("--password", default="", help="user password")
-@click.option("--pkey", default="", help="private key")
+@ssh_click_options
 @click.option("--command", default="ls -la", help="command to execute")
 def run_command_on_server(host: str, port: int, username: str, password: str, pkey: str, command: str):
-    client: SSHClient
-    with SSHClient() as client:
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        pkey_loaded = paramiko.RSAKey.from_private_key(StringIO(pkey))
-        client.connect(hostname=host, port=port, username=username, password=password, pkey=pkey_loaded)
+    with connect_ssh(host, port, username, password, pkey) as client:
         _stdin, stdout, _stderr = client.exec_command(f"{command}")
         lines = stdout.readlines()
         for line in lines:

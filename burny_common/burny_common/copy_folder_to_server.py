@@ -1,15 +1,14 @@
 import subprocess
 import sys
-from io import StringIO
 from pathlib import Path
 
 import click
-import paramiko
 from click.testing import CliRunner
 from paramiko import SSHClient
 from paramiko.sftp_client import SFTPClient
 
-from burny_common.copy_file_to_server import copy_file_to_server_helper, generate_path
+from burny_common.copy_file_to_server import copy_file_to_server_helper
+from burny_common.ssh_helper import connect_ssh, resolve_target_path, ssh_click_options
 
 
 def copy_folder_to_server_helper(
@@ -42,11 +41,7 @@ def copy_folder_to_server_helper(
 
 
 @click.command()
-@click.option("--host", default="", help="host address")
-@click.option("--port", default=22, help="port")
-@click.option("--username", default="", help="user name")
-@click.option("--password", default="", help="user password")
-@click.option("--pkey", default="", help="private key")
+@ssh_click_options
 @click.option("--sourcepath", default="", help="source folder to copy")
 @click.option("--targetpath", default="", help="which folder the output should be")
 @click.option("--respectgitignore", default=True, help="ignore files that are ignored by .gitignore")
@@ -60,14 +55,9 @@ def copy_folder_to_server(
     targetpath: str,
     respectgitignore: bool = True,
 ):
-    client: SSHClient
-    with SSHClient() as client:
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        pkey_loaded = paramiko.RSAKey.from_private_key(StringIO(pkey))
-        client.connect(hostname=host, port=port, username=username, password=password, pkey=pkey_loaded)
-
+    with connect_ssh(host, port, username, password, pkey) as client:
         path_source_root_folder = Path(sourcepath)
-        path_target_root_folder = generate_path(client, targetpath)
+        path_target_root_folder = resolve_target_path(client, targetpath)
 
         allowed_files: set | None = None
         if respectgitignore:
