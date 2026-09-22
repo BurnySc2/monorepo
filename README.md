@@ -11,8 +11,7 @@ My monorepo for various tools and showcases
 ### Pre-requisites
 - [Python](https://www.python.org/downloads)
     - [uv](https://docs.astral.sh/uv/)
-- [Earthly](https://earthly.dev)
-    - [Docker](https://www.docker.com)
+- [Docker](https://www.docker.com)
 
 ## VScode
 Run VScode task called `Install requirements` or alternatively run `sh .vscode/install_requirements.sh` or alternatively run `uv sync` in the python projects.
@@ -36,10 +35,12 @@ uv run pre-commit install
 uv run pre-commit run --all-files --verbose --hook-stage push
 ```
 
-This runs pylint, mypy, pytest tests, apply autoformatter yapf
+This runs ruff lint, ruff format check, pyrefly type check
 
 # Autoformat all files
-`earthly +format`
+```sh
+uv run ruff check . --fix && uv run ruff format .
+```
 
 # Recommended websites and tools:
 [Convert JSON API response to types](https://app.quicktype.io/#l=Python)

@@ -1,6 +1,3 @@
 {
-    "editor.formatOnSave": true,
-    "[python]": {
-        "editor.defaultFormatter": "eeyore.yapf"
-      }
+    "editor.formatOnSave": true
 }

@@ -56,21 +56,17 @@ jobs:
         with:
           postgres-version: 14
 
-      # https://earthly.dev/get-earthly
-      - name: Install Earthly
-        run: sudo /bin/sh -c 'wget https://github.com/earthly/earthly/releases/latest/download/earthly-linux-amd64 -O /usr/local/bin/earthly && chmod +x /usr/local/bin/earthly && /usr/local/bin/earthly bootstrap --with-autocomplete'
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
 
-      - name: Install
+      - name: Install packages
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: earthly +install-dev --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+        run: uv sync --frozen --no-cache --no-install-project
 
-      - name: Run code checks and tests
+      - name: Run pytest
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: earthly +all --verbose true --PYTHONVERSION=${{ matrix.python-version }}
-
-  #    - name: Save cache
-  #      working-directory: ${{ env.SUBDIRECTORY }}
-  #      run: earthly +export-cache --verbose true --PYTHONVERSION=${{ matrix.python-version }}
+        run: uv run pytest
 
   run_python_examples:
     needs: [run_code_check]

@@ -8,7 +8,6 @@
       - spotify
       - spotify-adblock
       - anydesk-bin  # remote maintenance
-      - earthly-bin  # development helper
       - docker-slim-bin  # slimify docker images by stripping them to files that are required
       - choosenim  # nim installer
       - jdownloader2
