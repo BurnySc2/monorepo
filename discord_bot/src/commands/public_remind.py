@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-import re
 import time
 
 import arrow
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent, Message, NotFoundError, User  # pyrefly: ignore
 from loguru import logger
 
+from commands._remind_parse import parse_date_and_time, parse_time_shift
 from models import Reminder
 
 MIN_SECONDS_ELAPSED_BEFORE_FETCH = 10 * 60  # 10 minutes
@@ -49,13 +49,13 @@ Example usage:
         while self.next_reminder is not None and reminded is True:
             reminded = False
             if utc_now < self.next_reminder.reminder_utc:
-                continue
+                break
             # Run remind, remind user in discord
             reminded = True
             person: User = await self._get_user_by_id(self.next_reminder.user_id)
             logger.info(f"Attempting to remind {person.username} of: {self.next_reminder.message}")
             try:
-                # The original !reminder message may have been deleted
+                # The !reminder source message may no longer exist
                 message: Message = await self._get_message_by_id(
                     self.next_reminder.channel_id,
                     self.next_reminder.message_id,
@@ -82,105 +82,15 @@ Example usage:
         return await self.client.rest.fetch_message(channel_id, message_id)
 
     async def _user_reached_max_reminder_threshold(self, user_id: int) -> bool:
-        count = await Reminder.count(Reminder.user_id)
+        # pyrefly: ignore
+        count = await Reminder.count().where(Reminder.user_id == user_id)
         return count >= self.reminder_limit
 
     async def _parse_date_and_time_from_message(self, message: str) -> tuple[arrow.Arrow, str] | None:
-        time_now: arrow.Arrow = arrow.utcnow()
-
-        # Old pattern which was working:
-        date_pattern = r"(?:(?:(\d{4})-)?(\d{1,2})-(\d{1,2}))?"
-        time_pattern = r"(?:(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?"
-        text_pattern = "((?:.|\n)+)"
-        space_pattern = " ?"
-        regex_pattern = f"{date_pattern}{space_pattern}{time_pattern}{space_pattern} {text_pattern}"
-
-        result = re.fullmatch(regex_pattern, message)
-
-        # Pattern does not match
-        if result is None:
-            return None
-
-        results = [(message[x[0] : x[1]] if x != (-1, -1) else "") for x in result.regs]
-        _ = results.pop(0)
-        year, month, day, hour, minute, second, reminder_message = results
-
-        # Message is empty or just a new line character
-        if not reminder_message.strip():
-            return None
-
-        # Could not retrieve a combination of month+day or hour+minute from the message
-        if not all([month, day]) and not all([hour, minute]):
-            return None
-
-        # Set year to current year if it was not set in the message string
-        year = year if year else str(time_now.year)
-        # Set current month and day if the input was only HH:mm:ss
-        month = month if month else str(time_now.month)
-        day = day if day else str(time_now.day)
-
-        # Fill empty strings with 1 zero
-        hour, minute, second = (v.zfill(2) for v in [hour, minute, second])
-
-        try:
-            future_reminder_time = arrow.get(
-                f"{str(year).zfill(2)}-{str(month).zfill(2)}-{str(day).zfill(2)} "
-                f"{str(hour).zfill(2)}:{str(minute).zfill(2)}:{str(second).zfill(2)}",
-                ["YYYY-MM-DD HH:mm:ss"],
-            )
-        except (ValueError, arrow.parser.ParserError):
-            # Exception: ParserError not the right format
-            return None
-        return future_reminder_time, reminder_message.strip()
+        return parse_date_and_time(message, arrow.utcnow())
 
     async def _parse_time_shift_from_message(self, message: str) -> tuple[arrow.Arrow, str] | None:
-        time_now: arrow.Arrow = arrow.utcnow()
-
-        days_pattern = "(?:([0-9]+) ?(?:d|day|days))?"
-        hours_pattern = "(?:([0-9]+) ?(?:h|hour|hours))?"
-        minutes_pattern = "(?:([0-9]+) ?(?:m|min|mins|minute|minutes))?"
-        seconds_pattern = "(?:([0-9]+) ?(?:s|sec|secs|second|seconds))?"
-        text_pattern = "((?:.|\n)+)"
-        space_pattern = " ?"
-        regex_pattern = (
-            f"{days_pattern}{space_pattern}{hours_pattern}{space_pattern}{minutes_pattern}{space_pattern}"
-            f"{seconds_pattern} {text_pattern}"
-        )
-
-        result = re.fullmatch(regex_pattern, message)
-
-        # Pattern does not match
-        if result is None:
-            return None
-
-        results = [(message[x[0] : x[1]] if x != (-1, -1) else "") for x in result.regs]
-        _ = results.pop(0)
-        day, hour, minute, second, reminder_message = results
-
-        # Message is empty or just a new line character
-        if not reminder_message.strip():
-            return None
-
-        # At least one value must be given
-        valid_usage: bool = bool((day or hour or minute or second) and reminder_message)
-        if not valid_usage:
-            return None
-
-        # Fill empty strings with 1 zero
-        days_, hours_, minutes_, seconds_ = (v.zfill(1) for v in [day, hour, minute, second])
-        # Convert strings to int
-        days, hours, minutes, seconds = map(int, [days_, hours_, minutes_, seconds_])
-
-        # Do not do ridiculous reminders
-        if any(time > 1_000_000 for time in [days, hours, minutes, seconds]):
-            return None
-
-        try:
-            future_reminder_time = time_now.shift(days=days, hours=hours, minutes=minutes, seconds=seconds)
-        # Days > 3_000_000 => error
-        except OverflowError:
-            return None
-        return future_reminder_time, reminder_message.strip()
+        return parse_time_shift(message, arrow.utcnow())
 
     async def public_remind_in(
         self,

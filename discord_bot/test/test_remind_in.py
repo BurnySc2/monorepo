@@ -5,6 +5,7 @@ import hypothesis.strategies as st
 import pytest
 from hypothesis import example, given, settings
 
+from commands._remind_parse import extract_groups, parse_time_shift
 from commands.public_remind import Remind
 
 
@@ -111,3 +112,48 @@ async def test_parsing_date_and_time_from_message_failure(_day, _hour, _minute, 
     # Invalid second
     if not 0 <= _second <= 1_000_000:
         assert result is None
+
+
+def test_pure_parse_time_shift_success():
+    now = arrow.get("2026-01-01T00:00:00+00:00")
+    result = parse_time_shift("5d 3h 2m 1s hello world", now)
+    assert result is not None
+    future, text = result
+    assert isinstance(future, arrow.Arrow)
+    assert text == "hello world"
+    assert future == now.shift(days=5, hours=3, minutes=2, seconds=1)
+
+
+def test_pure_parse_time_shift_matches_wrapper():
+    import asyncio
+
+    now = arrow.utcnow()
+    msg = "1d 1h hello"
+    pure = parse_time_shift(msg, now)
+    wrapped = asyncio.run(Remind(client=None)._parse_time_shift_from_message(msg))
+    assert pure is not None
+    assert wrapped is not None
+    # Same reminder text; timestamps within a few seconds (now drift)
+    assert pure[1] == wrapped[1]
+    assert abs((pure[0] - wrapped[0]).total_seconds()) < 10
+
+
+def test_pure_parse_time_shift_failure_cases():
+    now = arrow.utcnow()
+    assert parse_time_shift("", now) is None
+    assert parse_time_shift("   ", now) is None
+    assert parse_time_shift("hello without time", now) is None
+    # Ridiculous values rejected
+    assert parse_time_shift("10000000d hi", now) is None
+    # Empty reminder text rejected
+    assert parse_time_shift("5d ", now) is None
+
+
+def test_extract_groups_time_shift():
+    import re
+
+    pattern = "(?:([0-9]+) ?(?:d|day|days))? ?((?:.|\n)+)"
+    m = re.fullmatch(pattern, "5d hello")
+    assert m is not None
+    groups = extract_groups("5d hello", m)
+    assert groups == ["5", "hello"]

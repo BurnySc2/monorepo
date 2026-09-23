@@ -5,6 +5,7 @@ import hypothesis.strategies as st
 import pytest
 from hypothesis import example, given, settings
 
+from commands._remind_parse import extract_groups, parse_date_and_time
 from commands.public_remind import Remind
 
 
@@ -144,3 +145,55 @@ def test_parsing_date_and_time_from_message_failure(_year, _month, _day, _hour, 
     !remindat 04:20:00 remind me of this
     !remindat 04:20 remind me of this
     """
+
+
+def test_pure_parse_date_and_time_examples():
+    now = arrow.get("2026-01-01T00:00:00+00:00")
+    cases = [
+        ("2021-04-20 04:20:00 remind me of this", "2021-04-20 04:20:00"),
+        ("2021-04-20 04:20 remind me of this", "2021-04-20 04:20:00"),
+        ("04-20 04:20:00 remind me of this", "2026-04-20 04:20:00"),
+        ("04:20 remind me of this", None),  # date filled from now, check text only
+    ]
+    for msg, _expected_prefix in cases:
+        result = parse_date_and_time(msg, now)
+        assert result is not None, msg
+        future, text = result
+        assert isinstance(future, arrow.Arrow)
+        assert text == "remind me of this"
+
+
+def test_pure_parse_date_and_time_matches_wrapper():
+    import asyncio
+
+    msg = "2026-04-20 04:20 hello pure"
+    now = arrow.utcnow()
+    pure = parse_date_and_time(msg, now)
+    wrapped = asyncio.run(Remind(client=None)._parse_date_and_time_from_message(msg))
+    assert pure is not None
+    assert wrapped is not None
+    assert pure[1] == wrapped[1] == "hello pure"
+    assert pure[0] == wrapped[0]
+
+
+def test_pure_parse_date_and_time_failures():
+    now = arrow.get("2026-01-01T00:00:00+00:00")
+    assert parse_date_and_time("", now) is None
+    assert parse_date_and_time("   ", now) is None
+    assert parse_date_and_time("just text no date", now) is None
+    assert parse_date_and_time("16:20", now) is None  # no reminder text
+    assert parse_date_and_time("16:20 ", now) is None
+
+
+def test_extract_groups_date_time():
+    import re
+
+    pattern = r"(?:(\d{1,2}):(\d{1,2}))? ?((?:.|\n)+)"
+    m = re.fullmatch(pattern, "16:20 some message")
+    assert m is not None
+    groups = extract_groups("16:20 some message", m)
+    assert groups == ["16", "20", "some message"]
+    m2 = re.fullmatch(pattern, "some message")
+    assert m2 is not None
+    groups2 = extract_groups("some message", m2)
+    assert groups2 == ["", "", "some message"]
