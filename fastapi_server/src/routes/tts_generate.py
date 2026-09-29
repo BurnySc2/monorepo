@@ -1,22 +1,14 @@
 import base64
-from pathlib import Path
 from typing import cast
 
-import nltk
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from components.audiobook.epub_reader import _ensure_nltk_data
 from components.tts_generate import generate_audio, list_all_voices
 from schemas.tts import ENGINES
 from schemas.tts.engine import TTSEngine
 from schemas.tts.voice_info import VoiceInfo
-
-data_dir = Path(__file__).parents[3] / "data" / "nltk"
-data_dir.mkdir(parents=True, exist_ok=True)
-nltk.download("punkt_tab", download_dir=str(data_dir))
-# Fail fast if the resource is still unavailable (e.g. offline first run)
-# instead of failing later at tokenize time with a cryptic LookupError.
-nltk.data.find("tokenizers/punkt_tab")
 
 
 class TTSGenerateRequest(BaseModel):
@@ -62,6 +54,7 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
     if engine_str not in ENGINES:
         raise HTTPException(status_code=400, detail=f"Unknown engine: {engine_str}. Supported: {ENGINES}")
 
+    _ensure_nltk_data()
     engine = cast(TTSEngine, engine_str)
     audio_bytes, duration = await generate_audio(engine, voice_name, request.text)
 

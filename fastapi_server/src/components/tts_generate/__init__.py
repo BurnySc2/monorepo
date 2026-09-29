@@ -11,6 +11,7 @@ Provides a unified API for multiple TTS engines:
 from __future__ import annotations
 
 from io import BytesIO
+from typing import Any
 
 from cachetools import TTLCache
 from mutagen.mp3 import MP3
@@ -21,6 +22,13 @@ from . import edge_engine, kitten_engine, kokoro_engine, tiktok_engine
 
 _all_voices_cache: TTLCache = TTLCache(maxsize=50, ttl=600)
 _label_to_voice_info: dict[tuple[str, str], VoiceInfo] = {}
+
+ENGINE_REGISTRY: dict[str, Any] = {
+    "edge": edge_engine,
+    "kokoro": kokoro_engine,
+    "kitten": kitten_engine,
+    "tiktok": tiktok_engine,
+}
 
 
 async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
@@ -36,19 +44,13 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
     Raises:
         ValueError: If engine is not supported
     """
-    engine = engine.lower()
+    normalized_engine = engine.lower()
 
-    if engine == "edge":
-        voices = await edge_engine.list_voices_async()
-    elif engine == "kokoro":
-        voices = await kokoro_engine.list_voices_async()
-    elif engine == "kitten":
-        voices = await kitten_engine.list_voices_async()
-    elif engine == "tiktok":
-        voices = await tiktok_engine.list_voices_async()
-    else:
-        raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, tiktok")
+    handler = ENGINE_REGISTRY.get(normalized_engine)
+    if handler is None:
+        raise ValueError(f"Unknown TTS engine: {normalized_engine}. Supported engines: edge, kokoro, kitten, tiktok")
 
+    voices = await handler.list_voices_async()
     return voices
 
 
@@ -57,16 +59,15 @@ async def list_all_voices() -> list[VoiceInfo]:
     global _label_to_voice_info
     if "voices" not in _all_voices_cache:
         result: list[VoiceInfo] = []
+        label_map: dict[tuple[str, str], VoiceInfo] = {}
         for engine in ENGINES:
             voices = await list_voices(engine)
             result.extend(voices)
+            for vi in voices:
+                label_map[(engine, vi.label.lower())] = vi
         result.sort(key=lambda v: f"{v.locale} {v.engine} {v.label} ({v.gender})")
         _all_voices_cache["voices"] = result
-        _label_to_voice_info = {}
-        for engine in ENGINES:
-            engine_voices = await list_voices(engine)
-            for vi in engine_voices:
-                _label_to_voice_info[(engine, vi.label.lower())] = vi
+        _label_to_voice_info = label_map
     return _all_voices_cache["voices"]
 
 
@@ -90,27 +91,19 @@ async def generate_audio(
         ValueError: If engine is not supported
     """
 
-    engine = engine.lower()
+    normalized_engine: str = engine.lower()
 
-    if engine not in ("edge", "kokoro", "kitten", "tiktok"):
-        raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, tiktok")
+    handler = ENGINE_REGISTRY.get(normalized_engine)
+    if handler is None:
+        raise ValueError(f"Unknown TTS engine: {normalized_engine}. Supported engines: edge, kokoro, kitten, tiktok")
 
     # Populate or update the cache
     _voices = await list_all_voices()
-    voice = get_voice_by_label(engine, voice_label)
+    voice = get_voice_by_label(normalized_engine, voice_label)
     if voice is None:
         raise ValueError(f"Voice '{voice_label}' not found")
 
-    if engine == "edge":
-        audio_bytes, _ = await edge_engine.generate_audio_async(voice.internal_name, text)
-    elif engine == "kokoro":
-        audio_bytes, _ = await kokoro_engine.generate_audio_async(voice.internal_name, text)
-    elif engine == "kitten":
-        audio_bytes, _ = await kitten_engine.generate_audio_async(voice.internal_name, text)
-    elif engine == "tiktok":
-        audio_bytes, _ = await tiktok_engine.generate_audio_async(voice.internal_name, text)
-    else:
-        raise ValueError(f"Unknown TTS engine: {engine}. Supported engines: edge, kokoro, kitten, tiktok")
+    audio_bytes, _ = await handler.generate_audio_async(voice.internal_name, text)
 
     mp3_io = BytesIO(audio_bytes)
     audio = MP3(mp3_io)
@@ -133,6 +126,7 @@ __all__ = [
     "VoiceInfo",
     "TTSEngine",
     "ENGINES",
+    "ENGINE_REGISTRY",
     "list_voices",
     "list_all_voices",
     "generate_audio",

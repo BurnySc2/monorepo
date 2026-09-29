@@ -88,30 +88,6 @@ class LoggedInUser:
         assert self.service in VALID_SERVICES, self.service
 
 
-# class LoggedInUser(BaseModel):
-#     id: int
-#     name: str
-#     service: AVAILABLE_SERVICES_TYPE
-
-#     @classmethod
-#     def from_service(cls, user: GithubUser | TwitchUser | GoogleUser | None) -> LoggedInUser | None:
-#         if isinstance(user, TwitchUser):
-#             return LoggedInUser(id=user.id, name=user.display_name, service="twitch")
-#         if isinstance(user, GithubUser):
-#             return LoggedInUser(id=user.id, name=user.login, service="github")
-#         if isinstance(user, GoogleUser):
-#             return LoggedInUser(id=user.id, name=user.display_name, service="google")
-#         return None
-
-#     @property
-#     def db_name(self) -> str:
-#         separator = " "  # TODO change if with facebook or google account, space in name is allowed
-#         return f"{self.name}{separator}{self.service}"
-
-#     def __post_init__(self):
-#         assert self.service in VALID_SERVICES, self.service
-
-
 @dataclass
 class LoginSettings:
     twitch_access_token: str | None = None
@@ -189,14 +165,14 @@ async def google_get_user(google_access_token: str | None) -> GoogleUser | None:
     return google_user
 
 
-async def provide_logged_in_user(loggin_settings: LoginSettings) -> LoggedInUser | None:
+async def provide_logged_in_user(login_settings: LoginSettings) -> LoggedInUser | None:
     user = None
-    if loggin_settings.twitch_access_token is not None:
-        user = await twitch_get_user(loggin_settings.twitch_access_token)
-    if user is None and loggin_settings.github_access_token is not None:
-        user = await github_get_user(loggin_settings.github_access_token)
-    if user is None and loggin_settings.google_access_token is not None:
-        user = await google_get_user(loggin_settings.google_access_token)
+    if login_settings.twitch_access_token is not None:
+        user = await twitch_get_user(login_settings.twitch_access_token)
+    if user is None and login_settings.github_access_token is not None:
+        user = await github_get_user(login_settings.github_access_token)
+    if user is None and login_settings.google_access_token is not None:
+        user = await google_get_user(login_settings.google_access_token)
     return LoggedInUser.from_service(user)
 
 

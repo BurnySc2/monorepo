@@ -504,3 +504,187 @@ def test_delete_all_books_twice_idempotent(test_client_db_reset: TestClient) -> 
 
     response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
     assert response.status_code == 404
+
+
+def _other_user() -> LoggedInUser:
+    return LoggedInUser(id=2, name="otheruser", service="github")
+
+
+def _owner_user() -> LoggedInUser:
+    return LoggedInUser(id=1, name="testuser", service="github")
+
+
+def test_get_book_owner_200_with_mocked_s3(test_client_db_reset: TestClient, mock_s3) -> None:
+    """GET /books/{id} as owner returns 200 with presigned mocked (no real S3)."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+    assert response.status_code == 200
+    json_data = response.json()
+    assert json_data["book"]["id"] == book_id
+    assert len(json_data["chapters"]) == 31
+    assert all(c["minio_presigned_url"] == "" for c in json_data["chapters"])
+
+
+def test_get_book_presigned_mocked_url(test_client_db_reset: TestClient, mock_s3) -> None:
+    """GET /books/{id} returns mocked presigned URL when chapter has audio."""
+    book_id = _upload_book(test_client_db_reset)
+    chapters = AudiobookChapter.objects().where(AudiobookChapter.book == book_id).run_sync()
+    assert len(chapters) == 31
+    first_id = chapters[0].id
+    AudiobookChapter.update({AudiobookChapter.minio_object_name: "test-key.mp3"}).where(
+        AudiobookChapter.id == first_id
+    ).run_sync()
+
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+    assert response.status_code == 200
+    chapters_json = response.json()["chapters"]
+    with_audio = [c for c in chapters_json if c["minio_object_name"] == "test-key.mp3"]
+    assert len(with_audio) == 1
+    assert with_audio[0]["minio_presigned_url"].startswith("https://mock-s3.local/test-key.mp3")
+
+
+def test_get_book_non_owner_403(test_client_db_reset: TestClient) -> None:
+    """GET /books/{id} as non-owner returns 403."""
+    book_id = _upload_book(test_client_db_reset)
+    app.dependency_overrides[get_current_user] = _other_user
+    try:
+        response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Not authorized to access this book"}
+    finally:
+        app.dependency_overrides[get_current_user] = _owner_user
+
+
+def test_get_book_anon_401(test_client_db_reset: TestClient) -> None:
+    """GET /books/{id} without auth returns 401."""
+    book_id = _upload_book(test_client_db_reset)
+    original = dict(app.dependency_overrides)
+    app.dependency_overrides.clear()
+    try:
+        response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+        assert response.status_code == 401
+        assert "detail" in response.json()
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(original)
+
+
+def test_delete_book_non_owner_403(test_client_db_reset: TestClient) -> None:
+    """DELETE /books/{id} as non-owner returns 403 and keeps the book."""
+    book_id = _upload_book(test_client_db_reset)
+    app.dependency_overrides[get_current_user] = _other_user
+    try:
+        response = test_client_db_reset.delete(f"/api/audiobook/books/{book_id}")
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Not authorized to modify this book"}
+    finally:
+        app.dependency_overrides[get_current_user] = _owner_user
+    response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
+    assert response.status_code == 200
+
+
+def test_delete_book_anon_401(test_client_db_reset: TestClient) -> None:
+    """DELETE /books/{id} without auth returns 401."""
+    book_id = _upload_book(test_client_db_reset)
+    original = dict(app.dependency_overrides)
+    app.dependency_overrides.clear()
+    try:
+        response = test_client_db_reset.delete(f"/api/audiobook/books/{book_id}")
+        assert response.status_code == 401
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(original)
+
+
+def test_chapter_status_owner_200_with_mocked_s3(test_client_db_reset: TestClient, mock_s3) -> None:
+    """GET /books/{id}/chapters/status as owner returns 200 with mocked S3."""
+    book_id = _upload_book(test_client_db_reset)
+    response = test_client_db_reset.get(
+        f"/api/audiobook/books/{book_id}/chapters/status",
+        params={"chapter_numbers": "1,2,3"},
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 3
+
+
+def test_chapter_status_non_owner_403(test_client_db_reset: TestClient) -> None:
+    """GET /books/{id}/chapters/status as non-owner returns 403."""
+    book_id = _upload_book(test_client_db_reset)
+    app.dependency_overrides[get_current_user] = _other_user
+    try:
+        response = test_client_db_reset.get(
+            f"/api/audiobook/books/{book_id}/chapters/status",
+            params={"chapter_numbers": "1,2,3"},
+        )
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Not authorized to access this book"}
+    finally:
+        app.dependency_overrides[get_current_user] = _owner_user
+
+
+def test_chapter_status_anon_401(test_client_db_reset: TestClient) -> None:
+    """GET /books/{id}/chapters/status without auth returns 401."""
+    book_id = _upload_book(test_client_db_reset)
+    original = dict(app.dependency_overrides)
+    app.dependency_overrides.clear()
+    try:
+        response = test_client_db_reset.get(
+            f"/api/audiobook/books/{book_id}/chapters/status",
+            params={"chapter_numbers": "1"},
+        )
+        assert response.status_code == 401
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(original)
+
+
+def test_update_title_non_owner_403(test_client_db_reset: TestClient) -> None:
+    """PUT /books/{id}/title as non-owner returns 403."""
+    book_id = _upload_book(test_client_db_reset)
+    app.dependency_overrides[get_current_user] = _other_user
+    try:
+        response = test_client_db_reset.put(f"/api/audiobook/books/{book_id}/title", json={"title": "Hacked"})
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Not authorized to access this book"}
+    finally:
+        app.dependency_overrides[get_current_user] = _owner_user
+
+
+def test_update_title_anon_401(test_client_db_reset: TestClient) -> None:
+    """PUT /books/{id}/title without auth returns 401."""
+    book_id = _upload_book(test_client_db_reset)
+    original = dict(app.dependency_overrides)
+    app.dependency_overrides.clear()
+    try:
+        response = test_client_db_reset.put(f"/api/audiobook/books/{book_id}/title", json={"title": "Hacked"})
+        assert response.status_code == 401
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(original)
+
+
+def test_delete_all_audio_non_owner_403(test_client_db_reset: TestClient) -> None:
+    """DELETE /books/{id}/audio as non-owner returns 403."""
+    book_id = _upload_book(test_client_db_reset)
+    app.dependency_overrides[get_current_user] = _other_user
+    try:
+        response = test_client_db_reset.delete(f"/api/audiobook/books/{book_id}/audio")
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Not authorized to access this book"}
+    finally:
+        app.dependency_overrides[get_current_user] = _owner_user
+
+
+def test_queue_all_non_owner_403(test_client_db_reset: TestClient) -> None:
+    """POST /books/{id}/queue-all as non-owner returns 403."""
+    book_id = _upload_book(test_client_db_reset)
+    app.dependency_overrides[get_current_user] = _other_user
+    try:
+        response = test_client_db_reset.post(
+            f"/api/audiobook/books/{book_id}/queue-all",
+            json={"value": "af-ZA|edge|af-ZA-AdriNeural|Female"},
+        )
+        assert response.status_code == 403
+        assert response.json() == {"detail": "Not authorized to access this book"}
+    finally:
+        app.dependency_overrides[get_current_user] = _owner_user

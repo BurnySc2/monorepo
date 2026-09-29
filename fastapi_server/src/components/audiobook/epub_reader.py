@@ -1,8 +1,10 @@
 import contextlib
 import gc
 import io
+import os
 import re
 import zipfile
+from functools import lru_cache
 from pathlib import Path
 
 import nltk
@@ -14,16 +16,29 @@ from nltk import word_tokenize
 from nltk.tokenize import sent_tokenize
 from pydantic import BaseModel
 
-data_dir = Path(__file__).parents[3] / "data" / "nltk"
-data_dir.mkdir(parents=True, exist_ok=True)
-nltk.data.path.insert(0, str(data_dir))
-nltk.download("punkt_tab", download_dir=str(data_dir))
-# Fail fast if the resource is still unavailable (e.g. offline first run)
-# instead of failing later at tokenize time with a cryptic LookupError.
-nltk.data.find("tokenizers/punkt_tab")
+
+@lru_cache(maxsize=1)
+def _ensure_nltk_data() -> Path:
+    """Ensure NLTK punkt data is available, returning its directory.
+
+    The directory defaults to ``<repo>/data/nltk`` but can be overridden
+    with the ``NLTK_DATA_DIR`` environment variable. Called lazily from
+    tokenization entry points so importing this module works offline.
+    """
+    default_dir = Path(__file__).parents[3] / "data" / "nltk"
+    data_dir = Path(os.getenv("NLTK_DATA_DIR", str(default_dir)))
+    data_dir.mkdir(parents=True, exist_ok=True)
+    if str(data_dir) not in nltk.data.path:
+        nltk.data.path.insert(0, str(data_dir))
+    nltk.download("punkt_tab", download_dir=str(data_dir))
+    # Fail fast if the resource is still unavailable (e.g. offline first run)
+    # instead of failing later at tokenize time with a cryptic LookupError.
+    nltk.data.find("tokenizers/punkt_tab")
+    return data_dir
 
 
 def extract_sentences(text: str) -> list[str]:
+    _ensure_nltk_data()
     sentences = sent_tokenize(text)
     return sentences
 
@@ -44,6 +59,7 @@ class EpubChapter(BaseModel):
 
 
 def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
+    _ensure_nltk_data()
     try:
         c = EpubReader("")
         # pyrefly: ignore

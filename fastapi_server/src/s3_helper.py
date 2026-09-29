@@ -9,6 +9,7 @@ from typing import Literal
 import aioboto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
+from loguru import logger
 from types_aiobotocore_s3 import S3Client
 from types_aiobotocore_s3.service_resource import Bucket, S3ServiceResource
 from types_aiobotocore_s3.type_defs import HeadObjectOutputTypeDef, ObjectTypeDef
@@ -89,26 +90,37 @@ async def object_upload_async_iterable(session: S3Client, bucket: str, key: str,
     _ = await session.upload_fileobj(Bucket=bucket, Key=key, Fileobj=my_stream)
 
 
-async def object_get_info(session: S3Client, bucket: str, key: str) -> HeadObjectOutputTypeDef | None:
+async def object_get_info(
+    session: S3Client, bucket: str, key: str, reraise: bool = False
+) -> HeadObjectOutputTypeDef | None:
     try:
         response = await session.head_object(Bucket=bucket, Key=key)
-    except ClientError:
-        return
+    except ClientError as e:
+        logger.warning(f"S3 head_object failed for bucket={bucket} key={key}: {e}")
+        if reraise:
+            raise
+        return None
     return response
 
 
-async def object_download(session: S3Client, bucket: str, key: str) -> bytes | None:
+async def object_download(session: S3Client, bucket: str, key: str, reraise: bool = False) -> bytes | None:
     try:
         data = await session.get_object(Bucket=bucket, Key=key)
-    except ClientError:
-        return
+    except ClientError as e:
+        logger.warning(f"S3 get_object failed for bucket={bucket} key={key}: {e}")
+        if reraise:
+            raise
+        return None
     return await data["Body"].read()
 
 
-async def object_delete(session: S3Client, bucket: str, key: str):
+async def object_delete(session: S3Client, bucket: str, key: str, reraise: bool = False):
     try:
         _ = await session.delete_object(Bucket=bucket, Key=key)
-    except ClientError:
+    except ClientError as e:
+        logger.warning(f"S3 delete_object failed for bucket={bucket} key={key}: {e}")
+        if reraise:
+            raise
         return
 
 
@@ -120,6 +132,7 @@ async def object_create_presigned_url(
     expires_in_seconds: int = 3600,
     verify_object_exists: bool = False,
     disposition: Literal["attachment", "inline"] = "attachment",
+    reraise: bool = False,
 ) -> str | None:
     """
     verify_object_exists: if True, returns None if object doesn't exist
@@ -143,8 +156,11 @@ async def object_create_presigned_url(
             },
             ExpiresIn=expires_in_seconds,
         )
-    except ClientError:
-        return
+    except ClientError as e:
+        logger.warning(f"S3 generate_presigned_url failed for bucket={bucket} key={key}: {e}")
+        if reraise:
+            raise
+        return None
     return url
 
 

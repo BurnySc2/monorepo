@@ -9,18 +9,10 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from components.login.cookies import (
     BACKEND_SERVER_URL,
     COOKIES,
-    GITHUB_CLIENT_ID,
-    GOOGLE_CLIENT_ID,
-    TWITCH_CLIENT_ID,
     LoginSettings,
-    github_get_user,
-    google_get_user,
     provide_logged_in_user,
-    twitch_get_user,
 )
-from components.login.github import github_verify_code
-from components.login.google import google_verify_code
-from components.login.twitch import twitch_verify_code
+from components.login.providers import PROVIDERS, OAuthProvider
 
 login_router = APIRouter()
 LOGIN_MAX_AGE = 84_400  # 7 days in seconds
@@ -43,6 +35,58 @@ def _get_frontend_url(request: Request) -> str:
     scheme = request.url.scheme
     host = request.headers.get("host", "localhost")
     return f"{scheme}://{host}"
+
+
+async def _handle_oauth_callback(
+    provider: OAuthProvider,
+    request: Request,
+    code: str | None,
+) -> RedirectResponse:
+    """Shared OAuth callback logic for all providers."""
+    access_token = request.cookies.get(provider.cookie_key)
+
+    # Check if already logged in with this provider
+    if access_token is not None:
+        user = await provider.get_user(access_token)
+        if user is not None:
+            return RedirectResponse(url=_get_frontend_url(request))
+
+    # No code provided, redirect to login
+    if code is None:
+        return RedirectResponse(url=_get_frontend_url(request))
+
+    # Exchange code for access token
+    token_or_error = await provider.verify_code(code)
+
+    if isinstance(token_or_error, int):
+        # Error occurred
+        return RedirectResponse(url=(_get_frontend_url(request) + "/login?error=oauth_failed"))
+
+    # Set cookie and redirect
+    response = RedirectResponse(url=_get_frontend_url(request))
+    response.set_cookie(
+        key=provider.cookie_key,
+        value=token_or_error,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=LOGIN_MAX_AGE,
+    )
+    return response
+
+
+def _start_oauth(provider: OAuthProvider) -> RedirectResponse:
+    """Shared OAuth start logic for all providers."""
+    oauth_url = httpx.URL(
+        provider.authorize_url,
+        params={
+            "client_id": provider.client_id,
+            "redirect_uri": f"{BACKEND_SERVER_URL}{provider.redirect_path}",
+            "response_type": "code",
+            "scope": provider.scope,
+        },
+    )
+    return RedirectResponse(url=str(oauth_url))
 
 
 @login_router.get("/login")
@@ -93,36 +137,7 @@ async def twitch_login_callback(
     If code provided, exchange for token and set cookie.
     If already logged in, redirect to login page.
     """
-    twitch_access_token = request.cookies.get(COOKIES["twitch"])
-
-    # Check if already logged in with twitch
-    if twitch_access_token is not None:
-        user = await twitch_get_user(twitch_access_token)
-        if user is not None:
-            return RedirectResponse(url=_get_frontend_url(request))
-
-    # No code provided, redirect to login
-    if code is None:
-        return RedirectResponse(url=_get_frontend_url(request))
-
-    # Exchange code for access token
-    access_token = await twitch_verify_code(code)
-
-    if isinstance(access_token, int):
-        # Error occurred
-        return RedirectResponse(url=(_get_frontend_url(request) + "/login?error=oauth_failed"))
-
-    # Set cookie and redirect
-    response = RedirectResponse(url=_get_frontend_url(request))
-    response.set_cookie(
-        key=COOKIES["twitch"],
-        value=access_token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-        max_age=LOGIN_MAX_AGE,
-    )
-    return response
+    return await _handle_oauth_callback(PROVIDERS["twitch"], request, code)
 
 
 @login_router.get("/login/github")
@@ -135,36 +150,7 @@ async def github_login_callback(
     If code provided, exchange for token and set cookie.
     If already logged in, redirect to login page.
     """
-    github_access_token = request.cookies.get(COOKIES["github"])
-
-    # Check if already logged in with github
-    if github_access_token is not None:
-        user = await github_get_user(github_access_token)
-        if user is not None:
-            return RedirectResponse(url=_get_frontend_url(request))
-
-    # No code provided, redirect to login
-    if code is None:
-        return RedirectResponse(url=_get_frontend_url(request))
-
-    # Exchange code for access token
-    access_token = await github_verify_code(code)
-
-    if isinstance(access_token, int):
-        # Error occurred
-        return RedirectResponse(url=(_get_frontend_url(request) + "/login?error=oauth_failed"))
-
-    # Set cookie and redirect
-    response = RedirectResponse(url=_get_frontend_url(request))
-    response.set_cookie(
-        key=COOKIES["github"],
-        value=access_token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-        max_age=LOGIN_MAX_AGE,
-    )
-    return response
+    return await _handle_oauth_callback(PROVIDERS["github"], request, code)
 
 
 @login_router.get("/login/google")
@@ -177,36 +163,7 @@ async def google_login_callback(
     If code provided, exchange for token and set cookie.
     If already logged in, redirect to login page.
     """
-    google_access_token = request.cookies.get(COOKIES["google"])
-
-    # Check if already logged in with google
-    if google_access_token is not None:
-        user = await google_get_user(google_access_token)
-        if user is not None:
-            return RedirectResponse(url=_get_frontend_url(request))
-
-    # No code provided, redirect to login
-    if code is None:
-        return RedirectResponse(url=_get_frontend_url(request))
-
-    # Exchange code for access token
-    access_token = await google_verify_code(code)
-
-    if isinstance(access_token, int):
-        # Error occurred
-        return RedirectResponse(url=(_get_frontend_url(request) + "/login?error=oauth_failed"))
-
-    # Set cookie and redirect
-    response = RedirectResponse(url=_get_frontend_url(request))
-    response.set_cookie(
-        key=COOKIES["google"],
-        value=access_token,
-        httponly=True,
-        secure=True,
-        samesite="lax",
-        max_age=LOGIN_MAX_AGE,
-    )
-    return response
+    return await _handle_oauth_callback(PROVIDERS["google"], request, code)
 
 
 @login_router.get("/login/twitch/start")
@@ -214,17 +171,7 @@ async def start_twitch_login() -> RedirectResponse:
     """
     Start Twitch OAuth flow - redirects to Twitch authorization page.
     """
-
-    oauth_url = httpx.URL(
-        "https://id.twitch.tv/oauth2/authorize",
-        params={
-            "client_id": TWITCH_CLIENT_ID,
-            "redirect_uri": f"{BACKEND_SERVER_URL}/login/twitch",
-            "response_type": "code",
-            "scope": "user:read:email",
-        },
-    )
-    return RedirectResponse(url=str(oauth_url))
+    return _start_oauth(PROVIDERS["twitch"])
 
 
 @login_router.get("/login/github/start")
@@ -232,17 +179,7 @@ async def start_github_login() -> RedirectResponse:
     """
     Start GitHub OAuth flow - redirects to GitHub authorization page.
     """
-
-    oauth_url = httpx.URL(
-        "https://github.com/login/oauth/authorize",
-        params={
-            "client_id": GITHUB_CLIENT_ID,
-            "redirect_uri": f"{BACKEND_SERVER_URL}/login/github",
-            "response_type": "code",
-            "scope": "read:user",
-        },
-    )
-    return RedirectResponse(url=str(oauth_url))
+    return _start_oauth(PROVIDERS["github"])
 
 
 @login_router.get("/login/google/start")
@@ -250,14 +187,4 @@ async def start_google_login() -> RedirectResponse:
     """
     Start Google OAuth flow - redirects to Google authorization page.
     """
-
-    oauth_url = httpx.URL(
-        "https://accounts.google.com/o/oauth2/v2/auth",
-        params={
-            "client_id": GOOGLE_CLIENT_ID,
-            "redirect_uri": f"{BACKEND_SERVER_URL}/login/google",
-            "response_type": "code",
-            "scope": "profile",
-        },
-    )
-    return RedirectResponse(url=str(oauth_url))
+    return _start_oauth(PROVIDERS["google"])

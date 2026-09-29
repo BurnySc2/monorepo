@@ -3,13 +3,13 @@ from __future__ import annotations
 import asyncio
 import io
 import os
-import re
 from typing import cast
 
 import arrow
 from dotenv import load_dotenv
 from loguru import logger
 
+from components.audiobook.epub_reader import combine_text
 from components.tts_generate import generate_audio
 from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_upload
 from schemas.audiobook import AudioSettings
@@ -25,17 +25,29 @@ ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR", "0.3"))
 # Maximum number of concurrent chapter conversions
 MAX_CONCURRENT_CONVERSIONS = int(os.getenv("AUDIOBOOK_MAX_CONCURRENT_CONVERSIONS", "1"))
 
-
-def get_chapter_combined_text(text: str) -> str:
-    combined = " ".join(row for row in text)
-    return re.sub(r"\s+", " ", combined)
+_background_tasks: set[asyncio.Task[None]] = set()
 
 
-# TODO Investigate why the following is better:
-# def get_chapter_combined_text(text: str) -> str:
-#     lines = text.splitlines()
-#     combined = " ".join(row.strip() for row in lines if row.strip())
-#     return re.sub(r"\s+", " ", combined).strip()
+def _on_background_task_done(task: asyncio.Task[None]) -> None:
+    """Drop finished tasks and log failures so they are never silent."""
+    _background_tasks.discard(task)
+    try:
+        exc = task.exception()
+    except asyncio.CancelledError:
+        return
+    if exc is not None:
+        logger.exception(f"Background audiobook conversion failed: {exc}")
+
+
+def get_chapter_combined_text(text: str | list[str]) -> str:
+    """Backward-compatible shim delegating to :func:`epub_reader.combine_text`.
+
+    Historically took a raw ``content`` string; now also accepts a list of
+    lines. Strings are split into lines before delegating.
+    """
+    if isinstance(text, str):
+        return combine_text(text.splitlines())
+    return combine_text(text)
 
 
 class AudiobookConversionContext:
@@ -112,8 +124,10 @@ async def check_queued_chapters() -> bool:
     count_more_conversion_possible = MAX_CONCURRENT_CONVERSIONS - active_conversions
     chapters = await query.limit(count_more_conversion_possible)
     for chapter in chapters:
-        # Launch convert_one in a new asyncio task
-        asyncio.create_task(convert_one(chapter))
+        # Launch convert_one in a new asyncio task, tracked to avoid GC + silent failures
+        task = asyncio.create_task(convert_one(chapter))
+        _background_tasks.add(task)
+        task.add_done_callback(_on_background_task_done)
     return True
 
 

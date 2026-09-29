@@ -1,16 +1,21 @@
 from __future__ import annotations
 
 import io
-from pathlib import Path
 from typing import Annotated
 
 import arrow
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 
 from components.audiobook.epub_reader import extract_chapters, extract_metadata
-from components.login.cookies import LoggedInUser, check_book_ownership, get_current_user
+from components.login.cookies import LoggedInUser, get_current_user
 from piccolo_conf import DB
-from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url
+from routes._audiobook_helpers import (
+    AUDIO_CLEAR_FIELDS,
+    book_to_list_item,
+    get_chapters_with_urls,
+    get_owned_book,
+    parse_chapter_numbers,
+)
 from schemas.audiobook import (
     AudioSettings,
     BookListItem,
@@ -22,9 +27,6 @@ from schemas.audiobook import (
     UploadSuccess,
 )
 from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
-
-_queries_directory = Path(__file__).parent.parent / "queries"
-_query_get_chapters = (_queries_directory / "audiobook_get_chapters.sql").read_text()
 
 audiobook_router = APIRouter()
 
@@ -52,19 +54,7 @@ async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_u
         .order_by(AudiobookBook.upload_date, ascending=False)
     )
 
-    return [
-        BookListItem(
-            id=book.id,  # pyrefly: ignore[missing-attribute]
-            uploaded_by=book.uploaded_by,
-            book_title=book.book_title,
-            book_author=book.book_author,
-            custom_book_title=book.custom_book_title,
-            custom_book_author=book.custom_book_author,
-            chapter_count=book.chapter_count,
-            upload_date=book.upload_date,
-        )
-        for book in books
-    ]
+    return [book_to_list_item(book) for book in books]
 
 
 @audiobook_router.get("/books/{book_id}", response_model=BookWithChapters)
@@ -75,63 +65,13 @@ async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(g
     Generates presigned URLs for chapters with audio.
     Uses optimized SQL query to get global queue position.
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+    book = await get_owned_book(book_id, current_user)
 
     chapter_numbers = list(range(1, book.chapter_count + 1))
-    chapters_rows: list[dict] = await AudiobookChapter.raw(_query_get_chapters, book_id, chapter_numbers)
-
-    chapters_data = []
-    async with get_s3_client() as s3:
-        for row in chapters_rows:
-            presigned_url = ""
-            if row["minio_object_name"]:
-                presigned_url = (
-                    await object_create_presigned_url(
-                        session=s3,
-                        bucket=RUSTFS_AUDIOBOOK_BUCKET,
-                        key=row["minio_object_name"],
-                        file_name=f"{row['chapter_title']}.mp3",
-                        expires_in_seconds=3600,
-                        verify_object_exists=False,
-                    )
-                    or ""
-                )
-
-            chapters_data.append(
-                ChapterDetail(
-                    id=row["id"],
-                    book_id=row["book_id"],
-                    number_in_queue=row["number_in_queue"],
-                    is_converting=row["is_converting"],
-                    has_audio=row["has_audio"],
-                    chapter_title=row["chapter_title"],
-                    chapter_number=row["chapter_number"],
-                    sentence_count=row["sentence_count"],
-                    minio_object_name=row["minio_object_name"],
-                    minio_presigned_url=presigned_url,
-                )
-            )
+    chapters_data = await get_chapters_with_urls(book_id, chapter_numbers)
 
     return BookWithChapters(
-        book=BookListItem(
-            id=book.id,  # pyrefly: ignore[missing-attribute]
-            uploaded_by=book.uploaded_by,
-            book_title=book.book_title,
-            book_author=book.book_author,
-            custom_book_title=book.custom_book_title,
-            custom_book_author=book.custom_book_author,
-            chapter_count=book.chapter_count,
-            upload_date=book.upload_date,
-        ),
+        book=book_to_list_item(book),
         chapters=chapters_data,
         available_voices=[],
     )
@@ -148,60 +88,11 @@ async def get_chapter_status(
     Accepts comma-separated chapter numbers via query param 'chapter_numbers'.
     Returns only the status fields (queue position, converting, has_audio).
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
+    await get_owned_book(book_id, current_user)
 
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
+    chapter_num_list = parse_chapter_numbers(chapter_numbers)
 
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
-
-    if chapter_numbers is None:
-        raise HTTPException(status_code=400, detail="chapter_numbers query param required")
-
-    try:
-        chapter_num_list = [int(x.strip()) for x in chapter_numbers.split(",")]
-    except ValueError:
-        raise HTTPException(status_code=400, detail="chapter_numbers must be comma-separated integers")
-
-    chapters_rows: list[dict] = await AudiobookChapter.raw(_query_get_chapters, book_id, chapter_num_list)
-
-    chapters_data = []
-    async with get_s3_client() as s3:
-        for row in chapters_rows:
-            presigned_url = ""
-            if row["minio_object_name"]:
-                presigned_url = (
-                    await object_create_presigned_url(
-                        session=s3,
-                        bucket=RUSTFS_AUDIOBOOK_BUCKET,
-                        key=row["minio_object_name"],
-                        file_name=f"{row['chapter_title']}.mp3",
-                        expires_in_seconds=3600,
-                        verify_object_exists=False,
-                    )
-                    or ""
-                )
-
-            chapters_data.append(
-                ChapterDetail(
-                    id=row["id"],
-                    book_id=row["book_id"],
-                    number_in_queue=row["number_in_queue"],
-                    is_converting=row["is_converting"],
-                    has_audio=row["has_audio"],
-                    chapter_title=row["chapter_title"],
-                    chapter_number=row["chapter_number"],
-                    sentence_count=row["sentence_count"],
-                    minio_object_name=row["minio_object_name"],
-                    minio_presigned_url=presigned_url,
-                )
-            )
-
-    return chapters_data
+    return await get_chapters_with_urls(book_id, chapter_num_list)
 
 
 @audiobook_router.post("/upload", response_model=UploadSuccess, status_code=201)
@@ -281,16 +172,7 @@ async def delete_book(book_id: int, current_user: Annotated[LoggedInUser, Depend
     Relies on FK ON DELETE CASCADE to remove chapters.
     Returns 404 if not found, 403 if not owned.
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to modify this book")
+    await get_owned_book(book_id, current_user, forbidden_detail="Not authorized to modify this book")
 
     await AudiobookBook.delete().where(AudiobookBook.id == book_id)  # pyrefly: ignore[missing-attribute]
 
@@ -307,24 +189,11 @@ async def delete_all_audio(
     DB-only; clears audio fields via single bulk UPDATE, no S3 deletion (auto-expire).
     Returns 404 if book not found, 403 if not owned.
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
+    await get_owned_book(book_id, current_user)
+
+    await AudiobookChapter.update(AUDIO_CLEAR_FIELDS).where(
+        AudiobookChapter.book == book_id  # pyrefly: ignore[missing-attribute]
     )
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
-
-    await AudiobookChapter.update(
-        {
-            AudiobookChapter.minio_object_name: None,
-            AudiobookChapter.queued: None,
-            AudiobookChapter.started_converting: None,
-            AudiobookChapter.audio_settings: None,  # pyrefly: ignore[bad-argument-type,missing-attribute]
-        }
-    ).where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
 
     return DeleteResponse(deleted=True)
 
@@ -340,15 +209,7 @@ async def queue_chapter(
     Queue a chapter for audio conversion.
     Sets queued timestamp and stores audio settings.
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+    await get_owned_book(book_id, current_user)
 
     chapter = (
         await AudiobookChapter.objects()
@@ -380,15 +241,7 @@ async def delete_chapter_audio(
     DB-only; clears audio fields via single UPDATE, no S3 deletion (auto-expire).
     Returns 404 if book/chapter not found, 403 if not owned.
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+    await get_owned_book(book_id, current_user)
 
     chapter = (
         await AudiobookChapter.objects()
@@ -399,14 +252,9 @@ async def delete_chapter_audio(
     if chapter is None:
         raise HTTPException(status_code=404, detail="Chapter not found")
 
-    await AudiobookChapter.update(
-        {
-            AudiobookChapter.minio_object_name: None,
-            AudiobookChapter.queued: None,
-            AudiobookChapter.started_converting: None,
-            AudiobookChapter.audio_settings: None,  # pyrefly: ignore[bad-argument-type,missing-attribute]
-        }
-    ).where(AudiobookChapter.id == chapter.id)  # pyrefly: ignore[missing-attribute]
+    await AudiobookChapter.update(AUDIO_CLEAR_FIELDS).where(
+        AudiobookChapter.id == chapter.id  # pyrefly: ignore[missing-attribute]
+    )
 
     return DeleteResponse(deleted=True)
 
@@ -420,29 +268,12 @@ async def update_book_title(
     """
     Update the custom title for a book.
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+    book = await get_owned_book(book_id, current_user)
 
     book.custom_book_title = body["title"]
     await book.save()
 
-    return BookListItem(
-        id=book.id,  # pyrefly: ignore[missing-attribute]
-        uploaded_by=book.uploaded_by,
-        book_title=book.book_title,
-        book_author=book.book_author,
-        custom_book_title=book.custom_book_title,
-        custom_book_author=book.custom_book_author,
-        chapter_count=book.chapter_count,
-        upload_date=book.upload_date,
-    )
+    return book_to_list_item(book)
 
 
 @audiobook_router.put("/books/{book_id}/author", response_model=BookListItem)
@@ -454,29 +285,12 @@ async def update_book_author(
     """
     Update the custom author for a book.
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+    book = await get_owned_book(book_id, current_user)
 
     book.custom_book_author = body["author"]
     await book.save()
 
-    return BookListItem(
-        id=book.id,  # pyrefly: ignore[missing-attribute]
-        uploaded_by=book.uploaded_by,
-        book_title=book.book_title,
-        book_author=book.book_author,
-        custom_book_title=book.custom_book_title,
-        custom_book_author=book.custom_book_author,
-        chapter_count=book.chapter_count,
-        upload_date=book.upload_date,
-    )
+    return book_to_list_item(book)
 
 
 @audiobook_router.post("/books/{book_id}/queue-all", status_code=201)
@@ -488,15 +302,7 @@ async def queue_all_chapters(
     """
     Queue all chapters of a book for audio conversion.
     """
-    book = (
-        # pyrefly: ignore[missing-attribute]
-        await AudiobookBook.objects().where(AudiobookBook.id == book_id).first()
-    )
-    if book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    if not await check_book_ownership(book, current_user):
-        raise HTTPException(status_code=403, detail="Not authorized to access this book")
+    await get_owned_book(book_id, current_user)
 
     validate_audiobook_engine(settings)
 
