@@ -7,8 +7,8 @@ from fastapi.testclient import TestClient
 from piccolo.table import create_db_tables, drop_db_tables
 from piccolo.utils.sync import run_sync
 
-from src.main import app
-from src.models.raceroom import RRREBestTime, RRREPlayer, RRRETrack
+from main import app
+from models.raceroom import RRREBestTime, RRREPlayer, RRRETrack
 
 RACEROOM_TABLES = [RRREPlayer, RRRETrack, RRREBestTime]
 

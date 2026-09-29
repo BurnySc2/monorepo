@@ -164,6 +164,9 @@ class TTSQueueRunner:
             # End worker if text queue was removed which means all connected websockets have disconnected
             if not self.text_queue_exists:
                 return
+            queue = self.text_queue
+            if queue is None:
+                return
 
             # TTS is still playing
             if arrow.utcnow() < self.tts_is_playing_till:
@@ -171,32 +174,30 @@ class TTSQueueRunner:
                 continue
 
             # No new items
-            # pyrefly: ignore
-            if self.text_queue.empty():
+            if queue.empty():
                 await asyncio.sleep(0.1)
                 continue
 
             # Generate tts
-            # pyrefly: ignore
-            voice, text = await self.text_queue.get()
+            voice, text = await queue.get()
             engine, internal_voice = voice.split("_", 1)
             logger.info(f"Generating tts: {self.stream_name}: ({voice}) {text}")
 
             # Generate audio from text
             try:
+                # pyrefly: ignore[bad-argument-type]
                 mp3_bytes, duration = await generate_audio(engine, internal_voice, text)
                 # logger.info(f"{duration}s: {text}")
             except RuntimeError as e:
                 logger.error(e)
-                self.text_queue.task_done()
+                queue.task_done()
                 continue
             except AssertionError as e:
                 logger.error(e)
-                self.text_queue.task_done()
+                queue.task_done()
                 continue
             logger.info(f"Sending generated tts to clients: {self.stream_name}: ({voice}) {text}")
-            # pyrefly: ignore
-            self.text_queue.task_done()
+            queue.task_done()
             tasks = [
                 asyncio.create_task(self.send_mp3_data_to_ws(ws, base64.b64encode(mp3_bytes).decode()))
                 for ws in self.connected_websockets

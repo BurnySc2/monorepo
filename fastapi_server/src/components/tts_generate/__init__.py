@@ -107,6 +107,7 @@ async def generate_audio(
 
     mp3_io = BytesIO(audio_bytes)
     audio = MP3(mp3_io)
+    assert audio.info is not None, "Invalid MP3 data"
     duration = audio.info.length
 
     return audio_bytes, duration

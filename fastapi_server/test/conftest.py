@@ -18,7 +18,7 @@ from fastapi.testclient import TestClient
 from piccolo.table import Table, create_db_tables, drop_db_tables
 from piccolo.utils.sync import run_sync
 
-from components.audiobook.epub_reader import _ensure_nltk_data
+from components.audiobook.epub_reader import ensure_nltk_data
 from components.login.cookies import LoggedInUser, get_current_user
 from main import app
 from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
@@ -77,4 +77,4 @@ def mock_s3(monkeypatch: pytest.MonkeyPatch) -> Iterator[AsyncMock]:
 
 @pytest.fixture(scope="session", autouse=True)
 def _prewarm_nltk_data() -> None:
-    _ensure_nltk_data()
+    ensure_nltk_data()

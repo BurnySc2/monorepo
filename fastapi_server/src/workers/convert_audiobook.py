@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import io
 import os
 from typing import cast
 
@@ -150,7 +149,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
             audio_settings.voice_name,
             chapter.content,
         )
-        audio = io.BytesIO(result[0])
+        audio = result[0]
 
         # Get data from db, user may have clicked "delete" button on book or chapter
         # pyrefly: ignore
@@ -166,7 +165,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         # Save result to MinIO
         try:
             async with get_s3_client() as s3:
-                await object_upload(s3, RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio)  # pyrefly: ignore[bad-argument-type]
+                await object_upload(s3, RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio)
             logger.debug(f"Successfully saved audio to s3 storage: {context.minio_object_name}")
         except Exception as e:
             logger.exception(f"Failed to save audio to s3 storage: {e}")

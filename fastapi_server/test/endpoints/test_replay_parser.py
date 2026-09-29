@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 from components.replay_pack_builder.models import ParsedReplayFile
 from components.replay_pack_builder.replay_parser import parse_replay
-from src.main import app
+from main import app
 
 
 @pytest.fixture

@@ -121,6 +121,7 @@ async def generate_audio_async(
 
     audio = audio_segment.AudioSegment.from_wav(wav_io)
 
+    assert isinstance(audio, audio_segment.AudioSegment)
     mp3_io = BytesIO()
     audio.export(mp3_io, format="mp3")
     mp3_io.seek(0)

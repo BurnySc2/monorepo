@@ -703,6 +703,7 @@ async def _tiktok_generate_chunk(voice: str, text: str) -> tuple[bytes, float]:
     audio_bytes = base64.b64decode(b64data)
 
     mp3_info = MP3(BytesIO(audio_bytes))
+    assert mp3_info.info is not None, "Invalid MP3 data"
     duration = mp3_info.info.length
 
     _audio_cache[key] = (audio_bytes, duration)

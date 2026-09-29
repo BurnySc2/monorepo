@@ -99,11 +99,7 @@ project-excludes = [
     "**/__pycache__/**",
     "**/*.pyc",
     # Temp disable for those files and folders
-    "**/workers/prevent_overflowing_audiobook_bucket.py",
     "**/workers/convert_audiobook.py",
-    "**/_app.py",
-    "**/components/**/*.py",
-    "**/routes_/**/*.py",
 ]
 
 # [tool.pyrefly.errors]
@@ -121,7 +117,7 @@ select = [
     "E",   # Error
     "F",   # pyflakes
     "BLE", # flake8-blind-except
-    # "I",   # isort
+    "I",   # isort
     "N",   # pep8-naming
     "PGH", # pygrep-hooks
     "PTH", # flake8-use-pathlib
@@ -162,7 +158,7 @@ apply_dbt_builtins = true
 capitalisation_policy = "upper"
 
 [tool.pytest.ini_options]
-pythonpath = ["src", "."]
+pythonpath = ["src"]
 testpaths = ["test"]
 
 [tool.pytest_env]
@@ -175,5 +171,5 @@ RUSTFS_ADMIN_URL = "http://localhost:9000"
 RUSTFS_ACCESS_KEY = "rustfsadmin"
 RUSTFS_SECRET_KEY = "rustfsadmin"
 RUSTFS_AUDIOBOOK_BUCKET = "rustfs-audiobook-bucket-test"
-RUSTFS_TELEGRAM_FILES_BUCKET = "telegram-files-bucket-test"
+RUSTFS_TELEGRAM_BUCKET = "telegram-files-bucket-test"
 NLTK_DATA_DIR = "./data/nltk"

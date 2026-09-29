@@ -18,7 +18,7 @@ from pydantic import BaseModel
 
 
 @lru_cache(maxsize=1)
-def _ensure_nltk_data() -> Path:
+def ensure_nltk_data() -> Path:
     """Ensure NLTK punkt data is available, returning its directory.
 
     The directory defaults to ``<repo>/data/nltk`` but can be overridden
@@ -38,7 +38,7 @@ def _ensure_nltk_data() -> Path:
 
 
 def extract_sentences(text: str) -> list[str]:
-    _ensure_nltk_data()
+    ensure_nltk_data()
     sentences = sent_tokenize(text)
     return sentences
 
@@ -59,7 +59,7 @@ class EpubChapter(BaseModel):
 
 
 def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
-    _ensure_nltk_data()
+    ensure_nltk_data()
     try:
         c = EpubReader("")
         # pyrefly: ignore

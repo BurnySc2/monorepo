@@ -18,7 +18,7 @@ async def test_malformed_voice_returns_400_without_calling_ensure(monkeypatch: p
     """Voice without engine prefix returns 400 and skips NLTK ensure."""
     mock_ensure = MagicMock()
     mock_generate = AsyncMock()
-    monkeypatch.setattr("routes.tts_generate._ensure_nltk_data", mock_ensure)
+    monkeypatch.setattr("routes.tts_generate.ensure_nltk_data", mock_ensure)
     monkeypatch.setattr("routes.tts_generate.generate_audio", mock_generate)
 
     with pytest.raises(HTTPException) as exc_info:
@@ -34,7 +34,7 @@ async def test_unknown_engine_returns_400_without_calling_ensure(monkeypatch: py
     """Unknown engine returns 400 and skips NLTK ensure."""
     mock_ensure = MagicMock()
     mock_generate = AsyncMock()
-    monkeypatch.setattr("routes.tts_generate._ensure_nltk_data", mock_ensure)
+    monkeypatch.setattr("routes.tts_generate.ensure_nltk_data", mock_ensure)
     monkeypatch.setattr("routes.tts_generate.generate_audio", mock_generate)
 
     with pytest.raises(HTTPException) as exc_info:
@@ -50,7 +50,7 @@ async def test_valid_path_calls_ensure_once(monkeypatch: pytest.MonkeyPatch) -> 
     """Valid voice calls NLTK ensure exactly once before generating audio."""
     mock_ensure = MagicMock()
     mock_generate = AsyncMock(return_value=(b"fake-audio", 1.5))
-    monkeypatch.setattr("routes.tts_generate._ensure_nltk_data", mock_ensure)
+    monkeypatch.setattr("routes.tts_generate.ensure_nltk_data", mock_ensure)
     monkeypatch.setattr("routes.tts_generate.generate_audio", mock_generate)
 
     result = await generate_tts(TTSGenerateRequest(voice="edge_test-voice", text="Hello world"))

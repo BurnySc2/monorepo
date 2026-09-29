@@ -19,7 +19,7 @@ uv sync
 
 Open a Python file in the `fastapi_server` folder and select the correct python environment in the bottom right of vscode.
 
-Start webserver with `uv run src/app.py` or via the vscode debug config `Start LiteStar`.
+Start webserver with `uv run --directory src uvicorn main:app --host 0.0.0.0 --port 8000` or via the vscode debug config `Start uvicorn`.
 
 Now you can go to http://0.0.0.0:8000 or http://0.0.0.0:8000/schema to check out the documentation to all endpoints.
 

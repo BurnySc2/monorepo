@@ -6,3 +6,7 @@ deps.txt
 
 # Test database because it seems in memory the tables do not get cleared or dropped properly
 test.db*
+.ruff_cache/
+.benchmarks/
+.hypothesis/
+.pytest_cache/

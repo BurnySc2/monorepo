@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
+from components.audiobook.epub_reader import ensure_nltk_data
 from routes.audiobook import audiobook_router
 from routes.index import IndexRouter
 from routes.login import login_router
@@ -21,11 +22,6 @@ from routes.telegram_browser import telegram_browser_router
 from routes.tts_generate import tts_generate_router
 from routes.tts_websocket import TTSRouter
 from s3_helper import initialize_rustfs
-from components.audiobook.epub_reader import _ensure_nltk_data
-
-RUSTFS_AUDIOBOOK_BUCKET = os.getenv("RUSTFS_AUDIOBOOK_BUCKET", "rustfs-audiobook-bucket")
-RUSTFS_AUDIOBOOK_MAX_SIZE_MB = int(os.getenv("RUSTFS_AUDIOBOOK_MAX_SIZE_MB", "100000"))
-RUSTFS_KEY_NAME = os.getenv("RUSTFS_KEY_NAME", "audiobook-key")
 
 
 @asynccontextmanager
@@ -33,7 +29,7 @@ async def lifespan(app: FastAPI):
     # Startup
     await initialize_rustfs()
     try:
-        _ensure_nltk_data()
+        ensure_nltk_data()
     except (LookupError, OSError, RuntimeError):
         logger.warning("NLTK data unavailable at startup; continuing without it", exc_info=True)
     yield

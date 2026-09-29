@@ -4,7 +4,7 @@ from typing import cast
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from components.audiobook.epub_reader import _ensure_nltk_data
+from components.audiobook.epub_reader import ensure_nltk_data
 from components.tts_generate import generate_audio, list_all_voices
 from schemas.tts import ENGINES
 from schemas.tts.engine import TTSEngine
@@ -54,7 +54,7 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
     if engine_str not in ENGINES:
         raise HTTPException(status_code=400, detail=f"Unknown engine: {engine_str}. Supported: {ENGINES}")
 
-    _ensure_nltk_data()
+    ensure_nltk_data()
     engine = cast(TTSEngine, engine_str)
     audio_bytes, duration = await generate_audio(engine, voice_name, request.text)
 

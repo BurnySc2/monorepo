@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from fastapi.testclient import TestClient
 
-from src.main import app
+from main import app
 
 REPLAY_DIR = Path(__file__).parent / "replay_comparer_replays"
 

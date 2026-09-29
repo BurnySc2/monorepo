@@ -11,7 +11,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.workers.convert_audiobook import (
+from workers.convert_audiobook import (
     AudiobookConversionContext,
     _background_tasks,
     _on_background_task_done,
@@ -26,7 +26,6 @@ class TestAudiobookConversionContext:
     """Tests for AudiobookConversionContext context manager."""
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="__aexit__ calls AudiobookChapter.update().where() which requires complex db mocking")
     async def test_context_enter_sets_started_converting(self):
         """Test that entering context sets started_converting timestamp."""
         mock_chapter = MagicMock()
@@ -35,44 +34,85 @@ class TestAudiobookConversionContext:
         mock_chapter.started_converting = None
         mock_chapter.save = AsyncMock()
 
+        mock_update_query = MagicMock()
+        mock_update_query.where = AsyncMock(return_value=[])
+
         with (
-            patch("src.workers.convert_audiobook.get_chapter_combined_text", return_value="Test content"),
-            patch("src.workers.convert_audiobook.ESTIMATE_FACTOR", 0.3),
+            patch("workers.convert_audiobook.get_chapter_combined_text", return_value="Test content"),
+            patch("workers.convert_audiobook.ESTIMATE_FACTOR", 0.3),
+            patch(
+                "workers.convert_audiobook.AudiobookChapter.update",
+                return_value=mock_update_query,
+            ) as mock_update,
         ):
             async with AudiobookConversionContext(mock_chapter) as context:
                 assert context.minio_object_name == "42_audio.mp3"
                 mock_chapter.save.assert_called_once()
+                assert mock_chapter.started_converting is not None
+
+            mock_update.assert_called_once()
+            mock_update_query.where.assert_awaited_once()
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="__aexit__ calls AudiobookChapter.update().where() which requires complex db mocking")
     async def test_context_exit_success_clears_flag(self):
         """Test that exiting context with no exception clears started_converting."""
         mock_chapter = MagicMock()
         mock_chapter.id = 42
+        mock_chapter.content = "Test content"
         mock_chapter.started_converting = None
         mock_chapter.save = AsyncMock()
 
-        async with AudiobookConversionContext(mock_chapter):
-            pass
+        mock_update_query = MagicMock()
+        mock_update_query.where = AsyncMock(return_value=[])
 
-        assert mock_chapter.save.call_count == 2
-        assert mock_chapter.started_converting is None
+        with (
+            patch("workers.convert_audiobook.get_chapter_combined_text", return_value="Test content"),
+            patch(
+                "workers.convert_audiobook.AudiobookChapter.update",
+                return_value=mock_update_query,
+            ) as mock_update,
+        ):
+            async with AudiobookConversionContext(mock_chapter):
+                pass
+
+            mock_chapter.save.assert_called_once()
+            mock_update.assert_called_once()
+            mock_update_query.where.assert_awaited_once()
+            # Flag cleared via DB update: update dict contains None + minio name
+            update_arg = mock_update.call_args[0][0]
+            assert None in list(update_arg.values())
+            assert "42_audio.mp3" in list(update_arg.values())
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="__aexit__ calls AudiobookChapter.update().where() which requires complex db mocking")
     async def test_context_exit_failure_clears_flag(self):
         """Test that exiting context after exception clears started_converting and logs error."""
         mock_chapter = MagicMock()
         mock_chapter.id = 42
+        mock_chapter.content = "Test content"
         mock_chapter.started_converting = None
         mock_chapter.save = AsyncMock()
 
-        with pytest.raises(ValueError):
-            async with AudiobookConversionContext(mock_chapter):
-                raise ValueError("Conversion failed")
+        mock_update_query = MagicMock()
+        mock_update_query.where = AsyncMock(return_value=[])
 
-        assert mock_chapter.save.call_count == 2
-        assert mock_chapter.started_converting is None
+        with (
+            patch("workers.convert_audiobook.get_chapter_combined_text", return_value="Test content"),
+            patch(
+                "workers.convert_audiobook.AudiobookChapter.update",
+                return_value=mock_update_query,
+            ) as mock_update,
+        ):
+            with pytest.raises(ValueError):
+                async with AudiobookConversionContext(mock_chapter):
+                    raise ValueError("Conversion failed")
+
+            mock_chapter.save.assert_called_once()
+            mock_update.assert_called_once()
+            mock_update_query.where.assert_awaited_once()
+            # Flag cleared via DB update: update dict contains None, no minio name on failure
+            update_arg = mock_update.call_args[0][0]
+            assert None in list(update_arg.values())
+            assert "42_audio.mp3" not in list(update_arg.values())
 
 
 class TestConvertOne:
@@ -99,21 +139,21 @@ class TestConvertOne:
         mock_context.__aexit__ = AsyncMock(return_value=None)
 
         with (
-            patch("src.workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
-            patch("src.workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
+            patch("workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
+            patch("workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
         ):
             mock_tts.return_value = mock_audio
 
-            with patch("src.workers.convert_audiobook.AudiobookChapter.objects") as mock_objects:
+            with patch("workers.convert_audiobook.AudiobookChapter.objects") as mock_objects:
                 mock_chapter2 = MagicMock()
                 mock_chapter2.audio_settings = mock_chapter.audio_settings
                 mock_objects.return_value.where.return_value.first = AsyncMock(return_value=mock_chapter2)
 
-                with patch("src.workers.convert_audiobook.get_s3_client") as mock_s3:
+                with patch("workers.convert_audiobook.get_s3_client") as mock_s3:
                     mock_s3.return_value.__aenter__ = AsyncMock(return_value=MagicMock())
                     mock_s3.return_value.__aexit__ = AsyncMock(return_value=None)
 
-                    with patch("src.workers.convert_audiobook.object_upload", new_callable=AsyncMock) as mock_upload:
+                    with patch("workers.convert_audiobook.object_upload", new_callable=AsyncMock) as mock_upload:
                         await convert_one(mock_chapter)
 
                         mock_tts.assert_called_once()
@@ -136,12 +176,12 @@ class TestConvertOne:
         mock_context.__aexit__ = AsyncMock(return_value=None)
 
         with (
-            patch("src.workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
-            patch("src.workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
+            patch("workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
+            patch("workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
         ):
             mock_tts.return_value = mock_audio
 
-            with patch("src.workers.convert_audiobook.AudiobookChapter.objects") as mock_objects:
+            with patch("workers.convert_audiobook.AudiobookChapter.objects") as mock_objects:
                 mock_objects.return_value.where.return_value.first = AsyncMock(return_value=None)
 
                 await convert_one(mock_chapter)
@@ -166,21 +206,21 @@ class TestConvertOne:
         mock_context.__aexit__ = AsyncMock(return_value=None)
 
         with (
-            patch("src.workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
-            patch("src.workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
+            patch("workers.convert_audiobook.AudiobookConversionContext", return_value=mock_context),
+            patch("workers.convert_audiobook.generate_audio", new_callable=AsyncMock) as mock_tts,
         ):
             mock_tts.return_value = mock_audio
 
-            with patch("src.workers.convert_audiobook.AudiobookChapter.objects") as mock_objects:
+            with patch("workers.convert_audiobook.AudiobookChapter.objects") as mock_objects:
                 mock_chapter2 = MagicMock()
                 mock_chapter2.audio_settings = '{"engine_name": "kokoro", "voice_name": "joey"}'
                 mock_objects.return_value.where.return_value.first = AsyncMock(return_value=mock_chapter2)
 
-                with patch("src.workers.convert_audiobook.get_s3_client") as mock_s3:
+                with patch("workers.convert_audiobook.get_s3_client") as mock_s3:
                     mock_s3.return_value.__aenter__ = AsyncMock(return_value=MagicMock())
                     mock_s3.return_value.__aexit__ = AsyncMock(return_value=None)
 
-                    with patch("src.workers.convert_audiobook.object_upload", new_callable=AsyncMock) as mock_upload:
+                    with patch("workers.convert_audiobook.object_upload", new_callable=AsyncMock) as mock_upload:
                         await convert_one(mock_chapter)
 
                         mock_tts.assert_called_once()
@@ -201,8 +241,8 @@ class TestKeepConverting:
             raise asyncio.CancelledError
 
         with (
-            patch("src.workers.convert_audiobook.check_queued_chapters", side_effect=mock_check_that_errors),
-            patch("src.workers.convert_audiobook.asyncio.sleep", side_effect=mock_sleep),
+            patch("workers.convert_audiobook.check_queued_chapters", side_effect=mock_check_that_errors),
+            patch("workers.convert_audiobook.asyncio.sleep", side_effect=mock_sleep),
         ):
             task = asyncio.create_task(keep_converting())
 
@@ -308,19 +348,19 @@ class TestBackgroundTaskTracking:
                 # usable in where-clauses (patching the whole model leaves a
                 # MagicMock column that fails `<= datetime` comparisons).
                 patch(
-                    "src.workers.convert_audiobook.AudiobookChapter.update",
+                    "workers.convert_audiobook.AudiobookChapter.update",
                     return_value=mock_update_query,
                 ),
                 patch(
-                    "src.workers.convert_audiobook.AudiobookChapter.objects",
+                    "workers.convert_audiobook.AudiobookChapter.objects",
                     return_value=mock_query,
                 ),
                 patch(
-                    "src.workers.convert_audiobook.AudiobookChapter.count",
+                    "workers.convert_audiobook.AudiobookChapter.count",
                     return_value=mock_count_query,
                 ),
-                patch("src.workers.convert_audiobook.convert_one", new=_noop),
-                patch("src.workers.convert_audiobook.asyncio.create_task", side_effect=_tracking_create_task),
+                patch("workers.convert_audiobook.convert_one", new=_noop),
+                patch("workers.convert_audiobook.asyncio.create_task", side_effect=_tracking_create_task),
             ):
                 result = await check_queued_chapters()
 

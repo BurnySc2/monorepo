@@ -18,7 +18,7 @@ async def test_lifespan_continues_when_nltk_data_unavailable(monkeypatch: pytest
     """Lifespan yields/boots when _ensure_nltk_data raises LookupError/OSError."""
     monkeypatch.setattr(main, "initialize_rustfs", AsyncMock(return_value=None))
     mock_ensure = MagicMock(side_effect=error)
-    monkeypatch.setattr(main, "_ensure_nltk_data", mock_ensure)
+    monkeypatch.setattr(main, "ensure_nltk_data", mock_ensure)
 
     async with main.lifespan(MagicMock()):
         pass
@@ -31,7 +31,7 @@ async def test_lifespan_propagates_unexpected_error(monkeypatch: pytest.MonkeyPa
     """Lifespan does not swallow unexpected errors like ValueError."""
     monkeypatch.setattr(main, "initialize_rustfs", AsyncMock(return_value=None))
     mock_ensure = MagicMock(side_effect=ValueError("unexpected"))
-    monkeypatch.setattr(main, "_ensure_nltk_data", mock_ensure)
+    monkeypatch.setattr(main, "ensure_nltk_data", mock_ensure)
 
     with pytest.raises(ValueError, match="unexpected"):
         async with main.lifespan(MagicMock()):

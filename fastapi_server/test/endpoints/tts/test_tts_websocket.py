@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from components.tts.websocket_handler import TTSQueue
-from src.main import app
+from main import app
 
 
 @pytest.fixture
