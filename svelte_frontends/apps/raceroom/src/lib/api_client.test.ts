@@ -36,6 +36,8 @@ describe("fetch_tracks", () => {
 
     afterEach(() => {
         globalThis.fetch = original_fetch
+        vi.clearAllMocks()
+        vi.unstubAllEnvs()
     })
 
     it("returns tracks on successful response", async () => {
@@ -83,6 +85,8 @@ describe("fetch_times", () => {
 
     afterEach(() => {
         globalThis.fetch = original_fetch
+        vi.clearAllMocks()
+        vi.unstubAllEnvs()
     })
 
     it("returns times on successful response", async () => {
@@ -107,74 +111,30 @@ describe("fetch_times", () => {
         await expect(fetch_times()).rejects.toThrow(/Request failed \/api\/raceroom\/times.*Server Error/)
     })
 
-    it("calls /api/raceroom/times without params", async () => {
-        mock_fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => [],
-        })
-
-        await fetch_times()
-
-        expect(mock_fetch).toHaveBeenCalledWith(
-            "http://localhost:8000/api/raceroom/times",
-            expect.objectContaining({ credentials: "include" }),
-        )
-    })
-
-    it("appends track_id query param when provided", async () => {
-        mock_fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => [],
-        })
-
-        await fetch_times(5)
-
-        expect(mock_fetch).toHaveBeenCalledWith(
-            "http://localhost:8000/api/raceroom/times?track_id=5",
-            expect.objectContaining({ credentials: "include" }),
-        )
-    })
-
-    it("appends start_date query param when provided", async () => {
-        mock_fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => [],
-        })
-
-        await fetch_times(undefined, "2024-01-01")
-
-        expect(mock_fetch).toHaveBeenCalledWith(
-            "http://localhost:8000/api/raceroom/times?start_date=2024-01-01",
-            expect.objectContaining({ credentials: "include" }),
-        )
-    })
-
-    it("appends end_date query param when provided", async () => {
-        mock_fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => [],
-        })
-
-        await fetch_times(undefined, undefined, "2024-12-31")
-
-        expect(mock_fetch).toHaveBeenCalledWith(
-            "http://localhost:8000/api/raceroom/times?end_date=2024-12-31",
-            expect.objectContaining({ credentials: "include" }),
-        )
-    })
-
-    it("combines multiple query params", async () => {
-        mock_fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => [],
-        })
-
-        await fetch_times(3, "2024-01-01", "2024-12-31")
-
-        expect(mock_fetch).toHaveBeenCalledWith(
+    it.each([
+        [undefined, undefined, undefined, "http://localhost:8000/api/raceroom/times"],
+        [5, undefined, undefined, "http://localhost:8000/api/raceroom/times?track_id=5"],
+        [undefined, "2024-01-01", undefined, "http://localhost:8000/api/raceroom/times?start_date=2024-01-01"],
+        [undefined, undefined, "2024-12-31", "http://localhost:8000/api/raceroom/times?end_date=2024-12-31"],
+        [
+            3,
+            "2024-01-01",
+            "2024-12-31",
             "http://localhost:8000/api/raceroom/times?track_id=3&start_date=2024-01-01&end_date=2024-12-31",
-            expect.objectContaining({ credentials: "include" }),
+        ],
+    ])("builds query track_id=%s start_date=%s end_date=%s -> %s", async (track_id, start_date, end_date, expected_url) => {
+        mock_fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => [],
+        })
+
+        await fetch_times(
+            track_id as number | undefined,
+            start_date as string | undefined,
+            end_date as string | undefined,
         )
+
+        expect(mock_fetch).toHaveBeenCalledWith(expected_url, expect.objectContaining({ credentials: "include" }))
     })
 
     it("throws error when fetch fails completely", async () => {

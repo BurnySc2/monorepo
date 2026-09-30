@@ -2,6 +2,8 @@ import { get_api_base } from "@repo/api-client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { check_login_status, handle_logout, start_github_login, start_twitch_login } from "./login"
 
+const original_fetch = globalThis.fetch
+
 function create_mock_location() {
     return {
         href: "",
@@ -37,15 +39,19 @@ function create_mock_window() {
     }
 }
 
+beforeEach(() => {
+    vi.stubEnv("VITE_API_TARGET", "localhost:8000")
+    vi.clearAllMocks()
+})
+
+afterEach(() => {
+    globalThis.fetch = original_fetch
+    vi.clearAllMocks()
+    vi.unstubAllEnvs()
+    vi.restoreAllMocks()
+})
+
 describe("check_login_status", () => {
-    beforeEach(() => {
-        vi.stubEnv("VITE_API_TARGET", "localhost:8000")
-    })
-
-    afterEach(() => {
-        vi.restoreAllMocks()
-    })
-
     it("returns logged in state when user is authenticated", async () => {
         const mockUser = { id: 1, name: "testuser", service: "twitch" }
         global.fetch = vi.fn().mockResolvedValue({
@@ -89,14 +95,6 @@ describe("check_login_status", () => {
 })
 
 describe("start_twitch_login", () => {
-    beforeEach(() => {
-        vi.stubEnv("VITE_API_TARGET", "localhost:8000")
-    })
-
-    afterEach(() => {
-        vi.restoreAllMocks()
-    })
-
     it("redirects to twitch login URL", () => {
         const location = create_mock_location()
         const mockWindow = create_mock_window()
@@ -110,14 +108,6 @@ describe("start_twitch_login", () => {
 })
 
 describe("start_github_login", () => {
-    beforeEach(() => {
-        vi.stubEnv("VITE_API_TARGET", "localhost:8000")
-    })
-
-    afterEach(() => {
-        vi.restoreAllMocks()
-    })
-
     it("redirects to github login URL", () => {
         const location = create_mock_location()
         const mockWindow = create_mock_window()
@@ -131,14 +121,6 @@ describe("start_github_login", () => {
 })
 
 describe("handle_logout", () => {
-    beforeEach(() => {
-        vi.stubEnv("VITE_API_TARGET", "localhost:8000")
-    })
-
-    afterEach(() => {
-        vi.restoreAllMocks()
-    })
-
     it("reloads page when logout redirects", async () => {
         const reloadSpy = vi.fn()
         const location = create_mock_location()

@@ -22,147 +22,180 @@ const createMockStorage = (): StorageLike & { store: Record<string, string> } =>
 }
 
 describe("load_saved_ideals", () => {
-    it("returns empty array when storage is empty", () => {
+    it.each([
+        {
+            name: "returns empty array when storage is empty",
+            setup: (_storage: ReturnType<typeof createMockStorage>) => {},
+            expected_length: 0,
+            assert_extra: (_result: SavedIdealReplay[]) => {},
+        },
+        {
+            name: "returns parsed array when storage has data",
+            setup: (storage: ReturnType<typeof createMockStorage>) => {
+                const savedReplay: SavedIdealReplay = {
+                    name: "test",
+                    replay_data: createReplayData({ player1: { name: "TestPlayer" } }),
+                }
+                storage.store.saved_ideal_replays = JSON.stringify([savedReplay])
+            },
+            expected_length: 1,
+            assert_extra: (result: SavedIdealReplay[]) => {
+                expect(result[0].name).toBe("test")
+            },
+        },
+        {
+            name: "handles invalid JSON gracefully",
+            setup: (storage: ReturnType<typeof createMockStorage>) => {
+                storage.store.saved_ideal_replays = "invalid json"
+            },
+            expected_length: 0,
+            assert_extra: (_result: SavedIdealReplay[]) => {},
+        },
+    ])("$name", ({ setup, expected_length, assert_extra }) => {
         const storage = createMockStorage()
+        setup(storage)
         const result = load_saved_ideals(storage)
-        expect(result).toEqual([])
-    })
-
-    it("returns parsed array when storage has data", () => {
-        const storage = createMockStorage()
-        const savedReplay: SavedIdealReplay = {
-            name: "test",
-            replay_data: createReplayData({ player1: { name: "TestPlayer" } }),
+        expect(result).toHaveLength(expected_length)
+        if (expected_length === 0) {
+            expect(result).toEqual([])
         }
-        storage.store.saved_ideal_replays = JSON.stringify([savedReplay])
-
-        const result = load_saved_ideals(storage)
-
-        expect(result).toHaveLength(1)
-        expect(result[0].name).toBe("test")
-    })
-
-    it("handles invalid JSON gracefully", () => {
-        const storage = createMockStorage()
-        storage.store.saved_ideal_replays = "invalid json"
-
-        const result = load_saved_ideals(storage)
-
-        expect(result).toEqual([])
+        assert_extra(result)
     })
 })
 
 describe("save_ideal_replay", () => {
-    it("saves new replay to storage", () => {
+    it.each([
+        {
+            name: "saves new replay to storage",
+            initial: [] as SavedIdealReplay[],
+            save_name: "new_replay",
+            save_data: () => createReplayData(),
+            expected_length: 1,
+            expected_name: "new_replay",
+            expected_player: undefined as string | undefined,
+        },
+        {
+            name: "updates existing replay with same name",
+            initial: [
+                {
+                    name: "existing",
+                    replay_data: createReplayData({ player1: { name: "OldName" } }),
+                },
+            ] as SavedIdealReplay[],
+            save_name: "existing",
+            save_data: () => createReplayData({ player1: { name: "NewName" } }),
+            expected_length: 1,
+            expected_name: "existing",
+            expected_player: "NewName",
+        },
+        {
+            name: "appends new replay when name is different",
+            initial: [{ name: "existing", replay_data: createReplayData() }] as SavedIdealReplay[],
+            save_name: "new_one",
+            save_data: () => createReplayData(),
+            expected_length: 2,
+            expected_name: "new_one",
+            expected_player: undefined as string | undefined,
+        },
+    ])("$name", ({ initial, save_name, save_data, expected_length, expected_name, expected_player }) => {
         const storage = createMockStorage()
-        const replayData = createReplayData()
-
-        save_ideal_replay("new_replay", replayData, storage)
-
+        if (initial.length > 0) {
+            storage.store.saved_ideal_replays = JSON.stringify(initial)
+        }
+        save_ideal_replay(save_name, save_data(), storage)
         expect(storage.store.saved_ideal_replays).toBeDefined()
-        const saved = JSON.parse(storage.store.saved_ideal_replays)
-        expect(saved).toHaveLength(1)
-        expect(saved[0].name).toBe("new_replay")
-    })
-
-    it("updates existing replay with same name", () => {
-        const storage = createMockStorage()
-        const existingReplay: SavedIdealReplay = {
-            name: "existing",
-            replay_data: createReplayData({ player1: { name: "OldName" } }),
+        const saved = JSON.parse(storage.store.saved_ideal_replays) as SavedIdealReplay[]
+        expect(saved).toHaveLength(expected_length)
+        if (expected_player !== undefined) {
+            const entry = saved.find((s) => s.name === save_name)
+            expect(entry?.replay_data.player1.name).toBe(expected_player)
+        } else {
+            expect(saved.some((s) => s.name === expected_name)).toBe(true)
         }
-        storage.store.saved_ideal_replays = JSON.stringify([existingReplay])
-
-        const newReplayData = createReplayData({ player1: { name: "NewName" } })
-        save_ideal_replay("existing", newReplayData, storage)
-
-        const saved = JSON.parse(storage.store.saved_ideal_replays)
-        expect(saved).toHaveLength(1)
-        expect(saved[0].replay_data.player1.name).toBe("NewName")
-    })
-
-    it("appends new replay when name is different", () => {
-        const storage = createMockStorage()
-        const existingReplay: SavedIdealReplay = {
-            name: "existing",
-            replay_data: createReplayData(),
-        }
-        storage.store.saved_ideal_replays = JSON.stringify([existingReplay])
-
-        save_ideal_replay("new_one", createReplayData(), storage)
-
-        const saved = JSON.parse(storage.store.saved_ideal_replays)
-        expect(saved).toHaveLength(2)
     })
 })
 
 describe("delete_saved_ideal", () => {
-    it("removes replay from storage", () => {
+    it.each([
+        {
+            name: "removes replay from storage",
+            initial: [
+                { name: "replay1", replay_data: createReplayData() },
+                { name: "replay2", replay_data: createReplayData() },
+            ] as SavedIdealReplay[],
+            delete_name: "replay1",
+            expected_length: 1,
+            expected_remaining: "replay2",
+        },
+        {
+            name: "does nothing when name does not exist",
+            initial: [{ name: "replay1", replay_data: createReplayData() }] as SavedIdealReplay[],
+            delete_name: "nonexistent",
+            expected_length: 1,
+            expected_remaining: "replay1",
+        },
+        {
+            name: "handles empty storage",
+            initial: [] as SavedIdealReplay[],
+            delete_name: "any_name",
+            expected_length: 0,
+            expected_remaining: undefined as string | undefined,
+        },
+    ])("$name", ({ initial, delete_name, expected_length, expected_remaining }) => {
         const storage = createMockStorage()
-        const replay1: SavedIdealReplay = { name: "replay1", replay_data: createReplayData() }
-        const replay2: SavedIdealReplay = { name: "replay2", replay_data: createReplayData() }
-        storage.store.saved_ideal_replays = JSON.stringify([replay1, replay2])
-
-        delete_saved_ideal("replay1", storage)
-
-        const saved = JSON.parse(storage.store.saved_ideal_replays)
-        expect(saved).toHaveLength(1)
-        expect(saved[0].name).toBe("replay2")
-    })
-
-    it("does nothing when name does not exist", () => {
-        const storage = createMockStorage()
-        const replay: SavedIdealReplay = { name: "replay1", replay_data: createReplayData() }
-        storage.store.saved_ideal_replays = JSON.stringify([replay])
-
-        delete_saved_ideal("nonexistent", storage)
-
-        const saved = JSON.parse(storage.store.saved_ideal_replays)
-        expect(saved).toHaveLength(1)
-    })
-
-    it("handles empty storage", () => {
-        const storage = createMockStorage()
-        delete_saved_ideal("any_name", storage)
-        expect(storage.store.saved_ideal_replays).toBe("[]")
+        if (initial.length > 0) {
+            storage.store.saved_ideal_replays = JSON.stringify(initial)
+        }
+        delete_saved_ideal(delete_name, storage)
+        const saved = JSON.parse(storage.store.saved_ideal_replays) as SavedIdealReplay[]
+        expect(saved).toHaveLength(expected_length)
+        if (expected_remaining !== undefined) {
+            expect(saved[0].name).toBe(expected_remaining)
+        } else {
+            expect(storage.store.saved_ideal_replays).toBe("[]")
+        }
     })
 })
 
 describe("rename_saved_ideal", () => {
-    it("renames existing replay", () => {
-        const storage = createMockStorage()
-        const replay: SavedIdealReplay = { name: "old_name", replay_data: createReplayData() }
-        storage.store.saved_ideal_replays = JSON.stringify([replay])
-
-        rename_saved_ideal("old_name", "new_name", storage)
-
-        const saved = JSON.parse(storage.store.saved_ideal_replays)
-        expect(saved[0].name).toBe("new_name")
-    })
-
-    it("does nothing when old name does not exist", () => {
-        const storage = createMockStorage()
-        const replay: SavedIdealReplay = { name: "existing", replay_data: createReplayData() }
-        storage.store.saved_ideal_replays = JSON.stringify([replay])
-
-        rename_saved_ideal("nonexistent", "new_name", storage)
-
-        const saved = JSON.parse(storage.store.saved_ideal_replays)
-        expect(saved[0].name).toBe("existing")
-    })
-
-    it("preserves replay data when renaming", () => {
+    it.each([
+        {
+            name: "renames existing replay",
+            initial_name: "old_name",
+            initial_player: "Player1",
+            old_name: "old_name",
+            new_name: "new_name",
+            expected_name: "new_name",
+            expected_player: "Player1",
+        },
+        {
+            name: "does nothing when old name does not exist",
+            initial_name: "existing",
+            initial_player: "Player1",
+            old_name: "nonexistent",
+            new_name: "new_name",
+            expected_name: "existing",
+            expected_player: "Player1",
+        },
+        {
+            name: "preserves replay data when renaming",
+            initial_name: "old_name",
+            initial_player: "OriginalPlayer",
+            old_name: "old_name",
+            new_name: "new_name",
+            expected_name: "new_name",
+            expected_player: "OriginalPlayer",
+        },
+    ])("$name", ({ initial_name, initial_player, old_name, new_name, expected_name, expected_player }) => {
         const storage = createMockStorage()
         const replay: SavedIdealReplay = {
-            name: "old_name",
-            replay_data: createReplayData({ player1: { name: "OriginalPlayer" } }),
+            name: initial_name,
+            replay_data: createReplayData({ player1: { name: initial_player } }),
         }
         storage.store.saved_ideal_replays = JSON.stringify([replay])
-
-        rename_saved_ideal("old_name", "new_name", storage)
-
-        const saved = JSON.parse(storage.store.saved_ideal_replays)
-        expect(saved[0].name).toBe("new_name")
-        expect(saved[0].replay_data.player1.name).toBe("OriginalPlayer")
+        rename_saved_ideal(old_name, new_name, storage)
+        const saved = JSON.parse(storage.store.saved_ideal_replays) as SavedIdealReplay[]
+        expect(saved[0].name).toBe(expected_name)
+        expect(saved[0].replay_data.player1.name).toBe(expected_player)
     })
 })

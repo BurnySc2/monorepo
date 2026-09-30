@@ -1,4 +1,7 @@
+import * as fc from "fast-check"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+
+const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
 vi.mock("$app/environment", () => ({
     browser: false,
@@ -293,5 +296,82 @@ describe("sort_settings", () => {
             const result = SortStateSchema.parse([])
             expect(result).toEqual([])
         })
+    })
+})
+
+describe("sort toggle cycle properties", () => {
+    beforeEach(() => {
+        clear_sort()
+    })
+
+    it("three toggles of same column return to empty", () => {
+        fc.assert(
+            fc.property(fc.stringMatching(/^[a-z_]{1,20}$/), (column) => {
+                clear_sort()
+                toggle_sort(column)
+                expect(get_sort_direction(column)).toBe("desc")
+                toggle_sort(column)
+                expect(get_sort_direction(column)).toBe("asc")
+                toggle_sort(column)
+                expect(get_sort_direction(column)).toBeNull()
+                expect(get_sort_priority(column)).toBe(0)
+                expect(sort_state).toHaveLength(0)
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("sort priority order properties", () => {
+    beforeEach(() => {
+        clear_sort()
+    })
+
+    it("new column becomes highest priority and order mirrors toggle sequence", () => {
+        fc.assert(
+            fc.property(fc.array(fc.stringMatching(/^[a-z_]{1,12}$/), { minLength: 1, maxLength: 6 }), (columns) => {
+                clear_sort()
+                const unique = [...new Set(columns)]
+                for (const column of unique) {
+                    toggle_sort(column)
+                    expect(sort_state[0].column_key).toBe(column)
+                    expect(get_sort_priority(column)).toBe(1)
+                }
+                const expected_order = [...unique].reverse()
+                expect(sort_state.map((entry) => entry.column_key)).toEqual(expected_order)
+                for (const [index, column] of expected_order.entries()) {
+                    expect(get_sort_priority(column)).toBe(index + 1)
+                }
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("sort ascending flag properties", () => {
+    beforeEach(() => {
+        clear_sort()
+    })
+
+    it("to_sort_items ascending flag matches direction", () => {
+        fc.assert(
+            fc.property(fc.array(fc.stringMatching(/^[a-z_]{1,12}$/), { minLength: 1, maxLength: 5 }), (columns) => {
+                clear_sort()
+                const unique = [...new Set(columns)]
+                for (const column of unique) {
+                    toggle_sort(column)
+                }
+                if (unique.length > 0) {
+                    toggle_sort(unique[0])
+                }
+                const items = to_sort_items()
+                expect(items).toHaveLength(sort_state.length)
+                for (const [index, entry] of sort_state.entries()) {
+                    expect(items[index].column).toBe(entry.column_key)
+                    expect(items[index].ascending).toBe(entry.direction === "asc")
+                }
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
     })
 })

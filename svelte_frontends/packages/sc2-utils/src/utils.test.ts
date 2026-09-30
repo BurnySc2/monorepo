@@ -1,3 +1,4 @@
+import * as fc from "fast-check"
 import { describe, expect, it } from "vitest"
 import type { IGameData, IUiData } from "./types"
 import {
@@ -13,6 +14,8 @@ import {
     toNephestServer,
     validateGameFromGameData,
 } from "./utils"
+
+const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
 const createGameData = (overrides: Partial<IGameData> = {}): IGameData => ({
     isReplay: false,
@@ -267,5 +270,81 @@ describe("parse_poll_frequency", () => {
         expect(parse_poll_frequency("100")).toBe(250)
         expect(parse_poll_frequency("500")).toBe(500)
         expect(parse_poll_frequency("1000")).toBe(1000)
+    })
+})
+
+describe("poll frequency properties", () => {
+    it("returns >=250 for numeric input else 1000", () => {
+        fc.assert(
+            fc.property(fc.integer({ min: -1000, max: 10000 }), (value) => {
+                const result = parse_poll_frequency(String(value))
+                expect(result).toBeGreaterThanOrEqual(250)
+                if (value < 250) {
+                    expect(result).toBe(250)
+                } else {
+                    expect(result).toBe(value)
+                }
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+
+    it("returns 1000 for null and non-numeric strings", () => {
+        fc.assert(
+            fc.property(fc.stringMatching(/^[^0-9-]+$/), (raw) => {
+                if (raw.trim() === "") {
+                    return
+                }
+                expect(parse_poll_frequency(raw)).toBe(1000)
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("time round-trip properties", () => {
+    it("formatTime then timeStringToNumber round-trips", () => {
+        fc.assert(
+            fc.property(fc.nat({ max: 7200 }), (seconds) => {
+                const formatted = formatTime(seconds)
+                expect(timeStringToNumber(formatted)).toBe(seconds)
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("build order skip-invalid properties", () => {
+    it("skips empty and invalid lines and never throws", () => {
+        fc.assert(
+            fc.property(fc.array(fc.string({ maxLength: 30 }), { maxLength: 10 }), (lines) => {
+                const text = lines.join("\n")
+                const result = textToBuildOrder(text)
+                expect(result.length).toBeLessThanOrEqual(lines.filter((line) => line.trim() !== "").length)
+                for (const item of result) {
+                    expect(Number.isFinite(item.time)).toBe(true)
+                }
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+
+    it("preserves valid m:ss lines", () => {
+        fc.assert(
+            fc.property(
+                fc.array(fc.tuple(fc.nat({ max: 60 }), fc.nat({ max: 59 }), fc.stringMatching(/^[A-Za-z ]{1,10}$/)), {
+                    minLength: 1,
+                    maxLength: 5,
+                }),
+                (entries) => {
+                    const text = entries
+                        .map(([minutes, seconds, label]) => `${minutes}:${String(seconds).padStart(2, "0")} ${label}`)
+                        .join("\n")
+                    const result = textToBuildOrder(text)
+                    expect(result).toHaveLength(entries.length)
+                },
+            ),
+            { seed: FC_SEED, numRuns: 100 },
+        )
     })
 })

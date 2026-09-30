@@ -4,6 +4,9 @@ import { ApiError, api_fetch, get_api_error_status } from "./client"
 const original_fetch = globalThis.fetch
 const mock_fetch = vi.fn()
 
+const json_headers = { "Content-Type": "application/json" }
+const json_body = JSON.stringify({ text: "hello" })
+
 describe("api_fetch", () => {
     beforeEach(() => {
         vi.stubEnv("VITE_API_TARGET", "localhost:8000")
@@ -13,49 +16,57 @@ describe("api_fetch", () => {
 
     afterEach(() => {
         globalThis.fetch = original_fetch
-        vi.restoreAllMocks()
+        vi.clearAllMocks()
         vi.unstubAllEnvs()
     })
 
-    it("builds full URL from base and path", async () => {
+    it.each([
+        {
+            name: "builds full URL from base and path",
+            path: "/login",
+            init: undefined,
+            expected_url: "http://localhost:8000/login",
+            expected_options: {},
+        },
+        {
+            name: "merges credentials include by default",
+            path: "/login",
+            init: undefined,
+            expected_url: "http://localhost:8000/login",
+            expected_options: { credentials: "include" },
+        },
+        {
+            name: "preserves explicit credentials override",
+            path: "/login",
+            init: { credentials: "omit" },
+            expected_url: "http://localhost:8000/login",
+            expected_options: { credentials: "omit" },
+        },
+        {
+            name: "preserves method",
+            path: "/logout",
+            init: { method: "POST" },
+            expected_url: "http://localhost:8000/logout",
+            expected_options: { method: "POST", credentials: "include" },
+        },
+        {
+            name: "preserves headers",
+            path: "/tts-generate/generate",
+            init: { method: "POST", headers: json_headers },
+            expected_url: "http://localhost:8000/tts-generate/generate",
+            expected_options: { headers: json_headers },
+        },
+        {
+            name: "preserves body",
+            path: "/tts-generate/generate",
+            init: { method: "POST", body: json_body },
+            expected_url: "http://localhost:8000/tts-generate/generate",
+            expected_options: { body: json_body },
+        },
+    ])("pass-through $name", async ({ path, init, expected_url, expected_options }) => {
         mock_fetch.mockResolvedValueOnce({ ok: true, status: 200, statusText: "OK" } as Response)
-        await api_fetch("/login")
-        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/login", expect.objectContaining({}))
-    })
-
-    it("merges credentials include by default", async () => {
-        mock_fetch.mockResolvedValueOnce({ ok: true, status: 200, statusText: "OK" } as Response)
-        await api_fetch("/login")
-        expect(mock_fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ credentials: "include" }))
-    })
-
-    it("preserves explicit credentials override", async () => {
-        mock_fetch.mockResolvedValueOnce({ ok: true, status: 200, statusText: "OK" } as Response)
-        await api_fetch("/login", { credentials: "omit" })
-        expect(mock_fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ credentials: "omit" }))
-    })
-
-    it("preserves method", async () => {
-        mock_fetch.mockResolvedValueOnce({ ok: true, status: 200, statusText: "OK" } as Response)
-        await api_fetch("/logout", { method: "POST" })
-        expect(mock_fetch).toHaveBeenCalledWith(
-            "http://localhost:8000/logout",
-            expect.objectContaining({ method: "POST", credentials: "include" }),
-        )
-    })
-
-    it("preserves headers", async () => {
-        mock_fetch.mockResolvedValueOnce({ ok: true, status: 200, statusText: "OK" } as Response)
-        const headers = { "Content-Type": "application/json" }
-        await api_fetch("/tts-generate/generate", { method: "POST", headers })
-        expect(mock_fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ headers }))
-    })
-
-    it("preserves body", async () => {
-        mock_fetch.mockResolvedValueOnce({ ok: true, status: 200, statusText: "OK" } as Response)
-        const body = JSON.stringify({ text: "hello" })
-        await api_fetch("/tts-generate/generate", { method: "POST", body })
-        expect(mock_fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ body }))
+        await api_fetch(path, init as RequestInit | undefined)
+        expect(mock_fetch).toHaveBeenCalledWith(expected_url, expect.objectContaining(expected_options))
     })
 
     it("throws on !ok with status and path in message", async () => {

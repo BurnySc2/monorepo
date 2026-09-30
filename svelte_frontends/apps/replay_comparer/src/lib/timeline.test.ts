@@ -1,3 +1,4 @@
+import * as fc from "fast-check"
 import { describe, expect, it } from "vitest"
 import {
     gameloop_to_time_string,
@@ -7,6 +8,8 @@ import {
     sort_by_key,
 } from "./timeline"
 import { EVENT_TIMELINE_OPTIONS, SPENDING_OPTIONS, TIMELINE_OPTIONS, type TimelineData } from "./types"
+
+const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
 const createTimelineData = (overrides: Partial<TimelineData> = {}): TimelineData => ({
     gameloop: 0,
@@ -220,5 +223,46 @@ describe("merge_timelines", () => {
         expect(result[1][1].workers_active).toBe(12)
         expect(result[2][1].workers_active).toBe(16)
         expect(result[3][1].workers_active).toBe(16)
+    })
+})
+
+describe("sort_by_key properties", () => {
+    it("output is ordered ascending by key", () => {
+        fc.assert(
+            fc.property(
+                fc.array(fc.record({ gameloop: fc.integer({ min: 0, max: 10000 }) }), { maxLength: 20 }),
+                (arr) => {
+                    const copy = [...arr]
+                    sort_by_key(copy, "gameloop")
+                    for (let index = 1; index < copy.length; index += 1) {
+                        expect(copy[index].gameloop).toBeGreaterThanOrEqual(copy[index - 1].gameloop)
+                    }
+                },
+            ),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("gameloop properties", () => {
+    it("time string is monotonic and pads seconds", () => {
+        fc.assert(
+            fc.property(fc.integer({ min: 0, max: 100000 }), fc.integer({ min: 0, max: 100000 }), (a, b) => {
+                const time_a = gameloop_to_time_string(a)
+                const time_b = gameloop_to_time_string(b)
+                expect(time_a).toMatch(/^\d+:\d{2}$/)
+                expect(time_b).toMatch(/^\d+:\d{2}$/)
+                const to_seconds = (time: string) => {
+                    const [minutes_text, seconds_text] = time.split(":")
+                    return Number(minutes_text) * 60 + Number(seconds_text)
+                }
+                if (a <= b) {
+                    expect(to_seconds(time_a)).toBeLessThanOrEqual(to_seconds(time_b))
+                } else {
+                    expect(to_seconds(time_b)).toBeLessThanOrEqual(to_seconds(time_a))
+                }
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
     })
 })

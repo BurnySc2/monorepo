@@ -18,6 +18,55 @@ import {
 const original_fetch = globalThis.fetch
 const mock_fetch = vi.fn()
 
+function mock_500() {
+    mock_fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: "Server Error",
+    })
+}
+
+function mock_ok(payload?: unknown) {
+    if (payload === undefined) {
+        mock_fetch.mockResolvedValueOnce({ ok: true })
+    } else {
+        mock_fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => payload,
+        })
+    }
+}
+
+const audio_settings = { value: "af-ZA|edge|af-ZA-AdriNeural|Female" }
+
+const mock_books_payload = [
+    {
+        id: 1,
+        uploaded_by: "user1",
+        book_title: "Test Book",
+        book_author: "Author",
+        custom_book_title: null,
+        custom_book_author: null,
+        chapter_count: 10,
+        upload_date: "2024-01-01",
+    },
+]
+
+const mock_chapters_payload = [
+    {
+        id: 1,
+        book_id: 123,
+        chapter_number: 1,
+        chapter_title: "Chapter 1",
+        sentence_count: 10,
+        number_in_queue: null,
+        is_converting: false,
+        has_audio: false,
+        minio_object_name: null,
+        minio_presigned_url: "",
+    },
+]
+
 describe("audiobook API", () => {
     beforeEach(() => {
         vi.clearAllMocks()
@@ -26,40 +75,122 @@ describe("audiobook API", () => {
 
     afterEach(() => {
         globalThis.fetch = original_fetch
+        vi.clearAllMocks()
+        vi.unstubAllEnvs()
     })
 
-    describe("get_books", () => {
-        it("returns array of books on success", async () => {
-            const mockBooks = [
-                {
-                    id: 1,
-                    uploaded_by: "user1",
-                    book_title: "Test Book",
-                    book_author: "Author",
-                    custom_book_title: null,
-                    custom_book_author: null,
-                    chapter_count: 10,
-                    upload_date: "2024-01-01",
-                },
-            ]
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => mockBooks,
-            })
-
-            const result = await get_books()
-            expect(result).toHaveLength(1)
-            expect(result[0].id).toBe(1)
+    describe.each([
+        {
+            name: "get_books",
+            invoke: () => get_books(),
+            mock_success: () => mock_ok(mock_books_payload),
+            assert_success: (result: Awaited<ReturnType<typeof get_books>>) => {
+                expect(result).toHaveLength(1)
+                expect(result[0].id).toBe(1)
+            },
+            failure_pattern: /Request failed \/api\/audiobook\/books/,
+        },
+        {
+            name: "delete_book",
+            invoke: () => delete_book(123),
+            mock_success: () => mock_ok(),
+            assert_success: async (result: Awaited<ReturnType<typeof delete_book>>) => {
+                expect(result).toBeUndefined()
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "get_available_voices",
+            invoke: () => get_available_voices(),
+            mock_success: () => mock_ok(["Voice1", "Voice2"]),
+            assert_success: (result: Awaited<ReturnType<typeof get_available_voices>>) => {
+                expect(result).toEqual(["Voice1", "Voice2"])
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "update_book_title",
+            invoke: () => update_book_title(123, "New Title"),
+            mock_success: () => mock_ok(),
+            assert_success: async (result: Awaited<ReturnType<typeof update_book_title>>) => {
+                expect(result).toBeUndefined()
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "update_book_author",
+            invoke: () => update_book_author(123, "New Author"),
+            mock_success: () => mock_ok(),
+            assert_success: async (result: Awaited<ReturnType<typeof update_book_author>>) => {
+                expect(result).toBeUndefined()
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "queue_chapter_audio",
+            invoke: () => queue_chapter_audio(123, 1, audio_settings),
+            mock_success: () => mock_ok(),
+            assert_success: async (result: Awaited<ReturnType<typeof queue_chapter_audio>>) => {
+                expect(result).toBeUndefined()
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "delete_chapter_audio",
+            invoke: () => delete_chapter_audio(123, 1),
+            mock_success: () => mock_ok(),
+            assert_success: async (result: Awaited<ReturnType<typeof delete_chapter_audio>>) => {
+                expect(result).toBeUndefined()
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "queue_all_chapters",
+            invoke: () => queue_all_chapters(123, audio_settings),
+            mock_success: () => mock_ok(),
+            assert_success: async (result: Awaited<ReturnType<typeof queue_all_chapters>>) => {
+                expect(result).toBeUndefined()
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "delete_all_audio",
+            invoke: () => delete_all_audio(123),
+            mock_success: () => mock_ok(),
+            assert_success: async (result: Awaited<ReturnType<typeof delete_all_audio>>) => {
+                expect(result).toBeUndefined()
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "delete_all_books",
+            invoke: () => delete_all_books(),
+            mock_success: () => mock_ok(),
+            assert_success: async (result: Awaited<ReturnType<typeof delete_all_books>>) => {
+                expect(result).toBeUndefined()
+            },
+            failure_pattern: /Request failed/,
+        },
+        {
+            name: "refresh_chapters",
+            invoke: () => refresh_chapters(123, [1]),
+            mock_success: () => mock_ok(mock_chapters_payload),
+            assert_success: (result: Awaited<ReturnType<typeof refresh_chapters>>) => {
+                expect(result).toHaveLength(1)
+                expect(result[0].chapter_number).toBe(1)
+            },
+            failure_pattern: /Request failed/,
+        },
+    ])("$name", ({ invoke, mock_success, assert_success, failure_pattern }) => {
+        it("succeeds without error on success", async () => {
+            mock_success()
+            const result = await (invoke() as Promise<never>)
+            await assert_success(result as never)
         })
 
         it("throws on fetch failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(get_books()).rejects.toThrow(/Request failed \/api\/audiobook\/books/)
+            mock_500()
+            await expect(invoke()).rejects.toThrow(failure_pattern)
         })
     })
 
@@ -100,33 +231,9 @@ describe("audiobook API", () => {
         })
 
         it("throws on other fetch failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
+            mock_500()
 
             await expect(get_book(123)).rejects.toThrow(/Request failed/)
-        })
-    })
-
-    describe("delete_book", () => {
-        it("succeeds without error on success", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-            })
-
-            await expect(delete_book(123)).resolves.toBeUndefined()
-        })
-
-        it("throws on failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(delete_book(123)).rejects.toThrow(/Request failed/)
         })
     })
 
@@ -165,175 +272,7 @@ describe("audiobook API", () => {
         })
     })
 
-    describe("get_available_voices", () => {
-        it("returns array of voices", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => ["Voice1", "Voice2"],
-            })
-
-            const result = await get_available_voices()
-            expect(result).toEqual(["Voice1", "Voice2"])
-        })
-
-        it("throws on fetch failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(get_available_voices()).rejects.toThrow(/Request failed/)
-        })
-    })
-
-    describe("update_book_title", () => {
-        it("succeeds without error on success", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-            })
-
-            await expect(update_book_title(123, "New Title")).resolves.toBeUndefined()
-        })
-
-        it("throws on failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(update_book_title(123, "New Title")).rejects.toThrow(/Request failed/)
-        })
-    })
-
-    describe("update_book_author", () => {
-        it("succeeds without error on success", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-            })
-
-            await expect(update_book_author(123, "New Author")).resolves.toBeUndefined()
-        })
-
-        it("throws on failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(update_book_author(123, "New Author")).rejects.toThrow(/Request failed/)
-        })
-    })
-
-    describe("queue_chapter_audio", () => {
-        it("succeeds without error on success", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-            })
-
-            await expect(
-                queue_chapter_audio(123, 1, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" }),
-            ).resolves.toBeUndefined()
-        })
-
-        it("throws on failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(queue_chapter_audio(123, 1, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" })).rejects.toThrow(
-                /Request failed/,
-            )
-        })
-    })
-
-    describe("delete_chapter_audio", () => {
-        it("succeeds without error on success", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-            })
-
-            await expect(delete_chapter_audio(123, 1)).resolves.toBeUndefined()
-        })
-
-        it("throws on failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(delete_chapter_audio(123, 1)).rejects.toThrow(/Request failed/)
-        })
-    })
-
-    describe("queue_all_chapters", () => {
-        it("succeeds without error on success", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-            })
-
-            await expect(
-                queue_all_chapters(123, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" }),
-            ).resolves.toBeUndefined()
-        })
-
-        it("throws on failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(queue_all_chapters(123, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" })).rejects.toThrow(
-                /Request failed/,
-            )
-        })
-    })
-
-    describe("delete_all_audio", () => {
-        it("succeeds without error on success", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-            })
-
-            await expect(delete_all_audio(123)).resolves.toBeUndefined()
-        })
-
-        it("throws on failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(delete_all_audio(123)).rejects.toThrow(/Request failed/)
-        })
-    })
-
-    describe("delete_all_books", () => {
-        it("succeeds without error on success", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-            })
-
-            await expect(delete_all_books()).resolves.toBeUndefined()
-        })
-
-        it("throws on failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(delete_all_books()).rejects.toThrow(/Request failed/)
-        })
-
+    describe("delete_all_books url", () => {
         it("calls fetch with DELETE and credentials include and correct URL", async () => {
             mock_fetch.mockResolvedValueOnce({
                 ok: true,
@@ -349,43 +288,6 @@ describe("audiobook API", () => {
                     credentials: "include",
                 }),
             )
-        })
-    })
-
-    describe("refresh_chapters", () => {
-        it("returns array of chapters on success", async () => {
-            const mockChapters = [
-                {
-                    id: 1,
-                    book_id: 123,
-                    chapter_number: 1,
-                    chapter_title: "Chapter 1",
-                    sentence_count: 10,
-                    number_in_queue: null,
-                    is_converting: false,
-                    has_audio: false,
-                    minio_object_name: null,
-                    minio_presigned_url: "",
-                },
-            ]
-            mock_fetch.mockResolvedValueOnce({
-                ok: true,
-                json: async () => mockChapters,
-            })
-
-            const result = await refresh_chapters(123, [1])
-            expect(result).toHaveLength(1)
-            expect(result[0].chapter_number).toBe(1)
-        })
-
-        it("throws on fetch failure", async () => {
-            mock_fetch.mockResolvedValueOnce({
-                ok: false,
-                status: 500,
-                statusText: "Server Error",
-            })
-
-            await expect(refresh_chapters(123, [1])).rejects.toThrow(/Request failed/)
         })
     })
 })

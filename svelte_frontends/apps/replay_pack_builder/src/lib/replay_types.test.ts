@@ -1,3 +1,4 @@
+import * as fc from "fast-check"
 import { describe, expect, it } from "vitest"
 import {
     get_default_filter_settings,
@@ -5,6 +6,8 @@ import {
     rename_file_according_to_template,
     replay_passes_filter,
 } from "./replay_types"
+
+const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
 const create_replay = (overrides: Partial<ParsedReplayFile> = {}): ParsedReplayFile => ({
     user_id: "test_user",
@@ -585,5 +588,62 @@ describe("rename_file_according_to_template", () => {
         const replay = create_replay()
         const result = rename_file_according_to_template(replay, "SC2_{map}_Replay")
         expect(result).toBe("SC2_Cyber_Forest_LE_Replay")
+    })
+})
+
+describe("rename_file_according_to_template properties", () => {
+    it("is deterministic and idempotent for same inputs", () => {
+        fc.assert(
+            fc.property(
+                fc.integer({ min: 0, max: 3600 }),
+                fc.stringMatching(/^[A-Za-z0-9 _-]{1,20}$/),
+                (duration, map_suffix) => {
+                    const replay = create_replay({ game_length_seconds: duration, map_name: `Map ${map_suffix}` })
+                    const pattern = "{date}_{time}_{p1r}v{p2r}_{p1name}_vs_{p2name}_on_{map}_{duration}"
+                    const first = rename_file_according_to_template(replay, pattern)
+                    const second = rename_file_according_to_template(replay, pattern)
+                    expect(second).toBe(first)
+                },
+            ),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+
+    it("eliminates placeholders present in pattern", () => {
+        fc.assert(
+            fc.property(fc.constantFrom("{map}", "{p1name}", "{p2name}", "{duration}", "{version}"), (placeholder) => {
+                const replay = create_replay()
+                const result = rename_file_according_to_template(replay, `prefix_${placeholder}_suffix`)
+                expect(result).not.toContain(placeholder)
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("replay_passes_filter properties", () => {
+    it("is monotonic when widening duration bounds", () => {
+        fc.assert(
+            fc.property(
+                fc.integer({ min: 0, max: 2000 }),
+                fc.integer({ min: 0, max: 2000 }),
+                fc.integer({ min: 0, max: 2000 }),
+                (duration, range_min, range_max) => {
+                    const replay = create_replay({ game_length_seconds: duration })
+                    const low = Math.min(range_min, range_max)
+                    const high = Math.max(range_min, range_max)
+                    const tight = { ...get_default_filter_settings(), game_duration_min: low, game_duration_max: high }
+                    const wide = {
+                        ...get_default_filter_settings(),
+                        game_duration_min: Math.max(0, low - 100),
+                        game_duration_max: high + 100,
+                    }
+                    if (replay_passes_filter(replay, tight)) {
+                        expect(replay_passes_filter(replay, wide)).toBe(true)
+                    }
+                },
+            ),
+            { seed: FC_SEED, numRuns: 100 },
+        )
     })
 })

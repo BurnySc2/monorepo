@@ -63,6 +63,8 @@ describe("parse_replay_file", () => {
 
     afterEach(() => {
         globalThis.fetch = original_fetch
+        vi.clearAllMocks()
+        vi.unstubAllEnvs()
     })
 
     it("returns parsed replay data on successful response", async () => {
@@ -80,25 +82,15 @@ describe("parse_replay_file", () => {
         expect(result.teams[0].players[0].name).toBe("TestPlayer")
     })
 
-    it("throws generic api_fetch error on error response (server detail lost)", async () => {
+    it.each([
+        ["throws generic api_fetch error on error response (server detail lost)", { error: "Invalid replay file" }],
+        ["throws generic error when error message is missing", {}],
+    ])("%s", async (_name, payload) => {
         mock_fetch.mockResolvedValueOnce({
             ok: false,
             status: 400,
             statusText: "Bad Request",
-            json: async () => ({ error: "Invalid replay file" }),
-        })
-
-        const file = create_mock_file("invalid.SC2Replay")
-
-        await expect(parse_replay_file(file)).rejects.toThrow(/Request failed \/api\/parse_replay/)
-    })
-
-    it("throws generic error when error message is missing", async () => {
-        mock_fetch.mockResolvedValueOnce({
-            ok: false,
-            status: 400,
-            statusText: "Bad Request",
-            json: async () => ({}),
+            json: async () => payload,
         })
 
         const file = create_mock_file("invalid.SC2Replay")

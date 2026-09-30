@@ -1,5 +1,14 @@
+import * as fc from "fast-check"
 import { describe, expect, it } from "vitest"
 import { format_duration, format_file_size } from "./format"
+
+const FC_SEED = Number(process.env.FC_SEED ?? 42)
+
+function parse_formatted_size(formatted: string): { value: number; unit_index: number } {
+    const sizes = ["B", "KB", "MB", "GB"]
+    const [value_text, unit] = formatted.split(" ")
+    return { value: Number(value_text), unit_index: sizes.indexOf(unit) }
+}
 
 describe("format_file_size", () => {
     it("returns 0 B for zero bytes", () => {
@@ -63,5 +72,33 @@ describe("format_duration", () => {
         expect(format_duration(222.75999450684)).toBe("3:42.759")
         expect(format_duration(3661.5)).toBe("1:01:01.500")
         expect(format_duration(3723.5)).toBe("1:02:03.500")
+    })
+})
+
+describe("format_duration properties", () => {
+    it("is deterministic for same input", () => {
+        fc.assert(
+            fc.property(fc.double({ min: 0, max: 86400, noNaN: true }), (seconds) => {
+                expect(format_duration(seconds)).toBe(format_duration(seconds))
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("format_file_size properties", () => {
+    it("is monotonic in unit and value", () => {
+        fc.assert(
+            fc.property(fc.integer({ min: 0, max: 5000000000 }), fc.integer({ min: 0, max: 5000000000 }), (a, b) => {
+                const [small, large] = a <= b ? [a, b] : [b, a]
+                const parsed_small = parse_formatted_size(format_file_size(small))
+                const parsed_large = parse_formatted_size(format_file_size(large))
+                expect(parsed_small.unit_index).toBeLessThanOrEqual(parsed_large.unit_index)
+                if (parsed_small.unit_index === parsed_large.unit_index) {
+                    expect(parsed_small.value).toBeLessThanOrEqual(parsed_large.value)
+                }
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
     })
 })

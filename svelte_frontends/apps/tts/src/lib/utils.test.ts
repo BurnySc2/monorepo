@@ -1,5 +1,14 @@
+import * as fc from "fast-check"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { build_overlay_url, calculate_reconnect_delay, copy_to_clipboard } from "./utils"
+import {
+    build_overlay_url,
+    calculate_reconnect_delay,
+    clamp_volume_percent,
+    clamp_volume_ratio,
+    copy_to_clipboard,
+} from "./utils"
+
+const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
 describe("build_overlay_url", () => {
     it("constructs URL with channel and volume", () => {
@@ -75,5 +84,79 @@ describe("calculate_reconnect_delay", () => {
     it("falls back to 1000 for infinite attempts with clamp", () => {
         expect(calculate_reconnect_delay(Number.POSITIVE_INFINITY)).toBe(1000)
         expect(calculate_reconnect_delay(-5)).toBe(1000)
+    })
+})
+
+describe("volume clamp properties", () => {
+    it("clamp_volume_percent stays bounded in 0..100 and is idempotent", () => {
+        fc.assert(
+            fc.property(fc.double({ noNaN: false }), (volume) => {
+                const clamped = clamp_volume_percent(volume)
+                expect(clamped).toBeGreaterThanOrEqual(0)
+                expect(clamped).toBeLessThanOrEqual(100)
+                expect(Number.isInteger(clamped)).toBe(true)
+                expect(clamp_volume_percent(clamped)).toBe(clamped)
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+
+    it("clamp_volume_ratio stays bounded in 0..1 and is idempotent", () => {
+        fc.assert(
+            fc.property(fc.double({ noNaN: false }), (volume) => {
+                const clamped = clamp_volume_ratio(volume)
+                expect(clamped).toBeGreaterThanOrEqual(0)
+                expect(clamped).toBeLessThanOrEqual(1)
+                expect(clamp_volume_ratio(clamped)).toBe(clamped)
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("backoff properties", () => {
+    it("reconnect delay is monotonic and capped in 1000..30000", () => {
+        fc.assert(
+            fc.property(fc.integer({ min: -10, max: 20 }), fc.integer({ min: -10, max: 20 }), (a, b) => {
+                const delay_a = calculate_reconnect_delay(a)
+                const delay_b = calculate_reconnect_delay(b)
+                expect(delay_a).toBeGreaterThanOrEqual(1000)
+                expect(delay_a).toBeLessThanOrEqual(30000)
+                expect(delay_b).toBeGreaterThanOrEqual(1000)
+                expect(delay_b).toBeLessThanOrEqual(30000)
+                if (a <= b) {
+                    expect(delay_a).toBeLessThanOrEqual(delay_b)
+                } else {
+                    expect(delay_b).toBeLessThanOrEqual(delay_a)
+                }
+            }),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("overlay url encode properties", () => {
+    it("encode round-trip preserves trimmed channel and clamped volume", () => {
+        fc.assert(
+            fc.property(
+                fc.stringMatching(/^[A-Za-z0-9_ ]{1,20}$/),
+                fc.integer({ min: -50, max: 150 }),
+                (channel, volume) => {
+                    const trimmed = channel.trim()
+                    if (trimmed === "") {
+                        return
+                    }
+                    const url = build_overlay_url(channel, volume)
+                    const prefix = "https://burnysc2.xyz/tts-api/twitch/"
+                    expect(url.startsWith(prefix)).toBe(true)
+                    const without_prefix = url.slice(prefix.length)
+                    const channel_part = without_prefix.split("?volume=")[0]
+                    expect(decodeURIComponent(channel_part)).toBe(trimmed)
+                    const volume_part = Number(without_prefix.split("?volume=")[1])
+                    expect(volume_part).toBe(clamp_volume_percent(volume))
+                },
+            ),
+            { seed: FC_SEED, numRuns: 100 },
+        )
     })
 })
