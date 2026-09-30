@@ -82,6 +82,22 @@
                     }
                 }
             }
+        },
+        {
+            "includes": ["packages/api-types/src/api.ts"],
+            "formatter": {
+                "enabled": false
+            },
+            "linter": {
+                "enabled": false
+            },
+            "assist": {
+                "actions": {
+                    "source": {
+                        "organizeImports": "off"
+                    }
+                }
+            }
         }
     ]
 }

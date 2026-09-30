@@ -7,10 +7,12 @@
         ".": "./src/index.ts"
     },
     "scripts": {
-        "generate-types": "openapi-typescript http://localhost:8000/openapi.json --output src/api.ts"
+        "generate-types": "openapi-typescript http://localhost:8000/openapi.json --output src/api.ts",
+        "check-types": "tsc --noEmit"
     },
     "devDependencies": {
         "@repo/typescript-config": "*",
-        "openapi-typescript": "^7.6.0"
+        "openapi-typescript": "^7.6.0",
+        "typescript": "^5.0.0"
     }
 }
