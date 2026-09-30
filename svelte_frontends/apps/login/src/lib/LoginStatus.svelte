@@ -1,8 +1,8 @@
 <script lang="ts">
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
-import { fetch_login_status } from "./api"
 import {
+    check_login_status,
     type LoginState,
     handle_logout as shared_handle_logout,
     start_github_login,
@@ -15,20 +15,13 @@ let is_logged_in: LoginState["is_logged_in"] = $state(false)
 let logged_in_user: LoginState["logged_in_user"] = $state(null)
 let error_message: LoginState["error_message"] = $state(null)
 
-// Check login status on mount
-async function check_login_status() {
-    try {
-        const data = await fetch_login_status()
-        is_logged_in = data.logged_in
-        if (data.logged_in && data.user) {
-            logged_in_user = { id: data.user.id, name: data.user.name, service: data.user.service }
-        }
-    } catch (error) {
-        console.error("Failed to check login status:", error)
-        error_message = "Failed to connect to server"
-    } finally {
-        is_loading = false
-    }
+// Refresh login status (delegates to canonical check_login_status, keeps Svelte set-state behavior)
+async function refresh_login_status() {
+    const state = await check_login_status()
+    is_loading = state.is_loading
+    is_logged_in = state.is_logged_in
+    logged_in_user = state.logged_in_user
+    error_message = state.error_message
 }
 
 // Logout function (delegates to canonical handle_logout, keeps Svelte set-state behavior)
@@ -44,7 +37,7 @@ async function handle_logout() {
 }
 
 onMount(() => {
-    check_login_status()
+    refresh_login_status()
 })
 </script>
 
@@ -54,7 +47,7 @@ onMount(() => {
     {:else if error_message}
         <div class="text-center">
             <p>{error_message}</p>
-            <button onclick={() => { error_message = null; check_login_status(); }}>Retry</button>
+            <button onclick={() => { error_message = null; refresh_login_status(); }}>Retry</button>
         </div>
     {:else if is_logged_in && logged_in_user}
         <div class="text-center">

@@ -160,3 +160,11 @@ export const textToBuildOrder = (buildOrderText: string): IBuildOrderItem[] => {
 export const isNephestResponse = (data: unknown): data is INephestResponse => {
     return typeof data === "object" && data !== null && "currentStats" in data && "members" in data
 }
+
+export function parse_poll_frequency(raw: string | null): number {
+    const parsed = parseInt(raw ?? "1000", 10)
+    if (!Number.isFinite(parsed)) {
+        return 1000
+    }
+    return Math.max(250, parsed)
+}

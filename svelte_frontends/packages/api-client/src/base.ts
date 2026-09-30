@@ -1,12 +1,7 @@
-export function get_api_base(): string {
-    const raw_target =
-        typeof import.meta.env === "undefined" ? undefined : (import.meta.env.VITE_API_TARGET as string | undefined)
-    if (!raw_target) {
-        return "http://localhost:8000"
-    }
-    const without_scheme = raw_target.replace(/^https?:\/\//i, "").replace(/\/+$/, "")
+export function is_local_host(target: string): boolean {
+    const without_scheme = target.replace(/^https?:\/\//i, "").replace(/\/+$/, "")
     if (!without_scheme) {
-        return "http://localhost:8000"
+        return false
     }
     const host_port = without_scheme.split("/")[0] ?? ""
     const lower_host_port = host_port.toLowerCase()
@@ -19,8 +14,20 @@ export function get_api_base(): string {
     } else {
         hostname = lower_host_port.split(":")[0] ?? ""
     }
-    const is_local =
-        hostname === "localhost" || hostname.endsWith(".localhost") || hostname === "127.0.0.1" || hostname === "::1"
+    return hostname === "localhost" || hostname.endsWith(".localhost") || hostname === "127.0.0.1" || hostname === "::1"
+}
+
+export function get_api_base(): string {
+    const raw_target =
+        typeof import.meta.env === "undefined" ? undefined : (import.meta.env.VITE_API_TARGET as string | undefined)
+    if (!raw_target) {
+        return "http://localhost:8000"
+    }
+    const without_scheme = raw_target.replace(/^https?:\/\//i, "").replace(/\/+$/, "")
+    if (!without_scheme) {
+        return "http://localhost:8000"
+    }
+    const is_local = is_local_host(raw_target)
     const protocol = is_local ? "http" : "https"
     return `${protocol}://${without_scheme}`
 }

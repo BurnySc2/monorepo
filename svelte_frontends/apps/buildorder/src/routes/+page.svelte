@@ -17,6 +17,7 @@ import {
     gameResponseRaces,
     getCurrentScene,
     getSceneChange,
+    parse_poll_frequency,
     resetInfo,
     sc2GameUrl,
     sc2UiUrl,
@@ -26,14 +27,6 @@ import { Spinner } from "@repo/ui"
 import { page } from "$app/state"
 
 const dev = import.meta.env.DEV
-
-function parse_poll_frequency(raw: string | null): number {
-    const parsed = parseInt(raw ?? "1000", 10)
-    if (!Number.isFinite(parsed)) {
-        return 1000
-    }
-    return Math.max(250, parsed)
-}
 
 let params = $derived({
     twitchUser: page.url.searchParams.get("twitchUser"),

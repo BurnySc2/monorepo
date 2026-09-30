@@ -27,5 +27,6 @@ export async function copy_to_clipboard(text: string): Promise<void> {
 
 export function calculate_reconnect_delay(attempts: number): number {
     const max_delay = 30000
-    return Math.min(1000 * 2 ** attempts, max_delay)
+    const safe_attempts = !Number.isFinite(attempts) || attempts < 0 ? 0 : Math.floor(attempts)
+    return Math.min(1000 * 2 ** safe_attempts, max_delay)
 }

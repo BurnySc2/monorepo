@@ -1,4 +1,5 @@
 <script lang="ts">
+import { is_local_host } from "@repo/api-client"
 import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
 import * as api from "$lib/api/audiobook"
@@ -18,19 +19,7 @@ function is_local_api_target(target: string | undefined): boolean {
     if (!target) {
         return true
     }
-    const without_scheme = target.replace(/^https?:\/\//i, "").replace(/\/+$/, "")
-    const host_port = without_scheme.split("/")[0] ?? ""
-    const lower_host_port = host_port.toLowerCase()
-    let hostname: string
-    if (lower_host_port.startsWith("[")) {
-        const end = lower_host_port.indexOf("]")
-        hostname = end === -1 ? lower_host_port : lower_host_port.slice(1, end)
-    } else if (lower_host_port === "::1" || lower_host_port.startsWith("::1:")) {
-        hostname = "::1"
-    } else {
-        hostname = lower_host_port.split(":")[0] ?? ""
-    }
-    return hostname === "localhost" || hostname.endsWith(".localhost") || hostname === "127.0.0.1" || hostname === "::1"
+    return is_local_host(target)
 }
 const login_url = is_local_api_target(raw_api_target) ? "http://localhost:5173" : "https://login.burnysc2.xyz"
 

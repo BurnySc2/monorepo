@@ -66,4 +66,14 @@ describe("calculate_reconnect_delay", () => {
         expect(calculate_reconnect_delay(5)).toBe(30000)
         expect(calculate_reconnect_delay(10)).toBe(30000)
     })
+
+    it("falls back to 1000 for NaN and negative attempts", () => {
+        expect(calculate_reconnect_delay(Number.NaN)).toBe(1000)
+        expect(calculate_reconnect_delay(-1)).toBe(1000)
+    })
+
+    it("falls back to 1000 for infinite attempts with clamp", () => {
+        expect(calculate_reconnect_delay(Number.POSITIVE_INFINITY)).toBe(1000)
+        expect(calculate_reconnect_delay(-5)).toBe(1000)
+    })
 })

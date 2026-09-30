@@ -6,6 +6,7 @@ import {
     getCurrentScene,
     getSceneChange,
     isNephestResponse,
+    parse_poll_frequency,
     textToBuildOrder,
     timeStringToNumber,
     toNephestRace,
@@ -253,5 +254,18 @@ describe("toNephestRace", () => {
 describe("toNephestServer", () => {
     it("contains correct server mappings", () => {
         expect(toNephestServer.Europe).toBe("EU")
+    })
+})
+
+describe("parse_poll_frequency", () => {
+    it("returns 1000 for null and non-numeric input", () => {
+        expect(parse_poll_frequency(null)).toBe(1000)
+        expect(parse_poll_frequency("abc")).toBe(1000)
+    })
+
+    it("clamps values below 250 up to 250 and passes through larger values", () => {
+        expect(parse_poll_frequency("100")).toBe(250)
+        expect(parse_poll_frequency("500")).toBe(500)
+        expect(parse_poll_frequency("1000")).toBe(1000)
     })
 })
