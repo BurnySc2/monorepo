@@ -6,304 +6,304 @@
 export interface paths {
     "/api/rick_morty": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /** Read Users */
-        get: operations["read_users_api_rick_morty_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["read_users_api_rick_morty_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/hello_world": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /** Json Text */
-        get: operations["json_text_api_hello_world_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["json_text_api_hello_world_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Get Login Status
          * @description Check if user is logged in by reading cookies.
          *     Returns user info if logged in, None otherwise.
          */
-        get: operations["get_login_status_login_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["get_login_status_login_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/logout": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Logout
          * @description Clear all authentication cookies and redirect to login page.
          */
-        get: operations["logout_logout_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["logout_logout_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/twitch": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Twitch Login Callback
          * @description Handle Twitch OAuth callback.
          *     If code provided, exchange for token and set cookie.
          *     If already logged in, redirect to login page.
          */
-        get: operations["twitch_login_callback_login_twitch_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["twitch_login_callback_login_twitch_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/github": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Github Login Callback
          * @description Handle GitHub OAuth callback.
          *     If code provided, exchange for token and set cookie.
          *     If already logged in, redirect to login page.
          */
-        get: operations["github_login_callback_login_github_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["github_login_callback_login_github_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/google": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Google Login Callback
          * @description Handle Google OAuth callback.
          *     If code provided, exchange for token and set cookie.
          *     If already logged in, redirect to login page.
          */
-        get: operations["google_login_callback_login_google_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["google_login_callback_login_google_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/twitch/start": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Start Twitch Login
          * @description Start Twitch OAuth flow - redirects to Twitch authorization page.
          */
-        get: operations["start_twitch_login_login_twitch_start_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["start_twitch_login_login_twitch_start_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/github/start": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Start Github Login
          * @description Start GitHub OAuth flow - redirects to GitHub authorization page.
          */
-        get: operations["start_github_login_login_github_start_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["start_github_login_login_github_start_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/login/google/start": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Start Google Login
          * @description Start Google OAuth flow - redirects to Google authorization page.
          */
-        get: operations["start_google_login_login_google_start_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["start_google_login_login_google_start_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/parse_replay": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
          * Parse Replay File
          * @description Parse a StarCraft II replay file and return the parsed data as JSON.
          *
          *     The frontend handles all filtering, renaming, and zipping locally.
          */
-        post: operations["parse_replay_file_api_parse_replay_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        post: operations["parse_replay_file_api_parse_replay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tts-generate/voices-audiobook": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * List Audiobook Voices
          * @description List TTS voices available for audiobook generation.
          *     Only returns voices from tiktok and edge engines (kokoro/kitten excluded - too slow for server CPU).
          */
-        get: operations["list_audiobook_voices_tts_generate_voices_audiobook_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["list_audiobook_voices_tts_generate_voices_audiobook_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tts-generate/voices": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * List Voices
          * @description List all available TTS voices.
          */
-        get: operations["list_voices_tts_generate_voices_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["list_voices_tts_generate_voices_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/tts-generate/generate": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
          * Generate Tts
          * @description Generate TTS audio for the given voice and text.
          *     Voice should be in format: {engine}_{voice_name}
          *     Returns base64-encoded MP3 audio.
          */
-        post: operations["generate_tts_tts_generate_generate_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        post: operations["generate_tts_tts_generate_generate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * List Books
          * @description List all non-deleted books with chapter counts.
          */
-        get: operations["list_books_api_audiobook_books_get"]
-        put?: never
-        post?: never
+        get: operations["list_books_api_audiobook_books_get"];
+        put?: never;
+        post?: never;
         /**
          * Delete All Books
          * @description Delete all books of the logged-in user (scoped by uploaded_by).
@@ -311,19 +311,19 @@ export interface paths {
          *     DB-only; S3 objects not deleted (auto-expire after 30 days).
          *     Relies on FK ON DELETE CASCADE to remove chapters.
          */
-        delete: operations["delete_all_books_api_audiobook_books_delete"]
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        delete: operations["delete_all_books_api_audiobook_books_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books/{book_id}": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Get Book
          * @description Get a single book with its chapters.
@@ -331,272 +331,276 @@ export interface paths {
          *     Generates presigned URLs for chapters with audio.
          *     Uses optimized SQL query to get global queue position.
          */
-        get: operations["get_book_api_audiobook_books__book_id__get"]
-        put?: never
-        post?: never
+        get: operations["get_book_api_audiobook_books__book_id__get"];
+        put?: never;
+        post?: never;
         /**
          * Delete Book
          * @description Hard delete a book and all its chapters.
-         *     Also deletes S3 audio files for each chapter.
-         *     Returns 404 if not found.
+         *     DB-only; S3 objects not deleted (auto-expire after 30 days).
+         *     Relies on FK ON DELETE CASCADE to remove chapters.
+         *     Returns 404 if not found, 403 if not owned.
          */
-        delete: operations["delete_book_api_audiobook_books__book_id__delete"]
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        delete: operations["delete_book_api_audiobook_books__book_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books/{book_id}/chapters/status": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Get Chapter Status
          * @description Get status for specific chapters without full book data.
          *     Accepts comma-separated chapter numbers via query param 'chapter_numbers'.
          *     Returns only the status fields (queue position, converting, has_audio).
          */
-        get: operations["get_chapter_status_api_audiobook_books__book_id__chapters_status_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["get_chapter_status_api_audiobook_books__book_id__chapters_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/upload": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
          * Upload Epub
          * @description Upload an epub file, parse it, and create book/chapter records.
          *     Returns 400 if not an epub, 400 if duplicate, 201 on success.
          */
-        post: operations["upload_epub_api_audiobook_upload_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        post: operations["upload_epub_api_audiobook_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books/{book_id}/audio": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
-        post?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
         /**
          * Delete All Audio
          * @description Delete all generated audio for a book.
+         *     DB-only; clears audio fields via single bulk UPDATE, no S3 deletion (auto-expire).
+         *     Returns 404 if book not found, 403 if not owned.
          */
-        delete: operations["delete_all_audio_api_audiobook_books__book_id__audio_delete"]
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        delete: operations["delete_all_audio_api_audiobook_books__book_id__audio_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books/{book_id}/chapters/{chapter_id}/queue": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
          * Queue Chapter
          * @description Queue a chapter for audio conversion.
          *     Sets queued timestamp and stores audio settings.
          */
-        post: operations["queue_chapter_api_audiobook_books__book_id__chapters__chapter_id__queue_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        post: operations["queue_chapter_api_audiobook_books__book_id__chapters__chapter_id__queue_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books/{book_id}/chapters/{chapter_id}": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
-        post?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
         /**
          * Delete Chapter Audio
          * @description Delete the generated audio for a chapter.
-         *     Removes the audio from rustfs and clears the queued/audio fields.
+         *     DB-only; clears audio fields via single UPDATE, no S3 deletion (auto-expire).
+         *     Returns 404 if book/chapter not found, 403 if not owned.
          */
-        delete: operations["delete_chapter_audio_api_audiobook_books__book_id__chapters__chapter_id__delete"]
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        delete: operations["delete_chapter_audio_api_audiobook_books__book_id__chapters__chapter_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books/{book_id}/title": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
         /**
          * Update Book Title
          * @description Update the custom title for a book.
          */
-        put: operations["update_book_title_api_audiobook_books__book_id__title_put"]
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        put: operations["update_book_title_api_audiobook_books__book_id__title_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books/{book_id}/author": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
         /**
          * Update Book Author
          * @description Update the custom author for a book.
          */
-        put: operations["update_book_author_api_audiobook_books__book_id__author_put"]
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        put: operations["update_book_author_api_audiobook_books__book_id__author_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/audiobook/books/{book_id}/queue-all": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
          * Queue All Chapters
          * @description Queue all chapters of a book for audio conversion.
          */
-        post: operations["queue_all_chapters_api_audiobook_books__book_id__queue_all_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        post: operations["queue_all_chapters_api_audiobook_books__book_id__queue_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/raceroom/tracks": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Get Tracks
          * @description Get all available tracks.
          */
-        get: operations["get_tracks_api_raceroom_tracks_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["get_tracks_api_raceroom_tracks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/raceroom/times": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Get Times
          * @description Get best times with optional filters.
          */
-        get: operations["get_times_api_raceroom_times_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["get_times_api_raceroom_times_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/replay_comparer/parse_replay": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /** Parse Replay File */
-        post: operations["parse_replay_file_api_replay_comparer_parse_replay_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        post: operations["parse_replay_file_api_replay_comparer_parse_replay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/telegram-browser/search": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
          * Search Messages
          * @description Search telegram messages with dynamic filters.
          *     Joins with TelegramChannel via FK traversal for channel_title.
          *     Returns list of SearchResult dicts (frontend expects array directly).
          */
-        post: operations["search_messages_telegram_browser_search_post"]
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        post: operations["search_messages_telegram_browser_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/telegram-browser/queue-file/{id}": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Queue File
          * @description Queue a file for download.
@@ -605,1801 +609,1790 @@ export interface paths {
          *     Deletes and recreates if a terminal download (Downloaded/Failed/GiveUp) exists.
          *     Does NOT modify TelegramMessage.status.
          */
-        get: operations["queue_file_telegram_browser_queue_file__id__get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["queue_file_telegram_browser_queue_file__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/telegram-browser/delete-file/{id}": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        get?: never
-        put?: never
-        post?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
         /**
          * Delete File
          * @description Delete a downloaded file from S3 and remove the download record.
          *     Message status is no longer modified — it stays as 'HasFile'.
          */
-        delete: operations["delete_file_telegram_browser_delete_file__id__delete"]
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        delete: operations["delete_file_telegram_browser_delete_file__id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/telegram-browser/view-file/{id}": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * View File
          * @description Get a presigned S3 URL for viewing a file.
          *     Only succeeds if status is 'Downloaded' and s3_object_name exists.
          */
-        get: operations["view_file_telegram_browser_view_file__id__get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["view_file_telegram_browser_view_file__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/telegram-browser/download-file/{id}": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Download File
          * @description Redirect to a presigned S3 URL with Content-Disposition: attachment.
          *     Used as an <a href> link for browser downloads.
          */
-        get: operations["download_file_telegram_browser_download_file__id__get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["download_file_telegram_browser_download_file__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/telegram-browser/channel-names": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Get Channel Names
          * @description Get all channels that have a username set.
          *     Returns a list of channel titles and usernames, ordered alphabetically by title.
          */
-        get: operations["get_channel_names_telegram_browser_channel_names_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["get_channel_names_telegram_browser_channel_names_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/telegram-browser/channel-stats": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Get Channel Stats
          * @description Get statistics for all telegram channels.
          *     Returns channel info with message counts and file counts, sorted by total messages descending.
          */
-        get: operations["get_channel_stats_telegram_browser_channel_stats_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["get_channel_stats_telegram_browser_channel_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/telegram-browser/downloads": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * List Downloads
          * @description List all downloaded files from the last N days.
          *     Joins TelegramDownload -> TelegramMessage -> TelegramChannel via FK traversal.
          */
-        get: operations["list_downloads_telegram_browser_downloads_get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["list_downloads_telegram_browser_downloads_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/": {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         /**
          * Root
          * @description Health‑check endpoint returning a simple JSON payload.
          */
-        get: operations["root__get"]
-        put?: never
-        post?: never
-        delete?: never
-        options?: never
-        head?: never
-        patch?: never
-        trace?: never
-    }
+        get: operations["root__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
-export type webhooks = Record<string, never>
+export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** Body_parse_replay_file_api_parse_replay_post */
         Body_parse_replay_file_api_parse_replay_post: {
             /** File */
-            file: string
-        }
+            file: string;
+        };
         /** Body_parse_replay_file_api_replay_comparer_parse_replay_post */
         Body_parse_replay_file_api_replay_comparer_parse_replay_post: {
             /**
              * Replay File
              * @description The SC2Replay file to parse
              */
-            replay_file: string
+            replay_file: string;
             /**
              * Replay Tick
              * @description Gameloop tick interval (e.g. 224 for 22.4 seconds)
              */
-            replay_tick: string
-        }
+            replay_tick: string;
+        };
         /** Body_upload_epub_api_audiobook_upload_post */
         Body_upload_epub_api_audiobook_upload_post: {
             /** File */
-            file: string
-        }
+            file: string;
+        };
         /** BookListItem */
         BookListItem: {
             /** Id */
-            id: number
+            id: number;
             /** Uploaded By */
-            uploaded_by: string
+            uploaded_by: string;
             /** Book Title */
-            book_title: string
+            book_title: string;
             /** Book Author */
-            book_author: string
+            book_author: string;
             /** Custom Book Title */
-            custom_book_title?: string | null
+            custom_book_title?: string | null;
             /** Custom Book Author */
-            custom_book_author?: string | null
+            custom_book_author?: string | null;
             /** Chapter Count */
-            chapter_count: number
+            chapter_count: number;
             /**
              * Upload Date
              * Format: date-time
              */
-            upload_date: string
-        }
+            upload_date: string;
+        };
         /** BookWithChapters */
         BookWithChapters: {
-            book: components["schemas"]["BookListItem"]
+            book: components["schemas"]["BookListItem"];
             /** Chapters */
-            chapters: components["schemas"]["ChapterDetail"][]
+            chapters: components["schemas"]["ChapterDetail"][];
             /** Available Voices */
-            available_voices: string[]
-        }
+            available_voices: string[];
+        };
         /** ChannelNameItem */
         ChannelNameItem: {
             /** Channel Title */
-            channel_title: string
+            channel_title: string;
             /** Channel Username */
-            channel_username: string
-        }
+            channel_username: string;
+        };
         /** ChannelStatsItem */
         ChannelStatsItem: {
             /** Channel Title */
-            channel_title: string
+            channel_title: string;
             /** Channel Username */
-            channel_username: string
+            channel_username: string;
             /** Creation Date */
-            creation_date: string
+            creation_date: string;
             /** Participants */
-            participants: number
+            participants: number;
             /** Total Messages */
-            total_messages: number
+            total_messages: number;
             /** Total Files */
-            total_files: number
-        }
+            total_files: number;
+        };
         /** ChapterDetail */
         ChapterDetail: {
             /** Id */
-            id: number
+            id: number;
             /** Book Id */
-            book_id: number
+            book_id: number;
             /** Number In Queue */
-            number_in_queue?: number | null
+            number_in_queue?: number | null;
             /** Is Converting */
-            is_converting: boolean
+            is_converting: boolean;
             /** Has Audio */
-            has_audio: boolean
+            has_audio: boolean;
             /** Chapter Title */
-            chapter_title: string
+            chapter_title: string;
             /** Chapter Number */
-            chapter_number: number
+            chapter_number: number;
             /** Sentence Count */
-            sentence_count: number
+            sentence_count: number;
             /** Minio Object Name */
-            minio_object_name?: string | null
+            minio_object_name?: string | null;
             /**
              * Minio Presigned Url
              * @default
              */
-            minio_presigned_url: string
-        }
+            minio_presigned_url: string;
+        };
         /** DeleteFileResponse */
         DeleteFileResponse: {
             /** Deleted */
-            deleted: boolean
-        }
+            deleted: boolean;
+        };
         /** DeleteResponse */
         DeleteResponse: {
             /** Deleted */
-            deleted: boolean
-        }
+            deleted: boolean;
+        };
         /** DownloadedFileItem */
         DownloadedFileItem: {
             /** Download Queue Time */
-            download_queue_time: string
+            download_queue_time: string;
             /** Download Start Time */
-            download_start_time?: string | null
+            download_start_time?: string | null;
             /** Download Finished Time */
-            download_finished_time?: string | null
+            download_finished_time?: string | null;
             /** Download Retry Attempt */
-            download_retry_attempt: number
+            download_retry_attempt: number;
             /** S3 Object Name */
-            s3_object_name: string
+            s3_object_name: string;
             /** Download Status */
-            download_status: string
+            download_status: string;
             /** Message Id */
-            message_id: number
+            message_id: number;
             /** Message Date */
-            message_date: string
+            message_date: string;
             /** Message Text */
-            message_text: string
+            message_text: string;
             /** File Mime Type */
-            file_mime_type: string
+            file_mime_type: string;
             /** File Extension */
-            file_extension: string
+            file_extension: string;
             /** File Size Bytes */
-            file_size_bytes: number
+            file_size_bytes: number;
             /** File Duration Seconds */
-            file_duration_seconds: number
+            file_duration_seconds: number;
             /** Channel Title */
-            channel_title: string
+            channel_title: string;
             /** Channel Username */
-            channel_username: string
+            channel_username: string;
             /** Message Link */
-            message_link: string
-        }
+            message_link: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
-            detail?: components["schemas"]["ValidationError"][]
-        }
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /** ParsedReplayFile */
         ParsedReplayFile: {
             /** User Id */
-            user_id: string
+            user_id: string;
             /** Size */
-            size: number
+            size: number;
             /** Md5 */
-            md5: string
+            md5: string;
             /**
              * Status
              * @default uploaded
              * @enum {string}
              */
-            status: "uploaded" | "processing" | "processed" | "error"
+            status: "uploaded" | "processing" | "processed" | "error";
             /** Teams */
-            teams: components["schemas"]["ReplayTeam"][]
+            teams: components["schemas"]["ReplayTeam"][];
             /** Played Timestamp */
-            played_timestamp: number
+            played_timestamp: number;
             /** Game Length Seconds */
-            game_length_seconds: number
+            game_length_seconds: number;
             /** Map Name */
-            map_name: string
+            map_name: string;
             /**
              * Region Short
              * @enum {string}
              */
-            region_short: "us" | "eu" | "kr" | "cn"
+            region_short: "us" | "eu" | "kr" | "cn";
             /**
              * Expansion
              * @enum {string}
              */
-            expansion: "WoL" | "HotS" | "LotV"
+            expansion: "WoL" | "HotS" | "LotV";
             /** Game Base Build */
-            game_base_build: number
+            game_base_build: number;
             /** Game Version */
-            game_version: string
+            game_version: string;
             /** Game Type */
-            game_type: string
+            game_type: string;
             /** Is Ladder */
-            is_ladder: boolean
+            is_ladder: boolean;
             /** Is Private */
-            is_private: boolean
+            is_private: boolean;
             /** Resume From Replay */
-            resume_from_replay: boolean
-        }
+            resume_from_replay: boolean;
+        };
         /** QueueChapterRequest */
         QueueChapterRequest: {
             /** Value */
-            value: string
-        }
+            value: string;
+        };
         /** QueueFileResponse */
         QueueFileResponse: {
             /** Queued */
-            queued: boolean
-        }
+            queued: boolean;
+        };
         /** QueueResponse */
         QueueResponse: {
             /** Queued */
-            queued: boolean
-        }
+            queued: boolean;
+        };
         /** ReplayPlayer */
         ReplayPlayer: {
             /** Clan Tag */
-            clan_tag: string
+            clan_tag: string;
             /** Name */
-            name: string
+            name: string;
             /**
              * Pick Race
              * @enum {string}
              */
-            pick_race: "Random" | "Protoss" | "Terran" | "Zerg"
+            pick_race: "Random" | "Protoss" | "Terran" | "Zerg";
             /**
              * Play Race
              * @enum {string}
              */
-            play_race: "Protoss" | "Terran" | "Zerg"
+            play_race: "Protoss" | "Terran" | "Zerg";
             /** Is Human */
-            is_human: boolean
+            is_human: boolean;
             /** Mmr */
-            mmr: number | null
-        }
+            mmr: number | null;
+        };
         /** ReplayTeam */
         ReplayTeam: {
             /** Result */
-            result: ("Win" | "Loss") | null
+            result: ("Win" | "Loss") | null;
             /** Players */
-            players: components["schemas"]["ReplayPlayer"][]
-        }
+            players: components["schemas"]["ReplayPlayer"][];
+        };
         /** SearchRequest */
         SearchRequest: {
             /**
              * Search Text
              * @default
              */
-            search_text: string
+            search_text: string;
             /**
              * Channel Name
              * @default
              */
-            channel_name: string
+            channel_name: string;
             /**
              * Datetime Min
              * @default
              */
-            datetime_min: string
+            datetime_min: string;
             /**
              * Datetime Max
              * @default
              */
-            datetime_max: string
+            datetime_max: string;
             /**
              * Reactions Min
              * @default 0
              */
-            reactions_min: number
+            reactions_min: number;
             /**
              * Reactions Max
              * @default 0
              */
-            reactions_max: number
+            reactions_max: number;
             /**
              * Comments Min
              * @default 0
              */
-            comments_min: number
+            comments_min: number;
             /**
              * Comments Max
              * @default 0
              */
-            comments_max: number
+            comments_max: number;
             /**
              * Must Have File
              * @default false
              */
-            must_have_file: boolean
+            must_have_file: boolean;
             /**
              * File Extension
              * @default
              */
-            file_extension: string
+            file_extension: string;
             /**
              * File Duration Min
              * @default 00:00:00
              */
-            file_duration_min: string
+            file_duration_min: string;
             /**
              * File Duration Max
              * @default 00:00:00
              */
-            file_duration_max: string
+            file_duration_max: string;
             /**
              * File Size Min
              * @default 0
              */
-            file_size_min: number
+            file_size_min: number;
             /**
              * File Size Max
              * @default 0
              */
-            file_size_max: number
+            file_size_max: number;
             /**
              * File Image Width Min
              * @default 0
              */
-            file_image_width_min: number
+            file_image_width_min: number;
             /**
              * File Image Width Max
              * @default 0
              */
-            file_image_width_max: number
+            file_image_width_max: number;
             /**
              * File Image Height Min
              * @default 0
              */
-            file_image_height_min: number
+            file_image_height_min: number;
             /**
              * File Image Height Max
              * @default 0
              */
-            file_image_height_max: number
+            file_image_height_max: number;
             /**
              * Sort
              * @default []
              */
-            sort: components["schemas"]["SortItem"][]
-        }
+            sort: components["schemas"]["SortItem"][];
+        };
         /** SearchResultItem */
         SearchResultItem: {
-            metadata: components["schemas"]["SearchResultMetadata"]
+            metadata: components["schemas"]["SearchResultMetadata"];
             /** Message Date */
-            message_date?: string | null
+            message_date?: string | null;
             /** Channel Title */
-            channel_title?: string | null
+            channel_title?: string | null;
             /** Channel Username */
-            channel_username?: string | null
+            channel_username?: string | null;
             /** Message Text */
-            message_text?: string | null
+            message_text?: string | null;
             /**
              * Amount Of Reactions
              * @default 0
              */
-            amount_of_reactions: number
+            amount_of_reactions: number;
             /**
              * Amount Of Comments
              * @default 0
              */
-            amount_of_comments: number
+            amount_of_comments: number;
             /** File Extension */
-            file_extension?: string | null
+            file_extension?: string | null;
             /** File Size Bytes */
-            file_size_bytes?: number | null
+            file_size_bytes?: number | null;
             /** File Duration Seconds */
-            file_duration_seconds?: number | null
+            file_duration_seconds?: number | null;
             /** File Height */
-            file_height?: number | null
+            file_height?: number | null;
             /** File Width */
-            file_width?: number | null
+            file_width?: number | null;
             /** Mime Type */
-            mime_type?: string | null
+            mime_type?: string | null;
             /**
              * Message Link
              * @default
              */
-            message_link: string
-        }
+            message_link: string;
+        };
         /** SearchResultMetadata */
         SearchResultMetadata: {
             /** Id */
-            id: string
+            id: string;
             /** Status */
-            status: string
+            status: string;
             /** Download Status */
-            download_status?: string | null
-        }
+            download_status?: string | null;
+        };
         /** SortItem */
         SortItem: {
             /**
              * Column
              * @enum {string}
              */
-            column:
-                | "message_date"
-                | "amount_of_reactions"
-                | "amount_of_comments"
-                | "file_size_bytes"
-                | "file_duration_seconds"
-                | "file_height"
-                | "file_width"
-                | "channel_title"
-                | "channel_username"
-                | "file_extension"
-                | "mime_type"
+            column: "message_date" | "amount_of_reactions" | "amount_of_comments" | "file_size_bytes" | "file_duration_seconds" | "file_height" | "file_width" | "channel_title" | "channel_username" | "file_extension" | "mime_type";
             /**
              * Ascending
              * @default true
              */
-            ascending: boolean
-        }
+            ascending: boolean;
+        };
         /** TTSGenerateRequest */
         TTSGenerateRequest: {
             /** Voice */
-            voice: string
+            voice: string;
             /** Text */
-            text: string
-        }
+            text: string;
+        };
         /** UploadSuccess */
         UploadSuccess: {
             /** Id */
-            id: number
+            id: number;
             /** Title */
-            title: string
-        }
+            title: string;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
-            loc: (string | number)[]
+            loc: (string | number)[];
             /** Message */
-            msg: string
+            msg: string;
             /** Error Type */
-            type: string
+            type: string;
             /** Input */
-            input?: unknown
+            input?: unknown;
             /** Context */
-            ctx?: Record<string, never>
-        }
+            ctx?: Record<string, never>;
+        };
         /** ViewFileResponse */
         ViewFileResponse: {
             /** Minio Url */
-            minio_url: string
+            minio_url: string;
             /** Mime Type */
-            mime_type: string
-        }
+            mime_type: string;
+        };
         /** VoiceInfo */
         VoiceInfo: {
             /**
              * Engine
              * @enum {string}
              */
-            engine: "edge" | "kokoro" | "kitten" | "tiktok"
+            engine: "edge" | "kokoro" | "kitten" | "tiktok";
             /** Internal Name */
-            internal_name: string
+            internal_name: string;
             /** Label */
-            label: string
+            label: string;
             /** Gender */
-            gender: string
+            gender: string;
             /** Locale */
-            locale: string
-        }
-    }
-    responses: never
-    parameters: never
-    requestBodies: never
-    headers: never
-    pathItems: never
+            locale: string;
+        };
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
-export type $defs = Record<string, never>
+export type $defs = Record<string, never>;
 export interface operations {
     read_users_api_rick_morty_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
-        }
-    }
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     json_text_api_hello_world_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
-        }
-    }
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     get_login_status_login_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
-        }
-    }
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     logout_logout_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
-        }
-    }
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     twitch_login_callback_login_twitch_get: {
         parameters: {
             query?: {
-                code?: string | null
-            }
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+                code?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
+                    "application/json": unknown;
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     github_login_callback_login_github_get: {
         parameters: {
             query?: {
-                code?: string | null
-            }
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+                code?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
+                    "application/json": unknown;
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     google_login_callback_login_google_get: {
         parameters: {
             query?: {
-                code?: string | null
-            }
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+                code?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
+                    "application/json": unknown;
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     start_twitch_login_login_twitch_start_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
-        }
-    }
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     start_github_login_login_github_start_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
-        }
-    }
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     start_google_login_login_google_start_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
-        }
-    }
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     parse_replay_file_api_parse_replay_post: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_parse_replay_file_api_parse_replay_post"]
-            }
-        }
+                "multipart/form-data": components["schemas"]["Body_parse_replay_file_api_parse_replay_post"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["ParsedReplayFile"]
-                }
-            }
+                    "application/json": components["schemas"]["ParsedReplayFile"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_audiobook_voices_tts_generate_voices_audiobook_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["VoiceInfo"][]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["VoiceInfo"][];
+                };
+            };
+        };
+    };
     list_voices_tts_generate_voices_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["VoiceInfo"][]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["VoiceInfo"][];
+                };
+            };
+        };
+    };
     generate_tts_tts_generate_generate_post: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["TTSGenerateRequest"]
-            }
-        }
+                "application/json": components["schemas"]["TTSGenerateRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
                     "application/json": {
-                        [key: string]: unknown
-                    }
-                }
-            }
+                        [key: string]: unknown;
+                    };
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_books_api_audiobook_books_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["BookListItem"][]
-                }
-            }
+                    "application/json": components["schemas"]["BookListItem"][];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     delete_all_books_api_audiobook_books_delete: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["DeleteResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["DeleteResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_book_api_audiobook_books__book_id__get: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                book_id: number
-            }
+                book_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["BookWithChapters"]
-                }
-            }
+                    "application/json": components["schemas"]["BookWithChapters"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     delete_book_api_audiobook_books__book_id__delete: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                book_id: number
-            }
+                book_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["DeleteResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["DeleteResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_chapter_status_api_audiobook_books__book_id__chapters_status_get: {
         parameters: {
             query: {
-                chapter_numbers: string
-            }
-            header?: never
+                chapter_numbers: string;
+            };
+            header?: never;
             path: {
-                book_id: number
-            }
+                book_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["ChapterDetail"][]
-                }
-            }
+                    "application/json": components["schemas"]["ChapterDetail"][];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     upload_epub_api_audiobook_upload_post: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_upload_epub_api_audiobook_upload_post"]
-            }
-        }
+                "multipart/form-data": components["schemas"]["Body_upload_epub_api_audiobook_upload_post"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             201: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["UploadSuccess"]
-                }
-            }
+                    "application/json": components["schemas"]["UploadSuccess"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     delete_all_audio_api_audiobook_books__book_id__audio_delete: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                book_id: number
-            }
+                book_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["DeleteResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["DeleteResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     queue_chapter_api_audiobook_books__book_id__chapters__chapter_id__queue_post: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                book_id: number
-                chapter_id: number
-            }
+                book_id: number;
+                chapter_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["QueueChapterRequest"]
-            }
-        }
+                "application/json": components["schemas"]["QueueChapterRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["QueueResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["QueueResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     delete_chapter_audio_api_audiobook_books__book_id__chapters__chapter_id__delete: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                book_id: number
-                chapter_id: number
-            }
+                book_id: number;
+                chapter_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["DeleteResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["DeleteResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     update_book_title_api_audiobook_books__book_id__title_put: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                book_id: number
-            }
+                book_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
         requestBody: {
             content: {
                 "application/json": {
-                    [key: string]: unknown
-                }
-            }
-        }
+                    [key: string]: unknown;
+                };
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["BookListItem"]
-                }
-            }
+                    "application/json": components["schemas"]["BookListItem"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     update_book_author_api_audiobook_books__book_id__author_put: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                book_id: number
-            }
+                book_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
         requestBody: {
             content: {
                 "application/json": {
-                    [key: string]: unknown
-                }
-            }
-        }
+                    [key: string]: unknown;
+                };
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["BookListItem"]
-                }
-            }
+                    "application/json": components["schemas"]["BookListItem"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     queue_all_chapters_api_audiobook_books__book_id__queue_all_post: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                book_id: number
-            }
+                book_id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["QueueChapterRequest"]
-            }
-        }
+                "application/json": components["schemas"]["QueueChapterRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             201: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["QueueResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["QueueResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_tracks_api_raceroom_tracks_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
-        }
-    }
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
     get_times_api_raceroom_times_get: {
         parameters: {
             query?: {
                 /** @description Filter by track ID */
-                track_id?: number | null
+                track_id?: number | null;
                 /** @description Filter by start date (ISO format) */
-                start_date?: string | null
+                start_date?: string | null;
                 /** @description Filter by end date (ISO format) */
-                end_date?: string | null
-            }
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+                end_date?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
+                    "application/json": unknown;
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     parse_replay_file_api_replay_comparer_parse_replay_post: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_parse_replay_file_api_replay_comparer_parse_replay_post"]
-            }
-        }
+                "multipart/form-data": components["schemas"]["Body_parse_replay_file_api_replay_comparer_parse_replay_post"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
+                    "application/json": unknown;
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     search_messages_telegram_browser_search_post: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SearchRequest"]
-            }
-        }
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["SearchResultItem"][]
-                }
-            }
+                    "application/json": components["schemas"]["SearchResultItem"][];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     queue_file_telegram_browser_queue_file__id__get: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                id: number
-            }
+                id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["QueueFileResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["QueueFileResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     delete_file_telegram_browser_delete_file__id__delete: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                id: number
-            }
+                id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["DeleteFileResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["DeleteFileResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     view_file_telegram_browser_view_file__id__get: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                id: number
-            }
+                id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["ViewFileResponse"]
-                }
-            }
+                    "application/json": components["schemas"]["ViewFileResponse"];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     download_file_telegram_browser_download_file__id__get: {
         parameters: {
-            query?: never
-            header?: never
+            query?: never;
+            header?: never;
             path: {
-                id: number
-            }
+                id: number;
+            };
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": unknown
-                }
-            }
+                    "application/json": unknown;
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_channel_names_telegram_browser_channel_names_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["ChannelNameItem"][]
-                }
-            }
+                    "application/json": components["schemas"]["ChannelNameItem"][];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_channel_stats_telegram_browser_channel_stats_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["ChannelStatsItem"][]
-                }
-            }
+                    "application/json": components["schemas"]["ChannelStatsItem"][];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_downloads_telegram_browser_downloads_get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
+            query?: never;
+            header?: never;
+            path?: never;
             cookie?: {
-                twitch_access_token?: string | null
-                github_access_token?: string | null
-                google_access_token?: string | null
-            }
-        }
-        requestBody?: never
+                twitch_access_token?: string | null;
+                github_access_token?: string | null;
+                google_access_token?: string | null;
+            };
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["DownloadedFileItem"][]
-                }
-            }
+                    "application/json": components["schemas"]["DownloadedFileItem"][];
+                };
+            };
             /** @description Validation Error */
             422: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"]
-                }
-            }
-        }
-    }
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     root__get: {
         parameters: {
-            query?: never
-            header?: never
-            path?: never
-            cookie?: never
-        }
-        requestBody?: never
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
-                    [name: string]: unknown
-                }
+                    [name: string]: unknown;
+                };
                 content: {
                     "application/json": {
-                        [key: string]: unknown
-                    }
-                }
-            }
-        }
-    }
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
 }
