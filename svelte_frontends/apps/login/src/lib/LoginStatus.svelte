@@ -10,7 +10,6 @@ import {
     start_twitch_login,
 } from "./login"
 
-// State variables using snake_case (shaped as LoginState)
 let is_loading: LoginState["is_loading"] = $state(true)
 let is_logged_in: LoginState["is_logged_in"] = $state(false)
 let logged_in_user: LoginState["logged_in_user"] = $state(null)
