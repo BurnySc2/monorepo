@@ -105,7 +105,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
                 # span.unwrap()
                 span.replace_with(span.text.strip().strip("\n"))
 
-            # TODO Remove <a> and <img> to remove texts describing images?
+            # NOTE(audiobook-owner): Consider stripping <a> and <img> to remove image-description text.
 
             chapter_text = soup.get_text()
             texts = [row for row in chapter_text.split("\n") if row.strip() != ""]

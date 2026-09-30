@@ -9,6 +9,9 @@ from components.tts_generate import list_all_voices
 
 TTSRouter = APIRouter()
 
+# Guard check-then-act creation of queue/runner/IRC bot against concurrent connects.
+_tts_init_lock = asyncio.Lock()
+
 
 @TTSRouter.websocket("/ws/{stream_name}/{read_name_lang}")
 async def websocket_endpoint(websocket: WebSocket, stream_name: str, read_name_lang: ReadNameLang):
@@ -22,24 +25,38 @@ async def websocket_endpoint(websocket: WebSocket, stream_name: str, read_name_l
 
     await websocket.accept()
 
-    # Initialize text queue if not exists
-    if (stream_name, read_name_lang) not in TTSQueue.text_queue:
-        TTSQueue.text_queue[(stream_name, read_name_lang)] = asyncio.Queue()
-        # Create worker for this 'stream_name' and 'read_name_lang'
-        asyncio.create_task(TTSQueueRunner(stream_name, read_name_lang).run())
+    key = (stream_name, read_name_lang)
+    async with _tts_init_lock:
+        # Initialize text queue if not exists (setdefault guard + lock against race)
+        if key not in TTSQueue.text_queue:
+            TTSQueue.text_queue[key] = asyncio.Queue()
+            # Create worker for this 'stream_name' and 'read_name_lang'.
+            asyncio.create_task(
+                TTSQueueRunner(stream_name, read_name_lang).run(),
+                name=f"tts-runner-{stream_name}-{read_name_lang}",
+            )
 
-    # Add socket - needs to happen after text_queue is initialized
-    TTSQueue.add_websocket(stream_name, read_name_lang, websocket)
+        # Add socket - needs to happen after text_queue is initialized
+        TTSQueue.add_websocket(stream_name, read_name_lang, websocket)
 
-    # Start irc bot: listen to messages in channel
-    if (stream_name, read_name_lang) not in TTSQueue.twitch_irc_bots:
-        new_irc_client = IRCClient(
-            channel=stream_name, read_name_lang=read_name_lang, callback=TTSQueue.irc_client_add_text_method
-        )
-        TTSQueue.twitch_irc_bots[(stream_name, read_name_lang)] = new_irc_client
-        await new_irc_client.connect()
-        # Keep irc bot running
-        asyncio.create_task(new_irc_client.listen())
+        # Start irc bot: listen to messages in channel
+        if key not in TTSQueue.twitch_irc_bots:
+            new_irc_client = IRCClient(
+                channel=stream_name, read_name_lang=read_name_lang, callback=TTSQueue.irc_client_add_text_method
+            )
+            TTSQueue.twitch_irc_bots[key] = new_irc_client
+            try:
+                await new_irc_client.connect()
+            except Exception as e:  # noqa: BLE001
+                logger.exception(f"IRC connect failed for {stream_name}: {e}")
+                # Drop half-initialized bot so a later connect can retry; keep queue/runner.
+                TTSQueue.twitch_irc_bots.pop(key, None)
+            else:
+                # Keep irc bot running.
+                asyncio.create_task(
+                    new_irc_client.listen(),
+                    name=f"irc-listen-{stream_name}-{read_name_lang}",
+                )
 
     try:
         while True:

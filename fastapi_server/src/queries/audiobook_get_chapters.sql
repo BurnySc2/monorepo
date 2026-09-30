@@ -1,4 +1,4 @@
--- TODO Create class from pydantic BaseModel that matches the result of the select query
+-- NOTE(db-owner): Create class from pydantic BaseModel that matches the result of the select query.
 
 -- Goal of the query is retrieve all data for the initial page load
 -- If a chapter is queued for conversion to audio, then it needs to be retrieved what position in the queue it is

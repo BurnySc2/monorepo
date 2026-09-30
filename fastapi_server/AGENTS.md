@@ -2,6 +2,8 @@
 
 Compact reference for LLM agents. Target: scannable in <2 minutes.
 
+> Single-source note: `src/main.py` (routers), `src/settings.py` (env/S3), `pyproject.toml` (ruff/pyrefly/pytest), `src/piccolo_conf.py` (DB), and `test/conftest.py` (fixtures) are authoritative; this file summarizes only.
+
 ---
 
 ## 1. Project Overview
@@ -20,14 +22,15 @@ Stack: FastAPI + async, PostgreSQL (Piccolo ORM), S3-compatible storage (RustFS)
 
 | Path | Purpose |
 |------|---------|
-| `src/main.py` | FastAPI app entry, router registration |
-| `src/routes/` | 8 API routers (audiobook, login, raceroom, replay_*, tts_*) |
+| `src/main.py` | FastAPI app entry, router registration (9 routers, see below) |
+| `src/routes/` | 9 API routers (audiobook, index, login, raceroom, replay_comparer, replay_parser, telegram_browser, tts_generate, tts_websocket) |
 | `src/components/` | Business logic (audiobook, login, tts, replay_pack_builder) |
-| `src/schemas/` | Pydantic models + Piccolo DB models |
-| `src/s3_helper.py` | S3 operations (aioboto3) |
+| `src/schemas/` | Pydantic API models + audiobook Piccolo tables (`audiobook/db_models.py`: AudiobookBook, AudiobookChapter) |
+| `src/s3_helper.py` | S3 operations (aioboto3); bucket constants derive from `settings` (single source: `src/settings.py`) |
 | `src/workers/` | Background workers (convert_audiobook, raceroom_fetch_records) |
-| `src/models/` | Piccolo tables (raceroom, telegram_browser) |
+| `src/models/` | Piccolo tables (raceroom: RRRE*, telegram_browser: Telegram*) |
 | `src/queries/` | Raw SQL files |
+| `src/settings.py` | Single source for env config (`Settings`); `src/piccolo_conf.py` uses `settings.postgres_connection_string` |
 
 ---
 
@@ -55,10 +58,11 @@ async def list_books(
 
 ### S3 Operations
 ```python
-from s3_helper import get_s3_client, object_upload, RUSTFS_AUDIOBOOK_BUCKET
+from s3_helper import get_s3_client, object_upload
+from settings import settings
 
 async with get_s3_client() as s3:
-    await object_upload(s3, RUSTFS_AUDIOBOOK_BUCKET, key, data)
+    await object_upload(s3, settings.rustfs_audiobook_bucket, key, data)
 ```
 
 ### Piccolo Queries
@@ -73,9 +77,13 @@ rows: list[dict] = await AudiobookChapter.raw(query, book_id, chapter_numbers)
 
 ### TTS Unified Interface
 ```python
+from typing import cast
+
 from components.tts_generate import generate_audio
-audio_bytes, duration = await generate_audio("edge", "voice_name", "Hello world")
-# Engines: edge, kokoro, kitten, tiktok
+from schemas.tts.engine import TTSEngine
+
+audio_bytes, duration = await generate_audio(cast(TTSEngine, "edge"), "voice_label", "Hello world")
+# Engines: edge, kokoro, kitten, tiktok (see schemas/tts/engine.py TTSEngine)
 ```
 
 ---
@@ -96,6 +104,7 @@ uv run ruff format src/
 
 # Run both (common workflow)
 uv run ruff check src/ --fix && uv run ruff format src/
+# From monorepo root: add --project fastapi_server (e.g. uv run --project fastapi_server ruff check src/)
 ```
 
 **Key rules enforced:**
@@ -119,7 +128,7 @@ uv run pyrefly check
 uv run pyrefly check src/routes/audiobook.py
 ```
 
-**Excluded paths:** `**/workers/convert_audiobook.py`, `**/components/**`, `**/routes_/**`
+**Excluded paths:** none in `src/` (only cache: `**/.venv/**`, `**/__pycache__/**`, `**/*.pyc`, `**/dist/**`; see `pyproject.toml [tool.pyrefly]`) — `convert_audiobook.py` is type-checked.
 
 ### SQLFluff (SQL Linting)
 
@@ -170,36 +179,38 @@ uv run pre-commit run --all-files
 ## 5. Testing
 
 ```bash
-# All tests
-pytest
+# All tests (cwd is fastapi_server/)
+uv run pytest
 
 # With coverage
-pytest --cov=src --cov-report=term-missing
+uv run pytest --cov=src --cov-report=term-missing
 
 # Specific file
-pytest test/endpoints/login/test_login_twitch.py
+uv run pytest test/endpoints/login/test_login_twitch.py
 
 # Specific test
-pytest test/endpoints/login/test_login_twitch.py::test_twitch_login_start
+uv run pytest test/endpoints/login/test_login_twitch.py::test_twitch_login_start
 
 # By marker
-pytest -m endpoint     # endpoint tests only
-pytest -m worker       # worker tests only
-pytest -m "not slow"  # skip slow tests
+uv run pytest -m endpoint     # endpoint tests only
+uv run pytest -m worker       # worker tests only
+uv run pytest -m "not slow"  # skip slow tests
 ```
 
 ### Key Fixtures (`test/conftest.py`)
 
 ```python
 @pytest.fixture
-def mock_s3_client():
-    """Mock S3 client for tests."""
-    # Use with: async with mock_s3_client() as s3: ...
+def test_client() -> Iterator[TestClient]:
+    """FastAPI TestClient without DB reset."""
 
 @pytest.fixture
-def auth_cookies():
-    """Returns valid auth cookies for testing."""
-    return {"twitch_access_token": "valid_test_token"}
+def test_client_db_reset() -> Iterator[TestClient]:
+    """FastAPI TestClient with fresh Audiobook tables + mocked get_current_user."""
+
+@pytest.fixture
+def mock_s3(monkeypatch: pytest.MonkeyPatch) -> Iterator[AsyncMock]:
+    """Mock S3 presigned URL + get_s3_client for audiobook routes (no network)."""
 ```
 
 ---
@@ -235,13 +246,17 @@ STAGE=dev
 ### Run Server (dev)
 ```bash
 uv sync
-uv run --directory src rio run --port 8000
+uv run --directory src uvicorn main:app --host 0.0.0.0 --port 8000
+# M6: Above assumes cwd=fastapi_server with PYTHONPATH=src (pytest sets pythonpath=src;
+# Dockerfile sets ENV PYTHONPATH=/root/fastapi_server/src). From monorepo root use:
+# uv run --project fastapi_server --directory fastapi_server/src uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Run Workers
 ```bash
-uv run --directory src python src/workers/convert_audiobook.py
-uv run --directory src python src/workers/raceroom_fetch_records.py
+# M6: cwd=fastapi_server; src/ prefix is required (do NOT add --directory src with src/ prefix).
+PYTHONPATH=src uv run python src/workers/convert_audiobook.py
+PYTHONPATH=src uv run python src/workers/raceroom_fetch_records.py
 ```
 
 ### Database Migrations
@@ -249,6 +264,7 @@ uv run --directory src python src/workers/raceroom_fetch_records.py
 piccolo migrations_new --app src
 piccolo migrations_run --app src
 ```
+Config: `src/piccolo_conf.py` (`DB = PostgresEngine(config={"dsn": settings.postgres_connection_string})`); run with `PICCOLO_CONF=piccolo_conf` from `src/`.
 
 ### Add New Router
 ```python

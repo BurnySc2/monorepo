@@ -2,7 +2,7 @@ import asyncio
 import base64
 from dataclasses import dataclass, field
 from datetime import timedelta
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import arrow
 import orjson
@@ -12,6 +12,7 @@ from websockets import ConnectionClosedError, ConnectionClosedOK
 
 from components.tts.irc_bot_async import ALLOWED_NAME_LANGUAGES, IRCClient, ReadNameLang
 from components.tts_generate import generate_audio, get_voice_by_label
+from schemas.tts.engine import TTSEngine
 
 
 @dataclass
@@ -116,11 +117,17 @@ class TTSQueue:
         Check if any websocket is connected to this stream channel
         Leave if none connected
         """
-        cls.text_queue.pop((stream_name, read_name_lang))
-        cls.connected_websockets.pop((stream_name, read_name_lang))
-        # Shut down irc bot
-        irc_client = cls.twitch_irc_bots.pop((stream_name, read_name_lang))
-        await irc_client.shutdown()
+        # pop with default so double-cleanup or missing keys do not raise KeyError.
+        cls.text_queue.pop((stream_name, read_name_lang), None)
+        cls.connected_websockets.pop((stream_name, read_name_lang), None)
+        # Shut down irc bot (close writer so listen() unblocks and exits)
+        irc_client = cls.twitch_irc_bots.pop((stream_name, read_name_lang), None)
+        if irc_client is None:
+            return
+        try:
+            await irc_client.shutdown()
+        except Exception:  # noqa: BLE001
+            logger.exception(f"IRC shutdown failed for {stream_name}/{read_name_lang}")
 
 
 @dataclass
@@ -186,8 +193,7 @@ class TTSQueueRunner:
 
             # Generate audio from text
             try:
-                # pyrefly: ignore[bad-argument-type]
-                mp3_bytes, duration = await generate_audio(engine, internal_voice, text)
+                mp3_bytes, duration = await generate_audio(cast(TTSEngine, engine), internal_voice, text)
                 # logger.info(f"{duration}s: {text}")
             except RuntimeError as e:
                 logger.error(e)
@@ -199,12 +205,19 @@ class TTSQueueRunner:
                 continue
             logger.info(f"Sending generated tts to clients: {self.stream_name}: ({voice}) {text}")
             queue.task_done()
-            tasks = [
-                asyncio.create_task(self.send_mp3_data_to_ws(ws, base64.b64encode(mp3_bytes).decode()))
-                for ws in self.connected_websockets
-            ]
-            for task in asyncio.as_completed(tasks):
-                await task
+            # Fan-out to all clients (one failure must not cancel others).
+            results = await asyncio.gather(
+                *(
+                    self.send_mp3_data_to_ws(ws, base64.b64encode(mp3_bytes).decode())
+                    for ws in list(self.connected_websockets)
+                ),
+                return_exceptions=True,
+            )
+            for result in results:
+                if isinstance(result, BaseException) and not isinstance(
+                    result, (asyncio.CancelledError, ConnectionClosedError, ConnectionClosedOK, WebSocketDisconnect)
+                ):
+                    logger.exception(f"TTS fan-out failed: {result}")
             logger.info(f"Sent generated tts to clients: {self.stream_name}: ({voice}) {text}")
 
             self.tts_is_playing_till = arrow.utcnow() + timedelta(seconds=duration)

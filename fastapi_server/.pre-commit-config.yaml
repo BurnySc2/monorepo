@@ -60,21 +60,21 @@ repos:
     hooks:
       - id: sqlfluff-lint-queries
         name: Lint sql queries with sqlfluff
-        entry: uv run --directory fastapi_server sqlfluff lint src/queries
+        entry: uv run sqlfluff lint src/queries
         language: system
         types: [sql]
         pass_filenames: false
 
       - id: sqlfluff-fix-queries
         name: Fix sql queries with sqlfluff
-        entry: uv run --directory fastapi_server sqlfluff fix src/queries
+        entry: uv run sqlfluff fix src/queries
         language: system
         types: [sql]
         pass_filenames: false
 
       - id: pyrefly
         name: Pyrefly check
-        entry: uv run --directory fastapi_server pyrefly check
+        entry: uv run pyrefly check
         language: system
         types: [python]
         pass_filenames: false

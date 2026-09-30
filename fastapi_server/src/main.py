@@ -4,9 +4,10 @@ Provides a minimal FastAPI application that can be started via the
 VS Code launch configuration added above.
 """
 
+import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
@@ -33,7 +34,6 @@ async def lifespan(app: FastAPI):
     except (LookupError, OSError, RuntimeError):
         logger.warning("NLTK data unavailable at startup; continuing without it", exc_info=True)
     yield
-    # End
 
 
 # Use default JSONResponse to keep Pydantic Rust dump_json fastpath.
@@ -60,6 +60,10 @@ elif settings.stage == "prod":
         allow_methods=["*"],
         allow_headers=["*"],
     )
+else:
+    # No CORS middleware outside dev/prod (e.g. test). Fail-closed by default;
+    # frontend must use same-origin in these stages.
+    logger.warning(f"No CORS middleware configured for STAGE={settings.stage!r}; same-origin only")
 
 
 # Include the routers with appropriate prefixes
@@ -78,3 +82,39 @@ app.include_router(telegram_browser_router, prefix="/telegram-browser")
 async def root() -> dict:
     """Health‑check endpoint returning a simple JSON payload."""
     return {"message": "FastAPI server is running"}
+
+
+@app.get("/health")
+async def health() -> dict:
+    """Liveness probe for Docker / compose healthchecks.
+
+    Liveness-only: always returns ok without checking DB/S3. Use /ready for readiness.
+    """
+    return {"status": "ok"}
+
+
+@app.get("/ready")
+async def ready() -> dict:
+    """Readiness probe: pings DB and S3, 503 when unavailable.
+
+    Liveness (/health) stays cheap for Docker; readiness is for load-balancer checks.
+    """
+    try:
+        from schemas.audiobook.db_models import AudiobookBook
+
+        await asyncio.wait_for(AudiobookBook.count(), timeout=2.0)
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Readiness DB check failed: {e}")
+        raise HTTPException(status_code=503, detail="DB not ready") from e
+    try:
+        from s3_helper import get_s3_client
+
+        async def _ping_s3() -> None:
+            async with get_s3_client() as s3:
+                await s3.list_buckets()
+
+        await asyncio.wait_for(_ping_s3(), timeout=2.0)
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Readiness S3 check failed: {e}")
+        raise HTTPException(status_code=503, detail="S3 not ready") from e
+    return {"status": "ready"}

@@ -203,7 +203,6 @@ services:
     profiles:
       - ""
       - local_dev
-# TODO Background workers for transcription
 networks:
   fastapi_dev:
     driver: bridge

@@ -9,6 +9,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Single typed settings object mirroring .env.example keys."""
 
+    # Keep extra="ignore" (not forbid) so rolling .env additions do not break
+    # prod boot; unknown keys are ignored and logged at startup by design.
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # Database
@@ -26,7 +28,9 @@ class Settings(BaseSettings):
     rustfs_access_key: str | None = Field(default=None)
     rustfs_secret_key: str | None = Field(default=None)
     rustfs_audiobook_bucket: str = Field(default="rustfs-audiobook-bucket")
-    rustfs_telegram_bucket: str = Field(default="rustfs-telegram-bucket")
+    # Fixed drift: default matches .env.example (telegram-files-bucket);
+    # test overlay uses telegram-files-bucket-test via env.
+    rustfs_telegram_bucket: str = Field(default="telegram-files-bucket")
     rustfs_sc2_replays_bucket: str = Field(default="sc2-replays")
     rustfs_admin_url: str = Field(default="http://localhost:3903")
     rustfs_admin_token: str | None = Field(default=None)
@@ -52,6 +56,9 @@ class Settings(BaseSettings):
     facebook_app_client_secret: str | None = Field(default="dcd070e77fab0aabf1d468fe1d586e28")
 
     # Telegram browser allowlist
+    # Fail-closed allowlist reads os.environ per-request (see allowlist.require_allowed_user),
+    # not this Settings field. This field exists for .env documentation and offline
+    # validation only; empty default means deny-all.
     allowed_twitch_users_for_telegram_browser: str = Field(default="")
 
     # Language data and cache

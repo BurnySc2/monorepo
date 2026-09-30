@@ -8,6 +8,7 @@ import pytest
 
 from components.login.cookies import COOKIES
 from components.login.providers import PROVIDERS, OAuthProvider, _require_env
+from settings import settings
 
 
 class TestProvidersDict:
@@ -51,17 +52,24 @@ class TestProvidersDict:
 
 class TestRequireEnv:
     def test_returns_value_when_set(self, monkeypatch: pytest.MonkeyPatch):
-        monkeypatch.setenv("CHUNK2_TEST_ENV_VAR", "hello")
-        assert _require_env("CHUNK2_TEST_ENV_VAR") == "hello"
+        monkeypatch.setattr(settings, "backend_domain", "hello-from-settings")
+        monkeypatch.setattr(settings, "stage", "dev")
+        assert _require_env("BACKEND_DOMAIN") == "hello-from-settings"
+
+    def test_ignores_os_environ(self, monkeypatch: pytest.MonkeyPatch):
+        monkeypatch.setattr(settings, "tiktok_session_id", None)
+        monkeypatch.setattr(settings, "stage", "dev")
+        monkeypatch.setenv("TIKTOK_SESSION_ID", "from-env")
+        assert _require_env("TIKTOK_SESSION_ID") is None
 
     def test_returns_none_when_missing_in_dev(self, monkeypatch: pytest.MonkeyPatch):
-        monkeypatch.delenv("CHUNK2_TEST_ENV_VAR_MISSING", raising=False)
-        monkeypatch.setenv("STAGE", "dev")
-        assert _require_env("CHUNK2_TEST_ENV_VAR_MISSING") is None
+        monkeypatch.setattr(settings, "tiktok_session_id", None)
+        monkeypatch.setattr(settings, "stage", "dev")
+        assert _require_env("TIKTOK_SESSION_ID") is None
 
     def test_warns_in_prod_when_missing(self, monkeypatch: pytest.MonkeyPatch):
         # Uses loguru, not stdlib logging: just assert it still returns None
         # without raising, even in prod.
-        monkeypatch.delenv("CHUNK2_TEST_ENV_VAR_MISSING", raising=False)
-        monkeypatch.setenv("STAGE", "prod")
-        assert _require_env("CHUNK2_TEST_ENV_VAR_MISSING") is None
+        monkeypatch.setattr(settings, "tiktok_session_id", None)
+        monkeypatch.setattr(settings, "stage", "prod")
+        assert _require_env("TIKTOK_SESSION_ID") is None

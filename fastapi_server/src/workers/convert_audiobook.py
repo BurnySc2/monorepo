@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from types import TracebackType
 from typing import cast
 
 import arrow
@@ -14,6 +15,7 @@ from components.tts_generate import generate_audio
 from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_upload
 from schemas.audiobook import AudioSettings
 from schemas.audiobook.db_models import AudiobookChapter
+from schemas.tts.engine import TTSEngine
 from settings import settings
 
 # Increase this value to give converters more time to convert an audio
@@ -47,7 +49,7 @@ def _is_retryable_audio_error(exc: BaseException) -> bool:
     reraise=True,
 )
 async def _generate_audio_with_retry(engine_name: str, voice_name: str, content: str) -> tuple[bytes, float]:
-    return await generate_audio(engine_name, voice_name, content)  # pyrefly: ignore
+    return await generate_audio(cast(TTSEngine, engine_name), voice_name, content)
 
 
 @retry(
@@ -84,23 +86,28 @@ def get_chapter_combined_text(text: str | list[str]) -> str:
 
 
 class AudiobookConversionContext:
-    def __init__(self, chapter: AudiobookChapter):
-        self.chapter = chapter
-        self.minio_object_name = None
+    def __init__(self, chapter: AudiobookChapter) -> None:
+        self.chapter: AudiobookChapter = chapter
+        self.minio_object_name: str | None = None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> AudiobookConversionContext:
         # Lock the chapter for conversion
         self.chapter.started_converting = (
             arrow.utcnow().shift(seconds=len(get_chapter_combined_text(self.chapter.content)) * ESTIMATE_FACTOR).naive
         )
         await self.chapter.save()
         # Generate s3 object name
-        # pyrefly: ignore
+        # pyrefly: ignore[missing-attribute]
         self.minio_object_name = f"{self.chapter.id}_audio.mp3"
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        chapter_id = self.chapter.id
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        chapter_id = self.chapter.id  # pyrefly: ignore[missing-attribute]
         try:
             if exc_type is None:
                 # Conversion succeeded - clear converting flag
@@ -109,14 +116,14 @@ class AudiobookConversionContext:
                         AudiobookChapter.started_converting: None,
                         AudiobookChapter.minio_object_name: self.minio_object_name,
                     }
-                ).where(AudiobookChapter.id == chapter_id)
+                ).where(AudiobookChapter.id == chapter_id)  # pyrefly: ignore[missing-attribute]
             else:
                 # Conversion failed - reset converting flag
                 await AudiobookChapter.update(
                     {
                         AudiobookChapter.started_converting: None,
                     }
-                ).where(AudiobookChapter.id == chapter_id)
+                ).where(AudiobookChapter.id == chapter_id)  # pyrefly: ignore[missing-attribute]
                 logger.error(f"Conversion failed: {exc_val}")
         except Exception as e:
             logger.exception(f"Error in context manager cleanup: {e}")
@@ -131,9 +138,7 @@ async def check_queued_chapters() -> bool:
 
     # Get first book that is waiting to be converted
     query = (
-        # pyrefly: ignore
         AudiobookChapter.objects()
-        # pyrefly: ignore
         .where(
             (AudiobookChapter.minio_object_name == None)  # noqa: E711
             & (AudiobookChapter.queued != None)  # noqa: E711
@@ -147,7 +152,6 @@ async def check_queued_chapters() -> bool:
         return False
 
     # Check active conversions count
-    # pyrefly: ignore
     active_conversions = cast(
         int, await AudiobookChapter.count().where(arrow.utcnow().naive < AudiobookChapter.started_converting)
     )
@@ -157,8 +161,8 @@ async def check_queued_chapters() -> bool:
     count_more_conversion_possible = MAX_CONCURRENT_CONVERSIONS - active_conversions
     chapters = await query.limit(count_more_conversion_possible)
     for chapter in chapters:
-        # Launch convert_one in a new asyncio task, tracked to avoid GC + silent failures
-        task = asyncio.create_task(convert_one(chapter))
+        task_name = f"audiobook-convert-{getattr(chapter, 'id', 'unknown')}-{getattr(chapter, 'chapter_number', '?')}"
+        task = asyncio.create_task(convert_one(chapter), name=task_name)
         _background_tasks.add(task)
         task.add_done_callback(_on_background_task_done)
     return True
@@ -170,7 +174,6 @@ async def convert_one(chapter: AudiobookChapter) -> None:
     Args:
         chapter: The chapter to convert containing text content and audio settings
     """
-    # pyrefly: ignore
     logger.info(f"Starting conversion for chapter {chapter.chapter_number} (book: {chapter.book})")
     logger.debug(f"Audio settings: {chapter.audio_settings}")
 
@@ -186,7 +189,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         audio = result[0]
 
         # Get data from db, user may have clicked "delete" button on book or chapter
-        # pyrefly: ignore
+        # pyrefly: ignore[missing-attribute]
         chapter2 = await AudiobookChapter.objects().where(AudiobookChapter.id == chapter.id).first()
         if chapter2 is None:
             # Book was deleted

@@ -24,6 +24,10 @@ async def require_allowed_user(
 ) -> LoggedInUser:
     """Require allowlisted user. Reads process env per-request (no .env fallback; restart to reload).
     Unset/empty -> 403.
+
+    Fail-closed by design. Settings.allowed_twitch_users_for_telegram_browser mirrors
+    the same env key for .env documentation only and is intentionally NOT consulted here,
+    so stale Settings cache cannot open access. Single source at runtime is os.environ.
     """
     env_value = os.environ.get("ALLOWED_TWITCH_USERS_FOR_TELEGRAM_BROWSER")
     allowed = parse_allowlist(env_value)

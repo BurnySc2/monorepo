@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import httpx
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
+from loguru import logger
 
 from components.login.cookies import (
     BACKEND_SERVER_URL,
@@ -63,11 +64,13 @@ async def _handle_oauth_callback(
 
     # Set cookie and redirect
     response = RedirectResponse(url=_get_frontend_url(request))
+    # Secure cookies only outside dev/test (dev uses http://localhost, Secure would drop cookie).
+    is_secure = settings.stage not in ("dev", "test", "")
     response.set_cookie(
         key=provider.cookie_key,
         value=token_or_error,
         httponly=True,
-        secure=True,
+        secure=is_secure,
         samesite="lax",
         max_age=LOGIN_MAX_AGE,
     )
@@ -76,6 +79,10 @@ async def _handle_oauth_callback(
 
 def _start_oauth(provider: OAuthProvider) -> RedirectResponse:
     """Shared OAuth start logic for all providers."""
+    # Fail-closed when OAuth client_id is missing (do not emit client_id=None).
+    if not provider.client_id:
+        logger.error(f"OAuth not configured for provider {provider.name!r}: missing client_id")
+        raise HTTPException(status_code=500, detail=f"OAuth not configured for {provider.name}")
     oauth_url = httpx.URL(
         provider.authorize_url,
         params={

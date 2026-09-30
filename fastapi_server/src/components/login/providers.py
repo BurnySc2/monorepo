@@ -7,7 +7,6 @@ callback/start logic per provider.
 
 from __future__ import annotations
 
-import os
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any
@@ -30,21 +29,15 @@ from settings import settings
 
 
 def _require_env(name: str) -> str | None:
-    """Return env value, warning in non-dev stages when missing.
+    """Return settings value, warning in non-dev stages when missing.
 
-    Value lookup stays ``os.getenv`` for generic names, falling back to
-    matching ``settings`` fields (lowercased name). Stage defaults to
-    ``settings.stage`` so explicit ``STAGE`` env still overrides.
+    Value lookup reads ``getattr(settings, name.lower())`` and stage reads
+    ``settings.stage`` only (no ``os.getenv``). Fail-closed callers must treat
+    None as not-configured (see routes/login._start_oauth).
     """
-    value = os.getenv(name)
-    if value is None:
-        field_name = name.lower()
-        if hasattr(settings, field_name):
-            attr = getattr(settings, field_name)
-            if attr is not None:
-                value = str(attr)
-    stage = os.getenv("STAGE", settings.stage)
-    if not value and stage not in ("dev", "test", ""):
+    raw = getattr(settings, name.lower(), None)
+    value = str(raw) if raw is not None else None
+    if not value and settings.stage not in ("dev", "test", ""):
         logger.warning(f"Missing required environment variable {name!r} in non-dev STAGE")
     return value
 
@@ -64,6 +57,7 @@ class OAuthProvider:
 
 
 PROVIDERS: dict[str, OAuthProvider] = {
+    # client_id wired via _require_env (settings-backed, warns fail-closed outside dev/test).
     "twitch": OAuthProvider(
         name="twitch",
         cookie_key=COOKIES["twitch"],
@@ -71,7 +65,7 @@ PROVIDERS: dict[str, OAuthProvider] = {
         verify_code=twitch_verify_code,
         authorize_url="https://id.twitch.tv/oauth2/authorize",
         scope="user:read:email",
-        client_id=TWITCH_CLIENT_ID,
+        client_id=_require_env("TWITCH_APP_CLIENT_ID") or TWITCH_CLIENT_ID,
         redirect_path="/login/twitch",
     ),
     "github": OAuthProvider(
@@ -81,7 +75,7 @@ PROVIDERS: dict[str, OAuthProvider] = {
         verify_code=github_verify_code,
         authorize_url="https://github.com/login/oauth/authorize",
         scope="read:user",
-        client_id=GITHUB_CLIENT_ID,
+        client_id=_require_env("GITHUB_APP_CLIENT_ID") or GITHUB_CLIENT_ID,
         redirect_path="/login/github",
     ),
     "google": OAuthProvider(
@@ -91,7 +85,7 @@ PROVIDERS: dict[str, OAuthProvider] = {
         verify_code=google_verify_code,
         authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
         scope="profile",
-        client_id=GOOGLE_CLIENT_ID,
+        client_id=_require_env("GOOGLE_APP_CLIENT_ID") or GOOGLE_CLIENT_ID,
         redirect_path="/login/google",
     ),
 }

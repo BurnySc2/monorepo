@@ -3,7 +3,7 @@ import asyncio
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, cast
 
 import aioboto3
 from botocore.config import Config
@@ -56,7 +56,7 @@ async def initialize_rustfs():
 @asynccontextmanager
 async def get_s3_client() -> AsyncGenerator[S3Client, None]:
     session = aioboto3.Session()
-    async with session.client(  # pyrefly: ignore
+    async with session.client(  # pyrefly: ignore[no-matching-overload]
         "s3",
         endpoint_url=RUSTFS_S3_URL,
         aws_access_key_id=RUSTFS_ACCESS_KEY,
@@ -64,7 +64,7 @@ async def get_s3_client() -> AsyncGenerator[S3Client, None]:
         # Make it compatible with rustfs
         config=Config(signature_version="s3v4"),
     ) as s3:
-        yield s3  # This yields the client to the endpoint and closes it automatically afterward
+        yield cast(S3Client, s3)  # This yields the client to the endpoint and closes it automatically afterward
 
 
 @asynccontextmanager
@@ -248,7 +248,7 @@ async def bucket_set_expiration(session: S3Client, bucket: str, days: int) -> No
     lifecycle_config = {"Rules": [{"ID": "ExpireAll", "Status": "Enabled", "Filter": {}, "Expiration": {"Days": days}}]}
     _ = await session.put_bucket_lifecycle_configuration(
         Bucket=bucket,
-        # pyrefly: ignore
+        # pyrefly: ignore[bad-argument-type]
         LifecycleConfiguration=lifecycle_config,
     )
 

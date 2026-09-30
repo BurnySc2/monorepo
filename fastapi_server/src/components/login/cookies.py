@@ -76,7 +76,8 @@ class LoggedInUser:
 
     @property
     def db_name(self) -> str:
-        separator = " "  # TODO change if with facebook or google account, space in name is allowed
+        # NOTE(auth-owner): separator assumes single-word names; revisit if facebook/google allow spaces.
+        separator = " "
         return f"{self.name}{separator}{self.service}"
 
     def __post_init__(self):
