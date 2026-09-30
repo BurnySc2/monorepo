@@ -82,16 +82,14 @@ Run from the monorepo root (`/`):
 |---------|-------------|
 | `npm run dev` | Run all apps in dev mode concurrently |
 | `npm run build` | Build all apps (cached via Turborepo) |
-| `npm run format` | Check formatting with Biome |
-| `npm run format:fix` | Auto-fix formatting |
-| `npm run lint` | Lint check with Biome |
-| `npm run lint:fix` | Auto-fix lint errors |
+| `npm run lint` | Check format + linter + assist with Biome |
+| `npm run lint:fix` | Apply fixes for format + linter + assist |
 | `npm run check` | Run svelte-check on all apps |
 | `npm run check-types` | Run TypeScript compiler on all apps |
 | `npm run test` | Run all tests (unit + integration) |
 | `npm run test:unit` | Run unit tests only |
 | `npm run test:integration` | Run integration tests only |
-| `npm run precommit` | format:fix → build → lint → check |
+| `npm run precommit` | build → lint → check |
 | `npm run prepush` | precommit → test:unit → test:integration |
 
 ### Per-App Commands
@@ -172,23 +170,17 @@ Biome 2.4.6 is configured with:
 ### Commands
 
 ```bash
-# Check formatting
-npm run format
-
-# Auto-fix formatting
-npm run format:fix
-
-# Lint check
+# Lint check (format + linter + assist)
 npm run lint
 
-# Auto-fix lint errors
+# Auto-fix lint issues
 npm run lint:fix
 
 # Check both at once
 npx biome check . --error-on-warnings
 
-# Format both at once
-npx biome format . --write
+# Apply fixes
+npx biome check . --write --error-on-warnings
 ```
 
 ---
@@ -314,7 +306,7 @@ import type { SomeEndpointResponse } from '@repo/api-types';
 
 ```bash
 npm run precommit
-# Runs: format:fix → build → lint → check
+# Runs: build → lint → check
 ```
 
 ### Pre-Push Hook
@@ -539,9 +531,8 @@ npm run build
 # Type check all
 npm run check
 
-# Lint and format
+# Lint
 npm run lint
-npm run format
 
 # Run tests
 npm run test

@@ -7,7 +7,6 @@
         "build": "turbo run build",
         "lint": "biome check . --error-on-warnings",
         "lint:fix": "biome check . --write --error-on-warnings",
-        "format": "biome format .",
         "check": "turbo run check",
         "check-types": "turbo run check-types",
         "precommit": "npm run build && npm run lint && npm run check",
