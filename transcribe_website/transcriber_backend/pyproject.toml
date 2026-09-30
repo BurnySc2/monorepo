@@ -32,6 +32,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6.168.3",
     # Type checker
     "pyrefly>=0.18.0",
     "pytest>=8.4.0",

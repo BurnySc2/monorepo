@@ -8,7 +8,12 @@ from pathlib import Path
 
 from loguru import logger
 
-from src.helper import compress_files
+import pytest
+from hypothesis import given, settings
+
+import hypothesis.strategies as st
+
+from src.helper import compress_files, decompress_files
 
 # uv run python -m pytest
 
@@ -22,34 +27,13 @@ with TXT_FILE.open() as f:
 with SRT_FILE.open() as f:
     SRT_DATA = f.read()
 
+COMPRESSION_LEVEL = 9
+SIZE_TOLERANCE_BYTES = 50
 
-def compress_files_zipfile_stored(files: dict[str, str]) -> BytesIO:
+
+def compress_files_zipfile(files: dict[str, str], compression: int = zipfile.ZIP_DEFLATED) -> BytesIO:
     zip_data = BytesIO()
-    with zipfile.ZipFile(zip_data, mode="w", compression=zipfile.ZIP_STORED, compresslevel=9) as zip_file:
-        for file_name, file_content in files.items():
-            zip_file.writestr(file_name, file_content)
-    return zip_data
-
-
-def compress_files_zipfile_deflated(files: dict[str, str]) -> BytesIO:
-    zip_data = BytesIO()
-    with zipfile.ZipFile(zip_data, mode="w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zip_file:
-        for file_name, file_content in files.items():
-            zip_file.writestr(file_name, file_content)
-    return zip_data
-
-
-def compress_files_zipfile_bzip(files: dict[str, str]) -> BytesIO:
-    zip_data = BytesIO()
-    with zipfile.ZipFile(zip_data, mode="w", compression=zipfile.ZIP_BZIP2, compresslevel=9) as zip_file:
-        for file_name, file_content in files.items():
-            zip_file.writestr(file_name, file_content)
-    return zip_data
-
-
-def compress_files_zipfile_lzma(files: dict[str, str]) -> BytesIO:
-    zip_data = BytesIO()
-    with zipfile.ZipFile(zip_data, mode="w", compression=zipfile.ZIP_LZMA, compresslevel=9) as zip_file:
+    with zipfile.ZipFile(zip_data, mode="w", compression=compression, compresslevel=COMPRESSION_LEVEL) as zip_file:
         for file_name, file_content in files.items():
             zip_file.writestr(file_name, file_content)
     return zip_data
@@ -68,33 +52,80 @@ def helper_get_size(data: bytes | BytesIO) -> int:
         return len(data)
     if isinstance(data, BytesIO):
         return len(data.getvalue())
+    raise TypeError(f"unsupported type: {type(data)!r}")
 
 
-def test_compress_txt():
-    txt_compression_results = {
-        "implementation": helper_get_size(compress_files({"a": TXT_DATA})),
-        "zipfile_stored": helper_get_size(compress_files_zipfile_stored({"a": TXT_DATA})),
-        "zipfile_deflated": helper_get_size(compress_files_zipfile_deflated({"a": TXT_DATA})),
-        "zipfile_bzip": helper_get_size(compress_files_zipfile_bzip({"a": TXT_DATA})),
-        "zipfile_lzma": helper_get_size(compress_files_zipfile_lzma({"a": TXT_DATA})),
-        "gzip": helper_get_size(compress_file_gzip(TXT_DATA)),
-        "lzma": helper_get_size(compress_file_lzma(TXT_DATA)),
+@pytest.mark.parametrize("data", [TXT_DATA, SRT_DATA], ids=["txt", "srt"])
+def test_compress(data: str):
+    compression_results = {
+        "implementation": helper_get_size(compress_files({"a": data})),
+        "zipfile_stored": helper_get_size(compress_files_zipfile({"a": data}, compression=zipfile.ZIP_STORED)),
+        "zipfile_deflated": helper_get_size(compress_files_zipfile({"a": data}, compression=zipfile.ZIP_DEFLATED)),
+        "zipfile_bzip": helper_get_size(compress_files_zipfile({"a": data}, compression=zipfile.ZIP_BZIP2)),
+        "zipfile_lzma": helper_get_size(compress_files_zipfile({"a": data}, compression=zipfile.ZIP_LZMA)),
+        "gzip": helper_get_size(compress_file_gzip(data)),
+        "lzma": helper_get_size(compress_file_lzma(data)),
     }
 
-    logger.info(txt_compression_results)
-    # assert txt_compression_results["implementation"] <= min(txt_compression_results.values())
+    logger.info(compression_results)
+    # assert compression_results["implementation"] <= min(compression_results.values())
 
 
-def test_compress_srt():
-    srt_compression_results = {
-        "implementation": helper_get_size(compress_files({"a": SRT_DATA})),
-        "zipfile_stored": helper_get_size(compress_files_zipfile_stored({"a": SRT_DATA})),
-        "zipfile_deflated": helper_get_size(compress_files_zipfile_deflated({"a": SRT_DATA})),
-        "zipfile_bzip": helper_get_size(compress_files_zipfile_bzip({"a": SRT_DATA})),
-        "zipfile_lzma": helper_get_size(compress_files_zipfile_lzma({"a": SRT_DATA})),
-        "gzip": helper_get_size(compress_file_gzip(SRT_DATA)),
-        "lzma": helper_get_size(compress_file_lzma(SRT_DATA)),
-    }
+@pytest.mark.parametrize(
+    "files",
+    [
+        {"transcribed.txt": TXT_DATA},
+        {"transcribed.srt": SRT_DATA},
+        {"transcribed.txt": TXT_DATA, "transcribed.srt": SRT_DATA},
+        {},
+        {"empty.txt": ""},
+    ],
+    ids=["txt", "srt", "multi", "empty_dict", "empty_file"],
+)
+def test_roundtrip(files: dict[str, str]):
+    assert decompress_files(compress_files(files)) == files
 
-    logger.info(srt_compression_results)
-    # assert srt_compression_results["implementation"] <= min(srt_compression_results.values())
+
+def test_roundtrip_determinism():
+    files = {"transcribed.txt": TXT_DATA, "transcribed.srt": SRT_DATA}
+    first = compress_files(files)
+    second = compress_files(files)
+    # Zip headers embed timestamps, so compare size and roundtrip content instead of raw bytes.
+    assert helper_get_size(first) == helper_get_size(second)
+    assert decompress_files(first) == files
+    assert decompress_files(second) == files
+
+
+@pytest.mark.parametrize("data", [TXT_DATA, SRT_DATA], ids=["txt", "srt"])
+def test_deflated_smaller_than_stored(data: str):
+    stored = helper_get_size(compress_files_zipfile({"a": data}, compression=zipfile.ZIP_STORED))
+    deflated = helper_get_size(compress_files({"a": data}))
+    assert deflated + SIZE_TOLERANCE_BYTES < stored
+
+
+@given(
+    files=st.dictionaries(
+        keys=st.text(alphabet=st.characters(blacklist_characters="\x00"), min_size=1, max_size=20),
+        values=st.text(max_size=1000),
+        max_size=3,
+    ),
+)
+@settings(max_examples=20, deadline=None)
+def test_roundtrip_hypothesis(files: dict[str, str]):
+    assert decompress_files(compress_files(files)) == files
+
+
+@given(
+    files=st.dictionaries(
+        keys=st.text(alphabet=st.characters(blacklist_characters="\x00"), min_size=1, max_size=20),
+        values=st.text(max_size=1000),
+        max_size=3,
+    ),
+)
+@settings(max_examples=20, deadline=None)
+def test_determinism_hypothesis(files: dict[str, str]):
+    first = compress_files(files)
+    second = compress_files(files)
+    assert helper_get_size(first) == helper_get_size(second)
+    assert decompress_files(first) == files
+    assert decompress_files(second) == files
