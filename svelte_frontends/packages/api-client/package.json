@@ -1,0 +1,20 @@
+{
+    "name": "@repo/api-client",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "test": "vitest run",
+        "test:unit": "vitest run",
+        "test:integration": "echo 'No integration tests'",
+        "check-types": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "*",
+        "typescript": "^5.0.0",
+        "vitest": "^4.1.0"
+    }
+}

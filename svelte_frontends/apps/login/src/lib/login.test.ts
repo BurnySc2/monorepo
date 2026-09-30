@@ -1,5 +1,5 @@
+import { get_api_base } from "@repo/api-client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { get_api_base } from "./api"
 import { check_login_status, handle_logout, start_github_login, start_twitch_login } from "./login"
 
 function create_mock_location() {

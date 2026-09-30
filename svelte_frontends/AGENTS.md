@@ -16,7 +16,8 @@ svelte_frontends/
 │   ├── replay_pack_builder/
 │   ├── telegram/
 │   └── tts/
-├── packages/               # 4 shared packages
+├── packages/               # 5 shared packages
+│   ├── api-client/
 │   ├── api-types/
 │   ├── sc2-utils/
 │   ├── typescript-config/
@@ -66,6 +67,7 @@ svelte_frontends/
 | `@repo/ui` | Shared UI components |
 | `@repo/sc2-utils` | StarCraft 2 utilities |
 | `@repo/api-types` | Generated API types (from OpenAPI at localhost:8000) |
+| `@repo/api-client` | Shared API base + fetch wrapper (`get_api_base`, `api_fetch`) |
 | `@repo/typescript-config` | Shared TypeScript configuration |
 
 ---
@@ -224,12 +226,12 @@ npm run test:watch
 | App | Has Vitest | Has Integration Tests |
 |-----|-----------|-------------------|
 | login | Yes | Placeholder |
-| tts | No | - |
-| replay_pack_builder | No | - |
-| audiobook | No | - |
-| telegram | No | - |
-| raceroom | No | - |
-| replay_comparer | No | - |
+| tts | Yes | - |
+| replay_pack_builder | Yes | - |
+| audiobook | Yes | - |
+| telegram | Yes | - |
+| raceroom | Yes | - |
+| replay_comparer | Yes | - |
 | buildorder | No | - |
 | matchinfo | No | - |
 
@@ -394,7 +396,8 @@ let error_message = $state(null);
 
 ### Functions
 
-Use `snake_case` for all function names (both local and exported):
+Use `snake_case` for all function names (both local and exported).
+This includes shared helpers `get_api_base`, `api_fetch` and all per-app `fetch_*` functions:
 
 ```typescript
 function check_login_status() { ... }
@@ -452,16 +455,24 @@ Store API code in `src/lib/` with one of these naming patterns:
 - `src/lib/api_client.ts`
 - `src/lib/api/*.ts` (for larger APIs)
 
-### Required get_api_base() Helper
+### Shared API Client (`@repo/api-client`)
 
-Every API file should include this helper function:
+Use `get_api_base` and `api_fetch` from `@repo/api-client`. Do not copy the helper per app and do not keep deprecated aliases:
 
 ```typescript
-const get_api_base = () => {
-    const target = import.meta.env.VITE_API_TARGET;
-    const protocol = target?.includes("localhost") ? "http" : "https";
-    return target ? `${protocol}://${target}` : "localhost:8000";
-};
+import { api_fetch, get_api_base } from "@repo/api-client";
+```
+
+- `api_fetch` defaults to `credentials: "include"` and throws generic `Request failed <path>: <status> <statusText>` on `!ok`.
+- Keep raw `fetch` with `redirect: "manual"` for login logout and raw `href` for telegram download links. Never use `api_fetch` there.
+- Per-app API files must import from `@repo/api-client`, never redefine `get_api_base` or keep deprecated aliases.
+
+### Required get_api_base() Helper
+
+Import `get_api_base` from `@repo/api-client` instead of defining a local copy:
+
+```typescript
+import { get_api_base } from "@repo/api-client";
 ```
 
 ### API Function Naming
@@ -470,43 +481,37 @@ Use `snake_case` with `fetch_` prefix for API functions:
 
 ```typescript
 export async function fetch_login_status() {
-    const resp = await fetch(`${get_api_base()}/auth/status`);
-    if (!resp.ok) {
-        throw new Error(`Failed to fetch login status: ${resp.statusText}`);
-    }
+    const resp = await api_fetch("/login");
     return resp.json();
 }
 
 export async function fetch_voices() {
-    const resp = await fetch(`${get_api_base()}/tts-generate/voices`);
-    if (!resp.ok) {
-        throw new Error(`Failed to fetch voices: ${resp.statusText}`);
-    }
+    const resp = await api_fetch("/tts-generate/voices");
     return resp.json();
 }
 ```
 
 ### Error Handling Pattern
 
-Always check `resp.ok` and throw descriptive errors:
+Use `api_fetch` which defaults to `credentials: "include"` and throws generic errors:
 
 ```typescript
-if (!resp.ok) {
-    throw new Error(`Failed to ${action}: ${resp.statusText}`);
-}
+const resp = await api_fetch("/login");
+return resp.json();
+// throws `Request failed <path>: <status> <statusText>` on `!ok`
 ```
 
 ### Current API Files by App
 
 | App | API File | Functions |
 |-----|----------|------------|
-| login | `src/lib/api.ts` | `fetch_login_status`, `fetch_logout` |
+| login | `src/lib/api.ts` | `fetch_login_status` |
 | tts | `src/lib/api.ts` | `fetch_voices`, `fetch_generate_tts` |
 | telegram | `src/lib/api.ts` | `fetch_search`, `fetch_queue_file`, `fetch_delete_file` |
 | replay_pack_builder | `src/lib/api_client.ts` | `parse_replay_file` |
 | replay_comparer | `src/lib/api.ts` | `fetch_parse_replay`, `fetch_replay_events` |
 | raceroom | `src/lib/api_client.ts` | `fetch_tracks`, `fetch_times` |
-| audiobook | `src/lib/api/*.ts` | `get_books`, `upload_epub`, `get_available_voices` |
+| audiobook | `src/lib/api/*.ts` | `get_books`, `get_book`, `upload_epub`, `get_available_voices`, `update_book_title`, `update_book_author`, `queue_chapter_audio`, `delete_chapter_audio`, `queue_all_chapters`, `delete_book`, `delete_all_books`, `delete_all_audio`, `refresh_chapters` |
 
 ---
 

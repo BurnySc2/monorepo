@@ -1,7 +1,7 @@
 <script lang="ts">
+import { get_api_base } from "@repo/api-client"
 import type { components } from "@repo/api-types"
 import { Spinner } from "@repo/ui"
-import { get_api_base } from "$lib/api"
 import { column_settings } from "$lib/column_settings.svelte"
 import { format_duration, format_file_size } from "$lib/format"
 import {

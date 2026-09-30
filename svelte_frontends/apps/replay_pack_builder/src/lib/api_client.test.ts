@@ -1,9 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { parse_replay_file } from "./api_client"
 
+const original_fetch = globalThis.fetch
 const mock_fetch = vi.fn()
-
-global.fetch = mock_fetch
 
 const mock_replay_response = {
     user_id: "test_user",
@@ -59,6 +58,11 @@ const create_mock_file = (name: string): File => {
 describe("parse_replay_file", () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        globalThis.fetch = mock_fetch
+    })
+
+    afterEach(() => {
+        globalThis.fetch = original_fetch
     })
 
     it("returns parsed replay data on successful response", async () => {
@@ -76,26 +80,30 @@ describe("parse_replay_file", () => {
         expect(result.teams[0].players[0].name).toBe("TestPlayer")
     })
 
-    it("throws error with message from response on error", async () => {
+    it("throws generic api_fetch error on error response (server detail lost)", async () => {
         mock_fetch.mockResolvedValueOnce({
             ok: false,
+            status: 400,
+            statusText: "Bad Request",
             json: async () => ({ error: "Invalid replay file" }),
         })
 
         const file = create_mock_file("invalid.SC2Replay")
 
-        await expect(parse_replay_file(file)).rejects.toThrow("Invalid replay file")
+        await expect(parse_replay_file(file)).rejects.toThrow(/Request failed \/api\/parse_replay/)
     })
 
     it("throws generic error when error message is missing", async () => {
         mock_fetch.mockResolvedValueOnce({
             ok: false,
+            status: 400,
+            statusText: "Bad Request",
             json: async () => ({}),
         })
 
         const file = create_mock_file("invalid.SC2Replay")
 
-        await expect(parse_replay_file(file)).rejects.toThrow("Failed to parse replay")
+        await expect(parse_replay_file(file)).rejects.toThrow(/Request failed \/api\/parse_replay/)
     })
 
     it("sends POST request with file as FormData", async () => {

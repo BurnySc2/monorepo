@@ -1,8 +1,4 @@
-const get_api_base = () => {
-    const target = import.meta.env.VITE_API_TARGET
-    const protocol = target?.includes("localhost") ? "http" : "https"
-    return target ? `${protocol}://${target}` : "http://localhost:8000"
-}
+import { api_fetch } from "@repo/api-client"
 
 export interface User {
     id: number
@@ -29,9 +25,7 @@ export async function check_login_status(): Promise<{
     let error_message: string | null = null
 
     try {
-        const response = await fetch(`${get_api_base()}/login`, {
-            credentials: "include",
-        })
+        const response = await api_fetch("/login")
         const data = await response.json()
         is_logged_in = data.logged_in
         if (data.logged_in && data.user) {

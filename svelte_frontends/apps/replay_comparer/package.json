@@ -22,6 +22,7 @@
         "vitest": "^4.1.0"
     },
     "dependencies": {
+        "@repo/api-client": "*",
         "highcharts": "^11.0.0"
     }
 }

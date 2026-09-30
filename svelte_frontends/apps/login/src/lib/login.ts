@@ -1,4 +1,5 @@
-import { fetch_login_status, get_api_base } from "./api"
+import { get_api_base } from "@repo/api-client"
+import { fetch_login_status } from "./api"
 
 export interface User {
     id: number
@@ -60,7 +61,12 @@ export async function handle_logout(): Promise<void> {
         })
         if (response.type === "opaque" || response.status === 0) {
             window.location.reload()
+            return
         }
+        if (!response.ok && response.status !== 0) {
+            throw new Error(`Logout failed: ${response.status}`)
+        }
+        window.location.reload()
     } catch (error) {
         console.error("Logout failed:", error)
         throw new Error("Logout failed")

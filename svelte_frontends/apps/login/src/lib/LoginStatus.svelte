@@ -1,8 +1,13 @@
 <script lang="ts">
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
-import { fetch_login_status, get_api_base } from "./api"
-import { start_github_login, start_google_login, start_twitch_login } from "./login"
+import { fetch_login_status } from "./api"
+import {
+    handle_logout as shared_handle_logout,
+    start_github_login,
+    start_google_login,
+    start_twitch_login,
+} from "./login"
 
 // State variables using snake_case
 let is_loading = $state(true)
@@ -26,18 +31,12 @@ async function check_login_status() {
     }
 }
 
-// Logout function
+// Logout function (delegates to canonical handle_logout, keeps Svelte set-state behavior)
 async function handle_logout() {
     try {
-        const response = await fetch(`${get_api_base()}/logout`, {
-            credentials: "include",
-            redirect: "manual",
-        })
-        // Follow redirect manually to update UI
-        if (response.type === "opaque" || response.status === 0) {
-            // Redirect happened, reload to check status
-            window.location.reload()
-        }
+        await shared_handle_logout()
+        is_logged_in = false
+        logged_in_user = null
     } catch (error) {
         console.error("Logout failed:", error)
         error_message = "Logout failed"

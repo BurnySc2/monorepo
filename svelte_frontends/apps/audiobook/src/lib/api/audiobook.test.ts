@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
     delete_all_audio,
     delete_all_books,
@@ -15,12 +15,17 @@ import {
     upload_epub,
 } from "./audiobook"
 
-const mockFetch = vi.fn()
-global.fetch = mockFetch
+const original_fetch = globalThis.fetch
+const mock_fetch = vi.fn()
 
 describe("audiobook API", () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        globalThis.fetch = mock_fetch
+    })
+
+    afterEach(() => {
+        globalThis.fetch = original_fetch
     })
 
     describe("get_books", () => {
@@ -37,7 +42,7 @@ describe("audiobook API", () => {
                     upload_date: "2024-01-01",
                 },
             ]
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
                 json: async () => mockBooks,
             })
@@ -48,12 +53,13 @@ describe("audiobook API", () => {
         })
 
         it("throws on fetch failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(get_books()).rejects.toThrow("Failed to fetch books")
+            await expect(get_books()).rejects.toThrow(/Request failed \/api\/audiobook\/books/)
         })
     })
 
@@ -73,7 +79,7 @@ describe("audiobook API", () => {
                 chapters: [],
                 available_voices: ["Voice1"],
             }
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
                 json: async () => mockBook,
             })
@@ -83,9 +89,10 @@ describe("audiobook API", () => {
         })
 
         it("returns null on 404", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 404,
+                statusText: "Not Found",
             })
 
             const result = await get_book(999)
@@ -93,18 +100,19 @@ describe("audiobook API", () => {
         })
 
         it("throws on other fetch failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(get_book(123)).rejects.toThrow("Failed to fetch book")
+            await expect(get_book(123)).rejects.toThrow(/Request failed/)
         })
     })
 
     describe("delete_book", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
@@ -112,18 +120,19 @@ describe("audiobook API", () => {
         })
 
         it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(delete_book(123)).rejects.toThrow("Failed to delete book")
+            await expect(delete_book(123)).rejects.toThrow(/Request failed/)
         })
     })
 
     describe("upload_epub", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
             const file = new File(["content"], "test.epub", { type: "application/epub+zip" })
@@ -131,21 +140,22 @@ describe("audiobook API", () => {
             await expect(upload_epub(file)).resolves.toBeUndefined()
         })
 
-        it("throws on failure with error detail", async () => {
-            mockFetch.mockResolvedValueOnce({
+        it("throws generic error on failure (server detail lost via api_fetch)", async () => {
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 400,
+                statusText: "Bad Request",
                 json: async () => ({ detail: "Invalid file" }),
             })
             const file = new File(["content"], "test.epub", { type: "application/epub+zip" })
 
-            await expect(upload_epub(file)).rejects.toThrow("Invalid file")
+            await expect(upload_epub(file)).rejects.toThrow(/Request failed \/api\/audiobook\/upload/)
         })
     })
 
     describe("get_available_voices", () => {
         it("returns array of voices", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ["Voice1", "Voice2"],
             })
@@ -155,18 +165,19 @@ describe("audiobook API", () => {
         })
 
         it("throws on fetch failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(get_available_voices()).rejects.toThrow("Failed to fetch voices")
+            await expect(get_available_voices()).rejects.toThrow(/Request failed/)
         })
     })
 
     describe("update_book_title", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
@@ -174,18 +185,19 @@ describe("audiobook API", () => {
         })
 
         it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(update_book_title(123, "New Title")).rejects.toThrow("Failed to update title")
+            await expect(update_book_title(123, "New Title")).rejects.toThrow(/Request failed/)
         })
     })
 
     describe("update_book_author", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
@@ -193,18 +205,19 @@ describe("audiobook API", () => {
         })
 
         it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(update_book_author(123, "New Author")).rejects.toThrow("Failed to update author")
+            await expect(update_book_author(123, "New Author")).rejects.toThrow(/Request failed/)
         })
     })
 
     describe("queue_chapter_audio", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
@@ -214,20 +227,21 @@ describe("audiobook API", () => {
         })
 
         it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
             await expect(queue_chapter_audio(123, 1, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" })).rejects.toThrow(
-                "Failed to queue chapter audio",
+                /Request failed/,
             )
         })
     })
 
     describe("delete_chapter_audio", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
@@ -235,18 +249,19 @@ describe("audiobook API", () => {
         })
 
         it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(delete_chapter_audio(123, 1)).rejects.toThrow("Failed to delete chapter audio")
+            await expect(delete_chapter_audio(123, 1)).rejects.toThrow(/Request failed/)
         })
     })
 
     describe("queue_all_chapters", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
@@ -256,20 +271,21 @@ describe("audiobook API", () => {
         })
 
         it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
             await expect(queue_all_chapters(123, { value: "af-ZA|edge|af-ZA-AdriNeural|Female" })).rejects.toThrow(
-                "Failed to queue all chapters",
+                /Request failed/,
             )
         })
     })
 
     describe("delete_all_audio", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
@@ -277,18 +293,19 @@ describe("audiobook API", () => {
         })
 
         it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(delete_all_audio(123)).rejects.toThrow("Failed to delete all audio")
+            await expect(delete_all_audio(123)).rejects.toThrow(/Request failed/)
         })
     })
 
     describe("delete_all_books", () => {
         it("succeeds without error on success", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
@@ -296,23 +313,24 @@ describe("audiobook API", () => {
         })
 
         it("throws on failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(delete_all_books()).rejects.toThrow("Failed to delete all books")
+            await expect(delete_all_books()).rejects.toThrow(/Request failed/)
         })
 
         it("calls fetch with DELETE and credentials include and correct URL", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
             })
 
             await delete_all_books()
 
-            expect(mockFetch).toHaveBeenCalledTimes(1)
-            expect(mockFetch).toHaveBeenCalledWith(
+            expect(mock_fetch).toHaveBeenCalledTimes(1)
+            expect(mock_fetch).toHaveBeenCalledWith(
                 "http://localhost:8000/api/audiobook/books",
                 expect.objectContaining({
                     method: "DELETE",
@@ -338,7 +356,7 @@ describe("audiobook API", () => {
                     minio_presigned_url: "",
                 },
             ]
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: true,
                 json: async () => mockChapters,
             })
@@ -349,12 +367,13 @@ describe("audiobook API", () => {
         })
 
         it("throws on fetch failure", async () => {
-            mockFetch.mockResolvedValueOnce({
+            mock_fetch.mockResolvedValueOnce({
                 ok: false,
                 status: 500,
+                statusText: "Server Error",
             })
 
-            await expect(refresh_chapters(123, [1])).rejects.toThrow("Failed to refresh chapter status")
+            await expect(refresh_chapters(123, [1])).rejects.toThrow(/Request failed/)
         })
     })
 })

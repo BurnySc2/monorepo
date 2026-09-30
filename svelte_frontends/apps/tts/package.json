@@ -15,6 +15,7 @@
         "test:integration": "echo 'No integration tests'"
     },
     "dependencies": {
+        "@repo/api-client": "*",
         "@repo/api-types": "*"
     },
     "devDependencies": {

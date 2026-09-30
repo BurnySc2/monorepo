@@ -1,5 +1,6 @@
 <script lang="ts">
-import { fetch_downloads, get_api_base } from "$lib/api"
+import { get_api_base } from "@repo/api-client"
+import { fetch_downloads } from "$lib/api"
 import { file_column_settings } from "$lib/file_column_settings.svelte"
 import { format_duration, format_file_size } from "$lib/format"
 import { temp_state } from "$lib/temporary-storage.svelte"

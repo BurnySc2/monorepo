@@ -1,9 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { fetch_times, fetch_tracks } from "./api_client"
 
+const original_fetch = globalThis.fetch
 const mock_fetch = vi.fn()
-
-global.fetch = mock_fetch
 
 const mock_tracks_response = [
     { id: 1, name: "Track A" },
@@ -32,6 +31,11 @@ const mock_times_response = [
 describe("fetch_tracks", () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        globalThis.fetch = mock_fetch
+    })
+
+    afterEach(() => {
+        globalThis.fetch = original_fetch
     })
 
     it("returns tracks on successful response", async () => {
@@ -53,7 +57,7 @@ describe("fetch_tracks", () => {
             statusText: "Not Found",
         })
 
-        await expect(fetch_tracks()).rejects.toThrow("Failed to fetch tracks: Not Found")
+        await expect(fetch_tracks()).rejects.toThrow(/Request failed \/api\/raceroom\/tracks.*Not Found/)
     })
 
     it("calls /api/raceroom/tracks", async () => {
@@ -64,13 +68,21 @@ describe("fetch_tracks", () => {
 
         await fetch_tracks()
 
-        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/tracks")
+        expect(mock_fetch).toHaveBeenCalledWith(
+            "http://localhost:8000/api/raceroom/tracks",
+            expect.objectContaining({ credentials: "include" }),
+        )
     })
 })
 
 describe("fetch_times", () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        globalThis.fetch = mock_fetch
+    })
+
+    afterEach(() => {
+        globalThis.fetch = original_fetch
     })
 
     it("returns times on successful response", async () => {
@@ -92,7 +104,7 @@ describe("fetch_times", () => {
             statusText: "Server Error",
         })
 
-        await expect(fetch_times()).rejects.toThrow("Failed to fetch times: Server Error")
+        await expect(fetch_times()).rejects.toThrow(/Request failed \/api\/raceroom\/times.*Server Error/)
     })
 
     it("calls /api/raceroom/times without params", async () => {
@@ -103,7 +115,10 @@ describe("fetch_times", () => {
 
         await fetch_times()
 
-        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/times")
+        expect(mock_fetch).toHaveBeenCalledWith(
+            "http://localhost:8000/api/raceroom/times",
+            expect.objectContaining({ credentials: "include" }),
+        )
     })
 
     it("appends track_id query param when provided", async () => {
@@ -114,7 +129,10 @@ describe("fetch_times", () => {
 
         await fetch_times(5)
 
-        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/times?track_id=5")
+        expect(mock_fetch).toHaveBeenCalledWith(
+            "http://localhost:8000/api/raceroom/times?track_id=5",
+            expect.objectContaining({ credentials: "include" }),
+        )
     })
 
     it("appends start_date query param when provided", async () => {
@@ -125,7 +143,10 @@ describe("fetch_times", () => {
 
         await fetch_times(undefined, "2024-01-01")
 
-        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/times?start_date=2024-01-01")
+        expect(mock_fetch).toHaveBeenCalledWith(
+            "http://localhost:8000/api/raceroom/times?start_date=2024-01-01",
+            expect.objectContaining({ credentials: "include" }),
+        )
     })
 
     it("appends end_date query param when provided", async () => {
@@ -136,7 +157,10 @@ describe("fetch_times", () => {
 
         await fetch_times(undefined, undefined, "2024-12-31")
 
-        expect(mock_fetch).toHaveBeenCalledWith("http://localhost:8000/api/raceroom/times?end_date=2024-12-31")
+        expect(mock_fetch).toHaveBeenCalledWith(
+            "http://localhost:8000/api/raceroom/times?end_date=2024-12-31",
+            expect.objectContaining({ credentials: "include" }),
+        )
     })
 
     it("combines multiple query params", async () => {
@@ -149,6 +173,7 @@ describe("fetch_times", () => {
 
         expect(mock_fetch).toHaveBeenCalledWith(
             "http://localhost:8000/api/raceroom/times?track_id=3&start_date=2024-01-01&end_date=2024-12-31",
+            expect.objectContaining({ credentials: "include" }),
         )
     })
 

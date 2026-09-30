@@ -7,8 +7,24 @@ let read_name_lang = $state("")
 let volume = $state(1.0) // 0 to 1
 let is_loaded = $state(false)
 
-const api_target = import.meta.env?.VITE_API_TARGET || "localhost:8000"
-const ws_backend_server_url = import.meta.env?.VITE_API_TARGET ? `wss://${api_target}` : `ws://${api_target}`
+const raw_api_target = (import.meta.env?.VITE_API_TARGET as string | undefined) || "localhost:8000"
+const cleaned_api_target = raw_api_target.replace(/^https?:\/\//i, "").replace(/\/+$/, "")
+function is_local_ws_target(target: string): boolean {
+    const host_port = target.split("/")[0] ?? ""
+    const lower_host_port = host_port.toLowerCase()
+    let hostname: string
+    if (lower_host_port.startsWith("[")) {
+        const end = lower_host_port.indexOf("]")
+        hostname = end === -1 ? lower_host_port : lower_host_port.slice(1, end)
+    } else if (lower_host_port === "::1" || lower_host_port.startsWith("::1:")) {
+        hostname = "::1"
+    } else {
+        hostname = lower_host_port.split(":")[0] ?? ""
+    }
+    return hostname === "localhost" || hostname.endsWith(".localhost") || hostname === "127.0.0.1" || hostname === "::1"
+}
+const ws_protocol = is_local_ws_target(cleaned_api_target) ? "ws" : "wss"
+const ws_backend_server_url = `${ws_protocol}://${cleaned_api_target}`
 let ws: WebSocket | null = null
 let data: string | null = $state(null)
 
