@@ -22,12 +22,10 @@ def parse_allowlist(env_value: str | None) -> set[str]:
 async def require_allowed_user(
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
 ) -> LoggedInUser:
-    """FastAPI dependency that restricts access to users on an allowlist.
-
-    Reads ALLOWED_TWITCH_USERS_FOR_TELEGRAM_BROWSER per-request.
-    Empty/unset env var → deny all (fail-closed).
+    """Require allowlisted user. Reads process env per-request (no .env fallback; restart to reload).
+    Unset/empty -> 403.
     """
-    env_value = os.getenv("ALLOWED_TWITCH_USERS_FOR_TELEGRAM_BROWSER")
+    env_value = os.environ.get("ALLOWED_TWITCH_USERS_FOR_TELEGRAM_BROWSER")
     allowed = parse_allowlist(env_value)
 
     if current_user.db_name.lower() not in allowed:

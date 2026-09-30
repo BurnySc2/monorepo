@@ -1,30 +1,64 @@
 from __future__ import annotations
 
 import asyncio
-import os
 from typing import cast
 
 import arrow
-from dotenv import load_dotenv
+import httpx
+from botocore.exceptions import ClientError
 from loguru import logger
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from components.audiobook.epub_reader import combine_text
 from components.tts_generate import generate_audio
 from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_upload
 from schemas.audiobook import AudioSettings
 from schemas.audiobook.db_models import AudiobookChapter
-
-load_dotenv()
-
+from settings import settings
 
 # Increase this value to give converters more time to convert an audio
 # Ideal value is slightly above 0.3
-ESTIMATE_FACTOR = float(os.getenv("AUDIOBOOK_CONVERT_ESTIMATE_FACTOR", "0.3"))
+ESTIMATE_FACTOR = settings.audiobook_convert_estimate_factor
 
 # Maximum number of concurrent chapter conversions
-MAX_CONCURRENT_CONVERSIONS = int(os.getenv("AUDIOBOOK_MAX_CONCURRENT_CONVERSIONS", "1"))
+MAX_CONCURRENT_CONVERSIONS = settings.audiobook_max_concurrent_conversions
 
 _background_tasks: set[asyncio.Task[None]] = set()
+
+
+def _is_retryable_audio_error(exc: BaseException) -> bool:
+    """Retry transient network/S3 errors only (no retry for ValueError/AssertionError/RuntimeError)."""
+    if isinstance(exc, (httpx.HTTPError, TimeoutError)):
+        return True
+    if isinstance(exc, ClientError):
+        response = getattr(exc, "response", None)
+        error = response.get("Error", {}) if isinstance(response, dict) else {}
+        code = str(error.get("Code", ""))
+        if code in ("404", "NoSuchKey", "NoSuchBucket", "NotFound"):
+            return False
+        return code == "" or code.startswith("5") or "Throttle" in code or "TooMany" in code or "Timeout" in code
+    return False
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception(_is_retryable_audio_error),
+    reraise=True,
+)
+async def _generate_audio_with_retry(engine_name: str, voice_name: str, content: str) -> tuple[bytes, float]:
+    return await generate_audio(engine_name, voice_name, content)  # pyrefly: ignore
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception(_is_retryable_audio_error),
+    reraise=True,
+)
+async def _upload_audio_with_retry(bucket: str, key: str, data: bytes) -> None:
+    async with get_s3_client() as s3:
+        await object_upload(s3, bucket, key, data)
 
 
 def _on_background_task_done(task: asyncio.Task[None]) -> None:
@@ -144,7 +178,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         # Generate tts from the book
         audio_settings: AudioSettings = AudioSettings.model_validate_json(chapter.audio_settings)
 
-        result = await generate_audio(
+        result = await _generate_audio_with_retry(
             audio_settings.engine_name,
             audio_settings.voice_name,
             chapter.content,
@@ -164,8 +198,8 @@ async def convert_one(chapter: AudiobookChapter) -> None:
 
         # Save result to MinIO
         try:
-            async with get_s3_client() as s3:
-                await object_upload(s3, RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio)
+            assert context.minio_object_name is not None, "Missing S3 object name"
+            await _upload_audio_with_retry(RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio)
             logger.debug(f"Successfully saved audio to s3 storage: {context.minio_object_name}")
         except Exception as e:
             logger.exception(f"Failed to save audio to s3 storage: {e}")

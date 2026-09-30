@@ -73,7 +73,9 @@ class TestSendMp3DataToWs:
 
         await runner.send_mp3_data_to_ws(mock_ws, "test_base64")
 
-        mock_ws.send_text.assert_called_once_with('{"data": "test_base64"}')
+        # orjson emits compact JSON without spaces; compare parsed payload, not raw string.
+        sent_text = mock_ws.send_text.call_args[0][0]
+        assert json.loads(sent_text) == {"data": "test_base64"}
 
     @pytest.mark.asyncio
     async def test_send_mp3_data_removes_ws_on_disconnect(self):

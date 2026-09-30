@@ -5,7 +5,6 @@ https://game.raceroom.com
 
 import asyncio
 
-from dotenv import load_dotenv
 from piccolo.columns import (
     DoublePrecision,
     ForeignKey,
@@ -14,8 +13,6 @@ from piccolo.columns import (
     Timestamp,
 )
 from piccolo.table import Table, create_db_tables
-
-load_dotenv()
 
 
 class RRRETrack(Table, tablename="litestar_rrre_track"):

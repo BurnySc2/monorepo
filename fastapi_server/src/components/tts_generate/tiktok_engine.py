@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import asyncio
 import base64
-import os
 from io import BytesIO
 from pathlib import Path
 
@@ -20,16 +19,18 @@ import httpx
 from cachetools import TTLCache
 from loguru import logger
 from mutagen.mp3 import MP3
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from components.tts_generate._split_long_text import (
     generate_long_text_audio,
 )
 from schemas.tts import VoiceInfo
+from settings import settings
 
 # Cache: (voice_code, text) -> (audio_bytes, duration)
 _audio_cache: TTLCache = TTLCache(maxsize=1000, ttl=3600)
 
-SESSION_ID = os.getenv("TIKTOK_SESSION_ID")
+SESSION_ID = settings.tiktok_session_id
 
 API_DOMAINS = [
     "https://api16-normal-c-useast2a.tiktokv.com",
@@ -678,6 +679,17 @@ async def _tiktok_generate_chunk(voice: str, text: str) -> tuple[bytes, float]:
         "Cookie": f"sessionid={SESSION_ID}",
     }
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception_type(httpx.HTTPError),
+        reraise=True,
+    )
+    async def _post_to_domain(
+        client: httpx.AsyncClient, url: str, query_params: dict, request_headers: dict
+    ) -> httpx.Response:
+        return await client.post(url, params=query_params, headers=request_headers)
+
     data = {}
     status_code = 1
     async with httpx.AsyncClient() as client:
@@ -688,8 +700,15 @@ async def _tiktok_generate_chunk(voice: str, text: str) -> tuple[bytes, float]:
                 "speaker_map_type": 0,
                 "aid": 1233,
             }
-            response = await client.post(f"{domain}{API_PATH}", params=params, headers=headers)
+            try:
+                response = await _post_to_domain(client, f"{domain}{API_PATH}", params, headers)
+            except httpx.HTTPError as e:
+                logger.warning(f"TikTok POST failed for domain={domain}, trying next domain: {e}")
+                continue
             if response.is_error:
+                logger.warning(
+                    f"TikTok POST returned HTTP {response.status_code} for domain={domain}, trying next domain"
+                )
                 continue
             data = response.json()
             status_code = data.get("status_code", 1)

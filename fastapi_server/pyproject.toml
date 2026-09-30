@@ -23,18 +23,17 @@ dependencies = [
     "nltk>=3.9.1",
     # Database
     "piccolo[postgres]>=1.27.0",
+    "orjson>=3.10",
     # Dataclasses with type validation
     "pydantic>=2.9.2",
+    "pydantic-settings>=2.5",
+    "tenacity>=8.4",
     # PDF Parsing
     # "pymupdf>=1.24.13",
     # Load .env files easily
     "python-dotenv>=1.0.1",
     # Audio generation
     "edge-tts>=6.1.18",
-    # Zip files with low memory footprint
-    "stream-zip>=0.0.83",
-    # AWS S3
-    "humanize>=4.11.0",
     # SC2 Replay Parser
     "sc2reader>=1.8.0",
     # Async client for s3
@@ -63,7 +62,6 @@ torch = [{ index = "pytorch-cpu" }]
 kittentts = { url = "https://github.com/KittenML/KittenTTS/releases/download/0.8.1/kittentts-0.8.1-py3-none-any.whl" }
 [dependency-groups]
 dev = [
-    "djlint>=1.36.4",
     # Property based testing
     "hypothesis>=6.118.8",
     # Info about the system
@@ -82,7 +80,6 @@ dev = [
     # Linter and autoformat
     "ruff>=0.15.21",
     "sqlfluff>=3.3.1",
-    "toml>=0.10.2",
     "pytest-databases[postgres]>=0.13.0",
     "pre-commit>=4.5.1",
     "scalene>=2.1.4",

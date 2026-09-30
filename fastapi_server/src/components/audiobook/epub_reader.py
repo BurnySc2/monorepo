@@ -1,7 +1,6 @@
 import contextlib
 import gc
 import io
-import os
 import re
 import zipfile
 from functools import lru_cache
@@ -16,6 +15,8 @@ from nltk import word_tokenize
 from nltk.tokenize import sent_tokenize
 from pydantic import BaseModel
 
+from settings import settings
+
 
 @lru_cache(maxsize=1)
 def ensure_nltk_data() -> Path:
@@ -26,7 +27,7 @@ def ensure_nltk_data() -> Path:
     tokenization entry points so importing this module works offline.
     """
     default_dir = Path(__file__).parents[3] / "data" / "nltk"
-    data_dir = Path(os.getenv("NLTK_DATA_DIR", str(default_dir)))
+    data_dir = Path(settings.nltk_data_dir or str(default_dir))
     data_dir.mkdir(parents=True, exist_ok=True)
     if str(data_dir) not in nltk.data.path:
         nltk.data.path.insert(0, str(data_dir))

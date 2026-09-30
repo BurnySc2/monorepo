@@ -1,6 +1,5 @@
 # DO NOT MODIFY OUTSIDE OF FASTAPI BACKEND PROJECT
 import asyncio
-import os
 from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
@@ -10,20 +9,38 @@ import aioboto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 from loguru import logger
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 from types_aiobotocore_s3 import S3Client
 from types_aiobotocore_s3.service_resource import Bucket, S3ServiceResource
-from types_aiobotocore_s3.type_defs import HeadObjectOutputTypeDef, ObjectTypeDef
+from types_aiobotocore_s3.type_defs import GetObjectOutputTypeDef, HeadObjectOutputTypeDef, ObjectTypeDef
 
-RUSTFS_S3_URL = os.getenv("RUSTFS_S3_URL", "http://0.0.0.0:9000")
-RUSTFS_ACCESS_KEY = os.getenv("RUSTFS_ACCESS_KEY")
-RUSTFS_SECRET_KEY = os.getenv("RUSTFS_SECRET_KEY")
+from settings import settings
 
-RUSTFS_SC2_REPLAYS_BUCKET = os.getenv("RUSTFS_SC2_REPLAYS_BUCKET", "sc2-replays")
-RUSTFS_AUDIOBOOK_BUCKET = os.getenv("RUSTFS_AUDIOBOOK_BUCKET", "rustfs-audiobook-bucket")
-RUSTFS_TELEGRAM_BUCKET = os.getenv("RUSTFS_TELEGRAM_BUCKET", "rustfs-telegram-bucket")
+RUSTFS_S3_URL = settings.rustfs_s3_url
+RUSTFS_ACCESS_KEY = settings.rustfs_access_key
+RUSTFS_SECRET_KEY = settings.rustfs_secret_key
 
-RUSTFS_ADMIN_URL = os.getenv("RUSTFS_ADMIN_URL", "http://localhost:3903")
-RUSTFS_ADMIN_TOKEN = os.getenv("RUSTFS_ADMIN_TOKEN", "rootroot")
+RUSTFS_SC2_REPLAYS_BUCKET = settings.rustfs_sc2_replays_bucket
+RUSTFS_AUDIOBOOK_BUCKET = settings.rustfs_audiobook_bucket
+RUSTFS_TELEGRAM_BUCKET = settings.rustfs_telegram_bucket
+
+RUSTFS_ADMIN_URL = settings.rustfs_admin_url
+RUSTFS_ADMIN_TOKEN = settings.rustfs_admin_token
+
+
+# S3 error codes that mean "object/bucket missing": never retry, fail fast.
+# Callers map these to None (reraise=False) or raise (reraise=True).
+_NON_RETRYABLE_S3_CODES = frozenset({"404", "NoSuchKey", "NoSuchBucket", "NotFound", "NoSuchEntity"})
+
+
+def _is_retryable_s3_error(exc: BaseException) -> bool:
+    """Retry only retryable S3 ClientErrors (exclude 404/missing-key errors)."""
+    if not isinstance(exc, ClientError):
+        return False
+    response = getattr(exc, "response", None)
+    error = response.get("Error", {}) if isinstance(response, dict) else {}
+    code = str(error.get("Code", ""))
+    return code not in _NON_RETRYABLE_S3_CODES
 
 
 async def initialize_rustfs():
@@ -33,9 +50,7 @@ async def initialize_rustfs():
         await bucket_set_expiration(s3, RUSTFS_AUDIOBOOK_BUCKET, days=30)
         await bucket_create(s3, RUSTFS_TELEGRAM_BUCKET)
         await bucket_set_cors(s3, RUSTFS_TELEGRAM_BUCKET)
-        await bucket_set_expiration(
-            s3, RUSTFS_TELEGRAM_BUCKET, days=int(os.getenv("RUSTFS_TELEGRAM_BUCKET_EXPIRATION_DAYS", "7"))
-        )
+        await bucket_set_expiration(s3, RUSTFS_TELEGRAM_BUCKET, days=settings.rustfs_telegram_bucket_expiration_days)
 
 
 @asynccontextmanager
@@ -90,11 +105,62 @@ async def object_upload_async_iterable(session: S3Client, bucket: str, key: str,
     _ = await session.upload_fileobj(Bucket=bucket, Key=key, Fileobj=my_stream)
 
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception(_is_retryable_s3_error),
+    reraise=True,
+)
+async def _head_object_with_retry(session: S3Client, bucket: str, key: str) -> HeadObjectOutputTypeDef:
+    return await session.head_object(Bucket=bucket, Key=key)
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception(_is_retryable_s3_error),
+    reraise=True,
+)
+async def _get_object_with_retry(session: S3Client, bucket: str, key: str) -> GetObjectOutputTypeDef:
+    return await session.get_object(Bucket=bucket, Key=key)
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception(_is_retryable_s3_error),
+    reraise=True,
+)
+async def _delete_object_with_retry(session: S3Client, bucket: str, key: str) -> None:
+    _ = await session.delete_object(Bucket=bucket, Key=key)
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception(_is_retryable_s3_error),
+    reraise=True,
+)
+async def _generate_presigned_url_with_retry(
+    session: S3Client, bucket: str, key: str, file_name: str, expires_in_seconds: int, this_disposition: str
+) -> str:
+    return await session.generate_presigned_url(
+        "get_object",
+        Params={
+            "Bucket": bucket,
+            "Key": key,
+            "ResponseContentDisposition": this_disposition,
+        },
+        ExpiresIn=expires_in_seconds,
+    )
+
+
 async def object_get_info(
     session: S3Client, bucket: str, key: str, reraise: bool = False
 ) -> HeadObjectOutputTypeDef | None:
+    """Return head metadata, or None when missing/failed and reraise is False; raise when reraise is True."""
     try:
-        response = await session.head_object(Bucket=bucket, Key=key)
+        response = await _head_object_with_retry(session, bucket, key)
     except ClientError as e:
         logger.warning(f"S3 head_object failed for bucket={bucket} key={key}: {e}")
         if reraise:
@@ -104,8 +170,9 @@ async def object_get_info(
 
 
 async def object_download(session: S3Client, bucket: str, key: str, reraise: bool = False) -> bytes | None:
+    """Return object bytes, or None when missing/failed and reraise is False; raise when reraise is True."""
     try:
-        data = await session.get_object(Bucket=bucket, Key=key)
+        data = await _get_object_with_retry(session, bucket, key)
     except ClientError as e:
         logger.warning(f"S3 get_object failed for bucket={bucket} key={key}: {e}")
         if reraise:
@@ -116,7 +183,7 @@ async def object_download(session: S3Client, bucket: str, key: str, reraise: boo
 
 async def object_delete(session: S3Client, bucket: str, key: str, reraise: bool = False):
     try:
-        _ = await session.delete_object(Bucket=bucket, Key=key)
+        await _delete_object_with_retry(session, bucket, key)
     except ClientError as e:
         logger.warning(f"S3 delete_object failed for bucket={bucket} key={key}: {e}")
         if reraise:
@@ -147,14 +214,8 @@ async def object_create_presigned_url(
         this_disposition = "inline"
         if disposition == "attachment":
             this_disposition = f"{disposition}; filename={file_name}"
-        url = await session.generate_presigned_url(
-            "get_object",
-            Params={
-                "Bucket": bucket,
-                "Key": key,
-                "ResponseContentDisposition": this_disposition,
-            },
-            ExpiresIn=expires_in_seconds,
+        url = await _generate_presigned_url_with_retry(
+            session, bucket, key, file_name, expires_in_seconds, this_disposition
         )
     except ClientError as e:
         logger.warning(f"S3 generate_presigned_url failed for bucket={bucket} key={key}: {e}")

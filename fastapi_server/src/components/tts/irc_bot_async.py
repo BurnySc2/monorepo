@@ -4,6 +4,7 @@ IRC Client Implementation for Twitch chat using asyncio
 
 import asyncio
 import contextlib
+import random
 import re
 import ssl
 import time
@@ -120,7 +121,7 @@ class IRCClient:
                 await self.handle_reconnect()
 
     async def handle_reconnect(self):
-        """Handle reconnection with exponential backoff"""
+        """Handle reconnection with a single manual exponential backoff (2**n capped at 60s, plus jitter)."""
         logger.info(f"Running reconnect to channel {self.channel}")
         if self.writer:
             self.writer.close()
@@ -131,9 +132,10 @@ class IRCClient:
             logger.error("Max reconnection attempts reached")
             return
 
-        delay = min(2**self.reconnect_attempts, 60)  # Max 60s delay
+        # Single backoff source: per-attempt exponential delay with jitter.
+        delay = min(2**self.reconnect_attempts, 60) + random.uniform(0, 1)
         self.reconnect_attempts += 1
-        logger.info(f"Reconnecting in {delay} seconds...")
+        logger.info(f"Reconnecting in {delay:.1f} seconds (attempt {self.reconnect_attempts})...")
         await asyncio.sleep(delay)
 
         try:

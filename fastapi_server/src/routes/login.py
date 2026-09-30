@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import os
-
 import httpx
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -13,6 +11,7 @@ from components.login.cookies import (
     provide_logged_in_user,
 )
 from components.login.providers import PROVIDERS, OAuthProvider
+from settings import settings
 
 login_router = APIRouter()
 LOGIN_MAX_AGE = 84_400  # 7 days in seconds
@@ -23,14 +22,14 @@ LOGIN_MAX_AGE = 84_400  # 7 days in seconds
 def _get_frontend_url(request: Request) -> str:
     """Return the frontend base URL.
 
-    * In production it is read from the ``FRONTEND_URL`` environment variable.
+    * In production (``STAGE`` not ``dev``) it is read from settings
+      (``FRONTEND_URL`` environment variable).
     * In development (``STAGE=dev``) we infer it from the incoming request
       ``Host`` header and scheme so the port can change dynamically.
     """
-    # Production override – use explicit env var if set
-    env_url = os.getenv("FRONTEND_URL")
-    if env_url:
-        return env_url.rstrip("/")
+    # Production override – use settings value when not in dev
+    if settings.stage != "dev":
+        return settings.frontend_url.rstrip("/")
     # Development – construct from request (any localhost port)
     scheme = request.url.scheme
     host = request.headers.get("host", "localhost")

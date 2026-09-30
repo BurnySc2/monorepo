@@ -22,7 +22,8 @@ class TestProvidersDict:
         assert provider.cookie_key == COOKIES[name]
         assert provider.authorize_url.startswith("https://")
         assert provider.scope
-        assert provider.client_id
+        # OAuth client IDs default to None (configured via environment); must be str when set.
+        assert provider.client_id is None or isinstance(provider.client_id, str)
         assert provider.redirect_path == f"/login/{name}"
         assert callable(provider.get_user)
         assert callable(provider.verify_code)

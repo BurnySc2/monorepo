@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated
@@ -24,6 +23,7 @@ from schemas.telegram_browser import (
     SearchResultMetadata,
     ViewFileResponse,
 )
+from settings import settings
 
 telegram_browser_router = APIRouter()
 
@@ -496,11 +496,8 @@ async def list_downloads(
     List all downloaded files from the last N days.
     Joins TelegramDownload -> TelegramMessage -> TelegramChannel via FK traversal.
     """
-    # Get expiration period from environment (default 7 days)
-    try:
-        expiration_days = int(os.getenv("RUSTFS_TELEGRAM_BUCKET_EXPIRATION_DAYS", "7"))
-    except ValueError:
-        expiration_days = 7
+    # Get expiration period from settings (default 7 days)
+    expiration_days = settings.rustfs_telegram_bucket_expiration_days
     cutoff_time = arrow.now().shift(days=-expiration_days).naive
 
     # Query downloads completed within the expiration window

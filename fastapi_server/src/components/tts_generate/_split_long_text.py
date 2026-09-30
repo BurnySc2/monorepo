@@ -16,6 +16,7 @@ from typing import Protocol
 import nltk  # noqa: I001
 from loguru import logger
 from pydub import AudioSegment
+from tenacity import retry, retry_if_exception, stop_after_attempt
 
 
 class TikTokGenerator(Protocol):
@@ -25,6 +26,12 @@ class TikTokGenerator(Protocol):
         """Generate audio for text. Returns (audio_bytes, duration)."""
         ...
 
+
+# Substrings identifying retryable TikTok chunk-size failures in RuntimeError messages.
+# TikTok raises generic RuntimeError (e.g. "TikTok TTS failed: {...status_code...}"),
+# so chunking retries match these markers; terminal "Cannot synthesize ..." errors are never retried.
+_RETRYABLE_CHUNK_ERROR_MARKERS = ("Text too long", "status_code")
+_NON_RETRYABLE_CHUNK_MARKER = "Cannot synthesize"
 
 # Default character limit to try first (will auto-reduce if this fails)
 DEFAULT_MAX_CHARS = 2000
@@ -208,10 +215,23 @@ async def generate_long_text_audio(
     if initial_max_chars is None:
         initial_max_chars = DEFAULT_MAX_CHARS
 
-    max_chars = initial_max_chars
+    state = {"max_chars": initial_max_chars}
 
-    # Try different chunk sizes until one works
-    for attempt in range(MAX_AUTO_RETRY_DEPTH):
+    def _is_retryable_chunk_error(exc: BaseException) -> bool:
+        if not isinstance(exc, RuntimeError):
+            return False
+        msg = str(exc)
+        if _NON_RETRYABLE_CHUNK_MARKER in msg:
+            return False
+        return any(marker in msg for marker in _RETRYABLE_CHUNK_ERROR_MARKERS)
+
+    @retry(
+        stop=stop_after_attempt(MAX_AUTO_RETRY_DEPTH),
+        retry=retry_if_exception(_is_retryable_chunk_error),
+        reraise=True,
+    )
+    async def _generate_once() -> tuple[bytes, float]:
+        max_chars = state["max_chars"]
         try:
             chunks = split_text_recursive(text, max_chars)
             logger.info(f"Trying with max_chars={max_chars}, got {len(chunks)} chunks")
@@ -240,19 +260,25 @@ async def generate_long_text_audio(
             return combined, total_duration
 
         except RuntimeError as e:
-            error_msg = str(e)
-            if "Text too long" in error_msg or "status_code" in error_msg:
-                # Reduce chunk size and retry
-                max_chars = max_chars // 2
-                if max_chars < MIN_CHUNK_SIZE:
+            if _is_retryable_chunk_error(e):
+                new_max = state["max_chars"] // 2
+                if new_max < MIN_CHUNK_SIZE:
                     raise RuntimeError(
                         f"Cannot synthesize text even with very small chunks (min {MIN_CHUNK_SIZE} chars): {e}"
                     ) from e
-                logger.warning(f"Text too long, retrying with max_chars={max_chars}")
-                continue
+                state["max_chars"] = new_max
+                logger.warning(f"Text too long, retrying with max_chars={new_max}")
             raise
 
-    raise RuntimeError(f"Failed after {MAX_AUTO_RETRY_DEPTH} attempts")
+    try:
+        return await _generate_once()
+    except RuntimeError as e:
+        msg = str(e)
+        if _NON_RETRYABLE_CHUNK_MARKER in msg:
+            raise
+        if any(marker in msg for marker in _RETRYABLE_CHUNK_ERROR_MARKERS):
+            raise RuntimeError(f"Failed after {MAX_AUTO_RETRY_DEPTH} attempts") from e
+        raise
 
 
 # Export for convenience

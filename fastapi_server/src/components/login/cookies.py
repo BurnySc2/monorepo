@@ -1,38 +1,33 @@
 from __future__ import annotations
 
-import os
 import typing
 from dataclasses import dataclass
 from typing import Annotated, Literal
 
 import httpx
-from dotenv import load_dotenv
 from fastapi import Cookie, HTTPException
 from pydantic import BaseModel
 
 from schemas.audiobook.db_models import AudiobookBook
+from settings import settings
 
-_ = load_dotenv()
-
-BACKEND_SERVER_URL = os.getenv("BACKEND_SERVER_URL", "http://localhost:8000")
+BACKEND_SERVER_URL = settings.backend_server_url
 
 # Github app for local development
-GITHUB_CLIENT_ID = os.getenv("GITHUB_APP_CLIENT_ID", "1c200ded47490cce3b4d")
-GITHUB_CLIENT_SECRET = os.getenv("GITHUB_APP_CLIENT_SECRET", "2aab3b1a609cb1a4126c7eec121bad2343332113")
+GITHUB_CLIENT_ID = settings.github_app_client_id
+GITHUB_CLIENT_SECRET = settings.github_app_client_secret
 
 # Twitch app for local development
-TWITCH_CLIENT_ID = os.getenv("TWITCH_APP_CLIENT_ID", "ddgeuklh32bi15odtfc0o7gu4g4ehn")
-TWITCH_CLIENT_SECRET = os.getenv("TWITCH_APP_CLIENT_SECRET", "mtu72a2v35p8x7f4fddwmzc2wwdruu")
+TWITCH_CLIENT_ID = settings.twitch_app_client_id
+TWITCH_CLIENT_SECRET = settings.twitch_app_client_secret
 
 # Facebook app for local development
-FACEBOOK_CLIENT_ID = os.getenv("FACEBOOK_APP_CLIENT_ID", "1668878523656479")
-FACEBOOK_CLIENT_SECRET = os.getenv("FACEBOOK_APP_CLIENT_SECRET", "dcd070e77fab0aabf1d468fe1d586e28")
+FACEBOOK_CLIENT_ID = settings.facebook_app_client_id
+FACEBOOK_CLIENT_SECRET = settings.facebook_app_client_secret
 
 # Google app for local development
-GOOGLE_CLIENT_ID = os.getenv(
-    "GOOGLE_APP_CLIENT_ID", "359432605842-cm653in48c8itjpk40j6vjcottc7541i.apps.googleusercontent.com"
-)  # noqa: E501
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_APP_CLIENT_SECRET", "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")
+GOOGLE_CLIENT_ID = settings.google_app_client_id
+GOOGLE_CLIENT_SECRET = settings.google_app_client_secret
 
 COOKIES = {
     "facebook": "facebook_access_token",
@@ -105,7 +100,7 @@ async def twitch_get_user(twitch_access_token: str | None) -> TwitchUser | None:
             url="https://api.twitch.tv/helix/users",
             headers={
                 "Authorization": f"Bearer {twitch_access_token}",
-                "Client-Id": TWITCH_CLIENT_ID,
+                "Client-Id": TWITCH_CLIENT_ID or "",
                 "Accept": "application/json",
             },
         )

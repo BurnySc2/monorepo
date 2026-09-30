@@ -4,7 +4,6 @@ Provides a minimal FastAPI application that can be started via the
 VS Code launch configuration added above.
 """
 
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -22,6 +21,7 @@ from routes.telegram_browser import telegram_browser_router
 from routes.tts_generate import tts_generate_router
 from routes.tts_websocket import TTSRouter
 from s3_helper import initialize_rustfs
+from settings import settings
 
 
 @asynccontextmanager
@@ -36,10 +36,13 @@ async def lifespan(app: FastAPI):
     # End
 
 
+# Use default JSONResponse to keep Pydantic Rust dump_json fastpath.
+# default_response_class=ORJSONResponse is deprecated and disables the fastpath,
+# while websocket_handler.send_mp3_data_to_ws keeps direct orjson usage.
 app = FastAPI(lifespan=lifespan)
 
 # Enable CORS
-if os.getenv("STAGE") == "dev":
+if settings.stage == "dev":
     # Allow the Svelte dev server to talk to the API
     app.add_middleware(
         CORSMiddleware,
@@ -48,7 +51,7 @@ if os.getenv("STAGE") == "dev":
         allow_methods=["*"],
         allow_headers=["*"],
     )
-elif os.getenv("STAGE") == "prod":
+elif settings.stage == "prod":
     # Production CORS origins
     app.add_middleware(
         CORSMiddleware,

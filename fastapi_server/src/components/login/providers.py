@@ -26,18 +26,25 @@ from components.login.cookies import (
 from components.login.github import github_verify_code
 from components.login.google import google_verify_code
 from components.login.twitch import twitch_verify_code
+from settings import settings
 
 
 def _require_env(name: str) -> str | None:
-    """Return ``os.getenv(name)``, warning in non-dev stages when missing.
+    """Return env value, warning in non-dev stages when missing.
 
-    In production (``STAGE`` anything other than ``dev``/unset/``test``) a
-    missing variable is almost certainly a misconfiguration, so emit a
-    ``loguru`` warning while still returning ``None`` to keep local-dev
-    defaults working.
+    Value lookup stays ``os.getenv`` for generic names, falling back to
+    matching ``settings`` fields (lowercased name). Stage defaults to
+    ``settings.stage`` so explicit ``STAGE`` env still overrides.
     """
     value = os.getenv(name)
-    if not value and os.getenv("STAGE", "dev") not in ("dev", "test", ""):
+    if value is None:
+        field_name = name.lower()
+        if hasattr(settings, field_name):
+            attr = getattr(settings, field_name)
+            if attr is not None:
+                value = str(attr)
+    stage = os.getenv("STAGE", settings.stage)
+    if not value and stage not in ("dev", "test", ""):
         logger.warning(f"Missing required environment variable {name!r} in non-dev STAGE")
     return value
 
@@ -52,7 +59,7 @@ class OAuthProvider:
     verify_code: Callable[[str], Awaitable[Any]]
     authorize_url: str
     scope: str
-    client_id: str
+    client_id: str | None
     redirect_path: str
 
 

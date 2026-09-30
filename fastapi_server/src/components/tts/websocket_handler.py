@@ -5,6 +5,7 @@ from datetime import timedelta
 from typing import ClassVar
 
 import arrow
+import orjson
 from fastapi import WebSocket, WebSocketDisconnect
 from loguru import logger
 from websockets import ConnectionClosedError, ConnectionClosedOK
@@ -211,9 +212,7 @@ class TTSQueueRunner:
     async def send_mp3_data_to_ws(self, socket: WebSocket, data: str) -> None:
         """Send mp3 base64 data to frontend via WebSocket as JSON."""
         try:
-            import json
-
-            await socket.send_text(json.dumps({"data": data}))
+            await socket.send_text(orjson.dumps({"data": data}).decode())
         # Catch errors and remove websocket on error
         except (ConnectionClosedError, ConnectionClosedOK, WebSocketDisconnect):
             await TTSQueue.remove_ws(socket, self.stream_name, self.read_name_lang)

@@ -1,14 +1,15 @@
 import asyncio
 import datetime
-import os
 import re
 
 import arrow
 import httpx
 from loguru import logger
 from pydantic import BaseModel
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from models.raceroom import RRREBestTime, RRREPlayer, RRRETrack
+from settings import settings
 
 TRACK_IDS = [
     # Oschersleben
@@ -47,6 +48,12 @@ def parse_laptime(laptime: str) -> float:
     return int(minutes) * 60 + float(seconds)
 
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type(httpx.HTTPError),
+    reraise=True,
+)
 async def fetch_track_info(client: httpx.AsyncClient, track_id: int, car_class: str = "class-5262") -> list[BestTime]:
     url = f"https://game.raceroom.com/leaderboard/listing/0?start=0&count=200&track={track_id}&car_class={car_class}"
     response = await client.get(
@@ -54,8 +61,9 @@ async def fetch_track_info(client: httpx.AsyncClient, track_id: int, car_class: 
         # Header required to receive data as json
         headers={"x-requested-with": "XMLHttpRequest"},
     )
-    if response.is_error:
-        raise ValueError("Unable to fetch track and car class combination")
+    # Raise httpx.HTTPStatusError (a subclass of httpx.HTTPError) so
+    # transient HTTP failures are retried by the decorator above.
+    response.raise_for_status()
     data = response.json()
 
     data_parsed = [
@@ -137,7 +145,7 @@ async def main():
                 data = await fetch_track_info(client, track_id=track_id)
                 await update_db_data(data, track_id=track_id)
         logger.info("Fetched records")
-        if os.getenv("STAGE") == "dev":
+        if settings.stage == "dev":
             return
         # Loop every hour
         await asyncio.sleep(3600)
