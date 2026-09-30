@@ -4,9 +4,14 @@ on:
   push:
     paths:
       - svelte_frontends/**
+      - fastapi_server/**
       - .github/workflows/svelte_frontends.yml
   pull_request:
     branches: [master, develop]
+    paths:
+      - svelte_frontends/**
+      - fastapi_server/**
+      - .github/workflows/svelte_frontends.yml
 
 jobs:
   build:
@@ -30,30 +35,36 @@ jobs:
         run: npm ci
 
       - name: Build
+        if: always()
         working-directory: svelte_frontends
-        run: npm run build || echo "❌ Build failed" >> $GITHUB_STEP_SUMMARY
+        run: npm run build
 
       - name: Lint
+        if: always()
         working-directory: svelte_frontends
-        run: npm run lint || echo "❌ Lint failed" >> $GITHUB_STEP_SUMMARY
+        run: npm run lint
 
       - name: Type check
+        if: always()
         working-directory: svelte_frontends
-        run: npm run check || echo "❌ Type check failed" >> $GITHUB_STEP_SUMMARY
+        run: npm run check
+
+      - name: Check types
+        if: always()
+        working-directory: svelte_frontends
+        run: npm run check-types
 
       - name: Run unit unit tests
+        if: always()
         working-directory: svelte_frontends
-        run: npm run test:unit || echo "❌ Unit tests failed" >> $GITHUB_STEP_SUMMARY
+        run: npm run test:unit
 
       - name: Run unit integration tests
+        if: always()
         working-directory: svelte_frontends
-        run: npm run test:integration || echo "❌ Integration tests failed" >> $GITHUB_STEP_SUMMARY
+        run: npm run test:integration
 
       - name: Report results
+        if: always()
         run: |
-          if grep -q "❌" $GITHUB_STEP_SUMMARY; then
-            echo "## ❌ Some steps failed" >> $GITHUB_STEP_SUMMARY
-            exit 1
-          else
-            echo "## ✅ All checks passed" >> $GITHUB_STEP_SUMMARY
-          fi
+          echo "## Workflow completed (see individual step statuses)" >> $GITHUB_STEP_SUMMARY
