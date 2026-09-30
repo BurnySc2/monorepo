@@ -19,6 +19,7 @@ export function load_audio_settings(): AudioSettings {
             return AudioSettingsSchema.parse(JSON.parse(stored))
         }
     } catch {
+        localStorage.removeItem(STORAGE_KEY)
         return { value: "" }
     }
     return { value: "" }

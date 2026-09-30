@@ -1,2 +1,2 @@
 export { get_api_base } from "./base"
-export { api_fetch } from "./client"
+export { ApiError, api_fetch, get_api_error_status } from "./client"

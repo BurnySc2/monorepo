@@ -20,19 +20,19 @@ export const fetch_search = async (request: SearchRequest): Promise<SearchResult
 }
 
 export const fetch_queue_file = async (id: string): Promise<QueueFileResponse> => {
-    const resp = await api_fetch(`/telegram-browser/queue-file/${id}`)
+    const resp = await api_fetch(`/telegram-browser/queue-file/${encodeURIComponent(id)}`)
     return resp.json()
 }
 
 export const fetch_delete_file = async (id: string): Promise<DeleteFileResponse> => {
-    const resp = await api_fetch(`/telegram-browser/delete-file/${id}`, {
+    const resp = await api_fetch(`/telegram-browser/delete-file/${encodeURIComponent(id)}`, {
         method: "DELETE",
     })
     return resp.json()
 }
 
 export const fetch_view_file = async (id: string): Promise<ViewFileResponse> => {
-    const resp = await api_fetch(`/telegram-browser/view-file/${id}`)
+    const resp = await api_fetch(`/telegram-browser/view-file/${encodeURIComponent(id)}`)
     return resp.json()
 }
 

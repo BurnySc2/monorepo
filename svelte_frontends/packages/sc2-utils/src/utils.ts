@@ -123,9 +123,14 @@ export const formatTime = (timeInSeconds: number): string => {
 
 export const timeStringToNumber = (timeFormatted: string): number => {
     const timeSplit = timeFormatted.split(":")
-    console.assert(timeSplit.length === 2, timeSplit)
+    if (timeSplit.length !== 2) {
+        return Number.NaN
+    }
     const minutes = parseInt(timeSplit[0], 10)
     const seconds = parseInt(timeSplit[1], 10)
+    if (!Number.isFinite(minutes) || !Number.isFinite(seconds)) {
+        return Number.NaN
+    }
     return minutes * 60 + seconds
 }
 
@@ -133,11 +138,18 @@ export const textToBuildOrder = (buildOrderText: string): IBuildOrderItem[] => {
     const lines = buildOrderText.split("\n")
     const buildOrder: IBuildOrderItem[] = []
     lines.forEach((line) => {
+        if (line.trim() === "") {
+            return
+        }
         const timeAndText = line.split(" ")
         const time = timeAndText[0]
         const text = timeAndText.slice(1).join(" ")
+        const parsed_time = timeStringToNumber(time)
+        if (!Number.isFinite(parsed_time)) {
+            return
+        }
         buildOrder.push({
-            time: timeStringToNumber(time),
+            time: parsed_time,
             text: text,
         })
     })

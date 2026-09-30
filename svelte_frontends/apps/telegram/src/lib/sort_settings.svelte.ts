@@ -27,8 +27,12 @@ $effect.root(() => {
                 is_loading.value = false
                 const data = localStorage.getItem(STORAGE_KEY)
                 if (data !== null) {
-                    const parsed = SortStateSchema.parse(JSON.parse(data))
-                    sort_state.splice(0, sort_state.length, ...parsed)
+                    try {
+                        const parsed = SortStateSchema.parse(JSON.parse(data))
+                        sort_state.splice(0, sort_state.length, ...parsed)
+                    } catch {
+                        localStorage.removeItem(STORAGE_KEY)
+                    }
                 }
             } else {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(sort_state))

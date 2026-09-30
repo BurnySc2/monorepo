@@ -225,15 +225,22 @@ npm run test:watch
 
 | App | Has Vitest | Has Integration Tests |
 |-----|-----------|-------------------|
-| login | Yes | Placeholder |
-| tts | Yes | - |
-| replay_pack_builder | Yes | - |
-| audiobook | Yes | - |
-| telegram | Yes | - |
-| raceroom | Yes | - |
-| replay_comparer | Yes | - |
-| buildorder | No | - |
-| matchinfo | No | - |
+| login | Yes (`vitest.config.ts`) | Placeholder |
+| tts | Yes (no config file, default discovery) | - |
+| replay_pack_builder | Yes (`vitest.config.ts`) | - |
+| audiobook | Yes (no config file, default discovery) | - |
+| telegram | Yes (no config file, default discovery) | - |
+| raceroom | Yes (no config file, default discovery) | - |
+| replay_comparer | Yes (`vitest.config.ts`) | - |
+| buildorder | No (`echo 'No unit tests'`) | - |
+| matchinfo | No (`echo 'No unit tests'`) | - |
+
+### Package Test Status
+
+| Package | Has Vitest | Notes |
+|---------|-----------|-------|
+| `@repo/api-client` | Yes | `vitest run` with `client.test.ts`, `base.test.ts` |
+| `@repo/sc2-utils` | Yes (`vitest.config.ts` scoped to `src/**/*.test.ts`, excludes `dist/`, `.svelte-kit/`) | `vitest run` with `utils.test.ts` |
 
 ---
 
@@ -244,15 +251,15 @@ npm run test:watch
 All client-exposed environment variables must use the `VITE_` prefix:
 
 ```
-VITE_API_URL=localhost:8000
-VITE_APP_NAME=my-app
+VITE_API_TARGET=localhost:8000
+VITE_USE_MOCK=false
 ```
 
 ### Usage in Code
 
 ```typescript
-// Access in Svelte/Vite
-import { PUBLIC_API_URL } from '$env/VITE_PUBLIC_API_URL';
+// Access in Svelte/Vite via import.meta.env (VITE_ prefix is client-exposed)
+const api_target = import.meta.env.VITE_API_TARGET as string | undefined;
 ```
 
 ### Adding New Variables
@@ -507,11 +514,13 @@ return resp.json();
 |-----|----------|------------|
 | login | `src/lib/api.ts` | `fetch_login_status` |
 | tts | `src/lib/api.ts` | `fetch_voices`, `fetch_generate_tts` |
-| telegram | `src/lib/api.ts` | `fetch_search`, `fetch_queue_file`, `fetch_delete_file` |
-| replay_pack_builder | `src/lib/api_client.ts` | `parse_replay_file` |
+| telegram | `src/lib/api.ts` | `fetch_search`, `fetch_queue_file`, `fetch_delete_file`, `fetch_view_file`, `fetch_downloads`, `fetch_channel_names`, `fetch_channel_stats` |
+| replay_pack_builder | `src/lib/api_client.ts` | `parse_replay_file` (409 already-uploaded friendly error) |
 | replay_comparer | `src/lib/api.ts` | `fetch_parse_replay`, `fetch_replay_events` |
 | raceroom | `src/lib/api_client.ts` | `fetch_tracks`, `fetch_times` |
-| audiobook | `src/lib/api/*.ts` | `get_books`, `get_book`, `upload_epub`, `get_available_voices`, `update_book_title`, `update_book_author`, `queue_chapter_audio`, `delete_chapter_audio`, `queue_all_chapters`, `delete_book`, `delete_all_books`, `delete_all_audio`, `refresh_chapters` |
+| audiobook | `src/lib/api/*.ts` | `get_books`, `get_book` (404 returns null via `get_api_error_status`), `upload_epub` (409 already-uploaded friendly error), `get_available_voices`, `update_book_title`, `update_book_author`, `queue_chapter_audio`, `delete_chapter_audio`, `queue_all_chapters`, `delete_book`, `delete_all_books`, `delete_all_audio`, `refresh_chapters` |
+| buildorder | — (direct `fetch` to SC2 local API `localhost:6119` + static data) | — |
+| matchinfo | — (direct `fetch` to SC2 local API `localhost:6119` + `nephest.com` via `encodeURIComponent`) | `nephestQuery` |
 
 ---
 

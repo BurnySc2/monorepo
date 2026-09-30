@@ -151,6 +151,18 @@ describe("audiobook API", () => {
 
             await expect(upload_epub(file)).rejects.toThrow(/Request failed \/api\/audiobook\/upload/)
         })
+
+        it("throws friendly already-uploaded error on 409", async () => {
+            mock_fetch.mockResolvedValueOnce({
+                ok: false,
+                status: 409,
+                statusText: "Conflict",
+                json: async () => ({ detail: "Already uploaded" }),
+            })
+            const file = new File(["content"], "test.epub", { type: "application/epub+zip" })
+
+            await expect(upload_epub(file)).rejects.toThrow(/already uploaded/i)
+        })
     })
 
     describe("get_available_voices", () => {

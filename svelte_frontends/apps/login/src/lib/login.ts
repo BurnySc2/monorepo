@@ -14,12 +14,7 @@ export interface LoginState {
     error_message: string | null
 }
 
-export async function check_login_status(): Promise<{
-    is_loading: boolean
-    is_logged_in: boolean
-    logged_in_user: User | null
-    error_message: string | null
-}> {
+export async function check_login_status(): Promise<LoginState> {
     let is_loading = true
     let is_logged_in = false
     let logged_in_user: User | null = null
@@ -55,6 +50,7 @@ export function start_google_login() {
 
 export async function handle_logout(): Promise<void> {
     try {
+        // Keep raw fetch with redirect manual (never api_fetch) for logout navigation.
         const response = await fetch(`${get_api_base()}/logout`, {
             credentials: "include",
             redirect: "manual",
@@ -63,7 +59,7 @@ export async function handle_logout(): Promise<void> {
             window.location.reload()
             return
         }
-        if (!response.ok && response.status !== 0) {
+        if (!response.ok) {
             throw new Error(`Logout failed: ${response.status}`)
         }
         window.location.reload()

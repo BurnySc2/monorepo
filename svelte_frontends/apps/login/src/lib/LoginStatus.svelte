@@ -3,17 +3,18 @@ import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { fetch_login_status } from "./api"
 import {
+    type LoginState,
     handle_logout as shared_handle_logout,
     start_github_login,
     start_google_login,
     start_twitch_login,
 } from "./login"
 
-// State variables using snake_case
-let is_loading = $state(true)
-let is_logged_in = $state(false)
-let logged_in_user: { id: number; name: string; service: string } | null = $state(null)
-let error_message: string | null = $state(null)
+// State variables using snake_case (shaped as LoginState)
+let is_loading: LoginState["is_loading"] = $state(true)
+let is_logged_in: LoginState["is_logged_in"] = $state(false)
+let logged_in_user: LoginState["logged_in_user"] = $state(null)
+let error_message: LoginState["error_message"] = $state(null)
 
 // Check login status on mount
 async function check_login_status() {

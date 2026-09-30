@@ -37,7 +37,11 @@ $effect.root(() => {
                 is_loading.value = false
                 const data = localStorage.getItem(STORAGE_KEY)
                 if (data !== null) {
-                    Object.assign(search_filters, SearchFiltersSchema.parse(JSON.parse(data)))
+                    try {
+                        Object.assign(search_filters, SearchFiltersSchema.parse(JSON.parse(data)))
+                    } catch {
+                        localStorage.removeItem(STORAGE_KEY)
+                    }
                 }
             } else {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(search_filters))

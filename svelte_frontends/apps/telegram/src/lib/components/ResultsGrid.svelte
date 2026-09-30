@@ -135,7 +135,7 @@ async function handle_queue(id: string) {
                                 </button>
                                 <a
                                     class="w-8 rounded-lg transition-colors hover:bg-green-100"
-                                    href={`${get_api_base()}/telegram-browser/download-file/${row.metadata.id}`}
+                                    href={`${get_api_base()}/telegram-browser/download-file/${encodeURIComponent(String(row.metadata.id))}`}
                                     title="Download"
                                 >
                                     <img

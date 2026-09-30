@@ -1,6 +1,6 @@
 // API service for Audiobook feature
 
-import { api_fetch } from "@repo/api-client"
+import { api_fetch, get_api_error_status } from "@repo/api-client"
 import type {
     BookListItemSchema as AudiobookBook,
     ChapterDetail as AudiobookChapterQueryResult,
@@ -24,9 +24,12 @@ export async function get_book(book_id: number): Promise<BookWithChapters | null
     }
 
     try {
-        const response = await api_fetch(`/api/audiobook/books/${book_id}`)
+        const response = await api_fetch(`/api/audiobook/books/${encodeURIComponent(String(book_id))}`)
         return response.json()
     } catch (error) {
+        if (get_api_error_status(error) === 404) {
+            return null
+        }
         if (error instanceof Error && /\/api\/audiobook\/books\/[^\s]*: 404(?:[ ,]|$)/.test(error.message)) {
             return null
         }
@@ -38,10 +41,19 @@ export async function upload_epub(file: File): Promise<void> {
     const formData = new FormData()
     formData.append("file", file)
 
-    await api_fetch("/api/audiobook/upload", {
-        method: "POST",
-        body: formData,
-    })
+    try {
+        await api_fetch("/api/audiobook/upload", {
+            method: "POST",
+            body: formData,
+        })
+    } catch (error) {
+        if (get_api_error_status(error) === 409) {
+            const friendly = new Error("Book already uploaded: this EPUB has already been uploaded")
+            ;(friendly as Error & { status?: number }).status = 409
+            throw friendly
+        }
+        throw error
+    }
 }
 
 export async function get_available_voices(): Promise<VoiceInfo[]> {
@@ -50,7 +62,7 @@ export async function get_available_voices(): Promise<VoiceInfo[]> {
 }
 
 export async function update_book_title(book_id: number, title: string): Promise<void> {
-    await api_fetch(`/api/audiobook/books/${book_id}/title`, {
+    await api_fetch(`/api/audiobook/books/${encodeURIComponent(String(book_id))}/title`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -60,7 +72,7 @@ export async function update_book_title(book_id: number, title: string): Promise
 }
 
 export async function update_book_author(book_id: number, author: string): Promise<void> {
-    await api_fetch(`/api/audiobook/books/${book_id}/author`, {
+    await api_fetch(`/api/audiobook/books/${encodeURIComponent(String(book_id))}/author`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -74,23 +86,29 @@ export async function queue_chapter_audio(
     chapter_id: number,
     audio_settings: AudioSettings,
 ): Promise<void> {
-    await api_fetch(`/api/audiobook/books/${book_id}/chapters/${chapter_id}/queue`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
+    await api_fetch(
+        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/${encodeURIComponent(String(chapter_id))}/queue`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(audio_settings),
         },
-        body: JSON.stringify(audio_settings),
-    })
+    )
 }
 
 export async function delete_chapter_audio(book_id: number, chapter_id: number): Promise<void> {
-    await api_fetch(`/api/audiobook/books/${book_id}/chapters/${chapter_id}`, {
-        method: "DELETE",
-    })
+    await api_fetch(
+        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/${encodeURIComponent(String(chapter_id))}`,
+        {
+            method: "DELETE",
+        },
+    )
 }
 
 export async function queue_all_chapters(book_id: number, audio_settings: AudioSettings): Promise<void> {
-    await api_fetch(`/api/audiobook/books/${book_id}/queue-all`, {
+    await api_fetch(`/api/audiobook/books/${encodeURIComponent(String(book_id))}/queue-all`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -100,7 +118,7 @@ export async function queue_all_chapters(book_id: number, audio_settings: AudioS
 }
 
 export async function delete_book(book_id: number): Promise<void> {
-    await api_fetch(`/api/audiobook/books/${book_id}`, {
+    await api_fetch(`/api/audiobook/books/${encodeURIComponent(String(book_id))}`, {
         method: "DELETE",
     })
 }
@@ -112,7 +130,7 @@ export async function delete_all_books(): Promise<void> {
 }
 
 export async function delete_all_audio(book_id: number): Promise<void> {
-    await api_fetch(`/api/audiobook/books/${book_id}/audio`, {
+    await api_fetch(`/api/audiobook/books/${encodeURIComponent(String(book_id))}/audio`, {
         method: "DELETE",
     })
 }
@@ -122,7 +140,7 @@ export async function refresh_chapters(
     chapter_numbers: number[],
 ): Promise<AudiobookChapterQueryResult[]> {
     const response = await api_fetch(
-        `/api/audiobook/books/${book_id}/chapters/status?chapter_numbers=${chapter_numbers.join(",")}`,
+        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/status?chapter_numbers=${encodeURIComponent(chapter_numbers.join(","))}`,
     )
 
     const data: AudiobookChapterQueryResult[] = await response.json()

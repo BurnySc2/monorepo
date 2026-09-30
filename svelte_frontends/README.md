@@ -19,10 +19,12 @@ flowchart TB
             login[login]
         end
 
-        subgraph packages["Packages (3)"]
+        subgraph packages["Packages (5)"]
             ui[ui]
             sc2_utils[sc2-utils]
             typescript_config[typescript-config]
+            api_client[api-client]
+            api_types[api-types]
         end
     end
 
@@ -30,9 +32,19 @@ flowchart TB
     buildorder --> sc2_utils
     matchinfo --> sc2_utils
     audiobook --> ui
+    audiobook --> api_client
+    audiobook --> api_types
     login --> ui
+    login --> api_client
+    tts --> api_client
+    tts --> api_types
     telegram --> ui
+    telegram --> api_client
+    telegram --> api_types
     raceroom --> ui
+    raceroom --> api_client
+    replay_comparer --> api_client
+    replay_pack_builder --> api_client
 ```
 
 ## Apps Overview

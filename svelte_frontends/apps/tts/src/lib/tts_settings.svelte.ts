@@ -20,7 +20,11 @@ $effect.root(() => {
                 loading.value = false
                 const data = localStorage.getItem(STORAGE_KEY)
                 if (data !== null) {
-                    Object.assign(tts_settings, TtsSettingsSchema.parse(JSON.parse(data)))
+                    try {
+                        Object.assign(tts_settings, TtsSettingsSchema.parse(JSON.parse(data)))
+                    } catch {
+                        localStorage.removeItem(STORAGE_KEY)
+                    }
                 }
             } else {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(tts_settings))

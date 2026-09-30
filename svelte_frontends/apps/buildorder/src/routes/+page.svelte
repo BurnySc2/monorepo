@@ -27,10 +27,18 @@ import { page } from "$app/state"
 
 const dev = import.meta.env.DEV
 
+function parse_poll_frequency(raw: string | null): number {
+    const parsed = parseInt(raw ?? "1000", 10)
+    if (!Number.isFinite(parsed)) {
+        return 1000
+    }
+    return Math.max(250, parsed)
+}
+
 let params = $derived({
     twitchUser: page.url.searchParams.get("twitchUser"),
     server: page.url.searchParams.get("server") as ISc2Server | null,
-    sc2PollFrequency: parseInt(page.url.searchParams.get("sc2PollFrequency") || "1000", 10),
+    sc2PollFrequency: parse_poll_frequency(page.url.searchParams.get("sc2PollFrequency")),
 })
 
 let build_order_title = $state("Current Build Order Title")

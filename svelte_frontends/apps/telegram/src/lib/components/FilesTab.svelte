@@ -80,7 +80,7 @@ async function load_downloads() {
                                     </button>
                                     <a
                                         class="w-8 rounded-xl hover:bg-green-500"
-                                        href={`${get_api_base()}/telegram-browser/download-file/${file.message_id}`}
+                                        href={`${get_api_base()}/telegram-browser/download-file/${encodeURIComponent(String(file.message_id))}`}
                                         title="Download"
                                     >
                                         <img

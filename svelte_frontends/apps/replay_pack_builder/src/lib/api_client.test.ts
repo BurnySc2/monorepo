@@ -106,6 +106,19 @@ describe("parse_replay_file", () => {
         await expect(parse_replay_file(file)).rejects.toThrow(/Request failed \/api\/parse_replay/)
     })
 
+    it("throws friendly already-uploaded error on 409", async () => {
+        mock_fetch.mockResolvedValueOnce({
+            ok: false,
+            status: 409,
+            statusText: "Conflict",
+            json: async () => ({ detail: "Already uploaded" }),
+        })
+
+        const file = create_mock_file("duplicate.SC2Replay")
+
+        await expect(parse_replay_file(file)).rejects.toThrow(/already uploaded/i)
+    })
+
     it("sends POST request with file as FormData", async () => {
         mock_fetch.mockResolvedValueOnce({
             ok: true,

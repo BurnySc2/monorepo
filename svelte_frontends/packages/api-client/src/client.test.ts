@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { api_fetch } from "./client"
+import { ApiError, api_fetch, get_api_error_status } from "./client"
 
 const original_fetch = globalThis.fetch
 const mock_fetch = vi.fn()
@@ -68,6 +68,22 @@ describe("api_fetch", () => {
     it("includes statusText in error message", async () => {
         mock_fetch.mockResolvedValueOnce({ ok: false, status: 404, statusText: "Not Found" } as Response)
         await expect(api_fetch("/missing")).rejects.toThrow("Not Found")
+    })
+
+    it("exposes numeric status on error via ApiError", async () => {
+        mock_fetch.mockResolvedValueOnce({ ok: false, status: 409, statusText: "Conflict" } as Response)
+        const error = await api_fetch("/api/audiobook/upload").catch((e: unknown) => e)
+        expect(error).toBeInstanceOf(ApiError)
+        expect(error).toBeInstanceOf(Error)
+        expect((error as ApiError).status).toBe(409)
+        expect((error as ApiError).statusText).toBe("Conflict")
+        expect((error as Error).message).toContain("Request failed /api/audiobook/upload: 409")
+        expect(get_api_error_status(error)).toBe(409)
+    })
+
+    it("get_api_error_status returns undefined for generic errors", () => {
+        expect(get_api_error_status(new Error("boom"))).toBeUndefined()
+        expect(get_api_error_status(null)).toBeUndefined()
     })
 
     it("returns response on ok", async () => {

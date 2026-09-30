@@ -29,11 +29,27 @@ import { page } from "$app/state"
 
 const dev = import.meta.env.DEV
 
+function parse_poll_frequency(raw: string | null): number {
+    const parsed = parseInt(raw ?? "1000", 10)
+    if (!Number.isFinite(parsed)) {
+        return 1000
+    }
+    return Math.max(250, parsed)
+}
+
+function parse_mmr_difference(raw: string | null): number {
+    const parsed = parseInt(raw ?? "1000", 10)
+    if (!Number.isFinite(parsed)) {
+        return 1000
+    }
+    return parsed
+}
+
 let params = $derived({
     twitchUser: page.url.searchParams.get("twitchUser"),
     server: page.url.searchParams.get("server") as ISc2Server | null,
-    sc2PollFrequency: parseInt(page.url.searchParams.get("sc2PollFrequency") || "1000", 10),
-    maxOpponentMmrDifference: parseInt(page.url.searchParams.get("maxOpponentMmrDifference") || "1000", 10),
+    sc2PollFrequency: parse_poll_frequency(page.url.searchParams.get("sc2PollFrequency")),
+    maxOpponentMmrDifference: parse_mmr_difference(page.url.searchParams.get("maxOpponentMmrDifference")),
 })
 
 let info = $state<IMatchInfo>(resetInfo())
@@ -147,7 +163,7 @@ const pollSc2Api = async () => {
 }
 
 const nephestQuery = async (name: string, race: ISc2Race, server: ISc2Server, myMmr?: number): Promise<boolean> => {
-    const url = `${nephestUrl}${name}`
+    const url = `${nephestUrl}${encodeURIComponent(name)}`
     try {
         const response = await fetch(url)
         if (!response.ok) {

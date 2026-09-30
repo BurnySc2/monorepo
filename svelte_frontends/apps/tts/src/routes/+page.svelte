@@ -5,6 +5,7 @@ import { onMount } from "svelte"
 import { page } from "$app/state"
 import { fetch_generate_tts, fetch_voices } from "$lib/api"
 import { tts_settings } from "$lib/tts_settings.svelte"
+import { clamp_volume_percent, clamp_volume_ratio } from "$lib/utils"
 
 let voices = $state<VoiceInfo[]>([])
 let user_text = $state("")
@@ -73,7 +74,15 @@ const preview_text = $derived.by(() => {
 
     return `${voices[tts_settings.selected_voice_index].engine}_${voices[tts_settings.selected_voice_index].label.toLowerCase().replaceAll(" ", "_")}: ${user_text}`
 })
-const overlay_url = $derived(`${page.url.origin}/overlay?stream_name=${twitch_channel}&volume=${twitch_volume}`)
+// Volume convention: twitch_volume is percent 0-100 for the overlay query; default 15 (reasonable OBS level).
+// Audio element volume is ratio 0-1 derived from tts_settings.audio_volume percent.
+const overlay_url = $derived.by(() => {
+    const params = new URLSearchParams({
+        stream_name: twitch_channel,
+        volume: String(clamp_volume_percent(twitch_volume)),
+    })
+    return `${page.url.origin}/overlay?${params.toString()}`
+})
 </script>
 
 <main class="flex flex-col p-4 max-w-xl mx-auto gap-4">
@@ -117,11 +126,11 @@ const overlay_url = $derived(`${page.url.origin}/overlay?stream_name=${twitch_ch
                 <audio
                     controls
                     class="w-full"
-                    volume={tts_settings.audio_volume / 100}
+                    volume={clamp_volume_ratio(tts_settings.audio_volume / 100)}
                     onvolumechange={(e) => {
                         const target = e.currentTarget as HTMLAudioElement;
-                        const volume = Math.round(target.volume * 100);
-                        tts_settings.audio_volume = Math.min(100, Math.max(0, volume));
+                        const raw_volume = Math.round(target.volume * 100);
+                        tts_settings.audio_volume = clamp_volume_percent(raw_volume);
                     }}
                 >
                     <track

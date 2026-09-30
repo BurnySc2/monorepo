@@ -45,7 +45,11 @@ $effect.root(() => {
                 is_loading.value = false
                 const data = localStorage.getItem(STORAGE_KEY)
                 if (data !== null) {
-                    Object.assign(file_column_settings, FileColumnSettingsSchema.parse(JSON.parse(data)))
+                    try {
+                        Object.assign(file_column_settings, FileColumnSettingsSchema.parse(JSON.parse(data)))
+                    } catch {
+                        localStorage.removeItem(STORAGE_KEY)
+                    }
                 }
             } else {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(file_column_settings))
