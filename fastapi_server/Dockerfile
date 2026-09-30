@@ -7,6 +7,7 @@ FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim AS base
 
 # Required by tts engines like kokoro
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
     espeak-ng \
     && rm -rf /var/lib/apt/lists/*
 
@@ -29,4 +30,5 @@ FROM scratch
 COPY --from=base / /
 WORKDIR /root/fastapi_server
 ENV PYTHONPATH=$PYTHONPATH:/root/fastapi_server/src
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -f http://localhost:8000/health || exit 1
 CMD ["uv", "run", "--no-dev", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -157,6 +157,12 @@ capitalisation_policy = "upper"
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["test"]
+asyncio_mode = "auto"
+markers = [
+    "endpoint: endpoint tests",
+    "worker: worker tests",
+    "slow: slow tests",
+]
 
 [tool.pytest_env]
 # Env variables to be used while tests run

@@ -9,6 +9,12 @@ x-services-fragments:
     hostname: fastapi_server
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
   convert_audiobook_worker: &convert_audiobook_worker
     image: burnysc2/fastapi_server:latest_dev
     pull_policy: never
