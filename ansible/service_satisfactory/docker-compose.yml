@@ -18,7 +18,7 @@ services:
       - PGID=1000
       - ROOTLESS=false
       - STEAMBETA=false
-    restart: false
+    restart: unless-stopped
     healthcheck:
       test: bash /healthcheck.sh
       interval: 30s
