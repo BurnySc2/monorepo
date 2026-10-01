@@ -6,9 +6,10 @@ from typing import Any
 from fastapi import HTTPException
 
 from components.login.cookies import LoggedInUser, check_book_ownership
-from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_create_presigned_url
+from s3_helper import get_s3_client, object_create_presigned_url
 from schemas.audiobook import BookListItem, ChapterDetail
 from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
+from settings import settings
 
 _queries_directory = Path(__file__).parent.parent / "queries"
 _query_get_chapters = (_queries_directory / "audiobook_get_chapters.sql").read_text()
@@ -76,7 +77,7 @@ async def get_chapters_with_urls(book_id: int, chapter_numbers: list[int]) -> li
                 presigned_url = (
                     await object_create_presigned_url(
                         session=s3,
-                        bucket=RUSTFS_AUDIOBOOK_BUCKET,
+                        bucket=settings.rustfs_audiobook_bucket,
                         key=row["minio_object_name"],
                         file_name=f"{row['chapter_title']}.mp3",
                         expires_in_seconds=3600,

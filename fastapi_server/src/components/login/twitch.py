@@ -4,11 +4,7 @@ from typing import Literal
 
 import httpx
 
-from components.login.cookies import (
-    BACKEND_SERVER_URL,
-    TWITCH_CLIENT_ID,
-    TWITCH_CLIENT_SECRET,
-)
+from settings import settings
 
 
 async def twitch_verify_code(code: str) -> str | Literal[503, 409]:
@@ -17,11 +13,11 @@ async def twitch_verify_code(code: str) -> str | Literal[503, 409]:
             "https://id.twitch.tv/oauth2/token",
             headers={"Accept": "application/json"},
             json={
-                "client_id": TWITCH_CLIENT_ID,
-                "client_secret": TWITCH_CLIENT_SECRET,
+                "client_id": settings.twitch_app_client_id,
+                "client_secret": settings.twitch_app_client_secret,
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": f"{BACKEND_SERVER_URL}/login/twitch",
+                "redirect_uri": f"{settings.backend_server_url}/login/twitch",
             },
         )
         if post_response.is_error:

@@ -16,18 +16,6 @@ from types_aiobotocore_s3.type_defs import GetObjectOutputTypeDef, HeadObjectOut
 
 from settings import settings
 
-RUSTFS_S3_URL = settings.rustfs_s3_url
-RUSTFS_ACCESS_KEY = settings.rustfs_access_key
-RUSTFS_SECRET_KEY = settings.rustfs_secret_key
-
-RUSTFS_SC2_REPLAYS_BUCKET = settings.rustfs_sc2_replays_bucket
-RUSTFS_AUDIOBOOK_BUCKET = settings.rustfs_audiobook_bucket
-RUSTFS_TELEGRAM_BUCKET = settings.rustfs_telegram_bucket
-
-RUSTFS_ADMIN_URL = settings.rustfs_admin_url
-RUSTFS_ADMIN_TOKEN = settings.rustfs_admin_token
-
-
 # S3 error codes that mean "object/bucket missing": never retry, fail fast.
 # Callers map these to None (reraise=False) or raise (reraise=True).
 _NON_RETRYABLE_S3_CODES = frozenset({"404", "NoSuchKey", "NoSuchBucket", "NotFound", "NoSuchEntity"})
@@ -69,8 +57,12 @@ async def ensure_bucket(bucket: str, days: int, *, raise_on_error: bool = True) 
 
 
 async def initialize_rustfs():
-    await ensure_bucket(RUSTFS_AUDIOBOOK_BUCKET, settings.rustfs_audiobook_bucket_expiration_days, raise_on_error=True)
-    await ensure_bucket(RUSTFS_TELEGRAM_BUCKET, settings.rustfs_telegram_bucket_expiration_days, raise_on_error=True)
+    await ensure_bucket(
+        settings.rustfs_audiobook_bucket, settings.rustfs_audiobook_bucket_expiration_days, raise_on_error=True
+    )
+    await ensure_bucket(
+        settings.rustfs_telegram_bucket, settings.rustfs_telegram_bucket_expiration_days, raise_on_error=True
+    )
 
 
 @asynccontextmanager
@@ -78,9 +70,9 @@ async def get_s3_client() -> AsyncGenerator[S3Client, None]:
     session = aioboto3.Session()
     async with session.client(  # pyrefly: ignore[no-matching-overload]
         "s3",
-        endpoint_url=RUSTFS_S3_URL,
-        aws_access_key_id=RUSTFS_ACCESS_KEY,
-        aws_secret_access_key=RUSTFS_SECRET_KEY,
+        endpoint_url=settings.rustfs_s3_url,
+        aws_access_key_id=settings.rustfs_access_key,
+        aws_secret_access_key=settings.rustfs_secret_key,
         # Make it compatible with rustfs
         config=Config(signature_version="s3v4"),
     ) as s3:
@@ -92,9 +84,9 @@ async def get_s3_resource() -> AsyncGenerator[S3ServiceResource, None]:
     session = aioboto3.Session()
     async with session.resource(
         "s3",
-        endpoint_url=RUSTFS_S3_URL,
-        aws_access_key_id=RUSTFS_ACCESS_KEY,
-        aws_secret_access_key=RUSTFS_SECRET_KEY,
+        endpoint_url=settings.rustfs_s3_url,
+        aws_access_key_id=settings.rustfs_access_key,
+        aws_secret_access_key=settings.rustfs_secret_key,
     ) as s3:
         yield s3  # This yields the client to the endpoint and closes it automatically afterward
 
@@ -288,8 +280,8 @@ async def objects_delete_with_prefix(bucket_name: str, prefix: str):
 
 async def main():
     async with get_s3_client() as s3:
-        await bucket_create(s3, RUSTFS_AUDIOBOOK_BUCKET)
-        _a = await bucket_list_objects(s3, RUSTFS_AUDIOBOOK_BUCKET)
+        await bucket_create(s3, settings.rustfs_audiobook_bucket)
+        _a = await bucket_list_objects(s3, settings.rustfs_audiobook_bucket)
 
 
 if __name__ == "__main__":

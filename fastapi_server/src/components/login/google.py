@@ -4,11 +4,7 @@ from typing import Literal
 
 import httpx
 
-from components.login.cookies import (
-    BACKEND_SERVER_URL,
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-)
+from settings import settings
 
 
 async def google_verify_code(code: str) -> str | Literal[503, 409]:
@@ -17,11 +13,11 @@ async def google_verify_code(code: str) -> str | Literal[503, 409]:
             "https://oauth2.googleapis.com/token",
             headers={"Accept": "application/json"},
             json={
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
+                "client_id": settings.google_app_client_id,
+                "client_secret": settings.google_app_client_secret,
                 "code": code,
                 "grant_type": "authorization_code",
-                "redirect_uri": f"{BACKEND_SERVER_URL}/login/google",
+                "redirect_uri": f"{settings.backend_server_url}/login/google",
             },
         )
         if post_response.is_error:

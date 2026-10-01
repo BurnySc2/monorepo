@@ -12,12 +12,7 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 
 from components.audiobook.epub_reader import combine_text
 from components.tts_generate import generate_audio
-from s3_helper import (
-    RUSTFS_AUDIOBOOK_BUCKET,
-    ensure_bucket,
-    get_s3_client,
-    object_upload,
-)
+from s3_helper import ensure_bucket, get_s3_client, object_upload
 from schemas.audiobook import AudioSettings
 from schemas.audiobook.db_models import AudiobookChapter
 from schemas.tts.engine import TTSEngine
@@ -26,9 +21,6 @@ from settings import settings
 # Increase this value to give converters more time to convert an audio
 # Ideal value is slightly above 0.3
 ESTIMATE_FACTOR = settings.audiobook_convert_estimate_factor
-
-# Maximum number of concurrent chapter conversions
-MAX_CONCURRENT_CONVERSIONS = settings.audiobook_max_concurrent_conversions
 
 _background_tasks: set[asyncio.Task[None]] = set()
 
@@ -160,10 +152,10 @@ async def check_queued_chapters() -> bool:
     active_conversions = cast(
         int, await AudiobookChapter.count().where(arrow.utcnow().naive < AudiobookChapter.started_converting)
     )
-    if MAX_CONCURRENT_CONVERSIONS <= active_conversions:
+    if settings.audiobook_max_concurrent_conversions <= active_conversions:
         return False
 
-    count_more_conversion_possible = MAX_CONCURRENT_CONVERSIONS - active_conversions
+    count_more_conversion_possible = settings.audiobook_max_concurrent_conversions - active_conversions
     chapters = await query.limit(count_more_conversion_possible)
     for chapter in chapters:
         task_name = f"audiobook-convert-{getattr(chapter, 'id', 'unknown')}-{getattr(chapter, 'chapter_number', '?')}"
@@ -207,7 +199,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
         # Save result to MinIO
         try:
             assert context.minio_object_name is not None, "Missing S3 object name"
-            await _upload_audio_with_retry(RUSTFS_AUDIOBOOK_BUCKET, context.minio_object_name, audio)
+            await _upload_audio_with_retry(settings.rustfs_audiobook_bucket, context.minio_object_name, audio)
             logger.debug(f"Successfully saved audio to s3 storage: {context.minio_object_name}")
         except Exception as e:
             logger.exception(f"Failed to save audio to s3 storage: {e}")
@@ -219,7 +211,9 @@ async def convert_one(chapter: AudiobookChapter) -> None:
 async def keep_converting():
     """Main worker loop that continuously checks for and processes queued chapters."""
     logger.info("Starting audiobook conversion worker")
-    await ensure_bucket(RUSTFS_AUDIOBOOK_BUCKET, settings.rustfs_audiobook_bucket_expiration_days, raise_on_error=False)
+    await ensure_bucket(
+        settings.rustfs_audiobook_bucket, settings.rustfs_audiobook_bucket_expiration_days, raise_on_error=False
+    )
     while True:
         try:
             converted_one = await check_queued_chapters()

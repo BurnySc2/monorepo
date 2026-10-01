@@ -11,7 +11,7 @@ from fastapi.responses import RedirectResponse
 from components.login.allowlist import require_allowed_user
 from components.login.cookies import LoggedInUser
 from models.telegram_browser import DownloadStatus, Status, TelegramChannel, TelegramDownload, TelegramMessage
-from s3_helper import RUSTFS_TELEGRAM_BUCKET, get_s3_client, object_create_presigned_url, object_delete
+from s3_helper import get_s3_client, object_create_presigned_url, object_delete
 from schemas.telegram_browser import (
     ChannelNameItem,
     ChannelStatsItem,
@@ -322,7 +322,7 @@ async def delete_file(
         # Delete S3 object if it exists
         if download.s3_object_name:
             async with get_s3_client() as s3:
-                await object_delete(s3, RUSTFS_TELEGRAM_BUCKET, download.s3_object_name)
+                await object_delete(s3, settings.rustfs_telegram_bucket, download.s3_object_name)
 
         # Delete the download record
         await download.remove()
@@ -364,7 +364,7 @@ async def view_file(
     async with get_s3_client() as s3:
         presigned_url = await object_create_presigned_url(
             session=s3,
-            bucket=RUSTFS_TELEGRAM_BUCKET,
+            bucket=settings.rustfs_telegram_bucket,
             key=download.s3_object_name,
             file_name=file_name,
             expires_in_seconds=3600,
@@ -416,7 +416,7 @@ async def download_file(
     async with get_s3_client() as s3:
         presigned_url = await object_create_presigned_url(
             session=s3,
-            bucket=RUSTFS_TELEGRAM_BUCKET,
+            bucket=settings.rustfs_telegram_bucket,
             key=download.s3_object_name,
             file_name=file_name,
             expires_in_seconds=3600,

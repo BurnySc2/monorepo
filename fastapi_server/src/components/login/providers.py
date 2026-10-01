@@ -15,9 +15,6 @@ from loguru import logger
 
 from components.login.cookies import (
     COOKIES,
-    GITHUB_CLIENT_ID,
-    GOOGLE_CLIENT_ID,
-    TWITCH_CLIENT_ID,
     github_get_user,
     google_get_user,
     twitch_get_user,
@@ -65,7 +62,7 @@ PROVIDERS: dict[str, OAuthProvider] = {
         verify_code=twitch_verify_code,
         authorize_url="https://id.twitch.tv/oauth2/authorize",
         scope="user:read:email",
-        client_id=_require_env("TWITCH_APP_CLIENT_ID") or TWITCH_CLIENT_ID,
+        client_id=_require_env("TWITCH_APP_CLIENT_ID"),
         redirect_path="/login/twitch",
     ),
     "github": OAuthProvider(
@@ -75,7 +72,7 @@ PROVIDERS: dict[str, OAuthProvider] = {
         verify_code=github_verify_code,
         authorize_url="https://github.com/login/oauth/authorize",
         scope="read:user",
-        client_id=_require_env("GITHUB_APP_CLIENT_ID") or GITHUB_CLIENT_ID,
+        client_id=_require_env("GITHUB_APP_CLIENT_ID"),
         redirect_path="/login/github",
     ),
     "google": OAuthProvider(
@@ -85,7 +82,7 @@ PROVIDERS: dict[str, OAuthProvider] = {
         verify_code=google_verify_code,
         authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
         scope="profile",
-        client_id=_require_env("GOOGLE_APP_CLIENT_ID") or GOOGLE_CLIENT_ID,
+        client_id=_require_env("GOOGLE_APP_CLIENT_ID"),
         redirect_path="/login/google",
     ),
 }

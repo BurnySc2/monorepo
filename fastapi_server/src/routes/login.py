@@ -6,7 +6,6 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from loguru import logger
 
 from components.login.cookies import (
-    BACKEND_SERVER_URL,
     COOKIES,
     LoginSettings,
     provide_logged_in_user,
@@ -87,7 +86,7 @@ def _start_oauth(provider: OAuthProvider) -> RedirectResponse:
         provider.authorize_url,
         params={
             "client_id": provider.client_id,
-            "redirect_uri": f"{BACKEND_SERVER_URL}{provider.redirect_path}",
+            "redirect_uri": f"{settings.backend_server_url}{provider.redirect_path}",
             "response_type": "code",
             "scope": provider.scope,
         },

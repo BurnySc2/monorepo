@@ -11,24 +11,6 @@ from pydantic import BaseModel
 from schemas.audiobook.db_models import AudiobookBook
 from settings import settings
 
-BACKEND_SERVER_URL = settings.backend_server_url
-
-# Github app for local development
-GITHUB_CLIENT_ID = settings.github_app_client_id
-GITHUB_CLIENT_SECRET = settings.github_app_client_secret
-
-# Twitch app for local development
-TWITCH_CLIENT_ID = settings.twitch_app_client_id
-TWITCH_CLIENT_SECRET = settings.twitch_app_client_secret
-
-# Facebook app for local development
-FACEBOOK_CLIENT_ID = settings.facebook_app_client_id
-FACEBOOK_CLIENT_SECRET = settings.facebook_app_client_secret
-
-# Google app for local development
-GOOGLE_CLIENT_ID = settings.google_app_client_id
-GOOGLE_CLIENT_SECRET = settings.google_app_client_secret
-
 COOKIES = {
     "facebook": "facebook_access_token",
     "github": "github_access_token",
@@ -101,7 +83,7 @@ async def twitch_get_user(twitch_access_token: str | None) -> TwitchUser | None:
             url="https://api.twitch.tv/helix/users",
             headers={
                 "Authorization": f"Bearer {twitch_access_token}",
-                "Client-Id": TWITCH_CLIENT_ID or "",
+                "Client-Id": settings.twitch_app_client_id or "",
                 "Accept": "application/json",
             },
         )

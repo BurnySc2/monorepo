@@ -4,10 +4,7 @@ from typing import Literal
 
 import httpx
 
-from components.login.cookies import (
-    GITHUB_CLIENT_ID,
-    GITHUB_CLIENT_SECRET,
-)
+from settings import settings
 
 
 async def github_verify_code(code: str) -> str | Literal[503, 409]:
@@ -16,8 +13,8 @@ async def github_verify_code(code: str) -> str | Literal[503, 409]:
             "https://github.com/login/oauth/access_token",
             headers={"Accept": "application/json"},
             json={
-                "client_id": GITHUB_CLIENT_ID,
-                "client_secret": GITHUB_CLIENT_SECRET,
+                "client_id": settings.github_app_client_id,
+                "client_secret": settings.github_app_client_secret,
                 "code": code,
             },
         )

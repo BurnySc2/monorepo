@@ -30,8 +30,6 @@ from settings import settings
 # Cache: (voice_code, text) -> (audio_bytes, duration)
 _audio_cache: TTLCache = TTLCache(maxsize=1000, ttl=3600)
 
-SESSION_ID = settings.tiktok_session_id
-
 API_DOMAINS = [
     "https://api16-normal-c-useast2a.tiktokv.com",
 ]
@@ -676,7 +674,7 @@ async def _tiktok_generate_chunk(voice: str, text: str) -> tuple[bytes, float]:
             "com.zhiliaoapp.musically/2022600030 "
             "(Linux; U; Android 7.1.2; es_ES; SM-G988N; Build/NRD90M;tt-ok/3.12.13.1)"
         ),
-        "Cookie": f"sessionid={SESSION_ID}",
+        "Cookie": f"sessionid={settings.tiktok_session_id}",
     }
 
     @retry(
