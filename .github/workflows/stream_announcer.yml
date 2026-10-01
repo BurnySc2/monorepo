@@ -1,5 +1,12 @@
 name: Test Stream Announcer
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:
@@ -7,6 +14,7 @@ on:
       - .github/workflows/stream_announcer.yml
   pull_request:
     branches: [master, develop]
+  workflow_dispatch:
 
 env:
   SUBDIRECTORY: twitch_stream_announcer
@@ -22,6 +30,7 @@ jobs:
         os: [ubuntu-latest]
         nim-version: ["2.2.0"]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v6

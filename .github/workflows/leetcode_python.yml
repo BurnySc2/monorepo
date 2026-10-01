@@ -1,5 +1,12 @@
 name: Test Leetcode Python
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:
@@ -7,6 +14,7 @@ on:
       - .github/workflows/leetcode_python.yml
   pull_request:
     branches: [master, develop]
+  workflow_dispatch:
 
 env:
   SUBDIRECTORY: problem_sites/leetcode/python
@@ -33,6 +41,14 @@ jobs:
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv sync --frozen --no-cache --no-install-project
 
-      - name: Run pre-commit hooks
+      - name: Run ruff check
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run pre-commit run --all-files --hook-stage push
+        run: uv run ruff check .
+
+      - name: Run ruff format check
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv run ruff format --check .
+
+      - name: Run pyright check
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv run pyright

@@ -1,5 +1,12 @@
 name: Test Discord Bot
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:
@@ -7,6 +14,7 @@ on:
       - .github/workflows/discord_bot.yml
   pull_request:
     branches: [master, develop]
+  workflow_dispatch:
 
 env:
   SUBDIRECTORY: discord_bot
@@ -33,9 +41,17 @@ jobs:
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv sync --frozen --no-cache --no-install-project
 
-      - name: Run pre-commit hooks
+      - name: Ruff check
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run pre-commit run --all-files --hook-stage push
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv run ruff format --check .
+
+      - name: Pyrefly check
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: uv run pyrefly check
 
   test_backend:
     name: test_backend_py${{ matrix.python-version }}
@@ -45,6 +61,7 @@ jobs:
         os: [ubuntu-latest]
         python-version: ["3.12"]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v6

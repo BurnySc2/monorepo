@@ -1,5 +1,12 @@
 name: Test Svelte Frontends
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     paths:
@@ -12,10 +19,12 @@ on:
       - svelte_frontends/**
       - fastapi_server/**
       - .github/workflows/svelte_frontends.yml
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
         node-version: [18, 20, 22]
