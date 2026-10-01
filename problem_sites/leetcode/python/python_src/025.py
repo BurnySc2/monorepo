@@ -10,7 +10,7 @@ class ListNode:
         self.val = val
         self.next = next
 
-    def __eq__(self, other: "ListNode") -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, ListNode):
             return False
 
@@ -38,7 +38,7 @@ class ListNode:
             current = current.next
 
     @classmethod
-    def length(cls, node: "ListNode") -> int:
+    def length(cls, node: "ListNode | None") -> int:
         length = 0
         start = node
         while start:
@@ -58,20 +58,28 @@ class ListNode:
 
 
 class Solution:
-    def reverseKGroup(self, head: ListNode, k: int) -> ListNode:
+    def reverseKGroup(self, head: ListNode | None, k: int) -> ListNode | None:
+        if head is None:
+            return None
         if k < 2:
             return head
 
         first_call = True
-        node = head
+        node: ListNode | None = head
         for i in range(0, self.length(head) // k):
+            assert node is not None
             if first_call:
                 first_call = False
                 first, second = self.reverse_k(node, k)
+                assert first is not None
+                assert second is not None
                 head = first
                 node = second
             else:
+                assert node.next is not None
                 first, second = self.reverse_k(node.next, k)
+                assert first is not None
+                assert second is not None
                 node.next = first
                 node = second
             # print(f"head: {head}")
@@ -81,14 +89,17 @@ class Solution:
             # print()
         return head
 
-    def reverse_k(self, head: ListNode, k: int) -> tuple[ListNode, ListNode]:
+    def reverse_k(self, head: ListNode | None, k: int) -> tuple[ListNode | None, ListNode | None]:
         """Return the new start of listnode and last element that was reverted"""
+        assert head is not None
         start = head
-        first = head
+        first: ListNode = head
         second = first.next
+        assert second is not None
         first.next = None
         third = second.next
         while k > 1:
+            assert second is not None
             second.next = first
             if third is None:
                 first, second = second, third
@@ -99,7 +110,7 @@ class Solution:
         return first, start
 
     @classmethod
-    def length(cls, node: "ListNode") -> int:
+    def length(cls, node: "ListNode | None") -> int:
         length = 0
         start = node
         while start:
@@ -110,10 +121,10 @@ class Solution:
 
 if __name__ == "__main__":
     # fmt: off
-    test_cases = [
-        [ListNode.from_list([1, 2, 3, 4, 5]), 3],
-        [ListNode.from_list([1, 2, 3, 4, 5, 6]), 3],
-        [ListNode.from_list([1, 2, 3, 4, 5, 6]), 2],
+    test_cases: list[tuple[ListNode, int]] = [
+        (ListNode.from_list([1, 2, 3, 4, 5]), 3),
+        (ListNode.from_list([1, 2, 3, 4, 5, 6]), 3),
+        (ListNode.from_list([1, 2, 3, 4, 5, 6]), 2),
     ]
     results = [
         ListNode.from_list([3, 2, 1, 4, 5]),

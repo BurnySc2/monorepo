@@ -1,8 +1,8 @@
 class Solution:
-    def minWindow(self, s: str, t: str) -> str:
+    def minWindow(self, s: str, t: str) -> str | None:
         _start_index = None
         _end_index = None
-        best_word: str = None
+        best_word: str | None = None
         test_set = set(t)
         current = set()
         for index, i in enumerate(s):

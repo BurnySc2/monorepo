@@ -10,3 +10,4 @@ class Solution:
             if count > len(nums) // 2:
                 return i
             cache[i] = count
+        return -1

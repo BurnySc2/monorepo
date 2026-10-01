@@ -8,9 +8,9 @@ https://leetcode.com/problems/merge-two-sorted-lists/
 
 # Definition for singly-linked list.
 class ListNode:
-    def __init__(self, x):
-        self.val = x
-        self.next = None
+    def __init__(self, x: int, next: "ListNode | None" = None) -> None:
+        self.val: int = x
+        self.next: ListNode | None = next
 
     def __repr__(self):
         return_list = []
@@ -23,13 +23,14 @@ class ListNode:
 
 
 class Solution:
-    def mergeTwoLists(self, l1: ListNode, l2: ListNode) -> ListNode | None:
+    def mergeTwoLists(self, l1: ListNode | None, l2: ListNode | None) -> ListNode | None:
         if not l1 and not l2:
-            return
-        if l1 and not l2 or l1 and l1.val < l2.val:
+            return None
+        if l1 is not None and (l2 is None or l1.val < l2.val):
             cur = ListNode(l1.val)
             l1 = l1.next
         else:
+            assert l2 is not None
             cur = ListNode(l2.val)
             l2 = l2.next
 

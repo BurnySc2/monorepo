@@ -1,20 +1,20 @@
 class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
+    def __init__(self, val: int = 0, next: "ListNode | None" = None) -> None:
+        self.val: int = val
+        self.next: ListNode | None = next
 
 
 class Solution:
-    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
-        first_number = None
-        second_number = None
+    def addTwoNumbers(self, l1: ListNode | None, l2: ListNode | None) -> ListNode | None:
+        first_number: int | None = None
+        second_number: int | None = None
         while l1:
             if first_number is None:
                 first_number = l1.val
             else:
                 first_number *= 10 + l1.val
             l1 = l1.next
-        return first_number + second_number
+        return first_number + second_number  # pyrefly: ignore[bad-return, unsupported-operation]
 
 
 # fmt: off

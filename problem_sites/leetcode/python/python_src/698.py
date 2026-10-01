@@ -47,16 +47,16 @@ class Solution:
 
 
 # fmt: off
-test_cases = [
-    [
+test_cases: list[tuple[list[int], int]] = [
+    (
         [1, 1, 1, 1, 2, 2, 2, 2],
         4,
-    ],
-    [
+    ),
+    (
         [4, 3, 2, 3, 5, 2, 1],
         4,
-    ],
-    [[1, 2, 3, 4], 3],
+    ),
+    ([1, 2, 3, 4], 3),
 ]
 
 results = [

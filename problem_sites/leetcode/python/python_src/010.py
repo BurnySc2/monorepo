@@ -60,7 +60,7 @@ class Solution:
             else:
                 return False
         # Asterisk case: Fork
-        if "*" in p[:2]:
+        else:
             if self.match_first_character(s, p):
                 return any(
                     [

@@ -19,7 +19,9 @@ class Solution:
             results.append(my_dict[i])
         return results
 
-    def verticalTraversal2(self, nodes: list[TreeNode], x_values: list[int], my_dict: defaultdict[int, list[int]]):
+    def verticalTraversal2(
+        self, nodes: list[TreeNode | None], x_values: list[int], my_dict: defaultdict[int, list[int]]
+    ):
         new_nodes = []
         new_x_values = []
         row = defaultdict(list)

@@ -17,6 +17,7 @@ class Solution:
             for j, value2 in enumerate(nums[index_offset:]):
                 if value1 + value2 == target:
                     return [i, index_offset + j]
+        return []
 
 
 # num = [2,7,11,15]

@@ -24,7 +24,7 @@ class Solution:
         return [start_index, end_index]
 
 
-test_cases = [[[1], -1], [[5, 7, 7, 8, 8, 10], 8], [[5, 7, 7, 8, 8, 10], 6]]
+test_cases: list[tuple[list[int], int]] = [([1], -1), ([5, 7, 7, 8, 8, 10], 8), ([5, 7, 7, 8, 8, 10], 6)]
 results = [[-1, -1], [3, 4], [-1, -1]]
 
 if __name__ == "__main__":

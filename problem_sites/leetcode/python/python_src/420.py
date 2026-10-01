@@ -116,13 +116,13 @@ class Solution:
 
 
 if __name__ == "__main__":
-    test_cases_and_results = [
-        ["aaaabbaaabbaaa123456A", 3],
-        ["ABABABABABABABABABAB1", 2],
-        ["aaaabbbbccccddeeddeeddeedd", 8],
-        ["bbaaaaaaaaaaaaaaacccccc", 8],
-        ["aaa", 3],
-        ["1111111111", 3],
+    test_cases_and_results: list[tuple[str, int]] = [
+        ("aaaabbaaabbaaa123456A", 3),
+        ("ABABABABABABABABABAB1", 2),
+        ("aaaabbbbccccddeeddeeddeedd", 8),
+        ("bbaaaaaaaaaaaaaaacccccc", 8),
+        ("aaa", 3),
+        ("1111111111", 3),
     ]
     app = Solution()
     for test_case, correct_result in test_cases_and_results:

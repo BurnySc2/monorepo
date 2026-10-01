@@ -1,20 +1,20 @@
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+    def __init__(self, val: int = 0, left: "TreeNode | None" = None, right: "TreeNode | None" = None) -> None:
+        self.val: int = val
+        self.left: TreeNode | None = left
+        self.right: TreeNode | None = right
 
 
 class Solution:
     def __init__(self):
         self.amount = 0
 
-    def pathSum(self, root: TreeNode, sum: int) -> int:
+    def pathSum(self, root: TreeNode | None, sum: int) -> int:
         self.amount = 0
         self.traverse_tree(root, target=sum)
         return self.amount
 
-    def traverse_tree(self, node: TreeNode, target: int):
+    def traverse_tree(self, node: TreeNode | None, target: int):
         """Vertical recursive traversal."""
         if node is None:
             return
@@ -24,7 +24,7 @@ class Solution:
         self.traverse_tree(node.left, target)
         self.traverse_tree(node.right, target)
 
-    def find_sum_from_node(self, node: TreeNode, current_sum: int, target: int):
+    def find_sum_from_node(self, node: TreeNode | None, current_sum: int, target: int):
         """Traverses the current node and tries to find all the sums from its leaves."""
         if node is None:
             return

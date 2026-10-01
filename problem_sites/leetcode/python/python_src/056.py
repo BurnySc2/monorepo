@@ -3,10 +3,11 @@ class Solution:
         if len(intervals) < 2:
             return intervals
         intervals.sort()
-        start, end = None, None
-        results = []
+        start: int | None = None
+        end: int | None = None
+        results: list[list[int]] = []
         for interval in intervals:
-            if start is None:
+            if start is None or end is None:
                 start, end = interval
                 continue
             c_start, c_end = interval
@@ -17,6 +18,7 @@ class Solution:
             else:
                 results.append([start, end])
                 start, end = c_start, c_end
+        assert start is not None and end is not None
         results.append([start, end])
         return results
 

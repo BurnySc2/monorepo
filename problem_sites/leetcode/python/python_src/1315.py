@@ -1,27 +1,27 @@
 # Definition for a binary tree node.
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+    def __init__(self, val: int = 0, left: "TreeNode | None" = None, right: "TreeNode | None" = None) -> None:
+        self.val: int = val
+        self.left: TreeNode | None = left
+        self.right: TreeNode | None = right
 
 
 class Solution:
-    def sumEvenGrandparent(self, root: TreeNode) -> int:
+    def sumEvenGrandparent(self, root: TreeNode | None) -> int:
         if not root:
             return 0
 
         if root.val % 2 == 0:
             if root.left is not None:
-                root.left.has_even_parent = True
+                root.left.has_even_parent = True  # pyrefly: ignore[missing-attribute]
             if root.right is not None:
-                root.right.has_even_parent = True
+                root.right.has_even_parent = True  # pyrefly: ignore[missing-attribute]
 
         if hasattr(root, "has_even_parent"):
             if root.left is not None:
-                root.left.has_even_grand_parent = True
+                root.left.has_even_grand_parent = True  # pyrefly: ignore[missing-attribute]
             if root.right is not None:
-                root.right.has_even_grand_parent = True
+                root.right.has_even_grand_parent = True  # pyrefly: ignore[missing-attribute]
 
         value = 0
         if hasattr(root, "has_even_grand_parent"):

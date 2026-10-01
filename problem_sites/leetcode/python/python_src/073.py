@@ -6,12 +6,12 @@ https://leetcode.com/problems/set-matrix-zeroes/
 
 
 class Solution:
-    def setZeroes(self, matrix: list[list[int]]) -> None:
+    def setZeroes(self, matrix: list[list[int | None]]) -> list[list[int | None]] | None:
         """
         Do not return anything, modify matrix in-place instead.
         """
 
-        def set_zero(matrix, row, column, target_value):
+        def set_zero(matrix: list[list[int | None]], row: int, column: int, target_value: int | None) -> None:
             for y in range(0, len(matrix)):
                 if matrix[y][column]:
                     matrix[y][column] = target_value
@@ -42,5 +42,5 @@ results = [[[1, 0, 1], [0, 0, 0], [1, 0, 1]]]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        my_solution = app.setZeroes(test_case)
+        my_solution = app.setZeroes(test_case)  # pyrefly: ignore[bad-argument-type]
         assert my_solution == correct_result, f"My result: {my_solution}, correct result: {correct_result}"

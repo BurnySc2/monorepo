@@ -20,10 +20,10 @@ class Solution:
 
 if __name__ == "__main__":
     # fmt: off
-    test_cases = [
-        ["PAYPALISHIRING", 3],
-        ["PAYPALISHIRING", 4],
-        ["AB", 1],
+    test_cases: list[tuple[str, int]] = [
+        ("PAYPALISHIRING", 3),
+        ("PAYPALISHIRING", 4),
+        ("AB", 1),
     ]
     results = [
         "PAHNAPLSIIGYIR",

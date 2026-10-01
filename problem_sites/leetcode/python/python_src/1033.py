@@ -7,4 +7,4 @@ class Solution:
             min_moves = 0
         elif c - b <= 2 or b - a <= 2:
             min_moves = 1
-        return min_moves, max_moves
+        return [min_moves, max_moves]

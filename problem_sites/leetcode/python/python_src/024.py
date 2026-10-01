@@ -33,7 +33,9 @@ class ListNode:
             nodes_values.append(str(node_value))
         return " -> ".join(nodes_values)
 
-    def __eq__(self, other: "ListNode") -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ListNode):
+            return False
         if self.length() != other.length():
             return False
         return all(value_node1 == value_node2 for value_node1, value_node2 in zip(self, other))
@@ -53,11 +55,12 @@ class Solution:
             return None
         if head.next is None:
             return head
-        new_head = None
-        previous = None
-        current = head
+        new_head: ListNode | None = None
+        previous: ListNode | None = None
+        current: ListNode | None = head
         while True:
             # Split list node into 3 parts: first node, second node, tail
+            assert current is not None
             next = current.next
             # Break out for uneven long listnodes
             if next is None:
@@ -74,6 +77,8 @@ class Solution:
                 break
             # Start 2 nodes later again
             previous = next.next
+            assert previous is not None
+            assert previous.next is not None
             current = previous.next
         return new_head
 

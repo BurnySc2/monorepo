@@ -16,4 +16,4 @@ def permutation(my_list: list[Any]) -> list[Any]:
 
 class Solution:
     def permuteUnique(self, nums: list[int]) -> list[list[int]]:
-        return list({tuple(perm) for perm in permutation(nums)})
+        return [list(perm) for perm in {tuple(perm) for perm in permutation(nums)}]

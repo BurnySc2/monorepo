@@ -7,9 +7,9 @@ https://leetcode.com/problems/remove-nth-node-from-end-of-list/
 
 # Definition for singly-linked list.
 class ListNode:
-    def __init__(self, x):
-        self.val = x
-        self.next = None
+    def __init__(self, x: int, next: "ListNode | None" = None) -> None:
+        self.val: int = x
+        self.next: ListNode | None = next
 
 
 bro1 = ListNode(1)
@@ -36,15 +36,17 @@ while current.next:
 
 class Solution:
     def removeNthFromEnd(self, head: ListNode, n: int) -> ListNode | None:
-        cur = head
-        list_bro = [head]
+        cur: ListNode | None = head
+        list_bro: list[ListNode] = [head]
         while cur:
             list_bro.append(cur)
             cur = cur.next
         target = -n - 1
         if len(list_bro) + target == 0:
             return head.next
-        list_bro[target].next = list_bro[target].next.next
+        next_node = list_bro[target].next
+        assert next_node is not None
+        list_bro[target].next = next_node.next
         return head
 
 

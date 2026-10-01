@@ -7,6 +7,7 @@ https://leetcode.com/problems/evaluate-reverse-polish-notation/
 """
 
 import math
+from collections.abc import Callable
 from operator import add, mul, sub
 
 
@@ -26,10 +27,10 @@ class Solution:
             if token in operators:
                 first_value = tokens[index - 2]
                 second_value = tokens[index - 1]
-                operator: callable = operators[token]
+                operator: Callable[[int, int], int] = operators[token]
                 result = operator(int(first_value), int(second_value))
                 # print(f"Doing operation: {first_value} {token} {second_value} = {result}")
-                tokens[index] = result
+                tokens[index] = str(result)
                 tokens.pop(index - 1)
                 tokens.pop(index - 2)
                 index -= 2
@@ -39,7 +40,7 @@ class Solution:
                 break
 
         result = tokens[0]
-        return result
+        return int(result)
 
 
 test_cases = [

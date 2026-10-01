@@ -26,9 +26,9 @@ class Solution:
 
 if __name__ == "__main__":
     # fmt: off
-    test_cases = [
-        [[-1, 2, 1, -4], 1],
-        [[0, 0, 0], 1]
+    test_cases: list[tuple[list[int], int]] = [
+        ([-1, 2, 1, -4], 1),
+        ([0, 0, 0], 1)
     ]
     results = [
         2,

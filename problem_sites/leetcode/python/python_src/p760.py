@@ -49,7 +49,7 @@ def calc_avg(start: float, end: float) -> float:
     return (start + end) / 2
 
 
-def compute_fastest(N: int) -> int:
+def compute_fastest(N: int) -> int | float:
     my_sums = {}
     half_power_of_two = 1
     power_of_two = 1

@@ -10,7 +10,7 @@ class ListNode:
         self.val = val
         self.next = next
 
-    def __eq__(self, other: "ListNode") -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, ListNode):
             return False
 
@@ -65,9 +65,11 @@ class ListNode:
         return result
 
     def reverse(self) -> "ListNode":
-        cur, prev = self, None
+        cur: ListNode | None = self
+        prev: ListNode | None = None
         while cur:
             cur.next, prev, cur = prev, cur, cur.next
+        assert prev is not None
         return prev
 
 

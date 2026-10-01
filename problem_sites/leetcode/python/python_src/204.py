@@ -1,6 +1,6 @@
 def sieve_of_eratosthenes(limit: int) -> list[int]:
     if limit < 2:
-        return [False, False][:limit]
+        return []
     sieve = [True for _ in range(0, limit)]
     sieve[:2] = [False, False]
     sieve[4::2] = [False] * len(sieve[4::2])
