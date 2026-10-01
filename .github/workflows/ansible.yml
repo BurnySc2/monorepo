@@ -1,0 +1,36 @@
+name: Test Ansible
+
+on:
+  push:
+    branches: [master, develop]
+    paths:
+      - ansible/**
+      - .github/workflows/ansible.yml
+  pull_request:
+    branches: [master, develop]
+    paths:
+      - ansible/**
+      - .github/workflows/ansible.yml
+
+jobs:
+  ansible-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          python-version: "3.12"
+
+      - name: Install dependencies
+        working-directory: ansible
+        run: uv sync --frozen --no-cache --no-install-project
+
+      - name: Install ansible-core
+        run: uv tool install ansible-core
+
+      - name: Run ansible checks
+        run: bash ansible/check.sh
