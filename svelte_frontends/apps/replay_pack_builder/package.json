@@ -18,6 +18,7 @@
     "dependencies": {
         "@repo/api-client": "*",
         "@repo/api-types": "*",
+        "@repo/sc2-utils": "*",
         "@repo/ui": "*",
         "jszip": "^3.10.1"
     },

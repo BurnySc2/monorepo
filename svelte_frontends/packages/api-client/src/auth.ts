@@ -1,5 +1,5 @@
-import { get_api_base } from "@repo/api-client"
-import { fetch_login_status } from "./api"
+import { get_api_base } from "./base"
+import { api_fetch } from "./client"
 
 export interface User {
     id: number
@@ -12,6 +12,14 @@ export interface LoginState {
     is_logged_in: boolean
     logged_in_user: User | null
     error_message: string | null
+}
+
+export async function fetch_login_status(): Promise<{
+    logged_in: boolean
+    user?: { id: number; name: string; service: string }
+}> {
+    const response = await api_fetch("/login")
+    return response.json()
 }
 
 export async function check_login_status(): Promise<LoginState> {
@@ -55,7 +63,7 @@ export async function handle_logout(): Promise<void> {
             credentials: "include",
             redirect: "manual",
         })
-        if (response.type === "opaque" || response.status === 0) {
+        if (response.type === "opaque" || response.type === "opaqueredirect" || response.status === 0) {
             window.location.reload()
             return
         }

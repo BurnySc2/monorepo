@@ -1,11 +1,3 @@
-import { sveltekit } from "@sveltejs/kit/vite"
-import tailwindcss from "@tailwindcss/vite"
-import { defineConfig } from "vite"
+import { create_vite_config } from "@repo/typescript-config/vite_preset"
 
-export default defineConfig({
-    plugins: [tailwindcss(), sveltekit()],
-    server: {
-        port: 5182,
-        strictPort: true,
-    },
-})
+export default create_vite_config(5182)

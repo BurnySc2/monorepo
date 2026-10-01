@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@repo/api-client": "*",
+        "@repo/ui": "*",
         "highcharts": "^11.0.0"
     }
 }

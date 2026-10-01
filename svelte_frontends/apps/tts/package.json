@@ -16,7 +16,11 @@
     },
     "dependencies": {
         "@repo/api-client": "*",
-        "@repo/api-types": "*"
+        "@repo/api-types": "*",
+        "@repo/persisted-state": "*",
+        "@repo/sc2-utils": "*",
+        "@repo/ui": "*",
+        "zod": "^4.3.6"
     },
     "devDependencies": {
         "vitest": "^4.1.0"

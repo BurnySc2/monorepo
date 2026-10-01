@@ -31,7 +31,10 @@
         "svelte": "^5.0.0"
     },
     "dependencies": {
-        "esm-env": "^1.2.1"
+        "@repo/sc2-utils": "*",
+        "esm-env": "^1.2.1",
+        "lucide-svelte": "^0.544.0",
+        "svelte-sonner": "^0.3.28"
     },
     "devDependencies": {
         "@repo/typescript-config": "*",

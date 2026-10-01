@@ -17,6 +17,7 @@
     },
     "dependencies": {
         "@repo/api-client": "*",
+        "@repo/sc2-utils": "*",
         "@repo/ui": "*",
         "layercake": "^10.0.0",
         "d3-scale": "^4.0.2",

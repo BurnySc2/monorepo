@@ -1,0 +1,30 @@
+{
+    "name": "@repo/persisted-state",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "test": "vitest run",
+        "test:unit": "vitest run",
+        "test:integration": "echo 'No integration tests'",
+        "check": "svelte-check --tsconfig ./tsconfig.json",
+        "check-types": "svelte-check --tsconfig ./tsconfig.json"
+    },
+    "peerDependencies": {
+        "svelte": "^5.0.0"
+    },
+    "dependencies": {
+        "zod": "^4.3.6"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "*",
+        "@sveltejs/vite-plugin-svelte": "^7.0.0",
+        "svelte": "^5.0.0",
+        "svelte-check": "^4.0.0",
+        "typescript": "^5.0.0",
+        "vitest": "^4.1.0"
+    }
+}
