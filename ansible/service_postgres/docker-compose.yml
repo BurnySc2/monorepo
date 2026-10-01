@@ -53,7 +53,7 @@ services:
     # nocodb:
     # postgresql://{ POSTGRES_USER }:{ POSTGRES_PASSWORD }@postgres_postgres:5432/{ POSTGRES_DATABASE }
     hostname: postgres_postgres
-    image: postgres:16-alpine
+    image: postgres:16-alpine  # WHY pg16 SSOT: align postgres fleet
     networks:
       - pangolin_newt
     restart: unless-stopped
@@ -77,11 +77,11 @@ services:
   pgadmin:
     # TODO Add default connection if possible
     container_name: postgres_pgadmin
-    image: dpage/pgadmin4:8
+    image: dpage/pgadmin4:8.12  # WHY pinned 8.12: explicit patch stable
     networks:
       - pangolin_newt
     labels:
-      - pangolin.public-resources.pgadmin.name=PDadmin
+      - pangolin.public-resources.pgadmin.name=PgAdmin
       - pangolin.public-resources.pgadmin.full-domain={{ secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}
       - pangolin.public-resources.pgadmin.protocol=http
       - pangolin.public-resources.pgadmin.auth.sso-enabled=true
@@ -101,7 +101,7 @@ services:
   nocodb:
     # TODO Add default connection if possible
     container_name: postgres_nocodb
-    image: nocodb/nocodb:latest
+    image: nocodb/nocodb:latest  # TODO pin 0.3xx: WHY latest tracks rolling
     networks:
       - pangolin_newt
     labels:
@@ -111,6 +111,8 @@ services:
       - pangolin.public-resources.nocodb.auth.sso-enabled=true
       - pangolin.public-resources.nocodb.targets[0].site=local
       - pangolin.public-resources.nocodb.targets[0].method=http
+      - pangolin.public-resources.nocodb.targets[0].hostname=postgres_nocodb
+      - pangolin.public-resources.nocodb.targets[0].port=8080
     restart: unless-stopped
     volumes:
       - ./nocodb:/usr/app/data/

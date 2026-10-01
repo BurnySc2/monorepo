@@ -1,5 +1,4 @@
 ---
-# DEPRECATED
 # https://github.com/louislam/uptime-kuma
 # Execute with
 # ansible-playbook uptime_kuma_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
@@ -7,11 +6,12 @@
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.UPTIME_KUMA.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.UPTIME_KUMA.SUBDOMAIN }}'
     APPLICATION_PORT: 3001
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: '{{ USERNAME }}.{{ secrets.MY_DOMAIN }}'
+        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
       loop_control:
         loop_var: item
 
@@ -33,4 +33,4 @@
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
-        pull: always
+        pull: missing

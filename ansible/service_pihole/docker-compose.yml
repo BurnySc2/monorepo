@@ -7,7 +7,7 @@ networks:
 services:
   pihole:
     container_name: pihole
-    image: pihole/pihole:latest
+    image: pihole/pihole:latest  # TODO pin 2025.xx: WHY latest tracks stable
     # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
     environment:
       TZ: Europe/Berlin

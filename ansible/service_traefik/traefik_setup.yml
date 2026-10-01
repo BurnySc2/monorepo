@@ -1,5 +1,6 @@
 ---
-# DEPRECATED
+# DEPRECATED: pangolin bundle is SSOT, see DEPRECATED.md
+# Do not add routers; migrate via service_pangolin/traefik_config.yml
 # Execute with
 # ansible-playbook traefik_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service

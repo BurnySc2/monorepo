@@ -2,6 +2,7 @@
 name: pangolin
 services:
   pangolin:
+    # TODO pin release: WHY latest tracks rolling
     image: docker.io/fosrl/pangolin:latest  # https://github.com/fosrl/pangolin/releases
     container_name: pangolin
     networks:
@@ -23,6 +24,7 @@ services:
       timeout: 10s
       retries: 15
   gerbil:
+    # TODO pin release: WHY latest tracks rolling
     image: docker.io/fosrl/gerbil:latest  # https://github.com/fosrl/gerbil/releases
     container_name: gerbil
     networks:
@@ -50,7 +52,7 @@ services:
       - 5432:5432
       - 3306:3306
   traefik:
-    image: docker.io/traefik:v3.6
+    image: docker.io/traefik:v3.6  # WHY v3.6 SSOT: pangolin stack
     container_name: traefik
     restart: unless-stopped
     network_mode: service:gerbil  # Ports appear on the gerbil service

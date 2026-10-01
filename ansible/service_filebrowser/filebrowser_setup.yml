@@ -4,8 +4,8 @@
 - name: Create service
   hosts: server_group4
   vars:
-    USERNAME: '{{ secrets.NEXTCLOUD.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.NEXTCLOUD.SUBDOMAIN }}'
+    USERNAME: '{{ secrets.FILEBROWSER.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.FILEBROWSER.SUBDOMAIN }}'
     APPLICATION_PORT: '80'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml

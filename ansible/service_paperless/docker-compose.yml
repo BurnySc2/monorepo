@@ -7,7 +7,7 @@ services:
   broker:
     container_name: paperless-broker
     hostname: paperless-broker
-    image: docker.io/library/redis:7
+    image: docker.io/library/redis:7-alpine  # WHY 7-alpine: smaller base explicit major
     restart: unless-stopped
     networks:
       - '{{ secrets.TRAEFIK_NETWORK }}'
@@ -15,7 +15,7 @@ services:
       - redisdata:/data
   webserver:
     container_name: paperless-webserver
-    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest  # TODO pin ngx-2.x: WHY latest tracks stable
     restart: unless-stopped
     depends_on:
       - broker

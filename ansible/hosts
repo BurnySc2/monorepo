@@ -25,7 +25,7 @@ server_group2:
     # ssh2:
 server_group3:
   hosts:
-    contabo:
+    contabo2:
 server_group4:
   hosts:
     contabo2:

@@ -9,7 +9,7 @@ networks:
 services:
   # Database (Postgres)
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15-alpine  # WHY pg15: app requires pg15
     container_name: reactive_resume_postgres
     hostname: reactive_resume_postgres
     networks:
@@ -31,7 +31,7 @@ services:
 
   # Storage (for image uploads)
   minio:
-    image: minio/minio:latest
+    image: minio/minio:latest  # TODO pin release: WHY latest tracks rolling
     container_name: reactive_resume_minio
     hostname: reactive_resume_minio
     networks:
@@ -59,7 +59,7 @@ services:
 
   # Redis (for cache & server session management)
   redis:
-    image: redis:alpine
+    image: redis:7-alpine  # WHY 7-alpine: explicit major avoid rolling
     container_name: reactive_resume_redis
     hostname: reactive_resume_redis
     networks:
@@ -67,7 +67,7 @@ services:
     restart: unless-stopped
     command: redis-server --requirepass password
   app:
-    image: amruthpillai/reactive-resume:latest
+    image: amruthpillai/reactive-resume:latest  # TODO pin v3.x: WHY latest tracks stable
     container_name: reactive_resume_app
     hostname: reactive_resume_app
     networks:

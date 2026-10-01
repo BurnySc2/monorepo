@@ -1,6 +1,6 @@
 ---
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   uptime-kuma:
@@ -9,15 +9,17 @@ services:
     image: louislam/uptime-kuma:1
     restart: unless-stopped
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ secrets.UPTIME_KUMA.USERNAME }}.rule=Host(`{{ secrets.UPTIME_KUMA.USERNAME }}.{{ secrets.MY_DOMAIN
-        }}`)
-      - traefik.http.services.{{ secrets.UPTIME_KUMA.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-      - traefik.http.routers.{{ secrets.UPTIME_KUMA.USERNAME }}.tls=true
-      - traefik.http.routers.{{ secrets.UPTIME_KUMA.USERNAME }}.tls.certresolver=production
-      - traefik.http.routers.{{ secrets.UPTIME_KUMA.USERNAME }}.middlewares=authelia@docker
+      # WHY sso-disabled: was authelia@docker, now pangolin sso-enabled=false
+      - pangolin.public-resources.uptime-kuma.name=Uptime Kuma
+      - pangolin.public-resources.uptime-kuma.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.uptime-kuma.protocol=http
+      - pangolin.public-resources.uptime-kuma.auth.sso-enabled=false
+      - pangolin.public-resources.uptime-kuma.targets[0].site=local
+      - pangolin.public-resources.uptime-kuma.targets[0].method=http
+      - pangolin.public-resources.uptime-kuma.targets[0].hostname=uptime-kuma
+      - pangolin.public-resources.uptime-kuma.targets[0].port={{ APPLICATION_PORT }}
     volumes:
       - ./uptime-kuma:/app/data
       - /var/run/docker.sock:/var/run/docker.sock

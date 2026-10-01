@@ -59,7 +59,7 @@
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
-        pull: always
+        pull: missing
     - name: Create directories
       file:
         path: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}'

@@ -5,7 +5,7 @@ networks:
     external: true
 services:
   bookstack:
-    image: lscr.io/linuxserver/bookstack:latest
+    image: lscr.io/linuxserver/bookstack:latest  # TODO(pin) version-v on next verified deploy
     container_name: bookstack
     networks:
       - '{{ secrets.TRAEFIK_NETWORK }}'
@@ -30,7 +30,7 @@ services:
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.tls.certresolver=production
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.middlewares=authelia@docker
   bookstack_db:
-    image: mariadb:10
+    image: mariadb:10.11  # WHY 10.11 LTS: ambiguous :10 do not jump to 11.x
     container_name: bookstack_db
     networks:
       - '{{ secrets.TRAEFIK_NETWORK }}'

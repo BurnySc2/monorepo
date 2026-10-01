@@ -15,15 +15,15 @@ services:
     # docker exec -it wireguard nc -u -z MY_IP MY_PORT
     container_name: wireguard
     hostname: wireguard
-    image: linuxserver/wireguard:latest
+    image: linuxserver/wireguard:latest  # WHY rolling latest: intentional upstream
     restart: unless-stopped
     networks:
       - '{{ secrets.TRAEFIK_NETWORK }}'
     ports:
       # The HTTP port
-      - 80:80
+      # - 80:80  # WHY DISABLED: owned by pangolin/gerbil
       # The HTTPS port
-      - 443:443
+      # - 443:443  # WHY DISABLED: owned by pangolin/gerbil
       # The TCP port (postgres: 5432, mariadb: 3306)
       - 5432:5432
       - 3306:3306
@@ -46,7 +46,7 @@ services:
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
   traefik:
-    image: traefik:3.3.4
+    image: traefik:3.3.4  # WHY frozen 3.3.4: deprecated stack do not upgrade
     container_name: traefik
     # hostname: traefik
     restart: unless-stopped

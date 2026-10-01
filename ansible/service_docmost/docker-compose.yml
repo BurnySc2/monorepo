@@ -6,7 +6,7 @@ networks:
     driver: bridge
 services:
   docmost:
-    image: docmost/docmost:latest
+    image: docmost/docmost:latest  # TODO pin release: WHY latest tracks rolling
     depends_on:
       - db
       - redis
@@ -28,9 +28,10 @@ services:
       - pangolin.public-resources.docmost.auth.sso-enabled=false
       - pangolin.public-resources.docmost.targets[0].site=local
       - pangolin.public-resources.docmost.targets[0].method=http
+      - pangolin.public-resources.docmost.targets[0].hostname=docmost
       - pangolin.public-resources.docmost.targets[0].port={{ APPLICATION_PORT }}
   db:
-    image: postgres:16-alpine
+    image: postgres:16-alpine  # WHY pg16 SSOT: align postgres fleet
     environment:
       POSTGRES_DB: docmost
       POSTGRES_USER: docmost
@@ -41,7 +42,7 @@ services:
     networks:
       - docmost-net
   redis:
-    image: redis:8-alpine
+    image: redis:8-alpine  # WHY major-pinned 8-alpine: ok stable
     restart: unless-stopped
     volumes:
       - redis_data:/data
