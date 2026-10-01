@@ -42,6 +42,6 @@ results = ["fl", ""]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert app.longestCommonPrefix(test_case) == correct_result, (
-            f"My result: {app.longestCommonPrefix(test_case)}, correct result: {correct_result}"
-        )
+        assert (
+            app.longestCommonPrefix(test_case) == correct_result
+        ), f"My result: {app.longestCommonPrefix(test_case)}, correct result: {correct_result}"

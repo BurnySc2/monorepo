@@ -1,5 +1,6 @@
 """
-Given a string containing just the characters '(' and ')', find the length of the longest valid (well-formed) parentheses substring.
+Given a string containing just the characters '(' and ')', find the length of the longest valid (well-formed)
+parentheses substring.
 
 https://leetcode.com/problems/longest-valid-parentheses/
 """
@@ -15,9 +16,7 @@ class Solution:
                 return False
             else:
                 open_parentheses -= 1
-        if open_parentheses > 0:
-            return False
-        return True
+        return not open_parentheses > 0
 
     def longestValidParentheses(self, s: str) -> int:
         # TODO Too slow but should work
@@ -51,5 +50,5 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         assert app.longestValidParentheses(test_case) == correct_result, (
-            f"My result: {app.longestValidParentheses(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
+            f"My result: {app.longestValidParentheses(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"  # noqa: E501
         )

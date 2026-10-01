@@ -32,15 +32,12 @@ class WordDictionary:
 
     def search(self, word: str, start_node: Node | None = None) -> bool:
         """Word can be 'asd' or 'a.d' which should match the same."""
-        if start_node is not None:
-            node = start_node
-        else:
-            node = self.children
+        node = start_node if start_node is not None else self.children
         for index, char in enumerate(word):
             if char != "." and char not in node.children:
                 return False
             if char == ".":
-                return any(self.search(f"{key}{word[1 + index :]}", node) for key in node.children.keys())
+                return any(self.search(f"{key}{word[1 + index :]}", node) for key in node.children)
             node = node.children[char]
         return bool(node.value)
 

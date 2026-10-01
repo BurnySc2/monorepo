@@ -1,11 +1,16 @@
 """
 Implement atoi which converts a string to an integer.
 
-The function first discards as many whitespace characters as necessary until the first non-whitespace character is found. Then, starting from this character, takes an optional initial plus or minus sign followed by as many numerical digits as possible, and interprets them as a numerical value.
+The function first discards as many whitespace characters as necessary until the first non-whitespace
+character is found.
+Then, starting from this character, takes an optional initial plus or minus sign followed by as many numerical
+digits as possible, and interprets them as a numerical value.
 
-The string can contain additional characters after those that form the integral number, which are ignored and have no effect on the behavior of this function.
+The string can contain additional characters after those that form the integral number, which are ignored and have
+no effect on the behavior of this function.
 
-If the first sequence of non-whitespace characters in str is not a valid integral number, or if no such sequence exists because either str is empty or it contains only whitespace characters, no conversion is performed.
+If the first sequence of non-whitespace characters in str is not a valid integral number, or if no such sequence
+exists because either str is empty or it contains only whitespace characters, no conversion is performed.
 
 If no valid conversion could be performed, a zero value is returned.
 
@@ -33,7 +38,7 @@ class Solution:
             return 0
         try:
             return_number = int(return_str)
-        except:
+        except ValueError:
             return 0
 
         min_value = -(2**31)
@@ -61,6 +66,6 @@ results = [-88827, 12345678, 42, -42, 4193, 0, -2147483648]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert app.myAtoi(test_case) == correct_result, (
-            f"My result: {app.myAtoi(test_case)}, correct result: {correct_result}"
-        )
+        assert (
+            app.myAtoi(test_case) == correct_result
+        ), f"My result: {app.myAtoi(test_case)}, correct result: {correct_result}"

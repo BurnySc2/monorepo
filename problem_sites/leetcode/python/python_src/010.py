@@ -40,9 +40,7 @@ class Solution:
         return "".join(sanitized)
 
     def match_first_character(self, s: str, p: str):
-        if s and p and (s[0] == p[0] or p[0] == "."):
-            return True
-        return False
+        return bool(s and p and (s[0] == p[0] or p[0] == "."))
 
     def isMatch(self, s: str, p: str) -> bool:
         p = self.sanitize_pattern(p)
@@ -92,6 +90,6 @@ results = [False, True, True, False, True, True]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert app.isMatch(*test_case) == correct_result, (
-            f"My result: {app.isMatch(*test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
-        )
+        assert (
+            app.isMatch(*test_case) == correct_result
+        ), f"My result: {app.isMatch(*test_case)}, correct result: {correct_result}\nTest Case: {test_case}"

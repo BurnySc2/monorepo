@@ -6,6 +6,8 @@ Given an integer n, return the number of trailing zeroes in n!.
 https://leetcode.com/problems/factorial-trailing-zeroes/
 """
 
+import time
+
 
 class Solution:
     def trailingZeroes(self, n: int) -> int:
@@ -20,8 +22,6 @@ results = [7, 1, 0, 24]
 # results = [249999999999999999997]
 # test_cases = [10000]
 # results = [2499]
-
-import time
 
 if __name__ == "__main__":
     app = Solution()

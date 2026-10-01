@@ -4,8 +4,8 @@
 
 class Solution:
     def countBits(self, n: int) -> list[int]:
-        LIMIT = 10**5
-        exponents = {2**i for i in range(1, 20) if 2**i <= LIMIT}
+        limit = 10**5
+        exponents = {2**i for i in range(1, 20) if 2**i <= limit}
         ans = []
         last_exponent = 0
         for i in range(n + 1):

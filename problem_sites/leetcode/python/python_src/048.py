@@ -5,7 +5,8 @@ Rotate the image by 90 degrees (clockwise).
 
 Note:
 
-You have to rotate the image in-place, which means you have to modify the input 2D matrix directly. DO NOT allocate another 2D matrix and do the rotation.
+You have to rotate the image in-place, which means you have to modify the input 2D matrix directly.
+DO NOT allocate another 2D matrix and do the rotation.
 
 https://leetcode.com/problems/rotate-image/
 """
@@ -77,6 +78,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_solution = app.rotate(test_case)
-        assert repr(my_solution) == repr(correct_result), (
-            f"My result: {app.rotate(test_case)}, correct result: {correct_result}"
-        )
+        assert repr(my_solution) == repr(
+            correct_result
+        ), f"My result: {app.rotate(test_case)}, correct result: {correct_result}"

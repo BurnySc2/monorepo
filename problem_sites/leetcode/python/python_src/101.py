@@ -7,7 +7,7 @@ https://leetcode.com/problems/symmetric-tree/
 
 # Definition for a binary tree node.
 class TreeNode:
-    def __init__(self, val=0, left: "TreeNode" = None, right: "TreeNode" = None):
+    def __init__(self, val=0, left: "TreeNode | None" = None, right: "TreeNode | None" = None):
         self.val = val
         self.left = left
         self.right = right
@@ -41,6 +41,6 @@ results = [True]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert app.isSymmetric(test_case) == correct_result, (
-            f"My result: {app.isSymmetric(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
-        )
+        assert (
+            app.isSymmetric(test_case) == correct_result
+        ), f"My result: {app.isSymmetric(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"

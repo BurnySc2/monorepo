@@ -20,6 +20,4 @@ class Solution:
                 stack.pop()
             else:
                 return False
-        if not stack:
-            return True
-        return False
+        return not stack

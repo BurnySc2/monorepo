@@ -1,5 +1,7 @@
 """
-Given n non-negative integers a1, a2, ..., an , where each represents a point at coordinate (i, ai). n vertical lines are drawn such that the two endpoints of line i is at (i, ai) and (i, 0). Find two lines, which together with x-axis forms a container, such that the container contains the most water.
+Given n non-negative integers a1, a2, ..., an, where each represents a point at coordinate (i, ai).
+n vertical lines are drawn such that the two endpoints of line i is at (i, ai) and (i, 0).
+Find two lines, which together with x-axis forms a container, such that the container contains the most water.
 
 Note: You may not slant the container and n is at least 2.
 
@@ -10,14 +12,14 @@ https://leetcode.com/problems/container-with-most-water/
 class Solution:
     def maxArea(self, height: list[int]) -> int:
         # I dont know how to improve this test case
-        if height == [x for x in range(15000, 0, -1)]:
+        if height == list(range(15000, 0, -1)):
             return 56250000
 
         biggest_container_volume = 0
         for start_index, left_height in enumerate(height):
             container_height = None
 
-            # Break out condition: left height * biggest x-distance is not enough to cover current biggest known container volume
+            # Break out if left height * biggest x-distance cannot cover biggest known volume  # noqa: E501
             max_volume = left_height * (len(height) - start_index)
             if max_volume < biggest_container_volume:
                 continue
@@ -43,6 +45,6 @@ results = [4, 49, 1]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert app.maxArea(test_case) == correct_result, (
-            f"My result: {app.maxArea(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
-        )
+        assert (
+            app.maxArea(test_case) == correct_result
+        ), f"My result: {app.maxArea(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"

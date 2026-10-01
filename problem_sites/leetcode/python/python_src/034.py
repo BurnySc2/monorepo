@@ -1,5 +1,6 @@
 """
-Given an array of integers nums sorted in ascending order, find the starting and ending position of a given target value.
+Given an array of integers nums sorted in ascending order, find the starting and ending position
+of a given target value.
 
 Your algorithm's runtime complexity must be in the order of O(log n).
 
@@ -29,6 +30,6 @@ results = [[-1, -1], [3, 4], [-1, -1]]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert app.searchRange(*test_case) == correct_result, (
-            f"My result: {app.searchRange(*test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
-        )
+        assert (
+            app.searchRange(*test_case) == correct_result
+        ), f"My result: {app.searchRange(*test_case)}, correct result: {correct_result}\nTest Case: {test_case}"

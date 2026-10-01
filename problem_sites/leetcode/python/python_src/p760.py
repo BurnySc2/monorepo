@@ -8,7 +8,7 @@ class Formula:
     n: int
 
     def __str__(self):
-        return f"g({self.m}, {self.n}) = {self.m} ^ {self.n} + {self.m} | {self.n} + {self.m} & {self.n} == {self.compute()}"
+        return f"g({self.m}, {self.n}) = {self.m} ^ {self.n} + {self.m} | {self.n} + {self.m} & {self.n} == {self.compute()}"  # noqa: E501
 
     def compute(self) -> int:
         return self.m | self.n

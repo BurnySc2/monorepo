@@ -35,7 +35,7 @@ while current.next:
 
 
 class Solution:
-    def removeNthFromEnd(self, head: ListNode, n: int) -> ListNode:
+    def removeNthFromEnd(self, head: ListNode, n: int) -> ListNode | None:
         cur = head
         list_bro = [head]
         while cur:

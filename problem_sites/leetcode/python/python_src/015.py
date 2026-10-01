@@ -1,5 +1,6 @@
 """
-Given an array nums of n integers, are there elements a, b, c in nums such that a + b + c = 0? Find all unique triplets in the array which gives the sum of zero.
+Given an array nums of n integers, are there elements a, b, c in nums such that a + b + c = 0?
+Find all unique triplets in the array which gives the sum of zero.
 
 
 https://leetcode.com/problems/3sum/
@@ -63,5 +64,5 @@ if __name__ == "__main__":
         sorted_my_result = sorted([sorted(solution) for solution in my_result])
         sorted_correct_result = sorted([sorted(solution) for solution in correct_result])
         assert sorted_my_result == sorted_correct_result, (
-            f"My result ({len(sorted_my_result)}): {sorted_my_result}\n, correct result ({len(sorted_correct_result)}): {sorted_correct_result}"
+            f"My result ({len(sorted_my_result)}): {sorted_my_result}\n, correct result ({len(sorted_correct_result)}): {sorted_correct_result}"  # noqa: E501
         )

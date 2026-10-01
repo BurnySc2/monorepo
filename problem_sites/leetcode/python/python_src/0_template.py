@@ -6,7 +6,7 @@ https://leetcode.com/problems/pascals-triangle/
 
 
 class ListNode:
-    def __init__(self, val: int = 0, next: "ListNode" = None):
+    def __init__(self, val: int = 0, next: "ListNode | None" = None):
         self.val = val
         self.next = next
 
@@ -39,12 +39,12 @@ class ListNode:
 
     @classmethod
     def length(cls, node: "ListNode") -> int:
-        l = 0
+        length = 0
         start = node
         while start:
             start = start.next
-            l += 1
-        return l
+            length += 1
+        return length
 
     @classmethod
     def from_list(cls, my_list: list[int]) -> "ListNode":
@@ -57,12 +57,12 @@ class ListNode:
         return start
 
     def to_list(self) -> list[int]:
-        l = []
+        result = []
         cur = self
         while cur:
-            l.append(cur.val)
+            result.append(cur.val)
             cur = cur.next
-        return l
+        return result
 
     def reverse(self) -> "ListNode":
         cur, prev = self, None
@@ -110,6 +110,6 @@ if __name__ == "__main__":
     for test_case, correct_result in zip(test_cases, results):
         test_case_copy = test_case.copy() if hasattr(test_case, "copy") else test_case
         my_result = app.generate(test_case)
-        assert my_result == correct_result, (
-            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case_copy}"
-        )
+        assert (
+            my_result == correct_result
+        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case_copy}"

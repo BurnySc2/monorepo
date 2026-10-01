@@ -7,7 +7,7 @@ dependencies = ["loguru>=0.7.2", "numpy>=2.2.1"]
 [dependency-groups]
 dev = [
   "pre-commit>=4.5.1",
-  "pyright>=1.1.391",
+  "pyrefly>=0.18.0",
   "pytest-benchmark>=5.1.0",
   "pytest>=8.3.4",
   "ruff>=0.8.4",
@@ -16,9 +16,11 @@ dev = [
 [tool.ruff]
 target-version = 'py310'
 line-length = 120
+
+[tool.ruff.lint]
 # Allow unused variables when underscore-prefixed.
-lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-lint.select = [
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+select = [
   "C4",  # flake8-comprehensions
   "E",   # Error
   "F",   # pyflakes
@@ -35,23 +37,14 @@ lint.select = [
   #    "A",  # flake8-builtins
 ]
 ignore = ["SIM300"]
+per-file-ignores = { "python_src/*" = ["N999", "N802", "N803"] }
 
 [tool.ruff.lint.pep8-naming]
 # Allow Pydantic's `@validator` decorator to trigger class method treatment.
 classmethod-decorators = ["pydantic.validator", "classmethod"]
 
 [tool.pytest.ini_options]
-pythonpath = "src"
+pythonpath = "."
 
-[tool.pyright]
-include = ["src"]
-exclude = ["**/__pycache__", ".venv/**"]
-# ignore = ["src/oldstuff"]
-defineConstant = { DEBUG = true }
-# stubPath = "src/stubs"
-
-pythonVersion = "3.10"
-
-typeCheckingMode = "standard"
-# reportUnusedVariable = false
-# reportUndefinedVariable = false
+[tool.pyrefly]
+project_includes = ["python_src", "test"]

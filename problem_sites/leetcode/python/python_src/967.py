@@ -41,6 +41,6 @@ if __name__ == "__main__":
         test_case_copy = test_case.copy()
         my_result = app.numsSameConsecDiff(*test_case)
         my_result.sort()
-        assert my_result == correct_result, (
-            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case_copy}"
-        )
+        assert (
+            my_result == correct_result
+        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case_copy}"

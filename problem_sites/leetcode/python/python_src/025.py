@@ -6,7 +6,7 @@ https://leetcode.com/problems/pascals-triangle/
 
 
 class ListNode:
-    def __init__(self, val: int = 0, next: "ListNode" = None):
+    def __init__(self, val: int = 0, next: "ListNode | None" = None):
         self.val = val
         self.next = next
 
@@ -39,12 +39,12 @@ class ListNode:
 
     @classmethod
     def length(cls, node: "ListNode") -> int:
-        l = 0
+        length = 0
         start = node
         while start:
             start = start.next
-            l += 1
-        return l
+            length += 1
+        return length
 
     @classmethod
     def from_list(cls, my_list: list[int]) -> "ListNode":
@@ -100,12 +100,12 @@ class Solution:
 
     @classmethod
     def length(cls, node: "ListNode") -> int:
-        l = 0
+        length = 0
         start = node
         while start:
             start = start.next
-            l += 1
-        return l
+            length += 1
+        return length
 
 
 if __name__ == "__main__":
@@ -142,6 +142,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.reverseKGroup(*test_case)
-        assert my_result == correct_result, (
-            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
-        )
+        assert (
+            my_result == correct_result
+        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"

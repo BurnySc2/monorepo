@@ -27,6 +27,6 @@ results = [[[1], [1, 1], [1, 2, 1], [1, 3, 3, 1], [1, 4, 6, 4, 1]]]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert app.generate(test_case) == correct_result, (
-            f"My result: {app.generate(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"
-        )
+        assert (
+            app.generate(test_case) == correct_result
+        ), f"My result: {app.generate(test_case)}, correct result: {correct_result}\nTest Case: {test_case}"

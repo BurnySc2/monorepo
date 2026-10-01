@@ -21,15 +21,10 @@ class Solution:
         if not root.left and not root.right:
             return targetSum == current_sum + root.val
 
-        if root.left:
-            if self.hasPathSum(root.left, targetSum, current_sum + root.val):
-                return True
+        if root.left and self.hasPathSum(root.left, targetSum, current_sum + root.val):
+            return True
 
-        if root.right:
-            if self.hasPathSum(root.right, targetSum, current_sum + root.val):
-                return True
-
-        return False
+        return bool(root.right and self.hasPathSum(root.right, targetSum, current_sum + root.val))
 
 
 a = {1, 2, 3, "dein gesuchtes"}

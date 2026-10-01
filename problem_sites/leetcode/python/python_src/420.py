@@ -127,6 +127,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in test_cases_and_results:
         my_result = app.strongPasswordChecker(test_case)
-        assert my_result == correct_result, (
-            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
-        )
+        assert (
+            my_result == correct_result
+        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"

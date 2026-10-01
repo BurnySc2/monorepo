@@ -9,9 +9,9 @@ import math
 
 
 class Solution:
-    def threeSumClosest(self, nums: list[int], target: int) -> int:
+    def threeSumClosest(self, nums: list[int], target: int) -> int | None:
         closest = math.inf
-        closest_value = None
+        closest_value: int | None = None
         for index1, i1 in enumerate(nums):
             for index2, i2 in enumerate(nums[index1 + 1 :]):
                 for index3, i3 in enumerate(nums[index1 + index2 + 2 :]):
@@ -39,6 +39,6 @@ if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
         my_result = app.threeSumClosest(*test_case)
-        assert my_result == correct_result, (
-            f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"
-        )
+        assert (
+            my_result == correct_result
+        ), f"My result: {my_result}, correct result: {correct_result}\nTest Case: {test_case}"

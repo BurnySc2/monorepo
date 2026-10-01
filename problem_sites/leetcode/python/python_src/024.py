@@ -13,7 +13,7 @@ from collections.abc import Generator
 
 
 class ListNode:
-    def __init__(self, val: int, next: "ListNode" = None):
+    def __init__(self, val: int, next: "ListNode | None" = None):
         self.val = val
         self.next = next
 
@@ -36,10 +36,7 @@ class ListNode:
     def __eq__(self, other: "ListNode") -> bool:
         if self.length() != other.length():
             return False
-        for value_node1, value_node2 in zip(self, other):
-            if value_node1 != value_node2:
-                return False
-        return True
+        return all(value_node1 == value_node2 for value_node1, value_node2 in zip(self, other))
 
     def length(self) -> int:
         length = 0
@@ -51,9 +48,9 @@ class ListNode:
 
 
 class Solution:
-    def swapPairs(self, head: ListNode) -> ListNode:
+    def swapPairs(self, head: ListNode | None) -> ListNode | None:
         if head is None:
-            return
+            return None
         if head.next is None:
             return head
         new_head = None
@@ -93,6 +90,6 @@ results = [output_node, output_node2]
 if __name__ == "__main__":
     app = Solution()
     for test_case, correct_result in zip(test_cases, results):
-        assert app.swapPairs(test_case) == correct_result, (
-            f"My result: {app.swapPairs(test_case)}, correct result: {correct_result}"
-        )
+        assert (
+            app.swapPairs(test_case) == correct_result
+        ), f"My result: {app.swapPairs(test_case)}, correct result: {correct_result}"

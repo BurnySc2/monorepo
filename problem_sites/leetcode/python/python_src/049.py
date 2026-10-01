@@ -30,7 +30,7 @@ class Solution:
             else:
                 anagrams[repr_string].append(anagram)
         print(anagrams)
-        return_list: list[str] = [value for value in anagrams.values()]
+        return_list: list[str] = list(anagrams.values())
         return return_list
 
 
