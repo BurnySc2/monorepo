@@ -12,7 +12,12 @@ from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponen
 
 from components.audiobook.epub_reader import combine_text
 from components.tts_generate import generate_audio
-from s3_helper import RUSTFS_AUDIOBOOK_BUCKET, get_s3_client, object_upload
+from s3_helper import (
+    RUSTFS_AUDIOBOOK_BUCKET,
+    ensure_bucket,
+    get_s3_client,
+    object_upload,
+)
 from schemas.audiobook import AudioSettings
 from schemas.audiobook.db_models import AudiobookChapter
 from schemas.tts.engine import TTSEngine
@@ -214,6 +219,7 @@ async def convert_one(chapter: AudiobookChapter) -> None:
 async def keep_converting():
     """Main worker loop that continuously checks for and processes queued chapters."""
     logger.info("Starting audiobook conversion worker")
+    await ensure_bucket(RUSTFS_AUDIOBOOK_BUCKET, settings.rustfs_audiobook_bucket_expiration_days, raise_on_error=False)
     while True:
         try:
             converted_one = await check_queued_chapters()

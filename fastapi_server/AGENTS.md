@@ -27,7 +27,7 @@ Stack: FastAPI + async, PostgreSQL (Piccolo ORM), S3-compatible storage (RustFS)
 | `src/components/` | Business logic (audiobook, login, tts, replay_pack_builder) |
 | `src/schemas/` | Pydantic API models + audiobook Piccolo tables (`audiobook/db_models.py`: AudiobookBook, AudiobookChapter) |
 | `src/s3_helper.py` | S3 operations (aioboto3); bucket constants derive from `settings` (single source: `src/settings.py`) |
-| `src/workers/` | Background workers (convert_audiobook, raceroom_fetch_records) |
+| `src/workers/` | Separate OS processes, never imported by server (DB-polling only; routes enqueue via AudiobookChapter.queued) |
 | `src/models/` | Piccolo tables (raceroom: RRRE*, telegram_browser: Telegram*) |
 | `src/queries/` | Raw SQL files |
 | `src/settings.py` | Single source for env config (`Settings`); `src/piccolo_conf.py` uses `settings.postgres_connection_string` |
@@ -254,10 +254,17 @@ uv run --directory src uvicorn main:app --host 0.0.0.0 --port 8000
 
 ### Run Workers
 ```bash
-# M6: cwd=fastapi_server; src/ prefix is required (do NOT add --directory src with src/ prefix).
+# Separate OS processes, not in-process tasks. cwd=fastapi_server, PYTHONPATH=src required
+# (src/ prefix required; do NOT add --directory src with src/ prefix).
 PYTHONPATH=src uv run python src/workers/convert_audiobook.py
 PYTHONPATH=src uv run python src/workers/raceroom_fetch_records.py
 ```
+Compose `convert_audiobook_worker` / `raceroom_fetch_worker` / `local_dev_convert_audiobook_worker` run
+`python src/workers/... && sleep 1m` with `restart: always` (sleep only if loop exits; pacing is
+`sleep(30)` idle / `sleep(5)` on error inside, raceroom hourly `sleep(3600)`).
+Queue contract: routes set `queued` + `audio_settings` only; worker leases via `started_converting`.
+Buckets: server lifespan (`initialize_rustfs`) creates buckets; worker `ensure_audiobook_bucket()` on
+startup keeps it standalone-safe.
 
 ### Database Migrations
 ```bash

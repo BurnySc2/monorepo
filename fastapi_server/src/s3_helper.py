@@ -43,14 +43,34 @@ def _is_retryable_s3_error(exc: BaseException) -> bool:
     return code not in _NON_RETRYABLE_S3_CODES
 
 
+async def ensure_bucket(bucket: str, days: int, *, raise_on_error: bool = True) -> None:
+    """Ensure S3 bucket exists with CORS and expiration (idempotent)."""
+    try:
+        async with get_s3_client() as s3:
+            try:
+                await bucket_create(s3, bucket)
+            except ClientError as e:
+                response = getattr(e, "response", None)
+                error = response.get("Error", {}) if isinstance(response, dict) else {}
+                code = str(error.get("Code", ""))
+                if code not in ("BucketAlreadyOwnedByYou", "BucketAlreadyExists"):
+                    raise
+                logger.debug(f"Bucket already exists: {bucket}")
+            await bucket_set_cors(s3, bucket)
+            await bucket_set_expiration(s3, bucket, days)
+    except ClientError as e:
+        logger.warning(f"Bucket ensure failed for bucket={bucket} (S3 error): {e}")
+        if raise_on_error:
+            raise
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"Bucket ensure failed for bucket={bucket}: {e}")
+        if raise_on_error:
+            raise
+
+
 async def initialize_rustfs():
-    async with get_s3_client() as s3:
-        await bucket_create(s3, RUSTFS_AUDIOBOOK_BUCKET)
-        await bucket_set_cors(s3, RUSTFS_AUDIOBOOK_BUCKET)
-        await bucket_set_expiration(s3, RUSTFS_AUDIOBOOK_BUCKET, days=30)
-        await bucket_create(s3, RUSTFS_TELEGRAM_BUCKET)
-        await bucket_set_cors(s3, RUSTFS_TELEGRAM_BUCKET)
-        await bucket_set_expiration(s3, RUSTFS_TELEGRAM_BUCKET, days=settings.rustfs_telegram_bucket_expiration_days)
+    await ensure_bucket(RUSTFS_AUDIOBOOK_BUCKET, settings.rustfs_audiobook_bucket_expiration_days, raise_on_error=True)
+    await ensure_bucket(RUSTFS_TELEGRAM_BUCKET, settings.rustfs_telegram_bucket_expiration_days, raise_on_error=True)
 
 
 @asynccontextmanager

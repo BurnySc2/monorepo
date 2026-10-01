@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     rustfs_admin_url: str = Field(default="http://localhost:3903")
     rustfs_admin_token: str | None = Field(default=None)
     rustfs_telegram_bucket_expiration_days: int = Field(default=7)
+    rustfs_audiobook_bucket_expiration_days: int = Field(default=30)
 
     # Audiobook converter
     audiobook_convert_estimate_factor: float = Field(default=0.3)
