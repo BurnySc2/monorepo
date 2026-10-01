@@ -111,9 +111,6 @@ venv.bak/
 .pants.*
 .pids
 
-# Pyre
-.pyre
-
 # nim
 testresults
 nimcache

@@ -14,7 +14,7 @@ My monorepo for various tools and showcases
 - [Docker](https://www.docker.com)
 
 ## VScode
-Run VScode task called `Install requirements` or alternatively run `sh .vscode/install_requirements.sh` or alternatively run `uv sync` in the python projects.
+Run VScode task called `Install requirements` or alternatively run `uv sync` in the python projects.
 
 Open the Command Palette and `Workspaces: Add Folder to Workspace...` and select the folders you want to edit.
 

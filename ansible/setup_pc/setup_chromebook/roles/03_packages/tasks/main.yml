@@ -27,7 +27,7 @@
       - python-uv  # python package manager like poetry and pipenv
       - prettier  # formatter for yaml, json, css, markdown
       # Helix language servers
-      # Use uv packages for format / lint: pyre, pyright, ruff, djlint for html/jinja
+      # Use uv packages for format / lint: pyrefly, ruff, djlint for html/jinja
       - ansible-lint
       ## yaml
       - yaml-language-server

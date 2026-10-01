@@ -1,6 +1,5 @@
 .benchmarks/*
 .env*
-.pyre/*
 .pytest_cache/*
 .ruff_cache/*
 .venv
