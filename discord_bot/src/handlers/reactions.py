@@ -56,6 +56,8 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
         return
 
     # If "twss" reacted and reaction count >=3: add quote to db
+    if channel.name is None:
+        return
     allowed_emoji_names, target_emoji_count = get_allowed_emoji(channel.name)
     if not message.author.is_bot and event.emoji_name in allowed_emoji_names:
         for reaction in message.reactions:
