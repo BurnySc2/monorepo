@@ -19,21 +19,9 @@ LOGIN_MAX_AGE = 84_400  # 7 days in seconds
 
 # Frontend URL for OAuth redirects
 # Set via environment variable in production
-def _get_frontend_url(request: Request) -> str:
-    """Return the frontend base URL.
-
-    * In production (``STAGE`` not ``dev``) it is read from settings
-      (``FRONTEND_URL`` environment variable).
-    * In development (``STAGE=dev``) we infer it from the incoming request
-      ``Host`` header and scheme so the port can change dynamically.
-    """
-    # Production override – use settings value when not in dev
-    if settings.stage != "dev":
-        return settings.frontend_url.rstrip("/")
-    # Development – construct from request (any localhost port)
-    scheme = request.url.scheme
-    host = request.headers.get("host", "localhost")
-    return f"{scheme}://{host}"
+def _get_frontend_url() -> str:
+    """Return the frontend base URL from settings (``FRONTEND_URL`` environment variable)."""
+    return settings.frontend_url.rstrip("/")
 
 
 async def _handle_oauth_callback(
@@ -48,21 +36,21 @@ async def _handle_oauth_callback(
     if access_token is not None:
         user = await provider.get_user(access_token)
         if user is not None:
-            return RedirectResponse(url=_get_frontend_url(request))
+            return RedirectResponse(url=_get_frontend_url())
 
     # No code provided, redirect to login
     if code is None:
-        return RedirectResponse(url=_get_frontend_url(request))
+        return RedirectResponse(url=_get_frontend_url())
 
     # Exchange code for access token
     token_or_error = await provider.verify_code(code)
 
     if isinstance(token_or_error, int):
         # Error occurred
-        return RedirectResponse(url=(_get_frontend_url(request) + "/login?error=oauth_failed"))
+        return RedirectResponse(url=(_get_frontend_url() + "/?error=oauth_failed"))
 
     # Set cookie and redirect
-    response = RedirectResponse(url=_get_frontend_url(request))
+    response = RedirectResponse(url=_get_frontend_url())
     # Secure cookies only outside dev/test (dev uses http://localhost, Secure would drop cookie).
     is_secure = settings.stage not in ("dev", "test", "")
     response.set_cookie(
@@ -125,7 +113,7 @@ async def logout(request: Request) -> RedirectResponse:
     """
     Clear all authentication cookies and redirect to login page.
     """
-    response = RedirectResponse(url=_get_frontend_url(request))
+    response = RedirectResponse(url=_get_frontend_url())
     # Delete all auth cookies
     for cookie_name in COOKIES.values():
         response.delete_cookie(cookie_name)
