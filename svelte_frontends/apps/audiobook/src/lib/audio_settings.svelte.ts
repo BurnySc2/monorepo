@@ -1,5 +1,5 @@
+import { create_persisted_state } from "@repo/persisted-state"
 import { z } from "zod"
-import { browser } from "$app/environment"
 
 export const AudioSettingsSchema = z.object({
     value: z.string().default(""),
@@ -9,27 +9,20 @@ export type AudioSettings = z.infer<typeof AudioSettingsSchema>
 
 const STORAGE_KEY = "audiobook_settings"
 
+const persisted = create_persisted_state(STORAGE_KEY, AudioSettingsSchema, AudioSettingsSchema.parse({ value: "" }))
+
+export const audio_settings = persisted.state
+
+export const is_loading = persisted.is_loading
+
 export function load_audio_settings(): AudioSettings {
-    if (!browser) {
-        return { value: "" }
-    }
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY)
-        if (stored) {
-            return AudioSettingsSchema.parse(JSON.parse(stored))
-        }
-    } catch {
-        localStorage.removeItem(STORAGE_KEY)
-        return { value: "" }
-    }
-    return { value: "" }
+    return { ...persisted.state }
 }
 
 export function save_audio_settings(settings: AudioSettings): void {
-    if (!browser) {
-        return
-    }
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-    } catch {}
+    Object.assign(persisted.state, AudioSettingsSchema.parse(settings))
+}
+
+export function reset_audio_settings(): void {
+    persisted.reset()
 }

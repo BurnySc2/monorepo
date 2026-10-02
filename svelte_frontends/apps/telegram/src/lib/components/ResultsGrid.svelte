@@ -1,9 +1,9 @@
 <script lang="ts">
 import { get_api_base } from "@repo/api-client"
 import type { components } from "@repo/api-types"
-import { Spinner } from "@repo/ui"
+import { IconDelete, IconDownload, IconPlay, IconQueue, IconSpinner } from "@repo/ui"
 import { column_settings } from "$lib/column_settings.svelte"
-import { format_duration, format_file_size } from "$lib/format"
+import { format_duration, format_file_size, is_safe_http_url } from "$lib/format"
 import {
     clear_sort,
     get_sort_direction,
@@ -60,8 +60,9 @@ async function handle_queue(id: string) {
                 {#each column_settings.active_columns as col}
                     {@const direction = get_sort_direction(col.key)}
                     {@const priority = get_sort_priority(col.key)}
+                    {@const header_class = direction ? "bg-blue-100" : "bg-gray-100"}
                     <th
-                        class="whitespace-nowrap cursor-pointer select-none border border-gray-200 p-2 {direction ? 'bg-blue-100' : 'bg-gray-100'}"
+                        class="whitespace-nowrap cursor-pointer select-none border border-gray-200 p-2 {header_class}"
                         onclick={() => toggle_sort(col.key)}
                         title={get_sort_tooltip(col.key)}
                     >
@@ -103,23 +104,19 @@ async function handle_queue(id: string) {
                                     onclick={() => handle_queue(row.metadata.id)}
                                     title="Queue file"
                                 >
-                                    <img
-                                        src="/queue.svg"
-                                        alt="Queue"
-                                    >
+                                    <IconQueue class="h-8 w-8" />
                                 </button>
-                            {:else if [ "Queued", "Downloading", "Failed", "GiveUp"].includes(row.metadata.download_status as string)}
-                                <Spinner />
+                            {:else if ["Queued", "Downloading", "Failed", "GiveUp"].includes(
+                                row.metadata.download_status as string,
+                            )}
+                                <IconSpinner class="h-8 w-8 animate-spin" />
                                 <button
                                     class="w-8 cursor-no-drop rounded-lg transition-colors hover:bg-red-100"
                                     type="button"
                                     onclick={() => ondelete(row.metadata.id)}
                                     title="Delete"
                                 >
-                                    <img
-                                        src="/delete.svg"
-                                        alt="Delete"
-                                    >
+                                    <IconDelete class="h-8 w-8" />
                                 </button>
                             {:else if row.metadata.download_status === "Downloaded"}
                                 <button
@@ -128,20 +125,14 @@ async function handle_queue(id: string) {
                                     onclick={() => onview(row.metadata.id)}
                                     title="View"
                                 >
-                                    <img
-                                        src="/play.svg"
-                                        alt="View"
-                                    >
+                                    <IconPlay class="h-8 w-8" />
                                 </button>
                                 <a
                                     class="w-8 rounded-lg transition-colors hover:bg-green-100"
                                     href={`${get_api_base()}/telegram-browser/download-file/${encodeURIComponent(String(row.metadata.id))}`}
                                     title="Download"
                                 >
-                                    <img
-                                        src="/download.svg"
-                                        alt="Download"
-                                    >
+                                    <IconDownload class="h-8 w-8" />
                                 </a>
                                 <button
                                     class="w-8 cursor-no-drop rounded-lg transition-colors hover:bg-red-100"
@@ -149,10 +140,7 @@ async function handle_queue(id: string) {
                                     onclick={() => ondelete(row.metadata.id)}
                                     title="Delete"
                                 >
-                                    <img
-                                        src="/delete.svg"
-                                        alt="Delete"
-                                    >
+                                    <IconDelete class="h-8 w-8" />
                                 </button>
                             {/if}
                         </div>
@@ -171,14 +159,16 @@ async function handle_queue(id: string) {
                             </td>
                         {:else if col.key === "message_link"}
                             <td class="border-t border-gray-100">
-                                {#if value}
+                                {#if is_safe_http_url(value)}
                                     <a
-                                        href={value as string}
+                                        href={value}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         class="truncate text-purple-600 hover:underline"
                                         >Link</a
                                     >
+                                {:else if value}
+                                    <span class="truncate text-gray-500">{value as string}</span>
                                 {/if}
                             </td>
                         {:else if col.key === "message_date"}

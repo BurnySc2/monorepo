@@ -1,5 +1,5 @@
+import { create_persisted_state } from "@repo/persisted-state"
 import { z } from "zod"
-import { browser } from "$app/environment"
 
 export const SearchFiltersSchema = z.object({
     search_text: z.string().default(""),
@@ -26,32 +26,12 @@ export type SearchFilters = z.infer<typeof SearchFiltersSchema>
 
 const STORAGE_KEY = "search_filters"
 
-export const search_filters = $state<SearchFilters>(SearchFiltersSchema.parse({}))
+const persisted = create_persisted_state(STORAGE_KEY, SearchFiltersSchema, SearchFiltersSchema.parse({}))
 
-export const is_loading = $state({ value: true })
+export const search_filters = persisted.state
 
-$effect.root(() => {
-    $effect(() => {
-        if (browser) {
-            if (is_loading.value) {
-                is_loading.value = false
-                const data = localStorage.getItem(STORAGE_KEY)
-                if (data !== null) {
-                    try {
-                        Object.assign(search_filters, SearchFiltersSchema.parse(JSON.parse(data)))
-                    } catch {
-                        localStorage.removeItem(STORAGE_KEY)
-                    }
-                }
-            } else {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(search_filters))
-            }
-        }
-
-        $state.snapshot(search_filters)
-    })
-})
+export const is_loading = persisted.is_loading
 
 export function reset_filters(): void {
-    Object.assign(search_filters, SearchFiltersSchema.parse({}))
+    persisted.reset()
 }

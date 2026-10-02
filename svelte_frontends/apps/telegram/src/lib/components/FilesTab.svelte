@@ -1,8 +1,9 @@
 <script lang="ts">
 import { get_api_base } from "@repo/api-client"
+import { IconDelete, IconDownload, IconPlay } from "@repo/ui"
 import { fetch_downloads } from "$lib/api"
 import { file_column_settings } from "$lib/file_column_settings.svelte"
-import { format_duration, format_file_size } from "$lib/format"
+import { format_duration, format_file_size, is_safe_http_url } from "$lib/format"
 import { temp_state } from "$lib/temporary-storage.svelte"
 
 interface Props {
@@ -73,20 +74,14 @@ async function load_downloads() {
                                         onclick={() => onview(file.message_id.toString())}
                                         title="View"
                                     >
-                                        <img
-                                            src="/play.svg"
-                                            alt="View"
-                                        >
+                                        <IconPlay class="h-8 w-8" />
                                     </button>
                                     <a
                                         class="w-8 rounded-xl hover:bg-green-500"
                                         href={`${get_api_base()}/telegram-browser/download-file/${encodeURIComponent(String(file.message_id))}`}
                                         title="Download"
                                     >
-                                        <img
-                                            src="/download.svg"
-                                            alt="Download"
-                                        >
+                                        <IconDownload class="h-8 w-8" />
                                     </a>
                                     <button
                                         class="w-8 cursor-no-drop rounded-xl hover:bg-red-500"
@@ -94,10 +89,7 @@ async function load_downloads() {
                                         onclick={() => ondelete(file.message_id.toString())}
                                         title="Delete"
                                     >
-                                        <img
-                                            src="/delete.svg"
-                                            alt="Delete"
-                                        >
+                                        <IconDelete class="h-8 w-8" />
                                     </button>
                                 </div>
                             </td>
@@ -113,14 +105,16 @@ async function load_downloads() {
                                     </td>
                                 {:else if col.key === "message_link"}
                                     <td>
-                                        {#if value}
+                                        {#if is_safe_http_url(value)}
                                             <a
-                                                href={value as string}
+                                                href={value}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 class="truncate text-purple-600 hover:underline"
                                                 >Link</a
                                             >
+                                        {:else if value}
+                                            <span class="truncate text-gray-500">{value as string}</span>
                                         {/if}
                                     </td>
                                 {:else if col.key === "message_date"}

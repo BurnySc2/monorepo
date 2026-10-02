@@ -1,3 +1,26 @@
+// Voice selection guards (B1 OOB fix):
+// Stored selected_voice_index may outlive the voices list (e.g., backend
+// voices shrink). Clamp OOB to 0 and never throw on preview text.
+import type { VoiceInfo } from "@repo/api-types"
+
+export function clamp_voice_index(index: number, voice_count: number): number {
+    if (!Number.isInteger(index) || index < 0 || index >= voice_count) {
+        return 0
+    }
+    return index
+}
+
+export function get_preview_text(voices: VoiceInfo[], selected_index: number, user_text: string): string {
+    if (voices.length === 0) {
+        return ""
+    }
+    const voice = voices[selected_index]
+    if (!voice) {
+        return ""
+    }
+    return `${voice.engine}_${voice.label.toLowerCase().replaceAll(" ", "_")}: ${user_text}`
+}
+
 // Volume conventions (documented):
 // - Percent (0-100) is used in query params and the +page Twitch volume input; fallback is 15 (reasonable OBS level).
 // - Ratio (0-1) is used for the HTMLAudioElement volume in the overlay; fallback is 1.0 (full volume).

@@ -1,17 +1,18 @@
 <script lang="ts">
 import type { VoiceInfo } from "@repo/api-types"
+import { create_loading_state } from "@repo/sc2-utils"
 import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { page } from "$app/state"
 import { fetch_generate_tts, fetch_voices } from "$lib/api"
 import { tts_settings } from "$lib/tts_settings.svelte"
-import { clamp_volume_percent, clamp_volume_ratio } from "$lib/utils"
+import { clamp_voice_index, clamp_volume_percent, clamp_volume_ratio, get_preview_text } from "$lib/utils"
 
 let voices = $state<VoiceInfo[]>([])
 let user_text = $state("")
 let audio_b64 = $state("")
-let is_generating = $state(false)
-let is_loading_voices = $state(true)
+let is_generating = $state(create_loading_state(false).is_loading)
+let is_loading_voices = $state(create_loading_state(true).is_loading)
 let copied_preview = $state(false)
 let copied_overlay = $state(false)
 
@@ -21,6 +22,7 @@ let twitch_volume = $state(15)
 async function load_voices() {
     try {
         voices = await fetch_voices()
+        tts_settings.selected_voice_index = clamp_voice_index(tts_settings.selected_voice_index, voices.length)
     } catch (e) {
         console.error("Failed to load voices", e)
     } finally {
@@ -33,9 +35,12 @@ onMount(() => {
 })
 
 async function generate_audio() {
+    const voice = voices[tts_settings.selected_voice_index]
+    if (!voice) {
+        return
+    }
     is_generating = true
     audio_b64 = ""
-    const voice = voices[tts_settings.selected_voice_index]
     const text = user_text
     try {
         const data = await fetch_generate_tts({ voice: `${voice.engine}_${voice.label.replace(/ /g, "_")}`, text })
@@ -68,11 +73,7 @@ async function handle_copy_overlay() {
 }
 
 const preview_text = $derived.by(() => {
-    if (voices.length === 0) {
-        return ""
-    }
-
-    return `${voices[tts_settings.selected_voice_index].engine}_${voices[tts_settings.selected_voice_index].label.toLowerCase().replaceAll(" ", "_")}: ${user_text}`
+    return get_preview_text(voices, tts_settings.selected_voice_index, user_text)
 })
 // Volume convention: twitch_volume is percent 0-100 for the overlay query; default 15 (reasonable OBS level).
 // Audio element volume is ratio 0-1 derived from tts_settings.audio_volume percent.
@@ -112,10 +113,10 @@ const overlay_url = $derived.by(() => {
             </label>
             <button
                 onclick={generate_audio}
-                disabled={user_text.trim() === '' || is_generating}
+                disabled={user_text.trim() === "" || is_generating}
                 class="btn-primary w-full"
             >
-                {is_generating ? 'Generating...' : 'Generate audio'}
+                {is_generating ? "Generating..." : "Generate audio"}
             </button>
         </div>
 
@@ -128,9 +129,9 @@ const overlay_url = $derived.by(() => {
                     class="w-full"
                     volume={clamp_volume_ratio(tts_settings.audio_volume / 100)}
                     onvolumechange={(e) => {
-                        const target = e.currentTarget as HTMLAudioElement;
-                        const raw_volume = Math.round(target.volume * 100);
-                        tts_settings.audio_volume = clamp_volume_percent(raw_volume);
+                        const target = e.currentTarget as HTMLAudioElement
+                        const raw_volume = Math.round(target.volume * 100)
+                        tts_settings.audio_volume = clamp_volume_percent(raw_volume)
                     }}
                 >
                     <track
@@ -161,7 +162,7 @@ const overlay_url = $derived.by(() => {
                     onclick={handle_copy_preview}
                     class="btn-secondary ml-2"
                 >
-                    {copied_preview ? 'Copied!' : 'Copy'}
+                    {copied_preview ? "Copied!" : "Copy"}
                 </button>
             </div>
         </div>
@@ -182,7 +183,7 @@ const overlay_url = $derived.by(() => {
                     onclick={handle_copy_overlay}
                     class="btn-secondary ml-2"
                 >
-                    {copied_overlay ? 'Copied!' : 'Copy'}
+                    {copied_overlay ? "Copied!" : "Copy"}
                 </button>
             </div>
             <label class="block mb-2"

@@ -1,9 +1,8 @@
 <script lang="ts">
-import { is_local_host } from "@repo/api-client"
+import { check_login_status, is_local_host } from "@repo/api-client"
 import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
-import { Spinner } from "@repo/ui"
+import { Spinner, toast } from "@repo/ui"
 import * as api from "$lib/api/audiobook"
-import { check_login_status } from "$lib/api/auth"
 import BookCard from "$lib/components/BookCard.svelte"
 import BookUpload from "$lib/components/BookUpload.svelte"
 
@@ -13,6 +12,8 @@ let is_checking_auth = $state(true)
 let is_logged_in = $state(false)
 let is_uploading = $state(false)
 let is_deleting_all = $state(false)
+let confirm_delete_all_armed = $state(false)
+let delete_all_reset_timer: ReturnType<typeof setTimeout> | null = null
 
 const raw_api_target = import.meta.env.VITE_API_TARGET as string | undefined
 function is_local_api_target(target: string | undefined): boolean {
@@ -46,13 +47,14 @@ async function handle_upload(file: File) {
     try {
         await api.upload_epub(file)
         await load_books()
+        toast.success("Book uploaded")
     } catch (e) {
         console.error("Failed to upload:", e)
         const message = e instanceof Error ? e.message : String(e)
         if (message.includes("already uploaded")) {
-            alert("This book has already been uploaded")
+            toast.error("This book has already been uploaded")
         } else {
-            alert("Failed to upload book")
+            toast.error("Failed to upload book")
         }
     } finally {
         is_uploading = false
@@ -63,23 +65,37 @@ async function handle_delete_book(book_id: number) {
     try {
         await api.delete_book(book_id)
         books = books.filter((b) => b.id !== book_id)
+        toast.success("Book deleted")
     } catch (e) {
         console.error("Failed to delete book:", e)
-        alert("Failed to delete book")
+        toast.error("Failed to delete book")
     }
 }
 
 async function handle_delete_all_books() {
-    if (!confirm(`Are you sure you want to delete all ${books.length} books? This cannot be undone.`)) {
+    if (!confirm_delete_all_armed) {
+        confirm_delete_all_armed = true
+        if (delete_all_reset_timer) {
+            clearTimeout(delete_all_reset_timer)
+        }
+        delete_all_reset_timer = setTimeout(() => {
+            confirm_delete_all_armed = false
+        }, 3000)
         return
     }
+    if (delete_all_reset_timer) {
+        clearTimeout(delete_all_reset_timer)
+        delete_all_reset_timer = null
+    }
+    confirm_delete_all_armed = false
     is_deleting_all = true
     try {
         await api.delete_all_books()
         books = []
+        toast.success("All books deleted")
     } catch (e) {
         console.error("Failed to delete all books:", e)
-        alert("Failed to delete all books")
+        toast.error("Failed to delete all books")
     } finally {
         is_deleting_all = false
     }
@@ -105,7 +121,7 @@ $effect(() => {
         <div class="text-center py-12">
             <p class="text-lg text-gray-700 mb-4">You need to log in to proceed.</p>
             <button
-                onclick={() => window.location.href = login_url}
+                onclick={() => (window.location.href = login_url)}
                 class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
                 Log In
@@ -129,11 +145,15 @@ $effect(() => {
                     type="button"
                     onclick={handle_delete_all_books}
                     disabled={is_loading || is_deleting_all}
-                    aria-label="Delete all uploaded books"
+                    aria-label={confirm_delete_all_armed
+                        ? "Click again to confirm delete all books"
+                        : "Delete all uploaded books"}
                     class="w-full md:w-auto px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 >
                     {#if is_deleting_all}
                         Deleting...
+                    {:else if confirm_delete_all_armed}
+                        Click again to confirm delete all {books.length} books
                     {:else}
                         Delete all books
                     {/if}

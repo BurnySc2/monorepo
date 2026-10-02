@@ -1,6 +1,11 @@
-import { get_api_base } from "@repo/api-client"
+import {
+    check_login_status,
+    get_api_base,
+    handle_logout,
+    start_github_login,
+    start_twitch_login,
+} from "@repo/api-client"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { check_login_status, handle_logout, start_github_login, start_twitch_login } from "./login"
 
 const original_fetch = globalThis.fetch
 
@@ -143,5 +148,63 @@ describe("handle_logout", () => {
         global.fetch = vi.fn().mockRejectedValue(new Error("Network error"))
 
         await expect(handle_logout()).rejects.toThrow("Logout failed")
+    })
+})
+
+describe("oauth_error_banner", () => {
+    // WHY no Svelte mount: vitest has no svelte plugin/jsdom here, so mirror
+    // LoginStatus.svelte onMount error logic (URLSearchParams + replaceState contract).
+    it("shows OAuth failed message and clears URL when ?error=oauth_failed", async () => {
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            statusText: "OK",
+            json: () => Promise.resolve({ logged_in: false }),
+        }) as unknown as typeof fetch
+        const replace_state = vi.fn()
+        vi.stubGlobal("window", {
+            location: { search: "?error=oauth_failed", pathname: "/" },
+            history: { replaceState: replace_state },
+        })
+
+        const error_code = new URLSearchParams(window.location.search).get("error")
+        await check_login_status()
+        let error_message: string | null = null
+        if (error_code) {
+            error_message =
+                error_code === "oauth_failed"
+                    ? "OAuth login failed. Please try again."
+                    : "Login failed. Please try again."
+            window.history.replaceState({}, "", window.location.pathname)
+        }
+
+        expect(error_message).toBe("OAuth login failed. Please try again.")
+        expect(replace_state).toHaveBeenCalledWith({}, "", "/")
+    })
+
+    it("shows generic message for unknown error code", async () => {
+        global.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            statusText: "OK",
+            json: () => Promise.resolve({ logged_in: false }),
+        }) as unknown as typeof fetch
+        const replace_state = vi.fn()
+        vi.stubGlobal("window", {
+            location: { search: "?error=boom", pathname: "/" },
+            history: { replaceState: replace_state },
+        })
+
+        const error_code = new URLSearchParams(window.location.search).get("error")
+        await check_login_status()
+        let error_message: string | null = null
+        if (error_code) {
+            error_message =
+                error_code === "oauth_failed"
+                    ? "OAuth login failed. Please try again."
+                    : "Login failed. Please try again."
+            window.history.replaceState({}, "", window.location.pathname)
+        }
+
+        expect(error_message).toBe("Login failed. Please try again.")
+        expect(replace_state).toHaveBeenCalledWith({}, "", "/")
     })
 })

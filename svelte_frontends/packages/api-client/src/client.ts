@@ -1,4 +1,4 @@
-import { get_api_base } from "./base"
+import { get_api_base } from "./base.js"
 
 export class ApiError extends Error {
     status: number

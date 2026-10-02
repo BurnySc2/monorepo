@@ -2,8 +2,20 @@
     "name": "@repo/sc2-utils",
     "version": "0.0.0",
     "type": "module",
+    "files": [
+        "dist",
+        "!dist/**/*.test.*",
+        "!dist/**/*.spec.*",
+        "src",
+        "!src/**/*.test.*",
+        "!src/**/*.spec.*"
+    ],
+    "types": "./dist/index.d.ts",
     "exports": {
-        ".": "./src/index.ts"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
     },
     "scripts": {
         "build": "svelte-kit sync && svelte-package --input=src",

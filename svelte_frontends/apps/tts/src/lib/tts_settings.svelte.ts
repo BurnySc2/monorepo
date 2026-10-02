@@ -1,5 +1,5 @@
+import { create_persisted_state } from "@repo/persisted-state"
 import { z } from "zod"
-import { browser } from "$app/environment"
 
 export const TtsSettingsSchema = z.object({
     selected_voice_index: z.number().int().min(0).default(0),
@@ -10,27 +10,12 @@ export type TtsSettings = z.infer<typeof TtsSettingsSchema>
 
 const STORAGE_KEY = "tts_settings"
 
-export const tts_settings = $state<TtsSettings>(TtsSettingsSchema.parse({}))
-const loading = $state({ value: true })
+const persisted = create_persisted_state(STORAGE_KEY, TtsSettingsSchema, TtsSettingsSchema.parse({}))
 
-$effect.root(() => {
-    $effect(() => {
-        if (browser) {
-            if (loading.value) {
-                loading.value = false
-                const data = localStorage.getItem(STORAGE_KEY)
-                if (data !== null) {
-                    try {
-                        Object.assign(tts_settings, TtsSettingsSchema.parse(JSON.parse(data)))
-                    } catch {
-                        localStorage.removeItem(STORAGE_KEY)
-                    }
-                }
-            } else {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(tts_settings))
-            }
-        }
+export const tts_settings = persisted.state
 
-        $state.snapshot(tts_settings)
-    })
-})
+export const is_loading = persisted.is_loading
+
+export function reset_tts_settings(): void {
+    persisted.reset()
+}

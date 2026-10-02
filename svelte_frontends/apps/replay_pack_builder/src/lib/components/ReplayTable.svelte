@@ -1,4 +1,5 @@
 <script lang="ts">
+import { format_date_timestamp } from "@repo/sc2-utils"
 import { type ParsedReplayFile, rename_file_according_to_template } from "$lib/replay_types"
 
 interface Props {
@@ -10,14 +11,6 @@ interface Props {
 let { replays, replay_name_pattern, on_remove }: Props = $props()
 
 let sorted_replays = $derived([...replays].sort((a, b) => b.played_timestamp - a.played_timestamp))
-
-function format_date(timestamp: number): string {
-    const date = new Date(timestamp)
-    const year = date.getFullYear()
-    const month = (date.getMonth() + 1).toString().padStart(2, "0")
-    const day = date.getDate().toString().padStart(2, "0")
-    return `${year}-${month}-${day}`
-}
 
 function format_duration(seconds: number): string {
     const mins = Math.floor(seconds / 60)
@@ -113,7 +106,9 @@ async function download_replay(replay: ParsedReplayFile) {
         <tbody>
             {#each sorted_replays as replay (replay.md5)}
                 <tr class="hover:bg-gray-50">
-                    <td class=" border-b border-gray-100 text-nowrap">{format_date(replay.played_timestamp)}</td>
+                    <td class=" border-b border-gray-100 text-nowrap">
+                        {format_date_timestamp(replay.played_timestamp)}
+                    </td>
                     <td class=" border-b border-gray-100 max-w-48 truncate">{replay.map_name}</td>
                     <td class=" border-b border-gray-100 font-semibold">{get_matchup(replay)}</td>
                     <td class=" border-b border-gray-100">{get_players(replay)}</td>

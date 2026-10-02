@@ -1,5 +1,5 @@
+import { create_persisted_state } from "@repo/persisted-state"
 import { z } from "zod"
-import { browser } from "$app/environment"
 
 export const ColumnSchema = z.object({
     key: z.string(),
@@ -30,27 +30,7 @@ export type ColumnSettings = z.infer<typeof ColumnSettingsSchema>
 
 const STORAGE_KEY = "column_settings"
 
-export const column_settings = $state<ColumnSettings>(ColumnSettingsSchema.parse({}))
-export const is_loading = $state({ value: true })
+const persisted = create_persisted_state(STORAGE_KEY, ColumnSettingsSchema, ColumnSettingsSchema.parse({}))
 
-$effect.root(() => {
-    $effect(() => {
-        if (browser) {
-            if (is_loading.value) {
-                is_loading.value = false
-                const data = localStorage.getItem(STORAGE_KEY)
-                if (data !== null) {
-                    try {
-                        Object.assign(column_settings, ColumnSettingsSchema.parse(JSON.parse(data)))
-                    } catch {
-                        localStorage.removeItem(STORAGE_KEY)
-                    }
-                }
-            } else {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(column_settings))
-            }
-        }
-
-        $state.snapshot(column_settings)
-    })
-})
+export const column_settings = persisted.state
+export const is_loading = persisted.is_loading

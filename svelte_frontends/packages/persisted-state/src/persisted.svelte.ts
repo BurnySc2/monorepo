@@ -6,31 +6,46 @@ export interface PersistedState<T> {
     reset: () => void
 }
 
-export function create_persisted_state<T>(key: string, schema: ZodType<T>, initial: T): PersistedState<T> {
-    const browser_initial = typeof window !== "undefined" && typeof localStorage !== "undefined"
-    let resolved_initial: T
-    if (browser_initial) {
-        try {
-            const raw = localStorage.getItem(key)
-            if (raw !== null) {
-                try {
-                    resolved_initial = schema.parse(JSON.parse(raw)) as T
-                } catch {
-                    localStorage.removeItem(key)
-                    resolved_initial = schema.parse(initial) as T
-                }
-            } else {
-                resolved_initial = schema.parse(initial) as T
-            }
-        } catch {
-            resolved_initial = schema.parse(initial) as T
-        }
-    } else {
-        resolved_initial = schema.parse(initial) as T
-    }
-    const state = $state(resolved_initial) as T
-    const is_loading = $state({ value: !browser_initial })
+function is_browser(): boolean {
+    return typeof window !== "undefined" && typeof localStorage !== "undefined"
+}
 
+function load_stored<T>(key: string, schema: ZodType<T>, initial: T): T {
+    const fallback = schema.parse(initial) as T
+    if (!is_browser()) {
+        return fallback
+    }
+    try {
+        const raw = localStorage.getItem(key)
+        if (raw === null) {
+            return fallback
+        }
+        return schema.parse(JSON.parse(raw)) as T
+    } catch {
+        try {
+            localStorage.removeItem(key)
+        } catch {
+            // WHY ignore cleanup errors: stale key must not block fallback
+        }
+        return fallback
+    }
+}
+
+function save_stored(key: string, value: unknown): void {
+    try {
+        localStorage.setItem(key, JSON.stringify(value))
+    } catch {
+        // WHY ignore quota errors: memory state stays usable without persistence
+    }
+}
+
+export function create_persisted_state<T>(key: string, schema: ZodType<T>, initial: T): PersistedState<T> {
+    const browser = is_browser()
+    const resolved_initial = load_stored(key, schema, initial)
+    const state = $state(resolved_initial) as T
+    const is_loading = $state({ value: !browser })
+
+    // WHY in-place merge: $state identity must stay stable for subscribers
     function apply_value(value: T): void {
         if (Array.isArray(state) && Array.isArray(value)) {
             const state_array = state as unknown[]
@@ -42,30 +57,22 @@ export function create_persisted_state<T>(key: string, schema: ZodType<T>, initi
     }
 
     function reset(): void {
+        // WHY in-place reset: T is object/array in practice, identity must persist
         const fresh = schema.parse(initial) as T
         apply_value(fresh)
     }
 
     $effect.root(() => {
         $effect(() => {
-            const browser = typeof window !== "undefined" && typeof localStorage !== "undefined"
             if (browser) {
                 if (is_loading.value) {
                     is_loading.value = false
-                    const data = localStorage.getItem(key)
-                    if (data !== null) {
-                        try {
-                            const parsed = schema.parse(JSON.parse(data)) as T
-                            apply_value(parsed)
-                        } catch {
-                            localStorage.removeItem(key)
-                        }
-                    }
+                    apply_value(load_stored(key, schema, initial))
                 } else {
-                    localStorage.setItem(key, JSON.stringify(state))
+                    save_stored(key, state)
                 }
             }
-
+            // WHY snapshot tracks reads: subscribes effect to nested state mutations
             $state.snapshot(state)
         })
     })

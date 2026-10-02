@@ -2,7 +2,10 @@
     "extends": ["@repo/typescript-config/svelte.json"],
     "compilerOptions": {
         "outDir": "./dist",
+        "declaration": true,
+        "declarationMap": true,
         "types": ["vite/client"]
     },
-    "include": ["./src/**/*.ts"]
+    "include": ["./src/**/*.ts"],
+    "exclude": ["**/*.test.ts", "./dist"]
 }

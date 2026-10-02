@@ -1,5 +1,5 @@
-import { get_api_base } from "./base"
-import { api_fetch } from "./client"
+import { get_api_base } from "./base.js"
+import { api_fetch } from "./client.js"
 
 export interface User {
     id: number

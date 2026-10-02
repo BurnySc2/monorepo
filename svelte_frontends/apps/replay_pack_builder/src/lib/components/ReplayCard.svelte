@@ -1,4 +1,5 @@
 <script lang="ts">
+import { format_date_timestamp } from "@repo/sc2-utils"
 import { type ParsedReplayFile } from "$lib/replay_types"
 
 interface Props {
@@ -8,14 +9,6 @@ interface Props {
 }
 
 let { replay, show_remove = true, on_remove }: Props = $props()
-
-function format_date(timestamp: number): string {
-    return new Date(timestamp).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-    })
-}
 
 function format_duration(seconds: number): string {
     const mins = Math.floor(seconds / 60)
@@ -62,7 +55,7 @@ let teams_display: { result: string; players: { name: string; race: string; mmr:
     <div class="card-meta">
         <span class="meta-item">
             <span class="meta-label">Date:</span>
-            {format_date(replay.played_timestamp)}
+            {format_date_timestamp(replay.played_timestamp)}
         </span>
         <span class="meta-item">
             <span class="meta-label">Duration:</span>

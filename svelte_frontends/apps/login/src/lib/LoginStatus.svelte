@@ -1,6 +1,4 @@
 <script lang="ts">
-import { Spinner } from "@repo/ui"
-import { onMount } from "svelte"
 import {
     check_login_status,
     type LoginState,
@@ -8,7 +6,9 @@ import {
     start_github_login,
     start_google_login,
     start_twitch_login,
-} from "./login"
+} from "@repo/api-client"
+import { Spinner } from "@repo/ui"
+import { onMount } from "svelte"
 
 let is_loading: LoginState["is_loading"] = $state(true)
 let is_logged_in: LoginState["is_logged_in"] = $state(false)
@@ -36,8 +36,15 @@ async function handle_logout() {
     }
 }
 
-onMount(() => {
-    refresh_login_status()
+onMount(async () => {
+    const error_code = new URLSearchParams(window.location.search).get("error")
+    await refresh_login_status()
+    // WHY show OAuth redirect failure: status refresh clears message, so apply param after refresh
+    if (error_code) {
+        error_message =
+            error_code === "oauth_failed" ? "OAuth login failed. Please try again." : "Login failed. Please try again."
+        window.history.replaceState({}, "", window.location.pathname)
+    }
 })
 </script>
 

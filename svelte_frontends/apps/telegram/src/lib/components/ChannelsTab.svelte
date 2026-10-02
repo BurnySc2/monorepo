@@ -1,4 +1,5 @@
 <script lang="ts">
+import { format_date_string } from "@repo/sc2-utils"
 import { onMount } from "svelte"
 import { fetch_channel_stats } from "$lib/api"
 import { temp_state } from "$lib/temporary-storage.svelte"
@@ -17,11 +18,6 @@ onMount(async () => {
         }
     }
 })
-
-function format_date(date_string: string): string {
-    const date = new Date(date_string)
-    return date.toISOString().split("T")[0]
-}
 </script>
 
 <div class="w-full">
@@ -53,7 +49,7 @@ function format_date(date_string: string): string {
                         <tr class="border-t border-gray-100 hover:bg-gray-50">
                             <td class="border border-gray-200 p-2">{channel.channel_title}</td>
                             <td class="whitespace-nowrap border border-gray-200 p-2">
-                                {format_date(channel.creation_date)}
+                                {format_date_string(channel.creation_date)}
                             </td>
                             <td class="border border-gray-200 p-2 text-right">{channel.participants}</td>
                             <td class="border border-gray-200 p-2 text-right">{channel.total_messages}</td>

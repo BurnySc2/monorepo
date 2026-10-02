@@ -1,5 +1,6 @@
 <script lang="ts">
-import { FileUpload, Spinner } from "@repo/ui"
+import { create_loading_state } from "@repo/sc2-utils"
+import { FileUpload, Spinner, toast } from "@repo/ui"
 import { onMount } from "svelte"
 import { parse_replay_file } from "$lib/api_client"
 import FilterPanel from "$lib/components/FilterPanel.svelte"
@@ -16,8 +17,7 @@ import {
 
 let parsed_files: ParsedReplayFile[] = $state([])
 let filtered_replays: ParsedReplayFile[] = $state([])
-let is_loading = $state(false)
-let is_processing = $state(false)
+let is_processing = $state(create_loading_state(false).is_loading)
 let filter_settings: FilterSettings = $state(get_default_filter_settings())
 let replay_name_pattern: string = $state(DEFAULT_REPLAY_NAME_PATTERN)
 let preview_name: string = $state("")
@@ -144,9 +144,10 @@ async function download_zip() {
         a.download = "replay_pack.zip"
         a.click()
         URL.revokeObjectURL(url)
+        toast.success("Replay pack downloaded")
     } catch (error) {
         console.error("Error creating zip:", error)
-        alert(`Error creating zip: ${error}`)
+        toast.error(`Error creating zip: ${error}`)
     } finally {
         is_processing = false
     }

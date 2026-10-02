@@ -1,14 +1,28 @@
+import type { VoiceInfo } from "@repo/api-types"
 import * as fc from "fast-check"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
     build_overlay_url,
     calculate_reconnect_delay,
+    clamp_voice_index,
     clamp_volume_percent,
     clamp_volume_ratio,
     copy_to_clipboard,
+    get_preview_text,
 } from "./utils"
 
 const FC_SEED = Number(process.env.FC_SEED ?? 42)
+
+function create_voice(overrides: Partial<VoiceInfo> = {}): VoiceInfo {
+    return {
+        engine: "edge",
+        internal_name: "en-US-AvaNeural",
+        label: "Ava",
+        gender: "Female",
+        locale: "en-US",
+        ...overrides,
+    }
+}
 
 describe("build_overlay_url", () => {
     it("constructs URL with channel and volume", () => {
@@ -154,6 +168,84 @@ describe("overlay url encode properties", () => {
                     expect(decodeURIComponent(channel_part)).toBe(trimmed)
                     const volume_part = Number(without_prefix.split("?volume=")[1])
                     expect(volume_part).toBe(clamp_volume_percent(volume))
+                },
+            ),
+            { seed: FC_SEED, numRuns: 100 },
+        )
+    })
+})
+
+describe("clamp_voice_index", () => {
+    it.each([
+        [99, 1, 0],
+        [1, 1, 0],
+        [0, 1, 0],
+        [0, 0, 0],
+        [5, 0, 0],
+        [-1, 3, 0],
+    ])("clamps index %i with count %i to %i", (index, count, want) => {
+        expect(clamp_voice_index(index, count)).toBe(want)
+    })
+
+    it("passes through valid index", () => {
+        expect(clamp_voice_index(1, 3)).toBe(1)
+        expect(clamp_voice_index(2, 3)).toBe(2)
+    })
+
+    it("clamps B1 OOB: stored index 99 with single voice to 0", () => {
+        expect(clamp_voice_index(99, 1)).toBe(0)
+    })
+})
+
+describe("get_preview_text", () => {
+    it("returns empty string for empty voices without throwing", () => {
+        expect(get_preview_text([], 0, "hello")).toBe("")
+        expect(get_preview_text([], 99, "hello")).toBe("")
+    })
+
+    it("returns empty string for OOB index without throwing (B1)", () => {
+        const voices = [create_voice()]
+        expect(get_preview_text(voices, 99, "hello")).toBe("")
+    })
+
+    it("formats preview for valid selection", () => {
+        const voices = [create_voice({ engine: "edge", label: "Ava Voice" })]
+        expect(get_preview_text(voices, 0, "hello")).toBe("edge_ava_voice: hello")
+    })
+
+    it("load_voices clamp + preview integration: OOB stored index resolves safely", () => {
+        const voices = [create_voice()]
+        const stored_index = 99
+        const clamped = clamp_voice_index(stored_index, voices.length)
+        expect(clamped).toBe(0)
+        expect(() => get_preview_text(voices, stored_index, "hello")).not.toThrow()
+        expect(get_preview_text(voices, stored_index, "hello")).toBe("")
+        expect(get_preview_text(voices, clamped, "hello")).toContain("hello")
+    })
+})
+
+describe("voice selection properties", () => {
+    it("clamped index is always in range or zero and preview never throws", () => {
+        fc.assert(
+            fc.property(
+                fc.array(fc.string({ maxLength: 20 }), { maxLength: 5 }),
+                fc.integer({ min: -10, max: 20 }),
+                fc.string({ maxLength: 50 }),
+                (labels, index, user_text) => {
+                    const voices = labels.map((label) => create_voice({ label: label || "Voice" }))
+                    const clamped = clamp_voice_index(index, voices.length)
+                    expect(clamped).toBeGreaterThanOrEqual(0)
+                    if (voices.length > 0 && index >= 0 && index < voices.length) {
+                        expect(clamped).toBe(index)
+                    } else {
+                        expect(clamped).toBe(0)
+                    }
+                    expect(() => get_preview_text(voices, index, user_text)).not.toThrow()
+                    const preview = get_preview_text(voices, index, user_text)
+                    expect(typeof preview).toBe("string")
+                    if (voices.length === 0 || index < 0 || index >= voices.length) {
+                        expect(preview).toBe("")
+                    }
                 },
             ),
             { seed: FC_SEED, numRuns: 100 },

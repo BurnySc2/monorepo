@@ -1,4 +1,5 @@
 <script lang="ts">
+import { create_loading_state } from "@repo/sc2-utils"
 import { onMount } from "svelte"
 import { fetch_times, fetch_tracks } from "$lib/api_client"
 import BestTimeChart from "$lib/components/BestTimeChart.svelte"
@@ -9,7 +10,7 @@ let selected_track_id: number | undefined = $state(undefined)
 let best_times: BestTimeEntry[] = $state([])
 let date_range: DateRange = $state("all")
 let hovered_date: Date | null = $state(null)
-let is_loading = $state(false)
+let is_loading = $state(create_loading_state(false).is_loading)
 
 const DATE_RANGE_PRESETS: { label: string; value: DateRange }[] = [
     { label: "7 days", value: "7d" },
@@ -22,14 +23,26 @@ const DATE_RANGE_PRESETS: { label: string; value: DateRange }[] = [
 function get_start_date(range: DateRange): string | undefined {
     const now = new Date()
     switch (range) {
-        case "7d":
-            return new Date(now.setDate(now.getDate() - 7)).toISOString()
-        case "30d":
-            return new Date(now.setDate(now.getDate() - 30)).toISOString()
-        case "90d":
-            return new Date(now.setDate(now.getDate() - 90)).toISOString()
-        case "1y":
-            return new Date(now.setFullYear(now.getFullYear() - 1)).toISOString()
+        case "7d": {
+            const start = new Date(now)
+            start.setDate(start.getDate() - 7)
+            return start.toISOString()
+        }
+        case "30d": {
+            const start = new Date(now)
+            start.setDate(start.getDate() - 30)
+            return start.toISOString()
+        }
+        case "90d": {
+            const start = new Date(now)
+            start.setDate(start.getDate() - 90)
+            return start.toISOString()
+        }
+        case "1y": {
+            const start = new Date(now)
+            start.setFullYear(start.getFullYear() - 1)
+            return start.toISOString()
+        }
         case "all":
             return undefined
     }
@@ -159,12 +172,6 @@ let series: DriverSeries[] = $derived(group_by_driver(best_times))
 
 onMount(() => {
     load_tracks()
-})
-
-$effect(() => {
-    if (selected_track_id !== undefined) {
-        load_times()
-    }
 })
 
 $effect(() => {

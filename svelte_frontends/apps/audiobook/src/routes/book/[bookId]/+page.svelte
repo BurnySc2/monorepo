@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { BookWithChapters, VoiceInfo } from "@repo/api-types"
-import { Spinner } from "@repo/ui"
+import { Spinner, toast } from "@repo/ui"
 import JSZip from "jszip"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
@@ -18,6 +18,10 @@ let is_editing_title = $state(false)
 let is_editing_author = $state(false)
 let custom_book_title = $state("")
 let custom_book_author = $state("")
+let confirm_delete_audio_armed = $state(false)
+let confirm_delete_book_armed = $state(false)
+let delete_audio_reset_timer: ReturnType<typeof setTimeout> | null = null
+let delete_book_reset_timer: ReturnType<typeof setTimeout> | null = null
 
 // Audio settings
 import { load_audio_settings, save_audio_settings } from "$lib/audio_settings.svelte"
@@ -172,7 +176,7 @@ async function handle_download_book() {
 
     const chapters_with_audio = book_data.chapters.filter((c) => c.has_audio && c.minio_presigned_url)
     if (chapters_with_audio.length === 0) {
-        alert("No chapters with audio to download")
+        toast.error("No chapters with audio to download")
         return
     }
 
@@ -215,7 +219,7 @@ async function handle_download_book() {
         is_downloading = false
     } catch (e) {
         console.error("Failed to download book:", e)
-        alert("Failed to download book")
+        toast.error("Failed to download book")
         is_downloading = false
     }
 }
@@ -235,28 +239,57 @@ function reset_chapters_audio(chapter_ids: number[]) {
 }
 
 async function handle_delete_all_audio() {
-    if (!confirm("Are you sure you want to delete all audio for this book?")) {
+    if (!confirm_delete_audio_armed) {
+        confirm_delete_audio_armed = true
+        if (delete_audio_reset_timer) {
+            clearTimeout(delete_audio_reset_timer)
+        }
+        delete_audio_reset_timer = setTimeout(() => {
+            confirm_delete_audio_armed = false
+        }, 3000)
         return
     }
+    if (delete_audio_reset_timer) {
+        clearTimeout(delete_audio_reset_timer)
+        delete_audio_reset_timer = null
+    }
+    confirm_delete_audio_armed = false
     try {
         if (book_data) {
             reset_chapters_audio(book_data.chapters.map((c) => c.chapter_number))
         }
         await api.delete_all_audio(book_id)
+        toast.success("All audio deleted")
     } catch (e) {
         console.error("Failed to delete all audio:", e)
+        toast.error("Failed to delete all audio")
     }
 }
 
 async function handle_delete_book() {
-    if (!confirm("Are you sure you want to delete this book? This cannot be undone.")) {
+    if (!confirm_delete_book_armed) {
+        confirm_delete_book_armed = true
+        if (delete_book_reset_timer) {
+            clearTimeout(delete_book_reset_timer)
+        }
+        delete_book_reset_timer = setTimeout(() => {
+            confirm_delete_book_armed = false
+        }, 3000)
         return
     }
+    if (delete_book_reset_timer) {
+        clearTimeout(delete_book_reset_timer)
+        delete_book_reset_timer = null
+    }
+    confirm_delete_book_armed = false
     try {
         await api.delete_book(book_id)
+        toast.success("Book deleted")
+        await new Promise((resolve) => setTimeout(resolve, 800))
         window.location.href = "/"
     } catch (e) {
         console.error("Failed to delete book:", e)
+        toast.error("Failed to delete book")
     }
 }
 
@@ -376,15 +409,20 @@ $effect(() => {
                     class="flex-1 btn btn-danger"
                     onclick={handle_delete_all_audio}
                     disabled={any_chapter_has_audio_or_queued}
-                    title={any_chapter_has_audio_or_queued ? "Delete all audio" : "No chapters have audio"}
+                    title={confirm_delete_audio_armed
+                        ? "Click again to confirm delete all audio"
+                        : any_chapter_has_audio_or_queued
+                          ? "Delete all audio"
+                          : "No chapters have audio"}
                 >
-                    Delete all audio
+                    {confirm_delete_audio_armed ? "Click again to confirm" : "Delete all audio"}
                 </button>
                 <button
                     class="flex-1 btn btn-danger"
                     onclick={handle_delete_book}
+                    title={confirm_delete_book_armed ? "Click again to confirm delete book" : "Delete book"}
                 >
-                    Delete book
+                    {confirm_delete_book_armed ? "Click again to confirm" : "Delete book"}
                 </button>
             </div>
         </div>

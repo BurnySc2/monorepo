@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Spinner } from "@repo/ui"
+import { Spinner, toast } from "@repo/ui"
 
 interface Props {
     on_upload: (file: File) => Promise<void>
@@ -42,7 +42,7 @@ async function handle_drop(event: DragEvent) {
 
     const file = files[0]
     if (!file.name.endsWith(".epub")) {
-        alert("Please drop an .epub file")
+        toast.error("Please drop an .epub file")
         return
     }
 

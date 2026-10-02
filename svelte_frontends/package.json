@@ -9,7 +9,7 @@
         "lint:fix": "biome check . --write --error-on-warnings",
         "check": "turbo run check",
         "check-types": "turbo run check-types",
-        "precommit": "npm run build && npm run lint && npm run check",
+        "precommit": "npm run build && npm run lint && npm run check && npm run check-types",
         "prepush": "npm run precommit && npm run test:unit && npm run test:integration",
         "test": "turbo run test",
         "test:unit": "turbo run test:unit",

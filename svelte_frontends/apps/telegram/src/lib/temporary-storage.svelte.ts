@@ -1,4 +1,5 @@
 import type { components } from "@repo/api-types"
+import { create_loading_state } from "@repo/sc2-utils"
 import { z } from "zod"
 
 type ChannelStatsItem = components["schemas"]["ChannelStatsItem"]
@@ -32,17 +33,17 @@ export type TTempState = z.infer<typeof TempStateSchema>
 export const temp_state: TTempState = $state({
     channels: {
         stats: null,
-        is_loading: false,
+        ...create_loading_state(false),
         error: null,
     },
     messages: {
         results: null,
-        is_loading: false,
+        ...create_loading_state(false),
         error: null,
     },
     files: {
         list: null,
-        is_loading: false,
+        ...create_loading_state(false),
         error: null,
     },
 })

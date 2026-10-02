@@ -1,0 +1,5 @@
+export { default as IconDelete } from "./icons/IconDelete.svelte"
+export { default as IconDownload } from "./icons/IconDownload.svelte"
+export { default as IconPlay } from "./icons/IconPlay.svelte"
+export { default as IconQueue } from "./icons/IconQueue.svelte"
+export { default as IconSpinner } from "./icons/IconSpinner.svelte"

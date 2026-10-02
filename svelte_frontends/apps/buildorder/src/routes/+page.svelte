@@ -13,7 +13,7 @@ import type {
     IUiData,
 } from "@repo/sc2-utils"
 import {
-    formatTime,
+    format_time,
     gameResponseRaces,
     getCurrentScene,
     getSceneChange,
@@ -212,7 +212,7 @@ $effect(() => {
 
             <!-- Current time -->
             <div class="text-center mb-8">
-                <span class="text-5xl font-mono font-bold text-yellow-400"> {formatTime(game_time)} </span>
+                <span class="text-5xl font-mono font-bold text-yellow-400"> {format_time(game_time)} </span>
             </div>
 
             {#if end_of_build_order_reached}
@@ -225,14 +225,14 @@ $effect(() => {
                     <div class="bg-green-900/50 border-2 border-green-500 rounded-xl p-6">
                         <h2 class="text-sm uppercase tracking-wider text-green-400 mb-2">Current</h2>
                         <p class="text-3xl font-bold mb-2">{current_item.text}</p>
-                        <p class="text-xl text-gray-400">{formatTime(current_item.time)}</p>
+                        <p class="text-xl text-gray-400">{format_time(current_item.time)}</p>
                     </div>
 
                     <!-- Next item -->
                     <div class="bg-gray-700 rounded-xl p-6">
                         <h2 class="text-sm uppercase tracking-wider text-gray-400 mb-2">Next</h2>
                         <p class="text-3xl font-bold mb-2">{next_item.text}</p>
-                        <p class="text-xl text-gray-400">{formatTime(next_item.time)}</p>
+                        <p class="text-xl text-gray-400">{format_time(next_item.time)}</p>
                     </div>
                 </div>
             {:else}

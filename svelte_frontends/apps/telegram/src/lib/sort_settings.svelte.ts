@@ -1,6 +1,6 @@
 import type { components } from "@repo/api-types"
+import { create_persisted_state } from "@repo/persisted-state"
 import { z } from "zod"
-import { browser } from "$app/environment"
 
 type SortItem = components["schemas"]["SortItem"]
 
@@ -16,31 +16,11 @@ export type SortState = z.infer<typeof SortStateSchema>
 
 const STORAGE_KEY = "sort_settings"
 
-export const sort_state: SortState = $state<SortState>(SortStateSchema.parse([]))
+const persisted = create_persisted_state(STORAGE_KEY, SortStateSchema, SortStateSchema.parse([]))
 
-export const is_loading = $state({ value: true })
+export const sort_state: SortState = persisted.state
 
-$effect.root(() => {
-    $effect(() => {
-        if (browser) {
-            if (is_loading.value) {
-                is_loading.value = false
-                const data = localStorage.getItem(STORAGE_KEY)
-                if (data !== null) {
-                    try {
-                        const parsed = SortStateSchema.parse(JSON.parse(data))
-                        sort_state.splice(0, sort_state.length, ...parsed)
-                    } catch {
-                        localStorage.removeItem(STORAGE_KEY)
-                    }
-                }
-            } else {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(sort_state))
-            }
-        }
-        $state.snapshot(sort_state)
-    })
-})
+export const is_loading = persisted.is_loading
 
 export function toggle_sort(column_key: string): void {
     const existing_index = sort_state.findIndex((e) => e.column_key === column_key)
@@ -68,7 +48,7 @@ export function get_sort_direction(column_key: string): "asc" | "desc" | null {
 }
 
 export function clear_sort(): void {
-    sort_state.splice(0, sort_state.length)
+    persisted.reset()
 }
 
 export function get_sort_tooltip(column_key: string): string {

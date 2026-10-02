@@ -1,3 +1,7 @@
+export function is_safe_http_url(url: unknown): url is string {
+    return typeof url === "string" && /^https?:\/\//.test(url)
+}
+
 export function format_file_size(bytes: number): string {
     if (bytes === 0) {
         return "0 B"

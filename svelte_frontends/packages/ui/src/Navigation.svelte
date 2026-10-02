@@ -1,4 +1,5 @@
 <script lang="ts">
+import { BASE_DOMAIN } from "@repo/sc2-utils"
 import { DEV } from "esm-env"
 
 interface App {
@@ -15,8 +16,6 @@ const APPS: App[] = [
     { name: "Replay Pack Builder", subdomain: "replaypack", devPort: 5175 },
     { name: "Replay Comparer", subdomain: "replaycomparer", devPort: 5181 },
 ]
-
-const BASE_DOMAIN = "burnysc2.xyz"
 
 interface Props {
     currentApp?: string
