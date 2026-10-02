@@ -16,9 +16,10 @@ svelte_frontends/
 │   ├── replay_pack_builder/
 │   ├── telegram/
 │   └── tts/
-├── packages/               # 5 shared packages
+├── packages/               # 6 shared packages
 │   ├── api-client/
 │   ├── api-types/
+│   ├── persisted-state/
 │   ├── sc2-utils/
 │   ├── typescript-config/
 │   └── ui/
@@ -68,6 +69,7 @@ svelte_frontends/
 | `@repo/sc2-utils` | StarCraft 2 utilities |
 | `@repo/api-types` | Generated API types (from OpenAPI at localhost:8000) |
 | `@repo/api-client` | Shared API base + fetch wrapper (`get_api_base`, `api_fetch`) |
+| `@repo/persisted-state` | Persisted Svelte state with Zod validation |
 | `@repo/typescript-config` | Shared TypeScript configuration |
 
 ---
@@ -233,6 +235,7 @@ npm run test:watch
 |---------|-----------|-------|
 | `@repo/api-client` | Yes | `vitest run` with `client.test.ts`, `base.test.ts` |
 | `@repo/sc2-utils` | Yes (`vitest.config.ts` scoped to `src/**/*.test.ts`, excludes `dist/`, `.svelte-kit/`) | `vitest run` with `utils.test.ts` |
+| `@repo/persisted-state` | Yes (`vitest.config.ts` scoped to `src/**/*.test.ts`, excludes `dist/`, `.svelte-kit/`) | `vitest run` with `persisted.test.ts` |
 
 ---
 
@@ -419,6 +422,8 @@ interface SearchFilters {
     reactions_min: number;
 }
 ```
+
+Wire-format interfaces (`IGameData`, `INephestResponse`, SC2/nephest JSON) keep upstream camelCase; everything else snake_case.
 
 ### Constants
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { get_api_base } from "@repo/api-client"
-import { IconDelete, IconDownload, IconPlay } from "@repo/ui"
+import { IconDelete, IconDownload, IconPlay, IconQueue } from "@repo/ui"
 import { fetch_downloads } from "$lib/api"
 import { file_column_settings } from "$lib/file_column_settings.svelte"
 import { format_duration, format_file_size, is_safe_http_url } from "$lib/format"
@@ -43,11 +43,12 @@ async function load_downloads() {
         <div class="flex flex-col items-center justify-center gap-4 p-8">
             <div class="text-red-600">{temp_state.files.error}</div>
             <button
-                class="rounded-xl border-2 border-black bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                class="inline-flex items-center gap-2 rounded-xl border-2 border-black bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
                 type="button"
                 onclick={load_downloads}
             >
-                Retry
+                <IconQueue class="h-5 w-5" />
+                <span>Retry</span>
             </button>
         </div>
     {:else if temp_state.files.list === null || temp_state.files.list.length === 0}
@@ -69,27 +70,34 @@ async function load_downloads() {
                             <td>
                                 <div class="flex">
                                     <button
-                                        class="w-8 cursor-pointer rounded-xl hover:bg-green-500"
+                                        class="inline-flex w-auto cursor-pointer items-center gap-2 rounded-xl px-2 hover:bg-green-500"
                                         type="button"
                                         onclick={() => onview(file.message_id.toString())}
                                         title="View"
+                                        aria-label="View"
                                     >
-                                        <IconPlay class="h-8 w-8" />
+                                        <IconPlay class="h-5 w-5" />
+                                        <span class="text-xs">View</span>
                                     </button>
                                     <a
-                                        class="w-8 rounded-xl hover:bg-green-500"
+                                        class="inline-flex w-auto items-center gap-2 rounded-xl px-2 hover:bg-green-500"
                                         href={`${get_api_base()}/telegram-browser/download-file/${encodeURIComponent(String(file.message_id))}`}
                                         title="Download"
+                                        aria-label="Download"
+                                        download
                                     >
-                                        <IconDownload class="h-8 w-8" />
+                                        <IconDownload class="h-5 w-5" />
+                                        <span class="text-xs">Download</span>
                                     </a>
                                     <button
-                                        class="w-8 cursor-no-drop rounded-xl hover:bg-red-500"
+                                        class="inline-flex w-auto cursor-no-drop items-center gap-2 rounded-xl px-2 hover:bg-red-500"
                                         type="button"
                                         onclick={() => ondelete(file.message_id.toString())}
                                         title="Delete"
+                                        aria-label="Delete"
                                     >
-                                        <IconDelete class="h-8 w-8" />
+                                        <IconDelete class="h-5 w-5" />
+                                        <span class="text-xs">Delete</span>
                                     </button>
                                 </div>
                             </td>

@@ -19,12 +19,13 @@ flowchart TB
             login[login]
         end
 
-        subgraph packages["Packages (5)"]
+        subgraph packages["Packages (6)"]
             ui[ui]
             sc2_utils[sc2-utils]
             typescript_config[typescript-config]
             api_client[api-client]
             api_types[api-types]
+            persisted_state[persisted-state]
         end
     end
 
@@ -34,13 +35,16 @@ flowchart TB
     audiobook --> ui
     audiobook --> api_client
     audiobook --> api_types
+    audiobook --> persisted_state
     login --> ui
     login --> api_client
     tts --> api_client
     tts --> api_types
+    tts --> persisted_state
     telegram --> ui
     telegram --> api_client
     telegram --> api_types
+    telegram --> persisted_state
     raceroom --> ui
     raceroom --> api_client
     replay_comparer --> api_client

@@ -47,12 +47,14 @@ async function handle_queue(id: string) {
                         Actions
                         {#if sort_state.length > 0}
                             <button
-                                class="ml-1 rounded px-1 text-xs text-gray-500 hover:bg-red-100 hover:text-red-600"
+                                class="ml-1 inline-flex w-auto items-center gap-2 rounded px-2 text-xs text-gray-500 hover:bg-red-100 hover:text-red-600"
                                 type="button"
                                 onclick={() => clear_sort()}
                                 title="Clear all sorting"
+                                aria-label="Clear all sorting"
                             >
-                                ✕
+                                <IconDelete class="h-5 w-5" />
+                                <span class="text-xs">Clear sort</span>
                             </button>
                         {/if}
                     </div>
@@ -62,16 +64,24 @@ async function handle_queue(id: string) {
                     {@const priority = get_sort_priority(col.key)}
                     {@const header_class = direction ? "bg-blue-100" : "bg-gray-100"}
                     <th
-                        class="whitespace-nowrap cursor-pointer select-none border border-gray-200 p-2 {header_class}"
-                        onclick={() => toggle_sort(col.key)}
+                        class="whitespace-nowrap select-none border border-gray-200 p-2 {header_class}"
+                        aria-sort={direction === "asc" ? "ascending" : direction === "desc" ? "descending" : "none"}
                         title={get_sort_tooltip(col.key)}
                     >
-                        {col.name}
-                        {#if direction !== null}
-                            <span class="ml-1 text-xs font-bold text-blue-600">
-                                {direction === "asc" ? "▲" : "▼"}{priority}
-                            </span>
-                        {/if}
+                        <button
+                            type="button"
+                            class="inline-flex cursor-pointer items-center gap-1"
+                            onclick={() => toggle_sort(col.key)}
+                            aria-label={get_sort_tooltip(col.key)}
+                            title={get_sort_tooltip(col.key)}
+                        >
+                            {col.name}
+                            {#if direction !== null}
+                                <span class="ml-1 text-xs font-bold text-blue-600">
+                                    {direction === "asc" ? "▲" : "▼"}{priority}
+                                </span>
+                            {/if}
+                        </button>
                     </th>
                 {/each}
             </tr>
@@ -99,48 +109,59 @@ async function handle_queue(id: string) {
                         >
                             {#if row.metadata.status === "HasFile" && row.metadata.download_status === null}
                                 <button
-                                    class="w-8 cursor-copy rounded-lg transition-colors hover:bg-yellow-100"
+                                    class="inline-flex w-auto cursor-copy items-center gap-2 rounded-lg px-2 transition-colors hover:bg-yellow-100"
                                     type="button"
                                     onclick={() => handle_queue(row.metadata.id)}
                                     title="Queue file"
+                                    aria-label="Queue file"
                                 >
-                                    <IconQueue class="h-8 w-8" />
+                                    <IconQueue class="h-5 w-5" />
+                                    <span class="text-xs">Queue</span>
                                 </button>
                             {:else if ["Queued", "Downloading", "Failed", "GiveUp"].includes(
                                 row.metadata.download_status as string,
                             )}
                                 <IconSpinner class="h-8 w-8 animate-spin" />
                                 <button
-                                    class="w-8 cursor-no-drop rounded-lg transition-colors hover:bg-red-100"
+                                    class="inline-flex w-auto cursor-no-drop items-center gap-2 rounded-lg px-2 transition-colors hover:bg-red-100"
                                     type="button"
                                     onclick={() => ondelete(row.metadata.id)}
                                     title="Delete"
+                                    aria-label="Delete"
                                 >
-                                    <IconDelete class="h-8 w-8" />
+                                    <IconDelete class="h-5 w-5" />
+                                    <span class="text-xs">Delete</span>
                                 </button>
                             {:else if row.metadata.download_status === "Downloaded"}
                                 <button
-                                    class="w-8 cursor-pointer rounded-lg transition-colors hover:bg-green-100"
+                                    class="inline-flex w-auto cursor-pointer items-center gap-2 rounded-lg px-2 transition-colors hover:bg-green-100"
                                     type="button"
                                     onclick={() => onview(row.metadata.id)}
                                     title="View"
+                                    aria-label="View"
                                 >
-                                    <IconPlay class="h-8 w-8" />
+                                    <IconPlay class="h-5 w-5" />
+                                    <span class="text-xs">View</span>
                                 </button>
                                 <a
-                                    class="w-8 rounded-lg transition-colors hover:bg-green-100"
+                                    class="inline-flex w-auto items-center gap-2 rounded-lg px-2 transition-colors hover:bg-green-100"
                                     href={`${get_api_base()}/telegram-browser/download-file/${encodeURIComponent(String(row.metadata.id))}`}
                                     title="Download"
+                                    aria-label="Download"
+                                    download
                                 >
-                                    <IconDownload class="h-8 w-8" />
+                                    <IconDownload class="h-5 w-5" />
+                                    <span class="text-xs">Download</span>
                                 </a>
                                 <button
-                                    class="w-8 cursor-no-drop rounded-lg transition-colors hover:bg-red-100"
+                                    class="inline-flex w-auto cursor-no-drop items-center gap-2 rounded-lg px-2 transition-colors hover:bg-red-100"
                                     type="button"
                                     onclick={() => ondelete(row.metadata.id)}
                                     title="Delete"
+                                    aria-label="Delete"
                                 >
-                                    <IconDelete class="h-8 w-8" />
+                                    <IconDelete class="h-5 w-5" />
+                                    <span class="text-xs">Delete</span>
                                 </button>
                             {/if}
                         </div>

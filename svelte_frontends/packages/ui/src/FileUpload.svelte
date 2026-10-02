@@ -1,4 +1,7 @@
 <script lang="ts">
+import IconSpinner from "./icons/IconSpinner.svelte"
+import IconUpload from "./icons/IconUpload.svelte"
+
 interface Props {
     label: string
     on_upload: (files: FileList) => void
@@ -79,9 +82,18 @@ function handle_file_change(e: Event) {
     onclick={handle_click}
     onkeydown={(e) => e.key === "Enter" && handle_click()}
 >
-    <div class="drop-zone-icon">{disabled ? "⏳" : "📁"}</div>
-    <p class="drop-zone-text">{label}</p>
-    <p class="drop-zone-hint">or click to browse</p>
+    <div class="drop-zone-icon inline-flex items-center justify-center gap-2">
+        {#if disabled}
+            <IconSpinner class="h-6 w-6 animate-spin" />
+            <span class="text-base">Loading…</span>
+        {:else}
+            <IconUpload class="h-6 w-6" />
+            <span class="text-base">{label}</span>
+        {/if}
+    </div>
+    {#if !disabled}
+        <p class="drop-zone-hint">or click to browse</p>
+    {/if}
     <input
         bind:this={file_input}
         type="file"

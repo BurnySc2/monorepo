@@ -1,4 +1,6 @@
 <script lang="ts">
+import { IconUpload } from "@repo/ui"
+
 interface Props {
     label?: string
     on_upload: (files: FileList) => void
@@ -53,9 +55,10 @@ async function collect_sc2replay_files(dirHandle: FileSystemDirectoryHandle): Pr
 </script>
 
 <button
-    class="btn-secondary"
+    class="btn-secondary inline-flex items-center gap-2"
     onclick={handle_click}
     {disabled}
 >
-    📁 {label}
+    <IconUpload size={16} />
+    <span>{label}</span>
 </button>

@@ -14,7 +14,8 @@ const source = readFileSync(join(current_dir, "BookCard.svelte"), "utf-8")
 describe("BookCard delete affordance (static)", () => {
     it("renders IconDelete", () => {
         expect(source).toContain("IconDelete")
-        expect(source).toContain('import { IconDelete } from "@repo/ui"')
+        expect(source).toContain("@repo/ui")
+        expect(source).toMatch(/import\s*\{[^}]*IconDelete[^}]*\}\s*from\s*["']@repo\/ui["']/)
     })
 
     it("places delete button outside the link", () => {
@@ -32,5 +33,19 @@ describe("BookCard delete affordance (static)", () => {
 
     it("exposes delete accessible label", () => {
         expect(source).toContain("Delete book")
+    })
+
+    it("shows Delete text label in idle state", () => {
+        expect(source).toContain("<span>Delete</span>")
+    })
+
+    it("shows confirm prompt with icon when armed", () => {
+        expect(source).toContain("Click again to confirm")
+        expect(source).toContain("IconDelete")
+    })
+
+    it("delete button uses inline-flex layout with gap", () => {
+        expect(source).toContain("inline-flex")
+        expect(source).toContain("gap-2")
     })
 })
