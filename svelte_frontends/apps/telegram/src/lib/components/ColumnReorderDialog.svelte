@@ -143,7 +143,6 @@ function handle_keydown(event: KeyboardEvent) {
                         <div
                             id="active-columns"
                             class="droppable-container mx-2 flex h-64 w-48 flex-col gap-2 overflow-auto border border-black p-2"
-                            role="listbox"
                             ondragover={(e) => e.preventDefault()}
                             ondrop={(e) => handle_drop_on_empty(e, "active")}
                         >
@@ -152,8 +151,6 @@ function handle_keydown(event: KeyboardEvent) {
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"
                                     draggable="true"
-                                    role="option"
-                                    tabindex="0"
                                     ondragstart={() => handle_drag_start(column, "active")}
                                     ondragend={handle_drag_end}
                                     ondragover={(e) => e.preventDefault()}
@@ -170,7 +167,6 @@ function handle_keydown(event: KeyboardEvent) {
                         <div
                             id="disabled-columns"
                             class="droppable-container mx-2 flex h-64 w-48 flex-col gap-2 overflow-auto border border-black p-2"
-                            role="listbox"
                             ondragover={(e) => e.preventDefault()}
                             ondrop={(e) => handle_drop_on_empty(e, "disabled")}
                         >
@@ -179,8 +175,6 @@ function handle_keydown(event: KeyboardEvent) {
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"
                                     draggable="true"
-                                    role="option"
-                                    tabindex="0"
                                     ondragstart={() => handle_drag_start(column, "disabled")}
                                     ondragend={handle_drag_end}
                                     ondragover={(e) => e.preventDefault()}
