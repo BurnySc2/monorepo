@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { ApiError, api_fetch, get_api_error_status } from "./client"
+import { ApiError, api_fetch, get_api_error_status } from "./client.js"
 
 const original_fetch = globalThis.fetch
 const mock_fetch = vi.fn()

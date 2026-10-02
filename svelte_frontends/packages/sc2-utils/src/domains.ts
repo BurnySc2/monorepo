@@ -10,21 +10,21 @@ const envDbBuildOrders = "sc2buildorders"
 export const sc2AccountsDb = envDbAccounts
 export const sc2BuildOrdersDb = envDbBuildOrders
 
-export const gameResponseRaces: Record<string, string> = {
+export const game_response_races: Record<string, string> = {
     Terr: "Terran",
     Prot: "Protoss",
     Zerg: "Zerg",
     random: "Random",
 }
 
-export const toNephestRace: Record<string, string> = {
+export const to_nephest_race: Record<string, string> = {
     Terran: "terranGamesPlayed",
     Protoss: "protossGamesPlayed",
     Zerg: "zergGamesPlayed",
     random: "randomGamesPlayed",
 }
 
-export const toNephestServer: Record<string, string> = {
+export const to_nephest_server: Record<string, string> = {
     Europe: "EU",
 }
 

@@ -12,7 +12,7 @@ export * from "./async.js"
 export * from "./dates.js"
 export * from "./domains.js"
 
-export const resetInfo = (): IMatchInfo => {
+export const reset_info = (): IMatchInfo => {
     return {
         myName: null,
         myRace: null,
@@ -26,14 +26,14 @@ export const resetInfo = (): IMatchInfo => {
     }
 }
 
-export const validateGameFromGameData = (gameData: IGameData): IValidGame => {
+export const validate_game_from_game_data = (gameData: IGameData): IValidGame => {
     if (gameData.players.length !== 2) {
         return "other"
     }
     return "1v1"
 }
 
-export const getCurrentScene = (gameData: IGameData, uiData: IUiData): ISceneNames => {
+export const get_current_scene = (gameData: IGameData, uiData: IUiData): ISceneNames => {
     if (uiData.activeScreens.length === 0) {
         if (gameData.isReplay) {
             return "replay"
@@ -47,7 +47,11 @@ export const getCurrentScene = (gameData: IGameData, uiData: IUiData): ISceneNam
     return "unknown"
 }
 
-export const getSceneChange = (oldScene: ISceneNames, newScene: ISceneNames, containsPlayer: boolean): ISceneChange => {
+export const get_scene_change = (
+    oldScene: ISceneNames,
+    newScene: ISceneNames,
+    containsPlayer: boolean,
+): ISceneChange => {
     if (oldScene === newScene) {
         return "noChange"
     }
@@ -83,6 +87,6 @@ export const getSceneChange = (oldScene: ISceneNames, newScene: ISceneNames, con
 }
 
 // Type guard for NephestResponse
-export const isNephestResponse = (data: unknown): data is INephestResponse => {
+export const is_nephest_response = (data: unknown): data is INephestResponse => {
     return typeof data === "object" && data !== null && "currentStats" in data && "members" in data
 }

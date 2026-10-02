@@ -121,7 +121,7 @@ sequenceDiagram
     App->>SC2: Poll /ui endpoint
     SC2-->>App: Active screen data
 
-    App->>Utils: getCurrentScene(gameData, uiData)
+    App->>Utils: get_current_scene(game_data, ui_data)
     Utils-->>App: Scene: game|menu|replay
 
     alt Scene changed to new game

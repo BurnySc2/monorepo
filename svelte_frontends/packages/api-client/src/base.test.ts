@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { get_api_base, is_local_host } from "./base"
+import { get_api_base, is_local_host } from "./base.js"
 
 describe("get_api_base", () => {
     afterEach(() => {
