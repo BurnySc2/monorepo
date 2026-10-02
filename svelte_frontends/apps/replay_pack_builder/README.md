@@ -5,7 +5,7 @@ monorepo-replay-pack-builder-frontend
 
 ### Build command
 ```sh
-cd packages/ui && npm run build && cd ../../apps/replay_pack_builder && npm run build
+npm run build:replay_pack_builder
 ```
 
 ### Build output directory

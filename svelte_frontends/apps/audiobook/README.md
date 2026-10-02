@@ -5,7 +5,7 @@ monorepo-audiobook-frontend
 
 ### Build command
 ```sh
-cd packages/ui && npm run build && cd ../../apps/audiobook && npm run build
+npm run build:audiobook
 ```
 
 ### Build output directory

@@ -5,7 +5,7 @@ monorepo-login-frontend
 
 ### Build command
 ```sh
-cd packages/ui && npm run build && cd ../../apps/login && npm run build
+npm run build:login
 ```
 
 ### Build output directory

@@ -5,7 +5,7 @@ monorepo-raceroom-frontend
 
 ### Build command
 ```sh
-cd packages/ui && npm run build && cd ../../apps/raceroom && npm run build
+npm run build:raceroom
 ```
 
 ### Build output directory

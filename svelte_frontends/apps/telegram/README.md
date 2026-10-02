@@ -1,16 +1,16 @@
 # Cloudflare config
 
 ### Name
-monorepo-tts-frontend
+monorepo-telegram-frontend
 
 ### Build command
 ```sh
-npm run build:tts
+npm run build:telegram
 ```
 
 ### Build output directory
 ```sh
-apps/tts/build
+apps/telegram/build
 ```
 
 ### Path

@@ -5,7 +5,7 @@ monorepo-replay-comparer-frontend
 
 ### Build command
 ```sh
-cd packages/ui && npm run build && cd ../../apps/replay_comparer && npm run build
+npm run build:replay_comparer
 ```
 
 ### Build output directory

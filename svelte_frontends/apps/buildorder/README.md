@@ -1,16 +1,16 @@
 # Cloudflare config
 
 ### Name
-monorepo-tts-frontend
+monorepo-buildorder-frontend
 
 ### Build command
 ```sh
-npm run build:tts
+npm run build:buildorder
 ```
 
 ### Build output directory
 ```sh
-apps/tts/build
+apps/buildorder/build
 ```
 
 ### Path

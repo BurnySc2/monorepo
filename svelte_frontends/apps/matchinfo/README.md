@@ -1,16 +1,16 @@
 # Cloudflare config
 
 ### Name
-monorepo-tts-frontend
+monorepo-matchinfo-frontend
 
 ### Build command
 ```sh
-npm run build:tts
+npm run build:matchinfo
 ```
 
 ### Build output directory
 ```sh
-apps/tts/build
+apps/matchinfo/build
 ```
 
 ### Path
