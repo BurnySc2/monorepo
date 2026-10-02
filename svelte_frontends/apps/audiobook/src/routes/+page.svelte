@@ -1,7 +1,7 @@
 <script lang="ts">
 import { check_login_status, is_local_host } from "@repo/api-client"
 import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
-import { Spinner, toast } from "@repo/ui"
+import { IconDelete, Spinner, toast } from "@repo/ui"
 import * as api from "$lib/api/audiobook"
 import BookCard from "$lib/components/BookCard.svelte"
 import BookUpload from "$lib/components/BookUpload.svelte"
@@ -145,16 +145,20 @@ $effect(() => {
                     type="button"
                     onclick={handle_delete_all_books}
                     disabled={is_loading || is_deleting_all}
+                    aria-busy={is_deleting_all}
                     aria-label={confirm_delete_all_armed
                         ? "Click again to confirm delete all books"
                         : "Delete all uploaded books"}
-                    class="w-full md:w-auto px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                    class="inline-flex items-center justify-center gap-2 w-full md:w-auto px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
                 >
                     {#if is_deleting_all}
+                        <Spinner />
                         Deleting...
                     {:else if confirm_delete_all_armed}
+                        <IconDelete class="w-5 h-5" />
                         Click again to confirm delete all {books.length} books
                     {:else}
+                        <IconDelete class="w-5 h-5" />
                         Delete all books
                     {/if}
                 </button>

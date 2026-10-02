@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { ChapterDetail as AudiobookChapterQueryResult } from "@repo/api-types"
-import { Spinner } from "@repo/ui"
+import { IconDelete, IconDownload, IconQueue, Spinner } from "@repo/ui"
 
 interface Props {
     chapters: AudiobookChapterQueryResult[]
@@ -45,16 +45,18 @@ function handle_delete(chapter_id: number) {
                     <a
                         href={chapter.minio_presigned_url}
                         download
-                        type="button"
-                        class="btn btn-primary"
+                        class="btn btn-primary inline-flex items-center gap-2"
                     >
+                        <IconDownload class="w-5 h-5" />
                         Download
                     </a>
                     <button
                         type="button"
-                        class="btn btn-danger"
+                        class="btn btn-danger inline-flex items-center gap-2"
                         onclick={() => handle_delete(chapter.chapter_number)}
+                        aria-label={`Delete audio for chapter ${chapter.chapter_number}`}
                     >
+                        <IconDelete class="w-5 h-5" />
                         Delete
                     </button>
                 {:else if chapter.number_in_queue !== null}
@@ -69,9 +71,11 @@ function handle_delete(chapter_id: number) {
                         </span>
                         <button
                             type="button"
-                            class="btn btn-danger"
+                            class="btn btn-danger inline-flex items-center gap-2"
                             onclick={() => handle_delete(chapter.chapter_number)}
+                            aria-label={`Remove chapter ${chapter.chapter_number} from queue`}
                         >
+                            <IconDelete class="w-5 h-5" />
                             Remove
                         </button>
                     </div>
@@ -82,17 +86,20 @@ function handle_delete(chapter_id: number) {
                     </div>
                     <button
                         type="button"
-                        class="btn btn-danger"
+                        class="btn btn-danger inline-flex items-center gap-2"
                         onclick={() => handle_delete(chapter.chapter_number)}
+                        aria-label={`Delete audio for chapter ${chapter.chapter_number}`}
                     >
+                        <IconDelete class="w-5 h-5" />
                         Delete
                     </button>
                 {:else}
                     <button
                         type="button"
-                        class="btn btn-success"
+                        class="btn btn-success inline-flex items-center gap-2"
                         onclick={() => handle_queue(chapter.chapter_number)}
                     >
+                        <IconQueue class="w-5 h-5" />
                         Generate audio
                     </button>
                 {/if}

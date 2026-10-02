@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { BookWithChapters, VoiceInfo } from "@repo/api-types"
-import { Spinner, toast } from "@repo/ui"
+import { IconDelete, IconDownload, IconQueue, Spinner, toast } from "@repo/ui"
 import JSZip from "jszip"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
@@ -385,28 +385,29 @@ $effect(() => {
             </div>
             <div class="flex flex-col md:flex-row gap-2 flex-wrap">
                 <button
-                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer"
+                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer inline-flex items-center justify-center gap-2"
                     onclick={handle_queue_all}
                     disabled={all_chapters_queued_or_have_audio}
                     title={all_chapters_queued_or_have_audio ? "All chapters already have audio" : ""}
                 >
+                    <IconQueue class="w-5 h-5" />
                     Generate audio for all chapters
                 </button>
                 <button
-                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer relative  flex space-x-2 justify-center items-center"
+                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer relative inline-flex justify-center gap-2 items-center"
                     onclick={handle_download_book}
                     disabled={is_downloading || !all_chapters_have_audio}
                     title={!all_chapters_have_audio ? "All chapters require audio" : ""}
                 >
-                    {#if is_downloading}
+                    {#if is_downloading || (!all_chapters_have_audio && all_chapters_queued_or_have_audio)}
                         <Spinner />
-                    {:else if !all_chapters_have_audio && all_chapters_queued_or_have_audio}
-                        <Spinner />
+                    {:else}
+                        <IconDownload class="w-5 h-5" />
                     {/if}
-                    <div>Download book</div>
+                    <span>{is_downloading ? "Downloading..." : "Download book"}</span>
                 </button>
                 <button
-                    class="flex-1 btn btn-danger"
+                    class="flex-1 btn btn-danger inline-flex items-center justify-center gap-2"
                     onclick={handle_delete_all_audio}
                     disabled={any_chapter_has_audio_or_queued}
                     title={confirm_delete_audio_armed
@@ -414,14 +415,22 @@ $effect(() => {
                         : any_chapter_has_audio_or_queued
                           ? "Delete all audio"
                           : "No chapters have audio"}
+                    aria-label={confirm_delete_audio_armed
+                        ? "Click again to confirm delete all audio"
+                        : any_chapter_has_audio_or_queued
+                          ? "Delete all audio"
+                          : "No chapters have audio"}
                 >
+                    <IconDelete class="w-5 h-5" />
                     {confirm_delete_audio_armed ? "Click again to confirm" : "Delete all audio"}
                 </button>
                 <button
-                    class="flex-1 btn btn-danger"
+                    class="flex-1 btn btn-danger inline-flex items-center justify-center gap-2"
                     onclick={handle_delete_book}
                     title={confirm_delete_book_armed ? "Click again to confirm delete book" : "Delete book"}
+                    aria-label={confirm_delete_book_armed ? "Click again to confirm delete book" : "Delete book"}
                 >
+                    <IconDelete class="w-5 h-5" />
                     {confirm_delete_book_armed ? "Click again to confirm" : "Delete book"}
                 </button>
             </div>

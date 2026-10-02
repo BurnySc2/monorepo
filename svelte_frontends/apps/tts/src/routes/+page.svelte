@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { VoiceInfo } from "@repo/api-types"
 import { create_loading_state } from "@repo/sc2-utils"
-import { Spinner } from "@repo/ui"
+import { IconQueue, Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { page } from "$app/state"
 import { fetch_generate_tts, fetch_voices } from "$lib/api"
@@ -114,15 +114,19 @@ const overlay_url = $derived.by(() => {
             <button
                 onclick={generate_audio}
                 disabled={user_text.trim() === "" || is_generating}
-                class="btn-primary w-full"
+                class="btn-primary w-full inline-flex items-center justify-center gap-2"
             >
-                {is_generating ? "Generating..." : "Generate audio"}
+                {#if is_generating}
+                    <Spinner />
+                    Generating...
+                {:else}
+                    <IconQueue class="w-5 h-5" />
+                    Generate audio
+                {/if}
             </button>
         </div>
 
-        {#if is_generating}
-            <div class="self-center"><Spinner /></div>
-        {:else if audio_b64}
+        {#if audio_b64}
             <div class="card">
                 <audio
                     controls
