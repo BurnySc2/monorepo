@@ -14,14 +14,14 @@ import type {
 } from "@repo/sc2-utils"
 import {
     format_time,
-    gameResponseRaces,
-    getCurrentScene,
-    getSceneChange,
+    game_response_races,
+    get_current_scene,
+    get_scene_change,
     parse_poll_frequency,
-    resetInfo,
+    reset_info,
     sc2GameUrl,
     sc2UiUrl,
-    validateGameFromGameData,
+    validate_game_from_game_data,
 } from "@repo/sc2-utils"
 import { Spinner } from "@repo/ui"
 import { page } from "$app/state"
@@ -39,7 +39,7 @@ let current_item = $state<IBuildOrderItem>({ time: 85, text: "Supply Depot" })
 let next_item = $state<IBuildOrderItem>({ time: 105, text: "Barracks" })
 
 let sc2_accounts = $state<ISC2Account[]>([])
-let info = $state<IMatchInfo>(resetInfo())
+let info = $state<IMatchInfo>(reset_info())
 let running_data = $state<IRunningData>({ scene: "unknown" })
 let build_orders = $state<IBuildOrderDbRow[]>([])
 let active_build_order = $state<IBuildOrderItem[] | null>(null)
@@ -77,7 +77,7 @@ const pollSc2Api = async () => {
             return
         }
         const game_data: IGameData = await gameDataResponse.json()
-        let valid_game = validateGameFromGameData(game_data)
+        let valid_game = validate_game_from_game_data(game_data)
         if (valid_game === "other") {
             return
         }
@@ -90,7 +90,7 @@ const pollSc2Api = async () => {
             return
         }
         const ui_data: IUiData = await uiDataResponse.json()
-        const current_scene: ISceneNames = getCurrentScene(game_data, ui_data)
+        const current_scene: ISceneNames = get_current_scene(game_data, ui_data)
 
         // Find player account
         let my_index = -1
@@ -108,7 +108,7 @@ const pollSc2Api = async () => {
             return
         }
 
-        const scene_change: ISceneChange = getSceneChange(running_data.scene, current_scene, my_index !== -1)
+        const scene_change: ISceneChange = get_scene_change(running_data.scene, current_scene, my_index !== -1)
         if (current_scene === "loading") {
             return
         }
@@ -121,13 +121,13 @@ const pollSc2Api = async () => {
                 valid_game = "vsComputer"
             }
             // Clear and set info
-            info = resetInfo()
+            info = reset_info()
             info = {
                 ...info,
                 myName: game_data.players[my_index].name,
-                myRace: gameResponseRaces[game_data.players[my_index].race] as ISc2Race,
+                myRace: game_response_races[game_data.players[my_index].race] as ISc2Race,
                 opponentName: game_data.players[opponent_index].name,
-                opponentRace: gameResponseRaces[game_data.players[opponent_index].race] as ISc2Race,
+                opponentRace: game_response_races[game_data.players[opponent_index].race] as ISc2Race,
             }
             if (dev) {
                 info.opponentName = "Sonic"

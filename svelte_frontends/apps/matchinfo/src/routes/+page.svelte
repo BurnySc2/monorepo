@@ -12,18 +12,18 @@ import type {
     IUiData,
 } from "@repo/sc2-utils"
 import {
-    gameResponseRaces,
-    getCurrentScene,
-    getSceneChange,
-    isNephestResponse,
+    game_response_races,
+    get_current_scene,
+    get_scene_change,
+    is_nephest_response,
     nephestUrl,
     parse_poll_frequency,
-    resetInfo,
+    reset_info,
     sc2GameUrl,
     sc2UiUrl,
-    toNephestRace,
-    toNephestServer,
-    validateGameFromGameData,
+    to_nephest_race,
+    to_nephest_server,
+    validate_game_from_game_data,
 } from "@repo/sc2-utils"
 import { Spinner } from "@repo/ui"
 import { page } from "$app/state"
@@ -45,7 +45,7 @@ let params = $derived({
     maxOpponentMmrDifference: parse_mmr_difference(page.url.searchParams.get("maxOpponentMmrDifference")),
 })
 
-let info = $state<IMatchInfo>(resetInfo())
+let info = $state<IMatchInfo>(reset_info())
 let running_data = $state<IRunningData>({ scene: "unknown" })
 let sc2_accounts = $state<ISC2Account[]>([])
 let running = $state(false)
@@ -81,7 +81,7 @@ const pollSc2Api = async () => {
             return
         }
         const game_data: IGameData = await gameDataResponse.json()
-        let valid_game = validateGameFromGameData(game_data)
+        let valid_game = validate_game_from_game_data(game_data)
         if (valid_game === "other") {
             return
         }
@@ -92,7 +92,7 @@ const pollSc2Api = async () => {
             return
         }
         const ui_data: IUiData = await uiDataResponse.json()
-        const current_scene: ISceneNames = getCurrentScene(game_data, ui_data)
+        const current_scene: ISceneNames = get_current_scene(game_data, ui_data)
 
         // Find player account
         let my_index = -1
@@ -110,7 +110,7 @@ const pollSc2Api = async () => {
             return
         }
 
-        const scene_change: ISceneChange = getSceneChange(running_data.scene, current_scene, my_index !== -1)
+        const scene_change: ISceneChange = get_scene_change(running_data.scene, current_scene, my_index !== -1)
         if (current_scene === "loading") {
             return
         }
@@ -125,13 +125,13 @@ const pollSc2Api = async () => {
             valid_game = "vsComputer"
         }
         // Clear and set info
-        info = resetInfo()
+        info = reset_info()
         info = {
             ...info,
             myName: game_data.players[my_index].name,
-            myRace: gameResponseRaces[game_data.players[my_index].race] as ISc2Race,
+            myRace: game_response_races[game_data.players[my_index].race] as ISc2Race,
             opponentName: game_data.players[opponent_index].name,
-            opponentRace: gameResponseRaces[game_data.players[opponent_index].race] as ISc2Race,
+            opponentRace: game_response_races[game_data.players[opponent_index].race] as ISc2Race,
         }
         if (dev) {
             info.opponentName = "Sonic"
@@ -169,11 +169,11 @@ const nephestQuery = async (name: string, race: ISc2Race, server: ISc2Server, my
         }
 
         for (const playerAccount of data as INephestResponse[]) {
-            const nephestRace = toNephestRace[race]
+            const nephestRace = to_nephest_race[race]
             if (!playerAccount.members[nephestRace as keyof typeof playerAccount.members]) {
                 continue
             }
-            if (playerAccount.members.character.region !== toNephestServer[server]) {
+            if (playerAccount.members.character.region !== to_nephest_server[server]) {
                 continue
             }
 
