@@ -1,7 +1,7 @@
 <script lang="ts">
 import { check_login_status, is_local_host } from "@repo/api-client"
 import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
-import { IconDelete, Spinner, toast } from "@repo/ui"
+import { IconDelete, IconLogin, Spinner, toast } from "@repo/ui"
 import * as api from "$lib/api/audiobook"
 import BookCard from "$lib/components/BookCard.svelte"
 import BookUpload from "$lib/components/BookUpload.svelte"
@@ -121,10 +121,13 @@ $effect(() => {
         <div class="text-center py-12">
             <p class="text-lg text-gray-700 mb-4">You need to log in to proceed.</p>
             <button
+                type="button"
                 onclick={() => (window.location.href = login_url)}
-                class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                class="btn btn-primary inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg transition-colors"
+                aria-label="Log in"
             >
-                Log In
+                <IconLogin class="w-5 h-5" />
+                <span>Log In</span>
             </button>
         </div>
     {:else}
@@ -170,7 +173,7 @@ $effect(() => {
         {:else if books.length === 0}
             <p class="text-center text-gray-500 py-8">Your uploaded books will appear here.</p>
         {:else}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {#each books as book (book.id)}
                     <BookCard
                         {book}

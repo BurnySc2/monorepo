@@ -7,7 +7,7 @@ import {
     start_google_login,
     start_twitch_login,
 } from "@repo/api-client"
-import { IconLogout, IconQueue, Spinner } from "@repo/ui"
+import { IconLogout, IconRefresh, Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 
 let is_loading: LoginState["is_loading"] = $state(true)
@@ -56,10 +56,11 @@ onMount(async () => {
             <p>{error_message}</p>
             <!-- WHY shared icons only: avoid brand icons -->
             <button
-                class="inline-flex items-center gap-2"
+                type="button"
+                class="btn btn-secondary inline-flex items-center justify-center gap-2"
                 onclick={() => { error_message = null; refresh_login_status(); }}
             >
-                <IconQueue size={20} />
+                <IconRefresh class="w-5 h-5" />
                 <span>Retry</span>
             </button>
         </div>
@@ -67,8 +68,10 @@ onMount(async () => {
         <div class="text-center">
             <p>You are logged in via <strong>{logged_in_user.service}</strong> as '{logged_in_user.name}'</p>
             <button
-                class="mt-4 inline-flex items-center gap-2 px-6 py-3 text-base bg-red-600 hover:bg-red-700 text-white rounded-md cursor-pointer shadow-md hover:shadow-lg transition-colors duration-200"
+                type="button"
+                class="mt-4 inline-flex min-h-11 items-center gap-2 px-6 py-3 text-base bg-red-600 hover:bg-red-700 text-white rounded-md cursor-pointer shadow-md hover:shadow-lg transition-colors duration-200"
                 onclick={handle_logout}
+                aria-label="Log out"
             >
                 <IconLogout size={20} />
                 <span>Log out</span>
@@ -78,19 +81,22 @@ onMount(async () => {
         <div class="flex flex-col gap-4 items-center">
             <!-- WHY text-only social buttons: no suitable neutral icon in shared set; IconPlay implies media and misleads -->
             <button
-                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#6441a5] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md"
+                type="button"
+                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#6441a5] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md min-h-11"
                 onclick={start_twitch_login}
             >
                 <span>Login with Twitch</span>
             </button>
             <button
-                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#171515] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md"
+                type="button"
+                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#171515] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md min-h-11"
                 onclick={start_github_login}
             >
                 <span>Login with GitHub</span>
             </button>
             <button
-                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#4285f4] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md"
+                type="button"
+                class="px-8 py-4 text-base font-medium border-none rounded-md cursor-pointer min-w-[200px] bg-[#4285f4] text-white transition-opacity duration-200 hover:opacity-90 hover:scale-105 shadow-md min-h-11"
                 onclick={start_google_login}
             >
                 <span>Login with Google</span>

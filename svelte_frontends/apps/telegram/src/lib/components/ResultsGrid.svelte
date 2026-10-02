@@ -1,7 +1,7 @@
 <script lang="ts">
 import { get_api_base } from "@repo/api-client"
 import type { components } from "@repo/api-types"
-import { IconDelete, IconDownload, IconPlay, IconQueue, IconSpinner } from "@repo/ui"
+import { IconDelete, IconDownload, IconPlay, IconQueue, IconSpinner, IconX, Spinner } from "@repo/ui"
 import { column_settings } from "$lib/column_settings.svelte"
 import { format_duration, format_file_size, is_safe_http_url } from "$lib/format"
 import {
@@ -53,7 +53,7 @@ async function handle_queue(id: string) {
                                 title="Clear all sorting"
                                 aria-label="Clear all sorting"
                             >
-                                <IconDelete class="h-5 w-5" />
+                                <IconX class="h-5 w-5" />
                                 <span class="text-xs">Clear sort</span>
                             </button>
                         {/if}
@@ -90,10 +90,11 @@ async function handle_queue(id: string) {
             {#if is_searching}
                 <tr>
                     <td colspan={column_settings.active_columns.length + 1}>
-                        <div class="flex flex-col items-center justify-center gap-2 py-12">
-                            <div
-                                class="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"
-                            ></div>
+                        <div
+                            class="flex flex-col items-center justify-center gap-2 py-12"
+                            role="status"
+                        >
+                            <Spinner />
                             <span class="text-sm text-gray-500">Searching...</span>
                         </div>
                     </td>

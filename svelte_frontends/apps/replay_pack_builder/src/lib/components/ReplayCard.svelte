@@ -1,5 +1,6 @@
 <script lang="ts">
 import { format_date_timestamp } from "@repo/sc2-utils"
+import { IconDelete } from "@repo/ui"
 import { type ParsedReplayFile } from "$lib/replay_types"
 
 interface Props {
@@ -44,10 +45,13 @@ let teams_display: { result: string; players: { name: string; race: string; mmr:
         <h4 class="map-name">{replay.map_name}</h4>
         {#if show_remove && on_remove}
             <button
-                class="remove-btn"
+                type="button"
+                class="btn btn-danger inline-flex items-center justify-center gap-2"
                 onclick={() => on_remove?.(replay.md5)}
+                aria-label="Remove replay"
             >
-                Remove
+                <IconDelete class="w-5 h-5" />
+                <span>Remove</span>
             </button>
         {/if}
     </div>
@@ -120,20 +124,6 @@ let teams_display: { result: string; players: { name: string; race: string; mmr:
     margin: 0;
     font-size: 1.1rem;
     color: #333;
-}
-
-.remove-btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-    background: #fee2e2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.remove-btn:hover {
-    background: #fecaca;
 }
 
 .card-meta {

@@ -1,6 +1,6 @@
 <script lang="ts">
 import { get_api_base } from "@repo/api-client"
-import { IconDelete, IconDownload, IconPlay, IconQueue } from "@repo/ui"
+import { IconDelete, IconDownload, IconPlay, IconRefresh, Spinner } from "@repo/ui"
 import { fetch_downloads } from "$lib/api"
 import { file_column_settings } from "$lib/file_column_settings.svelte"
 import { format_duration, format_file_size, is_safe_http_url } from "$lib/format"
@@ -35,19 +35,23 @@ async function load_downloads() {
 
 <div class="w-full">
     {#if temp_state.files.is_loading}
-        <div class="flex items-center justify-center p-8">
-            <div class="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
+        <div
+            class="flex items-center justify-center p-8"
+            role="status"
+        >
+            <Spinner />
             <span class="ml-4">Loading downloads...</span>
         </div>
     {:else if temp_state.files.error}
         <div class="flex flex-col items-center justify-center gap-4 p-8">
             <div class="text-red-600">{temp_state.files.error}</div>
             <button
-                class="inline-flex items-center gap-2 rounded-xl border-2 border-black bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                class="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border-2 border-black bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
                 type="button"
                 onclick={load_downloads}
+                aria-label="Retry loading downloads"
             >
-                <IconQueue class="h-5 w-5" />
+                <IconRefresh class="h-5 w-5" />
                 <span>Retry</span>
             </button>
         </div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+import { IconCheck, IconX } from "@repo/ui"
 import type { Column } from "$lib/column_settings.svelte"
 import { column_settings } from "$lib/column_settings.svelte"
 import { file_column_settings } from "$lib/file_column_settings.svelte"
@@ -192,17 +193,21 @@ function handle_keydown(event: KeyboardEvent) {
         <div class="flex gap-4">
             <button
                 type="button"
-                class="grow rounded-xl bg-green-400 p-2 hover:bg-green-500"
+                class="btn btn-primary grow inline-flex items-center justify-center gap-2"
                 onclick={handle_save}
+                aria-label="Save changes"
             >
-                Save changes
+                <IconCheck class="w-5 h-5" />
+                <span>Save changes</span>
             </button>
             <button
                 type="button"
-                class="grow rounded-xl bg-red-400 p-2 hover:bg-red-500"
+                class="btn btn-secondary grow inline-flex items-center justify-center gap-2"
                 onclick={handle_cancel}
+                aria-label="Cancel"
             >
-                Cancel
+                <IconX class="w-5 h-5" />
+                <span>Cancel</span>
             </button>
         </div>
     </div>

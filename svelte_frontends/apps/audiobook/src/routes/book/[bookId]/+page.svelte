@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { BookWithChapters, VoiceInfo } from "@repo/api-types"
-import { IconDelete, IconDownload, IconQueue, Spinner, toast } from "@repo/ui"
+import { IconCheck, IconDelete, IconDownload, IconPencil, IconQueue, Spinner, toast } from "@repo/ui"
 import JSZip from "jszip"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
@@ -96,26 +96,76 @@ async function refresh_chapters(chapter_numbers: number[]) {
 }
 
 async function handle_edit_title() {
-    is_editing_title = !is_editing_title
-    if (!is_editing_title && custom_book_title && book_data) {
-        try {
-            await api.update_book_title(book_id, custom_book_title)
-            book_data.book.custom_book_title = custom_book_title
-        } catch (e) {
-            console.error("Failed to update title:", e)
-        }
+    if (!is_editing_title) {
+        is_editing_title = true
+        return
+    }
+    is_editing_title = false
+    if (!book_data) {
+        return
+    }
+    if (!custom_book_title.trim()) {
+        custom_book_title = book_data.book.custom_book_title || book_data.book.book_title
+        return
+    }
+    try {
+        await api.update_book_title(book_id, custom_book_title)
+        book_data.book.custom_book_title = custom_book_title
+    } catch (e) {
+        console.error("Failed to update title:", e)
     }
 }
 
 async function handle_edit_author() {
-    is_editing_author = !is_editing_author
-    if (!is_editing_author && custom_book_author && book_data) {
-        try {
-            await api.update_book_author(book_id, custom_book_author)
-            book_data.book.custom_book_author = custom_book_author
-        } catch (e) {
-            console.error("Failed to update author:", e)
+    if (!is_editing_author) {
+        is_editing_author = true
+        return
+    }
+    is_editing_author = false
+    if (!book_data) {
+        return
+    }
+    if (!custom_book_author.trim()) {
+        custom_book_author = book_data.book.custom_book_author || book_data.book.book_author
+        return
+    }
+    try {
+        await api.update_book_author(book_id, custom_book_author)
+        book_data.book.custom_book_author = custom_book_author
+    } catch (e) {
+        console.error("Failed to update author:", e)
+    }
+}
+
+async function handle_title_keydown(event: KeyboardEvent) {
+    if (!is_editing_title) {
+        return
+    }
+    if (event.key === "Enter") {
+        event.preventDefault()
+        await handle_edit_title()
+    } else if (event.key === "Escape") {
+        event.preventDefault()
+        if (book_data) {
+            custom_book_title = book_data.book.custom_book_title || book_data.book.book_title
         }
+        is_editing_title = false
+    }
+}
+
+function handle_author_keydown(event: KeyboardEvent) {
+    if (!is_editing_author) {
+        return
+    }
+    if (event.key === "Enter") {
+        event.preventDefault()
+        void handle_edit_author()
+    } else if (event.key === "Escape") {
+        event.preventDefault()
+        if (book_data) {
+            custom_book_author = book_data.book.custom_book_author || book_data.book.book_author
+        }
+        is_editing_author = false
     }
 }
 
@@ -325,37 +375,57 @@ $effect(() => {
         <!-- Book Title & Author -->
         <div class="book-header">
             <div class="title-row">
-                {#if is_editing_title}
-                    <input
-                        type="text"
-                        bind:value={custom_book_title}
-                        class="edit-input"
-                    >
-                {:else}
-                    <h1>{book_data.book.custom_book_title || book_data.book.book_title}</h1>
-                {/if}
-                <button
-                    class="edit-button"
-                    onclick={handle_edit_title}
+                <h1 class="sr-only">{custom_book_title}</h1>
+                <input
+                    type="text"
+                    bind:value={custom_book_title}
+                    readonly={!is_editing_title}
+                    class="title-input"
+                    aria-label="Book title"
+                    onkeydown={handle_title_keydown}
                 >
-                    {is_editing_title ? "Save" : "Edit"}
+                <button
+                    type="button"
+                    class="btn inline-flex items-center justify-center gap-2"
+                    class:btn-secondary={!is_editing_title}
+                    class:btn-success={is_editing_title}
+                    onclick={handle_edit_title}
+                    aria-label={is_editing_title ? "Save book title" : "Edit book title"}
+                >
+                    {#if is_editing_title}
+                        <IconCheck class="w-5 h-5" />
+                        <span>Save</span>
+                    {:else}
+                        <IconPencil class="w-5 h-5" />
+                        <span>Edit</span>
+                    {/if}
                 </button>
             </div>
             <div class="author-row">
-                {#if is_editing_author}
-                    <input
-                        type="text"
-                        bind:value={custom_book_author}
-                        class="edit-input"
-                    >
-                {:else}
-                    <h2>{book_data.book.custom_book_author || book_data.book.book_author}</h2>
-                {/if}
-                <button
-                    class="edit-button"
-                    onclick={handle_edit_author}
+                <h2 class="sr-only">{custom_book_author}</h2>
+                <input
+                    type="text"
+                    bind:value={custom_book_author}
+                    readonly={!is_editing_author}
+                    class="author-input"
+                    aria-label="Book author"
+                    onkeydown={handle_author_keydown}
                 >
-                    {is_editing_author ? "Save" : "Edit"}
+                <button
+                    type="button"
+                    class="btn inline-flex items-center justify-center gap-2"
+                    class:btn-secondary={!is_editing_author}
+                    class:btn-success={is_editing_author}
+                    onclick={handle_edit_author}
+                    aria-label={is_editing_author ? "Save book author" : "Edit book author"}
+                >
+                    {#if is_editing_author}
+                        <IconCheck class="w-5 h-5" />
+                        <span>Save</span>
+                    {:else}
+                        <IconPencil class="w-5 h-5" />
+                        <span>Edit</span>
+                    {/if}
                 </button>
             </div>
         </div>
@@ -385,19 +455,23 @@ $effect(() => {
             </div>
             <div class="flex flex-col md:flex-row gap-2 flex-wrap">
                 <button
-                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer inline-flex items-center justify-center gap-2"
+                    type="button"
+                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer btn btn-primary inline-flex items-center justify-center gap-2"
                     onclick={handle_queue_all}
                     disabled={all_chapters_queued_or_have_audio}
                     title={all_chapters_queued_or_have_audio ? "All chapters already have audio" : ""}
+                    aria-label="Generate audio for all chapters"
                 >
                     <IconQueue class="w-5 h-5" />
                     Generate audio for all chapters
                 </button>
                 <button
-                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer relative inline-flex justify-center gap-2 items-center"
+                    type="button"
+                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer btn btn-primary relative inline-flex justify-center gap-2 items-center"
                     onclick={handle_download_book}
                     disabled={is_downloading || !all_chapters_have_audio}
                     title={!all_chapters_have_audio ? "All chapters require audio" : ""}
+                    aria-label="Download book"
                 >
                     {#if is_downloading || (!all_chapters_have_audio && all_chapters_queued_or_have_audio)}
                         <Spinner />
@@ -407,6 +481,7 @@ $effect(() => {
                     <span>{is_downloading ? "Downloading..." : "Download book"}</span>
                 </button>
                 <button
+                    type="button"
                     class="flex-1 btn btn-danger inline-flex items-center justify-center gap-2"
                     onclick={handle_delete_all_audio}
                     disabled={any_chapter_has_audio_or_queued}
@@ -425,6 +500,7 @@ $effect(() => {
                     {confirm_delete_audio_armed ? "Click again to confirm" : "Delete all audio"}
                 </button>
                 <button
+                    type="button"
                     class="flex-1 btn btn-danger inline-flex items-center justify-center gap-2"
                     onclick={handle_delete_book}
                     title={confirm_delete_book_armed ? "Click again to confirm delete book" : "Delete book"}
@@ -472,41 +548,67 @@ $effect(() => {
     align-items: center;
     gap: 1rem;
     margin-bottom: 0.5rem;
+    min-width: 0;
 }
 
-.title-row h1,
-.author-row h2 {
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
     margin: 0;
-    flex: 1;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
-.title-row h1 {
+.title-input,
+.author-input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    margin: 0;
+    border-radius: 4px;
+    font: inherit;
+    color: inherit;
+}
+
+.title-input[readonly] {
     font-size: 1.75rem;
+    font-weight: bold;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.author-row h2 {
+.author-input[readonly] {
     font-size: 1.25rem;
+    font-weight: bold;
     color: #555;
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.edit-input {
-    flex: 1;
+.title-input:focus-visible,
+.author-input:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.title-input:not([readonly]),
+.author-input:not([readonly]) {
     font-size: 1.5rem;
     padding: 0.5rem;
     border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.edit-button {
-    background: none;
-    border: 1px solid #ccc;
-    padding: 0.25rem 0.75rem;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-.edit-button:hover {
-    background-color: #f0f0f0;
+    background: white;
 }
 
 .settings-box > div > button:disabled {

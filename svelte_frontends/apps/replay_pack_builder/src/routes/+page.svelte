@@ -1,6 +1,6 @@
 <script lang="ts">
 import { create_loading_state } from "@repo/sc2-utils"
-import { FileUpload, Spinner, toast } from "@repo/ui"
+import { FileUpload, IconDownload, Spinner, toast } from "@repo/ui"
 import { onMount } from "svelte"
 import { parse_replay_file } from "$lib/api_client"
 import FilterPanel from "$lib/components/FilterPanel.svelte"
@@ -171,8 +171,10 @@ $effect(() => {
         <h2 class="mt-0 mb-4">Upload Replays</h2>
         {#if parsed_files.length > 0}
             <button
-                class="btn-danger mb-3"
+                type="button"
+                class="btn btn-danger inline-flex items-center justify-center gap-2 mb-3"
                 onclick={clear_all_files}
+                aria-label="Remove uploaded files"
             >
                 Remove uploaded files
             </button>
@@ -185,18 +187,23 @@ $effect(() => {
                     <span class="ml-3 text-gray-600">Processing replays...</span>
                 </div>
             {:else}
-                <div class="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-                    <FileUpload
-                        label="Drag & drop .SC2Replay files here"
-                        accept=".SC2Replay"
-                        disabled={is_processing}
-                        on_upload={handle_file_upload}
-                    />
-                    <FolderUpload
-                        label="Select folder..."
-                        disabled={is_processing}
-                        on_upload={handle_file_upload}
-                    />
+                <div class="flex flex-col sm:flex-row gap-4 items-center">
+                    <div class="max-w-md w-full sm:flex-1">
+                        <FileUpload
+                            label="Drag & drop .SC2Replay files here"
+                            accept=".SC2Replay"
+                            disabled={is_processing}
+                            on_upload={handle_file_upload}
+                            size="compact"
+                        />
+                    </div>
+                    <div class="self-center shrink-0">
+                        <FolderUpload
+                            label="Select folder..."
+                            disabled={is_processing}
+                            on_upload={handle_file_upload}
+                        />
+                    </div>
                 </div>
             {/if}
         </div>
@@ -223,9 +230,11 @@ $effect(() => {
             >
         </div>
         <button
-            class="btn btn-secondary mb-3"
+            type="button"
+            class="btn btn-secondary inline-flex items-center justify-center gap-2 mb-3"
             onclick={reset_pattern}
             disabled={replay_name_pattern === DEFAULT_REPLAY_NAME_PATTERN}
+            aria-label="Reset pattern"
         >
             Reset pattern
         </button>
@@ -245,19 +254,31 @@ $effect(() => {
         <h2 class="mt-0 mb-4">Download</h2>
         {#if filtered_replays.length > 0}
             <button
-                class="btn btn-primary inline-flex items-center gap-2"
+                type="button"
+                class="btn btn-primary inline-flex items-center justify-center gap-2"
                 onclick={download_zip}
                 disabled={is_processing}
+                aria-label="Zip and download replays"
             >
-                <Spinner hidden={!is_processing} />
+                {#if is_processing}
+                    <Spinner />
+                {:else}
+                    <IconDownload class="w-5 h-5" />
+                {/if}
                 <span>Zip and download {filtered_replays.length} replays</span>
             </button>
         {:else}
             <button
-                class="btn btn-primary inline-flex items-center gap-2"
+                type="button"
+                class="btn btn-primary inline-flex items-center justify-center gap-2"
                 disabled
+                aria-label="No replays to download"
             >
-                <Spinner hidden={!is_processing} />
+                {#if is_processing}
+                    <Spinner />
+                {:else}
+                    <IconDownload class="w-5 h-5" />
+                {/if}
                 <span>No replays to download</span>
             </button>
         {/if}

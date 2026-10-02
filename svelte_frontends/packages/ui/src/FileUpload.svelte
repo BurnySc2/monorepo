@@ -7,9 +7,11 @@ interface Props {
     on_upload: (files: FileList) => void
     disabled?: boolean
     accept?: string
+    size?: "default" | "compact"
+    class?: string
 }
 
-let { label, on_upload, disabled = false, accept = "" }: Props = $props()
+let { label, on_upload, disabled = false, accept = "", size = "default", class: class_name = "" }: Props = $props()
 
 let is_dragging = $state(false)
 let file_input: HTMLInputElement
@@ -71,7 +73,8 @@ function handle_file_change(e: Event) {
 </script>
 
 <div
-    class="drop-zone"
+    class="drop-zone {class_name}"
+    class:drop-zone-compact={size === "compact"}
     class:dragging={is_dragging}
     class:disabled
     role="button"

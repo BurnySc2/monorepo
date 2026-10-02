@@ -1,5 +1,6 @@
 <script lang="ts">
 import { create_loading_state } from "@repo/sc2-utils"
+import { Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { fetch_times, fetch_tracks } from "$lib/api_client"
 import BestTimeChart from "$lib/components/BestTimeChart.svelte"
@@ -208,9 +209,13 @@ $effect(() => {
             <span class="font-medium">Period:</span>
             {#each DATE_RANGE_PRESETS as preset}
                 <button
-                    class="btn-secondary"
-                    class:btn-primary={date_range === preset.value}
+                    type="button"
+                    class={date_range === preset.value
+                        ? "btn btn-primary inline-flex items-center justify-center gap-2"
+                        : "btn btn-secondary inline-flex items-center justify-center gap-2"}
                     onclick={() => (date_range = preset.value)}
+                    aria-pressed={date_range === preset.value}
+                    aria-label={preset.label}
                 >
                     {preset.label}
                 </button>
@@ -219,7 +224,13 @@ $effect(() => {
     </div>
 
     {#if is_loading}
-        <div class="flex items-center justify-center p-8"><span>Loading...</span></div>
+        <div
+            class="flex items-center justify-center p-8"
+            role="status"
+        >
+            <Spinner />
+            <span class="ml-3 text-gray-600">Loading...</span>
+        </div>
     {:else if best_times.length === 0}
         <div class="text-center p-8 text-gray-500">No data available for the selected track and period.</div>
     {:else}

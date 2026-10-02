@@ -1,5 +1,6 @@
 <script lang="ts">
 import { format_date_timestamp } from "@repo/sc2-utils"
+import { IconDelete, IconDownload } from "@repo/ui"
 import { type ParsedReplayFile, rename_file_according_to_template } from "$lib/replay_types"
 
 interface Props {
@@ -117,16 +118,22 @@ async function download_replay(replay: ParsedReplayFile) {
                     <td class=" border-b border-gray-100 font-semibold">{get_winner_display(replay)}</td>
                     <td class=" border-b border-gray-100 flex flex-col">
                         <button
-                            class="btn-secondary"
+                            type="button"
+                            class="btn btn-secondary inline-flex items-center justify-center gap-2"
                             onclick={() => download_replay(replay)}
+                            aria-label="Download replay"
                         >
-                            Download
+                            <IconDownload class="w-5 h-5" />
+                            <span>Download</span>
                         </button>
                         <button
-                            class="btn-danger"
+                            type="button"
+                            class="btn btn-danger inline-flex items-center justify-center gap-2"
                             onclick={() => on_remove(replay.md5)}
+                            aria-label="Remove replay"
                         >
-                            Remove
+                            <IconDelete class="w-5 h-5" />
+                            <span>Remove</span>
                         </button>
                     </td>
                 </tr>

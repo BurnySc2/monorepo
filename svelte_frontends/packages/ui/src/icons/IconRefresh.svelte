@@ -1,0 +1,27 @@
+<script lang="ts">
+// ISC © Lucide contributors — paths from lucide `refresh-cw` (ISC licensed).
+interface Props {
+    class?: string
+    size?: number
+}
+let { class: class_name = "", size = 24 }: Props = $props()
+</script>
+
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class={class_name}
+    aria-hidden="true"
+>
+    <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+    <path d="M21 3v5h-5" />
+    <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+    <path d="M3 21v-5h5" />
+</svg>

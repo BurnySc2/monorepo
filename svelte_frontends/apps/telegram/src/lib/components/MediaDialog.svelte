@@ -1,4 +1,5 @@
 <script lang="ts">
+import { IconX } from "@repo/ui"
 import {
     initial_media_viewer_state,
     media_load_failed,
@@ -139,11 +140,12 @@ function handle_keydown(event: KeyboardEvent) {
         {/if}
 
         <button
-            class="mt-4 rounded-xl bg-gray-700 p-2 text-white ring-1 ring-white hover:bg-green-700"
+            class="mt-4 rounded-xl bg-gray-700 p-2 text-white ring-1 ring-white hover:bg-green-700 min-h-11 inline-flex items-center justify-center gap-2"
             type="button"
             onclick={handle_close}
         >
-            Close
+            <IconX class="w-5 h-5" />
+            <span>Close</span>
         </button>
     </div>
 </dialog>

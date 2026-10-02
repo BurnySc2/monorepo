@@ -79,8 +79,8 @@ const formatted_date = $derived(format_date_string(book.upload_date))
             <button
                 type="button"
                 class={confirm_armed
-                    ? "shrink-0 text-white bg-red-600 hover:bg-red-700 rounded px-3 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[180px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-                    : "shrink-0 text-red-700 hover:text-red-800 rounded px-3 py-2 text-sm inline-flex items-center justify-center gap-2 min-h-[44px] min-w-[180px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"}
+                    ? "btn btn-danger shrink-0 text-white bg-red-600 hover:bg-red-700 rounded px-3 py-2 text-sm font-semibold inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+                    : "btn btn-danger shrink-0 text-red-700 hover:text-red-800 rounded px-3 py-2 text-sm inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"}
                 onclick={handle_delete}
                 onkeydown={handle_keydown}
                 title={confirm_armed ? "Click again to confirm delete" : "Delete book"}
@@ -89,7 +89,7 @@ const formatted_date = $derived(format_date_string(book.upload_date))
             >
                 {#if confirm_armed}
                     <IconDelete class="w-5 h-5" />
-                    <span>Click again to confirm</span>
+                    <span>Confirm</span>
                 {:else}
                     <IconDelete class="w-5 h-5" />
                     <span>Delete</span>

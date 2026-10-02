@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { VoiceInfo } from "@repo/api-types"
 import { create_loading_state } from "@repo/sc2-utils"
-import { IconQueue, Spinner } from "@repo/ui"
+import { IconCheck, IconClipboard, IconQueue, Spinner } from "@repo/ui"
 import { onMount } from "svelte"
 import { page } from "$app/state"
 import { fetch_generate_tts, fetch_voices } from "$lib/api"
@@ -112,9 +112,11 @@ const overlay_url = $derived.by(() => {
                 ></textarea>
             </label>
             <button
+                type="button"
                 onclick={generate_audio}
                 disabled={user_text.trim() === "" || is_generating}
-                class="btn-primary w-full inline-flex items-center justify-center gap-2"
+                class="btn btn-primary w-full inline-flex items-center justify-center gap-2"
+                aria-label="Generate audio"
             >
                 {#if is_generating}
                     <Spinner />
@@ -163,10 +165,20 @@ const overlay_url = $derived.by(() => {
                     class="input flex-1"
                 >
                 <button
+                    type="button"
                     onclick={handle_copy_preview}
-                    class="btn-secondary ml-2"
+                    class={copied_preview
+                        ? "btn btn-success ml-2 inline-flex items-center justify-center gap-2"
+                        : "btn btn-secondary ml-2 inline-flex items-center justify-center gap-2"}
+                    aria-label={copied_preview ? "Preview text copied" : "Copy preview text"}
                 >
-                    {copied_preview ? "Copied!" : "Copy"}
+                    {#if copied_preview}
+                        <IconCheck class="w-5 h-5" />
+                        <span>Copied!</span>
+                    {:else}
+                        <IconClipboard class="w-5 h-5" />
+                        <span>Copy</span>
+                    {/if}
                 </button>
             </div>
         </div>
@@ -184,10 +196,20 @@ const overlay_url = $derived.by(() => {
                     class="input flex-1"
                 >
                 <button
+                    type="button"
                     onclick={handle_copy_overlay}
-                    class="btn-secondary ml-2"
+                    class={copied_overlay
+                        ? "btn btn-success ml-2 inline-flex items-center justify-center gap-2"
+                        : "btn btn-secondary ml-2 inline-flex items-center justify-center gap-2"}
+                    aria-label={copied_overlay ? "Overlay URL copied" : "Copy overlay URL"}
                 >
-                    {copied_overlay ? "Copied!" : "Copy"}
+                    {#if copied_overlay}
+                        <IconCheck class="w-5 h-5" />
+                        <span>Copied!</span>
+                    {:else}
+                        <IconClipboard class="w-5 h-5" />
+                        <span>Copy</span>
+                    {/if}
                 </button>
             </div>
             <label class="block mb-2"

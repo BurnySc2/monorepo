@@ -2,15 +2,26 @@
 
 /* Shared UI styles - use Tailwind's @apply for consistency across apps */
 
-.btn {
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    border: none;
-    font-size: 0.9rem;
-    transition:
-        opacity 0.2s,
-        box-shadow 0.2s;
+@layer components {
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        border: none;
+        font-size: 0.9rem;
+        min-height: 44px;
+        transition:
+            opacity 0.2s,
+            box-shadow 0.2s;
+    }
+
+    .btn-dense {
+        min-height: 0;
+    }
 }
 
 .btn-primary {
@@ -85,8 +96,20 @@
     opacity: 0.9;
 }
 
-.btn:disabled {
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-success:disabled,
+.btn-danger:disabled {
     @apply opacity-60 cursor-not-allowed;
+}
+
+.btn:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-success:focus-visible,
+.btn-danger:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
 }
 
 .input {
@@ -146,6 +169,19 @@
     font-size: 0.875rem;
     color: #888;
     margin: 0.25rem 0 0;
+}
+
+.drop-zone-compact {
+    padding: 0.75rem 1rem;
+}
+
+.drop-zone-compact .drop-zone-icon {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.drop-zone-compact .drop-zone-hint {
+    display: none;
 }
 
 .hidden-input {

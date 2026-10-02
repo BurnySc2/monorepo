@@ -1,4 +1,5 @@
 <script lang="ts">
+import { IconList, Spinner } from "@repo/ui"
 import { fetch_delete_file, fetch_queue_file, fetch_view_file } from "$lib/api"
 import { is_loading as columns_loading } from "$lib/column_settings.svelte"
 import ChannelsTab from "$lib/components/ChannelsTab.svelte"
@@ -66,11 +67,14 @@ function close_media_dialog() {
         <div class="flex gap-2">
             {#if active_tab !== "channels"}
                 <button
-                    class="h-full rounded-xl border-2 border-black p-2 hover:bg-yellow-500"
+                    class="h-full min-h-11 rounded-xl border-2 border-black p-2 hover:bg-yellow-500 inline-flex items-center justify-center gap-2"
                     type="button"
                     onclick={() => (show_column_dialog = true)}
+                    aria-haspopup="dialog"
+                    aria-label="Open column order dialog"
                 >
-                    Column order
+                    <IconList class="w-5 h-5" />
+                    <span>Column order</span>
                 </button>
             {/if}
         </div>
@@ -80,8 +84,11 @@ function close_media_dialog() {
             bind:active_tab
         >
             {#if !is_ready}
-                <div class="flex items-center justify-center p-8">
-                    <div class="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-500"></div>
+                <div
+                    class="flex items-center justify-center p-8"
+                    role="status"
+                >
+                    <Spinner />
                 </div>
             {:else if active_tab === "messages"}
                 <MessagesTab

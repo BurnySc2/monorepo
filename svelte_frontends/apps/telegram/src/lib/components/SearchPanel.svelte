@@ -1,5 +1,6 @@
 <script lang="ts">
 import type { components } from "@repo/api-types"
+import { IconRefresh, IconSearch } from "@repo/ui"
 import { onMount } from "svelte"
 import { fetch_channel_names } from "$lib/api"
 import type { SearchFilters } from "$lib/types"
@@ -158,11 +159,12 @@ function reset_duration() {
                     >
                 </div>
                 <button
-                    class="btn btn-secondary mt-2 w-full text-sm"
+                    class="btn btn-secondary mt-2 w-full text-sm inline-flex items-center justify-center gap-2"
                     type="button"
                     onclick={reset_duration}
                 >
-                    Reset
+                    <IconRefresh class="w-5 h-5" />
+                    <span>Reset</span>
                 </button>
             </fieldset>
 
@@ -223,10 +225,11 @@ function reset_duration() {
     </fieldset>
 
     <button
-        class="btn btn-primary w-full"
+        class="btn btn-primary w-full inline-flex items-center justify-center gap-2"
         type="button"
         onclick={onsearch}
     >
-        Search
+        <IconSearch class="w-5 h-5" />
+        <span>Search</span>
     </button>
 </div>
