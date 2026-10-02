@@ -107,6 +107,21 @@ describe("check_login_status", () => {
         expect(result.error_message).toBeNull()
     })
 
+    it("returns logged in without user when payload has no user", async () => {
+        globalThis.fetch = vi.fn().mockResolvedValue({
+            ok: true,
+            statusText: "OK",
+            json: () => Promise.resolve({ logged_in: true }),
+        }) as unknown as typeof fetch
+
+        const result = await check_login_status()
+
+        expect(result.is_loading).toBe(false)
+        expect(result.is_logged_in).toBe(true)
+        expect(result.logged_in_user).toBeNull()
+        expect(result.error_message).toBeNull()
+    })
+
     it("sets error message when fetch fails", async () => {
         globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"))
 
@@ -198,5 +213,43 @@ describe("handle_logout", () => {
         globalThis.fetch = vi.fn().mockRejectedValue(new Error("Network error"))
 
         await expect(handle_logout()).rejects.toThrow("Logout failed")
+    })
+
+    it("throws Logout failed on basic 500 without reloading", async () => {
+        const reloadSpy = vi.fn()
+        const location = create_mock_location()
+        location.reload = reloadSpy
+        const mockWindow = create_mock_window()
+        mockWindow.location = location
+        vi.stubGlobal("window", mockWindow)
+
+        globalThis.fetch = vi.fn().mockResolvedValue({
+            type: "basic",
+            ok: false,
+            status: 500,
+        }) as unknown as typeof fetch
+
+        await expect(handle_logout()).rejects.toThrow("Logout failed")
+
+        expect(reloadSpy).not.toHaveBeenCalled()
+    })
+
+    it("reloads once on basic 200 success", async () => {
+        const reloadSpy = vi.fn()
+        const location = create_mock_location()
+        location.reload = reloadSpy
+        const mockWindow = create_mock_window()
+        mockWindow.location = location
+        vi.stubGlobal("window", mockWindow)
+
+        globalThis.fetch = vi.fn().mockResolvedValue({
+            type: "basic",
+            ok: true,
+            status: 200,
+        }) as unknown as typeof fetch
+
+        await expect(handle_logout()).resolves.toBeUndefined()
+
+        expect(reloadSpy).toHaveBeenCalledTimes(1)
     })
 })
