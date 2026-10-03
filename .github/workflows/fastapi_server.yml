@@ -22,11 +22,16 @@ env:
 jobs:
   run_pre_commit_checks:
     name: pre_commit_check_py${{ matrix.python-version }}
+    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.12", "3.13", "3.14", "3.15"]
+        python-version: ["3.12", "3.13", "3.14"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.15"
+            experimental: true
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
 
@@ -56,11 +61,16 @@ jobs:
 
   test_backend:
     name: test_backend_py${{ matrix.python-version }}
+    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.11", "3.12", "3.13", "3.14", "3.15"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.15"
+            experimental: true
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
