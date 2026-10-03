@@ -8,8 +8,6 @@ let { children } = $props()
 const show_nav = !page.url.pathname.startsWith("/overlay")
 </script>
 
-<svelte:head> </svelte:head>
-
 {#if show_nav}
     <Navigation currentApp="TTS" />
 {/if}

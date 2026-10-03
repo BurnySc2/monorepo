@@ -18,8 +18,8 @@
         }
     },
     "scripts": {
-        "build": "svelte-kit sync && svelte-package --input=src",
-        "check": "svelte-check --tsconfig ./tsconfig.json",
+        "build": "svelte-package --input=src",
+        "check": "tsc --noEmit",
         "test": "vitest run",
         "test:unit": "vitest run",
         "test:integration": "echo 'No integration tests'"

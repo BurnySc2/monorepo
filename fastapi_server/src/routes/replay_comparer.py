@@ -3,6 +3,7 @@ from io import BytesIO
 from typing import Annotated
 
 import sc2reader
+import sc2reader.events
 from fastapi import APIRouter, File, Form, UploadFile
 from fastapi.responses import JSONResponse
 

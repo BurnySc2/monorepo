@@ -34,3 +34,8 @@ dist
 
 # build outputs
 build
+
+.env
+.env.*
+!.env.example
+!.env.production

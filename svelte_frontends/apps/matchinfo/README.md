@@ -17,8 +17,3 @@ apps/matchinfo/build
 ```sh
 svelte_frontends
 ```
-
-### Env variables
-```sh
-VITE_API_TARGET=burnysc2.xyz
-```

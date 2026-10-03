@@ -13,9 +13,3 @@ const STORAGE_KEY = "tts_settings"
 const persisted = create_persisted_state(STORAGE_KEY, TtsSettingsSchema, TtsSettingsSchema.parse({}))
 
 export const tts_settings = persisted.state
-
-export const is_loading = persisted.is_loading
-
-export function reset_tts_settings(): void {
-    persisted.reset()
-}

@@ -10,12 +10,23 @@ from websockets import ConnectionClosedError
 from components.tts.websocket_handler import TTSQueue, TTSQueueRunner
 
 
+@pytest.fixture(autouse=True)
+def _clean_tts_queue():
+    TTSQueue.text_queue.clear()
+    TTSQueue.connected_websockets.clear()
+    TTSQueue.twitch_irc_bots.clear()
+    yield
+    TTSQueue.text_queue.clear()
+    TTSQueue.connected_websockets.clear()
+    TTSQueue.twitch_irc_bots.clear()
+
+
 class TestTTSQueueRunnerRun:
     @pytest.mark.asyncio
     async def test_run_exits_when_queue_removed(self):
         """Test that worker exits when text queue no longer exists."""
         runner = TTSQueueRunner("stream1", "none")
-        runner.run()
+        await runner.run()
         await asyncio.sleep(0.05)
         assert runner.text_queue_exists is False
 
@@ -26,7 +37,7 @@ class TestTTSQueueRunnerRun:
         runner = TTSQueueRunner("stream1", "none")
 
         async def run_and_cancel():
-            runner.run()
+            await runner.run()
 
         task = asyncio.create_task(run_and_cancel())
         await asyncio.sleep(0.05)

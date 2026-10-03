@@ -6,6 +6,17 @@ import pytest
 from components.tts.websocket_handler import TTSQueue
 
 
+@pytest.fixture(autouse=True)
+def _clean_tts_queue():
+    TTSQueue.text_queue.clear()
+    TTSQueue.connected_websockets.clear()
+    TTSQueue.twitch_irc_bots.clear()
+    yield
+    TTSQueue.text_queue.clear()
+    TTSQueue.connected_websockets.clear()
+    TTSQueue.twitch_irc_bots.clear()
+
+
 class TestAddWebsocket:
     def test_add_websocket(self):
         """Test adding a WebSocket to TTSQueue."""

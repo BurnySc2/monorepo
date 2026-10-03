@@ -1,6 +1,5 @@
 <script lang="ts">
 import { is_local_host } from "@repo/api-client"
-import { onDestroy } from "svelte"
 import { calculate_reconnect_delay, clamp_volume_ratio } from "$lib/utils"
 
 // State initialized from URL params
@@ -51,11 +50,15 @@ function connect_ws(ws_url: string) {
         const raw_attempts = Number(sessionStorage.getItem("ws_reconnect_attempts") || "0")
         const stored_attempts = Number.isFinite(raw_attempts) && raw_attempts >= 0 ? Math.floor(raw_attempts) : 0
         const delay = calculate_reconnect_delay(stored_attempts)
-        sessionStorage.setItem("ws_reconnect_attempts", String(stored_attempts + 1))
+        sessionStorage.setItem("ws_reconnect_attempts", String(Math.min(stored_attempts + 1, 10)))
         if (reconnect_timer) {
             clearTimeout(reconnect_timer)
         }
         reconnect_timer = setTimeout(() => connect_ws(ws_url), delay)
+    })
+
+    ws.addEventListener("error", () => {
+        ws?.close()
     })
 }
 
@@ -86,14 +89,6 @@ $effect(() => {
         }
         ws?.close()
     }
-})
-
-onDestroy(() => {
-    if (reconnect_timer) {
-        clearTimeout(reconnect_timer)
-        reconnect_timer = null
-    }
-    ws?.close()
 })
 </script>
 

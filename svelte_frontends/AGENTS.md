@@ -264,6 +264,10 @@ const api_target = import.meta.env.VITE_API_TARGET as string | undefined;
 3. Create `$env/static/` or `$env/dynamic/` files in `$lib/` for typing
 4. Use `$env.VITE_*` pattern in code
 
+### Base Path
+
+`BASE_PATH` sets SvelteKit `paths.base` for production builds (see `packages/typescript-config/svelte_preset.ts:22`) and is declared as a Turborepo build env (see `turbo.json:10`). Dev mode uses an empty base.
+
 ---
 
 ## Build Configuration

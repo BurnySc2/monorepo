@@ -10,8 +10,8 @@
         "test": "vitest run",
         "test:unit": "vitest run",
         "test:integration": "echo 'No integration tests'",
-        "check": "svelte-check --tsconfig ./tsconfig.json",
-        "check-types": "svelte-check --tsconfig ./tsconfig.json"
+        "check": "tsc --noEmit",
+        "check-types": "tsc --noEmit"
     },
     "peerDependencies": {
         "svelte": "^5.0.0"

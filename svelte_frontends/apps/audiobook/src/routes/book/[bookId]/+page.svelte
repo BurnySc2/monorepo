@@ -456,7 +456,7 @@ $effect(() => {
             <div class="flex flex-col md:flex-row gap-2 flex-wrap">
                 <button
                     type="button"
-                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer btn btn-primary inline-flex items-center justify-center gap-2"
+                    class="flex-1 btn btn-primary inline-flex items-center justify-center gap-2"
                     onclick={handle_queue_all}
                     disabled={all_chapters_queued_or_have_audio}
                     title={all_chapters_queued_or_have_audio ? "All chapters already have audio" : ""}
@@ -467,7 +467,7 @@ $effect(() => {
                 </button>
                 <button
                     type="button"
-                    class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:opacity-90 cursor-pointer btn btn-primary relative inline-flex justify-center gap-2 items-center"
+                    class="flex-1 btn btn-primary inline-flex items-center justify-center gap-2"
                     onclick={handle_download_book}
                     disabled={is_downloading || !all_chapters_have_audio}
                     title={!all_chapters_have_audio ? "All chapters require audio" : ""}

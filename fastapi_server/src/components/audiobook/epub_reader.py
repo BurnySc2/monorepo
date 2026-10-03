@@ -63,7 +63,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
     ensure_nltk_data()
     try:
         c = EpubReader("")
-        # pyrefly: ignore
+        # pyrefly: ignore[missing-attribute]
         c.zf = zipfile.ZipFile(data)
         c._load_container()
         c._load_opf_file()
@@ -88,7 +88,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
                 epub_html: EpubHtml = chapter
                 chapter_title = epub_html.id
             else:
-                # pyrefly: ignore
+                # pyrefly: ignore[bad-assignment]
                 epub_html: EpubHtml = c.book.get_item_with_href(chapter.href.split("#")[0])  # noqa: F821
                 chapter_title = chapter.title
                 # Might be missing in some books
@@ -115,7 +115,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
             if combined_text != "" and combined_text != prev_text:
                 chapters.append(
                     EpubChapter(
-                        # pyrefly: ignore
+                        # pyrefly: ignore[bad-argument-type]
                         chapter_title=chapter_title,
                         chapter_number=chapter_number,
                         word_count=len(word_tokenize(combined_text)),
@@ -124,7 +124,7 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
                         combined_text=combined_text,
                     )
                 )
-                # pyrefly: ignore
+                # pyrefly: ignore[bad-assignment]
                 chapter_number += 1
                 prev_text = combined_text
 
@@ -156,7 +156,7 @@ class EpubMetadata(BaseModel):
 def extract_metadata(data: io.BytesIO) -> EpubMetadata:
     c = EpubReader("")
     try:
-        # pyrefly: ignore
+        # pyrefly: ignore[missing-attribute]
         c.zf = zipfile.ZipFile(data)
         c._load_container()
         c._load_opf_file()  # load title and toc etc

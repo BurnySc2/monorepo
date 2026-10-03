@@ -94,18 +94,20 @@ audio_bytes, duration = await generate_audio(cast(TTSEngine, "edge"), "voice_lab
 
 ```bash
 # Check
-uv run ruff check src/
+uv run ruff check .
 
 # Fix auto-fixable issues
-uv run ruff check src/ --fix
+uv run ruff check . --fix
 
 # Format
-uv run ruff format src/
+uv run ruff format .
 
 # Run both (common workflow)
-uv run ruff check src/ --fix && uv run ruff format src/
+uv run ruff check . --fix && uv run ruff format .
 # From monorepo root: add --project fastapi_server (e.g. uv run --project fastapi_server ruff check src/)
 ```
+
+Scope is repo root (covers src/+test/); use src/<path> for single file.
 
 **Key rules enforced:**
 - **Q**: Double quotes enforced
@@ -190,11 +192,6 @@ uv run pytest test/endpoints/login/test_login_twitch.py
 
 # Specific test
 uv run pytest test/endpoints/login/test_login_twitch.py::test_twitch_login_start
-
-# By marker
-uv run pytest -m endpoint     # endpoint tests only
-uv run pytest -m worker       # worker tests only
-uv run pytest -m "not slow"  # skip slow tests
 ```
 
 ### Key Fixtures (`test/conftest.py`)

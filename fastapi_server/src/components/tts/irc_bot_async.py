@@ -13,7 +13,7 @@ from typing import Literal
 from loguru import logger
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential, wait_random
 
-# pyrefly: ignore
+# pyrefly: ignore[bad-assignment]
 ALLOWED_NAME_LANGUAGES: dict[str, tuple[str | None, str | None]] = {
     # {str: (Voice label, suffix 'says')}
     "none": (None, None),

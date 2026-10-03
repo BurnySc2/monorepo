@@ -11,7 +11,8 @@ from main import app
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    with TestClient(app) as client:
+        yield client
 
 
 def _make_mock_player(name, mmr=None):

@@ -15,6 +15,8 @@ let is_generating = $state(create_loading_state(false).is_loading)
 let is_loading_voices = $state(create_loading_state(true).is_loading)
 let copied_preview = $state(false)
 let copied_overlay = $state(false)
+let preview_timer: ReturnType<typeof setTimeout> | null = null
+let overlay_timer: ReturnType<typeof setTimeout> | null = null
 
 let twitch_channel = $state("burnysc2")
 let twitch_volume = $state(15)
@@ -52,22 +54,34 @@ async function generate_audio() {
     }
 }
 
-async function copy_to_clipboard(text: string) {
-    await navigator.clipboard.writeText(text)
-}
-
 async function handle_copy_preview() {
-    await navigator.clipboard.writeText(preview_text)
+    if (preview_timer) {
+        clearTimeout(preview_timer)
+    }
+    try {
+        await navigator.clipboard.writeText(preview_text)
+    } catch (e) {
+        console.error("Failed to copy preview text", e)
+        return
+    }
     copied_preview = true
-    setTimeout(() => {
+    preview_timer = setTimeout(() => {
         copied_preview = false
     }, 2500)
 }
 
 async function handle_copy_overlay() {
-    await navigator.clipboard.writeText(overlay_url)
+    if (overlay_timer) {
+        clearTimeout(overlay_timer)
+    }
+    try {
+        await navigator.clipboard.writeText(overlay_url)
+    } catch (e) {
+        console.error("Failed to copy overlay URL", e)
+        return
+    }
     copied_overlay = true
-    setTimeout(() => {
+    overlay_timer = setTimeout(() => {
         copied_overlay = false
     }, 2500)
 }

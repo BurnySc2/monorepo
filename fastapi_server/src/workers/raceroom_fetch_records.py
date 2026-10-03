@@ -92,7 +92,7 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
 
     # Insert track if not exists
     track_names = {i.track_id: i.track_name for i in results}
-    # pyrefly: ignore
+    # pyrefly: ignore[missing-attribute]
     await RRRETrack.insert(
         *[
             RRRETrack(
@@ -101,12 +101,12 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
             )
             for dict_track_id, dict_track_name in track_names.items()
         ]
-        # pyrefly: ignore
+        # pyrefly: ignore[missing-attribute]
     ).on_conflict(target=RRRETrack.track_id, action="DO UPDATE", values=[RRRETrack.track_name])
 
     # Insert driver if not exists
     driver_names = {i.player_id: i.player_name for i in results}
-    # pyrefly: ignore
+    # pyrefly: ignore[missing-attribute]
     await RRREPlayer.insert(
         *[
             RRREPlayer(
@@ -115,11 +115,11 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
             )
             for driver_id, driver_name in driver_names.items()
         ]
-        # pyrefly: ignore
+        # pyrefly: ignore[missing-attribute]
     ).on_conflict(target=RRREPlayer.player_id, action="DO UPDATE", values=[RRREPlayer.player_name])
 
     # Insert best time if not inserted in db
-    # pyrefly: ignore
+    # pyrefly: ignore[missing-attribute]
     await RRREBestTime.insert(
         *[
             RRREBestTime(
@@ -133,7 +133,7 @@ async def update_db_data(results: list[BestTime], track_id: int) -> None:
             )
             for i in results
         ]
-        # pyrefly: ignore
+        # pyrefly: ignore[missing-attribute]
     ).on_conflict(action="DO NOTHING")
 
 
