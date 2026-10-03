@@ -1,0 +1,9 @@
+# WHY boot config required: image fails without config.yaml
+# See https://filebrowserquantum.com/en/docs/getting-started/docker-v1.5.x Step 2
+server:
+  port: 80
+  cacheDir: /home/filebrowser/data/tmp
+  sources:
+    - path: /folder
+      config:
+        defaultEnabled: true

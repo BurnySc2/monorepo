@@ -4,14 +4,13 @@ networks:
     external: true
 services:
   filebrowser:
-    # https://hub.docker.com/r/filebrowser/filebrowser/tags
-    image: filebrowser/filebrowser:v2.63.18-amd64
+    # https://github.com/gtsteffaniak/filebrowser/tags
+    image: ghcr.io/gtsteffaniak/filebrowser:1.5.6-stable
     container_name: filebrowser
     restart: unless-stopped
     volumes:
-      - ./data:/srv
-      - ./database:/database
-      - ./config:/config
+      - ./data:/folder
+      - ./database:/home/filebrowser/data
     user: '{{ USER_ID.stdout }}:{{ GROUP_ID.stdout }}'
     labels:
       - pangolin.public-resources.filebrowser.name=Filebrowser

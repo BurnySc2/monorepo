@@ -43,7 +43,15 @@
       loop:
         - /home/{{ USERNAME }}/data
         - /home/{{ USERNAME }}/database
-        - /home/{{ USERNAME }}/config
+        - /home/{{ USERNAME }}/database/tmp
+    - name: Template config.yaml file
+      template:
+        src: config.yaml
+        dest: /home/{{ USERNAME }}/database/config.yaml
+        owner: '{{ USER_ID.stdout }}'
+        group: '{{ GROUP_ID.stdout }}'
+        mode: '0640'
+        force: true
     - name: Copy docker-compose.yml file
       template:
         src: docker-compose.yml
