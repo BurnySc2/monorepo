@@ -6,6 +6,8 @@ With cookie name "store-idc" you can find the server name your sessionid works w
 
 https://github.com/oscie57/tiktok-voice/issues/1
 https://github.com/oscie57/tiktok-voice/wiki/Voice-Codes
+List of servers:
+https://gist.github.com/RupGautam/e6953b6e0a68ece63e6721309135190f
 """
 
 from __future__ import annotations
