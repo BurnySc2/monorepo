@@ -9,8 +9,8 @@
     },
     "exports": {
         "./svelte.json": "./svelte.json",
-        "./vite_preset": "./vite_preset.ts",
-        "./svelte_preset": "./svelte_preset.ts"
+        "./vite_preset": "./vite_preset.js",
+        "./svelte_preset": "./svelte_preset.js"
     },
     "peerDependencies": {
         "@sveltejs/adapter-static": "^3.0.0",
