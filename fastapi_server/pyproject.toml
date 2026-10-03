@@ -9,6 +9,10 @@ dependencies = [
     "beautifulsoup4>=4.12.3",
     # Epub Parsing
     "ebooklib>=0.18",
+    # PDF to EPUB (probe/parse, balanced text path)
+    "pypdf>=5",
+    "pdfplumber>=0.11",
+    "pillow>=10",
     # Web requests (sync + async)
     "httpx>=0.27.2",
     # Simple logger

@@ -15,6 +15,7 @@ from components.audiobook.epub_reader import ensure_nltk_data
 from routes.audiobook import audiobook_router
 from routes.index import IndexRouter
 from routes.login import login_router
+from routes.pdf_to_epub import pdf_to_epub_router
 from routes.raceroom import raceroom_router
 from routes.replay_comparer import replay_comparer_router
 from routes.replay_parser import replay_parser_router
@@ -73,6 +74,7 @@ app.include_router(replay_parser_router, prefix="/api")
 app.include_router(TTSRouter, prefix="/tts-api")
 app.include_router(tts_generate_router, prefix="/tts-generate")
 app.include_router(audiobook_router, prefix="/api/audiobook")
+app.include_router(pdf_to_epub_router, prefix="/api/pdf_to_epub")
 app.include_router(raceroom_router)
 app.include_router(replay_comparer_router, prefix="/api/replay_comparer")
 app.include_router(telegram_browser_router, prefix="/telegram-browser")
