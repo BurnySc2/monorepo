@@ -6,11 +6,12 @@ This is a monorepo of SvelteKit applications and shared packages using npm works
 
 ```
 svelte_frontends/
-├── apps/                    # 9 SvelteKit applications
+├── apps/                    # 10 SvelteKit applications
 │   ├── audiobook/
 │   ├── buildorder/
 │   ├── login/
 │   ├── matchinfo/
+│   ├── pdf_to_epub/
 │   ├── raceroom/
 │   ├── replay_comparer/
 │   ├── replay_pack_builder/
@@ -60,6 +61,7 @@ svelte_frontends/
 | replay_comparer | Replay comparison tool |
 | buildorder | Build order calculator |
 | matchinfo | Match information display |
+| pdf_to_epub | PDF to EPUB converter |
 
 ### Packages
 
@@ -128,6 +130,7 @@ Each app runs on a unique port:
 | replay_comparer | 5181 |
 | buildorder | 5182 |
 | matchinfo | 5183 |
+| pdf_to_epub | 5184 |
 
 When running `npm run dev` from root, all apps start concurrently on their respective ports.
 
@@ -228,6 +231,7 @@ npm run test:watch
 | replay_comparer | Yes (`vitest.config.ts`) | - |
 | buildorder | No (`echo 'No unit tests'`) | - |
 | matchinfo | No (`echo 'No unit tests'`) | - |
+| pdf_to_epub | Yes (no config file, default discovery) | - |
 
 ### Package Test Status
 
@@ -522,6 +526,7 @@ return resp.json();
 | audiobook | `src/lib/api/*.ts` | `get_books`, `get_book` (404 returns null via `get_api_error_status`), `upload_epub` (409 already-uploaded friendly error), `get_available_voices`, `update_book_title`, `update_book_author`, `queue_chapter_audio`, `delete_chapter_audio`, `queue_all_chapters`, `delete_book`, `delete_all_books`, `delete_all_audio`, `refresh_chapters` |
 | buildorder | — (direct `fetch` to SC2 local API `localhost:6119` + static data) | — |
 | matchinfo | — (direct `fetch` to SC2 local API `localhost:6119` + `nephest.com` via `encodeURIComponent`) | `nephestQuery` |
+| pdf_to_epub | `src/lib/api/pdf_to_epub.ts` (via `@repo/api-client`) + `src/lib/stores.ts` (via `@repo/persisted-state`), components `BookUpload`, `ChapterPreview` | `fetch_probe`, `fetch_preview`, `fetch_convert` |
 
 ---
 

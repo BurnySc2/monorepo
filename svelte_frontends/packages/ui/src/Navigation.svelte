@@ -11,6 +11,7 @@ interface App {
 const APPS: App[] = [
     { name: "Login", subdomain: "login", devPort: 5173 },
     { name: "Audiobook", subdomain: "audiobooks", devPort: 5178 },
+    { name: "PDF to EPUB", subdomain: "pdftoepub", devPort: 5184 },
     { name: "TTS", subdomain: "tts", devPort: 5174 },
     { name: "Raceroom", subdomain: "raceroom", devPort: 5180 },
     { name: "Replay Pack Builder", subdomain: "replaypack", devPort: 5175 },

@@ -1,0 +1,30 @@
+{
+    "name": "pdf_to_epub",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite dev",
+        "build": "svelte-kit sync && vite build",
+        "preview": "vite preview",
+        "test": "vitest run",
+        "test:unit": "vitest run",
+        "test:integration": "echo 'No integration tests'",
+        "check-types": "tsc --noEmit",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+    },
+    "dependencies": {
+        "@repo/api-client": "*",
+        "@repo/api-types": "*",
+        "@repo/persisted-state": "*",
+        "@repo/sc2-utils": "*",
+        "@repo/ui": "*",
+        "jszip": "^3.10.1",
+        "zod": "^4.3.6"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "*",
+        "@sveltejs/adapter-static": "^3.0.0"
+    }
+}

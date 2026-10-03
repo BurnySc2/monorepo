@@ -9,6 +9,7 @@
         "build:buildorder": "turbo run build --filter=./apps/buildorder...",
         "build:login": "turbo run build --filter=./apps/login...",
         "build:matchinfo": "turbo run build --filter=./apps/matchinfo...",
+        "build:pdf_to_epub": "turbo run build --filter=./apps/pdf_to_epub...",
         "build:raceroom": "turbo run build --filter=./apps/raceroom...",
         "build:replay_comparer": "turbo run build --filter=./apps/replay_comparer...",
         "build:replay_pack_builder": "turbo run build --filter=./apps/replay_pack_builder...",

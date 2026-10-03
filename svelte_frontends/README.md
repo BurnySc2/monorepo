@@ -7,13 +7,14 @@ A monorepo containing multiple Svelte 5/SvelteKit frontend applications for Star
 ```mermaid
 flowchart TB
     subgraph svelte_frontends["svelte_frontends"]
-        subgraph apps["Apps (9)"]
+        subgraph apps["Apps (10)"]
             buildorder[buildorder]
             matchinfo[matchinfo]
             replay_comparer[replay_comparer]
             replay_pack_builder[replay_pack_builder]
             raceroom[raceroom]
             audiobook[audiobook]
+            pdf_to_epub[pdf_to_epub]
             tts[tts]
             telegram[telegram]
             login[login]
@@ -36,6 +37,10 @@ flowchart TB
     audiobook --> api_client
     audiobook --> api_types
     audiobook --> persisted_state
+    pdf_to_epub --> ui
+    pdf_to_epub --> api_client
+    pdf_to_epub --> api_types
+    pdf_to_epub --> persisted_state
     login --> ui
     login --> api_client
     tts --> api_client
@@ -68,6 +73,7 @@ flowchart LR
 
     subgraph Media_Apps["Media"]
         audiobook["audiobook<br/>Upload/manage<br/>audiobook files"]
+        pdf_to_epub["pdf_to_epub<br/>Convert PDF<br/>to EPUB"]
         tts["tts<br/>Text-to-speech<br/>OBS overlay support"]
         telegram["telegram<br/>Search Telegram<br/>messages/media"]
     end
@@ -147,10 +153,13 @@ flowchart LR
     burnysc2_xyz --> matchinfo["match.burnysc2.xyz"]
     burnysc2_xyz --> raceroom["race.burnysc2.xyz"]
     burnysc2_xyz --> audiobook["book.burnysc2.xyz"]
+    burnysc2_xyz --> pdf_to_epub["pdftoepub.burnysc2.xyz"]
     burnysc2_xyz --> tts["tts.burnysc2.xyz"]
     burnysc2_xyz --> telegram["tg.burnysc2.xyz"]
     burnysc2_xyz --> login["login.burnysc2.xyz"]
 ```
+
+`pdftoepub.burnysc2.xyz` is served by Cloudflare Pages project `monorepo-pdf_to_epub-frontend` (custom domain via Cloudflare DNS). `VITE_API_TARGET` stays `burnysc2.xyz` (backend target, unchanged); no CORS/ansible/compose change needed — prod CORS regex in `fastapi_server/src/main.py:58` already covers `*.burnysc2.xyz`.
 
 ## Tech Stack
 
