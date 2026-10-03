@@ -1,0 +1,68 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+  forgejo-net:
+    driver: bridge
+services:
+  forgejo:
+    # https://forgejo.org/docs/v15.0/admin/installation/docker/
+    image: codeberg.org/forgejo/forgejo:15
+    container_name: forgejo
+    restart: unless-stopped
+    environment:
+      USER_UID: '{{ USER_ID.stdout }}'
+      USER_GID: '{{ GROUP_ID.stdout }}'
+      FORGEJO__database__DB_TYPE: postgres
+      FORGEJO__database__HOST: db:5432
+      FORGEJO__database__NAME: forgejo
+      FORGEJO__database__USER: forgejo
+      FORGEJO__database__PASSWD: '{{ secrets.FORGEJO.DB_PASSWORD }}'
+      FORGEJO__server__DOMAIN: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+      FORGEJO__server__ROOT_URL: 'https://{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}/'
+      FORGEJO__server__HTTP_PORT: '{{ APPLICATION_PORT }}'
+      FORGEJO__server__SSH_PORT: '{{ SSH_PORT }}'
+      FORGEJO__server__SSH_LISTEN_PORT: '22'
+      # WHY pangolin-only ingress, no direct 3000 publish; upstream requires non-wildcard value.
+      FORGEJO__security__REVERSE_PROXY_TRUSTED_PROXIES: '127.0.0.0/8,::1/128'
+    volumes:
+      - ./forgejo:/data
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - '{{ SSH_PORT }}:22'
+    networks:
+      - pangolin_newt
+      - forgejo-net
+    depends_on:
+      db:
+        condition: service_healthy
+    labels:
+      - pangolin.public-resources.forgejo.name=Forgejo
+      - pangolin.public-resources.forgejo.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.forgejo.protocol=http
+      - pangolin.public-resources.forgejo.auth.sso-enabled=false
+      - pangolin.public-resources.forgejo.targets[0].site=local
+      - pangolin.public-resources.forgejo.targets[0].method=http
+      - pangolin.public-resources.forgejo.targets[0].hostname=forgejo
+      - pangolin.public-resources.forgejo.targets[0].port={{ APPLICATION_PORT }}
+  db:
+    image: postgres:16-alpine  # WHY pg16 SSOT fleet standard
+    container_name: forgejo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: forgejo
+      POSTGRES_USER: forgejo
+      POSTGRES_PASSWORD: '{{ secrets.FORGEJO.DB_PASSWORD }}'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - forgejo-net
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U forgejo -d forgejo
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  db_data:

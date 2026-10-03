@@ -1,0 +1,61 @@
+---
+# Execute with
+# ansible-playbook forgejo_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service
+  hosts: server_group4
+  vars:
+    USERNAME: '{{ secrets.FORGEJO.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.FORGEJO.SUBDOMAIN }}'
+    APPLICATION_PORT: '3000'
+    SSH_PORT: '2222'
+  tasks:
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+      loop_control:
+        loop_var: item
+
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Get user id
+      ansible.builtin.shell:
+        cmd: id {{ USERNAME }} -u
+      register: USER_ID
+    - name: Get group id
+      ansible.builtin.shell:
+        cmd: id {{ USERNAME }} -g
+      register: GROUP_ID
+    - name: Create directories
+      file:
+        path: '{{ item }}'
+        recurse: true
+        state: directory
+        owner: '{{ USER_ID.stdout }}'
+        group: '{{ GROUP_ID.stdout }}'
+      loop:
+        - /home/{{ USERNAME }}/forgejo
+    - name: Copy docker-compose.yml file
+      template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+        owner: '{{ USER_ID.stdout }}'
+        group: '{{ GROUP_ID.stdout }}'
+        mode: '0640'
+    - name: Run `docker-compose down`
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: stopped
+      failed_when: false
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        pull: missing
