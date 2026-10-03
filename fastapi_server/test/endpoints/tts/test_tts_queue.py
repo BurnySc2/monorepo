@@ -3,7 +3,9 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from components import tts_generate
 from components.tts.websocket_handler import TTSQueue
+from schemas.tts import VoiceInfo
 
 
 @pytest.fixture(autouse=True)
@@ -133,6 +135,33 @@ class TestIsConnected:
 
 
 class TestIrcClientAddTextMethod:
+    @pytest.fixture(autouse=True)
+    def _seed_voice_cache(self):
+        """Seed voice cache so irc_client_add_text_method can resolve voices hermetically."""
+        original = dict(tts_generate._label_to_voice_info)
+        tts_generate._label_to_voice_info.clear()
+        tts_generate._label_to_voice_info.update(
+            {
+                ("tiktok", "narrator"): VoiceInfo(
+                    engine="tiktok",
+                    internal_name="en_male_narration",
+                    label="Narrator",
+                    gender="Male",
+                    locale="en-us",
+                ),
+                ("tiktok", "german female"): VoiceInfo(
+                    engine="tiktok",
+                    internal_name="de_001",
+                    label="German Female",
+                    gender="Female",
+                    locale="de-de",
+                ),
+            }
+        )
+        yield
+        tts_generate._label_to_voice_info.clear()
+        tts_generate._label_to_voice_info.update(original)
+
     def test_add_text_valid_voice(self):
         """Test parsing valid 'voice:text' message and adding to queue."""
         TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()

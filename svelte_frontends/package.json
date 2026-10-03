@@ -42,7 +42,7 @@
         "vitest": "^4.1.0"
     },
     "engines": {
-        "node": ">=18"
+        "node": ">=20"
     },
     "packageManager": "npm@11.11.1",
     "workspaces": [

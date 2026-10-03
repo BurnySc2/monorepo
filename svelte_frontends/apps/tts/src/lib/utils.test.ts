@@ -1,6 +1,6 @@
 import type { VoiceInfo } from "@repo/api-types"
 import * as fc from "fast-check"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
     build_overlay_url,
     calculate_reconnect_delay,
@@ -45,13 +45,13 @@ describe("copy_to_clipboard", () => {
     const mock_clipboard = {
         writeText: vi.fn(),
     }
-    Object.defineProperty(navigator, "clipboard", {
-        value: mock_clipboard,
-        writable: true,
-    })
-
     beforeEach(() => {
         vi.clearAllMocks()
+        vi.stubGlobal("navigator", { clipboard: mock_clipboard })
+    })
+
+    afterEach(() => {
+        vi.unstubAllGlobals()
     })
 
     it("calls navigator.clipboard.writeText with given text", async () => {

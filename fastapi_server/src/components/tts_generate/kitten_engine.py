@@ -40,8 +40,11 @@ def _get_binary_path() -> Path:
     _local_dir.mkdir(parents=True, exist_ok=True)
     tmp_tar = _local_dir / "kitten-tts.tar.gz"
     _download_file(_binary_url, tmp_tar)
+    # WHY filter=data: remote tarball must not escape target — see PEP 706.
     with tarfile.open(tmp_tar) as tf:
-        tf.extractall(_local_dir)
+        tf.extractall(_local_dir, filter="data")
+    # WHY chmod 755: data filter strips exec bit required by binary — see PEP 706.
+    _binary_path.chmod(0o755)
     tmp_tar.unlink()
     return _binary_path
 
@@ -52,8 +55,9 @@ def _ensure_models() -> Path:
     _local_dir.mkdir(parents=True, exist_ok=True)
     tmp_tar = _local_dir / "kitten-tts-models.tar.gz"
     _download_file(_model_url, tmp_tar)
+    # WHY filter=data: remote tarball must not escape target — see PEP 706.
     with tarfile.open(tmp_tar) as tf:
-        tf.extractall(_local_dir)
+        tf.extractall(_local_dir, filter="data")
     tmp_tar.unlink()
     return _model_dir
 
