@@ -64,18 +64,6 @@ def test_preview_outline_success(client: TestClient) -> None:
         assert chapter["preview"]
 
 
-def test_preview_minimal_tables_warning(client: TestClient) -> None:
-    data = _read_fixture("small_text.pdf")
-    response = client.post(
-        "/api/pdf_to_epub/preview",
-        files={"file": ("small_text.pdf", data, "application/pdf")},
-        data={"parser": "minimal"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert any("minimal" in warning.lower() for warning in body["warnings"])
-
-
 def test_convert_success_magic(client: TestClient) -> None:
     data = _read_fixture("outline.pdf")
     response = client.post(
@@ -200,28 +188,6 @@ def test_convert_invalid_range_400(client: TestClient) -> None:
         data={"page_start": "99"},
     )
     assert response.status_code == 400
-
-
-def test_preview_max_quality_disabled_422(client: TestClient) -> None:
-    data = _read_fixture("small_text.pdf")
-    response = client.post(
-        "/api/pdf_to_epub/preview",
-        files={"file": ("small_text.pdf", data, "application/pdf")},
-        data={"parser": "max_quality"},
-    )
-    assert response.status_code == 422
-    assert "disabled" in response.json()["detail"].lower()
-
-
-def test_convert_max_quality_disabled_422(client: TestClient) -> None:
-    data = _read_fixture("small_text.pdf")
-    response = client.post(
-        "/api/pdf_to_epub/convert",
-        files={"file": ("small_text.pdf", data, "application/pdf")},
-        data={"parser": "max_quality"},
-    )
-    assert response.status_code == 422
-    assert "disabled" in response.json()["detail"].lower()
 
 
 def test_preview_outline_missing_fallback_warns(client: TestClient) -> None:

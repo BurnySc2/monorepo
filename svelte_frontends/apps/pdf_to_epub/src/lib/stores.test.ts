@@ -2,10 +2,6 @@ import { describe, expect, it } from "vitest"
 import { load_pdf_settings } from "./stores"
 
 describe("pdf settings defaults", () => {
-    it("uses balanced parser by default", () => {
-        expect(load_pdf_settings().parser).toBe("balanced")
-    })
-
     it("uses auto chapter mode by default", () => {
         expect(load_pdf_settings().chapter_mode).toBe("auto")
     })
@@ -24,10 +20,9 @@ describe("pdf settings defaults", () => {
         expect(load_pdf_settings().max_chapters).toBe(300)
     })
 
-    it("enables images tables strip clean cover by default", () => {
+    it("enables images strip clean cover by default", () => {
         const settings = load_pdf_settings()
         expect(settings.include_images).toBe(true)
-        expect(settings.include_tables).toBe(true)
         expect(settings.strip_headers).toBe(true)
         expect(settings.clean_hyphens).toBe(true)
         expect(settings.use_cover).toBe(true)

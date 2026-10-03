@@ -1,6 +1,5 @@
 import { api_fetch, get_api_error_status } from "@repo/api-client"
 
-export type PdfParser = "balanced" | "minimal" | "max_quality"
 export type PdfChapterMode = "auto" | "outline" | "heuristic" | "single"
 export type PdfHeuristicSensitivity = "low" | "medium" | "high"
 export type PdfChapterSource = "outline" | "heuristic" | "single"
@@ -32,7 +31,6 @@ export interface PdfPreviewResult {
 }
 
 export interface PdfPreviewOptions {
-    parser: PdfParser
     chapter_mode: PdfChapterMode
     page_start: number | null
     page_end: number | null
@@ -40,7 +38,6 @@ export interface PdfPreviewOptions {
     min_chapter_chars: number
     max_chapters: number
     include_images: boolean
-    include_tables: boolean
     strip_headers: boolean
     clean_hyphens: boolean
 }
@@ -54,7 +51,6 @@ export interface PdfConvertOptions extends PdfPreviewOptions {
 }
 
 function append_pdf_preview_options(form_data: FormData, options: PdfPreviewOptions): void {
-    form_data.append("parser", options.parser)
     form_data.append("chapter_mode", options.chapter_mode)
     if (options.page_start !== null) {
         form_data.append("page_start", String(options.page_start))
@@ -66,7 +62,6 @@ function append_pdf_preview_options(form_data: FormData, options: PdfPreviewOpti
     form_data.append("min_chapter_chars", String(options.min_chapter_chars))
     form_data.append("max_chapters", String(options.max_chapters))
     form_data.append("include_images", String(options.include_images))
-    form_data.append("include_tables", String(options.include_tables))
     form_data.append("strip_headers", String(options.strip_headers))
     form_data.append("clean_hyphens", String(options.clean_hyphens))
 }
@@ -131,7 +126,7 @@ export function get_pdf_error_message(error: unknown): string {
         return `Not a PDF file: upload a valid .pdf file${suffix}`
     }
     if (status === 422) {
-        return `PDF cannot be processed (scanned, encrypted, disabled parser, or no chapters)${suffix}`
+        return `PDF cannot be processed (scanned, encrypted, or no chapters)${suffix}`
     }
     if (status === 400) {
         return `Invalid PDF request: bad page range or unreadable file${suffix}`

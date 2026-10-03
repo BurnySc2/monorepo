@@ -30,7 +30,6 @@ function mock_fail(status: number, statusText: string) {
 
 function base_options(overrides: Partial<PdfConvertOptions> = {}): PdfConvertOptions {
     return {
-        parser: "balanced",
         chapter_mode: "auto",
         page_start: null,
         page_end: null,
@@ -38,7 +37,6 @@ function base_options(overrides: Partial<PdfConvertOptions> = {}): PdfConvertOpt
         min_chapter_chars: 500,
         max_chapters: 300,
         include_images: true,
-        include_tables: true,
         strip_headers: true,
         clean_hyphens: true,
         title: null,
@@ -91,13 +89,11 @@ describe("pdf_to_epub API", () => {
         const url = mock_fetch.mock.calls[0][0] as string
         expect(url).toContain("/api/pdf_to_epub/preview")
         const form = last_form()
-        expect(form.get("parser")).toBe("balanced")
         expect(form.get("chapter_mode")).toBe("auto")
         expect(form.get("heuristic_sensitivity")).toBe("medium")
         expect(form.get("min_chapter_chars")).toBe("500")
         expect(form.get("max_chapters")).toBe("300")
         expect(form.get("include_images")).toBe("true")
-        expect(form.get("include_tables")).toBe("true")
         expect(form.get("strip_headers")).toBe("true")
         expect(form.get("clean_hyphens")).toBe("true")
         expect(form.has("title")).toBe(false)
@@ -194,7 +190,7 @@ describe("pdf_to_epub API", () => {
 
     it("get_pdf_error_message maps 422 processing failure", () => {
         const message = get_pdf_error_message({ status: 422 })
-        expect(message.toLowerCase()).toMatch(/scanned|encrypted|no chapters|disabled/)
+        expect(message.toLowerCase()).toMatch(/scanned|encrypted|no chapters/)
     })
 
     it("get_pdf_error_message passes backend detail through", () => {

@@ -1,10 +1,8 @@
 """PDF parser for the pdf_to_epub feature.
 
 Probe via pypdf plus page text extraction with page-range slicing and
-repeated header/footer filtering. Balanced uses pdfplumber when available
-with pypdf fallback; minimal stays pypdf-only; max_quality is disabled.
-Images come from pypdf XObjects with Pillow downscaling; tables come from
-pdfplumber as simple HTML; mojibake surfaces as warnings, never failures.
+repeated header/footer filtering. Images come from pypdf XObjects with
+Pillow downscaling; mojibake surfaces as warnings, never failures.
 """
 
 from __future__ import annotations
@@ -12,12 +10,10 @@ from __future__ import annotations
 import contextlib
 import gc
 import hashlib
-import html
 import io
 import statistics
 from collections import Counter
 from dataclasses import dataclass
-from typing import Literal
 
 from PIL import Image
 from pypdf import PdfReader
@@ -29,13 +25,6 @@ class ScannedPdfError(Exception):
 
 class EncryptedPdfError(Exception):
     """Raised when a PDF requires a password to open."""
-
-
-class MaxQualityDisabledError(Exception):
-    """Raised when the max_quality parser is requested while disabled."""
-
-
-ParserKind = Literal["balanced", "minimal", "max_quality"]
 
 
 @dataclass
@@ -188,24 +177,31 @@ def _median_text_chars(reader: PdfReader, total_pages: int) -> float:
 
 def probe_pdf(data: bytes) -> PdfProbeResult:
     """Return quick facts for a PDF, rejecting encrypted and scanned files."""
-    reader = PdfReader(io.BytesIO(data))
-    if reader.is_encrypted:
-        raise EncryptedPdfError("encrypted PDF; password-protected files are not supported")
-    total_pages = len(reader.pages)
-    if total_pages == 0:
-        raise ScannedPdfError("no extractable text found; scanned PDFs are not supported")
-    has_outline = _has_outline(reader)
-    has_images = _has_images(reader)
-    metadata = _extract_metadata(reader)
-    median_chars = _median_text_chars(reader, total_pages)
-    if median_chars < SCANNED_CHARS_THRESHOLD:
-        raise ScannedPdfError("no extractable text found; scanned PDFs are not supported")
-    return PdfProbeResult(
-        total_pages=total_pages,
-        has_outline=has_outline,
-        has_images=has_images,
-        metadata=metadata,
-    )
+    stream = io.BytesIO(data)
+    reader = PdfReader(stream)
+    try:
+        if reader.is_encrypted:
+            raise EncryptedPdfError("encrypted PDF; password-protected files are not supported")
+        total_pages = len(reader.pages)
+        if total_pages == 0:
+            raise ScannedPdfError("no extractable text found; scanned PDFs are not supported")
+        has_outline = _has_outline(reader)
+        has_images = _has_images(reader)
+        metadata = _extract_metadata(reader)
+        median_chars = _median_text_chars(reader, total_pages)
+        if median_chars < SCANNED_CHARS_THRESHOLD:
+            raise ScannedPdfError("no extractable text found; scanned PDFs are not supported")
+        return PdfProbeResult(
+            total_pages=total_pages,
+            has_outline=has_outline,
+            has_images=has_images,
+            metadata=metadata,
+        )
+    finally:
+        del reader
+        with contextlib.suppress(Exception):
+            stream.close()
+        gc.collect()
 
 
 def _flatten_outline(reader: PdfReader, items: list[object], out: list[OutlineEntry]) -> None:
@@ -225,7 +221,8 @@ def _flatten_outline(reader: PdfReader, items: list[object], out: list[OutlineEn
 
 def extract_outline(data: bytes) -> list[OutlineEntry]:
     """Return flattened outline entries with 1-based start pages."""
-    reader = PdfReader(io.BytesIO(data))
+    stream = io.BytesIO(data)
+    reader = PdfReader(stream)
     try:
         if reader.is_encrypted:
             raise EncryptedPdfError("encrypted PDF; password-protected files are not supported")
@@ -240,6 +237,8 @@ def extract_outline(data: bytes) -> list[OutlineEntry]:
         return sorted(entries, key=lambda entry: entry.start_page)
     finally:
         del reader
+        with contextlib.suppress(Exception):
+            stream.close()
         gc.collect()
 
 
@@ -265,44 +264,14 @@ def _extract_text_pypdf(reader: PdfReader, index: int) -> str:
 
 
 def _extract_texts_pypdf(data: bytes, indices: list[int]) -> list[str]:
-    reader = PdfReader(io.BytesIO(data))
+    stream = io.BytesIO(data)
+    reader = PdfReader(stream)
     try:
         return [_extract_text_pypdf(reader, index) for index in indices]
     finally:
         del reader
-        gc.collect()
-
-
-def _extract_texts_balanced(data: bytes, indices: list[int]) -> list[str]:
-    try:
-        import pdfplumber  # type: ignore[import-not-found]
-    except Exception:  # noqa: BLE001
-        return _extract_texts_pypdf(data, indices)
-    doc = None
-    try:
-        doc = pdfplumber.open(io.BytesIO(data))
-        if doc is None or not getattr(doc, "pages", None):
-            return _extract_texts_pypdf(data, indices)
-        texts: list[str] = []
-        for index in indices:
-            if 0 <= index < len(doc.pages):
-                try:
-                    texts.append(doc.pages[index].extract_text() or "")
-                except Exception:  # noqa: BLE001
-                    texts.append("")
-            else:
-                texts.append("")
-        if all(not text.strip() for text in texts):
-            return _extract_texts_pypdf(data, indices)
-        return texts
-    except Exception:  # noqa: BLE001
-        return _extract_texts_pypdf(data, indices)
-    finally:
-        try:
-            if doc is not None:
-                doc.close()
-        except Exception:  # noqa: BLE001
-            pass
+        with contextlib.suppress(Exception):
+            stream.close()
         gc.collect()
 
 
@@ -366,15 +335,11 @@ def extract_pages(
     data: bytes,
     page_start: int = 1,
     page_end: int | None = None,
-    parser: ParserKind = "balanced",
     strip_headers: bool = True,
 ) -> list[PageText]:
     """Extract page texts for a 1-based inclusive range with header filtering."""
-    if parser == "max_quality":
-        raise MaxQualityDisabledError("max_quality parser is disabled; use balanced or minimal")
-    if parser not in ("balanced", "minimal"):
-        raise ValueError(f"unknown parser: {parser}")
-    reader = PdfReader(io.BytesIO(data))
+    stream = io.BytesIO(data)
+    reader = PdfReader(stream)
     try:
         if reader.is_encrypted:
             raise EncryptedPdfError("encrypted PDF; password-protected files are not supported")
@@ -386,8 +351,10 @@ def extract_pages(
         page_numbers = list(range(start, end + 1))
     finally:
         del reader
+        with contextlib.suppress(Exception):
+            stream.close()
         gc.collect()
-    raw_texts = _extract_texts_pypdf(data, indices) if parser == "minimal" else _extract_texts_balanced(data, indices)
+    raw_texts = _extract_texts_pypdf(data, indices)
     if strip_headers:
         raw_texts = _strip_repeated_headers(raw_texts)
     pages = [PageText(page_number=number, text=text) for number, text in zip(page_numbers, raw_texts, strict=True)]
@@ -443,8 +410,13 @@ def _pil_to_jpeg_bytes(pil_image: Image.Image) -> tuple[bytes, int, int]:
         image = image.resize((MAX_IMAGE_WIDTH, scaled_height), Image.Resampling.LANCZOS)
         width, height = image.size
     buffer = io.BytesIO()
-    image.save(buffer, format="JPEG", quality=IMAGE_JPEG_QUALITY, optimize=True)
-    return buffer.getvalue(), width, height
+    try:
+        image.save(buffer, format="JPEG", quality=IMAGE_JPEG_QUALITY, optimize=True)
+        jpeg_bytes = buffer.getvalue()
+        return jpeg_bytes, width, height
+    finally:
+        with contextlib.suppress(Exception):
+            buffer.close()
 
 
 def _decode_xobject_as_pil(entry: object) -> Image.Image | None:
@@ -461,8 +433,13 @@ def _decode_xobject_as_pil(entry: object) -> Image.Image | None:
         try:
             raw = get_data()
             if isinstance(raw, bytes) and raw:
-                with Image.open(io.BytesIO(raw)) as opened:
-                    return opened.copy()
+                stream = io.BytesIO(raw)
+                try:
+                    with Image.open(stream) as opened:
+                        return opened.copy()
+                finally:
+                    with contextlib.suppress(Exception):
+                        stream.close()
         except Exception:  # noqa: BLE001
             pass
     try:
@@ -531,10 +508,15 @@ def extract_images(
     warnings: list[str] = []
     if not include_images:
         return [], warnings
+    stream: io.BytesIO | None = None
     try:
-        reader = PdfReader(io.BytesIO(data))
+        stream = io.BytesIO(data)
+        reader = PdfReader(stream)
     except Exception as exc:  # noqa: BLE001
         warnings.append(f"images skipped: unreadable PDF ({exc})")
+        if stream is not None:
+            with contextlib.suppress(Exception):
+                stream.close()
         return [], warnings
     try:
         if reader.is_encrypted:
@@ -543,15 +525,19 @@ def extract_images(
         entries = _iter_image_entries(reader)
         total_pages = len(reader.pages)
     finally:
-        del reader
+        with contextlib.suppress(UnboundLocalError, NameError):
+            del reader
+        if stream is not None:
+            with contextlib.suppress(Exception):
+                stream.close()
         gc.collect()
     if total_pages == 0:
         return [], warnings
     start, end = _validate_page_range(total_pages, page_start, page_end)
     entries = [(page_number, entry) for page_number, entry in entries if start <= page_number <= end]
-    images: list[ExtractedImage] = []
-    seen_hashes: set[str] = set()
-    skipped_oversize = 0
+    # WHY two-phase: decode entry dicts to PIL copies immediately, then release
+    # pypdf dicts before heavy JPEG resize/encode work.
+    decoded: list[tuple[int, Image.Image]] = []
     skipped_unreadable = 0
     for page_number, entry in entries:
         pil_image = _decode_xobject_as_pil(entry)
@@ -559,6 +545,16 @@ def extract_images(
             skipped_unreadable += 1
             warnings.append(f"skipped unreadable image on page {page_number}")
             continue
+        decoded.append((page_number, pil_image))
+    # Release entry dicts (bytes already copied into PIL) before heavy Pillow work.
+    del entries
+    with contextlib.suppress(NameError):
+        del entry  # type: ignore[has-type]
+    gc.collect()
+    images: list[ExtractedImage] = []
+    seen_hashes: set[str] = set()
+    skipped_oversize = 0
+    for page_number, pil_image in decoded:
         try:
             jpeg_bytes, width, height = _pil_to_jpeg_bytes(pil_image)
         except Exception:  # noqa: BLE001
@@ -590,130 +586,11 @@ def extract_images(
                 page_number=page_number,
             )
         )
+    del decoded
+    with contextlib.suppress(NameError):
+        del pil_image  # type: ignore[has-type]
     gc.collect()
     return images, warnings
-
-
-def _render_table_html(table: list[list[str | None]]) -> str | None:
-    rows: list[str] = []
-    for row in table:
-        cells = [html.escape((cell or "").strip()) for cell in row]
-        if not any(cells):
-            continue
-        cells_html = "".join(f"<td>{cell}</td>" for cell in cells)
-        rows.append(f"<tr>{cells_html}</tr>")
-    if not rows:
-        return None
-    return f"<table>{''.join(rows)}</table>"
-
-
-def extract_tables_html(
-    data: bytes,
-    page_number: int,
-    parser: ParserKind = "balanced",
-    include_tables: bool = True,
-) -> tuple[list[str], list[str]]:
-    """Render one 1-based page's tables as simple HTML; minimal warns and returns text only."""
-    if not include_tables:
-        return [], []
-    if parser == "max_quality":
-        raise MaxQualityDisabledError("max_quality parser is disabled; use balanced or minimal")
-    if parser not in ("balanced", "minimal"):
-        raise ValueError(f"unknown parser: {parser}")
-    if parser == "minimal":
-        return [], ["tables skipped: minimal parser extracts text only; use balanced for tables"]
-    try:
-        import pdfplumber  # type: ignore[import-not-found]
-    except Exception:  # noqa: BLE001
-        return [], ["tables unavailable: pdfplumber not installed"]
-    try:
-        doc = pdfplumber.open(io.BytesIO(data))
-    except Exception as exc:  # noqa: BLE001
-        return [], [f"tables skipped: unreadable PDF ({exc})"]
-    try:
-        if doc is None or not getattr(doc, "pages", None):
-            return [], ["tables skipped: unreadable PDF"]
-        if page_number < 1 or page_number > len(doc.pages):
-            return [], [f"tables skipped: page {page_number} out of range"]
-        try:
-            raw_tables = doc.pages[page_number - 1].extract_tables() or []
-        except Exception as exc:  # noqa: BLE001
-            return [], [f"tables skipped on page {page_number} ({exc})"]
-        rendered: list[str] = []
-        for table in raw_tables:
-            rendered_table = _render_table_html(table)
-            if rendered_table is not None:
-                rendered.append(rendered_table)
-        return rendered, []
-    finally:
-        with contextlib.suppress(Exception):
-            doc.close()
-        gc.collect()
-
-
-def extract_all_tables_html(
-    data: bytes,
-    parser: ParserKind = "balanced",
-    include_tables: bool = True,
-    page_start: int = 1,
-    page_end: int | None = None,
-) -> tuple[dict[int, list[str]], list[str]]:
-    """Render tables for pages in [page_start, page_end], keyed by 1-based page number."""
-    if not include_tables:
-        return {}, []
-    if parser == "max_quality":
-        raise MaxQualityDisabledError("max_quality parser is disabled; use balanced or minimal")
-    if parser not in ("balanced", "minimal"):
-        raise ValueError(f"unknown parser: {parser}")
-    if parser == "minimal":
-        return {}, ["tables skipped: minimal parser extracts text only; use balanced for tables"]
-    try:
-        reader = PdfReader(io.BytesIO(data))
-        total_pages = len(reader.pages)
-    except Exception as exc:  # noqa: BLE001
-        return {}, [f"tables skipped: unreadable PDF ({exc})"]
-    finally:
-        with contextlib.suppress(UnboundLocalError):
-            del reader
-        gc.collect()
-    if total_pages == 0:
-        return {}, []
-    start, end = _validate_page_range(total_pages, page_start, page_end)
-    try:
-        import pdfplumber  # type: ignore[import-not-found]
-    except Exception:  # noqa: BLE001
-        return {}, ["tables unavailable: pdfplumber not installed"]
-    try:
-        doc = pdfplumber.open(io.BytesIO(data))
-    except Exception as exc:  # noqa: BLE001
-        return {}, [f"tables skipped: unreadable PDF ({exc})"]
-    try:
-        if doc is None or not getattr(doc, "pages", None):
-            return {}, ["tables skipped: unreadable PDF"]
-        by_page: dict[int, list[str]] = {}
-        warnings: list[str] = []
-        for index in range(start - 1, end):
-            page_number = index + 1
-            if not 0 <= index < len(doc.pages):
-                warnings.append(f"tables skipped: page {page_number} out of range")
-                continue
-            try:
-                raw_tables = doc.pages[index].extract_tables() or []
-            except Exception as exc:  # noqa: BLE001
-                warnings.append(f"tables skipped on page {page_number} ({exc})")
-                continue
-            rendered: list[str] = []
-            for table in raw_tables:
-                rendered_table = _render_table_html(table)
-                if rendered_table is not None:
-                    rendered.append(rendered_table)
-            if rendered:
-                by_page[page_number] = rendered
-        return by_page, warnings
-    finally:
-        with contextlib.suppress(Exception):
-            doc.close()  # type: ignore[union-attr]
-        gc.collect()
 
 
 _MOJIBAKE_MARKERS = ("�", "Ã©", "Ã¨", "Ãª", "Ã´", "Ã±", "â€", "Â ", "Ã ", "ðŸ", "\ufffd")

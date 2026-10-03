@@ -23,7 +23,6 @@ from components.pdf_to_epub.parser import (
     PageText,
     detect_mojibake_warnings,
     extract_images,
-    extract_tables_html,
 )
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -168,16 +167,6 @@ def test_images_extract_dedupe_and_caps() -> None:
     assert len(seen_hashes) == len(images)
     empty_images, _empty_warnings = extract_images((FIXTURES / "small_text.pdf").read_bytes())
     assert empty_images == []
-
-
-def test_tables_minimal_warns_and_balanced_html() -> None:
-    data = (FIXTURES / "small_text.pdf").read_bytes()
-    balanced_tables, balanced_warnings = extract_tables_html(data, 1, parser="balanced", include_tables=True)
-    assert balanced_warnings == []
-    assert balanced_tables == []
-    minimal_tables, minimal_warnings = extract_tables_html(data, 1, parser="minimal", include_tables=True)
-    assert minimal_tables == []
-    assert any("minimal" in warning.lower() for warning in minimal_warnings)
 
 
 def test_mojibake_warnings_do_not_fail() -> None:

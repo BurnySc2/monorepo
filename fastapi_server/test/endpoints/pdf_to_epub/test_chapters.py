@@ -9,7 +9,6 @@ from components.pdf_to_epub.chapters import (
     detect_chapters,
 )
 from components.pdf_to_epub.parser import (
-    MaxQualityDisabledError,
     OutlineEntry,
     PageText,
     extract_pages,
@@ -141,27 +140,21 @@ def test_cleanup_text_hyphens_ligatures_whitespace() -> None:
 
 def test_extract_pages_range_and_minimal() -> None:
     data = (FIXTURES / "small_text.pdf").read_bytes()
-    pages = extract_pages(data, page_start=1, page_end=2, parser="minimal")
+    pages = extract_pages(data, page_start=1, page_end=2)
     assert len(pages) == 2
     assert pages[0].page_number == 1
-    single = extract_pages(data, page_start=2, page_end=2, parser="minimal")
+    single = extract_pages(data, page_start=2, page_end=2)
     assert len(single) == 1
     assert single[0].page_number == 2
 
 
 def test_extract_pages_strip_headers_drops_repeated() -> None:
     data = (FIXTURES / "small_text.pdf").read_bytes()
-    pages = extract_pages(data, parser="minimal", strip_headers=True)
+    pages = extract_pages(data, strip_headers=True)
     assert len(pages) == 2
-
-
-def test_extract_pages_max_quality_disabled() -> None:
-    data = (FIXTURES / "small_text.pdf").read_bytes()
-    with pytest.raises(MaxQualityDisabledError):
-        extract_pages(data, parser="max_quality")
 
 
 def test_extract_pages_invalid_range_rejected() -> None:
     data = (FIXTURES / "small_text.pdf").read_bytes()
     with pytest.raises(ValueError):
-        extract_pages(data, page_start=3, page_end=2, parser="minimal")
+        extract_pages(data, page_start=3, page_end=2)

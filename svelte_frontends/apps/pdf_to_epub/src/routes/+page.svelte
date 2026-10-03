@@ -5,10 +5,9 @@ import { fetch_convert, fetch_preview, fetch_probe, get_pdf_error_message } from
 import BookUpload from "$lib/components/BookUpload.svelte"
 import ChapterPreview from "$lib/components/ChapterPreview.svelte"
 import type { PdfSettings } from "$lib/stores"
-import { is_loading, load_pdf_settings, save_pdf_settings } from "$lib/stores"
+import { load_pdf_settings, save_pdf_settings } from "$lib/stores"
 
 let selected_file: File | null = $state(null)
-let parser: PdfSettings["parser"] = $state(load_pdf_settings().parser)
 let chapter_mode: PdfSettings["chapter_mode"] = $state(load_pdf_settings().chapter_mode)
 let heuristic_sensitivity: PdfSettings["heuristic_sensitivity"] = $state(load_pdf_settings().heuristic_sensitivity)
 let page_start: number | null = $state(load_pdf_settings().page_start)
@@ -16,7 +15,6 @@ let page_end: number | null = $state(load_pdf_settings().page_end)
 let min_chapter_chars: number = $state(load_pdf_settings().min_chapter_chars)
 let max_chapters: number = $state(load_pdf_settings().max_chapters)
 let include_images: boolean = $state(load_pdf_settings().include_images)
-let include_tables: boolean = $state(load_pdf_settings().include_tables)
 let strip_headers: boolean = $state(load_pdf_settings().strip_headers)
 let clean_hyphens: boolean = $state(load_pdf_settings().clean_hyphens)
 let use_cover: boolean = $state(load_pdf_settings().use_cover)
@@ -46,7 +44,6 @@ let is_dirty = $derived.by(() => {
 
 function preview_key(): string {
     return JSON.stringify({
-        parser,
         chapter_mode,
         page_start: normalize_page(page_start),
         page_end: normalize_page(page_end),
@@ -54,7 +51,6 @@ function preview_key(): string {
         min_chapter_chars,
         max_chapters,
         include_images,
-        include_tables,
         strip_headers,
         clean_hyphens,
     })
@@ -84,7 +80,6 @@ function build_convert_options(): PdfConvertOptions {
         chapter_titles = edited_titles.map((entry) => (typeof entry === "string" ? entry : ""))
     }
     return {
-        parser,
         chapter_mode,
         page_start: normalize_page(page_start),
         page_end: normalize_page(page_end),
@@ -92,7 +87,6 @@ function build_convert_options(): PdfConvertOptions {
         min_chapter_chars,
         max_chapters,
         include_images,
-        include_tables,
         strip_headers,
         clean_hyphens,
         title: trimmed_title ? trimmed_title : null,
@@ -105,7 +99,6 @@ function build_convert_options(): PdfConvertOptions {
 
 function persist_options(): void {
     save_pdf_settings({
-        parser,
         chapter_mode,
         heuristic_sensitivity,
         page_start: normalize_page(page_start),
@@ -113,7 +106,6 @@ function persist_options(): void {
         min_chapter_chars,
         max_chapters,
         include_images,
-        include_tables,
         strip_headers,
         clean_hyphens,
         use_cover,
@@ -242,10 +234,6 @@ async function handle_options_submit() {
     <h1 class="text-3xl font-bold text-center mb-4">PDF to EPUB</h1>
     <p class="text-sm text-gray-500 text-center mb-6">Upload &rarr; Options &rarr; Preview &rarr; Download</p>
 
-    {#if is_loading.value}
-        <p class="text-sm text-gray-500 text-center">Loading settings…</p>
-    {/if}
-
     {#if step === "upload"}
         <section aria-label="Upload">
             <h2 class="text-xl font-semibold mb-3">1. Upload PDF</h2>
@@ -276,22 +264,6 @@ async function handle_options_submit() {
                 }}
                 class="grid gap-4"
             >
-                <label class="grid gap-1">
-                    <span>Parser</span>
-                    <select
-                        bind:value={parser}
-                        class="border rounded px-2 py-1"
-                    >
-                        <option value="balanced">balanced</option>
-                        <option value="minimal">minimal</option>
-                        <option value="max_quality">max_quality</option>
-                    </select>
-                    {#if parser === "max_quality"}
-                        <span class="text-xs text-amber-700">
-                            License: max_quality uses pymupdf (AGPL), lazy import, opt-in only
-                        </span>
-                    {/if}
-                </label>
                 <label class="grid gap-1">
                     <span>Chapter mode</span>
                     <select
@@ -376,13 +348,6 @@ async function handle_options_submit() {
                         bind:checked={include_images}
                     >
                     <span>Include images</span>
-                </label>
-                <label class="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        bind:checked={include_tables}
-                    >
-                    <span>Include tables</span>
                 </label>
                 <label class="flex items-center gap-2">
                     <input

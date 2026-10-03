@@ -71,6 +71,7 @@ def _chapter_body_html(
     for paragraph in _split_paragraphs(text):
         parts.append(f"<p>{html.escape(paragraph)}</p>")
     for table_html in tables_html:
+        # Caller-trusted HTML only: no sanitization here; do not pass raw untrusted input.
         parts.append(table_html)
     for pos, href in enumerate(image_hrefs, start=1):
         parts.append(f'<img src="{html.escape(href)}" alt="{html.escape(f"Figure {pos}")}"/><br/>')
@@ -185,7 +186,11 @@ def build_epub(
     min_chars: int = DEFAULT_MIN_CHARS,
     max_chapters: int = DEFAULT_MAX_CHAPTERS,
 ) -> tuple[epub.EpubBook, list[str]]:
-    """Build an audiobook-compatible book with spine, TOC, images, and cover."""
+    """Build an audiobook-compatible book with spine, TOC, images, and cover.
+
+    tables_by_chapter is a legacy optional passthrough (no producer in the
+    pypdf-only pipeline); entries must be caller-trusted HTML only.
+    """
     warnings: list[str] = []
     book_title = (title or "").strip() or "Untitled"
     book_author = (author or "").strip() or "Unknown"
@@ -277,7 +282,11 @@ def write_epub_bytes(
     min_chars: int = DEFAULT_MIN_CHARS,
     max_chapters: int = DEFAULT_MAX_CHAPTERS,
 ) -> tuple[bytes, list[str]]:
-    """Write chapters to EPUB bytes with compat guarantees."""
+    """Write chapters to EPUB bytes with compat guarantees.
+
+    tables_by_chapter is a legacy optional passthrough (no producer in the
+    pypdf-only pipeline); entries must be caller-trusted HTML only.
+    """
     book, warnings = build_epub(
         chapters,
         title,
