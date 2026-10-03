@@ -1,9 +1,7 @@
 <script lang="ts">
 import { IconUpload, Spinner, toast } from "@repo/ui"
 
-// SPEC.md section 11 names this PdfUpload.svelte; this file is BookUpload.svelte
 // cloned from apps/audiobook (accept filter + drop handler adapted to .pdf).
-// TODO(@documenter): reconcile SPEC section 11 file list with this clone.
 
 interface Props {
     on_upload: (file: File) => Promise<void>
@@ -16,7 +14,7 @@ let { on_upload, is_uploading = false, disabled = false }: Props = $props()
 let is_dragging = $state(false)
 
 let container_class = $derived(
-    `border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors duration-200 ${is_dragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"} ${disabled || is_uploading ? "opacity-50 cursor-not-allowed" : ""}`,
+    `flex flex-col items-center justify-center gap-2 text-center border-2 border-dashed rounded-lg p-8 cursor-pointer transition-colors duration-200 ${is_dragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"} ${disabled || is_uploading ? "opacity-50 cursor-not-allowed" : ""}`,
 )
 
 function handle_drag_over(event: DragEvent) {
@@ -91,7 +89,7 @@ async function handle_click() {
     }}
 >
     {#if is_uploading}
-        <Spinner />
+        <div class="mx-auto shrink-0"><Spinner /></div>
         <p class="mt-4 text-gray-600">Processing PDF...</p>
     {:else}
         <IconUpload class="h-12 w-12 mx-auto text-gray-400" />
