@@ -1,7 +1,7 @@
 # Cloudflare config
 
 ### Name
-monorepo-pdf_to_epub-frontend
+monorepo-pdf-to-epub-frontend
 
 ### Build command
 ```sh
