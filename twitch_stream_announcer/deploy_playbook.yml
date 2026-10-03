@@ -16,7 +16,7 @@
         groups:
           - "{{ USERNAME }}"
           - docker
-        shell: "/bin/fish"
+        shell: "/bin/bash"
 
     - name: Copy docker-compose.yml file
       template:
@@ -36,7 +36,7 @@
 
     - name: Copy files except .env to the destination directory
       ansible.posix.synchronize:
-        src: ./
+        src: "{{ playbook_dir }}/"
         dest: /home/{{ USERNAME }}/dockerfiles/
         rsync_opts:
           - --filter=':- .gitignore'

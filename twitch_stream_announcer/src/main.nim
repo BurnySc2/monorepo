@@ -299,25 +299,25 @@ proc get_which_streams_to_announce_and_update(
           )
 
 proc run_once(db: DbConn) =
-  let t1 = cpuTime()
+  let t1 = epochTime()
   let rows = fetch_postgres_users(db)
   # echo fmt"Rows as list of dict: {rows}"
-  let t2 = cpuTime()
+  let t2 = epochTime()
   let stream_infos = fetch_twitch_stream_status(rows)
   # echo fmt"Current stream infos: {stream_infos}"
-  let t3 = cpuTime()
+  let t3 = epochTime()
   let info_tuple = get_which_streams_to_announce_and_update(
     database_rows = rows, stream_infos = stream_infos
   )
   # echo fmt"Info tuple: {info_tuple}"
-  let t4 = cpuTime()
+  let t4 = epochTime()
   update_database_entries(
     db, info_tuple.announced_streams, info_tuple.online_streams,
     info_tuple.now_offline_streams,
   )
-  let t5 = cpuTime()
+  let t5 = epochTime()
   send_webhooks(info_tuple.announce_in_webhook)
-  let t6 = cpuTime()
+  let t6 = epochTime()
   if STAGE == "DEV":
     info fmt"Fetching database entries: {t2 - t1}"
     info fmt"Fetching twitch api data: {t3 - t2}"
@@ -327,10 +327,10 @@ proc run_once(db: DbConn) =
     info fmt"Total time taken: {t6 - t1}"
 
 proc run_for_one_hour(db: DbConn) =
-  let t1 = cpuTime()
+  let t1 = epochTime()
   let duration: float = 60 * 60
   while true:
-    if duration < cpuTime() - t1:
+    if duration < epochTime() - t1:
       break
     info "Running once"
     run_once(db)

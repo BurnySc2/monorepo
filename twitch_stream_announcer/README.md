@@ -25,8 +25,8 @@ slim build --target burnysc2/twitch_stream_announcer:local --tag burnysc2/twitch
 CREATE USER twitch_stream_announcer WITH PASSWORD 'your_password';
 -- Add select permission
 GRANT SELECT ON stream_announcer_streams TO twitch_stream_announcer;
---Add update permission to columns status and announced_at
-GRANT UPDATE(status, announced_at) ON stream_announcer_streams TO twitch_stream_announcer;
+-- Add update permission to columns status, announced_at and last_seen_online
+GRANT UPDATE(status, announced_at, last_seen_online) ON stream_announcer_streams TO twitch_stream_announcer;
 ```
 
 ---

@@ -1,9 +1,7 @@
 {
     "recommendations": [
-        "charliermarsh.ruff",
-        "ms-python.vscode-pylance",
-        "ms-python.python",
-        "quicktype.quicktype",
-        "tamasfe.even-better-toml"
+        "nimsaem.nimvscode",
+        "tamasfe.even-better-toml",
+        "quicktype.quicktype"
     ]
 }
