@@ -1,7 +1,10 @@
-import { describe, expect, it } from "vitest"
-import { load_pdf_settings } from "./stores"
+import { afterEach, describe, expect, it } from "vitest"
+import { load_pdf_settings, PdfSettingsSchema, reset_pdf_settings, save_pdf_settings } from "./stores"
 
 describe("pdf settings defaults", () => {
+    afterEach(() => {
+        reset_pdf_settings()
+    })
     it("uses auto chapter mode by default", () => {
         expect(load_pdf_settings().chapter_mode).toBe("auto")
     })
@@ -30,5 +33,45 @@ describe("pdf settings defaults", () => {
 
     it("leaves language null by default", () => {
         expect(load_pdf_settings().language).toBeNull()
+    })
+
+    it("save then load round-trips custom values", () => {
+        save_pdf_settings({
+            ...load_pdf_settings(),
+            chapter_mode: "single",
+            page_start: 3,
+            include_images: false,
+            language: "de",
+        })
+        const loaded = load_pdf_settings()
+        expect(loaded.chapter_mode).toBe("single")
+        expect(loaded.page_start).toBe(3)
+        expect(loaded.include_images).toBe(false)
+        expect(loaded.language).toBe("de")
+    })
+
+    it("reset restores defaults after custom save", () => {
+        save_pdf_settings({
+            ...load_pdf_settings(),
+            chapter_mode: "single",
+            page_start: 3,
+            include_images: false,
+            language: "de",
+        })
+        reset_pdf_settings()
+        const loaded = load_pdf_settings()
+        expect(loaded.chapter_mode).toBe("auto")
+        expect(loaded.page_start).toBeNull()
+        expect(loaded.include_images).toBe(true)
+        expect(loaded.language).toBeNull()
+    })
+
+    it.each([
+        ["chapter_mode", "bogus"],
+        ["heuristic_sensitivity", "ultra"],
+        ["page_start", "2"],
+        ["min_chapter_chars", "500"],
+    ])("rejects invalid %s", (key, value) => {
+        expect(() => PdfSettingsSchema.parse({ ...load_pdf_settings(), [key]: value })).toThrow()
     })
 })

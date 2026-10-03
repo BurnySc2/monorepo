@@ -219,4 +219,120 @@ describe("pdf_to_epub API", () => {
         expect(get_pdf_error_message(new Error("boom"))).toBe("boom")
         expect(get_pdf_error_message(null)).toBe("Unknown PDF error")
     })
+
+    it("fetch_convert sends chapter_titles when preview count omitted", async () => {
+        mock_blob()
+        await fetch_convert(test_file(), base_options({ chapter_titles: ["Alpha", "Beta"] }), undefined)
+        const form = last_form()
+        expect(form.has("chapter_titles")).toBe(true)
+        expect(form.get("chapter_titles")).toBe(JSON.stringify(["Alpha", "Beta"]))
+    })
+
+    it.each([
+        [
+            [null, "Beta"],
+            ["", "Beta"],
+        ],
+        [
+            [undefined, "Beta"],
+            ["", "Beta"],
+        ],
+        [
+            [123, "Beta"],
+            ["", "Beta"],
+        ],
+        [
+            ["", "Beta"],
+            ["", "Beta"],
+        ],
+    ])("fetch_convert normalizes %o to %o", async (raw, want) => {
+        mock_blob()
+        await fetch_convert(test_file(), base_options({ chapter_titles: raw as unknown as (string | null)[] }), 2)
+        expect(last_form().get("chapter_titles")).toBe(JSON.stringify(want))
+    })
+
+    it("fetch_convert omits chapter_titles when non-array", async () => {
+        mock_blob()
+        await fetch_convert(test_file(), base_options({ chapter_titles: "nope" as unknown as (string | null)[] }), 1)
+        expect(last_form().has("chapter_titles")).toBe(false)
+    })
+
+    it.each([[413], [415], [422], [400]])("fetch_preview throws on %i", async (status) => {
+        mock_fail(status, "fail")
+        await expect(fetch_preview(test_file(), base_options())).rejects.toThrow(
+            /Request failed \/api\/pdf_to_epub\/preview/,
+        )
+    })
+
+    it.each([[413], [415], [422], [400]])("fetch_convert throws on %i", async (status) => {
+        mock_fail(status, "fail")
+        await expect(fetch_convert(test_file(), base_options())).rejects.toThrow(
+            /Request failed \/api\/pdf_to_epub\/convert/,
+        )
+    })
+
+    it.each([
+        [413, "quota exceeded", "File too large"],
+        [415, "bad magic", "Not a PDF"],
+        [400, "bad range", "Invalid PDF request"],
+    ])("get_pdf_error_message appends detail for %i", (status, detail, fragment) => {
+        const message = get_pdf_error_message({ status, detail })
+        expect(message).toContain(detail)
+        expect(message).toContain(`: ${detail}`)
+        expect(message.toLowerCase()).toContain(fragment.toLowerCase())
+    })
+
+    it.each([
+        [{ status: 413, detail: "   " }, "File too large: PDF exceeds the size limit"],
+        [{ status: 413, detail: 123 }, "File too large: PDF exceeds the size limit"],
+        [{ status: 413 }, "File too large: PDF exceeds the size limit"],
+        [{ status: 415, detail: "   " }, "Not a PDF file: upload a valid .pdf file"],
+        [{ status: 415, detail: 123 }, "Not a PDF file: upload a valid .pdf file"],
+        [{ status: 415 }, "Not a PDF file: upload a valid .pdf file"],
+        [{ status: 400, detail: "   " }, "Invalid PDF request: bad page range or unreadable file"],
+        [{ status: 400, detail: 123 }, "Invalid PDF request: bad page range or unreadable file"],
+        [{ status: 400 }, "Invalid PDF request: bad page range or unreadable file"],
+    ])("get_pdf_error_message omits blank detail %o", (input, want) => {
+        expect(get_pdf_error_message(input)).toBe(want)
+    })
+
+    it("fetch_preview serializes false booleans as string false", async () => {
+        mock_json({ chapter_source: "single", outline: [], chapters: [], warnings: [] })
+        await fetch_preview(
+            test_file(),
+            base_options({ include_images: false, strip_headers: false, clean_hyphens: false }),
+        )
+        const form = last_form()
+        expect(form.get("include_images")).toBe("false")
+        expect(form.get("strip_headers")).toBe("false")
+        expect(form.get("clean_hyphens")).toBe("false")
+    })
+
+    it("fetch_convert serializes false booleans as string false", async () => {
+        mock_blob()
+        await fetch_convert(
+            test_file(),
+            base_options({
+                include_images: false,
+                strip_headers: false,
+                clean_hyphens: false,
+                use_cover: false,
+            }),
+        )
+        const form = last_form()
+        expect(form.get("include_images")).toBe("false")
+        expect(form.get("strip_headers")).toBe("false")
+        expect(form.get("clean_hyphens")).toBe("false")
+        expect(form.get("use_cover")).toBe("false")
+    })
+
+    it("fetch_probe sends file only without option keys", async () => {
+        mock_json({ total_pages: 5, has_outline: false, has_images: false, metadata: {} })
+        await fetch_probe(test_file())
+        const form = last_form()
+        expect(form.get("file")).toBeInstanceOf(File)
+        expect(form.has("chapter_mode")).toBe(false)
+        expect(form.has("min_chapter_chars")).toBe(false)
+        expect(form.has("include_images")).toBe(false)
+    })
 })
