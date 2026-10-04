@@ -103,7 +103,7 @@ flowchart TD
         CMD -->|aoe4*| AOE4[AoE4 Commands]
     end
 
-    subgraph Database[(PostgreSQL)]
+    subgraph Database["PostgreSQL"]
         Reminder[(Reminder)]
         DiscordMessage[(DiscordMessage)]
         DiscordQuote[(DiscordQuote)]

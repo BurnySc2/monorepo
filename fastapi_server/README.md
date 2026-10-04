@@ -105,7 +105,7 @@ flowchart TB
         TikTok_TTS[TikTok TTS API]
     end
 
-    subgraph Database[(PostgreSQL)]
+    subgraph Database["PostgreSQL"]
         Audiobook_DB[Audiobook Tables]
         Chat_DB[Chat Messages]
         Raceroom_DB[Raceroom Tables]
