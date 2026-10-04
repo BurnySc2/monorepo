@@ -1,4 +1,10 @@
 ---
+# SSH config entry:
+# Host forgejo {{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+#     HostName {{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+#     Port {{ SSH_PORT }}
+#     IdentityFile ~/.ssh/forgejo
+#     IdentitiesOnly yes
 networks:
   pangolin_newt:
     external: true
