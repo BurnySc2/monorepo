@@ -1,9 +1,9 @@
-FROM nimlang/nim:2.2.4-alpine-regular as base
+FROM nimlang/nim:2.2.4-alpine-regular AS base
 
 # Install dependencies
 COPY twitch_stream_announcer.nimble /root/tsa/
 WORKDIR /root/tsa
-RUN nimble install --depsOnly
+RUN nimble install --depsOnly -y
 
 # Needs empty .env file to not crash
 RUN touch .env
