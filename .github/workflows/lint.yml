@@ -1,0 +1,72 @@
+name: Lint Workflows
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths:
+      - .github/workflows/**
+      - .yamllint.yml
+      - lint.sh
+      - '**/lint.sh'
+      - ansible/check.sh
+      - problem_sites/leetcode/python/**
+  pull_request:
+    branches: [master, develop]
+  workflow_dispatch:
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: reviewdog/action-actionlint@v1
+        with:
+          fail_on_error: true
+
+  yamllint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Run yamllint
+        run: uvx yamllint .github/workflows/
+
+  root-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install yamllint and pyyaml
+        run: uv pip install --system yamllint pyyaml
+
+      - name: Setup Nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: "2.2.4"
+
+      - name: Install ansible-core
+        run: uv tool install ansible-core
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Run root lint
+        env:
+          LINT_STRICT: 1
+        run: bash ./lint.sh

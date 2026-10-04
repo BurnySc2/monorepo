@@ -64,7 +64,7 @@ select = [
     "E",   # Error
     "F",   # pyflakes
     "BLE", # flake8-blind-except
-    # "I",   # isort
+    "I",   # isort
     "N",   # pep8-naming
     "PGH", # pygrep-hooks
     "PTH", # flake8-use-pathlib

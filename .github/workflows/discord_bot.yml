@@ -20,8 +20,8 @@ env:
   SUBDIRECTORY: discord_bot
 
 jobs:
-  run_pre_commit_checks:
-    name: pre_commit_check_py${{ matrix.python-version }}
+  run_lint_checks:
+    name: lint_check_py${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -41,17 +41,11 @@ jobs:
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv sync --frozen --no-cache --no-install-project
 
-      - name: Ruff check
+      - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run ruff check .
-
-      - name: Ruff format check
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run ruff format --check .
-
-      - name: Pyrefly check
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run pyrefly check
+        env:
+          LINT_STRICT: 1
+        run: bash lint.sh
 
   test_backend:
     name: test_backend_py${{ matrix.python-version }}

@@ -20,8 +20,8 @@ env:
   SUBDIRECTORY: python_examples
 
 jobs:
-  run_pre_commit_checks:
-    name: pre_commit_check_py${{ matrix.python-version }}
+  run_lint_checks:
+    name: lint_check_py${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
@@ -41,17 +41,11 @@ jobs:
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv sync --frozen --no-cache --no-install-project
 
-      - name: Run ruff check
+      - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run ruff check .
-
-      - name: Run ruff format check
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run ruff format --check .
-
-      - name: Run pyrefly check
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run pyrefly check
+        env:
+          LINT_STRICT: 1
+        run: bash lint.sh
 
   run_code_check:
     strategy:
@@ -114,21 +108,10 @@ jobs:
       #      with:
       #        mongodb-version: 5.0
 
-      #    - name: Start MongoDB in docker
-      #      if: ${{ matrix.os != 'macos-latest'}}
-      #      run: |
-      #        docker run --rm -d -p 27017-27019:27017-27019 --name mongodb mongo:5.0
-
       - name: Start Postgres
         uses: ankane/setup-postgres@v1
         with:
           postgres-version: 14
-
-      #    - name: Start Postgres in docker
-      #      if: ${{ matrix.os == 'ubuntu-latest'}}
-      #      run: |
-      #        docker run --rm -d --name postgresql-container -p 5432:5432 \
-      #          -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=changeme postgres:9.6.23-alpine3.14
 
       - name: Print environment variables (linux)
         run: |

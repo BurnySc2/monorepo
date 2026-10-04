@@ -31,15 +31,11 @@ jobs:
       - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv sync --frozen --no-cache --no-install-project
-      - name: Run ruff check
+      - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run ruff check .
-      - name: Run ruff format check
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run ruff format --check .
-      - name: Run pyrefly check
-        working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv run pyrefly check
+        env:
+          LINT_STRICT: 1
+        run: bash lint.sh
 
   test:
     runs-on: ubuntu-latest

@@ -54,9 +54,9 @@ def test_command_map_aliases_share_handler():
 
 
 def test_command_map_targets_real_functions():
+    from commands.public_leaderboard import public_leaderboard
     from commands.public_mmr import public_mmr
     from commands.public_twss import public_twss
-    from commands.public_leaderboard import public_leaderboard
 
     assert COMMAND_MAP["mmr"] is public_mmr
     assert COMMAND_MAP["twss"] is public_twss

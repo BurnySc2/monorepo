@@ -29,13 +29,17 @@ To avoid packages with large amount of dependencies, we can use `pipdeptree`
 uv run pipdeptree > deps.txt
 ```
 
-# Install and run pre-commit hook on all staged files
+# Lint one project
 ```sh
-uv run pre-commit install
-uv run pre-commit run --all-files --verbose --hook-stage push
+bash fastapi_server/lint.sh
 ```
 
-This runs ruff lint, ruff format check, pyrefly type check
+# Lint all projects + workflows
+```sh
+bash lint.sh
+```
+
+This runs ruff lint, ruff format check, pyrefly type check, sqlfluff lint, plus yamllint, yaml parse, checkout-pin grep, whitespace, and docker checks
 
 # Autoformat all files
 ```sh

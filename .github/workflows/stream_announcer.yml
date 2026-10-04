@@ -42,6 +42,8 @@ jobs:
         working-directory: ${{ env.SUBDIRECTORY }}
         run: nimble install --depsOnly -y
 
-      - name: Compile
+      - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: nimble c -d:ssl -d:release --opt:size -o:main src/main.nim
+        env:
+          LINT_STRICT: 1
+        run: bash lint.sh

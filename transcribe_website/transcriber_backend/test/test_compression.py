@@ -6,12 +6,10 @@ import zipfile
 from io import BytesIO
 from pathlib import Path
 
-from loguru import logger
-
+import hypothesis.strategies as st
 import pytest
 from hypothesis import given, settings
-
-import hypothesis.strategies as st
+from loguru import logger
 
 from src.helper import compress_files, decompress_files
 

@@ -76,4 +76,5 @@ jobs:
       - name: Report results
         if: always()
         run: |
-          echo "## Workflow completed (see individual step statuses)" >> $GITHUB_STEP_SUMMARY
+          echo "## Workflow completed" >> $GITHUB_STEP_SUMMARY
+          echo "(see individual step statuses)" >> $GITHUB_STEP_SUMMARY

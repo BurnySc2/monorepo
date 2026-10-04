@@ -57,7 +57,6 @@ dev = [
     "scalene>=1.5.42.2",
     "radon>=6.0.1",
     "pyrefly>=0.18.0",
-    "pre-commit>=4.5.1",
 ]
 
 [tool.pyrefly]
@@ -76,7 +75,7 @@ select = [
     "E",   # Error
     "F",   # pyflakes
     "BLE", # flake8-blind-except
-    # "I",   # isort
+    "I",   # isort
     "N",   # pep8-naming
     "PGH", # pygrep-hooks
     "PTH", # flake8-use-pathlib

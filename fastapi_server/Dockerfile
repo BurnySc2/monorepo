@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Add ffmpeg from
 # https://github.com/wader/static-ffmpeg
-COPY --from=mwader/static-ffmpeg:8.1.1 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:8.1.1 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:8.1.1@sha256:735f84b905e00d5c618b667f0b053f83b1096f5fc404c607e6134bf2275a0e0a /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:8.1.1@sha256:735f84b905e00d5c618b667f0b053f83b1096f5fc404c607e6134bf2275a0e0a /ffprobe /usr/local/bin/
 
 WORKDIR /root/fastapi_server
 

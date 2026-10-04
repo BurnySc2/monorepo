@@ -6,7 +6,6 @@ dependencies = ["loguru>=0.7.2", "numpy>=2.2.1"]
 
 [dependency-groups]
 dev = [
-  "pre-commit>=4.5.1",
   "pyrefly>=0.18.0",
   "pytest-benchmark>=5.1.0",
   "pytest>=8.3.4",
@@ -25,7 +24,7 @@ select = [
   "E",   # Error
   "F",   # pyflakes
   "BLE", # flake8-blind-except
-  # "I",   # isort
+  "I",   # isort
   "N",   # pep8-naming
   "PGH", # pygrep-hooks
   "PTH", # flake8-use-pathlib

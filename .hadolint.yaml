@@ -1,0 +1,4 @@
+# WHY advisory only in v1: warn without blocking bot images.
+ignored:
+  - DL3008
+  - DL3015

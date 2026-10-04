@@ -144,30 +144,24 @@ uv run sqlfluff fix src/queries/
 
 **Config:** `dialect = "postgres"`, `max_line_length = 120`, `param_style = "ampersand"` (`{var}`)
 
-### Pre-commit Hooks
+### Lint Script
 
 ```bash
-# Run on staged files
-uv run pre-commit run
+# Check (cwd is fastapi_server/)
+bash lint.sh
 
-# Run on all files
-uv run pre-commit run --all-files
+# Check all projects + workflows (cwd is monorepo root)
+./lint.sh
+# From fastapi_server/: bash ../lint.sh
 ```
 
-**Hooks installed:**
-| Hook | Purpose |
-|------|---------|
-| check-ast | Python syntax |
-| check-yaml/toml | Config file validity |
-| trailing-whitespace | Remove trailing spaces |
-| pyupgrade | Upgrade to py310+ |
-| ruff Q/fix | Double quotes |
-| ruff F/fix | Remove unused |
-| ruff I/fix | Sort imports |
-| ruff-format | Format code |
-| prettier | Format YAML |
-| sqlfluff lint/fix | Lint/fix SQL |
-| pyrefly | Type check |
+```bash
+# Fix auto-fixable issues
+uv run ruff check . --fix && uv run ruff format .
+uv run sqlfluff fix src/queries/
+```
+
+Runs `ruff check`, `ruff format --check`, `pyrefly check`, `sqlfluff lint src/queries/` (see `lint.sh`).
 
 ### Style Rules Summary
 

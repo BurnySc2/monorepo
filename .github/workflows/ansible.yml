@@ -33,4 +33,6 @@ jobs:
         run: uv tool install ansible-core
 
       - name: Run ansible checks
-        run: bash ansible/check.sh
+        env:
+          LINT_STRICT: 1
+        run: bash ansible/lint.sh

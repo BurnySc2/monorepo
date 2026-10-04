@@ -8,7 +8,6 @@ import os
 import shutil
 import subprocess
 import tempfile
-from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -66,7 +65,8 @@ def print_words_overview() -> None:
 
     This function prints a summary of the words found in the videos. It retrieves the words from the database and counts their occurrences in each video. The function then prints the top 10 most common words for each video.
     """  # noqa: E501
-    part_of_path = os.getenv("WORDS_EXTRACTOR_PART_OF_PATH")
+
+
 #     results = db.query_raw(
 #         """
 # SELECT LOWER(word_text) AS word_text, COUNT(*) AS count FROM word

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import asyncio
 
-from hikari import StartedEvent, GuildMessageCreateEvent, GuildReactionAddEvent  # pyrefly: ignore
+from hikari import GuildMessageCreateEvent, GuildReactionAddEvent, StartedEvent  # pyrefly: ignore
 from loguru import logger
 
 import bot as bot_module

@@ -6,7 +6,6 @@ dependencies = ["click>=8.1.7", "loguru>=0.7.3", "paramiko>=3.5.0"]
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.3.0",
     "pyrefly>=0.18.0",
     "ruff>=0.8.3",
 ]
@@ -26,7 +25,7 @@ select = [
   "E",   # Error
   "F",   # pyflakes
   "BLE", # flake8-blind-except
-  # "I",   # isort
+  "I",   # isort
   "N",   # pep8-naming
   "PGH", # pygrep-hooks
   "PTH", # flake8-use-pathlib

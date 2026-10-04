@@ -1,5 +1,10 @@
 **/__pycache__
 .pytest_cache
+.ruff_cache
+.ruff_cache/*
+.venv
+.env*
+.vscode/*
 test
 SECRETS.toml
 whisper_models
