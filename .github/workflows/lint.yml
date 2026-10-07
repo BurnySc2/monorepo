@@ -36,9 +36,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: astral-sh/setup-uv@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
+          python-version: "3.12"
 
       - name: Run yamllint
         run: uvx yamllint .github/workflows/
@@ -49,9 +51,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: astral-sh/setup-uv@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
+          python-version: "3.12"
 
       - name: Install yamllint and pyyaml
         run: uv pip install --system yamllint pyyaml

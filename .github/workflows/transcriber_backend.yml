@@ -25,9 +25,11 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
-      - uses: astral-sh/setup-uv@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
+          python-version: "3.12"
       - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv sync --frozen --no-cache --no-install-project
@@ -42,9 +44,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
-      - uses: astral-sh/setup-uv@v7
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
+          python-version: "3.12"
       - name: Install packages
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv sync --frozen --no-cache --no-install-project
