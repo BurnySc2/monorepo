@@ -23,7 +23,7 @@ services:
       - '{{ secrets.TRAEFIK_NETWORK }}'
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ USERNAME }}.tls=true
       - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production
@@ -48,8 +48,8 @@ services:
     env_file: docker-compose.env
     environment:
       PAPERLESS_REDIS: redis://paperless-broker:6379
-      PAPERLESS_URL: https://{{ USERNAME }}.{{ secrets.MY_DOMAIN }}
-      PAPERLESS_CSRF_TRUSTED_ORIGINS: https://{{ USERNAME }}.{{ secrets.MY_DOMAIN }}
-      PAPERLESS_CORS_ALLOWED_HOSTS: https://{{ USERNAME }}.{{ secrets.MY_DOMAIN }}
+      PAPERLESS_URL: https://{{ USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+      PAPERLESS_CSRF_TRUSTED_ORIGINS: https://{{ USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+      PAPERLESS_CORS_ALLOWED_HOSTS: https://{{ USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}
 volumes:
   redisdata: null

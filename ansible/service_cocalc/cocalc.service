@@ -6,7 +6,7 @@ ExecStart=/usr/bin/docker run \
     --env NOSSL=true \
     -v ./cocalc:/projects \
     -l traefik.enable=true \
-    -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.rule=Host(`{{ secrets.COCALC.USERNAME }}.{{ secrets.MY_DOMAIN }}`) \
+    -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.rule=Host(`{{ secrets.COCALC.USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}`) \
     -l traefik.http.services.{{ secrets.COCALC.USERNAME }}.loadbalancer.server.port=80 \
     -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.tls=true \
     -l traefik.http.routers.{{ secrets.COCALC.USERNAME }}.tls.certresolver=production \

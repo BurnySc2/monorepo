@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     labels:
       - pangolin.public-resources.excalidraw.name=Excalidraw
-      - pangolin.public-resources.excalidraw.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.excalidraw.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.excalidraw.protocol=http
       - pangolin.public-resources.excalidraw.auth.sso-enabled=true
       - pangolin.public-resources.excalidraw.targets[0].site=local

@@ -29,7 +29,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.JELLYFIN.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.JELLYFIN.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: '{{ secrets.JELLYFIN.USERNAME }}'
       tls:
         certResolver: production
@@ -41,7 +41,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.AUDIOBOOKSHELF.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.AUDIOBOOKSHELF.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: '{{ secrets.AUDIOBOOKSHELF.USERNAME }}'
       tls:
         certResolver: production
@@ -51,7 +51,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.BAIKAL.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.BAIKAL.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: '{{ secrets.BAIKAL.USERNAME }}'
       tls:
         certResolver: production
@@ -61,7 +61,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.TRILLIUM.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.TRILLIUM.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: '{{ secrets.TRILLIUM.USERNAME }}'
       tls:
         certResolver: production
@@ -71,7 +71,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`sync2.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`sync2.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: sync2
       tls:
         certResolver: production
@@ -81,7 +81,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.MEALIE.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.MEALIE.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: mealie
       tls:
         certResolver: production
@@ -90,7 +90,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`traefik2.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`traefik2.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: traefik2
       tls:
         certResolver: production
@@ -100,7 +100,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.PINCHFLAT.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.PINCHFLAT.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: '{{ secrets.PINCHFLAT.USERNAME }}'
       tls:
         certResolver: production
@@ -110,7 +110,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`sync1.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`sync1.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: sync1
       tls:
         certResolver: production
@@ -120,7 +120,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`traefik1.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`traefik1.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: traefik1
       tls:
         certResolver: production
@@ -129,7 +129,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.CODESERVER.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.CODESERVER.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: '{{ secrets.CODESERVER.USERNAME }}'
       tls:
         certResolver: production
@@ -138,7 +138,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.CODESERVER.PREVIEW1 }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.CODESERVER.PREVIEW1 }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: preview1
       tls:
         certResolver: production
@@ -147,7 +147,7 @@ http:
       entryPoints:
         - web
         - websecure
-      rule: Host(`{{ secrets.CODESERVER.PREVIEW2 }}.{{ secrets.MY_DOMAIN }}`)
+      rule: Host(`{{ secrets.CODESERVER.PREVIEW2 }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       service: preview1
       tls:
         certResolver: production

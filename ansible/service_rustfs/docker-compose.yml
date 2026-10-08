@@ -13,14 +13,14 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.rustfs-s3.name=RustFS S3 API
-      - pangolin.public-resources.rustfs-s3.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.rustfs-s3.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.rustfs-s3.protocol=http
       - pangolin.public-resources.rustfs-s3.auth.sso-enabled=false
       - pangolin.public-resources.rustfs-s3.targets[0].site=local
       - pangolin.public-resources.rustfs-s3.targets[0].method=http
       - pangolin.public-resources.rustfs-s3.targets[0].port=9000
       - pangolin.public-resources.rustfs-admin.name=RustFS Admin Console
-      - pangolin.public-resources.rustfs-admin.full-domain={{ ADMINSUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.rustfs-admin.full-domain={{ ADMINSUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.rustfs-admin.protocol=http
       - pangolin.public-resources.rustfs-admin.auth.sso-enabled=true
       - pangolin.public-resources.rustfs-admin.targets[0].site=local

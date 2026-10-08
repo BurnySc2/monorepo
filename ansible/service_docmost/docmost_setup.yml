@@ -11,7 +11,7 @@
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+        - hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}'
       loop_control:
         loop_var: item
 

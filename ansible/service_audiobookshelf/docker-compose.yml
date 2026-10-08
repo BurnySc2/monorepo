@@ -12,7 +12,7 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.audiobookshelf.name=Audiobookshelf
-      - pangolin.public-resources.audiobookshelf.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.audiobookshelf.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.audiobookshelf.protocol=http
       - pangolin.public-resources.audiobookshelf.auth.sso-enabled=false
       - pangolin.public-resources.audiobookshelf.targets[0].method=http

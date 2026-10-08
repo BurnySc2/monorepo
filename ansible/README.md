@@ -36,7 +36,7 @@ ansible-playbook service_filebrowser/filebrowser_setup.yml -i ../hosts -i $ANSIB
 ```
 
 The pattern is always `-i ../hosts -i $ANSIBLE_SECRETS`.
-Templates reference values as `{{ secrets.MY_DOMAIN }}` and similar
+Templates reference values as `{{ secrets.MY_PUBLIC_DOMAIN }}` and similar
 placeholders; no real values belong in this repo.
 
 ## 3. Galaxy Install

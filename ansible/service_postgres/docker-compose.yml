@@ -64,7 +64,7 @@ services:
       - ./postgres_data:/var/lib/postgresql/data
     labels:
       - pangolin.public-resources.postgres.name=Postgres DB
-      - pangolin.public-resources.postgres.full-domain={{ secrets.POSTGRES.POSTGRES_USER }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.postgres.full-domain={{ secrets.POSTGRES.POSTGRES_USER }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       # - pangolin.public-resources.postgres.tls=true
       - pangolin.public-resources.postgres.healthcheck.enabled=true
       - pangolin.public-resources.postgres.healthcheck.interval=10s
@@ -82,7 +82,7 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.pgadmin.name=PgAdmin
-      - pangolin.public-resources.pgadmin.full-domain={{ secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.pgadmin.full-domain={{ secrets.POSTGRES.PGADMIN_USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.pgadmin.protocol=http
       - pangolin.public-resources.pgadmin.auth.sso-enabled=true
       - pangolin.public-resources.pgadmin.targets[0].site=local
@@ -106,7 +106,7 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.nocodb.name=Noco DB
-      - pangolin.public-resources.nocodb.full-domain={{ secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.nocodb.full-domain={{ secrets.POSTGRES.NOCODB_USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.nocodb.protocol=http
       - pangolin.public-resources.nocodb.auth.sso-enabled=true
       - pangolin.public-resources.nocodb.targets[0].site=local

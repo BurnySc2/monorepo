@@ -10,7 +10,7 @@ services:
     networks:
       - '{{ secrets.TRAEFIK_NETWORK }}'
     environment:
-      - APP_URL=https://{{ secrets.BOOKSTACK.USERNAME }}.{{ secrets.MY_DOMAIN }}
+      - APP_URL=https://{{ secrets.BOOKSTACK.USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - DB_HOST=bookstack_db
       - DB_PORT=3306
       - DB_USER={{ secrets.BOOKSTACK.DB_USER }}
@@ -23,7 +23,7 @@ services:
       - bookstack_db
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.rule=Host(`{{ secrets.BOOKSTACK.USERNAME }}.{{ secrets.MY_DOMAIN
+      - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.rule=Host(`{{ secrets.BOOKSTACK.USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN
         }}`)
       - traefik.http.services.{{ secrets.BOOKSTACK.USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ secrets.BOOKSTACK.USERNAME }}.tls=true

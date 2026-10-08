@@ -14,7 +14,7 @@ services:
       - HASHED_PASSWORD=  # optional
       - SUDO_PASSWORD={{ secrets.CODESERVER.PASSWORD }}  # optional
       - SUDO_PASSWORD_HASH=  # optional
-      #  - PROXY_DOMAIN='{{ secrets.CODESERVER.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'  # optional
+      #  - PROXY_DOMAIN='{{ secrets.CODESERVER.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}'  # optional
       - DEFAULT_WORKSPACE=/config/workspace  # optional
       - PWA_APPNAME=code-server  # optional
     volumes:
@@ -27,21 +27,21 @@ services:
     labels:
       # Code server
       - pangolin.public-resources.code.name=Code
-      - pangolin.public-resources.code.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.code.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.code.protocol=http
       - pangolin.public-resources.code.auth.sso-enabled=true
       - pangolin.public-resources.code.targets[0].method=http
       - pangolin.public-resources.code.targets[0].port={{ APPLICATION_PORT }}
       # Preview1 port 8000
       - pangolin.public-resources.preview1.name=Code Preview1
-      - pangolin.public-resources.preview1.full-domain={{ PREVIEW1 }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.preview1.full-domain={{ PREVIEW1 }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.preview1.protocol=http
       - pangolin.public-resources.preview1.auth.sso-enabled=true
       - pangolin.public-resources.preview1.targets[0].method=http
       - pangolin.public-resources.preview1.targets[0].port={{ PREVIEW1_PORT }}
       # Preview2 port 8001
       - pangolin.public-resources.preview2.name=Code Preview2
-      - pangolin.public-resources.preview2.full-domain={{ PREVIEW2 }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.preview2.full-domain={{ PREVIEW2 }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.preview2.protocol=http
       - pangolin.public-resources.preview2.auth.sso-enabled=true
       - pangolin.public-resources.preview2.targets[0].method=http

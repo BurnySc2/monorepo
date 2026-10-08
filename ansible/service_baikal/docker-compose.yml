@@ -15,7 +15,7 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.baikal.name=Baikal
-      - pangolin.public-resources.baikal.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.baikal.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.baikal.protocol=http
       - pangolin.public-resources.baikal.auth.sso-enabled=false
       - pangolin.public-resources.baikal.targets[0].method=http

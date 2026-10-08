@@ -12,7 +12,7 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.navidrome.name=Navidrome
-      - pangolin.public-resources.navidrome.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.navidrome.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.navidrome.protocol=http
       - pangolin.public-resources.navidrome.auth.sso-enabled=false
       - pangolin.public-resources.navidrome.targets[0].method=http

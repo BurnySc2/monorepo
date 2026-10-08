@@ -18,7 +18,7 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.pinchflat.name=Pinchflat
-      - pangolin.public-resources.pinchflat.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.pinchflat.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PRIVATE_DOMAIN }}
       - pangolin.public-resources.pinchflat.protocol=http
       - pangolin.public-resources.pinchflat.auth.sso-enabled=true
       - pangolin.public-resources.pinchflat.targets[0].method=http

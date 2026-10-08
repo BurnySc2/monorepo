@@ -20,7 +20,7 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.comfyui.name=Comfyui
-      - pangolin.public-resources.comfyui.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.comfyui.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.comfyui.protocol=http
       - pangolin.public-resources.comfyui.auth.sso-enabled=false
       - pangolin.public-resources.comfyui.targets[0].site=local

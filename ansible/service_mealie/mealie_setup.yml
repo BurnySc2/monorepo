@@ -11,7 +11,7 @@
     - include_tasks: ../setup_cloudflare_a_record.yml
       vars:
         item:
-          hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
+          hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}'
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'

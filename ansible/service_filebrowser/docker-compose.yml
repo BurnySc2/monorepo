@@ -14,7 +14,7 @@ services:
     user: '{{ USER_ID.stdout }}:{{ GROUP_ID.stdout }}'
     labels:
       - pangolin.public-resources.filebrowser.name=Filebrowser
-      - pangolin.public-resources.filebrowser.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.filebrowser.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.filebrowser.protocol=http
       # - pangolin.public-resources.filebrowser.auth.sso-enabled=true
       - pangolin.public-resources.filebrowser.auth.sso-enabled=false

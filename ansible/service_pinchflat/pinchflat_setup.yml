@@ -9,6 +9,9 @@
     SUBDOMAIN: '{{ secrets.PINCHFLAT.SUBDOMAIN }}'
     APPLICATION_PORT: '8945'
   tasks:
+    - include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - {domain: '{{ secrets.MY_PRIVATE_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
     - name: Get syncthing user id
       ansible.builtin.shell:
         cmd: id syncthing -u

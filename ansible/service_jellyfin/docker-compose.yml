@@ -14,7 +14,7 @@ services:
       - 10000:{{ APPLICATION_PORT }}
     labels:
       - pangolin.public-resources.jellyfin.name=Jellyfin
-      - pangolin.public-resources.jellyfin.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.jellyfin.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.jellyfin.protocol=http
       - pangolin.public-resources.jellyfin.auth.sso-enabled=true
       - pangolin.public-resources.jellyfin.auth.sso-roles[0]=jellyfin

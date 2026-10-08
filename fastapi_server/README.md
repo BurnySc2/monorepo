@@ -66,8 +66,8 @@ title: "Stages: local_dev, dev, staging, prod, test"
 ---
 mindmap
   root((mindmap))
-    www.my_domain.com Stage: PROD, most stable release
-    staging.my_domain.com Stage: STAGING, experimental release
+    www.MY_PUBLIC_DOMAIN.com Stage: PROD, most stable release
+    staging.MY_PUBLIC_DOMAIN.com Stage: STAGING, experimental release
     localhost, Stage: DEV, under development, uses postgres dev instance
     no domain, Stage: Test, under development, uses local second postgres instance
 ```

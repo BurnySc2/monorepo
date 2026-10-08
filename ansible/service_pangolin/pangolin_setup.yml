@@ -5,10 +5,11 @@
   hosts: server_group4
   vars:
     USERNAME: pangolin
+    SUBDOMAIN: pangolin
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: '{{ secrets.PANGOLIN_URL }}'
+        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
       loop_control:
         loop_var: item
       when: "'server_group4' in group_names"

@@ -84,7 +84,7 @@ services:
       NODE_ENV: production
 
       # -- URLs --
-      PUBLIC_URL: http://{{ USERNAME }}.{{ secrets.MY_DOMAIN }}
+      PUBLIC_URL: http://{{ USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       STORAGE_URL: http://reactive_resume_minio:9000/default
 
       # -- Printer (Chrome) --
@@ -136,7 +136,7 @@ services:
       # GOOGLE_CALLBACK_URL: http://localhost:3000/api/auth/google/callback
     labels:
       - traefik.enable=true
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_DOMAIN }}`)
+      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
       - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
       - traefik.http.routers.{{ USERNAME }}.tls=true
       - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production

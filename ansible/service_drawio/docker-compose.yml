@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     labels:
       - pangolin.public-resources.drawio.name=Drawio
-      - pangolin.public-resources.drawio.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.drawio.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.drawio.protocol=http
       - pangolin.public-resources.drawio.auth.sso-enabled=true
       - pangolin.public-resources.drawio.targets[0].site=local

@@ -15,7 +15,10 @@ app:
     anonymous_usage: true
 domains:
   domain1:
-    base_domain: '{{ secrets.MY_DOMAIN }}'  # REPLACE WITH YOUR DOMAIN
+    base_domain: '{{ secrets.MY_PUBLIC_DOMAIN }}'  # REPLACE WITH YOUR DOMAIN
+    cert_resolver: letsencrypt
+  domain2:
+    base_domain: '{{ secrets.MY_PRIVATE_DOMAIN }}'
     cert_resolver: letsencrypt
 server:
   secret: '{{ secrets.PANGOLIN.SECRET }}'  # REPLACE

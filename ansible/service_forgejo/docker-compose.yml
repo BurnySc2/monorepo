@@ -1,7 +1,7 @@
 ---
 # SSH config entry:
-# Host forgejo {{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
-#     HostName {{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+# Host forgejo {{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+#     HostName {{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
 #     Port {{ SSH_PORT }}
 #     IdentityFile ~/.ssh/forgejo
 #     IdentitiesOnly yes
@@ -24,8 +24,8 @@ services:
       FORGEJO__database__NAME: forgejo
       FORGEJO__database__USER: forgejo
       FORGEJO__database__PASSWD: '{{ secrets.FORGEJO.DB_PASSWORD }}'
-      FORGEJO__server__DOMAIN: '{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}'
-      FORGEJO__server__ROOT_URL: 'https://{{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}/'
+      FORGEJO__server__DOMAIN: '{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}'
+      FORGEJO__server__ROOT_URL: 'https://{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}/'
       FORGEJO__server__HTTP_PORT: '{{ APPLICATION_PORT }}'
       FORGEJO__server__SSH_PORT: '{{ SSH_PORT }}'
       FORGEJO__server__SSH_LISTEN_PORT: '22'
@@ -44,7 +44,7 @@ services:
         condition: service_healthy
     labels:
       - pangolin.public-resources.forgejo.name=Forgejo
-      - pangolin.public-resources.forgejo.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.forgejo.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.forgejo.protocol=http
       - pangolin.public-resources.forgejo.auth.sso-enabled=false
       - pangolin.public-resources.forgejo.targets[0].site=local

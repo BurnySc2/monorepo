@@ -11,7 +11,7 @@ services:
       - db
       - redis
     environment:
-      APP_URL: https://{{ secrets.DOCMOST.SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      APP_URL: https://{{ secrets.DOCMOST.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       APP_SECRET: '{{ secrets.DOCMOST.APP_SECRET }}'
       DATABASE_URL: postgresql://docmost:STRONG_DB_PASSWORD@db:5432/docmost?schema=public
       REDIS_URL: redis://redis:6379
@@ -23,7 +23,7 @@ services:
       - docmost-net
     labels:
       - pangolin.public-resources.docmost.name=Docmost
-      - pangolin.public-resources.docmost.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_DOMAIN }}
+      - pangolin.public-resources.docmost.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.docmost.protocol=http
       - pangolin.public-resources.docmost.auth.sso-enabled=false
       - pangolin.public-resources.docmost.targets[0].site=local
