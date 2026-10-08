@@ -12,8 +12,6 @@
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
         - hostname: '{{ USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}'
-      loop_control:
-        loop_var: item
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'

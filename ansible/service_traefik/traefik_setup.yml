@@ -40,9 +40,7 @@
       when: "'server_group4' in group_names"
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: '{{ TRAEFIK_URL }}'
-      loop_control:
-        loop_var: item
+        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
       when: "'server_group4' in group_names"
 
     # - name: docker-compose stop

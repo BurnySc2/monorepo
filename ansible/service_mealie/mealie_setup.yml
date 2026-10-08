@@ -9,9 +9,8 @@
     APPLICATION_PORT: '9000'
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
-      vars:
-        item:
-          hostname: '{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}'
+      loop:
+        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'

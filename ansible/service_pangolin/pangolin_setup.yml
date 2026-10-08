@@ -10,9 +10,6 @@
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
         - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-      loop_control:
-        loop_var: item
-      when: "'server_group4' in group_names"
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'

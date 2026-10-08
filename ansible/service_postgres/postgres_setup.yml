@@ -14,12 +14,9 @@
   tasks:
     - include_tasks: ../setup_cloudflare_a_record.yml
       loop:
-        - hostname: postgres.{{ secrets.MY_PUBLIC_DOMAIN }}
-        - hostname: db.{{ secrets.MY_PUBLIC_DOMAIN }}
-        - hostname: db2.{{ secrets.MY_PUBLIC_DOMAIN }}
-      loop_control:
-        loop_var: item
-
+        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: 'postgres'}
+        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: 'db'}
+        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: 'db2'}
     - name: Create group
       ansible.builtin.group:
         name: '{{ USERNAME }}'
