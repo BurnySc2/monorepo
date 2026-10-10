@@ -25,12 +25,12 @@ services:
       FORGEJO__database__USER: forgejo
       FORGEJO__database__PASSWD: '{{ secrets.FORGEJO.DB_PASSWORD }}'
       FORGEJO__server__DOMAIN: '{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}'
-      FORGEJO__server__ROOT_URL: 'https://{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}/'
+      FORGEJO__server__ROOT_URL: https://{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}/
       FORGEJO__server__HTTP_PORT: '{{ APPLICATION_PORT }}'
       FORGEJO__server__SSH_PORT: '{{ SSH_PORT }}'
       FORGEJO__server__SSH_LISTEN_PORT: '22'
       # WHY pangolin-only ingress, no direct 3000 publish; upstream requires non-wildcard value.
-      FORGEJO__security__REVERSE_PROXY_TRUSTED_PROXIES: '127.0.0.0/8,::1/128'
+      FORGEJO__security__REVERSE_PROXY_TRUSTED_PROXIES: 127.0.0.0/8,::1/128
     volumes:
       - ./forgejo:/data
       - /etc/localtime:/etc/localtime:ro
@@ -71,4 +71,4 @@ services:
       timeout: 5s
       retries: 5
 volumes:
-  db_data:
+  db_data: null

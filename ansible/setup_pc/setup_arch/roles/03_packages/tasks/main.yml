@@ -18,11 +18,12 @@
       # Internet browser
       - vivaldi
       - chromium
+      - braver-browser
       # Terminal
       - fish
       # Explorer
       # - thunar
-      - pcmanfm # better thunar alternative
+      - pcmanfm  # better thunar alternative
       # Communication
       - thunderbird
       - discord
@@ -94,7 +95,7 @@
       - vlc-plugin-ffmpeg
       - gcc
       - rust
-      - blender # video editor
+      - blender  # video editor
       # Activate via
       # sudo archlinux-java set java-21-openjdk
       - jre11-openjdk

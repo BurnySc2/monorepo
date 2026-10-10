@@ -8,6 +8,12 @@ strict_skip() {
   echo "SKIP: $1 missing"
   return 0
 }
+# WHY gate YAML format before compose/syntax checks.
+check_yaml_format() {
+  command -v uv >/dev/null || { strict_skip "uv"; return $?; }
+  uv run --group dev yamlfix --check --exclude '.venv/*' .
+  uv run --group dev yamllint --strict .
+}
 # WHY catch compose errors before ansible runs.
 check_compose() {
   command -v docker >/dev/null || { strict_skip "docker"; return $?; }
@@ -40,6 +46,7 @@ check_secrets() {
   done
 }
 main() {
+  check_yaml_format
   check_compose
   check_syntax
   check_secrets

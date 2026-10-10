@@ -2,9 +2,9 @@
 - name: Ensure A record exists and points to target IP
   community.general.cloudflare_dns:
     # example.com
-    zone: "{{ item.domain }}"
+    zone: '{{ item.domain }}'
     # test, for test.example.com
-    record: "{{ item.subdomain }}"
+    record: '{{ item.subdomain }}'
     type: A
-    value: "{{ secrets.IPv4 }}"
-    api_token: "{{ secrets.CLOUDFLARE.DNS_API_TOKEN }}"
+    value: '{{ secrets.IPv4 }}'
+    api_token: '{{ secrets.CLOUDFLARE.DNS_API_TOKEN }}'

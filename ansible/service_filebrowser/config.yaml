@@ -1,3 +1,4 @@
+---
 # WHY boot config required: image fails without config.yaml
 # See https://filebrowserquantum.com/en/docs/getting-started/docker-v1.5.x Step 2
 server:

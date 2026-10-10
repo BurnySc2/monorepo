@@ -101,3 +101,20 @@ services.
 | traefik | 3.3.4 frozen, v3.6 active | 3.3.4 stays frozen in legacy stack; v3.6 serves the Pangolin stack |
 | wireguard | rolling release | Intentional rolling tag in legacy traefik compose files |
 | compose pull | missing | 7 setup playbooks use `pull: missing` (docmost, paperless, pangolin, pihole, bookstack, reactive_resume, postgres) |
+
+## 7. Formatting
+
+YAML autoformat is `yamlfix` via `uv`, configured in `pyproject.toml [tool.yamlfix]` (line_length=200, sequence_style=block_style, none_representation="null", allow_duplicate_keys=true). `yamllint` (`.yamllint.yml`) is lint-only.
+
+```sh
+# format one file
+uv run --group dev yamlfix <file.yml>
+# format whole repo
+uv run --group dev yamlfix .
+# check-only
+uv run --group dev yamlfix --check .
+# lint after fixing
+uv run --group dev yamllint .
+```
+
+Run `yamlfix` before `yamllint`; review `git diff` after first run (block_style/null can cause cosmetic diffs).

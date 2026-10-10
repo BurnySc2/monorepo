@@ -11,6 +11,6 @@ dev = [
 
 [tool.yamlfix]
 allow_duplicate_keys = true
-line_length = 120
+line_length = 200
 none_representation = "null"
 sequence_style = "block_style"

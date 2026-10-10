@@ -18,7 +18,7 @@
       - visual-studio-code-bin
       - ai-jail-bin
       - playwright
-      - warp-terminal-bin # Modern terminal emulator
+      - warp-terminal-bin  # Modern terminal emulator
       # Other
       - xq  # html content extractor
       - zoom
