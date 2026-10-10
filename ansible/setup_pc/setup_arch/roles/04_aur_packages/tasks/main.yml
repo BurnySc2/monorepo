@@ -10,25 +10,30 @@
 - name: Install AUR packages
   kewlfft.aur.aur:
     name:
-      # TODO Add 'DaVinci Resolve' using 'opencl-clover-mesa' (need to manually download davinci-linux.zip to '~/.cache/yay/davinci-resolve/')
+      # Browser
+      - google-chrome
+      - zen-browser-bin
+      - opera
+      # Dev
+      - visual-studio-code-bin
+      - ai-jail-bin
+      - playwright
+      - warp-terminal-bin # Modern terminal emulator
+      # Other
       - xq  # html content extractor
       - zoom
-      - visual-studio-code-bin
-      # - nimlangserver-bin
       - spotify
       - spotify-adblock
       - anydesk-bin  # remote maintenance
-      - rustdesk  # anydesk / teamviewer alternative
-      - aur/google-chrome
+      - rustdesk-bin  # anydesk / teamviewer alternative
       # - docker-slim-bin  # slimify docker images by stripping them to files that are required
       # - choosenim  # nim installer
+      # - nimlangserver-bin
       - jdownloader2
       # - yt-dlp-git  # Videos downloader
       - ttf-symbola  # required by discord? https://wiki.archlinux.org/title/Discord#Emojis_are_not_rendered_correctly
       - nodejs-emmet-ls  # emmet language server for helix
-      # - warp-terminal  # Modern terminal emulator
       # - whatsie  # Whatsapp, use web version instead https://web.whatsapp.com
-      # - opera
       # - lazydocker-bin  # docker gui in terminal
     state: present
     update_cache: true
