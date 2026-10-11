@@ -9,6 +9,7 @@
       - i3exit
       - rofi  # dmenu alternative
       - alacritty  # terminal emulator
+      - ghostty  # terminal emulator
       - xautolock  # autolock after time
       - i3lock  # lock screen / screensaver
       - xorg-xsetroot  # set background image
