@@ -30,7 +30,7 @@ dependencies = [
     # Load .env files easily
     "python-dotenv>=1.0.1",
     # Audio generation
-    "edge-tts>=6.1.18",
+    "edge-tts>=7.0.0",
     # SC2 Replay Parser
     "sc2reader>=1.8.0",
     # Async client for s3
