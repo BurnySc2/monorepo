@@ -12,9 +12,6 @@ services:
     image: openchamber-local:latest
     container_name: openchamber
     restart: unless-stopped
-    # LAN debug only (bypasses Pangolin SSO, keep commented):
-    # ports:
-    #   - "3000:3000"
     extra_hosts:
       - host.docker.internal:host-gateway
     volumes:

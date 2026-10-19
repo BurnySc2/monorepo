@@ -77,13 +77,6 @@
         owner: '1000'
         group: '1000'
         mode: '0755'
-    # - name: Upload opencode auth.json even if unreadable locally
-    #   ansible.builtin.copy:
-    #     src: /home/burny/.local/share/opencode/auth.json
-    #     dest: /home/{{ USERNAME }}/data/opencode/share/auth.json
-    #     owner: '1000'
-    #     group: '1000'
-    #     mode: '0600'
     - name: Tear down existing services
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
