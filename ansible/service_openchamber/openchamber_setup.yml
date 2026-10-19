@@ -1,0 +1,98 @@
+---
+# Execute with
+# ansible-playbook openchamber_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create and start openchamber service
+  hosts: server_group1
+  vars:
+    USERNAME: '{{ secrets.OPENCHAMBER.USERNAME }}'
+    SUBDOMAIN: '{{ secrets.OPENCHAMBER.SUBDOMAIN }}'
+    APPLICATION_PORT: '3000'
+  tasks:
+    - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
+      loop:
+        - {domain: '{{ secrets.MY_PRIVATE_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
+    - name: Create group
+      ansible.builtin.group:
+        name: '{{ USERNAME }}'
+        state: present
+    - name: Create user
+      ansible.builtin.user:
+        name: '{{ USERNAME }}'
+        groups:
+          - '{{ USERNAME }}'
+          - docker
+        shell: '{{ secrets.DEFAULT_SHELL }}'
+    - name: Create volume directories
+      ansible.builtin.file:
+        path: /home/{{ USERNAME }}/{{ item }}
+        state: directory
+        owner: '1000'
+        group: '1000'
+        mode: '0755'
+      loop:
+        - data/openchamber
+        - data/opencode/share
+        - data/opencode/state
+        - data/opencode/config
+        - data/ssh
+        - workspaces
+    - name: Create RSA key pair if missing
+      ansible.builtin.shell:
+        cmd: ssh-keygen -t rsa -b 4096 -f /home/{{ USERNAME }}/data/ssh/id_rsa -N '' -C 'openchamber@{{ USERNAME }}'
+        creates: /home/{{ USERNAME }}/data/ssh/id_rsa
+        # deterministic filename id_rsa so it is not recreated
+    - name: Set key permissions
+      ansible.builtin.file:
+        path: /home/{{ USERNAME }}/data/ssh/id_rsa
+        owner: '1000'
+        group: '1000'
+        mode: '0600'
+    - name: Set pub key permissions
+      ansible.builtin.file:
+        path: /home/{{ USERNAME }}/data/ssh/id_rsa.pub
+        owner: '1000'
+        group: '1000'
+        mode: '0644'
+    - name: Generate known_hosts for github.com
+      ansible.builtin.shell:
+        cmd: ssh-keyscan -t rsa,ecdsa,ed25519 github.com > /home/{{ USERNAME }}/data/ssh/known_hosts && chown 1000:1000 /home/{{ USERNAME }}/data/ssh/known_hosts && chmod 644 /home/{{ USERNAME }}/data/ssh/known_hosts
+        creates: /home/{{ USERNAME }}/data/ssh/known_hosts
+    # Optional permission fix - try without first, uncomment if container hits permission errors (image runs as 1000:1000):
+    # - name: Fix ownership for openchamber data (optional, try without first)
+    #   ansible.builtin.shell:
+    #     cmd: chown -R 1000:1000 /home/{{ USERNAME }}/data /home/{{ USERNAME }}/workspaces && chmod 700 /home/{{ USERNAME }}/data/ssh && chmod 600 /home/{{ USERNAME }}/data/ssh/id_rsa
+    - name: Upload opencode config directory (source of truth with delete)
+      ansible.posix.synchronize:
+        src: /home/burny/.config/opencode/
+        dest: /home/{{ USERNAME }}/data/opencode/config/
+        delete: true
+        rsync_opts:
+          - --delete
+      delegate_to: localhost
+    - name: Ensure opencode share dir exists
+      ansible.builtin.file:
+        path: /home/{{ USERNAME }}/data/opencode/share
+        state: directory
+        owner: '1000'
+        group: '1000'
+        mode: '0755'
+    # - name: Upload opencode auth.json even if unreadable locally
+    #   ansible.builtin.copy:
+    #     src: /home/burny/.local/share/opencode/auth.json
+    #     dest: /home/{{ USERNAME }}/data/opencode/share/auth.json
+    #     owner: '1000'
+    #     group: '1000'
+    #     mode: '0600'
+    - name: Tear down existing services
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        state: stopped
+      failed_when: false
+    - name: Copy docker-compose.yml file
+      ansible.builtin.template:
+        src: docker-compose.yml
+        dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: Run `docker-compose up` again
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ USERNAME }}
+        build: always

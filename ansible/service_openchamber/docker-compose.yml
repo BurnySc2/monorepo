@@ -1,0 +1,36 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+services:
+  openchamber:
+    build:
+      context: https://github.com/openchamber/openchamber.git#main
+      dockerfile: Dockerfile
+    image: openchamber-local:latest
+    container_name: openchamber
+    restart: unless-stopped
+    # LAN debug only (bypasses Pangolin SSO, keep commented):
+    # ports:
+    #   - "3000:3000"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ./data/openchamber:/home/openchamber/.config/openchamber
+      - ./data/opencode/share:/home/openchamber/.local/share/opencode
+      - ./data/opencode/state:/home/openchamber/.local/state/opencode
+      - ./data/opencode/config:/home/openchamber/.config/opencode
+      - ./data/ssh:/home/openchamber/.ssh
+      - ./workspaces:/home/openchamber/workspaces
+    environment:
+      - OPENCHAMBER_UI_PASSWORD={{ secrets.OPENCHAMBER.UI_PASSWORD }}
+    networks:
+      - pangolin_newt
+    labels:
+      - pangolin.public-resources.openchamber.name=Openchamber
+      - pangolin.public-resources.openchamber.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+      - pangolin.public-resources.openchamber.protocol=http
+      - pangolin.public-resources.openchamber.auth.sso-enabled=true
+      - pangolin.public-resources.openchamber.targets[0].method=http
+      - pangolin.public-resources.openchamber.targets[0].hostname=openchamber
+      - pangolin.public-resources.openchamber.targets[0].port={{ APPLICATION_PORT }}
