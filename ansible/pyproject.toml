@@ -14,3 +14,5 @@ allow_duplicate_keys = true
 line_length = 200
 none_representation = "null"
 sequence_style = "block_style"
+# WHY keep intentional quotes on Jinja URLs (e.g. git#{{ ... }} fragment would read as comment-risk unquoted).
+preserve_quotes = true

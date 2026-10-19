@@ -5,8 +5,10 @@ networks:
 services:
   openchamber:
     build:
-      context: https://github.com/openchamber/openchamber.git#main
+      context: ./dockerfiles
       dockerfile: Dockerfile
+      args:
+        BASE_IMAGE: "openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF | default('main') }}"
     image: openchamber-local:latest
     container_name: openchamber
     restart: unless-stopped

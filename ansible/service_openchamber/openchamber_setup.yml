@@ -7,6 +7,7 @@
     USERNAME: '{{ secrets.OPENCHAMBER.USERNAME }}'
     SUBDOMAIN: '{{ secrets.OPENCHAMBER.SUBDOMAIN }}'
     APPLICATION_PORT: '3000'
+    OPENCHAMBER_UPSTREAM_REF: 'main'
   tasks:
     - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
       loop:
@@ -88,11 +89,40 @@
         project_src: /home/{{ USERNAME }}
         state: stopped
       failed_when: false
+    - name: Build upstream openchamber image
+      # Daemon clones the full repo to a temp dir for this remote-URL build, then auto-cleans it.
+      ansible.builtin.command:
+        argv:
+          - docker
+          - build
+          - https://github.com/openchamber/openchamber.git#{{ OPENCHAMBER_UPSTREAM_REF | default('main') }}
+          - -t
+          - openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF | default('main') }}
+          - --pull
+      changed_when: true
+    - name: Create dockerfiles directory
+      ansible.builtin.file:
+        path: /home/{{ USERNAME }}/dockerfiles
+        state: directory
+        owner: '{{ USERNAME }}'
+        group: '{{ USERNAME }}'
+        mode: '0755'
     - name: Copy docker-compose.yml file
       ansible.builtin.template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
+    - name: Copy Dockerfile file
+      ansible.builtin.copy:
+        src: Dockerfile
+        dest: /home/{{ USERNAME }}/dockerfiles/Dockerfile
+        owner: '{{ USERNAME }}'
+        group: '{{ USERNAME }}'
+        mode: '0644'
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
         build: always
+    - name: Remove dockerfiles build context
+      ansible.builtin.file:
+        path: /home/{{ USERNAME }}/dockerfiles
+        state: absent
