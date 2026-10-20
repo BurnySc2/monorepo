@@ -7,7 +7,8 @@
     USERNAME: '{{ secrets.OPENCHAMBER.USERNAME }}'
     SUBDOMAIN: '{{ secrets.OPENCHAMBER.SUBDOMAIN }}'
     APPLICATION_PORT: '3000'
-    OPENCHAMBER_UPSTREAM_REF: 'main'
+    # Upstream tags: https://github.com/openchamber/openchamber/tags
+    OPENCHAMBER_UPSTREAM_REF: 'v2.5.0'
   tasks:
     - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
       loop:
@@ -88,9 +89,9 @@
         argv:
           - docker
           - build
-          - https://github.com/openchamber/openchamber.git#{{ OPENCHAMBER_UPSTREAM_REF | default('main') }}
+          - https://github.com/openchamber/openchamber.git#{{ OPENCHAMBER_UPSTREAM_REF | default('v2.5.0') }}
           - -t
-          - openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF | default('main') }}
+          - openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF | default('v2.5.0') }}
           - --pull
       changed_when: true
     - name: Create dockerfiles directory

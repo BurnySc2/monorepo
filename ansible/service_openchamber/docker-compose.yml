@@ -8,7 +8,8 @@ services:
       context: ./dockerfiles
       dockerfile: Dockerfile
       args:
-        BASE_IMAGE: "openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF | default('main') }}"
+        # Upstream tags: https://github.com/openchamber/openchamber/tags
+        BASE_IMAGE: "openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF | default('v2.5.0') }}"
     image: openchamber-local:latest
     container_name: openchamber
     restart: unless-stopped
