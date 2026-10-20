@@ -91,8 +91,8 @@ jobs:
 
       - name: Run pytest
         working-directory: ${{ env.SUBDIRECTORY }}
-        # REQUIRE_DB=1 turns missing-postgres skips into failures here (services are up);
-        # fast jobs without services use: uv run pytest test -m "not db" --random-order
+        # REQUIRE_DB=1: missing-postgres skips fail here;
+        # services are up. Without services use -m "not db".
         env:
           REQUIRE_DB: 1
         run: uv run pytest test --random-order

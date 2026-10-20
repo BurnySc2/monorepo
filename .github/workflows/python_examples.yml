@@ -93,9 +93,9 @@ jobs:
         include:
           - os: macos-latest
             python-version: "3.13"
-          # Doesn't work on windows
-          # - os: windows-latest
-          #   python-version: "3.11"
+            # Doesn't work on windows
+            # - os: windows-latest
+            #   python-version: "3.11"
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15

@@ -58,7 +58,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install yamllint and pyyaml
-        run: uv pip install --system yamllint pyyaml
+        run: uv pip install --system --break-system-packages yamllint pyyaml
 
       - name: Setup Nim
         uses: jiro4989/setup-nim-action@v2
