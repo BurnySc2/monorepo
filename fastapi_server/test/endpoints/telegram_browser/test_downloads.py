@@ -3,9 +3,12 @@
 from datetime import datetime
 
 import arrow
+import pytest
 from fastapi.testclient import TestClient
 
 from models.telegram_browser import DownloadStatus, TelegramChannel, TelegramDownload, TelegramMessage
+
+pytestmark = pytest.mark.db
 
 _CHANNEL_TABLE = TelegramChannel._meta.tablename
 _MESSAGE_TABLE = TelegramMessage._meta.tablename

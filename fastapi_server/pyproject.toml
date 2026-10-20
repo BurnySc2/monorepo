@@ -150,6 +150,7 @@ capitalisation_policy = "upper"
 pythonpath = ["src"]
 testpaths = ["test"]
 asyncio_mode = "auto"
+markers = ["db: requires postgres", "rustfs: requires RustFS S3"]
 
 [tool.pytest_env]
 # Env variables to be used while tests run

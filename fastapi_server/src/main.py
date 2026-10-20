@@ -29,7 +29,13 @@ from settings import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    await initialize_rustfs()
+    try:
+        await initialize_rustfs()
+    except Exception:  # noqa: BLE001
+        if settings.stage == "test":
+            logger.warning("RustFS unavailable at startup; continuing without it", exc_info=True)
+        else:
+            raise
     try:
         ensure_nltk_data()
     except (LookupError, OSError, RuntimeError):

@@ -1,6 +1,4 @@
 import io
-import os
-import socket
 from pathlib import Path
 
 import pytest
@@ -9,21 +7,9 @@ from fastapi.testclient import TestClient
 from components.login.cookies import LoggedInUser, get_current_user
 from main import app
 from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
+from test.conftest import _require_rustfs
 
-
-def _rustfs_available() -> bool:
-    rustfs_url = os.getenv("RUSTFS_S3_URL", "http://localhost:9000")
-    url = rustfs_url.removeprefix("http://").removeprefix("https://")
-    host, port = url.split(":")
-
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(1)
-    try:
-        result = sock.connect_ex((host, int(port)))
-        sock.close()
-        return result == 0
-    except Exception:  # noqa: BLE001
-        return False
+pytestmark = pytest.mark.db
 
 
 def _upload_book(client: TestClient) -> int:
@@ -81,9 +67,10 @@ def test_uploaded_book_chapter_count(test_client_db_reset: TestClient) -> None:
     assert len(json_data["chapters"]) == 31
 
 
-@pytest.mark.skipif(not _rustfs_available(), reason="RustFS not available")
+@pytest.mark.rustfs
 def test_get_book(test_client_db_reset: TestClient) -> None:
     """GET /api/audiobook/books/{id} returns book with chapters array. Requires rustfs."""
+    _require_rustfs()
     book_id = _upload_book(test_client_db_reset)
     response = test_client_db_reset.get(f"/api/audiobook/books/{book_id}")
     assert response.status_code == 200
