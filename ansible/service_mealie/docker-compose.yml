@@ -15,7 +15,7 @@ services:
     environment:
       ALLOW_SIGNUP: 'false'
       LOG_LEVEL: DEBUG
-      DB_ENGINE: sqlite  # Optional: 'sqlite', 'postgres'
+      DB_ENGINE: sqlite # Optional: 'sqlite', 'postgres'
     labels:
       - pangolin.public-resources.mealie.name=Mealie
       - pangolin.public-resources.mealie.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
