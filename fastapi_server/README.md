@@ -41,21 +41,21 @@ Pydantic
 ```py
 from pydantic import BaseModel
 
+
 class Item(BaseModel):
     name: str
     price: float
     is_offer: bool | None = None
 
+
 @app.get("/items/{item_id}", response_model=Item)
 async def get_item(item_id: int):
     return {"name": "Widget", "price": 19.99}
 
+
 @app.get("/items", response_model=list[Item])
 async def get_items():
-    return [
-        {"name": "Foo", "price": 50.2},
-        {"name": "Bar", "price": 62.0}
-    ]
+    return [{"name": "Foo", "price": 50.2}, {"name": "Bar", "price": 62.0}]
 ```
 
 Response type vs response model
@@ -64,6 +64,7 @@ Response type vs response model
 @app.get("/items/{item_id}", response_model=Item)
 async def get_item(item_id: int) -> Item:
     return Item(name="Foo", price=50.2)
+
 
 @app.get("/items/{item_id}")
 async def get_item(item_id: int) -> Item:

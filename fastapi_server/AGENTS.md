@@ -38,8 +38,8 @@ Stack: FastAPI + async, PostgreSQL (Piccolo ORM), S3-compatible storage (RustFS)
 
 ### Router Registration
 ```python
-app.include_router(login_router)                          # no prefix
-app.include_router(TTSRouter, prefix="/tts-api")        # custom prefix
+app.include_router(login_router)  # no prefix
+app.include_router(TTSRouter, prefix="/tts-api")  # custom prefix
 app.include_router(audiobook_router, prefix="/api/audiobook")
 ```
 
@@ -49,10 +49,9 @@ from typing import Annotated
 from fastapi import Depends
 from components.login.cookies import LoggedInUser, get_current_user
 
+
 @audiobook_router.get("/books")
-async def list_books(
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)]
-) -> list[BookListItem]:
+async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> list[BookListItem]:
     books = await AudiobookBook.objects().where(...)
 ```
 
@@ -195,9 +194,11 @@ uv run pytest test/endpoints/login/test_login_twitch.py::test_twitch_login_start
 def test_client() -> Iterator[TestClient]:
     """FastAPI TestClient without DB reset."""
 
+
 @pytest.fixture
 def test_client_db_reset() -> Iterator[TestClient]:
     """FastAPI TestClient with fresh Audiobook tables + mocked get_current_user."""
+
 
 @pytest.fixture
 def mock_s3(monkeypatch: pytest.MonkeyPatch) -> Iterator[AsyncMock]:
@@ -277,7 +278,9 @@ Config: `src/piccolo_conf.py` (`DB = PostgresEngine(config={"dsn": settings.post
 ```python
 # src/routes/example.py
 from fastapi import APIRouter
+
 example_router = APIRouter()
+
 
 @example_router.get("/example")
 async def get_example() -> dict:
@@ -290,6 +293,7 @@ Then register in `main.py` with `app.include_router(example_router, prefix="/api
 # src/schemas/example/db_models.py
 from piccolo.columns import Boolean, Integer, Text, Timestamp
 from piccolo.table import Table
+
 
 class ExampleTable(Table, tablename="example_table"):
     name = Text(required=True)

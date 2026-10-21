@@ -7,6 +7,7 @@ dependencies = ["click>=8.1.7", "loguru>=0.7.3", "paramiko>=3.5.0"]
 [dependency-groups]
 dev = [
     "pyrefly>=0.18.0",
+    "pytest>=8.3.4",
     "ruff>=0.8.3",
 ]
 
