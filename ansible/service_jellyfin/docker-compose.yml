@@ -10,8 +10,13 @@ services:
     restart: unless-stopped
     networks:
       - pangolin_newt
-    ports:
-      - 10000:{{ APPLICATION_PORT }}
+    # ports:
+    #   - 10000:{{ APPLICATION_PORT }}
+    environment:
+      # Same as user id
+      - PUID=1004
+      - PGID=1004
+      - TZ=Etc/UTC
     labels:
       - pangolin.public-resources.jellyfin.name=Jellyfin
       - pangolin.public-resources.jellyfin.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
