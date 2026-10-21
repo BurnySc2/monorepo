@@ -2,9 +2,12 @@
 
 from datetime import datetime
 
+import pytest
 from fastapi.testclient import TestClient
 
 from models.telegram_browser import TelegramChannel
+
+pytestmark = pytest.mark.db
 
 _TABLE = TelegramChannel._meta.tablename
 

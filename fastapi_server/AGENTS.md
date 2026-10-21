@@ -38,8 +38,8 @@ Stack: FastAPI + async, PostgreSQL (Piccolo ORM), S3-compatible storage (RustFS)
 
 ### Router Registration
 ```python
-app.include_router(login_router)                          # no prefix
-app.include_router(TTSRouter, prefix="/tts-api")        # custom prefix
+app.include_router(login_router)  # no prefix
+app.include_router(TTSRouter, prefix="/tts-api")  # custom prefix
 app.include_router(audiobook_router, prefix="/api/audiobook")
 ```
 
@@ -49,10 +49,9 @@ from typing import Annotated
 from fastapi import Depends
 from components.login.cookies import LoggedInUser, get_current_user
 
+
 @audiobook_router.get("/books")
-async def list_books(
-    current_user: Annotated[LoggedInUser, Depends(get_current_user)]
-) -> list[BookListItem]:
+async def list_books(current_user: Annotated[LoggedInUser, Depends(get_current_user)]) -> list[BookListItem]:
     books = await AudiobookBook.objects().where(...)
 ```
 
@@ -195,14 +194,25 @@ uv run pytest test/endpoints/login/test_login_twitch.py::test_twitch_login_start
 def test_client() -> Iterator[TestClient]:
     """FastAPI TestClient without DB reset."""
 
+
 @pytest.fixture
 def test_client_db_reset() -> Iterator[TestClient]:
     """FastAPI TestClient with fresh Audiobook tables + mocked get_current_user."""
+
 
 @pytest.fixture
 def mock_s3(monkeypatch: pytest.MonkeyPatch) -> Iterator[AsyncMock]:
     """Mock S3 presigned URL + get_s3_client for audiobook routes (no network)."""
 ```
+
+### Test Contract (authoritative: `test/conftest.py`, `.github/workflows/fastapi_server.yml` at repo root)
+
+- `pytestmark = pytest.mark.db` needs postgres via `test_client_db_reset`; RustFS tests add `@pytest.mark.rustfs` + `_require_rustfs()` (see `test/endpoints/audiobook/test_audiobook_api.py`).
+- No services: `uv run pytest -m "not db"` — unavailable services skip via TCP probe in `test/conftest.py`.
+- Full suite: `docker compose --profile test up -d`, then `REQUIRE_DB=1 uv run pytest --random-order`.
+- `REQUIRE_DB=1` / `FAIL_ON_SKIP=1` turn service-missing skips into failures.
+- NLTK `punkt_tab` downloads to `data/nltk` (`NLTK_DATA_DIR` override); session fixture `_prewarm_nltk_data` pre-warms it.
+- Raw SQL in `src/queries/` is Postgres-only (`dialect = "postgres"`); no SQLite fallback.
 
 ---
 
@@ -268,7 +278,9 @@ Config: `src/piccolo_conf.py` (`DB = PostgresEngine(config={"dsn": settings.post
 ```python
 # src/routes/example.py
 from fastapi import APIRouter
+
 example_router = APIRouter()
+
 
 @example_router.get("/example")
 async def get_example() -> dict:
@@ -281,6 +293,7 @@ Then register in `main.py` with `app.include_router(example_router, prefix="/api
 # src/schemas/example/db_models.py
 from piccolo.columns import Boolean, Integer, Text, Timestamp
 from piccolo.table import Table
+
 
 class ExampleTable(Table, tablename="example_table"):
     name = Text(required=True)

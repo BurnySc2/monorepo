@@ -1,5 +1,6 @@
 """Tests for RaceRoom endpoints."""
 
+from collections.abc import Iterator
 from datetime import datetime
 
 import pytest
@@ -9,13 +10,17 @@ from piccolo.utils.sync import run_sync
 
 from main import app
 from models.raceroom import RRREBestTime, RRREPlayer, RRRETrack
+from test.conftest import _require_postgres
+
+pytestmark = pytest.mark.db
 
 RACEROOM_TABLES = [RRREPlayer, RRRETrack, RRREBestTime]
 
 
 @pytest.fixture(scope="function")
-def test_client_raceroom() -> TestClient:
+def test_client_raceroom() -> Iterator[TestClient]:
     """Test client with fresh RaceRoom database tables."""
+    _require_postgres()
     run_sync(create_db_tables(*RACEROOM_TABLES, if_not_exists=True))
     try:
         with TestClient(app=app) as client:

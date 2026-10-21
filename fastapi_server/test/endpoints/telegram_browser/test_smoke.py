@@ -4,9 +4,12 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import arrow
+import pytest
 from fastapi.testclient import TestClient
 
 from models.telegram_browser import DownloadStatus, TelegramChannel, TelegramDownload, TelegramMessage
+
+pytestmark = pytest.mark.db
 
 
 def _create_channel(

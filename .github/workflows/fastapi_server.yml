@@ -22,16 +22,11 @@ env:
 jobs:
   run_lint_checks:
     name: lint_check_py${{ matrix.python-version }}
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.12", "3.13", "3.14"]
-        include:
-          - os: ubuntu-latest
-            python-version: "3.15"
-            experimental: true
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
 
@@ -46,7 +41,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
@@ -56,16 +51,11 @@ jobs:
 
   test_backend:
     name: test_backend_py${{ matrix.python-version }}
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
         python-version: ["3.11", "3.12", "3.13", "3.14"]
-        include:
-          - os: ubuntu-latest
-            python-version: "3.15"
-            experimental: true
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
@@ -87,8 +77,12 @@ jobs:
 
       - name: Install packages
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Run pytest
         working-directory: ${{ env.SUBDIRECTORY }}
+        # REQUIRE_DB=1: missing-postgres skips fail here;
+        # services are up. Without services use -m "not db".
+        env:
+          REQUIRE_DB: 1
         run: uv run pytest test --random-order

@@ -37,11 +37,11 @@ jobs:
         uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
@@ -73,11 +73,11 @@ jobs:
         uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install packages
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Run pytest
         working-directory: ${{ env.SUBDIRECTORY }}
@@ -93,9 +93,9 @@ jobs:
         include:
           - os: macos-latest
             python-version: "3.13"
-          # Doesn't work on windows
-          # - os: windows-latest
-          #   python-version: "3.11"
+            # Doesn't work on windows
+            # - os: windows-latest
+            #   python-version: "3.11"
 
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
@@ -107,7 +107,7 @@ jobs:
         uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Start MongoDB
         uses: ankane/setup-mongodb@v1

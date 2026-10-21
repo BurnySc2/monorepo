@@ -9,9 +9,12 @@ Fixtures:
         created before each test and dropped after.
 """
 
+import os
+import socket
 from collections.abc import Iterator
 from contextlib import asynccontextmanager
 from unittest.mock import AsyncMock
+from urllib.parse import urlparse
 
 import pytest
 from fastapi.testclient import TestClient
@@ -22,8 +25,57 @@ from components.audiobook.epub_reader import ensure_nltk_data
 from components.login.cookies import LoggedInUser, get_current_user
 from main import app
 from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
+from settings import settings
 
 TABLES: list[type[Table]] = [AudiobookBook, AudiobookChapter]
+
+
+def _tcp_open(host: str, port: int, timeout: float = 1.0) -> bool:
+    if host in ("0.0.0.0", "::"):
+        host = "127.0.0.1"
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def postgres_available() -> bool:
+    try:
+        parsed = urlparse(settings.postgres_connection_string)
+        host = parsed.hostname or "localhost"
+        port = parsed.port or 5432
+        return _tcp_open(host, port)
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def rustfs_available() -> bool:
+    try:
+        parsed = urlparse(settings.rustfs_s3_url)
+        host = parsed.hostname or "localhost"
+        port = parsed.port or (443 if parsed.scheme == "https" else 80)
+        return _tcp_open(host, port)
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def _require_postgres() -> None:
+    if postgres_available():
+        return
+    reason = "postgres not available"
+    if os.getenv("REQUIRE_DB") == "1" or os.getenv("FAIL_ON_SKIP") == "1":
+        pytest.fail(reason)
+    pytest.skip(reason)
+
+
+def _require_rustfs() -> None:
+    if rustfs_available():
+        return
+    reason = "RustFS not available"
+    if os.getenv("REQUIRE_DB") == "1" or os.getenv("FAIL_ON_SKIP") == "1":
+        pytest.fail(reason)
+    pytest.skip(reason)
 
 
 @pytest.fixture(scope="function")
@@ -38,6 +90,7 @@ def _mock_get_current_user() -> LoggedInUser:
 
 @pytest.fixture(scope="function")
 def test_client_db_reset() -> Iterator[TestClient]:
+    _require_postgres()
     run_sync(create_db_tables(*TABLES, if_not_exists=True))
     app.dependency_overrides[get_current_user] = _mock_get_current_user
     try:

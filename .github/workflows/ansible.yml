@@ -28,10 +28,13 @@ jobs:
 
       - name: Install dependencies
         working-directory: ansible
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Install ansible-core
         run: uv tool install ansible-core
+
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r ansible/requirements.yml
 
       - name: Run ansible checks
         env:

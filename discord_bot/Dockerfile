@@ -14,5 +14,5 @@ RUN rm -r \
 FROM scratch
 COPY --from=base / /
 WORKDIR /root/discord_bot
-ENV PYTHONPATH=$PYTHONPATH:/root/discord_bot/src
+ENV PYTHONPATH=/root/discord_bot/src
 CMD ["uv", "run", "--no-dev", "src/discord_bot.py"]

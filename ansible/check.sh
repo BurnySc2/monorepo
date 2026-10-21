@@ -11,7 +11,7 @@ strict_skip() {
 # WHY gate YAML format before compose/syntax checks.
 check_yaml_format() {
   command -v uv >/dev/null || { strict_skip "uv"; return $?; }
-  uv run --group dev yamlfix --check --exclude '.venv/*' .
+  uv run --group dev yamlfix --check --exclude '.venv/**/*' .
   uv run --group dev yamllint --strict .
 }
 # WHY catch compose errors before ansible runs.

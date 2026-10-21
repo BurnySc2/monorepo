@@ -9,6 +9,7 @@ from components.login.allowlist import require_allowed_user
 from components.login.cookies import LoggedInUser
 from main import app
 from models.telegram_browser import TelegramChannel, TelegramDownload, TelegramMessage
+from test.conftest import _require_postgres
 
 TABLES = [TelegramChannel, TelegramMessage, TelegramDownload]
 
@@ -19,6 +20,7 @@ def _mock_get_current_user() -> LoggedInUser:
 
 @pytest.fixture(scope="function")
 def telegram_client() -> Iterator[TestClient]:
+    _require_postgres()
     run_sync(create_db_tables(*TABLES, if_not_exists=True))
     app.dependency_overrides[require_allowed_user] = _mock_get_current_user
     try:

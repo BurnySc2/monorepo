@@ -25,26 +25,37 @@ Now you can go to http://0.0.0.0:8000 or http://0.0.0.0:8000/schema to check out
 
 Under http://pgadmin.localhost you can `register` the postgres instance with host name `fastapi_dev_postgres`, port `5432`, username `root` and password `root` and keep database as `postgres` and now click on `save`. You will now be able to browse the database tables and data.
 
+## Testing
+
+Test contract (authoritative: `test/conftest.py`, `.github/workflows/fastapi_server.yml` at repo root):
+
+- `pytestmark = pytest.mark.db` needs postgres via `test_client_db_reset`; RustFS tests add `@pytest.mark.rustfs` + `_require_rustfs()` (see `test/endpoints/audiobook/test_audiobook_api.py`).
+- No services: `uv run pytest -m "not db"` — unavailable services skip via TCP probe in `test/conftest.py`.
+- Full suite: `docker compose --profile test up -d`, then `REQUIRE_DB=1 uv run pytest --random-order`.
+- `REQUIRE_DB=1` / `FAIL_ON_SKIP=1` turn service-missing skips into failures.
+- NLTK `punkt_tab` downloads to `data/nltk` (`NLTK_DATA_DIR` override); session fixture `_prewarm_nltk_data` pre-warms it.
+- Raw SQL in `src/queries/` is Postgres-only (`dialect = "postgres"`); no SQLite fallback.
+
 # Fastapi allowed response types
 Pydantic
 ```py
 from pydantic import BaseModel
+
 
 class Item(BaseModel):
     name: str
     price: float
     is_offer: bool | None = None
 
+
 @app.get("/items/{item_id}", response_model=Item)
 async def get_item(item_id: int):
     return {"name": "Widget", "price": 19.99}
 
+
 @app.get("/items", response_model=list[Item])
 async def get_items():
-    return [
-        {"name": "Foo", "price": 50.2},
-        {"name": "Bar", "price": 62.0}
-    ]
+    return [{"name": "Foo", "price": 50.2}, {"name": "Bar", "price": 62.0}]
 ```
 
 Response type vs response model
@@ -53,6 +64,7 @@ Response type vs response model
 @app.get("/items/{item_id}", response_model=Item)
 async def get_item(item_id: int) -> Item:
     return Item(name="Foo", price=50.2)
+
 
 @app.get("/items/{item_id}")
 async def get_item(item_id: int) -> Item:

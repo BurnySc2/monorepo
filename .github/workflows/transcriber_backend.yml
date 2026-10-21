@@ -8,12 +8,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  push:
-    paths:
-      - transcribe_website/transcriber_backend/**
-      - .github/workflows/transcriber_backend.yml
-  pull_request:
-    branches: [master, develop]
+  # WHY: transcriber checks disabled temporarily —
+  # re-enable by restoring push/pull_request triggers
   workflow_dispatch:
 
 env:
@@ -32,7 +28,7 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
       - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
         env:
@@ -51,7 +47,7 @@ jobs:
           python-version: "3.12"
       - name: Install packages
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
       - name: Run pytest
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv run pytest

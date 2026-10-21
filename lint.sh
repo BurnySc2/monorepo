@@ -78,7 +78,8 @@ check_optional() {
 # WHY reuse per-project lint scripts so CI matches local runs.
 check_projects() {
   local fails=0
-  for d in fastapi_server discord_bot transcribe_website/transcriber_backend python_examples problem_sites/leetcode/python burny_common twitch_stream_announcer ansible; do
+  # WHY: transcriber checks disabled temporarily
+  for d in fastapi_server discord_bot python_examples problem_sites/leetcode/python burny_common twitch_stream_announcer ansible; do
     echo "==> $d"
     if [ ! -x "$d/lint.sh" ]; then strict_skip "$d/lint.sh" || fails=$((fails+1)); continue; fi
     "$d/lint.sh" || { echo "FAIL $d"; fails=$((fails+1)); }

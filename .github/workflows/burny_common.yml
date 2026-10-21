@@ -37,11 +37,11 @@ jobs:
         uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
@@ -55,7 +55,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
 
@@ -66,11 +66,11 @@ jobs:
         uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install packages
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Run pytest
         working-directory: ${{ env.SUBDIRECTORY }}
@@ -92,25 +92,24 @@ jobs:
         uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install packages
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Build project
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv build
 
       - id: wait-for-jobs
-        uses: yogeshlonkar/wait-for-jobs@v0
+        uses: yogeshlonkar/wait-for-jobs@v1
         with:
           gh-token: ${{ secrets.GITHUB_TOKEN }}
           jobs: |
-            run_code_check_py3.9
-            run_code_check_py3.10
             run_code_check_py3.11
             run_code_check_py3.12
+            run_code_check_py3.13
 
         # Publish package on pypi
       - name: Publish
