@@ -58,7 +58,10 @@ jobs:
           python-version: "3.12"
 
       - name: Install yamllint and pyyaml
-        run: uv pip install --system --break-system-packages yamllint pyyaml
+        run: |
+          uv venv .venv
+          uv pip install --python .venv/bin/python yamllint pyyaml
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Setup Nim
         uses: jiro4989/setup-nim-action@v2
@@ -68,7 +71,7 @@ jobs:
       - name: Install ansible-core
         run: uv tool install ansible-core
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Run root lint
         env:

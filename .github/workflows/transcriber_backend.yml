@@ -8,12 +8,8 @@ concurrency:
   cancel-in-progress: true
 
 on:
-  push:
-    paths:
-      - transcribe_website/transcriber_backend/**
-      - .github/workflows/transcriber_backend.yml
-  pull_request:
-    branches: [master, develop]
+  # WHY: transcriber checks disabled temporarily —
+  # re-enable by restoring push/pull_request triggers
   workflow_dispatch:
 
 env:
@@ -21,7 +17,6 @@ env:
 
 jobs:
   lint:
-    if: false  # WHY: transcriber checks disabled temporarily
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -41,7 +36,6 @@ jobs:
         run: bash lint.sh
 
   test:
-    if: false  # WHY: transcriber checks disabled temporarily
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
