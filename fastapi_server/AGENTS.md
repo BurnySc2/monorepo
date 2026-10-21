@@ -204,6 +204,15 @@ def mock_s3(monkeypatch: pytest.MonkeyPatch) -> Iterator[AsyncMock]:
     """Mock S3 presigned URL + get_s3_client for audiobook routes (no network)."""
 ```
 
+### Test Contract (authoritative: `test/conftest.py`, `.github/workflows/fastapi_server.yml` at repo root)
+
+- `pytestmark = pytest.mark.db` needs postgres via `test_client_db_reset`; RustFS tests add `@pytest.mark.rustfs` + `_require_rustfs()` (see `test/endpoints/audiobook/test_audiobook_api.py`).
+- No services: `uv run pytest -m "not db"` — unavailable services skip via TCP probe in `test/conftest.py`.
+- Full suite: `docker compose --profile test up -d`, then `REQUIRE_DB=1 uv run pytest --random-order`.
+- `REQUIRE_DB=1` / `FAIL_ON_SKIP=1` turn service-missing skips into failures.
+- NLTK `punkt_tab` downloads to `data/nltk` (`NLTK_DATA_DIR` override); session fixture `_prewarm_nltk_data` pre-warms it.
+- Raw SQL in `src/queries/` is Postgres-only (`dialect = "postgres"`); no SQLite fallback.
+
 ---
 
 ## 6. Environment Variables
