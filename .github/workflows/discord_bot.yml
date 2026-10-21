@@ -41,7 +41,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Run lint
         working-directory: ${{ env.SUBDIRECTORY }}
@@ -70,7 +70,7 @@ jobs:
 
       - name: Install packages
         working-directory: ${{ env.SUBDIRECTORY }}
-        run: uv sync --frozen --no-cache --no-install-project
+        run: uv sync --frozen --no-install-project
 
       - name: Run pytest
         working-directory: ${{ env.SUBDIRECTORY }}
