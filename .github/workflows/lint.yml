@@ -56,12 +56,10 @@ jobs:
         with:
           enable-cache: true
           python-version: "3.12"
+          activate-environment: true
 
       - name: Install yamllint and pyyaml
-        run: |
-          uv venv .venv
-          uv pip install --python .venv/bin/python yamllint pyyaml
-          echo "$GITHUB_WORKSPACE/.venv/bin" >> "$GITHUB_PATH"
+        run: uv pip install yamllint pyyaml
 
       - name: Setup Nim
         uses: jiro4989/setup-nim-action@v2

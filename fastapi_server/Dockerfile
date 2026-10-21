@@ -29,6 +29,6 @@ COPY src src
 FROM scratch
 COPY --from=base / /
 WORKDIR /root/fastapi_server
-ENV PYTHONPATH=$PYTHONPATH:/root/fastapi_server/src
+ENV PYTHONPATH=/root/fastapi_server/src
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD curl -f http://localhost:8000/health || exit 1
 CMD ["uv", "run", "--no-dev", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

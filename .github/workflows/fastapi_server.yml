@@ -22,7 +22,6 @@ env:
 jobs:
   run_lint_checks:
     name: lint_check_py${{ matrix.python-version }}
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -52,7 +51,6 @@ jobs:
 
   test_backend:
     name: test_backend_py${{ matrix.python-version }}
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
