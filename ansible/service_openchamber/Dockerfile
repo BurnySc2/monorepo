@@ -8,6 +8,9 @@ FROM ${BASE_IMAGE}
 USER root
 # trixie removed libpcre3 (now libpcre2); C backend needs only gcc/g++.
 RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ libc6-dev && rm -rf /var/lib/apt/lists/*
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
+# WHY fontconfig + fonts-liberation: Chromium crashes in SkFontMgr without font config.
+RUN mkdir -p /opt/ms-playwright && chown openchamber:openchamber /opt/ms-playwright && apt-get update && apt-get install -y --no-install-recommends fontconfig fonts-liberation && npx -y playwright@1.61.0 install --with-deps chromium && rm -rf /var/lib/apt/lists/* /root/.npm /root/.cache && chown -R openchamber:openchamber /opt/ms-playwright
 COPY --from=uv /uv /uvx /bin/
 COPY --from=nim /opt/nim /opt/nim
 ENV NIM_VERSION=2.2.4
