@@ -3,9 +3,9 @@
 import { api_fetch, get_api_error_status } from "@repo/api-client"
 import type {
     BookListItemSchema as AudiobookBook,
-    ChapterDetail as AudiobookChapterQueryResult,
     QueueChapterRequest as AudioSettings,
     BookWithChapters,
+    ChapterDetail,
     VoiceInfo,
 } from "@repo/api-types"
 import { mock_book_data } from "./mock_data"
@@ -135,14 +135,11 @@ export async function delete_all_audio(book_id: number): Promise<void> {
     })
 }
 
-export async function refresh_chapters(
-    book_id: number,
-    chapter_numbers: number[],
-): Promise<AudiobookChapterQueryResult[]> {
+export async function refresh_chapters(book_id: number, chapter_numbers: number[]): Promise<ChapterDetail[]> {
     const response = await api_fetch(
         `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/status?chapter_numbers=${encodeURIComponent(chapter_numbers.join(","))}`,
     )
 
-    const data: AudiobookChapterQueryResult[] = await response.json()
+    const data: ChapterDetail[] = await response.json()
     return data
 }

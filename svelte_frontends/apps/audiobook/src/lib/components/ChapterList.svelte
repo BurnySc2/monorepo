@@ -1,9 +1,9 @@
 <script lang="ts">
-import type { ChapterDetail as AudiobookChapterQueryResult } from "@repo/api-types"
+import type { ChapterDetail } from "@repo/api-types"
 import { IconDelete, IconDownload, IconQueue, Spinner } from "@repo/ui"
 
 interface Props {
-    chapters: AudiobookChapterQueryResult[]
+    chapters: ChapterDetail[]
     on_queue_chapter?: (chapter_id: number) => void
     on_delete_chapter_audio?: (chapter_id: number) => void
 }
