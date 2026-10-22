@@ -82,6 +82,7 @@ async def get_chapters_with_urls(book_id: int, chapter_numbers: list[int]) -> li
                     chapter_title=row["chapter_title"],
                     chapter_number=row["chapter_number"],
                     sentence_count=row["sentence_count"],
+                    word_count=row["word_count"],
                     minio_object_name=row["minio_object_name"],
                     minio_presigned_url=presigned_url,
                 )

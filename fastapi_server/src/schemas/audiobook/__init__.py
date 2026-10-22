@@ -1,5 +1,4 @@
 from schemas.audiobook.api_models import (
-    AudiobookChapterQueryResult,
     AudioSettings,
     Book,
     BookListItem,

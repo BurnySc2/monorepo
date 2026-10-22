@@ -42,19 +42,6 @@ class Chapter(BaseModel):
     audio_url: str
 
 
-class AudiobookChapterQueryResult(BaseModel):
-    id: int
-    book_id: int
-    number_in_queue: int | None = None
-    is_converting: bool
-    has_audio: bool
-    chapter_title: str
-    chapter_number: int
-    sentence_count: int
-    minio_object_name: str | None = None
-    minio_presigned_url: str = ""
-
-
 class BookListItem(BaseModel):
     id: int
     uploaded_by: str
@@ -74,6 +61,7 @@ class ChapterDetail(BaseModel):
     has_audio: bool
     chapter_title: str
     chapter_number: int
+    word_count: int
     sentence_count: int
     minio_object_name: str | None = None
     minio_presigned_url: str = ""
@@ -114,7 +102,6 @@ __all__ = [
     "AudioSettings",
     "Book",
     "Chapter",
-    "AudiobookChapterQueryResult",
     "BookListItem",
     "ChapterDetail",
     "BookWithChapters",

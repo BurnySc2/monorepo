@@ -5,6 +5,7 @@ import JSZip from "jszip"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
 import ChapterList from "$lib/components/ChapterList.svelte"
+import { get_tab_title } from "$lib/tab_title"
 
 let book_id = $derived(Number(page.params.bookId))
 
@@ -28,7 +29,26 @@ import { load_audio_settings, save_audio_settings } from "$lib/audio_settings.sv
 
 let audio_settings = $state(load_audio_settings())
 
+let tab_title: string = $derived.by(() => {
+    return get_tab_title(
+        custom_book_title,
+        custom_book_author,
+        book_data?.book.custom_book_title,
+        book_data?.book.custom_book_author,
+        book_data?.book.book_title ?? "",
+        book_data?.book.book_author ?? "",
+        book_data !== null,
+    )
+})
+
 let all_chapters_have_audio = $derived(book_data?.chapters.every((c) => c.has_audio && c.minio_presigned_url) ?? false)
+const WORDS_PER_MINUTE = 150
+let chapter_count = $derived(book_data?.chapters.length ?? 0)
+let total_words = $derived(book_data?.chapters.reduce((sum, c) => sum + (c.word_count ?? 0), 0) ?? 0)
+let total_sentences = $derived(book_data?.chapters.reduce((sum, c) => sum + (c.sentence_count ?? 0), 0) ?? 0)
+let audio_done_count = $derived(book_data?.chapters.filter((c) => c.has_audio).length ?? 0)
+let avg_words = $derived(chapter_count > 0 ? Math.round(total_words / chapter_count) : 0)
+let est_minutes = $derived(Math.round(total_words / WORDS_PER_MINUTE))
 
 let all_chapters_queued_or_have_audio = $derived(
     book_data?.chapters.every((c) => c.number_in_queue !== null || c.has_audio || c.is_converting) ?? false,
@@ -366,6 +386,8 @@ $effect(() => {
 })
 </script>
 
+<svelte:head> <title>{tab_title}</title> </svelte:head>
+
 <div class="container">
     {#if is_loading}
         <div class="flex justify-center"><Spinner /></div>
@@ -512,6 +534,32 @@ $effect(() => {
             </div>
         </div>
 
+        <details class="stats-box">
+            <summary>Book summary ({chapter_count} chapters, {total_words.toLocaleString()} words)</summary>
+            <dl class="stats-grid">
+                <div>
+                    <dt>Audio progress</dt>
+                    <dd>{audio_done_count}/{chapter_count}</dd>
+                </div>
+                <div>
+                    <dt>Total words</dt>
+                    <dd>{total_words.toLocaleString()}</dd>
+                </div>
+                <div>
+                    <dt>Total sentences</dt>
+                    <dd>{total_sentences.toLocaleString()}</dd>
+                </div>
+                <div>
+                    <dt>Avg words/chapter</dt>
+                    <dd>{avg_words.toLocaleString()}</dd>
+                </div>
+                <div>
+                    <dt>Est. listening time</dt>
+                    <dd>≈ {est_minutes.toLocaleString()} min at {WORDS_PER_MINUTE} wpm</dd>
+                </div>
+            </dl>
+        </details>
+
         <!-- Chapters -->
         <div class="chapters-box">
             <h3>Table of Contents</h3>
@@ -617,6 +665,7 @@ $effect(() => {
 }
 
 .settings-box,
+.stats-box,
 .chapters-box {
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -629,6 +678,33 @@ $effect(() => {
     margin-top: 0;
     margin-bottom: 1rem;
     text-align: center;
+}
+
+.stats-box summary {
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+}
+
+.stats-grid {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+}
+
+.stats-grid > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.stats-grid dt {
+    color: #555;
+}
+
+.stats-grid dd {
+    margin: 0;
+    font-weight: bold;
 }
 
 .settings-grid {

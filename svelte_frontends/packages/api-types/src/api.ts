@@ -515,6 +515,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/pdf_to_epub/probe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Probe Pdf File
+         * @description Probe a PDF upload and return quick facts for the conversion form.
+         */
+        post: operations["probe_pdf_file_api_pdf_to_epub_probe_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pdf_to_epub/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Pdf File
+         * @description Preview detected chapters without building the EPUB.
+         */
+        post: operations["preview_pdf_file_api_pdf_to_epub_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pdf_to_epub/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Convert Pdf File
+         * @description Convert a PDF upload to an EPUB blob.
+         */
+        post: operations["convert_pdf_file_api_pdf_to_epub_convert_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/raceroom/tracks": {
         parameters: {
             query?: never;
@@ -812,6 +872,68 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Body_convert_pdf_file_api_pdf_to_epub_convert_post */
+        Body_convert_pdf_file_api_pdf_to_epub_convert_post: {
+            /** File */
+            file: string;
+            /**
+             * Chapter Mode
+             * @default auto
+             * @enum {string}
+             */
+            chapter_mode: "auto" | "outline" | "heuristic" | "single";
+            /**
+             * Page Start
+             * @default 1
+             */
+            page_start: number;
+            /** Page End */
+            page_end?: number | null;
+            /**
+             * Heuristic Sensitivity
+             * @default medium
+             * @enum {string}
+             */
+            heuristic_sensitivity: "low" | "medium" | "high";
+            /**
+             * Min Chapter Chars
+             * @default 500
+             */
+            min_chapter_chars: number;
+            /**
+             * Max Chapters
+             * @default 300
+             */
+            max_chapters: number;
+            /**
+             * Include Images
+             * @default true
+             */
+            include_images: boolean;
+            /**
+             * Strip Headers
+             * @default true
+             */
+            strip_headers: boolean;
+            /**
+             * Clean Hyphens
+             * @default true
+             */
+            clean_hyphens: boolean;
+            /** Title */
+            title?: string | null;
+            /** Author */
+            author?: string | null;
+            /** Language */
+            language?: string | null;
+            /**
+             * Use Cover
+             * @default true
+             */
+            use_cover: boolean;
+            /** Chapter Titles */
+            chapter_titles?: string | null;
+        };
         /** Body_parse_replay_file_api_parse_replay_post */
         Body_parse_replay_file_api_parse_replay_post: {
             /** File */
@@ -829,6 +951,60 @@ export interface components {
              * @description Gameloop tick interval (e.g. 224 for 22.4 seconds)
              */
             replay_tick: string;
+        };
+        /** Body_preview_pdf_file_api_pdf_to_epub_preview_post */
+        Body_preview_pdf_file_api_pdf_to_epub_preview_post: {
+            /** File */
+            file: string;
+            /**
+             * Chapter Mode
+             * @default auto
+             * @enum {string}
+             */
+            chapter_mode: "auto" | "outline" | "heuristic" | "single";
+            /**
+             * Page Start
+             * @default 1
+             */
+            page_start: number;
+            /** Page End */
+            page_end?: number | null;
+            /**
+             * Heuristic Sensitivity
+             * @default medium
+             * @enum {string}
+             */
+            heuristic_sensitivity: "low" | "medium" | "high";
+            /**
+             * Min Chapter Chars
+             * @default 500
+             */
+            min_chapter_chars: number;
+            /**
+             * Max Chapters
+             * @default 300
+             */
+            max_chapters: number;
+            /**
+             * Include Images
+             * @default true
+             */
+            include_images: boolean;
+            /**
+             * Strip Headers
+             * @default true
+             */
+            strip_headers: boolean;
+            /**
+             * Clean Hyphens
+             * @default true
+             */
+            clean_hyphens: boolean;
+        };
+        /** Body_probe_pdf_file_api_pdf_to_epub_probe_post */
+        Body_probe_pdf_file_api_pdf_to_epub_probe_post: {
+            /** File */
+            file: string;
         };
         /** Body_upload_epub_api_audiobook_upload_post */
         Body_upload_epub_api_audiobook_upload_post: {
@@ -903,6 +1079,8 @@ export interface components {
             chapter_title: string;
             /** Chapter Number */
             chapter_number: number;
+            /** Word Count */
+            word_count: number;
             /** Sentence Count */
             sentence_count: number;
             /** Minio Object Name */
@@ -1007,6 +1185,48 @@ export interface components {
             is_private: boolean;
             /** Resume From Replay */
             resume_from_replay: boolean;
+        };
+        /** PdfPreviewChapter */
+        PdfPreviewChapter: {
+            /** Title */
+            title: string;
+            /** Chars */
+            chars: number;
+            /** Preview */
+            preview: string;
+        };
+        /** PdfPreviewResult */
+        PdfPreviewResult: {
+            /**
+             * Chapter Source
+             * @enum {string}
+             */
+            chapter_source: "outline" | "heuristic" | "single";
+            /** Outline */
+            outline: string[];
+            /** Chapters */
+            chapters: components["schemas"]["PdfPreviewChapter"][];
+            /** Warnings */
+            warnings: string[];
+        };
+        /** PdfProbeMetadata */
+        PdfProbeMetadata: {
+            /** Title */
+            title: string | null;
+            /** Author */
+            author: string | null;
+            /** Language */
+            language: string | null;
+        };
+        /** PdfProbeResult */
+        PdfProbeResult: {
+            /** Total Pages */
+            total_pages: number;
+            /** Has Outline */
+            has_outline: boolean;
+            /** Has Images */
+            has_images: boolean;
+            metadata: components["schemas"]["PdfProbeMetadata"];
         };
         /** QueueChapterRequest */
         QueueChapterRequest: {
@@ -2039,6 +2259,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["QueueResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    probe_pdf_file_api_pdf_to_epub_probe_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_probe_pdf_file_api_pdf_to_epub_probe_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PdfProbeResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_pdf_file_api_pdf_to_epub_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_preview_pdf_file_api_pdf_to_epub_preview_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PdfPreviewResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    convert_pdf_file_api_pdf_to_epub_convert_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_convert_pdf_file_api_pdf_to_epub_convert_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

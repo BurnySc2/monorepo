@@ -3,9 +3,9 @@
 import { api_fetch, get_api_error_status } from "@repo/api-client"
 import type {
     BookListItemSchema as AudiobookBook,
-    ChapterDetail as AudiobookChapterQueryResult,
     QueueChapterRequest as AudioSettings,
     BookWithChapters,
+    ChapterDetail,
     VoiceInfo,
 } from "@repo/api-types"
 import { mock_book_data } from "./mock_data"

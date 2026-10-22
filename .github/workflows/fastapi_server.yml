@@ -18,6 +18,8 @@ on:
 
 env:
   SUBDIRECTORY: fastapi_server
+  FFMPEG_URL: https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-30-13-08/ffmpeg-n8.1.3-9-g29e619e767-linux64-gpl-8.1.tar.xz  # yamllint disable-line rule:line-length
+  FFMPEG_SHA256: 97ce978979194b5cf7e06a5e68020dbdaa7a4f3294c5452b6a1bc347100dbb79
 
 jobs:
   run_lint_checks:
@@ -66,8 +68,33 @@ jobs:
         working-directory: ${{ env.SUBDIRECTORY }}
         run: docker compose --profile test up -d
 
-      - name: Install espeak-ng and ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y espeak-ng ffmpeg
+      - name: Install espeak-ng
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends espeak-ng espeak-ng-data
+
+      - name: Restore cached static ffmpeg
+        uses: actions/cache@v5
+        with:
+          path: |
+            /tmp/ffmpeg-static
+            /tmp/ffmpeg.tar.xz
+          key: ffmpeg-${{ env.FFMPEG_SHA256 }}
+
+      - name: Install static ffmpeg
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ffmpeg-static
+          if [ ! -f /tmp/ffmpeg.tar.xz ]; then
+            curl -fsSL --retry 3 -o /tmp/ffmpeg.tar.xz "$FFMPEG_URL"
+          fi
+          echo "$FFMPEG_SHA256  /tmp/ffmpeg.tar.xz" | sha256sum -c -
+          rm -rf /tmp/ffmpeg-extract && mkdir -p /tmp/ffmpeg-extract
+          tar -xJf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg-extract
+          cp "$(find /tmp/ffmpeg-extract -path '*/bin/ffmpeg' -type f | head -n 1)" /tmp/ffmpeg-static/ffmpeg
+          cp "$(find /tmp/ffmpeg-extract -path '*/bin/ffprobe' -type f | head -n 1)" /tmp/ffmpeg-static/ffprobe
+          rm -rf /tmp/ffmpeg-extract
+          sudo install -m 0755 /tmp/ffmpeg-static/ffmpeg /tmp/ffmpeg-static/ffprobe /usr/local/bin/
+          ffmpeg -version
+          ffprobe -version
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v10.2.0
