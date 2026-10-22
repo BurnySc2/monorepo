@@ -27,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
+      fail-fast: false
       matrix:
         node-version: [20, 22, 24, 26]
 
@@ -63,6 +64,11 @@ jobs:
         working-directory: svelte_frontends
         run: npm run lint
 
+      - name: Build
+        if: always()
+        working-directory: svelte_frontends
+        run: npm run build
+
       - name: Check types
         if: always()
         working-directory: svelte_frontends
@@ -72,11 +78,6 @@ jobs:
         if: always()
         working-directory: svelte_frontends
         run: npm run check
-
-      - name: Build
-        if: always()
-        working-directory: svelte_frontends
-        run: npm run build
 
       - name: Run unit tests
         if: always()
