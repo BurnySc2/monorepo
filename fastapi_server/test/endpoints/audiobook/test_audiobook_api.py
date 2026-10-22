@@ -216,12 +216,12 @@ def test_delete_chapter_audio_chapter_not_found(test_client_db_reset: TestClient
     assert response.json() == {"detail": "Chapter not found"}
 
 
-def test_get_chapter_status(test_client_db_reset: TestClient) -> None:
-    """GET /api/audiobook/books/1/chapters/status returns chapter status."""
+def test_post_chapter_status(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/1/chapters/status returns chapter status."""
     book_id = _upload_book(test_client_db_reset)
-    response = test_client_db_reset.get(
+    response = test_client_db_reset.post(
         f"/api/audiobook/books/{book_id}/chapters/status",
-        params={"chapter_numbers": "1,2,3"},
+        json={"chapter_numbers": [1, 2, 3]},
     )
     assert response.status_code == 200
     chapters = response.json()
@@ -231,37 +231,49 @@ def test_get_chapter_status(test_client_db_reset: TestClient) -> None:
     assert chapters[2]["chapter_number"] == 3
 
 
-def test_get_chapter_status_single_chapter(test_client_db_reset: TestClient) -> None:
-    """GET /api/audiobook/books/1/chapters/status with single chapter."""
+def test_post_chapter_status_single_chapter(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/1/chapters/status with single chapter."""
     book_id = _upload_book(test_client_db_reset)
-    response = test_client_db_reset.get(
+    response = test_client_db_reset.post(
         f"/api/audiobook/books/{book_id}/chapters/status",
-        params={"chapter_numbers": "1"},
+        json={"chapter_numbers": [1]},
     )
     assert response.status_code == 200
     chapters = response.json()
     assert len(chapters) == 1
 
 
-def test_get_chapter_status_book_not_found(test_client_db_reset: TestClient) -> None:
-    """GET /api/audiobook/books/999/chapters/status returns 404."""
-    response = test_client_db_reset.get(
+def test_post_chapter_status_book_not_found(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/999/chapters/status returns 404."""
+    response = test_client_db_reset.post(
         "/api/audiobook/books/999/chapters/status",
-        params={"chapter_numbers": "1"},
+        json={"chapter_numbers": [1]},
     )
     assert response.status_code == 404
     assert response.json() == {"detail": "Book not found"}
 
 
-def test_get_chapter_status_invalid_chapter_numbers(test_client_db_reset: TestClient) -> None:
-    """GET /api/audiobook/books/1/chapters/status with non-integer returns 400."""
+def test_post_chapter_status_invalid_chapter_numbers(test_client_db_reset: TestClient) -> None:
+    """POST /api/audiobook/books/1/chapters/status with non-integer returns 422."""
     book_id = _upload_book(test_client_db_reset)
-    response = test_client_db_reset.get(
+    response = test_client_db_reset.post(
         f"/api/audiobook/books/{book_id}/chapters/status",
-        params={"chapter_numbers": "a,b,c"},
+        json={"chapter_numbers": ["a", "b"]},
     )
-    assert response.status_code == 400
-    assert "chapter_numbers must be comma-separated integers" in response.json()["detail"]
+    assert response.status_code == 422
+
+    response = test_client_db_reset.post(
+        f"/api/audiobook/books/{book_id}/chapters/status",
+        json={},
+    )
+    assert response.status_code == 422
+
+    response = test_client_db_reset.post(
+        f"/api/audiobook/books/{book_id}/chapters/status",
+        json={"chapter_numbers": []},
+    )
+    assert response.status_code == 200
+    assert response.json() == []
 
 
 def test_update_book_title(test_client_db_reset: TestClient) -> None:
@@ -584,24 +596,24 @@ def test_delete_book_anon_401(test_client_db_reset: TestClient) -> None:
 
 
 def test_chapter_status_owner_200_with_mocked_s3(test_client_db_reset: TestClient, mock_s3) -> None:
-    """GET /books/{id}/chapters/status as owner returns 200 with mocked S3."""
+    """POST /books/{id}/chapters/status as owner returns 200 with mocked S3."""
     book_id = _upload_book(test_client_db_reset)
-    response = test_client_db_reset.get(
+    response = test_client_db_reset.post(
         f"/api/audiobook/books/{book_id}/chapters/status",
-        params={"chapter_numbers": "1,2,3"},
+        json={"chapter_numbers": [1, 2, 3]},
     )
     assert response.status_code == 200
     assert len(response.json()) == 3
 
 
 def test_chapter_status_non_owner_403(test_client_db_reset: TestClient) -> None:
-    """GET /books/{id}/chapters/status as non-owner returns 403."""
+    """POST /books/{id}/chapters/status as non-owner returns 403."""
     book_id = _upload_book(test_client_db_reset)
     app.dependency_overrides[get_current_user] = _other_user
     try:
-        response = test_client_db_reset.get(
+        response = test_client_db_reset.post(
             f"/api/audiobook/books/{book_id}/chapters/status",
-            params={"chapter_numbers": "1,2,3"},
+            json={"chapter_numbers": [1, 2, 3]},
         )
         assert response.status_code == 403
         assert response.json() == {"detail": "Not authorized to access this book"}
@@ -610,14 +622,14 @@ def test_chapter_status_non_owner_403(test_client_db_reset: TestClient) -> None:
 
 
 def test_chapter_status_anon_401(test_client_db_reset: TestClient) -> None:
-    """GET /books/{id}/chapters/status without auth returns 401."""
+    """POST /books/{id}/chapters/status without auth returns 401."""
     book_id = _upload_book(test_client_db_reset)
     original = dict(app.dependency_overrides)
     app.dependency_overrides.clear()
     try:
-        response = test_client_db_reset.get(
+        response = test_client_db_reset.post(
             f"/api/audiobook/books/{book_id}/chapters/status",
-            params={"chapter_numbers": "1"},
+            json={"chapter_numbers": [1]},
         )
         assert response.status_code == 401
     finally:

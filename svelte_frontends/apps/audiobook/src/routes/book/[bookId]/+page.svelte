@@ -189,11 +189,11 @@ function handle_author_keydown(event: KeyboardEvent) {
     }
 }
 
-async function handle_queue_chapter(chapter_id: number) {
+async function handle_queue_chapter(chapter_number: number) {
     if (!book_data) {
         return
     }
-    const chapter = book_data.chapters.find((c) => c.chapter_number === chapter_id)
+    const chapter = book_data.chapters.find((c) => c.chapter_number === chapter_number)
     if (!chapter) {
         return
     }
@@ -202,24 +202,24 @@ async function handle_queue_chapter(chapter_id: number) {
     chapter.is_converting = false
 
     try {
-        await api.queue_chapter_audio(book_id, chapter_id, audio_settings)
+        await api.queue_chapter_audio(book_id, chapter_number, audio_settings)
     } catch (e) {
         console.error("Failed to queue chapter:", e)
     }
 }
 
-async function handle_delete_chapter_audio(chapter_id: number) {
+async function handle_delete_chapter_audio(chapter_number: number) {
     if (!book_data) {
         return
     }
-    const chapter = book_data.chapters.find((c) => c.chapter_number === chapter_id)
+    const chapter = book_data.chapters.find((c) => c.chapter_number === chapter_number)
     if (!chapter) {
         return
     }
 
     try {
-        reset_chapters_audio([chapter_id])
-        await api.delete_chapter_audio(book_id, chapter_id)
+        reset_chapters_audio([chapter_number])
+        await api.delete_chapter_audio(book_id, chapter_number)
     } catch (e) {
         console.error("Failed to delete chapter audio:", e)
     }
@@ -294,12 +294,12 @@ async function handle_download_book() {
     }
 }
 
-function reset_chapters_audio(chapter_ids: number[]) {
+function reset_chapters_audio(chapter_numbers: number[]) {
     if (!book_data) {
         return
     }
     for (const chapter of book_data.chapters) {
-        if (chapter_ids.includes(chapter.chapter_number)) {
+        if (chapter_numbers.includes(chapter.chapter_number)) {
             chapter.has_audio = false
             chapter.number_in_queue = null
             chapter.is_converting = false

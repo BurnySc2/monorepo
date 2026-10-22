@@ -291,4 +291,28 @@ describe("audiobook API", () => {
             )
         })
     })
+
+    describe("refresh_chapters POST body", () => {
+        it("posts chapter_numbers without query string", async () => {
+            mock_ok(mock_chapters_payload)
+
+            await refresh_chapters(123, [1, 2])
+
+            expect(mock_fetch).toHaveBeenCalledTimes(1)
+            expect(mock_fetch).toHaveBeenCalledWith(
+                "http://localhost:8000/api/audiobook/books/123/chapters/status",
+                expect.objectContaining({
+                    method: "POST",
+                    body: JSON.stringify({ chapter_numbers: [1, 2] }),
+                }),
+            )
+        })
+
+        it("resolves [] without fetch on empty list", async () => {
+            mock_fetch.mockClear()
+
+            await expect(refresh_chapters(123, [])).resolves.toEqual([])
+            expect(mock_fetch).not.toHaveBeenCalled()
+        })
+    })
 })

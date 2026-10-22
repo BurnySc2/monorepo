@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AudioSettings(BaseModel):
@@ -94,6 +94,10 @@ class QueueChapterRequest(BaseModel):
     value: str
 
 
+class ChapterStatusRequest(BaseModel):
+    chapter_numbers: list[int] = Field(max_length=2000)
+
+
 __all__ = [
     "AudioSettings",
     "Book",
@@ -106,4 +110,5 @@ __all__ = [
     "QueueResponse",
     "CancelQueueResponse",
     "QueueChapterRequest",
+    "ChapterStatusRequest",
 ]

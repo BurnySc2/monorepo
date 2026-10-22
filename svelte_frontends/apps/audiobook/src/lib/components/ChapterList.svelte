@@ -4,18 +4,18 @@ import { IconDelete, IconDownload, IconQueue, Spinner } from "@repo/ui"
 
 interface Props {
     chapters: ChapterDetail[]
-    on_queue_chapter?: (chapter_id: number) => void
-    on_delete_chapter_audio?: (chapter_id: number) => void
+    on_queue_chapter?: (chapter_number: number) => void
+    on_delete_chapter_audio?: (chapter_number: number) => void
 }
 
 let { chapters, on_queue_chapter, on_delete_chapter_audio }: Props = $props()
 
-function handle_queue(chapter_id: number) {
-    on_queue_chapter?.(chapter_id)
+function handle_queue(chapter_number: number) {
+    on_queue_chapter?.(chapter_number)
 }
 
-function handle_delete(chapter_id: number) {
-    on_delete_chapter_audio?.(chapter_id)
+function handle_delete(chapter_number: number) {
+    on_delete_chapter_audio?.(chapter_number)
 }
 </script>
 

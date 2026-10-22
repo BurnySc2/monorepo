@@ -83,11 +83,11 @@ export async function update_book_author(book_id: number, author: string): Promi
 
 export async function queue_chapter_audio(
     book_id: number,
-    chapter_id: number,
+    chapter_number: number,
     audio_settings: AudioSettings,
 ): Promise<void> {
     await api_fetch(
-        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/${encodeURIComponent(String(chapter_id))}/queue`,
+        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/${encodeURIComponent(String(chapter_number))}/queue`,
         {
             method: "POST",
             headers: {
@@ -98,9 +98,9 @@ export async function queue_chapter_audio(
     )
 }
 
-export async function delete_chapter_audio(book_id: number, chapter_id: number): Promise<void> {
+export async function delete_chapter_audio(book_id: number, chapter_number: number): Promise<void> {
     await api_fetch(
-        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/${encodeURIComponent(String(chapter_id))}`,
+        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/${encodeURIComponent(String(chapter_number))}`,
         {
             method: "DELETE",
         },
@@ -136,10 +136,14 @@ export async function delete_all_audio(book_id: number): Promise<void> {
 }
 
 export async function refresh_chapters(book_id: number, chapter_numbers: number[]): Promise<ChapterDetail[]> {
-    const response = await api_fetch(
-        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/status?chapter_numbers=${encodeURIComponent(chapter_numbers.join(","))}`,
-    )
-
+    if (chapter_numbers.length === 0) {
+        return []
+    }
+    const response = await api_fetch(`/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chapter_numbers }),
+    })
     const data: ChapterDetail[] = await response.json()
     return data
 }
