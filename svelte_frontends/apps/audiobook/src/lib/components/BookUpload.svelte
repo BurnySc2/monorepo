@@ -17,13 +17,17 @@ let container_class = $derived(
 
 function handle_drag_over(event: DragEvent) {
     event.preventDefault()
-    if (!disabled) {
-        is_dragging = true
+    if (disabled || is_uploading) {
+        return
     }
+    is_dragging = true
 }
 
 function handle_drag_leave(event: DragEvent) {
     event.preventDefault()
+    if (disabled || is_uploading) {
+        return
+    }
     is_dragging = false
 }
 
@@ -31,7 +35,7 @@ async function handle_drop(event: DragEvent) {
     event.preventDefault()
     is_dragging = false
 
-    if (disabled) {
+    if (disabled || is_uploading) {
         return
     }
 
@@ -75,7 +79,8 @@ async function handle_click() {
     ondragleave={handle_drag_leave}
     onclick={handle_click}
     role="button"
-    tabindex="0"
+    tabindex={disabled || is_uploading ? -1 : 0}
+    aria-disabled={disabled || is_uploading ? "true" : undefined}
     onkeydown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
             handle_click()
