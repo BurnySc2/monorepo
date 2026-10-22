@@ -9,6 +9,7 @@ concurrency:
 
 on:
   push:
+    branches: [master, develop]
     paths:
       - svelte_frontends/**
       - fastapi_server/**
@@ -22,10 +23,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
+      fail-fast: false
       matrix:
         node-version: [20, 22, 24, 26]
 
@@ -43,32 +45,46 @@ jobs:
         working-directory: svelte_frontends
         run: npm ci
 
-      - name: Build
-        if: always()
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-1.61.0-${{
+            hashFiles('svelte_frontends/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-1.61.0-
+            ${{ runner.os }}-playwright-
+
+      - name: Install Playwright chromium
         working-directory: svelte_frontends
-        run: npm run build
+        run: npx playwright install chromium --with-deps
 
       - name: Lint
         if: always()
         working-directory: svelte_frontends
         run: npm run lint
 
-      - name: Type check
+      - name: Build
         if: always()
         working-directory: svelte_frontends
-        run: npm run check
+        run: npm run build
 
       - name: Check types
         if: always()
         working-directory: svelte_frontends
         run: npm run check-types
 
-      - name: Run unit unit tests
+      - name: Type check
+        if: always()
+        working-directory: svelte_frontends
+        run: npm run check
+
+      - name: Run unit tests
         if: always()
         working-directory: svelte_frontends
         run: npm run test:unit
 
-      - name: Run unit integration tests
+      - name: Run integration tests
         if: always()
         working-directory: svelte_frontends
         run: npm run test:integration
