@@ -191,10 +191,10 @@ async def delete_all_audio(
     return DeleteResponse(deleted=True)
 
 
-@audiobook_router.post("/books/{book_id}/chapters/{chapter_id}/queue", response_model=QueueResponse)
+@audiobook_router.post("/books/{book_id}/chapters/{chapter_number}/queue", response_model=QueueResponse)
 async def queue_chapter(
     book_id: int,
-    chapter_id: int,
+    chapter_number: int,
     settings: QueueChapterRequest,
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
 ) -> QueueResponse:
@@ -206,7 +206,7 @@ async def queue_chapter(
 
     chapter = (
         await AudiobookChapter.objects()
-        .where(AudiobookChapter.chapter_number == chapter_id)  # pyrefly: ignore[missing-attribute]
+        .where(AudiobookChapter.chapter_number == chapter_number)  # pyrefly: ignore[missing-attribute]
         .where(AudiobookChapter.book == book_id)
         .first()
     )
@@ -223,10 +223,10 @@ async def queue_chapter(
     return QueueResponse(queued=True)
 
 
-@audiobook_router.delete("/books/{book_id}/chapters/{chapter_id}", response_model=DeleteResponse)
+@audiobook_router.delete("/books/{book_id}/chapters/{chapter_number}", response_model=DeleteResponse)
 async def delete_chapter_audio(
     book_id: int,
-    chapter_id: int,
+    chapter_number: int,
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
 ) -> DeleteResponse:
     """
@@ -238,7 +238,7 @@ async def delete_chapter_audio(
 
     chapter = (
         await AudiobookChapter.objects()
-        .where(AudiobookChapter.chapter_number == chapter_id)  # pyrefly: ignore[missing-attribute]
+        .where(AudiobookChapter.chapter_number == chapter_number)  # pyrefly: ignore[missing-attribute]
         .where(AudiobookChapter.book == book_id)  # pyrefly: ignore[missing-attribute]
         .first()
     )
