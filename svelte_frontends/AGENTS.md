@@ -40,7 +40,7 @@ svelte_frontends/
 | Type Checking | svelte-check | 4.4.5 |
 | Validation | Zod | 4.3.6 |
 | Unit Testing | Vitest | 4.1.0 |
-| E2E/Integration Testing | Playwright | 1.58.2 |
+| E2E/Integration Testing | Playwright | 1.61.0 |
 | Linting/Formatting | Biome | 2.4.6 |
 | CSS | Tailwind CSS | 4.0.0 |
 
