@@ -50,6 +50,7 @@ class AudiobookChapterQueryResult(BaseModel):
     has_audio: bool
     chapter_title: str
     chapter_number: int
+    word_count: int
     sentence_count: int
     minio_object_name: str | None = None
     minio_presigned_url: str = ""
@@ -74,6 +75,7 @@ class ChapterDetail(BaseModel):
     has_audio: bool
     chapter_title: str
     chapter_number: int
+    word_count: int
     sentence_count: int
     minio_object_name: str | None = None
     minio_presigned_url: str = ""

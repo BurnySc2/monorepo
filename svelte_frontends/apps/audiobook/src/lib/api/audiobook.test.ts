@@ -59,6 +59,7 @@ const mock_chapters_payload = [
         chapter_number: 1,
         chapter_title: "Chapter 1",
         sentence_count: 10,
+        word_count: 150,
         number_in_queue: null,
         is_converting: false,
         has_audio: false,
