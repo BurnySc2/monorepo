@@ -14,13 +14,13 @@ from routes._audiobook_helpers import (
     book_to_list_item,
     get_chapters_with_urls,
     get_owned_book,
-    parse_chapter_numbers,
 )
 from schemas.audiobook import (
     AudioSettings,
     BookListItem,
     BookWithChapters,
     ChapterDetail,
+    ChapterStatusRequest,
     DeleteResponse,
     QueueChapterRequest,
     QueueResponse,
@@ -77,22 +77,15 @@ async def get_book(book_id: int, current_user: Annotated[LoggedInUser, Depends(g
     )
 
 
-@audiobook_router.get("/books/{book_id}/chapters/status", response_model=list[ChapterDetail])
+@audiobook_router.post("/books/{book_id}/chapters/status", response_model=list[ChapterDetail])
 async def get_chapter_status(
     book_id: int,
-    chapter_numbers: Annotated[str, ...],
+    body: ChapterStatusRequest,
     current_user: Annotated[LoggedInUser, Depends(get_current_user)],
 ) -> list[ChapterDetail]:
-    """
-    Get status for specific chapters without full book data.
-    Accepts comma-separated chapter numbers via query param 'chapter_numbers'.
-    Returns only the status fields (queue position, converting, has_audio).
-    """
+    """Get status for specific chapters via POST JSON body {chapter_numbers: [...]}."""
     await get_owned_book(book_id, current_user)
-
-    chapter_num_list = parse_chapter_numbers(chapter_numbers)
-
-    return await get_chapters_with_urls(book_id, chapter_num_list)
+    return await get_chapters_with_urls(book_id, body.chapter_numbers)
 
 
 @audiobook_router.post("/upload", response_model=UploadSuccess, status_code=201)

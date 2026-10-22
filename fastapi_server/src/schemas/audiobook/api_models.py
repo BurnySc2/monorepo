@@ -106,6 +106,10 @@ class QueueChapterRequest(BaseModel):
     value: str
 
 
+class ChapterStatusRequest(BaseModel):
+    chapter_numbers: list[int]
+
+
 __all__ = [
     "AudioSettings",
     "Book",
@@ -119,4 +123,5 @@ __all__ = [
     "QueueResponse",
     "CancelQueueResponse",
     "QueueChapterRequest",
+    "ChapterStatusRequest",
 ]

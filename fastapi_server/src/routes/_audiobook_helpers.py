@@ -22,19 +22,6 @@ AUDIO_CLEAR_FIELDS: dict[Any, Any] = {
 }
 
 
-def parse_chapter_numbers(raw: str | None) -> list[int]:
-    """Parse comma-separated chapter numbers into a list of ints.
-
-    Raises 400 if the query param is missing or contains non-integers.
-    """
-    if raw is None:
-        raise HTTPException(status_code=400, detail="chapter_numbers query param required")
-    try:
-        return [int(x.strip()) for x in raw.split(",")]
-    except ValueError:
-        raise HTTPException(status_code=400, detail="chapter_numbers must be comma-separated integers") from None
-
-
 def book_to_list_item(book: AudiobookBook) -> BookListItem:
     """Convert an AudiobookBook row to its API list-item representation."""
     return BookListItem(
@@ -107,5 +94,4 @@ __all__ = [
     "book_to_list_item",
     "get_chapters_with_urls",
     "get_owned_book",
-    "parse_chapter_numbers",
 ]

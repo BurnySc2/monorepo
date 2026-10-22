@@ -139,10 +139,17 @@ export async function refresh_chapters(
     book_id: number,
     chapter_numbers: number[],
 ): Promise<AudiobookChapterQueryResult[]> {
+    if (chapter_numbers.length === 0) {
+        return []
+    }
     const response = await api_fetch(
-        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/status?chapter_numbers=${encodeURIComponent(chapter_numbers.join(","))}`,
+        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/status`,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chapter_numbers }),
+        },
     )
-
     const data: AudiobookChapterQueryResult[] = await response.json()
     return data
 }
