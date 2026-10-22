@@ -2,6 +2,7 @@
 import { check_login_status, is_local_host } from "@repo/api-client"
 import type { BookListItemSchema as AudiobookBook } from "@repo/api-types"
 import { IconDelete, IconLogin, Spinner, toast } from "@repo/ui"
+import { onMount } from "svelte"
 import * as api from "$lib/api/audiobook"
 import BookCard from "$lib/components/BookCard.svelte"
 import BookUpload from "$lib/components/BookUpload.svelte"
@@ -24,14 +25,25 @@ function is_local_api_target(target: string | undefined): boolean {
 }
 const login_url = is_local_api_target(raw_api_target) ? "http://localhost:5173" : "https://login.burnysc2.xyz"
 
-async function check_auth() {
-    is_checking_auth = true
-    const state = await check_login_status()
-    is_logged_in = state.is_logged_in
-    is_checking_auth = false
+async function check_auth(): Promise<boolean> {
+    try {
+        const state = await check_login_status()
+        is_logged_in = state.is_logged_in
+        return is_logged_in
+    } catch (e) {
+        console.error("Failed to check login status:", e)
+        is_logged_in = false
+        return false
+    } finally {
+        is_checking_auth = false
+    }
 }
 
 async function load_books() {
+    if (!is_logged_in) {
+        is_loading = false
+        return
+    }
     is_loading = true
     try {
         books = await api.get_books()
@@ -102,9 +114,15 @@ async function handle_delete_all_books() {
 }
 
 // Load auth status and books on mount
-$effect(() => {
-    check_auth()
-    load_books()
+onMount(() => {
+    ;(async () => {
+        const logged_in = await check_auth()
+        if (logged_in) {
+            await load_books()
+        } else {
+            is_loading = false
+        }
+    })()
 })
 </script>
 
@@ -115,11 +133,22 @@ $effect(() => {
         storage.
     </p>
 
+    <div class="mb-8">
+        <BookUpload
+            on_upload={handle_upload}
+            {is_uploading}
+            disabled={!is_logged_in || is_checking_auth || is_uploading}
+        />
+        <p class="text-xs text-gray-500 mt-2 text-center">
+            By uploading, you confirm that you own the rights to this content.
+        </p>
+    </div>
+
     {#if is_checking_auth}
-        <div class="flex justify-center py-12"><Spinner /></div>
+        <p class="text-center text-sm text-gray-500 py-4">Checking login...</p>
     {:else if !is_logged_in}
         <div class="text-center py-12">
-            <p class="text-lg text-gray-700 mb-4">You need to log in to proceed.</p>
+            <p class="text-lg text-gray-700 mb-4">You need to log in before being able to upload a book.</p>
             <button
                 type="button"
                 onclick={() => (window.location.href = login_url)}
@@ -131,17 +160,6 @@ $effect(() => {
             </button>
         </div>
     {:else}
-        <div class="mb-8">
-            <BookUpload
-                on_upload={handle_upload}
-                {is_uploading}
-                disabled={!is_logged_in}
-            />
-            <p class="text-xs text-gray-500 mt-2 text-center">
-                By uploading, you confirm that you own the rights to this content.
-            </p>
-        </div>
-
         {#if books.length > 0}
             <div class="flex justify-center my-6">
                 <button
