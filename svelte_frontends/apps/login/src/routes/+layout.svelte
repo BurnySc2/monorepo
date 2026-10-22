@@ -5,7 +5,7 @@ import { Navigation } from "@repo/ui"
 let { children } = $props()
 </script>
 
-<svelte:head> </svelte:head>
+<svelte:head> <title>Login</title> </svelte:head>
 
 <Navigation currentApp="Login" />
 

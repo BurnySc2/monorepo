@@ -5,6 +5,7 @@ import JSZip from "jszip"
 import { page } from "$app/state"
 import * as api from "$lib/api/audiobook"
 import ChapterList from "$lib/components/ChapterList.svelte"
+import { get_tab_title } from "$lib/tab_title"
 
 let book_id = $derived(Number(page.params.bookId))
 
@@ -27,6 +28,18 @@ let delete_book_reset_timer: ReturnType<typeof setTimeout> | null = null
 import { load_audio_settings, save_audio_settings } from "$lib/audio_settings.svelte"
 
 let audio_settings = $state(load_audio_settings())
+
+let tab_title: string = $derived.by(() => {
+    return get_tab_title(
+        custom_book_title,
+        custom_book_author,
+        book_data?.book.custom_book_title,
+        book_data?.book.custom_book_author,
+        book_data?.book.book_title ?? "",
+        book_data?.book.book_author ?? "",
+        book_data !== null,
+    )
+})
 
 let all_chapters_have_audio = $derived(book_data?.chapters.every((c) => c.has_audio && c.minio_presigned_url) ?? false)
 const WORDS_PER_MINUTE = 150
@@ -372,6 +385,8 @@ $effect(() => {
     }
 })
 </script>
+
+<svelte:head> <title>{tab_title}</title> </svelte:head>
 
 <div class="container">
     {#if is_loading}
