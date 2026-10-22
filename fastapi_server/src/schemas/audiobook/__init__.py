@@ -15,8 +15,9 @@ from schemas.audiobook.api_models import (
 from schemas.audiobook.db_models import AudiobookBook, AudiobookChapter
 
 __all__ = [
-    "AudiobookChapterQueryResult",
     "AudioSettings",
+    "AudiobookBook",
+    "AudiobookChapter",
     "Book",
     "BookListItem",
     "BookWithChapters",
@@ -28,6 +29,4 @@ __all__ = [
     "QueueChapterRequest",
     "QueueResponse",
     "UploadSuccess",
-    "AudiobookBook",
-    "AudiobookChapter",
 ]

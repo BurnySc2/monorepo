@@ -135,10 +135,7 @@ export async function delete_all_audio(book_id: number): Promise<void> {
     })
 }
 
-export async function refresh_chapters(
-    book_id: number,
-    chapter_numbers: number[],
-): Promise<AudiobookChapterQueryResult[]> {
+export async function refresh_chapters(book_id: number, chapter_numbers: number[]): Promise<ChapterDetail[]> {
     if (chapter_numbers.length === 0) {
         return []
     }
@@ -147,6 +144,6 @@ export async function refresh_chapters(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chapter_numbers }),
     })
-    const data: AudiobookChapterQueryResult[] = await response.json()
+    const data: ChapterDetail[] = await response.json()
     return data
 }
