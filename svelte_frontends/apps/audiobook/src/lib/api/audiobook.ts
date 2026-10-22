@@ -142,14 +142,11 @@ export async function refresh_chapters(
     if (chapter_numbers.length === 0) {
         return []
     }
-    const response = await api_fetch(
-        `/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/status`,
-        {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chapter_numbers }),
-        },
-    )
+    const response = await api_fetch(`/api/audiobook/books/${encodeURIComponent(String(book_id))}/chapters/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chapter_numbers }),
+    })
     const data: AudiobookChapterQueryResult[] = await response.json()
     return data
 }
