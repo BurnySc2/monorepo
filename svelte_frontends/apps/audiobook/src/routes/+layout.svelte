@@ -5,7 +5,7 @@ import { Navigation, Toaster } from "@repo/ui"
 let { children } = $props()
 </script>
 
-<svelte:head> </svelte:head>
+<svelte:head> <title>Audiobook Converter</title> </svelte:head>
 
 <Navigation currentApp="Audiobook" />
 <Toaster />
