@@ -18,7 +18,7 @@ on:
 
 env:
   SUBDIRECTORY: fastapi_server
-  FFMPEG_URL: https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-30-13-08/ffmpeg-n8.1.3-9-g29e619e767-linux64-gpl-8.1.tar.xz
+  FFMPEG_URL: https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-09-30-13-08/ffmpeg-n8.1.3-9-g29e619e767-linux64-gpl-8.1.tar.xz  # yamllint disable-line rule:line-length
   FFMPEG_SHA256: 97ce978979194b5cf7e06a5e68020dbdaa7a4f3294c5452b6a1bc347100dbb79
 
 jobs:
@@ -72,7 +72,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends espeak-ng espeak-ng-data
 
       - name: Restore cached static ffmpeg
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             /tmp/ffmpeg-static
