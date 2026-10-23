@@ -4,7 +4,7 @@ networks:
     external: true
 services:
   baikal:
-    image: ckulka/baikal:nginx
+    image: ghcr.io/aalmenar/baikal:0.13.0-r1
     container_name: baikal
     hostname: baikal
     restart: unless-stopped
