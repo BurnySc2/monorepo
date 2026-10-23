@@ -2,15 +2,31 @@ import asyncio
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from loguru import logger
+from starlette.datastructures import QueryParams
 
 from components.tts.irc_bot_async import IRCClient, ReadNameLang
-from components.tts.websocket_handler import TTSQueue, TTSQueueRunner
+from components.tts.websocket_handler import RoleFilter, TTSQueue, TTSQueueRunner
 from components.tts_generate import list_all_voices
 
 TTSRouter = APIRouter()
 
 # Guard check-then-act creation of queue/runner/IRC bot against concurrent connects.
 _tts_init_lock = asyncio.Lock()
+
+
+def _parse_bool_param(v: str | None) -> bool:
+    if v is None:
+        return True
+    return v.strip().lower() not in {"0", "false", "no", "off"}
+
+
+def parse_role_filter(query: QueryParams) -> RoleFilter:
+    return RoleFilter(
+        allow_mods=_parse_bool_param(query.get("allow_mods")),
+        allow_vips=_parse_bool_param(query.get("allow_vips")),
+        allow_subs=_parse_bool_param(query.get("allow_subs")),
+        allow_normal=_parse_bool_param(query.get("allow_normal")),
+    )
 
 
 @TTSRouter.websocket("/ws/{stream_name}/{read_name_lang}")
@@ -25,6 +41,7 @@ async def websocket_endpoint(websocket: WebSocket, stream_name: str, read_name_l
 
     await websocket.accept()
 
+    role_filter = parse_role_filter(websocket.query_params)
     key = (stream_name, read_name_lang)
     async with _tts_init_lock:
         # Initialize text queue if not exists (setdefault guard + lock against race)
@@ -37,7 +54,7 @@ async def websocket_endpoint(websocket: WebSocket, stream_name: str, read_name_l
             )
 
         # Add socket - needs to happen after text_queue is initialized
-        TTSQueue.add_websocket(stream_name, read_name_lang, websocket)
+        TTSQueue.add_websocket(stream_name, read_name_lang, websocket, role_filter)
 
         # Start irc bot: listen to messages in channel
         if key not in TTSQueue.twitch_irc_bots:

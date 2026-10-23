@@ -28,13 +28,17 @@ TIMEOUT_SECONDS = 60  # Timeout "readline()" after n seconds
 
 ReadNameLang = Literal["none", "en", "de"]
 
+UserRole = Literal["mod", "vip", "sub", "normal"]
+
+UserRoles = frozenset[UserRole]
+
 
 class IRCClient:
     def __init__(
         self,
         channel: str,
         read_name_lang: ReadNameLang,
-        callback: Callable[[str, ReadNameLang, str, str], None],
+        callback: Callable[[str, ReadNameLang, str, str, UserRoles], None],
     ):
         """
         Callback params:
@@ -42,7 +46,10 @@ class IRCClient:
         - read_name_lang: Literal['none', 'de', 'en']
         - voice: one valid Voice
         - text: str
+        - roles: UserRoles (frozenset of 'mod', 'vip', 'sub', 'normal')
         """
+        if not re.fullmatch(r"[A-Za-z0-9_]{1,25}", channel):
+            raise ValueError(f"Invalid Twitch channel name: {channel!r}")
         self.host = "irc.chat.twitch.tv"  # Use standard IRC endpoint
         self.port = 6697  # Standard IRC SSL port
         self.nick = "justinfan12345"
@@ -66,6 +73,7 @@ class IRCClient:
         self.writer.write(f"USER {self.nick} :This is a fun bot!\r\n".encode())
         self.writer.write(f"NICK {self.nick}\r\n".encode())  # sets nick
         self.writer.write(b"PRIVMSG nickserv :iNOOPE\r\n")  # auth
+        self.writer.write(b"CAP REQ :twitch.tv/tags twitch.tv/commands\r\n")
         self.writer.write(f"JOIN #{self.channel}\r\n".encode())  # join channel
         await self.writer.drain()
 
@@ -121,10 +129,30 @@ class IRCClient:
                     await self.writer.drain()
                 elif "PRIVMSG" in message:
                     # Extract username and message content
-                    match = re.fullmatch(r":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)", message)
+                    roles: UserRoles = frozenset({"normal"})
+                    text = message
+                    if message.startswith("@"):
+                        tags_part, _, rest = message.partition(" ")
+                        tags: dict[str, str] = {}
+                        for tag in tags_part[1:].split(";"):
+                            if "=" in tag:
+                                key, value = tag.split("=", 1)
+                                tags[key] = value
+                        badges = tags.get("badges", "")
+                        badge_names = {b.split("/")[0] for b in badges.split(",") if b}
+                        collected: set[UserRole] = set()
+                        if tags.get("mod") == "1" or "broadcaster" in badge_names or "moderator" in badge_names:
+                            collected.add("mod")
+                        if tags.get("vip") == "1" or "vip" in badge_names:
+                            collected.add("vip")
+                        if tags.get("subscriber") == "1" or "subscriber" in badge_names:
+                            collected.add("sub")
+                        roles = frozenset(collected) if collected else frozenset({"normal"})
+                        text = rest.lstrip()
+                    match = re.fullmatch(r":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)", text)
                     if match:
                         username, content = match.groups()
-                        self.callback(self.channel, self.read_name_lang, username, content)
+                        self.callback(self.channel, self.read_name_lang, username, content, roles)
 
             except Exception as e:  # noqa: BLE001
                 logger.exception(f"Error receiving message: {e}")
@@ -193,7 +221,7 @@ async def main():
     client = IRCClient(
         channel="burnysc2",
         read_name_lang="none",
-        callback=lambda channel, read_name_lang, user, msg: logger.info(f"{channel} {user}: {msg}"),
+        callback=lambda channel, read_name_lang, user, msg, role: logger.info(f"{channel} {user}: {msg}"),
     )
     await client.connect()
     await client.listen()

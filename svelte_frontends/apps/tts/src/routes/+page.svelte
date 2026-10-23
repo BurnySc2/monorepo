@@ -20,6 +20,10 @@ let overlay_timer: ReturnType<typeof setTimeout> | null = null
 
 let twitch_channel = $state("burnysc2")
 let twitch_volume = $state(15)
+let allow_mods = $state(true)
+let allow_vips = $state(true)
+let allow_subs = $state(true)
+let allow_normal = $state(true)
 
 async function load_voices() {
     try {
@@ -95,6 +99,10 @@ const overlay_url = $derived.by(() => {
     const params = new URLSearchParams({
         stream_name: twitch_channel,
         volume: String(clamp_volume_percent(twitch_volume)),
+        allow_mods: allow_mods ? "1" : "0",
+        allow_vips: allow_vips ? "1" : "0",
+        allow_subs: allow_subs ? "1" : "0",
+        allow_normal: allow_normal ? "1" : "0",
     })
     return `${page.url.origin}/overlay?${params.toString()}`
 })
@@ -234,7 +242,7 @@ const overlay_url = $derived.by(() => {
                     class="input w-full"
                 >
             </label>
-            <label class="block"
+            <label class="block mb-2"
                 >Volume (0-100):
                 <input
                     type="number"
@@ -244,6 +252,30 @@ const overlay_url = $derived.by(() => {
                     class="input w-full"
                 >
             </label>
+            <label class="flex items-center gap-2"
+                ><input
+                    type="checkbox"
+                    bind:checked={allow_mods}
+                >Mods</label
+            >
+            <label class="flex items-center gap-2"
+                ><input
+                    type="checkbox"
+                    bind:checked={allow_vips}
+                >VIPs</label
+            >
+            <label class="flex items-center gap-2"
+                ><input
+                    type="checkbox"
+                    bind:checked={allow_subs}
+                >Subscribers</label
+            >
+            <label class="flex items-center gap-2"
+                ><input
+                    type="checkbox"
+                    bind:checked={allow_normal}
+                >Normal users</label
+            >
         </div>
     {/if}
 </main>

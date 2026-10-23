@@ -76,9 +76,15 @@ $effect(() => {
         const parsed = Number(vol_param)
         volume = clamp_volume_ratio(Number.isFinite(parsed) ? parsed / 100 : 1.0)
     }
+    const is_enabled = (v: string | null): boolean =>
+        v === null ? true : !["0", "false", "no", "off"].includes(v.toLowerCase())
+    const allow_mods = is_enabled(params.get("allow_mods"))
+    const allow_vips = is_enabled(params.get("allow_vips"))
+    const allow_subs = is_enabled(params.get("allow_subs"))
+    const allow_normal = is_enabled(params.get("allow_normal"))
 
     if (stream_name) {
-        const ws_url = `${ws_backend_server_url}/tts-api/ws/${encodeURIComponent(stream_name)}/${encodeURIComponent(read_name_lang)}`
+        const ws_url = `${ws_backend_server_url}/tts-api/ws/${encodeURIComponent(stream_name)}/${encodeURIComponent(read_name_lang)}?allow_mods=${allow_mods}&allow_vips=${allow_vips}&allow_subs=${allow_subs}&allow_normal=${allow_normal}`
         connect_ws(ws_url)
     }
 
