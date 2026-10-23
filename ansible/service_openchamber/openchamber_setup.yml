@@ -8,7 +8,7 @@
     SUBDOMAIN: '{{ secrets.OPENCHAMBER.SUBDOMAIN }}'
     APPLICATION_PORT: '3000'
     # Upstream tags: https://github.com/openchamber/openchamber/tags
-    OPENCHAMBER_UPSTREAM_REF: 'v2.5.0'
+    OPENCHAMBER_UPSTREAM_REF: 'v2.5.1'
   tasks:
     - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
       loop:
