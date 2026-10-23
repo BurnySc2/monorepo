@@ -77,6 +77,7 @@ jobs:
         run: uv run pytest
 
   build_and_publish:
+    needs: [run_lint_checks, run_code_check]
     strategy:
       fail-fast: false
       matrix:
@@ -101,15 +102,6 @@ jobs:
       - name: Build project
         working-directory: ${{ env.SUBDIRECTORY }}
         run: uv build
-
-      - id: wait-for-jobs
-        uses: yogeshlonkar/wait-for-jobs@v1
-        with:
-          gh-token: ${{ secrets.GITHUB_TOKEN }}
-          jobs: |
-            run_code_check_py3.11
-            run_code_check_py3.12
-            run_code_check_py3.13
 
         # Publish package on pypi
       - name: Publish
