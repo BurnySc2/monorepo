@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10.2.0
+        uses: astral-sh/setup-uv@v10.3.0
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
@@ -72,7 +72,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends espeak-ng espeak-ng-data
 
       - name: Restore cached static ffmpeg
-        uses: actions/cache@v5
+        uses: actions/cache@v5.1.0
         with:
           path: |
             /tmp/ffmpeg-static
@@ -97,7 +97,7 @@ jobs:
           ffprobe -version
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v10.2.0
+        uses: astral-sh/setup-uv@v10.3.0
         with:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
