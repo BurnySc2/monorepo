@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from components import tts_generate
-from components.tts.websocket_handler import TTSQueue
+from components.tts.websocket_handler import RoleFilter, TTSQueue
 from schemas.tts import VoiceInfo
 
 
@@ -24,7 +24,7 @@ class TestAddWebsocket:
         """Test adding a WebSocket to TTSQueue."""
         mock_ws = MagicMock()
         TTSQueue.add_websocket("stream1", "none", mock_ws)
-        assert TTSQueue.get_connected_websockets("stream1", "none") == [mock_ws]
+        assert TTSQueue.get_connected_websockets("stream1", "none") == {mock_ws: RoleFilter()}
 
     def test_add_websocket_multiple(self):
         """Test adding multiple WebSockets to the same stream."""
@@ -40,8 +40,8 @@ class TestAddWebsocket:
         mock_ws2 = MagicMock()
         TTSQueue.add_websocket("stream1", "none", mock_ws1)
         TTSQueue.add_websocket("stream2", "none", mock_ws2)
-        assert TTSQueue.get_connected_websockets("stream1", "none") == [mock_ws1]
-        assert TTSQueue.get_connected_websockets("stream2", "none") == [mock_ws2]
+        assert TTSQueue.get_connected_websockets("stream1", "none") == {mock_ws1: RoleFilter()}
+        assert TTSQueue.get_connected_websockets("stream2", "none") == {mock_ws2: RoleFilter()}
 
 
 class TestRemoveWs:
@@ -55,7 +55,7 @@ class TestRemoveWs:
         mock_irc.shutdown = AsyncMock()
         TTSQueue.twitch_irc_bots[("stream1", "none")] = mock_irc
         await TTSQueue.remove_ws(mock_ws, "stream1", "none")
-        assert TTSQueue.get_connected_websockets("stream1", "none") == []
+        assert TTSQueue.get_connected_websockets("stream1", "none") == {}
         assert ("stream1", "none") not in TTSQueue.text_queue
 
     @pytest.mark.asyncio
@@ -83,7 +83,7 @@ class TestRemoveWs:
         mock_irc.shutdown = AsyncMock()
         TTSQueue.twitch_irc_bots[("stream1", "none")] = mock_irc
         await TTSQueue.remove_ws(mock_ws1, "stream1", "none")
-        assert TTSQueue.get_connected_websockets("stream1", "none") == [mock_ws2]
+        assert TTSQueue.get_connected_websockets("stream1", "none") == {mock_ws2: RoleFilter()}
         assert ("stream1", "none") in TTSQueue.text_queue
 
 
@@ -105,14 +105,14 @@ class TestGetConnectedWebsockets:
     def test_get_connected_websockets_empty(self):
         """Test that get_connected_websockets returns empty list for missing key."""
         result = TTSQueue.get_connected_websockets("nonexistent", "none")
-        assert result == []
+        assert result == {}
 
     def test_get_connected_websockets_with_sockets(self):
         """Test that get_connected_websockets returns list of connected sockets."""
         mock_ws = MagicMock()
         TTSQueue.add_websocket("stream1", "none", mock_ws)
         result = TTSQueue.get_connected_websockets("stream1", "none")
-        assert result == [mock_ws]
+        assert result == {mock_ws: RoleFilter()}
 
 
 class TestIsConnected:
@@ -165,16 +165,19 @@ class TestIrcClientAddTextMethod:
     def test_add_text_valid_voice(self):
         """Test parsing valid 'voice:text' message and adding to queue."""
         TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
+        TTSQueue.add_websocket("stream1", "none", MagicMock())
         TTSQueue.irc_client_add_text_method("stream1", "none", "user", "tiktok_narrator:Hello world")
         queue = TTSQueue.get_text_queue("stream1", "none")
         assert queue is not None
         item = queue.get_nowait()
         assert item[0] == "tiktok_Narrator"
         assert item[1] == "hello world"
+        assert item[2] == frozenset({"normal"})
 
     def test_add_text_invalid_voice(self):
         """Test that invalid voice names are ignored."""
         TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
+        TTSQueue.add_websocket("stream1", "none", MagicMock())
         TTSQueue.irc_client_add_text_method("stream1", "none", "user", "INVALID_VOICE:Hello world")
         queue = TTSQueue.get_text_queue("stream1", "none")
         assert queue is not None
@@ -183,6 +186,7 @@ class TestIrcClientAddTextMethod:
     def test_add_text_empty_message(self):
         """Test that empty messages after voice are ignored."""
         TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
+        TTSQueue.add_websocket("stream1", "none", MagicMock())
         TTSQueue.irc_client_add_text_method("stream1", "none", "user", "tiktok_narrator:")
         queue = TTSQueue.get_text_queue("stream1", "none")
         assert queue is not None
@@ -191,31 +195,39 @@ class TestIrcClientAddTextMethod:
     def test_add_text_with_lang_prefix_en(self):
         """Test that username prefix is added for English language."""
         TTSQueue.text_queue[("stream1", "en")] = asyncio.Queue()
+        TTSQueue.add_websocket("stream1", "en", MagicMock())
         TTSQueue.irc_client_add_text_method("stream1", "en", "testuser", "tiktok_narrator:Hello")
         queue = TTSQueue.get_text_queue("stream1", "en")
         assert queue is not None
         item1 = queue.get_nowait()
         assert item1[1] == "testuser says"
+        assert item1[2] == frozenset({"normal"})
         item2 = queue.get_nowait()
         assert item2[1] == "hello"
+        assert item2[2] == frozenset({"normal"})
 
     def test_add_text_with_lang_prefix_de(self):
         """Test that username prefix is added for German language."""
         TTSQueue.text_queue[("stream1", "de")] = asyncio.Queue()
+        TTSQueue.add_websocket("stream1", "de", MagicMock())
         TTSQueue.irc_client_add_text_method("stream1", "de", "testuser", "tiktok_german_female:Hallo")
         queue = TTSQueue.get_text_queue("stream1", "de")
         assert queue is not None
         item1 = queue.get_nowait()
         assert item1[1] == "testuser sagt"
+        assert item1[2] == frozenset({"normal"})
         item2 = queue.get_nowait()
         assert item2[1] == "hallo"
+        assert item2[2] == frozenset({"normal"})
 
     def test_add_text_with_lang_none(self):
         """Test that no prefix is added when lang is 'none'."""
         TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
+        TTSQueue.add_websocket("stream1", "none", MagicMock())
         TTSQueue.irc_client_add_text_method("stream1", "none", "testuser", "tiktok_narrator:Hello")
         queue = TTSQueue.get_text_queue("stream1", "none")
         assert queue is not None
         item = queue.get_nowait()
         assert item[1] == "hello"
+        assert item[2] == frozenset({"normal"})
         assert queue.empty()

@@ -57,7 +57,7 @@ class TestTTSQueueRunnerRun:
 
         with patch("components.tts.websocket_handler.generate_audio", new_callable=AsyncMock) as mock_generate:
             mock_generate.return_value = (b"mock_mp3_bytes", 1.0)
-            TTSQueue.text_queue[("stream1", "none")].put_nowait(("tiktok_narrator", "Hello"))
+            TTSQueue.text_queue[("stream1", "none")].put_nowait(("tiktok_narrator", "Hello", frozenset({"normal"})))
 
             async def run_task():
                 await runner.run()
