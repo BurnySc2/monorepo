@@ -120,3 +120,6 @@
       ansible.builtin.file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: absent
+    - name: Prune unused Docker images to free disk space
+      community.docker.docker_prune:
+        images: true
