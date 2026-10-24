@@ -6,7 +6,13 @@ import { onMount } from "svelte"
 import { page } from "$app/state"
 import { fetch_generate_tts, fetch_voices } from "$lib/api"
 import { tts_settings } from "$lib/tts_settings.svelte"
-import { clamp_voice_index, clamp_volume_percent, clamp_volume_ratio, get_preview_text } from "$lib/utils"
+import {
+    build_overlay_url,
+    clamp_voice_index,
+    clamp_volume_percent,
+    clamp_volume_ratio,
+    get_preview_text,
+} from "$lib/utils"
 
 let voices = $state<VoiceInfo[]>([])
 let user_text = $state("")
@@ -20,6 +26,10 @@ let overlay_timer: ReturnType<typeof setTimeout> | null = null
 
 let twitch_channel = $state("burnysc2")
 let twitch_volume = $state(15)
+let allow_mods = $state(true)
+let allow_vips = $state(true)
+let allow_subs = $state(true)
+let allow_normal = $state(true)
 
 async function load_voices() {
     try {
@@ -92,11 +102,13 @@ const preview_text = $derived.by(() => {
 // Volume convention: twitch_volume is percent 0-100 for the overlay query; default 15 (reasonable OBS level).
 // Audio element volume is ratio 0-1 derived from tts_settings.audio_volume percent.
 const overlay_url = $derived.by(() => {
-    const params = new URLSearchParams({
-        stream_name: twitch_channel,
-        volume: String(clamp_volume_percent(twitch_volume)),
+    return build_overlay_url(twitch_channel, twitch_volume, {
+        origin: page.url.origin,
+        allow_mods,
+        allow_vips,
+        allow_subs,
+        allow_normal,
     })
-    return `${page.url.origin}/overlay?${params.toString()}`
 })
 </script>
 
@@ -234,7 +246,7 @@ const overlay_url = $derived.by(() => {
                     class="input w-full"
                 >
             </label>
-            <label class="block"
+            <label class="block mb-2"
                 >Volume (0-100):
                 <input
                     type="number"
@@ -244,6 +256,30 @@ const overlay_url = $derived.by(() => {
                     class="input w-full"
                 >
             </label>
+            <label class="flex items-center gap-2"
+                ><input
+                    type="checkbox"
+                    bind:checked={allow_mods}
+                >Mods</label
+            >
+            <label class="flex items-center gap-2"
+                ><input
+                    type="checkbox"
+                    bind:checked={allow_vips}
+                >VIPs</label
+            >
+            <label class="flex items-center gap-2"
+                ><input
+                    type="checkbox"
+                    bind:checked={allow_subs}
+                >Subscribers</label
+            >
+            <label class="flex items-center gap-2"
+                ><input
+                    type="checkbox"
+                    bind:checked={allow_normal}
+                >Normal users</label
+            >
         </div>
     {/if}
 </main>

@@ -5,7 +5,6 @@ import { calculate_reconnect_delay, clamp_volume_ratio } from "$lib/utils"
 // State initialized from URL params
 // Volume convention: ratio 0-1 for HTMLAudioElement; default 1.0 (full volume).
 let stream_name = $state("")
-let read_name_lang = $state("")
 let volume = $state(1.0) // 0 to 1
 let is_loaded = $state(false)
 
@@ -70,15 +69,20 @@ function on_play_end() {
 $effect(() => {
     const params = new URLSearchParams(window.location.search)
     stream_name = params.get("stream_name") ?? ""
-    read_name_lang = params.get("read_name_lang") ?? "none"
     const vol_param = params.get("volume")
     if (vol_param !== null) {
         const parsed = Number(vol_param)
         volume = clamp_volume_ratio(Number.isFinite(parsed) ? parsed / 100 : 1.0)
     }
+    const is_enabled = (v: string | null): boolean =>
+        v === null ? true : !["0", "false", "no", "off"].includes(v.toLowerCase())
+    const allow_mods = is_enabled(params.get("allow_mods"))
+    const allow_vips = is_enabled(params.get("allow_vips"))
+    const allow_subs = is_enabled(params.get("allow_subs"))
+    const allow_normal = is_enabled(params.get("allow_normal"))
 
     if (stream_name) {
-        const ws_url = `${ws_backend_server_url}/tts-api/ws/${encodeURIComponent(stream_name)}/${encodeURIComponent(read_name_lang)}`
+        const ws_url = `${ws_backend_server_url}/tts-api/ws/${encodeURIComponent(stream_name)}?allow_mods=${allow_mods}&allow_vips=${allow_vips}&allow_subs=${allow_subs}&allow_normal=${allow_normal}`
         connect_ws(ws_url)
     }
 

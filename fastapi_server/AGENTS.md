@@ -85,6 +85,14 @@ audio_bytes, duration = await generate_audio(cast(TTSEngine, "edge"), "voice_lab
 # Engines: edge, kokoro, kitten, tiktok (see schemas/tts/engine.py TTSEngine)
 ```
 
+### TTS WebSocket / IRC (`src/routes/tts_websocket.py`, `src/components/tts/websocket_handler.py`, `src/components/tts/irc_bot_async.py`)
+- WS `.../tts-api/ws/{stream_name}` (+ legacy alias `/ws/{stream_name}/{deprecated_lang}`, ignored); channel normalized `strip().lower()`.
+- One queue/runner/IRC bot per normalized channel (`TTSQueue.text_queue` / `twitch_irc_bots`, `TTSQueueRunner(stream_name)`).
+- Channel validated after normalize `^[a-z0-9_]{1,25}$` (`IRCClient.__init__`); invalid → WS close `4400`.
+- `CAP REQ :twitch.tv/tags twitch.tv/commands`; tags (`mod`/`vip`/`subscriber` + badges incl. broadcaster) → `roles: frozenset["mod"|"vip"|"sub"|"normal"|"broadcaster"]` (multi-role); broadcaster badge yields dual-role `{"mod", "broadcaster"}`.
+- Callback `(stream_name, username, message, roles)` (`TTSQueue.irc_client_add_text_method`); `RoleFilter.allows(roles)` any-match, returns `True` unconditionally for broadcaster (owner always heard, bypasses `allow_mods/vips/subs/normal`); per-socket `allow_mods/vips/subs/normal` query params default `True` (only `0/false/no/off` disable).
+- Message `engine_voice: text`; voice label lowercased for lookup, text `strip()` preserves case. No `read_name_lang`, no says/sagt prefix.
+
 ---
 
 ## 4. Code Style & Tooling

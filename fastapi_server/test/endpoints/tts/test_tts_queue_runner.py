@@ -25,7 +25,7 @@ class TestTTSQueueRunnerRun:
     @pytest.mark.asyncio
     async def test_run_exits_when_queue_removed(self):
         """Test that worker exits when text queue no longer exists."""
-        runner = TTSQueueRunner("stream1", "none")
+        runner = TTSQueueRunner("stream1")
         await runner.run()
         await asyncio.sleep(0.05)
         assert runner.text_queue_exists is False
@@ -33,8 +33,8 @@ class TestTTSQueueRunnerRun:
     @pytest.mark.asyncio
     async def test_run_waits_when_empty(self):
         """Test that worker sleeps when queue is empty."""
-        TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
-        runner = TTSQueueRunner("stream1", "none")
+        TTSQueue.text_queue["stream1"] = asyncio.Queue()
+        runner = TTSQueueRunner("stream1")
 
         async def run_and_cancel():
             await runner.run()
@@ -48,16 +48,16 @@ class TestTTSQueueRunnerRun:
     @pytest.mark.asyncio
     async def test_run_processes_item(self):
         """Test that worker generates TTS and sends to WebSocket."""
-        TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
+        TTSQueue.text_queue["stream1"] = asyncio.Queue()
         mock_ws = MagicMock()
         mock_ws.send_text = AsyncMock()
-        TTSQueue.add_websocket("stream1", "none", mock_ws)
+        TTSQueue.add_websocket("stream1", mock_ws)
 
-        runner = TTSQueueRunner("stream1", "none")
+        runner = TTSQueueRunner("stream1")
 
         with patch("components.tts.websocket_handler.generate_audio", new_callable=AsyncMock) as mock_generate:
             mock_generate.return_value = (b"mock_mp3_bytes", 1.0)
-            TTSQueue.text_queue[("stream1", "none")].put_nowait(("tiktok_narrator", "Hello"))
+            TTSQueue.text_queue["stream1"].put_nowait(("tiktok_narrator", "Hello", frozenset({"normal"})))
 
             async def run_task():
                 await runner.run()
@@ -80,7 +80,7 @@ class TestSendMp3DataToWs:
         """Test sending mp3 base64 data as JSON."""
         mock_ws = MagicMock()
         mock_ws.send_text = AsyncMock()
-        runner = TTSQueueRunner("stream1", "none")
+        runner = TTSQueueRunner("stream1")
 
         await runner.send_mp3_data_to_ws(mock_ws, "test_base64")
 
@@ -93,13 +93,13 @@ class TestSendMp3DataToWs:
         """Test that WebSocket is removed on disconnect."""
         mock_ws = MagicMock()
         mock_ws.send_text = AsyncMock(side_effect=ConnectionClosedError(None, None))
-        runner = TTSQueueRunner("stream1", "none")
-        TTSQueue.add_websocket("stream1", "none", mock_ws)
-        TTSQueue.text_queue[("stream1", "none")] = asyncio.Queue()
+        runner = TTSQueueRunner("stream1")
+        TTSQueue.add_websocket("stream1", mock_ws)
+        TTSQueue.text_queue["stream1"] = asyncio.Queue()
         mock_irc = MagicMock()
         mock_irc.shutdown = AsyncMock()
-        TTSQueue.twitch_irc_bots[("stream1", "none")] = mock_irc
+        TTSQueue.twitch_irc_bots["stream1"] = mock_irc
 
         await runner.send_mp3_data_to_ws(mock_ws, "test_base64")
 
-        assert mock_ws not in TTSQueue.get_connected_websockets("stream1", "none")
+        assert mock_ws not in TTSQueue.get_connected_websockets("stream1")

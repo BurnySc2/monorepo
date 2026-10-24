@@ -25,19 +25,52 @@ function create_voice(overrides: Partial<VoiceInfo> = {}): VoiceInfo {
 }
 
 describe("build_overlay_url", () => {
-    it("constructs URL with channel and volume", () => {
-        const result = build_overlay_url("burnysc2", 15)
-        expect(result).toBe("https://burnysc2.xyz/tts-api/twitch/burnysc2?volume=15")
+    it("defaults to /overlay shape with all allow_*=1", () => {
+        const url = build_overlay_url("burnysc2", 15)
+        const parsed = new URL(url, "https://example.com")
+        expect(parsed.pathname).toBe("/overlay")
+        expect(parsed.searchParams.get("stream_name")).toBe("burnysc2")
+        expect(parsed.searchParams.get("volume")).toBe("15")
+        expect(parsed.searchParams.get("allow_mods")).toBe("1")
+        expect(parsed.searchParams.get("allow_vips")).toBe("1")
+        expect(parsed.searchParams.get("allow_subs")).toBe("1")
+        expect(parsed.searchParams.get("allow_normal")).toBe("1")
     })
 
-    it("handles different channel names", () => {
-        const result = build_overlay_url("testchannel", 50)
-        expect(result).toBe("https://burnysc2.xyz/tts-api/twitch/testchannel?volume=50")
+    it.each([
+        [{ allow_mods: false }, "allow_mods"],
+        [{ allow_mods: false, allow_vips: false, allow_subs: false, allow_normal: false }, "all"],
+    ])("flips %o (checked key %s)", (opts, _label) => {
+        const url = build_overlay_url("burnysc2", 15, opts)
+        const parsed = new URL(url, "https://example.com")
+        if (_label === "all") {
+            expect(parsed.searchParams.get("allow_mods")).toBe("0")
+            expect(parsed.searchParams.get("allow_vips")).toBe("0")
+            expect(parsed.searchParams.get("allow_subs")).toBe("0")
+            expect(parsed.searchParams.get("allow_normal")).toBe("0")
+        } else {
+            expect(parsed.searchParams.get("allow_mods")).toBe("0")
+            expect(parsed.searchParams.get("allow_vips")).toBe("1")
+            expect(parsed.searchParams.get("allow_subs")).toBe("1")
+            expect(parsed.searchParams.get("allow_normal")).toBe("1")
+        }
     })
 
-    it("handles volume at boundaries", () => {
-        expect(build_overlay_url("ch", 0)).toBe("https://burnysc2.xyz/tts-api/twitch/ch?volume=0")
-        expect(build_overlay_url("ch", 100)).toBe("https://burnysc2.xyz/tts-api/twitch/ch?volume=100")
+    it("handles origin and clamps volume", () => {
+        const with_origin = build_overlay_url("ch", 999, { origin: "https://example.com" })
+        expect(with_origin.startsWith("https://example.com/overlay?")).toBe(true)
+        expect(new URL(with_origin).searchParams.get("volume")).toBe("100")
+        const relative = build_overlay_url("ch", 15)
+        expect(relative.startsWith("/overlay?")).toBe(true)
+        expect(new URL(build_overlay_url("ch", -5), "https://example.com").searchParams.get("volume")).toBe("0")
+        expect(new URL(build_overlay_url("ch", Number.NaN), "https://example.com").searchParams.get("volume")).toBe(
+            "15",
+        )
+    })
+
+    it("does not include read_name_lang param", () => {
+        const parsed = new URL(build_overlay_url("ch", 15), "https://example.com")
+        expect(parsed.searchParams.get("read_name_lang")).toBeNull()
     })
 })
 
@@ -64,7 +97,9 @@ describe("copy_to_clipboard", () => {
         mock_clipboard.writeText.mockResolvedValueOnce(undefined)
         const url = build_overlay_url("burnysc2", 15)
         await copy_to_clipboard(url)
-        expect(mock_clipboard.writeText).toHaveBeenCalledWith("https://burnysc2.xyz/tts-api/twitch/burnysc2?volume=15")
+        const parsed = new URL(url, "https://example.com")
+        expect(parsed.pathname).toBe("/overlay")
+        expect(mock_clipboard.writeText).toHaveBeenCalledWith(url)
     })
 })
 
@@ -151,27 +186,45 @@ describe("backoff properties", () => {
 
 describe("overlay url encode properties", () => {
     it("encode round-trip preserves trimmed channel and clamped volume", () => {
-        fc.assert(
-            fc.property(
-                fc.stringMatching(/^[A-Za-z0-9_ ]{1,20}$/),
-                fc.integer({ min: -50, max: 150 }),
-                (channel, volume) => {
-                    const trimmed = channel.trim()
-                    if (trimmed === "") {
-                        return
-                    }
-                    const url = build_overlay_url(channel, volume)
-                    const prefix = "https://burnysc2.xyz/tts-api/twitch/"
-                    expect(url.startsWith(prefix)).toBe(true)
-                    const without_prefix = url.slice(prefix.length)
-                    const channel_part = without_prefix.split("?volume=")[0]
-                    expect(decodeURIComponent(channel_part)).toBe(trimmed)
-                    const volume_part = Number(without_prefix.split("?volume=")[1])
-                    expect(volume_part).toBe(clamp_volume_percent(volume))
-                },
-            ),
-            { seed: FC_SEED, numRuns: 100 },
+        for (const channel of ["burnysc2", "  spaced name  ", "testchannel"]) {
+            for (const volume of [-50, 0, 15, 100, 150]) {
+                const trimmed = channel.trim()
+                if (trimmed === "") {
+                    continue
+                }
+                const url = build_overlay_url(channel, volume)
+                const parsed = new URL(url, "https://example.com")
+                expect(parsed.pathname).toBe("/overlay")
+                expect(parsed.searchParams.get("stream_name")).toBe(trimmed)
+                expect(parsed.searchParams.get("volume")).toBe(String(clamp_volume_percent(volume)))
+            }
+        }
+    })
+
+    it("round-trips allow_* through overlay is_enabled logic", () => {
+        const is_enabled = (v: string | null): boolean =>
+            v === null ? true : !["0", "false", "no", "off"].includes(v.toLowerCase())
+        expect(is_enabled(null)).toBe(true)
+        for (const off of ["0", "false", "no", "off", "FALSE", "Off"]) {
+            expect(is_enabled(off)).toBe(false)
+        }
+        const url = build_overlay_url("burnysc2", 15, { allow_mods: false })
+        const parsed = new URL(url, "https://example.com")
+        expect(is_enabled(parsed.searchParams.get("allow_mods"))).toBe(false)
+        expect(is_enabled(parsed.searchParams.get("allow_vips"))).toBe(true)
+        const all_off = new URL(
+            build_overlay_url("burnysc2", 15, {
+                allow_mods: false,
+                allow_vips: false,
+                allow_subs: false,
+                allow_normal: false,
+            }),
+            "https://example.com",
         )
+        expect(is_enabled(all_off.searchParams.get("allow_mods"))).toBe(false)
+        expect(is_enabled(all_off.searchParams.get("allow_vips"))).toBe(false)
+        expect(is_enabled(all_off.searchParams.get("allow_subs"))).toBe(false)
+        expect(is_enabled(all_off.searchParams.get("allow_normal"))).toBe(false)
     })
 })
 

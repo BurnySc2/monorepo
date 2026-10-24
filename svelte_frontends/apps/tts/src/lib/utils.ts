@@ -38,10 +38,34 @@ export function clamp_volume_ratio(volume: number): number {
     return Math.min(1, Math.max(0, volume))
 }
 
-export function build_overlay_url(channel: string, volume: number): string {
-    const safe_channel = encodeURIComponent(channel.trim())
-    const safe_volume = clamp_volume_percent(volume)
-    return `https://burnysc2.xyz/tts-api/twitch/${safe_channel}?volume=${safe_volume}`
+export function is_enabled_param(value: string | null): boolean {
+    if (value === null) {
+        return true
+    }
+    return !["0", "false", "no", "off"].includes(value.toLowerCase())
+}
+
+export function build_overlay_url(
+    channel: string,
+    volume: number,
+    opts?: {
+        origin?: string
+        allow_mods?: boolean
+        allow_vips?: boolean
+        allow_subs?: boolean
+        allow_normal?: boolean
+    },
+): string {
+    const params = new URLSearchParams({
+        stream_name: channel.trim(),
+        volume: String(clamp_volume_percent(volume)),
+        allow_mods: (opts?.allow_mods ?? true) ? "1" : "0",
+        allow_vips: (opts?.allow_vips ?? true) ? "1" : "0",
+        allow_subs: (opts?.allow_subs ?? true) ? "1" : "0",
+        allow_normal: (opts?.allow_normal ?? true) ? "1" : "0",
+    })
+    const base = (opts?.origin ?? "").replace(/\/+$/, "")
+    return `${base}/overlay?${params.toString()}`
 }
 
 export async function copy_to_clipboard(text: string): Promise<void> {

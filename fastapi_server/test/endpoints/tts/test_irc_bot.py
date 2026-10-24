@@ -20,7 +20,6 @@ class TestIRCClientConnect:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=lambda *args: None,
             )
             await client.connect()
@@ -31,13 +30,26 @@ class TestIRCClientConnect:
             assert call_args[0][1] == 6697
             assert isinstance(call_args[1]["ssl"], ssl.SSLContext)
 
-            assert mock_writer.write.call_count == 4
+            assert mock_writer.write.call_count == 5
 
             calls = [call[0][0] for call in mock_writer.write.call_args_list]
             assert any(b"USER justinfan12345" in c for c in calls)
             assert any(b"NICK justinfan12345" in c for c in calls)
             assert any(b"PRIVMSG nickserv" in c for c in calls)
+            assert any(b"CAP REQ :twitch.tv/tags twitch.tv/commands" in c for c in calls)
             assert any(b"JOIN #teststream" in c for c in calls)
+            cap_idx = next(i for i, c in enumerate(calls) if b"CAP REQ" in c)
+            join_idx = next(i for i, c in enumerate(calls) if b"JOIN #teststream" in c)
+            assert cap_idx < join_idx
+
+
+class TestIRCClientChannelNormalization:
+    @pytest.mark.parametrize(
+        ("raw", "want"), [("teststream", "teststream"), ("  TestStream  ", "teststream"), ("BURNYSC2", "burnysc2")]
+    )
+    def test_channel_normalized(self, raw: str, want: str) -> None:
+        client = IRCClient(channel=raw, callback=lambda *args: None)
+        assert client.channel == want
 
 
 class TestIRCClientShutdown:
@@ -46,7 +58,6 @@ class TestIRCClientShutdown:
         """Test that shutdown sets channel to empty string."""
         client = IRCClient(
             channel="teststream",
-            read_name_lang="none",
             callback=lambda *args: None,
         )
         assert client.channel == "teststream"
@@ -71,7 +82,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=callback_mock,
             )
             await client.connect()
@@ -85,7 +95,108 @@ class TestIRCClientListen:
             with suppress(asyncio.CancelledError):
                 await task
 
-            callback_mock.assert_called_once_with("teststream", "none", "user123", "STORY_TELLER:Hello world")
+            callback_mock.assert_called_once_with(
+                "teststream", "user123", "STORY_TELLER:Hello world", frozenset({"normal"})
+            )
+
+    @pytest.mark.asyncio
+    async def test_listen_parses_tagged_privmsg_mod_sub(self):
+        """Test that listen parses tagged mod+sub PRIVMSG with roles frozenset."""
+        privmsg = (
+            b"@badges=moderator/1,subscriber/12;mod=1;subscriber=1 "
+            b":moduser!moduser@moduser.tmi.twitch.tv PRIVMSG #teststream :hello\r\n"
+        )
+
+        mock_reader = MagicMock()
+        mock_reader.readline = AsyncMock(side_effect=[privmsg, asyncio.CancelledError()])
+        mock_writer = MagicMock()
+        mock_writer.drain = AsyncMock()
+
+        callback_mock = MagicMock()
+
+        with patch("asyncio.open_connection", new_callable=AsyncMock) as mock_connect:
+            mock_connect.return_value = (mock_reader, mock_writer)
+            client = IRCClient(
+                channel="teststream",
+                callback=callback_mock,
+            )
+            await client.connect()
+
+            async def listen_task():
+                await client.listen()
+
+            task = asyncio.create_task(listen_task())
+            await asyncio.sleep(0.05)
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
+
+            callback_mock.assert_called_once_with("teststream", "moduser", "hello", frozenset({"mod", "sub"}))
+
+    @pytest.mark.asyncio
+    async def test_listen_parses_tagged_privmsg_vip(self):
+        """Test that listen parses tagged vip PRIVMSG with roles frozenset."""
+        privmsg = b"@badges=vip/1;vip=1 :vipuser!vipuser@vipuser.tmi.twitch.tv PRIVMSG #teststream :hi vip\r\n"
+
+        mock_reader = MagicMock()
+        mock_reader.readline = AsyncMock(side_effect=[privmsg, asyncio.CancelledError()])
+        mock_writer = MagicMock()
+        mock_writer.drain = AsyncMock()
+
+        callback_mock = MagicMock()
+
+        with patch("asyncio.open_connection", new_callable=AsyncMock) as mock_connect:
+            mock_connect.return_value = (mock_reader, mock_writer)
+            client = IRCClient(
+                channel="teststream",
+                callback=callback_mock,
+            )
+            await client.connect()
+
+            async def listen_task():
+                await client.listen()
+
+            task = asyncio.create_task(listen_task())
+            await asyncio.sleep(0.05)
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
+
+            callback_mock.assert_called_once_with("teststream", "vipuser", "hi vip", frozenset({"vip"}))
+
+    @pytest.mark.asyncio
+    async def test_listen_parses_tagged_privmsg_broadcaster(self):
+        """Test that listen maps broadcaster badge to dual-role {"mod", "broadcaster"} for bypass."""
+        privmsg = (
+            b"@badges=broadcaster/1;mod=0;subscriber=0 "
+            b":owneruser!owneruser@owneruser.tmi.twitch.tv PRIVMSG #teststream :hi\r\n"
+        )
+
+        mock_reader = MagicMock()
+        mock_reader.readline = AsyncMock(side_effect=[privmsg, asyncio.CancelledError()])
+        mock_writer = MagicMock()
+        mock_writer.drain = AsyncMock()
+
+        callback_mock = MagicMock()
+
+        with patch("asyncio.open_connection", new_callable=AsyncMock) as mock_connect:
+            mock_connect.return_value = (mock_reader, mock_writer)
+            client = IRCClient(
+                channel="teststream",
+                callback=callback_mock,
+            )
+            await client.connect()
+
+            async def listen_task():
+                await client.listen()
+
+            task = asyncio.create_task(listen_task())
+            await asyncio.sleep(0.05)
+            task.cancel()
+            with suppress(asyncio.CancelledError):
+                await task
+
+            callback_mock.assert_called_once_with("teststream", "owneruser", "hi", frozenset({"mod", "broadcaster"}))
 
     @pytest.mark.asyncio
     async def test_listen_responds_to_ping(self):
@@ -101,7 +212,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=lambda *args: None,
             )
             await client.connect()
@@ -132,7 +242,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=lambda *args: None,
             )
             client.connect = AsyncMock()

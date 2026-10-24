@@ -12,7 +12,7 @@ from components.tts.irc_bot_async import IRCClient
 
 
 def _make_client(**overrides) -> IRCClient:
-    kwargs = {"channel": "teststream", "read_name_lang": "none", "callback": lambda *args: None}
+    kwargs = {"channel": "teststream", "callback": lambda *args: None}
     kwargs.update(overrides)
     return IRCClient(**kwargs)  # type: ignore[arg-type]
 
