@@ -6,7 +6,7 @@ import { onMount } from "svelte"
 import { page } from "$app/state"
 import { fetch_generate_tts, fetch_voices } from "$lib/api"
 import { tts_settings } from "$lib/tts_settings.svelte"
-import { clamp_voice_index, clamp_volume_percent, clamp_volume_ratio, get_preview_text } from "$lib/utils"
+import { build_overlay_url, clamp_voice_index, clamp_volume_percent, clamp_volume_ratio, get_preview_text } from "$lib/utils"
 
 let voices = $state<VoiceInfo[]>([])
 let user_text = $state("")
@@ -96,15 +96,13 @@ const preview_text = $derived.by(() => {
 // Volume convention: twitch_volume is percent 0-100 for the overlay query; default 15 (reasonable OBS level).
 // Audio element volume is ratio 0-1 derived from tts_settings.audio_volume percent.
 const overlay_url = $derived.by(() => {
-    const params = new URLSearchParams({
-        stream_name: twitch_channel,
-        volume: String(clamp_volume_percent(twitch_volume)),
-        allow_mods: allow_mods ? "1" : "0",
-        allow_vips: allow_vips ? "1" : "0",
-        allow_subs: allow_subs ? "1" : "0",
-        allow_normal: allow_normal ? "1" : "0",
+    return build_overlay_url(twitch_channel, twitch_volume, {
+        origin: page.url.origin,
+        allow_mods,
+        allow_vips,
+        allow_subs,
+        allow_normal,
     })
-    return `${page.url.origin}/overlay?${params.toString()}`
 })
 </script>
 
