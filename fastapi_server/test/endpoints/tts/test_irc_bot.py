@@ -20,7 +20,6 @@ class TestIRCClientConnect:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=lambda *args: None,
             )
             await client.connect()
@@ -44,13 +43,21 @@ class TestIRCClientConnect:
             assert cap_idx < join_idx
 
 
+class TestIRCClientChannelNormalization:
+    @pytest.mark.parametrize(
+        ("raw", "want"), [("teststream", "teststream"), ("  TestStream  ", "teststream"), ("BURNYSC2", "burnysc2")]
+    )
+    def test_channel_normalized(self, raw: str, want: str) -> None:
+        client = IRCClient(channel=raw, callback=lambda *args: None)
+        assert client.channel == want
+
+
 class TestIRCClientShutdown:
     @pytest.mark.asyncio
     async def test_shutdown(self):
         """Test that shutdown sets channel to empty string."""
         client = IRCClient(
             channel="teststream",
-            read_name_lang="none",
             callback=lambda *args: None,
         )
         assert client.channel == "teststream"
@@ -75,7 +82,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=callback_mock,
             )
             await client.connect()
@@ -90,7 +96,7 @@ class TestIRCClientListen:
                 await task
 
             callback_mock.assert_called_once_with(
-                "teststream", "none", "user123", "STORY_TELLER:Hello world", frozenset({"normal"})
+                "teststream", "user123", "STORY_TELLER:Hello world", frozenset({"normal"})
             )
 
     @pytest.mark.asyncio
@@ -112,7 +118,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=callback_mock,
             )
             await client.connect()
@@ -126,7 +131,7 @@ class TestIRCClientListen:
             with suppress(asyncio.CancelledError):
                 await task
 
-            callback_mock.assert_called_once_with("teststream", "none", "moduser", "hello", frozenset({"mod", "sub"}))
+            callback_mock.assert_called_once_with("teststream", "moduser", "hello", frozenset({"mod", "sub"}))
 
     @pytest.mark.asyncio
     async def test_listen_parses_tagged_privmsg_vip(self):
@@ -144,7 +149,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=callback_mock,
             )
             await client.connect()
@@ -158,7 +162,7 @@ class TestIRCClientListen:
             with suppress(asyncio.CancelledError):
                 await task
 
-            callback_mock.assert_called_once_with("teststream", "none", "vipuser", "hi vip", frozenset({"vip"}))
+            callback_mock.assert_called_once_with("teststream", "vipuser", "hi vip", frozenset({"vip"}))
 
     @pytest.mark.asyncio
     async def test_listen_parses_tagged_privmsg_broadcaster(self):
@@ -179,7 +183,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=callback_mock,
             )
             await client.connect()
@@ -193,7 +196,7 @@ class TestIRCClientListen:
             with suppress(asyncio.CancelledError):
                 await task
 
-            callback_mock.assert_called_once_with("teststream", "none", "owneruser", "hi", frozenset({"mod"}))
+            callback_mock.assert_called_once_with("teststream", "owneruser", "hi", frozenset({"mod"}))
 
     @pytest.mark.asyncio
     async def test_listen_responds_to_ping(self):
@@ -209,7 +212,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=lambda *args: None,
             )
             await client.connect()
@@ -240,7 +242,6 @@ class TestIRCClientListen:
             mock_connect.return_value = (mock_reader, mock_writer)
             client = IRCClient(
                 channel="teststream",
-                read_name_lang="none",
                 callback=lambda *args: None,
             )
             client.connect = AsyncMock()

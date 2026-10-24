@@ -13,20 +13,10 @@ from typing import Literal
 from loguru import logger
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential, wait_random
 
-# pyrefly: ignore[bad-assignment]
-ALLOWED_NAME_LANGUAGES: dict[str, tuple[str | None, str | None]] = {
-    # {str: (Voice label, suffix 'says')}
-    "none": (None, None),
-    "en": ("Narrator", "says"),
-    "de": ("German Female", "sagt"),
-}
-
 # If no ping received by this time, reconnect
 TWITCH_PING_TIMEOUT_SECONDS = 6 * 60  # Ping received roughly every 5mins
 TIMEOUT_SECONDS = 60  # Timeout "readline()" after n seconds
 
-
-ReadNameLang = Literal["none", "en", "de"]
 
 UserRole = Literal["mod", "vip", "sub", "normal"]
 
@@ -37,24 +27,22 @@ class IRCClient:
     def __init__(
         self,
         channel: str,
-        read_name_lang: ReadNameLang,
-        callback: Callable[[str, ReadNameLang, str, str, UserRoles], None],
+        callback: Callable[[str, str, str, UserRoles], None],
     ):
         """
         Callback params:
         - stream_name
-        - read_name_lang: Literal['none', 'de', 'en']
-        - voice: one valid Voice
+        - username: str
         - text: str
         - roles: UserRoles (frozenset of 'mod', 'vip', 'sub', 'normal')
         """
-        if not re.fullmatch(r"[A-Za-z0-9_]{1,25}", channel):
+        normalized = channel.strip().lower()
+        if not re.fullmatch(r"[a-z0-9_]{1,25}", normalized):
             raise ValueError(f"Invalid Twitch channel name: {channel!r}")
         self.host = "irc.chat.twitch.tv"  # Use standard IRC endpoint
         self.port = 6697  # Standard IRC SSL port
         self.nick = "justinfan12345"
-        self.channel = channel
-        self.read_name_lang = read_name_lang
+        self.channel = normalized
         self.callback = callback
         self.reader: asyncio.StreamReader | None = None
         self.writer: asyncio.StreamWriter | None = None
@@ -152,7 +140,7 @@ class IRCClient:
                     match = re.fullmatch(r":(\w+)!\w+@\w+\.tmi\.twitch\.tv PRIVMSG #\w+ :(.+)", text)
                     if match:
                         username, content = match.groups()
-                        self.callback(self.channel, self.read_name_lang, username, content, roles)
+                        self.callback(self.channel, username, content, roles)
 
             except Exception as e:  # noqa: BLE001
                 logger.exception(f"Error receiving message: {e}")
@@ -220,8 +208,7 @@ async def main():
     """Main function to start the IRC client"""
     client = IRCClient(
         channel="burnysc2",
-        read_name_lang="none",
-        callback=lambda channel, read_name_lang, user, msg, role: logger.info(f"{channel} {user}: {msg}"),
+        callback=lambda channel, user, msg, role: logger.info(f"{channel} {user}: {msg}"),
     )
     await client.connect()
     await client.listen()

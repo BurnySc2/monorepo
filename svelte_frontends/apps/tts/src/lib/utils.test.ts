@@ -56,7 +56,7 @@ describe("build_overlay_url", () => {
         }
     })
 
-    it("handles origin, read_name_lang and clamps volume", () => {
+    it("handles origin and clamps volume", () => {
         const with_origin = build_overlay_url("ch", 999, { origin: "https://example.com" })
         expect(with_origin.startsWith("https://example.com/overlay?")).toBe(true)
         expect(new URL(with_origin).searchParams.get("volume")).toBe("100")
@@ -66,8 +66,11 @@ describe("build_overlay_url", () => {
         expect(new URL(build_overlay_url("ch", Number.NaN), "https://example.com").searchParams.get("volume")).toBe(
             "15",
         )
-        const lang = new URL(build_overlay_url("ch", 15, { read_name_lang: "en" }), "https://example.com")
-        expect(lang.searchParams.get("read_name_lang")).toBe("en")
+    })
+
+    it("does not include read_name_lang param", () => {
+        const parsed = new URL(build_overlay_url("ch", 15), "https://example.com")
+        expect(parsed.searchParams.get("read_name_lang")).toBeNull()
     })
 })
 

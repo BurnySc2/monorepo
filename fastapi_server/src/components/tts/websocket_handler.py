@@ -10,7 +10,7 @@ from fastapi import WebSocket, WebSocketDisconnect
 from loguru import logger
 from websockets import ConnectionClosedError, ConnectionClosedOK
 
-from components.tts.irc_bot_async import ALLOWED_NAME_LANGUAGES, IRCClient, ReadNameLang, UserRole, UserRoles
+from components.tts.irc_bot_async import IRCClient, UserRole, UserRoles
 from components.tts_generate import generate_audio, get_voice_by_label
 from schemas.tts.engine import TTSEngine
 
@@ -44,8 +44,8 @@ class TTSQueue:
     Central coordination class for TTS WebSocket connections and text processing.
 
     Manages:
-    - Text queues for each (stream_name, read_name_lang) combination
-    - Connected WebSocket clients for each stream/language pair
+    - Text queues for each stream_name
+    - Connected WebSocket clients for each stream
     - Twitch IRC bot connection state
 
     Provides methods to:
@@ -57,19 +57,18 @@ class TTSQueue:
     Works with TTSQueueRunner which processes the queues and generates TTS audio.
     """
 
-    # {(stream_name, read_name_lang): asyncio.Queue}
+    # {stream_name: asyncio.Queue}
     # Each queue item is a tuple[voice: str, text: str, roles: UserRoles]
-    text_queue: ClassVar[dict[tuple[str, str], asyncio.Queue]] = {}
-    # {(stream_name, read_name_lang): {Websocket: RoleFilter}}
-    connected_websockets: ClassVar[dict[tuple[str, str], dict[WebSocket, RoleFilter]]] = {}
-    # {(stream_name, read_name_lang): irc_client}
-    twitch_irc_bots: ClassVar[dict[tuple[str, str], IRCClient]] = {}
+    text_queue: ClassVar[dict[str, asyncio.Queue]] = {}
+    # {stream_name: {Websocket: RoleFilter}}
+    connected_websockets: ClassVar[dict[str, dict[WebSocket, RoleFilter]]] = {}
+    # {stream_name: irc_client}
+    twitch_irc_bots: ClassVar[dict[str, IRCClient]] = {}
 
     @classmethod
     def irc_client_add_text_method(
         cls,
         stream_name: str,
-        read_name_lang: ReadNameLang,
         username: str,
         message: str,
         roles: UserRoles | UserRole = "normal",
@@ -81,100 +80,84 @@ class TTSQueue:
             return
         if ":" not in message:
             return
-        message_lowercase = message.lower()
         try:
-            # engine_voice: text
-            voice_label, text = message_lowercase.split(":", maxsplit=1)
+            # engine_voice: text (voice lookup is case-insensitive, text preserves case)
+            voice_label_raw, text_raw = message.split(":", maxsplit=1)
+            voice_label = voice_label_raw.strip().lower()
             # engine name, voice name
-            engine, voice_internal = voice_label.strip().split("_", 1)
+            engine, voice_internal = voice_label.split("_", 1)
         except ValueError:
             # Not in the correct format
             return
         voice = get_voice_by_label(engine, voice_internal)
         if voice is None:
             return
-        text = text.strip()
+        text = text_raw.strip()
         if text == "":
             # No text, just voice
             return
-        key = (stream_name, read_name_lang)
-        sockets = cls.connected_websockets.get(key)
+        sockets = cls.connected_websockets.get(stream_name)
         if sockets is None or not any(f.allows(roles) for f in sockets.values()):
             return
-        queue = cls.text_queue.get(key)
+        queue = cls.text_queue.get(stream_name)
         if queue is None:
             return
-        if read_name_lang != "none":
-            # Add the prefix of "Username says" before queueing the text
-            username_says_voice, username_says_text = ALLOWED_NAME_LANGUAGES[read_name_lang]
-            if username_says_voice and username_says_text:
-                queue.put_nowait((f"tiktok_{username_says_voice}", f"{username} {username_says_text}", roles))
         queue.put_nowait((f"{voice.engine}_{voice.label}", text, roles))
 
     @classmethod
-    def add_websocket(
-        cls, stream_name: str, read_name_lang: str, socket: WebSocket, role_filter: RoleFilter | None = None
-    ) -> None:
-        if (stream_name, read_name_lang) not in cls.connected_websockets:
-            cls.connected_websockets[(stream_name, read_name_lang)] = {}
+    def add_websocket(cls, stream_name: str, socket: WebSocket, role_filter: RoleFilter | None = None) -> None:
+        if stream_name not in cls.connected_websockets:
+            cls.connected_websockets[stream_name] = {}
         if role_filter is None:
             role_filter = RoleFilter()
-        cls.connected_websockets[(stream_name, read_name_lang)][socket] = role_filter
+        cls.connected_websockets[stream_name][socket] = role_filter
 
     @classmethod
-    def get_text_queue(cls, stream_name: str, read_name_lang: str) -> asyncio.Queue | None:
-        return cls.text_queue.get((stream_name, read_name_lang), None)
+    def get_text_queue(cls, stream_name: str) -> asyncio.Queue | None:
+        return cls.text_queue.get(stream_name, None)
 
     @classmethod
-    def get_connected_websockets(cls, stream_name: str, read_name_lang: str) -> dict[WebSocket, RoleFilter]:
-        return cls.connected_websockets.get((stream_name, read_name_lang), {})
+    def get_connected_websockets(cls, stream_name: str) -> dict[WebSocket, RoleFilter]:
+        return cls.connected_websockets.get(stream_name, {})
 
     @classmethod
-    def is_connected(cls, stream_name: str, read_name_lang: str | None = None) -> bool:
-        """
-        Check if connected to "stream_name" via given "read_name_lang".
-        If "read_name_lang" is not given, check if connected to "stream_name" at all.
-        """
-        if read_name_lang is None:
-            for read_name_lang_loop in ALLOWED_NAME_LANGUAGES:
-                if cls.is_connected(stream_name, read_name_lang_loop):
-                    return True
-        return (stream_name, read_name_lang) in cls.connected_websockets
+    def is_connected(cls, stream_name: str) -> bool:
+        return stream_name in cls.connected_websockets
 
     @classmethod
-    async def remove_ws(cls, socket: WebSocket, stream_name: str, read_name_lang: str) -> None:
-        connected_websockets: dict[WebSocket, RoleFilter] = cls.get_connected_websockets(stream_name, read_name_lang)
+    async def remove_ws(cls, socket: WebSocket, stream_name: str) -> None:
+        connected_websockets: dict[WebSocket, RoleFilter] = cls.get_connected_websockets(stream_name)
         for ws in list(connected_websockets.keys()):
             if ws == socket:
                 del connected_websockets[ws]
         # Remove dict entry if websockets-list is empty, which means no more websocket is connected.
         if len(connected_websockets) == 0:
-            await cls.remove_websockets_key(stream_name, read_name_lang)
+            await cls.remove_websockets_key(stream_name)
 
     @classmethod
-    async def remove_websockets_key(cls, stream_name: str, read_name_lang: str) -> None:
+    async def remove_websockets_key(cls, stream_name: str) -> None:
         """
         Remove key from dictionaries
         Check if any websocket is connected to this stream channel
         Leave if none connected
         """
         # pop with default so double-cleanup or missing keys do not raise KeyError.
-        cls.text_queue.pop((stream_name, read_name_lang), None)
-        cls.connected_websockets.pop((stream_name, read_name_lang), None)
+        cls.text_queue.pop(stream_name, None)
+        cls.connected_websockets.pop(stream_name, None)
         # Shut down irc bot (close writer so listen() unblocks and exits)
-        irc_client = cls.twitch_irc_bots.pop((stream_name, read_name_lang), None)
+        irc_client = cls.twitch_irc_bots.pop(stream_name, None)
         if irc_client is None:
             return
         try:
             await irc_client.shutdown()
         except Exception:  # noqa: BLE001
-            logger.exception(f"IRC shutdown failed for {stream_name}/{read_name_lang}")
+            logger.exception(f"IRC shutdown failed for {stream_name}")
 
 
 @dataclass
 class TTSQueueRunner:
     """
-    Worker class that processes TTS requests for a specific stream/language pair.
+    Worker class that processes TTS requests for a specific stream.
 
     Responsibilities:
     - Continuously checks the text queue for new messages
@@ -193,20 +176,19 @@ class TTSQueueRunner:
     """
 
     stream_name: str
-    read_name_lang: str
     tts_is_playing_till: arrow.Arrow = field(default_factory=arrow.utcnow)
 
     @property
     def text_queue(self) -> asyncio.Queue[tuple[str, str, UserRoles]] | None:
-        return TTSQueue.get_text_queue(self.stream_name, self.read_name_lang)
+        return TTSQueue.get_text_queue(self.stream_name)
 
     @property
     def text_queue_exists(self) -> bool:
-        return TTSQueue.get_text_queue(self.stream_name, self.read_name_lang) is not None
+        return TTSQueue.get_text_queue(self.stream_name) is not None
 
     @property
     def connected_websockets(self) -> dict[WebSocket, RoleFilter]:
-        return TTSQueue.get_connected_websockets(self.stream_name, self.read_name_lang)
+        return TTSQueue.get_connected_websockets(self.stream_name)
 
     async def run(self):
         while True:
@@ -268,7 +250,7 @@ class TTSQueueRunner:
             await socket.send_text(orjson.dumps({"data": data}).decode())
         # Catch errors and remove websocket on error
         except (ConnectionClosedError, ConnectionClosedOK, WebSocketDisconnect):
-            await TTSQueue.remove_ws(socket, self.stream_name, self.read_name_lang)
+            await TTSQueue.remove_ws(socket, self.stream_name)
         except Exception as e:  # noqa: BLE001
             logger.exception(f"Unexpected exception: {e}")
-            await TTSQueue.remove_ws(socket, self.stream_name, self.read_name_lang)
+            await TTSQueue.remove_ws(socket, self.stream_name)

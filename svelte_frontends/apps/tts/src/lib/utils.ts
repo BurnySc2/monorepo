@@ -50,7 +50,6 @@ export function build_overlay_url(
     volume: number,
     opts?: {
         origin?: string
-        read_name_lang?: string
         allow_mods?: boolean
         allow_vips?: boolean
         allow_subs?: boolean
@@ -65,9 +64,6 @@ export function build_overlay_url(
         allow_subs: (opts?.allow_subs ?? true) ? "1" : "0",
         allow_normal: (opts?.allow_normal ?? true) ? "1" : "0",
     })
-    if (opts?.read_name_lang !== undefined) {
-        params.set("read_name_lang", opts.read_name_lang)
-    }
     const base = (opts?.origin ?? "").replace(/\/+$/, "")
     return `${base}/overlay?${params.toString()}`
 }

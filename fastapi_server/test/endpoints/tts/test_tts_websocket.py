@@ -18,7 +18,7 @@ def client():
 class TestWebsocketEndpoint:
     @pytest.mark.asyncio
     async def test_ws_accepts_valid_connection(self, client):
-        """Test that WebSocket accepts connection with valid stream/lang."""
+        """Test that WebSocket accepts connection with valid stream."""
         with patch("routes.tts_websocket.IRCClient") as mock_irc:
             mock_irc_instance = MagicMock()
             mock_irc_instance.connect = AsyncMock()
@@ -26,14 +26,31 @@ class TestWebsocketEndpoint:
             mock_irc_instance.listen = AsyncMock()
             mock_irc_instance.shutdown = AsyncMock()
 
-            with client.websocket_connect("/tts-api/ws/teststream/none"):
-                assert TTSQueue.is_connected("teststream", "none") is True
+            with client.websocket_connect("/tts-api/ws/teststream"):
+                assert TTSQueue.is_connected("teststream") is True
 
     @pytest.mark.asyncio
-    async def test_ws_rejects_invalid_lang(self, client):
-        """Test that WebSocket rejects invalid read_name_lang."""
-        with pytest.raises(Exception), client.websocket_connect("/tts-api/ws/teststream/invalid_lang"):
-            pass
+    async def test_ws_legacy_lang_suffix_alias_shares_queue(self, client):
+        """Test that /ws/{stream}/{lang} alias shares queue with /ws/{stream}."""
+        with patch("routes.tts_websocket.IRCClient") as mock_irc:
+            mock_irc_instance = MagicMock()
+            mock_irc_instance.connect = AsyncMock()
+            mock_irc.return_value = mock_irc_instance
+            mock_irc_instance.listen = AsyncMock()
+            mock_irc_instance.shutdown = AsyncMock()
+
+            with client.websocket_connect("/tts-api/ws/aliastream"):
+                assert TTSQueue.is_connected("aliastream") is True
+                base_queue = TTSQueue.get_text_queue("aliastream")
+                assert base_queue is not None
+
+                with client.websocket_connect("/tts-api/ws/aliastream/none"):
+                    assert TTSQueue.is_connected("aliastream") is True
+                    assert TTSQueue.get_text_queue("aliastream") is base_queue
+
+                with client.websocket_connect("/tts-api/ws/aliastream/en"):
+                    assert TTSQueue.is_connected("aliastream") is True
+                    assert TTSQueue.get_text_queue("aliastream") is base_queue
 
     @pytest.mark.asyncio
     async def test_ws_initializes_queue(self, client):
@@ -45,10 +62,10 @@ class TestWebsocketEndpoint:
             mock_irc_instance.listen = AsyncMock()
             mock_irc_instance.shutdown = AsyncMock()
 
-            assert TTSQueue.get_text_queue("newstream", "none") is None
+            assert TTSQueue.get_text_queue("newstream") is None
 
-            with client.websocket_connect("/tts-api/ws/newstream/none"):
-                assert TTSQueue.get_text_queue("newstream", "none") is not None
+            with client.websocket_connect("/tts-api/ws/newstream"):
+                assert TTSQueue.get_text_queue("newstream") is not None
 
     @pytest.mark.asyncio
     async def test_ws_removes_ws_on_disconnect(self, client):
@@ -60,8 +77,8 @@ class TestWebsocketEndpoint:
             mock_irc_instance.listen = AsyncMock()
             mock_irc_instance.shutdown = AsyncMock()
 
-            with client.websocket_connect("/tts-api/ws/disconnectstream/none"):
-                assert TTSQueue.is_connected("disconnectstream", "none") is True
+            with client.websocket_connect("/tts-api/ws/disconnectstream"):
+                assert TTSQueue.is_connected("disconnectstream") is True
 
             await asyncio.sleep(0.1)
-            assert TTSQueue.is_connected("disconnectstream", "none") is False
+            assert TTSQueue.is_connected("disconnectstream") is False
