@@ -528,6 +528,10 @@ return resp.json();
 | matchinfo | — (direct `fetch` to SC2 local API `localhost:6119` + `nephest.com` via `encodeURIComponent`) | `nephestQuery` |
 | pdf_to_epub | `src/lib/api/pdf_to_epub.ts` (via `@repo/api-client`) + `src/lib/stores.ts` (via `@repo/persisted-state`), components `BookUpload`, `ChapterPreview` | `fetch_probe`, `fetch_preview`, `fetch_convert` |
 
+### TTS App (`apps/tts`)
+- Overlay URL `/overlay?stream_name&volume&allow_mods&allow_vips&allow_subs&allow_normal` via `build_overlay_url(channel, volume, opts)` (`src/lib/utils.ts`); `is_enabled_param` (null → true, else not in `0/false/no/off`). No `read_name_lang`.
+- Overlay (`src/routes/overlay/+page.svelte`) opens WS `<backend>/tts-api/ws/{stream_name}?allow_*` (`ws` local / `wss` remote), volume percent → ratio for `<audio>`.
+
 ---
 
 ## Useful Commands Reference
