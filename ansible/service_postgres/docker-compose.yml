@@ -53,7 +53,7 @@ services:
     # nocodb:
     # postgresql://{ POSTGRES_USER }:{ POSTGRES_PASSWORD }@postgres_postgres:5432/{ POSTGRES_DATABASE }
     hostname: postgres_postgres
-    image: postgres:16-alpine  # WHY pg16 SSOT: align postgres fleet
+    image: postgres:17-alpine  # WHY pg17 SSOT: align postgres fleet
     networks:
       - pangolin_newt
     restart: unless-stopped
@@ -77,7 +77,7 @@ services:
   pgadmin:
     # TODO Add default connection if possible
     container_name: postgres_pgadmin
-    image: dpage/pgadmin4:8.12  # WHY pinned 8.12: explicit patch stable
+    image: dpage/pgadmin4:9.18  # WHY pinned 9.18: PG17 support + pg_dump 18.4 + CVE fixes, 8.x EOL
     networks:
       - pangolin_newt
     labels:
@@ -101,7 +101,7 @@ services:
   nocodb:
     # TODO Add default connection if possible
     container_name: postgres_nocodb
-    image: nocodb/nocodb:latest  # TODO pin 0.3xx: WHY latest tracks rolling
+    image: nocodb/nocodb:2026.09.1  # WHY pinned 2026.09.1: PG17-compatible CalVer stable, deterministic (0.3xx line dead)
     networks:
       - pangolin_newt
     labels:
