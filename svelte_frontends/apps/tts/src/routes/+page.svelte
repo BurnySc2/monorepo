@@ -6,7 +6,13 @@ import { onMount } from "svelte"
 import { page } from "$app/state"
 import { fetch_generate_tts, fetch_voices } from "$lib/api"
 import { tts_settings } from "$lib/tts_settings.svelte"
-import { build_overlay_url, clamp_voice_index, clamp_volume_percent, clamp_volume_ratio, get_preview_text } from "$lib/utils"
+import {
+    build_overlay_url,
+    clamp_voice_index,
+    clamp_volume_percent,
+    clamp_volume_ratio,
+    get_preview_text,
+} from "$lib/utils"
 
 let voices = $state<VoiceInfo[]>([])
 let user_text = $state("")
