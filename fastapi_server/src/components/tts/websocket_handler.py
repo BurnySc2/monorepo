@@ -24,6 +24,8 @@ class RoleFilter:
 
     def allows(self, roles: UserRole | UserRoles | set[UserRole]) -> bool:
         role_set = {roles} if isinstance(roles, str) else roles
+        if "broadcaster" in role_set:
+            return True
         if len(role_set) == 0:
             return self.allow_normal
         for role in role_set:

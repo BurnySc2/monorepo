@@ -18,7 +18,7 @@ TWITCH_PING_TIMEOUT_SECONDS = 6 * 60  # Ping received roughly every 5mins
 TIMEOUT_SECONDS = 60  # Timeout "readline()" after n seconds
 
 
-UserRole = Literal["mod", "vip", "sub", "normal"]
+UserRole = Literal["mod", "vip", "sub", "normal", "broadcaster"]
 
 UserRoles = frozenset[UserRole]
 
@@ -34,7 +34,7 @@ class IRCClient:
         - stream_name
         - username: str
         - text: str
-        - roles: UserRoles (frozenset of 'mod', 'vip', 'sub', 'normal')
+        - roles: UserRoles (frozenset of 'mod', 'vip', 'sub', 'normal', 'broadcaster')
         """
         normalized = channel.strip().lower()
         if not re.fullmatch(r"[a-z0-9_]{1,25}", normalized):
@@ -131,6 +131,8 @@ class IRCClient:
                         collected: set[UserRole] = set()
                         if tags.get("mod") == "1" or "broadcaster" in badge_names or "moderator" in badge_names:
                             collected.add("mod")
+                        if "broadcaster" in badge_names:
+                            collected.add("broadcaster")
                         if tags.get("vip") == "1" or "vip" in badge_names:
                             collected.add("vip")
                         if tags.get("subscriber") == "1" or "subscriber" in badge_names:

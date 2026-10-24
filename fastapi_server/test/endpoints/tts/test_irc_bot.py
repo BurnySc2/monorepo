@@ -166,7 +166,7 @@ class TestIRCClientListen:
 
     @pytest.mark.asyncio
     async def test_listen_parses_tagged_privmsg_broadcaster(self):
-        """Test that listen maps broadcaster badge to mod role."""
+        """Test that listen maps broadcaster badge to dual-role {"mod", "broadcaster"} for bypass."""
         privmsg = (
             b"@badges=broadcaster/1;mod=0;subscriber=0 "
             b":owneruser!owneruser@owneruser.tmi.twitch.tv PRIVMSG #teststream :hi\r\n"
@@ -196,7 +196,7 @@ class TestIRCClientListen:
             with suppress(asyncio.CancelledError):
                 await task
 
-            callback_mock.assert_called_once_with("teststream", "owneruser", "hi", frozenset({"mod"}))
+            callback_mock.assert_called_once_with("teststream", "owneruser", "hi", frozenset({"mod", "broadcaster"}))
 
     @pytest.mark.asyncio
     async def test_listen_responds_to_ping(self):
