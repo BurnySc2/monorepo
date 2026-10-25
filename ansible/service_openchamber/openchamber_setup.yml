@@ -55,10 +55,26 @@
         owner: '1000'
         group: '1000'
         mode: '0644'
-    - name: Generate known_hosts for github.com
-      ansible.builtin.shell:
-        cmd: ssh-keyscan -t rsa,ecdsa,ed25519 github.com > /home/{{ USERNAME }}/data/ssh/known_hosts && chown 1000:1000 /home/{{ USERNAME }}/data/ssh/known_hosts && chmod 644 /home/{{ USERNAME }}/data/ssh/known_hosts
-        creates: /home/{{ USERNAME }}/data/ssh/known_hosts
+    - name: Ensure known_hosts file exists
+      ansible.builtin.file:
+        path: /home/{{ USERNAME }}/data/ssh/known_hosts
+        state: touch
+        owner: '1000'
+        group: '1000'
+        mode: '0644'
+        modification_time: preserve
+        access_time: preserve
+    - name: Add SSH host keys to known_hosts
+      ansible.builtin.known_hosts:
+        name: '{{ item.name }}'
+        key: "{{ lookup('pipe', item.keyscan) }}"
+        path: /home/{{ USERNAME }}/data/ssh/known_hosts
+        state: present
+      loop:
+        - name: 'github.com'
+          keyscan: 'ssh-keyscan -T 10 -t rsa,ecdsa,ed25519 github.com'
+        - name: '[git.burnysc2.xyz]:2222'
+          keyscan: 'ssh-keyscan -T 10 -p 2222 -t rsa,ecdsa,ed25519 git.burnysc2.xyz'
     # Optional permission fix - try without first, uncomment if container hits permission errors (image runs as 1000:1000):
     # - name: Fix ownership for openchamber data (optional, try without first)
     #   ansible.builtin.shell:
