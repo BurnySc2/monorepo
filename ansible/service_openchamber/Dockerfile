@@ -10,7 +10,7 @@ USER root
 RUN apt-get update && apt-get install -y --no-install-recommends gcc g++ libc6-dev && rm -rf /var/lib/apt/lists/*
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
 # WHY fontconfig + fonts-liberation: Chromium/Firefox crash without font config (SkFontMgr).
-RUN mkdir -p /opt/ms-playwright && chown openchamber:openchamber /opt/ms-playwright && apt-get update && apt-get install -y --no-install-recommends fontconfig fonts-liberation && npx -y playwright@1.61.0 install --with-deps chromium firefox && rm -rf /var/lib/apt/lists/* /root/.npm /root/.cache && chown -R openchamber:openchamber /opt/ms-playwright
+RUN mkdir -p /opt/ms-playwright && chown openchamber:openchamber /opt/ms-playwright && apt-get update && apt-get install -y --no-install-recommends fontconfig fonts-liberation && npx -y playwright@1.61.0 install --with-deps chromium firefox && npx -y playwright@1.61.0 install --only-shell chromium && rm -rf /var/lib/apt/lists/* /root/.npm /root/.cache && chown -R openchamber:openchamber /opt/ms-playwright
 COPY --from=uv /uv /uvx /bin/
 COPY --from=nim /opt/nim /opt/nim
 COPY --from=mwader/static-ffmpeg:8.1.1@sha256:735f84b905e00d5c618b667f0b053f83b1096f5fc404c607e6134bf2275a0e0a /ffmpeg /usr/local/bin/
