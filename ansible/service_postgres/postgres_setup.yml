@@ -77,7 +77,7 @@
     - name: Create cron job for SSL certificate renewal
       ansible.builtin.cron:
         name: Renew SSL certificate for postgres.burnysc2.xyz
-        job: bash /home/{{ USERNAME }}/ssl_cron_script.sh >> /home/{{ USERNAME }}/ssl_renewal.log 2>&1
+        job: bash /home/{{ USERNAME }}/ssl_cron_script.sh /home/{{ USERNAME }}/postgres_data >> /home/{{ USERNAME }}/ssl_renewal.log 2>&1
         minute: '0'
         hour: '3'
         day: '*'
