@@ -13,6 +13,9 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
 RUN mkdir -p /opt/ms-playwright && chown openchamber:openchamber /opt/ms-playwright && apt-get update && apt-get install -y --no-install-recommends fontconfig fonts-liberation && npx -y playwright@1.61.0 install --with-deps chromium firefox && rm -rf /var/lib/apt/lists/* /root/.npm /root/.cache && chown -R openchamber:openchamber /opt/ms-playwright
 COPY --from=uv /uv /uvx /bin/
 COPY --from=nim /opt/nim /opt/nim
+COPY --from=mwader/static-ffmpeg:8.1.1@sha256:735f84b905e00d5c618b667f0b053f83b1096f5fc404c607e6134bf2275a0e0a /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:8.1.1@sha256:735f84b905e00d5c618b667f0b053f83b1096f5fc404c607e6134bf2275a0e0a /ffprobe /usr/local/bin/
+RUN chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe && ffmpeg -version && ffprobe -version
 ENV NIM_VERSION=2.2.4
 ENV PATH="/opt/nim/bin:/home/openchamber/.nimble/bin:/bin:$PATH"
 USER openchamber
