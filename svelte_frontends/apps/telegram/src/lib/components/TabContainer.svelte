@@ -24,8 +24,8 @@ const panel_id = "tab-panel"
                 aria-selected={active_tab === tab.id}
                 aria-controls={active_tab === tab.id ? panel_id : undefined}
                 class="rounded-xl border-2 border-black px-4 py-2 {active_tab === tab.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-200 hover:bg-gray-300'}"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 hover:bg-gray-300"}"
                 type="button"
                 onclick={() => (active_tab = tab.id)}
             >

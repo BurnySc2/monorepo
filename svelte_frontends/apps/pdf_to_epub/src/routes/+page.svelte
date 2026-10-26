@@ -281,6 +281,7 @@ async function handle_options_submit() {
                         >Heuristic sensitivity
                         <span
                             title="Low: numbered headings only. Medium (default): also caps and keyword headings. High: also numeric and page-top short headings (more false positives). Only used for heuristic and auto fallback; single ignores it."
+                            role="img"
                             aria-label="Heuristic sensitivity details"
                             >ⓘ</span
                         >

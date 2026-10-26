@@ -59,6 +59,7 @@ function handle_keydown(event: KeyboardEvent) {
 >
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: propagation guard only, dialog dismissal via Escape handled on svelte:window -->
     <div
         class="relative flex h-full w-full flex-col items-center justify-center p-1"
         onclick={(e) => e.stopPropagation()}

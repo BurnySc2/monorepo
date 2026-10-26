@@ -42,7 +42,7 @@ function is_active(app: App): boolean {
         {@const active = is_active(app)}
         <a
             href={url}
-            class="nav-link {active ? 'active' : ''}"
+            class="nav-link {active ? "active" : ""}"
             data-sveltekit-preload-data="hover"
         >
             {app.name}

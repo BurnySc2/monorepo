@@ -27,17 +27,19 @@ function format_time(seconds: number): string {
 
 function extent<T>(data: T[], accessor: (d: T) => Date): [Date, Date] {
     const values = data.map(accessor)
+    // biome-ignore lint/complexity/useMathMinMax: generic Date reducer must return Date, Math.min/max return number
     const min = values.reduce((a, b) => (a < b ? a : b))
+    // biome-ignore lint/complexity/useMathMinMax: generic Date reducer must return Date, Math.min/max return number
     const max = values.reduce((a, b) => (a > b ? a : b))
     return [min, max]
 }
 
 function max<T>(data: T[], accessor: (d: T) => number): number {
-    return data.map(accessor).reduce((a, b) => (a > b ? a : b), 0)
+    return data.map(accessor).reduce((a, b) => Math.max(a, b), 0)
 }
 
 function min<T>(data: T[], accessor: (d: T) => number): number {
-    return data.map(accessor).reduce((a, b) => (a < b ? a : b), Infinity)
+    return data.map(accessor).reduce((a, b) => Math.min(a, b), Infinity)
 }
 
 function render_chart() {

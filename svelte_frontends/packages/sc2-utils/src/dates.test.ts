@@ -12,13 +12,12 @@ describe("format_date_timestamp", () => {
         expect(format_date_timestamp(local_noon.getTime())).toBe("Sep 30, 2026")
     })
 
-    it.each([
-        Number.NaN,
-        Number.POSITIVE_INFINITY,
-        Number.NEGATIVE_INFINITY,
-    ])("returns Invalid Date for non-finite timestamp %s", (timestamp) => {
-        expect(format_date_timestamp(timestamp)).toBe("Invalid Date")
-    })
+    it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+        "returns Invalid Date for non-finite timestamp %s",
+        (timestamp) => {
+            expect(format_date_timestamp(timestamp)).toBe("Invalid Date")
+        },
+    )
 
     it("returns Invalid Date for out-of-range timestamp", () => {
         expect(format_date_timestamp(8.64e15 + 1000000)).toBe("Invalid Date")
