@@ -4,6 +4,7 @@ from collections.abc import AsyncGenerator, AsyncIterable, AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Literal, cast
+from urllib.parse import quote
 
 import aioboto3
 from botocore.config import Config
@@ -203,6 +204,23 @@ async def object_delete(session: S3Client, bucket: str, key: str, reraise: bool 
         return
 
 
+def _build_content_disposition(disposition: str, file_name: str) -> str:
+    name = file_name.replace("\r", " ").replace("\n", " ").strip() or "download.mp3"
+    if len(name) > 200:
+        dot = name.rfind(".")
+        if dot > 0 and len(name) - dot <= 20:
+            ext = name[dot:]
+            name = name[: 200 - len(ext)] + ext
+        else:
+            name = name[:200]
+    quoted = name.replace("\\", "\\\\").replace('"', '\\"')
+    quoted = "".join(c if 0x20 <= ord(c) <= 0x7E else "?" for c in quoted)
+    result = f'{disposition}; filename="{quoted}"'
+    if any(not (c.isascii() and (c.isalnum() or c in "!#$&+-.^_|~`")) for c in name):
+        result += f"; filename*=UTF-8''{quote(name, safe='!#$&+-.^_|~')}"
+    return result
+
+
 async def object_create_presigned_url(
     session: S3Client,
     bucket: str,
@@ -225,7 +243,7 @@ async def object_create_presigned_url(
 
         this_disposition = "inline"
         if disposition == "attachment":
-            this_disposition = f"{disposition}; filename={file_name}"
+            this_disposition = _build_content_disposition(disposition, file_name)
         url = await _generate_presigned_url_with_retry(
             session, bucket, key, file_name, expires_in_seconds, this_disposition
         )
