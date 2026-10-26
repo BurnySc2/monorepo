@@ -159,7 +159,7 @@ const pollSc2Api = async () => {
             if (current_idx >= active_build_order.length - 1) {
                 end_of_build_order_reached = true
             } else {
-                current_item = active_build_order[current_idx >= 0 ? current_idx : 0]
+                current_item = active_build_order[Math.max(current_idx, 0)]
                 next_item = active_build_order[current_idx + 1]
             }
         }

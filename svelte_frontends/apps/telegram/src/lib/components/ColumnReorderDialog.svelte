@@ -116,6 +116,7 @@ function handle_keydown(event: KeyboardEvent) {
 <svelte:window onkeydown={handle_keydown} />
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+<!-- biome-ignore lint/a11y/useKeyWithClickEvents: backdrop click mirrors Escape dismissal handled on svelte:window -->
 <dialog
     open
     class="fixed inset-0 z-50 flex h-full w-full items-center justify-center bg-black/30 backdrop-blur-sm"
@@ -124,6 +125,7 @@ function handle_keydown(event: KeyboardEvent) {
 >
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <!-- biome-ignore lint/a11y/useKeyWithClickEvents lint/a11y/noStaticElementInteractions: propagation guard only, not an interactive control -->
     <div
         class="flex flex-col gap-4 rounded-xl bg-gray-100 p-8 ring-8"
         onclick={(e) => e.stopPropagation()}
@@ -141,6 +143,7 @@ function handle_keydown(event: KeyboardEvent) {
                 <tr>
                     <!-- Active columns -->
                     <td>
+                        <!-- biome-ignore lint/a11y/noStaticElementInteractions: HTML5 drag-and-drop target has no keyboard equivalent -->
                         <div
                             id="active-columns"
                             class="droppable-container mx-2 flex h-64 w-48 flex-col gap-2 overflow-auto border border-black p-2"
@@ -148,6 +151,7 @@ function handle_keydown(event: KeyboardEvent) {
                             ondrop={(e) => handle_drop_on_empty(e, "active")}
                         >
                             {#each active_settings.active_columns as column (column.key)}
+                                <!-- biome-ignore lint/a11y/noStaticElementInteractions: draggable item uses HTML5 drag-and-drop which has no keyboard equivalent -->
                                 <div
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"
@@ -165,6 +169,7 @@ function handle_keydown(event: KeyboardEvent) {
 
                     <!-- Disabled columns -->
                     <td>
+                        <!-- biome-ignore lint/a11y/noStaticElementInteractions: HTML5 drag-and-drop target has no keyboard equivalent -->
                         <div
                             id="disabled-columns"
                             class="droppable-container mx-2 flex h-64 w-48 flex-col gap-2 overflow-auto border border-black p-2"
@@ -172,6 +177,7 @@ function handle_keydown(event: KeyboardEvent) {
                             ondrop={(e) => handle_drop_on_empty(e, "disabled")}
                         >
                             {#each active_settings.disabled_columns as column (column.key)}
+                                <!-- biome-ignore lint/a11y/noStaticElementInteractions: draggable item uses HTML5 drag-and-drop which has no keyboard equivalent -->
                                 <div
                                     id={column.key}
                                     class="draggable-item whitespace-nowrap rounded-xl border border-black p-2 hover:bg-yellow-300"

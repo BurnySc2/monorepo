@@ -5,13 +5,12 @@ import { is_safe_http_url } from "./format"
 const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
 describe("is_safe_http_url", () => {
-    it.each([
-        ["https://example.com"],
-        ["https://t.me/c/123/456"],
-        ["http://example.com/file"],
-    ])("returns true for safe http url %s (renders link)", (url) => {
-        expect(is_safe_http_url(url)).toBe(true)
-    })
+    it.each([["https://example.com"], ["https://t.me/c/123/456"], ["http://example.com/file"]])(
+        "returns true for safe http url %s (renders link)",
+        (url) => {
+            expect(is_safe_http_url(url)).toBe(true)
+        },
+    )
 
     it.each([
         ["javascript:alert(1)"],

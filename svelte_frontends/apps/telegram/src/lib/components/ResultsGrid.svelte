@@ -187,7 +187,7 @@ async function handle_queue(id: string) {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         class="truncate text-purple-600 hover:underline"
-                                        >Link</a
+                                        >Open message</a
                                     >
                                 {:else if value}
                                     <span class="truncate text-gray-500">{value as string}</span>

@@ -122,20 +122,23 @@ describe("fetch_times", () => {
             "2024-12-31",
             "http://localhost:8000/api/raceroom/times?track_id=3&start_date=2024-01-01&end_date=2024-12-31",
         ],
-    ])("builds query track_id=%s start_date=%s end_date=%s -> %s", async (track_id, start_date, end_date, expected_url) => {
-        mock_fetch.mockResolvedValueOnce({
-            ok: true,
-            json: async () => [],
-        })
+    ])(
+        "builds query track_id=%s start_date=%s end_date=%s -> %s",
+        async (track_id, start_date, end_date, expected_url) => {
+            mock_fetch.mockResolvedValueOnce({
+                ok: true,
+                json: async () => [],
+            })
 
-        await fetch_times(
-            track_id as number | undefined,
-            start_date as string | undefined,
-            end_date as string | undefined,
-        )
+            await fetch_times(
+                track_id as number | undefined,
+                start_date as string | undefined,
+                end_date as string | undefined,
+            )
 
-        expect(mock_fetch).toHaveBeenCalledWith(expected_url, expect.objectContaining({ credentials: "include" }))
-    })
+            expect(mock_fetch).toHaveBeenCalledWith(expected_url, expect.objectContaining({ credentials: "include" }))
+        },
+    )
 
     it("throws error when fetch fails completely", async () => {
         mock_fetch.mockRejectedValueOnce(new Error("Network error"))

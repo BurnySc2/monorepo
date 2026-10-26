@@ -136,11 +136,12 @@ describe("is_spending_option", () => {
         expect(is_spending_option(option)).toBe(true)
     })
 
-    it.each(
-        TIMELINE_OPTIONS.filter((o) => !SPENDING_OPTIONS.includes(o as (typeof SPENDING_OPTIONS)[number])),
-    )("returns false for non-spending options like %s", (option) => {
-        expect(is_spending_option(option)).toBe(false)
-    })
+    it.each(TIMELINE_OPTIONS.filter((o) => !SPENDING_OPTIONS.includes(o as (typeof SPENDING_OPTIONS)[number])))(
+        "returns false for non-spending options like %s",
+        (option) => {
+            expect(is_spending_option(option)).toBe(false)
+        },
+    )
 })
 
 describe("merge_timelines", () => {
