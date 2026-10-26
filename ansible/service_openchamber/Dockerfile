@@ -1,6 +1,7 @@
 # Wrapper around pre-built openchamber-upstream image adding uv/uvx and Nim, base pinned via BASE_IMAGE build arg.
+# Rendered by openchamber_setup.yml from OPENCHAMBER_UPSTREAM_REF; raw docker build requires --build-arg override.
 # Upstream tags: https://github.com/openchamber/openchamber/tags
-ARG BASE_IMAGE=openchamber-upstream:v2.5.1
+ARG BASE_IMAGE=openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF }}
 FROM ghcr.io/astral-sh/uv:latest AS uv
 # Official nim image (hub.docker.com/r/nimlang/nim); nim-lang.org provides choosenim install as alternative.
 FROM nimlang/nim:2.2.4 AS nim

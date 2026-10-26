@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
       args:
         # Upstream tags: https://github.com/openchamber/openchamber/tags
-        BASE_IMAGE: "openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF | default('v2.5.0') }}"
+        BASE_IMAGE: "openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF }}"
     image: openchamber-local:latest
     container_name: openchamber
     restart: unless-stopped
