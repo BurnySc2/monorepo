@@ -74,6 +74,7 @@ async function handle_click() {
 }
 </script>
 
+<!-- biome-ignore lint/a11y/useSemanticElements: drop zone contains flow content (<p>) that is invalid inside <button>; keyboard activation already handled -->
 <div
     class={container_class}
     ondrop={handle_drop}
@@ -84,6 +85,7 @@ async function handle_click() {
     tabindex="0"
     onkeydown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
             handle_click()
         }
     }}

@@ -24,5 +24,6 @@ let { hidden = false } = $props()
 <div
     class="spinner"
     style={hidden ? "display: none" : ""}
+    role="status"
     aria-label="Loading"
 ></div>

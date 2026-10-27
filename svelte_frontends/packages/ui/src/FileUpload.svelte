@@ -72,6 +72,7 @@ function handle_file_change(e: Event) {
 }
 </script>
 
+<!-- biome-ignore lint/a11y/useSemanticElements: drop zone contains block content that is invalid inside <button>; keyboard activation already handled -->
 <div
     class="drop-zone {class_name}"
     class:drop-zone-compact={size === "compact"}
@@ -83,7 +84,12 @@ function handle_file_change(e: Event) {
     ondragleave={handle_dragleave}
     ondrop={handle_drop}
     onclick={handle_click}
-    onkeydown={(e) => e.key === "Enter" && handle_click()}
+    onkeydown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault()
+            handle_click()
+        }
+    }}
 >
     <div class="drop-zone-icon inline-flex items-center justify-center gap-2">
         {#if disabled}

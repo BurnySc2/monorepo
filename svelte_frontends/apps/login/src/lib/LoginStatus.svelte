@@ -58,7 +58,10 @@ onMount(async () => {
             <button
                 type="button"
                 class="btn btn-secondary inline-flex items-center justify-center gap-2"
-                onclick={() => { error_message = null; refresh_login_status(); }}
+                onclick={() => {
+                    error_message = null
+                    refresh_login_status()
+                }}
             >
                 <IconRefresh class="w-5 h-5" />
                 <span>Retry</span>

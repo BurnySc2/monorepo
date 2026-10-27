@@ -29,20 +29,20 @@ svelte_frontends/
 
 ## Technology Stack
 
-| Category | Technology | Version |
-|----------|------------|---------|
-| Package Manager | npm | 11.11.1 |
-| Framework | Svelte | 5.54.1 |
-| Framework | SvelteKit | 2.55.0 |
-| Build Tool | Vite | 8.0.1 |
-| Build Orchestration | Turborepo | 2.9.1 |
-| TypeScript | TypeScript | 5.9.3 |
-| Type Checking | svelte-check | 4.4.5 |
-| Validation | Zod | 4.3.6 |
-| Unit Testing | Vitest | 4.1.0 |
-| E2E/Integration Testing | Playwright | 1.61.0 |
-| Linting/Formatting | Biome | 2.4.6 |
-| CSS | Tailwind CSS | 4.0.0 |
+| Category                | Technology   | Version |
+| ----------------------- | ------------ | ------- |
+| Package Manager         | npm          | 11.11.1 |
+| Framework               | Svelte       | 5.54.1  |
+| Framework               | SvelteKit    | 2.55.0  |
+| Build Tool              | Vite         | 8.0.1   |
+| Build Orchestration     | Turborepo    | 2.9.1   |
+| TypeScript              | TypeScript   | 5.9.3   |
+| Type Checking           | svelte-check | 4.4.5   |
+| Validation              | Zod          | 4.3.6   |
+| Unit Testing            | Vitest       | 4.1.0   |
+| E2E/Integration Testing | Playwright   | 1.61.0  |
+| Linting/Formatting      | Biome        | 2.6.3   |
+| CSS                     | Tailwind CSS | 4.0.0   |
 
 ---
 
@@ -50,29 +50,29 @@ svelte_frontends/
 
 ### Apps
 
-| App | Description |
-|-----|-------------|
-| login | Authentication/m login portal |
-| tts | Text-to-speech interface |
-| replay_pack_builder | Replay pack builder tool |
-| audiobook | Audiobook management |
-| telegram | Telegram bot interface |
-| raceroom | Racing room/session manager |
-| replay_comparer | Replay comparison tool |
-| buildorder | Build order calculator |
-| matchinfo | Match information display |
-| pdf_to_epub | PDF to EPUB converter |
+| App                 | Description                   |
+| ------------------- | ----------------------------- |
+| login               | Authentication/m login portal |
+| tts                 | Text-to-speech interface      |
+| replay_pack_builder | Replay pack builder tool      |
+| audiobook           | Audiobook management          |
+| telegram            | Telegram bot interface        |
+| raceroom            | Racing room/session manager   |
+| replay_comparer     | Replay comparison tool        |
+| buildorder          | Build order calculator        |
+| matchinfo           | Match information display     |
+| pdf_to_epub         | PDF to EPUB converter         |
 
 ### Packages
 
-| Package | Description |
-|---------|-------------|
-| `@repo/ui` | Shared UI components |
-| `@repo/sc2-utils` | StarCraft 2 utilities |
-| `@repo/api-types` | Generated API types (from OpenAPI at localhost:8000) |
-| `@repo/api-client` | Shared API base + fetch wrapper (`get_api_base`, `api_fetch`) |
-| `@repo/persisted-state` | Persisted Svelte state with Zod validation |
-| `@repo/typescript-config` | Shared TypeScript configuration |
+| Package                   | Description                                                   |
+| ------------------------- | ------------------------------------------------------------- |
+| `@repo/ui`                | Shared UI components                                          |
+| `@repo/sc2-utils`         | StarCraft 2 utilities                                         |
+| `@repo/api-types`         | Generated API types (from OpenAPI at localhost:8000)          |
+| `@repo/api-client`        | Shared API base + fetch wrapper (`get_api_base`, `api_fetch`) |
+| `@repo/persisted-state`   | Persisted Svelte state with Zod validation                    |
+| `@repo/typescript-config` | Shared TypeScript configuration                               |
 
 ---
 
@@ -82,34 +82,34 @@ svelte_frontends/
 
 Run from the monorepo root (`/`):
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Run all apps in dev mode concurrently |
-| `npm run build` | Build all apps (cached via Turborepo) |
-| `npm run lint` | Check format + linter + assist with Biome |
-| `npm run lint:fix` | Apply fixes for format + linter + assist |
-| `npm run check` | Run svelte-check on all apps |
-| `npm run check-types` | Run TypeScript compiler on all apps |
-| `npm run test` | Run all tests (unit + integration) |
-| `npm run test:unit` | Run unit tests only |
-| `npm run test:integration` | Run integration tests only |
-| `npm run precommit` | build → lint → check |
-| `npm run prepush` | precommit → test:unit → test:integration |
+| Command                    | Description                               |
+| -------------------------- | ----------------------------------------- |
+| `npm run dev`              | Run all apps in dev mode concurrently     |
+| `npm run build`            | Build all apps (cached via Turborepo)     |
+| `npm run lint`             | Check format + linter + assist with Biome |
+| `npm run lint:fix`         | Apply fixes for format + linter + assist  |
+| `npm run check`            | Run svelte-check on all apps              |
+| `npm run check-types`      | Run TypeScript compiler on all apps       |
+| `npm run test`             | Run all tests (unit + integration)        |
+| `npm run test:unit`        | Run unit tests only                       |
+| `npm run test:integration` | Run integration tests only                |
+| `npm run precommit`        | build → lint → check                      |
+| `npm run prepush`          | precommit → test:unit → test:integration  |
 
 ### Per-App Commands
 
 Run from an app directory (`/apps/<app-name>`):
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | svelte-kit sync && vite build |
-| `npm run preview` | Preview production build |
-| `npm run check` | svelte-kit sync && svelte-check |
+| Command               | Description                             |
+| --------------------- | --------------------------------------- |
+| `npm run dev`         | Start Vite dev server                   |
+| `npm run build`       | svelte-kit sync && vite build           |
+| `npm run preview`     | Preview production build                |
+| `npm run check`       | svelte-kit sync && svelte-check         |
 | `npm run check:watch` | svelte-kit sync && svelte-check --watch |
-| `npm run check-types` | tsc --noEmit |
-| `npm run test` | vitest run (or placeholder) |
-| `npm run test:watch` | vitest (watch mode) |
+| `npm run check-types` | tsc --noEmit                            |
+| `npm run test`        | vitest run (or placeholder)             |
+| `npm run test:watch`  | vitest (watch mode)                     |
 
 > **Note**: Not all apps have Vitest configured. Run `npm run test` from an app to see available test commands.
 
@@ -119,18 +119,18 @@ Run from an app directory (`/apps/<app-name>`):
 
 Each app runs on a unique port:
 
-| App | Port |
-|----|------|
-| login | 5173 |
-| tts | 5174 |
+| App                 | Port |
+| ------------------- | ---- |
+| login               | 5173 |
+| tts                 | 5174 |
 | replay_pack_builder | 5175 |
-| audiobook | 5178 |
-| telegram | 5179 |
-| raceroom | 5180 |
-| replay_comparer | 5181 |
-| buildorder | 5182 |
-| matchinfo | 5183 |
-| pdf_to_epub | 5184 |
+| audiobook           | 5178 |
+| telegram            | 5179 |
+| raceroom            | 5180 |
+| replay_comparer     | 5181 |
+| buildorder          | 5182 |
+| matchinfo           | 5183 |
+| pdf_to_epub         | 5184 |
 
 When running `npm run dev` from root, all apps start concurrently on their respective ports.
 
@@ -167,7 +167,7 @@ npm run check-types
 
 ## Linting with Biome
 
-Biome 2.4.6 is configured with:
+Biome 2.6.3 is configured with:
 - 4-space indentation
 - 120 character line width
 - TypeScript and Svelte support
@@ -220,26 +220,26 @@ npm run test:watch
 
 ### App Test Status
 
-| App | Has Vitest | Has Integration Tests |
-|-----|-----------|-------------------|
-| login | Yes (`vitest.config.ts`) | Placeholder |
-| tts | Yes (no config file, default discovery) | - |
-| replay_pack_builder | Yes (`vitest.config.ts`) | - |
-| audiobook | Yes (no config file, default discovery) | - |
-| telegram | Yes (no config file, default discovery) | - |
-| raceroom | Yes (no config file, default discovery) | - |
-| replay_comparer | Yes (`vitest.config.ts`) | - |
-| buildorder | No (`echo 'No unit tests'`) | - |
-| matchinfo | No (`echo 'No unit tests'`) | - |
-| pdf_to_epub | Yes (no config file, default discovery) | - |
+| App                 | Has Vitest                              | Has Integration Tests |
+| ------------------- | --------------------------------------- | --------------------- |
+| login               | Yes (`vitest.config.ts`)                | Placeholder           |
+| tts                 | Yes (no config file, default discovery) | -                     |
+| replay_pack_builder | Yes (`vitest.config.ts`)                | -                     |
+| audiobook           | Yes (no config file, default discovery) | -                     |
+| telegram            | Yes (no config file, default discovery) | -                     |
+| raceroom            | Yes (no config file, default discovery) | -                     |
+| replay_comparer     | Yes (`vitest.config.ts`)                | -                     |
+| buildorder          | No (`echo 'No unit tests'`)             | -                     |
+| matchinfo           | No (`echo 'No unit tests'`)             | -                     |
+| pdf_to_epub         | Yes (no config file, default discovery) | -                     |
 
 ### Package Test Status
 
-| Package | Has Vitest | Notes |
-|---------|-----------|-------|
-| `@repo/api-client` | Yes | `vitest run` with `client.test.ts`, `base.test.ts` |
-| `@repo/sc2-utils` | Yes (`vitest.config.ts` scoped to `src/**/*.test.ts`, excludes `dist/`, `.svelte-kit/`) | `vitest run` with `utils.test.ts` |
-| `@repo/persisted-state` | Yes (`vitest.config.ts` scoped to `src/**/*.test.ts`, excludes `dist/`, `.svelte-kit/`) | `vitest run` with `persisted.test.ts` |
+| Package                 | Has Vitest                                                                              | Notes                                              |
+| ----------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `@repo/api-client`      | Yes                                                                                     | `vitest run` with `client.test.ts`, `base.test.ts` |
+| `@repo/sc2-utils`       | Yes (`vitest.config.ts` scoped to `src/**/*.test.ts`, excludes `dist/`, `.svelte-kit/`) | `vitest run` with `utils.test.ts`                  |
+| `@repo/persisted-state` | Yes (`vitest.config.ts` scoped to `src/**/*.test.ts`, excludes `dist/`, `.svelte-kit/`) | `vitest run` with `persisted.test.ts`              |
 
 ---
 
@@ -258,7 +258,7 @@ VITE_USE_MOCK=false
 
 ```typescript
 // Access in Svelte/Vite via import.meta.env (VITE_ prefix is client-exposed)
-const api_target = import.meta.env.VITE_API_TARGET as string | undefined;
+const api_target = import.meta.env.VITE_API_TARGET as string | undefined
 ```
 
 ### Adding New Variables
@@ -306,7 +306,7 @@ npm run generate-types
 ### Using Generated Types
 
 ```typescript
-import type { SomeEndpointResponse } from '@repo/api-types';
+import type { SomeEndpointResponse } from "@repo/api-types"
 ```
 
 ---
@@ -398,10 +398,10 @@ This project uses consistent naming conventions across all apps.
 Use `snake_case` for all variables and Svelte state:
 
 ```typescript
-let is_loading = $state(false);
-let user_text = $state("");
-let selected_track_id = $state(undefined);
-let error_message = $state(null);
+let is_loading = $state(false)
+let user_text = $state("")
+let selected_track_id = $state(undefined)
+let error_message = $state(null)
 ```
 
 ### Functions
@@ -423,11 +423,11 @@ Use `snake_case` for all interface and type properties:
 
 ```typescript
 interface SearchFilters {
-    search_text: string;
-    channel_name: string;
-    datetime_min: string;
-    datetime_max: string;
-    reactions_min: number;
+    search_text: string
+    channel_name: string
+    datetime_min: string
+    datetime_max: string
+    reactions_min: number
 }
 ```
 
@@ -438,9 +438,9 @@ Wire-format interfaces (`IGameData`, `INephestResponse`, SC2/nephest JSON) keep 
 Use `UPPER_CASE` with underscores for constants:
 
 ```typescript
-const DEFAULT_REPLAY_NAME_PATTERN = "*.SC2Replay";
-const STORAGE_KEY = "user_settings";
-const MAX_UPLOAD_SIZE = 50 * 1024 * 1024;
+const DEFAULT_REPLAY_NAME_PATTERN = "*.SC2Replay"
+const STORAGE_KEY = "user_settings"
+const MAX_UPLOAD_SIZE = 50 * 1024 * 1024
 ```
 
 ### Type and Interface Names
@@ -472,7 +472,7 @@ Store API code in `src/lib/` with one of these naming patterns:
 Use `get_api_base` and `api_fetch` from `@repo/api-client`. Do not copy the helper per app and do not keep deprecated aliases:
 
 ```typescript
-import { api_fetch, get_api_base } from "@repo/api-client";
+import { api_fetch, get_api_base } from "@repo/api-client"
 ```
 
 - `api_fetch` defaults to `credentials: "include"` and throws generic `Request failed <path>: <status> <statusText>` on `!ok`.
@@ -484,7 +484,7 @@ import { api_fetch, get_api_base } from "@repo/api-client";
 Import `get_api_base` from `@repo/api-client` instead of defining a local copy:
 
 ```typescript
-import { get_api_base } from "@repo/api-client";
+import { get_api_base } from "@repo/api-client"
 ```
 
 ### API Function Naming
@@ -493,13 +493,13 @@ Use `snake_case` with `fetch_` prefix for API functions:
 
 ```typescript
 export async function fetch_login_status() {
-    const resp = await api_fetch("/login");
-    return resp.json();
+    const resp = await api_fetch("/login")
+    return resp.json()
 }
 
 export async function fetch_voices() {
-    const resp = await api_fetch("/tts-generate/voices");
-    return resp.json();
+    const resp = await api_fetch("/tts-generate/voices")
+    return resp.json()
 }
 ```
 
@@ -515,20 +515,21 @@ return resp.json();
 
 ### Current API Files by App
 
-| App | API File | Functions |
-|-----|----------|------------|
-| login | `src/lib/api.ts` | `fetch_login_status` |
-| tts | `src/lib/api.ts` | `fetch_voices`, `fetch_generate_tts` |
-| telegram | `src/lib/api.ts` | `fetch_search`, `fetch_queue_file`, `fetch_delete_file`, `fetch_view_file`, `fetch_downloads`, `fetch_channel_names`, `fetch_channel_stats` |
-| replay_pack_builder | `src/lib/api_client.ts` | `parse_replay_file` (409 already-uploaded friendly error) |
-| replay_comparer | `src/lib/api.ts` | `fetch_parse_replay`, `fetch_replay_events` |
-| raceroom | `src/lib/api_client.ts` | `fetch_tracks`, `fetch_times` |
-| audiobook | `src/lib/api/*.ts` | `get_books`, `get_book` (404 returns null via `get_api_error_status`), `upload_epub` (409 already-uploaded friendly error), `get_available_voices`, `update_book_title`, `update_book_author`, `queue_chapter_audio`, `delete_chapter_audio`, `queue_all_chapters`, `delete_book`, `delete_all_books`, `delete_all_audio`, `refresh_chapters` |
-| buildorder | — (direct `fetch` to SC2 local API `localhost:6119` + static data) | — |
-| matchinfo | — (direct `fetch` to SC2 local API `localhost:6119` + `nephest.com` via `encodeURIComponent`) | `nephestQuery` |
-| pdf_to_epub | `src/lib/api/pdf_to_epub.ts` (via `@repo/api-client`) + `src/lib/stores.ts` (via `@repo/persisted-state`), components `BookUpload`, `ChapterPreview` | `fetch_probe`, `fetch_preview`, `fetch_convert` |
+| App                 | API File                                                                                                                                             | Functions                                                                                                                                                                                                                                                                                                                                     |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| login               | `src/lib/api.ts`                                                                                                                                     | `fetch_login_status`                                                                                                                                                                                                                                                                                                                          |
+| tts                 | `src/lib/api.ts`                                                                                                                                     | `fetch_voices`, `fetch_generate_tts`                                                                                                                                                                                                                                                                                                          |
+| telegram            | `src/lib/api.ts`                                                                                                                                     | `fetch_search`, `fetch_queue_file`, `fetch_delete_file`, `fetch_view_file`, `fetch_downloads`, `fetch_channel_names`, `fetch_channel_stats`                                                                                                                                                                                                   |
+| replay_pack_builder | `src/lib/api_client.ts`                                                                                                                              | `parse_replay_file` (409 already-uploaded friendly error)                                                                                                                                                                                                                                                                                     |
+| replay_comparer     | `src/lib/api.ts`                                                                                                                                     | `fetch_parse_replay`, `fetch_replay_events`                                                                                                                                                                                                                                                                                                   |
+| raceroom            | `src/lib/api_client.ts`                                                                                                                              | `fetch_tracks`, `fetch_times`                                                                                                                                                                                                                                                                                                                 |
+| audiobook           | `src/lib/api/*.ts`                                                                                                                                   | `get_books`, `get_book` (404 returns null via `get_api_error_status`), `upload_epub` (409 already-uploaded friendly error), `get_available_voices`, `update_book_title`, `update_book_author`, `queue_chapter_audio`, `delete_chapter_audio`, `queue_all_chapters`, `delete_book`, `delete_all_books`, `delete_all_audio`, `refresh_chapters` |
+| buildorder          | — (direct `fetch` to SC2 local API `localhost:6119` + static data)                                                                                   | —                                                                                                                                                                                                                                                                                                                                             |
+| matchinfo           | — (direct `fetch` to SC2 local API `localhost:6119` + `nephest.com` via `encodeURIComponent`)                                                        | `nephestQuery`                                                                                                                                                                                                                                                                                                                                |
+| pdf_to_epub         | `src/lib/api/pdf_to_epub.ts` (via `@repo/api-client`) + `src/lib/stores.ts` (via `@repo/persisted-state`), components `BookUpload`, `ChapterPreview` | `fetch_probe`, `fetch_preview`, `fetch_convert`                                                                                                                                                                                                                                                                                               |
 
 ### TTS App (`apps/tts`)
+
 - Overlay URL `/overlay?stream_name&volume&allow_mods&allow_vips&allow_subs&allow_normal` via `build_overlay_url(channel, volume, opts)` (`src/lib/utils.ts`); `is_enabled_param` (null → true, else not in `0/false/no/off`). No `read_name_lang`.
 - Overlay (`src/routes/overlay/+page.svelte`) opens WS `<backend>/tts-api/ws/{stream_name}?allow_*` (`ws` local / `wss` remote), volume percent → ratio for `<audio>`.
 
