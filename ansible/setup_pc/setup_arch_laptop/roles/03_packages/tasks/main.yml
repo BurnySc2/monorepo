@@ -9,7 +9,6 @@
       - i3exit
       - rofi  # dmenu alternative
       - alacritty  # terminal emulator
-      - xautolock  # autolock after time
       - i3lock  # lock screen / screensaver
       - xorg-xsetroot  # set background image
       # --- end of i3wm ---
