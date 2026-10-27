@@ -9,6 +9,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from loguru import logger
 
 from components.audiobook.epub_reader import ensure_nltk_data
@@ -87,9 +88,8 @@ app.include_router(telegram_browser_router, prefix="/telegram-browser")
 
 
 @app.get("/")
-async def root() -> dict:
-    """Health‑check endpoint returning a simple JSON payload."""
-    return {"message": "FastAPI server is running"}
+async def root() -> RedirectResponse:
+    return RedirectResponse(url=settings.frontend_url.rstrip("/"), status_code=307)
 
 
 @app.get("/health")
