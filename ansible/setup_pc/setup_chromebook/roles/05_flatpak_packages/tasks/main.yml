@@ -1,7 +1,0 @@
----
-- name: Install flatpaks
-  community.general.flatpak:
-    name:
-      - com.obsproject.Studio
-    state: present
-    remote: flathub

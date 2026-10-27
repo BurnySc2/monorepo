@@ -10,16 +10,16 @@ compose file, and starts the stack.
 Groups are defined in `hosts` at the `ansible/` root.
 Run playbooks from inside `ansible/` so `-i ../hosts` resolves.
 
-| Group | Members | Use when |
-| --- | --- | --- |
-| my_servers | prodesk, burnylaptopd, contabo2 | Target every host |
-| local_servers | prodesk, burnylaptopd | Target LAN hosts only |
-| remote_servers | contabo2 | Target rented host only |
-| server_group1 | prodesk | Single local workstation |
-| server_group2 | burnylaptopd | Single local laptop |
-| server_group3 | contabo2 | Remote host services |
-| server_group4 | contabo2 | Remote host services |
-| traefik_front | contabo2 | Legacy edge entrypoint host |
+| Group          | Members                         | Use when                    |
+| -------------- | ------------------------------- | --------------------------- |
+| my_servers     | prodesk, burnylaptopd, contabo2 | Target every host           |
+| local_servers  | prodesk, burnylaptopd           | Target LAN hosts only       |
+| remote_servers | contabo2                        | Target rented host only     |
+| server_group1  | prodesk                         | Single local workstation    |
+| server_group2  | burnylaptopd                    | Single local laptop         |
+| server_group3  | contabo2                        | Remote host services        |
+| server_group4  | contabo2                        | Remote host services        |
+| traefik_front  | contabo2                        | Legacy edge entrypoint host |
 
 `server_group3` points at `contabo2`. Both `server_group3` and
 `server_group4` currently resolve to the same remote host; pick the
@@ -49,8 +49,8 @@ ansible-galaxy collection install community.docker
 ```
 
 Versioned pointers live in `setup_pc/` requirements files, e.g.
-`setup_pc/setup_chromebook/requirements.yml` pins `community.docker`
-alongside `community.general` and `kewlfft.aur`.
+`setup_pc/setup_arch/requirements.yml` pins `community.general`
+and `kewlfft.aur`.
 Use the requirements file when bootstrapping a fresh laptop.
 
 ## 4. Deploy Example
@@ -91,16 +91,16 @@ services.
 
 ## 6. Pinning Policy
 
-| Image | Pin | Policy |
-| --- | --- | --- |
-| mariadb | 10.11 | Long-term release line in Bookstack |
-| redis | 7-alpine, 8-alpine | Major-pinned per service (Paperless and Reactive Resume on 7, Docmost on 8) |
-| postgres | 15-alpine, 16-alpine | 16 is the fleet standard; Reactive Resume stays on 15 for app support |
-| pihole | rolling release | Tracks upstream, pin to dated release later |
-| pangolin, gerbil | rolling release | Tracks upstream, pin to dated release later |
-| traefik | 3.3.4 frozen, v3.6 active | 3.3.4 stays frozen in legacy stack; v3.6 serves the Pangolin stack |
-| wireguard | rolling release | Intentional rolling tag in legacy traefik compose files |
-| compose pull | missing | 7 setup playbooks use `pull: missing` (docmost, paperless, pangolin, pihole, bookstack, reactive_resume, postgres) |
+| Image            | Pin                       | Policy                                                                                                             |
+| ---------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| mariadb          | 10.11                     | Long-term release line in Bookstack                                                                                |
+| redis            | 7-alpine, 8-alpine        | Major-pinned per service (Paperless and Reactive Resume on 7, Docmost on 8)                                        |
+| postgres         | 15-alpine, 16-alpine      | 16 is the fleet standard; Reactive Resume stays on 15 for app support                                              |
+| pihole           | rolling release           | Tracks upstream, pin to dated release later                                                                        |
+| pangolin, gerbil | rolling release           | Tracks upstream, pin to dated release later                                                                        |
+| traefik          | 3.3.4 frozen, v3.6 active | 3.3.4 stays frozen in legacy stack; v3.6 serves the Pangolin stack                                                 |
+| wireguard        | rolling release           | Intentional rolling tag in legacy traefik compose files                                                            |
+| compose pull     | missing                   | 7 setup playbooks use `pull: missing` (docmost, paperless, pangolin, pihole, bookstack, reactive_resume, postgres) |
 
 ## 7. Formatting
 
