@@ -5,7 +5,7 @@ networks:
 services:
   filebrowser:
     # https://github.com/gtsteffaniak/filebrowser/tags
-    image: ghcr.io/gtsteffaniak/filebrowser:1.5.6-stable
+    image: ghcr.io/gtsteffaniak/filebrowser:1.5.8-stable
     container_name: filebrowser
     restart: unless-stopped
     volumes:
