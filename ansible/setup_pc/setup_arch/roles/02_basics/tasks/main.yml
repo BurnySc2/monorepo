@@ -17,7 +17,6 @@
   ansible.builtin.stat:
     path: /swapfile
   register: swapfile_stat
-
 - name: Create swap file
   ansible.builtin.shell: |
     fallocate -l {{ swapfile_size | default('20G') }} /swapfile
@@ -28,7 +27,6 @@
   when: not swapfile_stat.stat.exists
   become: true
   changed_when: true
-
 - name: Enable swap file
   ansible.builtin.command: swapon /swapfile
   when: (ansible_swaptotal_mb | default(0)) < 1
