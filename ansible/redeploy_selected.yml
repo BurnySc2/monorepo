@@ -1,0 +1,28 @@
+---
+# Redeploy the selected services in dependency order.
+# Execute with
+# ansible-playbook redeploy_selected.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# Forward extra vars if a service needs them, e.g. -e NEWT_ID=... -e NEWT_SECRET=...
+# Each imported play keeps its original `hosts:`.
+- name: Redeploy pangolin newt first
+  ansible.builtin.import_playbook: service_pangolin_newt/pangolin_newt_setup.yml
+- name: Redeploy pangolin
+  ansible.builtin.import_playbook: service_pangolin/pangolin_setup.yml
+- name: Redeploy filebrowser
+  ansible.builtin.import_playbook: service_filebrowser/filebrowser_setup.yml
+- name: Redeploy docmost
+  ansible.builtin.import_playbook: service_docmost/docmost_setup.yml
+- name: Redeploy forgejo
+  ansible.builtin.import_playbook: service_forgejo/forgejo_setup.yml
+- name: Redeploy audiobookshelf
+  ansible.builtin.import_playbook: service_audiobookshelf/audiobookshelf_setup.yml
+- name: Redeploy jellyfin
+  ansible.builtin.import_playbook: service_jellyfin/jellyfin_setup.yml
+- name: Redeploy syncthing
+  ansible.builtin.import_playbook: service_syncthing/syncthing_setup.yml
+- name: Redeploy rustfs
+  ansible.builtin.import_playbook: service_rustfs/rustfs_setup.yml
+- name: Redeploy pinchflat
+  ansible.builtin.import_playbook: service_pinchflat/pinchflat_setup.yml
+- name: Redeploy openchamber
+  ansible.builtin.import_playbook: service_openchamber/openchamber_setup.yml
