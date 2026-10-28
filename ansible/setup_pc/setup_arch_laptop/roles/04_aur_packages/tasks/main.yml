@@ -11,6 +11,7 @@
   kewlfft.aur.aur:
     name:
       # TODO Add 'DaVinci Resolve' using 'opencl-clover-mesa' (need to manually download davinci-linux.zip to '~/.cache/yay/davinci-resolve/')
+      - xautolock  # autolock after time
       - xq  # html content extractor
       - zoom
       - visual-studio-code-bin

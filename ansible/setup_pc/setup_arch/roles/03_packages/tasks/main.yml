@@ -26,7 +26,6 @@
       # - thunar
       - pcmanfm  # better thunar alternative
       # Communication
-      - thunderbird
       - discord
       # Remote hard drive mounting
       # sshfs remote:/remote/directory /my/local/directory
@@ -153,7 +152,7 @@
     shell: /usr/bin/fish
   become: true
 - name: Start syncthing service for user
-  become_user: burny
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
   ansible.builtin.systemd_service:
     name: syncthing.service
     scope: user
@@ -185,7 +184,7 @@
     src: audiosh.service
     dest: ~/.config/systemd/user/audiosh.service
 - name: Start twitch audio sinks service for user
-  become_user: '{{ USERNAME }}'
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
   ansible.builtin.systemd_service:
     name: audiosh.service
     scope: user
@@ -197,8 +196,8 @@
   ansible.builtin.file:
     path: /media/burnylaptopd
     state: directory
-    owner: burny
-    group: burny
+    owner: '{{ USERNAME | default(ansible_user_id) }}'
+    group: '{{ USERNAME | default(ansible_user_id) }}'
     mode: '0755'
 - name: Mount burnylaptopd:/home
   ansible.builtin.mount:
@@ -214,8 +213,8 @@
   ansible.builtin.file:
     path: /media/prodesk
     state: directory
-    owner: burny
-    group: burny
+    owner: '{{ USERNAME | default(ansible_user_id) }}'
+    group: '{{ USERNAME | default(ansible_user_id) }}'
     mode: '0755'
 - name: Mount prodesk:/home
   ansible.builtin.mount:

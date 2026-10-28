@@ -13,14 +13,25 @@
 
 # Set up swap memory
 # https://github.com/ansible/ansible/issues/5241#issuecomment-31438159
+- name: Check if swap file exists
+  ansible.builtin.stat:
+    path: /swapfile
+  register: swapfile_stat
 - name: Create swap file
   ansible.builtin.shell: |
-    fallocate -l 20G /swapfile
+    fallocate -l {{ swapfile_size | default('20G') }} /swapfile
     chmod 600 /swapfile
     mkswap /swapfile
-    swapon /swapfile
-  when: ansible_swaptotal_mb < 1
+  args:
+    creates: /swapfile
+  when: not swapfile_stat.stat.exists
   become: true
+  changed_when: true
+- name: Enable swap file
+  ansible.builtin.command: swapon /swapfile
+  when: (ansible_swaptotal_mb | default(0)) < 1
+  become: true
+  changed_when: true
 - name: Ensure swapfile is enabled on boot by editing /etc/fstab
   ansible.builtin.mount:
     name: swap

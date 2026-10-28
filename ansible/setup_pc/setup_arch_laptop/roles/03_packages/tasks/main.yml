@@ -9,7 +9,6 @@
       - i3exit
       - rofi  # dmenu alternative
       - alacritty  # terminal emulator
-      - xautolock  # autolock after time
       - i3lock  # lock screen / screensaver
       - xorg-xsetroot  # set background image
       # --- end of i3wm ---
@@ -23,7 +22,6 @@
       # Explorer
       - thunar
       # Communication
-      - thunderbird
       - discord
       # Remote hard drive mounting
       # sshfs remote:/remote/directory /my/local/directory
@@ -156,7 +154,7 @@
     shell: /usr/bin/fish
   become: true
 - name: Start syncthing service for user
-  become_user: burny
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
   ansible.builtin.systemd_service:
     name: syncthing.service
     scope: user
