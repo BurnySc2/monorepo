@@ -58,7 +58,7 @@
     - name: Create and configure swap file (Btrfs and Ext4 compatible)
       ansible.builtin.shell: |
         touch /swapfile
-        chattr +C /swapfile
+        chattr +C /swapfile || true  # NoCOW only matters on Btrfs; no-op on ext4
         fallocate -l {{ swapfile_size | default('10G') }} /swapfile
         chmod 600 /swapfile
         mkswap /swapfile
