@@ -51,13 +51,14 @@
         update_cache: true
 
     # Set up swap memory
-    # https://github.com/ansible/ansible/issues/5241#issuecomment-31438159
     - name: Check if swap file exists
       ansible.builtin.stat:
         path: /swapfile
       register: swapfile_stat
-    - name: Create swap file
+    - name: Create and configure swap file (Btrfs and Ext4 compatible)
       ansible.builtin.shell: |
+        touch /swapfile
+        chattr +C /swapfile
         fallocate -l {{ swapfile_size | default('10G') }} /swapfile
         chmod 600 /swapfile
         mkswap /swapfile
@@ -68,7 +69,7 @@
       changed_when: true
     - name: Enable swap file
       ansible.builtin.command: swapon /swapfile
-      when: (ansible_swaptotal_mb | default(0)) < 1
+      when: (ansible_facts.swaptotal_mb | default(0)) < 1
       become: true
       changed_when: true
     - name: Ensure swapfile is enabled on boot by editing /etc/fstab

@@ -2,12 +2,32 @@
 # Less popups and interactivity when installing AUR packages through yay
 # https://unix.stackexchange.com/a/669602/673587
 # yay --save --answerdiff None --answerclean None --removemake
+- name: Create the `aur_builder` user
+  become: true
+  ansible.builtin.user:
+    name: aur_builder
+    create_home: yes
+    group: wheel
+
+- name: Allow the `aur_builder` user to run `sudo pacman` without a password
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/11-install-aur_builder
+    line: 'aur_builder ALL=(ALL) NOPASSWD: /usr/bin/pacman'
+    create: yes
+    mode: 0644
+    validate: 'visudo -cf %s'
+
 - name: Update AUR packages
+  become: true
+  become_user: aur_builder
   kewlfft.aur.aur:
     update_cache: true
     upgrade: true
     state: latest
 - name: Install AUR packages
+  become: true
+  become_user: aur_builder
   kewlfft.aur.aur:
     name:
       - fakturama
