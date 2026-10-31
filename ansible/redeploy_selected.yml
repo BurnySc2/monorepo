@@ -1,7 +1,7 @@
 ---
 # Redeploy the selected services in dependency order.
 # Execute with
-# ansible-playbook redeploy_selected.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook redeploy_selected.yml -i ./hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 # Forward extra vars if a service needs them, e.g. -e NEWT_ID=... -e NEWT_SECRET=...
 # Each imported play keeps its original `hosts:`.
 - name: Redeploy pangolin newt first
