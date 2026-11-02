@@ -40,7 +40,8 @@ class RRREBestTime(Table, tablename="litestar_rrre_best_time"):
     date_added = Timestamp()
 
 
-async def main():
+async def ensure_raceroom_schema() -> None:
+    """Create the RaceRoom tables and their uniqueness constraint."""
     await create_db_tables(RRREPlayer, RRRETrack, RRREBestTime, if_not_exists=True)
     # Add unique constraint on best times
     await RRREBestTime.raw("""
@@ -58,6 +59,11 @@ BEGIN
     END IF;
 END $$;
     """)
+
+
+async def main() -> None:
+    """Create the RaceRoom schema when run as a script."""
+    await ensure_raceroom_schema()
 
 
 if __name__ == "__main__":

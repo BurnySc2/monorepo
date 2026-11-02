@@ -13,6 +13,7 @@ from fastapi.responses import RedirectResponse
 from loguru import logger
 
 from components.audiobook.epub_reader import ensure_nltk_data
+from db_startup import initialize_database
 from routes.audiobook import audiobook_router
 from routes.index import IndexRouter
 from routes.login import login_router
@@ -30,6 +31,15 @@ from settings import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    # DB first: a prod boot fails fast before RustFS/NLTK work; startup DB init is skipped in test stage.
+    if settings.stage != "test":
+        try:
+            await initialize_database()
+        except Exception:  # noqa: BLE001
+            if settings.stage == "dev":
+                logger.warning("Database initialization failed at startup; continuing without it", exc_info=True)
+            else:
+                raise
     try:
         await initialize_rustfs()
     except Exception:  # noqa: BLE001
