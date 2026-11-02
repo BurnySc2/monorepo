@@ -33,9 +33,8 @@ async def create_tables() -> None:
 
 
 async def create_telegram_indexes() -> None:
-    """Create the Telegram indexes. Their tables must already exist."""
-    await TelegramMessage.raw(_read_query("telegram_browser_message_unique_index.sql"))
-    await TelegramDownload.raw(_read_query("telegram_browser_download_queued_index.sql"))
+    """Create or repair the Telegram indexes. Their tables must already exist."""
+    await TelegramMessage.raw(_read_query("telegram_browser_indexes.sql"))
 
 
 async def initialize_database() -> None:
