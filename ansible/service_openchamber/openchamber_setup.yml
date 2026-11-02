@@ -139,3 +139,4 @@
     - name: Prune unused Docker images to free disk space
       community.docker.docker_prune:
         images: true
+        builder_cache: true
