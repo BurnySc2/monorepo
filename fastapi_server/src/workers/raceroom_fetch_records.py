@@ -35,9 +35,21 @@ class BestTime(BaseModel):
     best_time_parsed: float
 
 
-def parse_player_id(url: str) -> int:
-    url = url.strip("/")
-    return int(url.split("/")[-1])
+_AVATAR_ID_RE = re.compile(r"/user_avatar/([0-9]+)(?:[/?#]|$)")
+
+
+def parse_player_id(driver: dict) -> int | None:
+    """Return the numeric driver id from the avatar URL, or None when unavailable.
+
+    The avatar URL ends in the numeric user id
+    (``https://game.raceroomracing.com/game/user_avatar/1233502``). Name-only
+    paths such as ``/users/Fogino`` carry no id; ``None`` makes the caller skip
+    that row instead of crashing the whole track.
+    """
+    match = _AVATAR_ID_RE.search(driver.get("avatar") or "")
+    if match is not None:
+        return int(match.group(1))
+    return None
 
 
 def parse_laptime(laptime: str) -> float:
@@ -66,28 +78,46 @@ async def fetch_track_info(client: httpx.AsyncClient, track_id: int, car_class: 
     response.raise_for_status()
     data = response.json()
 
-    data_parsed = [
-        BestTime(
-            player_id=parse_player_id(i["driver"]["path"]),
-            player_name=i["driver"]["name"],
-            track_id=track_id,
-            track_name=i["track"]["name"],
-            car_class=i["car_class"]["car"]["class-name"],
-            car_name=i["car_class"]["car"]["name"],
-            driving_model=i["driving_model"],
-            datetime_driven=i["date_time"],
-            datetime_driven_parsed=arrow.get(i["date_time"]).naive,
-            best_time=i["laptime"],
-            best_time_parsed=parse_laptime(i["laptime"]),
+    results = data["context"]["c"]["results"]
+    data_parsed: list[BestTime] = []
+    skipped = 0
+    for i in results:
+        player_id = parse_player_id(i["driver"])
+        if player_id is None:
+            logger.warning(
+                "Skipping result without parsable driver id: path={} avatar={} name={} track_id={}",
+                i["driver"].get("path"),
+                i["driver"].get("avatar"),
+                i["driver"].get("name"),
+                track_id,
+            )
+            skipped += 1
+            continue
+        data_parsed.append(
+            BestTime(
+                player_id=player_id,
+                player_name=i["driver"]["name"],
+                track_id=track_id,
+                track_name=i["track"]["name"],
+                car_class=i["car_class"]["car"]["class-name"],
+                car_name=i["car_class"]["car"]["name"],
+                driving_model=i["driving_model"],
+                datetime_driven=i["date_time"],
+                datetime_driven_parsed=arrow.get(i["date_time"]).naive,
+                best_time=i["laptime"],
+                best_time_parsed=parse_laptime(i["laptime"]),
+            )
         )
-        for i in data["context"]["c"]["results"]
-    ]
+    if skipped:
+        log = logger.error if skipped == len(results) else logger.warning
+        log("Skipped {} of {} results for track_id={}", skipped, len(results), track_id)
     return data_parsed
 
 
 async def update_db_data(results: list[BestTime], track_id: int) -> None:
     # Nothing to update
     if len(results) == 0:
+        logger.warning("No data to update for track_id={} (results={})", track_id, len(results))
         return
 
     # Insert track if not exists
