@@ -16,6 +16,7 @@ import gleam/io
 import gleam/list
 import gleam/result
 import gleam/string
+import gleam/time/timestamp.{type Timestamp}
 import twitch
 
 type Stage {
@@ -73,31 +74,12 @@ fn read_config(stage: Stage) -> Config {
   Config(stage:, client_id:, client_secret:, grace_seconds:)
 }
 
-fn utc_now() {
-  birl.now()
-}
-
-pub fn db_timestamp(now: birl.Time) -> String {
-  let birl.Day(year, month, day) = birl.get_day(now)
-  let birl.TimeOfDay(hour, minute, second, nanosecond) =
-    birl.get_time_of_day(now)
-  int.to_string(year)
-  <> "-"
-  <> string.pad_start(int.to_string(month), to: 2, with: "0")
-  <> "-"
-  <> string.pad_start(int.to_string(day), to: 2, with: "0")
-  <> " "
-  <> string.pad_start(int.to_string(hour), to: 2, with: "0")
-  <> ":"
-  <> string.pad_start(int.to_string(minute), to: 2, with: "0")
-  <> ":"
-  <> string.pad_start(int.to_string(second), to: 2, with: "0")
-  <> "."
-  <> string.pad_start(int.to_string(nanosecond / 1_000_000), to: 3, with: "0")
-}
-
-fn now_ms() -> Int {
-  birl.now() |> birl.to_unix_milli
+fn utc_now() -> Timestamp {
+  let now = birl.now()
+  timestamp.from_unix_seconds_and_nanoseconds(
+    birl.to_unix(now),
+    { birl.to_unix_micro(now) % 1_000_000 } * 1000,
+  )
 }
 
 fn write_if_present(
@@ -125,13 +107,13 @@ fn update_entries(
   online: List(String),
   now_offline: List(String),
 ) -> Result(Nil, String) {
-  let timestamp = utc_now() |> db_timestamp
+  let at = utc_now()
   use _ <- result.try(
     write_if_present(
       "Updating announced streams in db: ",
       announced,
       config.stage,
-      fn() { db.mark_status(conn, announced, timestamp, db.Announced) },
+      fn() { db.mark_status(conn, announced, at, db.Announced) },
     ),
   )
   use _ <- result.try(
@@ -139,7 +121,7 @@ fn update_entries(
       "Updating online streams in db: ",
       online,
       config.stage,
-      fn() { db.mark_status(conn, online, timestamp, db.Online) },
+      fn() { db.mark_status(conn, online, at, db.Online) },
     ),
   )
   use _ <- result.try(
@@ -147,37 +129,15 @@ fn update_entries(
       "Updating offline streams in db: ",
       now_offline,
       config.stage,
-      fn() { db.mark_status(conn, now_offline, timestamp, db.Offline) },
+      fn() { db.mark_status(conn, now_offline, at, db.Offline) },
     ),
   )
   Ok(Nil)
 }
 
-fn log_timings(
-  fetch_db: Int,
-  fetch_twitch: Int,
-  deciding: Int,
-  update: Int,
-  webhooks: Int,
-  total: Int,
-) -> Nil {
-  io.println("Fetching database entries: " <> int.to_string(fetch_db) <> "ms")
-  io.println(
-    "Fetching twitch api data: " <> int.to_string(fetch_twitch) <> "ms",
-  )
-  io.println(
-    "Calculating which streams to announce: " <> int.to_string(deciding) <> "ms",
-  )
-  io.println("Updating database entries: " <> int.to_string(update) <> "ms")
-  io.println("Sending webhooks: " <> int.to_string(webhooks) <> "ms")
-  io.println("Total time taken: " <> int.to_string(total) <> "ms")
-}
-
 fn run_once(conn: db.Conn, config: Config) -> Nil {
-  let t1 = now_ms()
   let outcome = {
     use rows <- result.try(db.fetch_enabled(conn))
-    let t2 = now_ms()
     use token <- result.try(twitch.get_access_token(
       config.client_id,
       config.client_secret,
@@ -188,11 +148,9 @@ fn run_once(conn: db.Conn, config: Config) -> Nil {
       token,
       config.client_id,
     ))
-    let t3 = now_ms()
     let now_epoch = birl.now() |> birl.to_unix
     let #(announced, online, now_offline, to_announce) =
       decide.decide(rows, dict.values(infos), now_epoch, config.grace_seconds)
-    let t4 = now_ms()
     use _ <- result.try(update_entries(
       conn,
       config,
@@ -200,21 +158,14 @@ fn run_once(conn: db.Conn, config: Config) -> Nil {
       online,
       now_offline,
     ))
-    let t5 = now_ms()
     use _ <- result.try(discord.post_announcements(
       to_announce,
       stage_string(config.stage),
     ))
-    let t6 = now_ms()
-    Ok(#(t2 - t1, t3 - t2, t4 - t3, t5 - t4, t6 - t5, t6 - t1))
+    Ok(Nil)
   }
   case outcome {
-    Ok(#(fetch_db, fetch_twitch, decided, updated, webhooks, total)) ->
-      case config.stage {
-        Dev ->
-          log_timings(fetch_db, fetch_twitch, decided, updated, webhooks, total)
-        _ -> Nil
-      }
+    Ok(Nil) -> Nil
     Error(reason) -> io.println("run_once failed: " <> reason)
   }
 }

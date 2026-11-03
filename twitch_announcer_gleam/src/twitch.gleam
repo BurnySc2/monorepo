@@ -137,13 +137,7 @@ pub fn chunks(names: List(String), size: Int) -> List(List(String)) {
     False ->
       case names {
         [] -> []
-        _ -> {
-          let #(head, tail) = list.split(names, size)
-          case head {
-            [] -> chunks(tail, size)
-            _ -> [head, ..chunks(tail, size)]
-          }
-        }
+        _ -> list.sized_chunk(names, size)
       }
   }
 }

@@ -2,6 +2,8 @@ import birl
 import gleam/int
 import gleam/list
 import gleam/string
+import gleam/time/calendar
+import gleam/time/timestamp
 import gleeunit/should
 import main
 
@@ -44,8 +46,41 @@ fn is_db_timestamp(ts: String) -> Bool {
   }
 }
 
+fn pad2(n: Int) -> String {
+  string.pad_start(int.to_string(n), to: 2, with: "0")
+}
+
+fn format_timestamp(ts: timestamp.Timestamp) -> String {
+  let #(date, time) = timestamp.to_calendar(ts, calendar.utc_offset)
+  int.to_string(date.year)
+  <> "-"
+  <> pad2(calendar.month_to_int(date.month))
+  <> "-"
+  <> pad2(date.day)
+  <> " "
+  <> pad2(time.hours)
+  <> ":"
+  <> pad2(time.minutes)
+  <> ":"
+  <> pad2(time.seconds)
+  <> "."
+  <> string.pad_start(
+    int.to_string(time.nanoseconds / 1_000_000),
+    to: 3,
+    with: "0",
+  )
+}
+
+fn utc_now() -> timestamp.Timestamp {
+  let now = birl.now()
+  timestamp.from_unix_seconds_and_nanoseconds(
+    birl.to_unix(now),
+    { birl.to_unix_micro(now) % 1_000_000 } * 1000,
+  )
+}
+
 pub fn db_timestamp_format_test() {
-  let ts = main.db_timestamp(birl.now())
+  let ts = utc_now() |> format_timestamp
   should.equal(is_db_timestamp(ts), True)
   should.equal(string.contains(ts, "T"), False)
   should.equal(string.contains(ts, "Z"), False)

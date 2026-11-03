@@ -60,9 +60,9 @@ gleam_http = { version = ">= 4.0.0 and < 5.0.0" }
 gleam_httpc = { version = ">= 5.0.0 and < 6.0.0" }
 gleam_json = { version = ">= 3.0.0 and < 4.0.0" }
 gleam_stdlib = { version = ">= 0.44.0 and < 2.0.0" }
+gleam_time = { version = ">= 1.11.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
 humanize = { version = ">= 1.2.0 and < 2.0.0" }
 kitazith = { version = ">= 0.2.0 and < 1.0.0" }
-pgo = { version = ">= 0.20.0 and < 1.0.0" }
 pog = { version = ">= 4.1.0 and < 5.0.0" }
 squirrel = { version = ">= 4.7.0 and < 5.0.0" }

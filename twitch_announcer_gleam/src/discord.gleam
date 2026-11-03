@@ -5,9 +5,6 @@
 
 import birl
 import decide.{type AnnounceInfo}
-import gleam/http
-import gleam/http/request
-import gleam/int
 import gleam/io
 import gleam/json
 import gleam/list
@@ -80,31 +77,7 @@ fn log_one(announce: AnnounceInfo, now_epoch: Int) -> Nil {
 }
 
 fn send_webhook(url: String, body: String) -> Result(Nil, String) {
-  use req <- result.try(
-    request.to(url)
-    |> result.replace_error("invalid webhook url: " <> url),
-  )
-  let req =
-    req
-    |> request.set_method(http.Post)
-    |> request.set_header("content-type", "application/json")
-    |> request.set_body(body)
-  use resp <- result.try(http_helpers.send(req))
-  use _ <- result.try(
-    http_helpers.require_status(
-      resp,
-      fn(status) { status >= 200 && status < 300 },
-      fn(status) {
-        "Status: "
-        <> int.to_string(status)
-        <> ", url: "
-        <> url
-        <> ", announce_message: "
-        <> body
-      },
-    ),
-  )
-  Ok(Nil)
+  http_helpers.post_json(url, body)
 }
 
 fn post_one(announce: AnnounceInfo) -> Result(Nil, String) {
