@@ -4,9 +4,12 @@
 ////
 
 import decide.{type StreamInfo, StreamInfo}
+import flwr_oauth2/authentication as auth
+import flwr_oauth2/common
+import flwr_oauth2/response as oauth_resp
+import flwr_oauth2/token_request
 import gleam/dict.{type Dict}
 import gleam/dynamic/decode
-import gleam/http
 import gleam/http/request
 import gleam/int
 import gleam/json
@@ -18,37 +21,30 @@ import http_helpers
 
 // WHY helix-logins-lowercase: Twitch user_login values are lowercase-only, Nim asserts/toLowers at fetch site — see main.nim get_twitch_info_for_20/get_twitch_infos.
 
-fn token_decoder() -> decode.Decoder(String) {
-  use token <- decode.field("access_token", decode.string)
-  decode.success(token)
-}
-
 pub fn get_access_token(
   client_id: String,
   client_secret: String,
 ) -> Result(String, String) {
-  let body =
-    "client_id="
-    <> uri.percent_encode(client_id)
-    <> "&client_secret="
-    <> uri.percent_encode(client_secret)
-    <> "&grant_type=client_credentials"
+  use endpoint <- result.try(
+    uri.parse("https://id.twitch.tv/oauth2/token")
+    |> result.map_error(string.inspect),
+  )
+  let token_req =
+    token_request.ClientCredentialsGrantTokenRequest(
+      endpoint,
+      auth.ClientSecretPost(
+        common.ClientId(client_id),
+        common.Secret(client_secret),
+      ),
+      [],
+    )
   use req <- result.try(
-    request.to("https://id.twitch.tv/oauth2/token")
-    |> result.replace_error("invalid token url"),
+    token_request.to_http_request(token_req)
+    |> result.map_error(string.inspect),
   )
-  let req =
-    req
-    |> request.set_method(http.Post)
-    |> request.set_header("content-type", "application/x-www-form-urlencoded")
-    |> request.set_body(body)
   use resp <- result.try(http_helpers.send(req))
-  use resp <- result.try(
-    http_helpers.require_status(resp, fn(status) { status == 200 }, fn(status) {
-      "token request status: " <> int.to_string(status)
-    }),
-  )
-  json.parse(resp.body, token_decoder())
+  oauth_resp.parse_token_response(resp)
+  |> result.map(fn(token) { token.access_token })
   |> result.map_error(string.inspect)
 }
 
