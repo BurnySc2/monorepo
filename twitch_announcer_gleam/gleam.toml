@@ -12,6 +12,9 @@ pgo = ">= 0.20.0 and < 1.0.0"
 envoy = ">= 1.0.0 and < 2.0.0"
 birl = ">= 2.0.0 and < 3.0.0"
 dot_env = ">= 1.3.0 and < 2.0.0"
+pog = ">= 4.1.0 and < 5.0.0"
+kitazith = ">= 0.2.0 and < 1.0.0"
 
 [dev-dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
+squirrel = ">= 4.7.0 and < 5.0.0"

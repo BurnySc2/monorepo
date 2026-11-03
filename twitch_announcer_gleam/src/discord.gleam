@@ -9,39 +9,48 @@ import gleam/json
 import gleam/list
 import gleam/result
 import gleam/string
+import kitazith/embed
+import kitazith/validation
+import kitazith/webhook/execute
 
-fn embed(announce: AnnounceInfo, age_string: String) -> json.Json {
-  json.object([
-    #("title", json.string(announce.displayname <> " is now live on Twitch!")),
-    #("url", json.string("https://www.twitch.tv/" <> announce.username)),
-    #(
-      "fields",
-      json.array(
-        [
-          json.object([
-            #("name", json.string("Stream title")),
-            #("value", json.string(announce.stream_title)),
-          ]),
-          json.object([
-            #(
-              "name",
-              json.string("Playing '" <> announce.stream_category <> "'"),
-            ),
-            #("value", json.string(age_string)),
-          ]),
-        ],
-        of: fn(field) { field },
-      ),
+fn build_embed(announce: AnnounceInfo, age_string: String) -> embed.Embed {
+  embed.new()
+  |> embed.with_title(announce.displayname <> " is now live on Twitch!")
+  |> embed.with_url("https://www.twitch.tv/" <> announce.username)
+  |> embed.with_fields([
+    embed.new_field(name: "Stream title", value: announce.stream_title),
+    embed.new_field(
+      name: "Playing '" <> announce.stream_category <> "'",
+      value: age_string,
     ),
   ])
 }
 
+fn execute_payload(
+  announce: AnnounceInfo,
+  age_string: String,
+) -> execute.ExecutePayload {
+  execute.new()
+  |> execute.with_username("Stream Announcer Webhook")
+  |> execute.with_content(announce.announce_message)
+  |> execute.with_embeds([build_embed(announce, age_string)])
+}
+
 pub fn build_payload(announce: AnnounceInfo, age_string: String) -> json.Json {
-  json.object([
-    #("username", json.string("Stream Announcer Webhook")),
-    #("content", json.string(announce.announce_message)),
-    #("embeds", json.array([embed(announce, age_string)], of: fn(e) { e })),
-  ])
+  execute_payload(announce, age_string)
+  |> execute.to_json
+}
+
+fn validate_payload(payload: execute.ExecutePayload) -> Result(Nil, String) {
+  case execute.validate(payload) {
+    Ok(_) -> Ok(Nil)
+    Error(errors) ->
+      Error(
+        errors
+        |> list.map(fn(e) { e.path <> ": " <> validation.message(e) })
+        |> string.join(", "),
+      )
+  }
 }
 
 pub fn age_string_for(announce: AnnounceInfo, now_epoch: Int) -> String {
@@ -67,9 +76,9 @@ fn log_one(announce: AnnounceInfo, now_epoch: Int) -> Nil {
 
 fn post_one(announce: AnnounceInfo) -> Result(Nil, String) {
   let now_epoch = birl.now() |> birl.to_unix
-  let body =
-    build_payload(announce, age_string_for(announce, now_epoch))
-    |> json.to_string
+  let payload = execute_payload(announce, age_string_for(announce, now_epoch))
+  use _ <- result.try(validate_payload(payload))
+  let body = execute.to_string(payload)
   use req <- result.try(
     request.to(announce.webhook_url)
     |> result.replace_error("invalid webhook url: " <> announce.webhook_url),

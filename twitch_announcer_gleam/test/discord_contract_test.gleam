@@ -27,7 +27,7 @@ pub fn discord_payload_golden_test() {
     discord.build_payload(fixed_announce(), fixed_age())
     |> json.to_string
   let golden =
-    "{\"username\":\"Stream Announcer Webhook\",\"content\":\"@here Alice live\",\"embeds\":[{\"title\":\"Alice is now live on Twitch!\",\"url\":\"https://www.twitch.tv/alice\",\"fields\":[{\"name\":\"Stream title\",\"value\":\"Hello\"},{\"name\":\"Playing 'Games'\",\"value\":\"since 2025-01-06 03:16:52 (which was 1 hour ago)\"}]}]}"
+    "{\"content\":\"@here Alice live\",\"username\":\"Stream Announcer Webhook\",\"embeds\":[{\"title\":\"Alice is now live on Twitch!\",\"url\":\"https://www.twitch.tv/alice\",\"fields\":[{\"name\":\"Stream title\",\"value\":\"Hello\"},{\"name\":\"Playing 'Games'\",\"value\":\"since 2025-01-06 03:16:52 (which was 1 hour ago)\"}]}]}"
   should.equal(payload, golden)
 }
 
