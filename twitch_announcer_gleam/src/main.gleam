@@ -2,6 +2,7 @@ import birl
 import db
 import decide
 import discord
+import dotenv
 import envoy
 import gleam/dict
 import gleam/erlang/process
@@ -238,6 +239,7 @@ fn run_stage(stage: Stage) -> Nil {
 
 pub fn main() {
   io.println("Started twitch_announcer_gleam.main")
+  dotenv.load_dotenv()
   case read_stage() {
     Build -> io.println("BUILD stage: skipping announcer run")
     Dev -> run_stage(Dev)
