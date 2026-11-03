@@ -19,7 +19,8 @@ COPY --from=mwader/static-ffmpeg:8.1.1@sha256:735f84b905e00d5c618b667f0b053f83b1
 COPY --from=mwader/static-ffmpeg:8.1.1@sha256:735f84b905e00d5c618b667f0b053f83b1096f5fc404c607e6134bf2275a0e0a /ffprobe /usr/local/bin/
 RUN chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe && ffmpeg -version && ffprobe -version
 # Gleam Erlang
-COPY --from=ghcr.io/gleam-lang/gleam:v1.10.0-erlang-alpine /bin/gleam /usr/local/bin/gleam
+# https://github.com/gleam-lang/gleam/pkgs/container/gleam/versions?filters%5Bversion_type%5D=tagged
+COPY --from=ghcr.io/gleam-lang/gleam:v1.19.2-erlang-alpine /bin/gleam /usr/local/bin/gleam
 RUN apt-get update && apt-get install -y --no-install-recommends erlang rebar3 && rm -rf /var/lib/apt/lists/*
 RUN gleam --version && erl -version && rebar3 version
 # Nim
