@@ -5,7 +5,6 @@
 ////
 
 import gleam/dynamic/decode
-import gleam/option.{type Option}
 import gleam/time/timestamp.{type Timestamp}
 import pog
 
@@ -17,10 +16,10 @@ import pog
 ///
 pub type FetchEnabledRow {
   FetchEnabledRow(
-    twitch_name: Option(String),
-    discord_webhook: Option(String),
-    announce_message: Option(String),
-    status: Option(String),
+    twitch_name: String,
+    discord_webhook: String,
+    announce_message: String,
+    status: String,
     last_seen_online: Timestamp,
     announced_at: Timestamp,
   )
@@ -36,10 +35,10 @@ pub fn fetch_enabled(
   db: pog.Connection,
 ) -> Result(pog.Returned(FetchEnabledRow), pog.QueryError) {
   let decoder = {
-    use twitch_name <- decode.field(0, decode.optional(decode.string))
-    use discord_webhook <- decode.field(1, decode.optional(decode.string))
-    use announce_message <- decode.field(2, decode.optional(decode.string))
-    use status <- decode.field(3, decode.optional(decode.string))
+    use twitch_name <- decode.field(0, decode.string)
+    use discord_webhook <- decode.field(1, decode.string)
+    use announce_message <- decode.field(2, decode.string)
+    use status <- decode.field(3, decode.string)
     use last_seen_online <- decode.field(4, pog.timestamp_decoder())
     use announced_at <- decode.field(5, pog.timestamp_decoder())
     decode.success(FetchEnabledRow(
@@ -52,7 +51,7 @@ pub fn fetch_enabled(
     ))
   }
 
-  "SELECT twitch_name, discord_webhook, announce_message, status, last_seen_online, announced_at FROM stream_announcer_streams WHERE enabled IS TRUE ORDER BY id;
+  "SELECT COALESCE(twitch_name, '') AS twitch_name, COALESCE(discord_webhook, '') AS discord_webhook, COALESCE(announce_message, '') AS announce_message, COALESCE(status, 'offline') AS status, last_seen_online, announced_at FROM stream_announcer_streams WHERE enabled IS TRUE ORDER BY id;
 "
   |> pog.query
   |> pog.returning(decoder)
