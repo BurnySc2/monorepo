@@ -57,6 +57,7 @@ jobs:
         with:
           otp-version: "27"
           gleam-version: "1.19.2"
+          rebar3-version: "3.24.0"
 
       - name: Download dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
@@ -81,8 +82,22 @@ jobs:
       - name: Live Postgres decoder smoke
         run: |
           pg_isready -h localhost -p 5432
-          psql -h localhost -U postgres -d postgres -c "CREATE TABLE IF NOT EXISTS gleam_smoke (id serial PRIMARY KEY, name text NOT NULL);"
-          psql -h localhost -U postgres -d postgres -c "INSERT INTO gleam_smoke (name) VALUES ('smoke') RETURNING id, name;"
-          psql -h localhost -U postgres -d postgres -c "CREATE TABLE IF NOT EXISTS stream_announcer_streams (id serial PRIMARY KEY, twitch_name text NOT NULL, discord_webhook text NOT NULL, announce_message text NOT NULL, announced_at timestamptz, status text NOT NULL, last_seen_online timestamptz, enabled boolean NOT NULL DEFAULT TRUE);"
-          psql -h localhost -U postgres -d postgres -c "DELETE FROM stream_announcer_streams WHERE twitch_name IN ('c3_smoke_alice', 'c3_smoke_disabled');"
-          psql -h localhost -U postgres -d postgres -c "INSERT INTO stream_announcer_streams (twitch_name, discord_webhook, announce_message, announced_at, status, last_seen_online, enabled) VALUES ('c3_smoke_alice', 'https://example.invalid/c3', '@here alice live', NULL, 'offline', NULL, TRUE), ('c3_smoke_disabled', 'https://example.invalid/c3', '@here bob live', NULL, 'offline', NULL, FALSE);"
+          psql -h localhost -U postgres -d postgres \
+            -c "CREATE TABLE IF NOT EXISTS gleam_smoke (id serial PRIMARY KEY, name text NOT NULL);"
+          psql -h localhost -U postgres -d postgres \
+            -c "INSERT INTO gleam_smoke (name) VALUES ('smoke') RETURNING id, name;"
+          psql -h localhost -U postgres -d postgres \
+            -c "CREATE TABLE IF NOT EXISTS stream_announcer_streams (id serial PRIMARY KEY, \
+            twitch_name text NOT NULL, discord_webhook text NOT NULL, \
+            announce_message text NOT NULL, announced_at timestamptz, status text NOT NULL, \
+            last_seen_online timestamptz, enabled boolean NOT NULL DEFAULT TRUE);"
+          psql -h localhost -U postgres -d postgres \
+            -c "DELETE FROM stream_announcer_streams \
+            WHERE twitch_name IN ('c3_smoke_alice', 'c3_smoke_disabled');"
+          psql -h localhost -U postgres -d postgres \
+            -c "INSERT INTO stream_announcer_streams (twitch_name, discord_webhook, announce_message, \
+            announced_at, status, last_seen_online, enabled) VALUES \
+            ('c3_smoke_alice', 'https://example.invalid/c3', '@here alice live', \
+            NULL, 'offline', NULL, TRUE), \
+            ('c3_smoke_disabled', 'https://example.invalid/c3', '@here bob live', \
+            NULL, 'offline', NULL, FALSE);"
