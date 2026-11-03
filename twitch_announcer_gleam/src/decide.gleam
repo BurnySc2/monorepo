@@ -1,8 +1,7 @@
 import birl
-import birl/duration
-import gleam/int
 import gleam/list
 import gleam/string
+import humanize
 
 // WHY caller-lowercases: Twitch logins are lowercase-only; Nim asserts/toLowers at fetch site, so decide matches usernames exactly — see main.nim get_twitch_info_for_20/get_twitch_infos.
 
@@ -85,44 +84,12 @@ pub fn parse_postgres_time(s: String) -> Result(Int, Nil) {
 }
 
 fn duration_string(total: Int) -> String {
-  let parts =
-    birl.difference(birl.from_unix(0), birl.from_unix(total))
-    |> duration.decompose
-    |> list.filter_map(fn(p) {
-      case p {
-        #(n, duration.Day) ->
-          case n {
-            1 -> Ok("1 day")
-            _ -> Ok(int.to_string(n) <> " days")
-          }
-        #(n, duration.Hour) ->
-          case n {
-            1 -> Ok("1 hour")
-            _ -> Ok(int.to_string(n) <> " hours")
-          }
-        #(n, duration.Minute) ->
-          case n {
-            1 -> Ok("1 minute")
-            _ -> Ok(int.to_string(n) <> " minutes")
-          }
-        #(n, duration.Second) ->
-          case n {
-            1 -> Ok("1 second")
-            _ -> Ok(int.to_string(n) <> " seconds")
-          }
-        _ -> Error(Nil)
-      }
-    })
-  case list.reverse(parts) {
-    [] -> "0 seconds"
-    [single] -> single
-    [last, ..rest_reversed] -> {
-      let head = string.join(list.reverse(rest_reversed), ", ")
-      case rest_reversed {
-        [_] -> head <> " and " <> last
-        _ -> head <> ", and " <> last
-      }
-    }
+  case total <= 0 {
+    True -> "0 seconds"
+    False ->
+      humanize.duration_precise(total)
+      |> string.split(", ")
+      |> humanize.list_with_oxford
   }
 }
 

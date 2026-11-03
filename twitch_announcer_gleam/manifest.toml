@@ -30,6 +30,7 @@ packages = [
   { name = "gleam_yielder", version = "1.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleam_yielder", source = "hex", outer_checksum = "8E4E4ECFA7982859F430C57F549200C7749823C106759F4A19A78AEA6687717A" },
   { name = "gleeunit", version = "1.11.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "EC31ABA74256AEA531EDF8169931D775BBB384FED0A8A1BDC4DD9354E3E21826" },
   { name = "glexer", version = "2.5.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "splitter"], otp_app = "glexer", source = "hex", outer_checksum = "D423CF63B8D4F9654EF53D0AF4904B249EB0679BD41C63440170AC508C9CC65E" },
+  { name = "humanize", version = "1.2.0", build_tools = ["gleam"], requirements = ["gleam_stdlib", "gleam_time"], otp_app = "humanize", source = "hex", outer_checksum = "7F7FBD96FCB8FCA9FA8D67FAA34185FE4A2AD78A19AAAE8985446A1B8DE0D0DC" },
   { name = "justin", version = "1.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "justin", source = "hex", outer_checksum = "8B1C62269E8607D0A0ED698B7903984CE0BF7B6B3C0DEA3C6C8302B39402837B" },
   { name = "kitazith", version = "0.2.0", build_tools = ["gleam"], requirements = ["gleam_json", "gleam_stdlib", "gleam_time"], otp_app = "kitazith", source = "hex", outer_checksum = "B542B610DE790E330BBE9700E1C3F43425E1570699FE638946A11ACD284A8D6F" },
   { name = "mug", version = "3.1.0", build_tools = ["gleam"], requirements = ["gleam_erlang", "gleam_stdlib"], otp_app = "mug", source = "hex", outer_checksum = "C01279D98E40371DA23461774B63F0E3581B8F1396049D881B0C7EB32799D93F" },
@@ -58,6 +59,7 @@ gleam_httpc = { version = ">= 5.0.0 and < 6.0.0" }
 gleam_json = { version = ">= 3.0.0 and < 4.0.0" }
 gleam_stdlib = { version = ">= 0.44.0 and < 2.0.0" }
 gleeunit = { version = ">= 1.0.0 and < 2.0.0" }
+humanize = { version = ">= 1.2.0 and < 2.0.0" }
 kitazith = { version = ">= 0.2.0 and < 1.0.0" }
 pgo = { version = ">= 0.20.0 and < 1.0.0" }
 pog = { version = ">= 4.1.0 and < 5.0.0" }
