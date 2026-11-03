@@ -106,6 +106,34 @@ pub fn webhook_age_string(live_since_epoch: Int, now_epoch: Int) -> String {
   "since " <> formatted <> " (which was " <> duration_string(diff) <> " ago)"
 }
 
+fn last_seen_epoch(row: DbRow) -> Int {
+  let raw = case row.last_seen_online {
+    "" -> fallback_last_seen
+    s -> s
+  }
+  case parse_postgres_time(raw) {
+    Ok(t) -> t
+    Error(_) -> 0
+  }
+}
+
+fn should_announce(last_seen: Int, now_epoch: Int, grace_s: Int) -> Bool {
+  now_epoch - last_seen >= grace_s
+}
+
+fn to_announce_entry(row: DbRow, info: StreamInfo) -> AnnounceInfo {
+  AnnounceInfo(
+    username: row.twitch_name,
+    displayname: info.displayname,
+    live: info.live,
+    stream_title: info.stream_title,
+    live_since: info.live_since,
+    stream_category: info.stream_category,
+    webhook_url: row.discord_webhook,
+    announce_message: row.announce_message,
+  )
+}
+
 pub fn decide(
   rows: List(DbRow),
   infos: List(StreamInfo),
@@ -118,7 +146,7 @@ pub fn decide(
         Error(_) -> acc
         Ok(info) -> {
           let #(announced, online, offline, to_announce) = acc
-          let offline = case row.status != "offline" && info.live == False {
+          let offline = case row.status != "offline" && !info.live {
             True -> [row.twitch_name, ..offline]
             False -> offline
           }
@@ -126,40 +154,22 @@ pub fn decide(
             False -> #(announced, online, offline, to_announce)
             True -> {
               let online = [row.twitch_name, ..online]
-              case row.status == "online" {
-                True -> #(announced, online, offline, to_announce)
-                False -> {
-                  let raw = case row.last_seen_online {
-                    "" -> fallback_last_seen
-                    s -> s
+              let announce =
+                row.status != "online"
+                && should_announce(last_seen_epoch(row), now_epoch, grace_s)
+              case announce {
+                False -> #(announced, online, offline, to_announce)
+                True -> {
+                  let announced = case
+                    list.contains(announced, row.twitch_name)
+                  {
+                    True -> announced
+                    False -> [row.twitch_name, ..announced]
                   }
-                  let last_seen = case parse_postgres_time(raw) {
-                    Ok(t) -> t
-                    Error(_) -> 0
-                  }
-                  case now_epoch - last_seen < grace_s {
-                    True -> #(announced, online, offline, to_announce)
-                    False -> {
-                      let announced = case
-                        list.contains(announced, row.twitch_name)
-                      {
-                        True -> announced
-                        False -> [row.twitch_name, ..announced]
-                      }
-                      let entry =
-                        AnnounceInfo(
-                          username: row.twitch_name,
-                          displayname: info.displayname,
-                          live: info.live,
-                          stream_title: info.stream_title,
-                          live_since: info.live_since,
-                          stream_category: info.stream_category,
-                          webhook_url: row.discord_webhook,
-                          announce_message: row.announce_message,
-                        )
-                      #(announced, online, offline, [entry, ..to_announce])
-                    }
-                  }
+                  #(announced, online, offline, [
+                    to_announce_entry(row, info),
+                    ..to_announce
+                  ])
                 }
               }
             }
