@@ -1,13 +1,8 @@
 import decide
 import gleam/list
 import gleam/string
-import gleeunit
 import gleeunit/should
 import twitch
-
-pub fn main() {
-  gleeunit.main()
-}
 
 fn live_info(name: String) -> decide.StreamInfo {
   decide.StreamInfo(

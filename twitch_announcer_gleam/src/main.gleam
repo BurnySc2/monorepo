@@ -72,7 +72,22 @@ fn utc_now() {
 }
 
 pub fn db_timestamp(now: birl.Time) -> String {
-  birl.to_naive_date_string(now) <> " " <> birl.to_naive_time_string(now)
+  let birl.Day(year, month, day) = birl.get_day(now)
+  let birl.TimeOfDay(hour, minute, second, nanosecond) =
+    birl.get_time_of_day(now)
+  int.to_string(year)
+  <> "-"
+  <> string.pad_start(int.to_string(month), to: 2, with: "0")
+  <> "-"
+  <> string.pad_start(int.to_string(day), to: 2, with: "0")
+  <> " "
+  <> string.pad_start(int.to_string(hour), to: 2, with: "0")
+  <> ":"
+  <> string.pad_start(int.to_string(minute), to: 2, with: "0")
+  <> ":"
+  <> string.pad_start(int.to_string(second), to: 2, with: "0")
+  <> "."
+  <> string.pad_start(int.to_string(nanosecond / 1_000_000), to: 3, with: "0")
 }
 
 fn now_ms() -> Int {
