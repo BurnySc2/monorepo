@@ -1,3 +1,8 @@
+//// Pure decision and time logic for this Gleam port.
+//// Exposes decide plus Twitch/Postgres time parsing and age
+//// formatting; performs no I/O or env reads by design.
+//// All database and webhook side effects live in main.
+
 import birl
 import gleam/list
 import gleam/string

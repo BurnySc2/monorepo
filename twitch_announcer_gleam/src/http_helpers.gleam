@@ -1,3 +1,8 @@
+//// Shared HTTP send + status check for twitch/discord clients.
+//// Centralizes httpc error mapping so callers stay focused on APIs.
+//// Named http_helpers to avoid OTP http_util module collision.
+//// Used by twitch token/stream fetches and discord webhook posts.
+
 import gleam/http/request
 import gleam/http/response
 import gleam/httpc

@@ -1,3 +1,8 @@
+//// CLI entry for this Gleam port of the Twitch announcer.
+//// Dispatches on STAGE: DEV runs the announce cycle once,
+//// PROD repeats it forever with a 20s sleep; owns all I/O.
+//// Pure announce choice lives in decide; DB writes fire in PROD only.
+
 import birl
 import db
 import decide

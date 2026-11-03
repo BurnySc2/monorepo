@@ -1,3 +1,9 @@
+////
+//// Loads .env files via dot_env wrapper.
+//// Checks repo root then package dir.
+//// File values overwrite OS env.
+////
+
 import dot_env as dot
 
 fn load_path(path: String) -> Nil {

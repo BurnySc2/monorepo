@@ -1,3 +1,9 @@
+////
+//// Postgres pool and typed queries via pgo.
+//// Maps rows to DbRow for the announce cycle.
+//// Squirrel codegen pending; runtime stays on pgo.
+////
+
 import decide.{type DbRow, DbRow}
 import gleam/dict
 import gleam/dynamic.{type Dynamic}

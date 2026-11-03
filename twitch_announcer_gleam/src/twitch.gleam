@@ -1,3 +1,8 @@
+//// Twitch Helix API client: OAuth client-credentials token fetch
+//// plus batched live-stream lookups (20 user_logins per request).
+//// Missing streams map to offline defaults; names lowercased.
+////
+
 import decide.{type StreamInfo, StreamInfo}
 import gleam/dict.{type Dict}
 import gleam/dynamic/decode

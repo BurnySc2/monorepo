@@ -1,3 +1,8 @@
+//// Discord notifier: kitazith embed builder plus webhook delivery.
+//// DEV and other stages only log payloads; PROD performs the POST.
+//// Payloads validated before sending; failures return Error strings.
+////
+
 import birl
 import decide.{type AnnounceInfo}
 import gleam/http
