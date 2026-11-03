@@ -9,6 +9,7 @@ import decide
 import discord
 import dotenv
 import envoy
+import gleam/bool
 import gleam/dict
 import gleam/erlang/process
 import gleam/int
@@ -58,15 +59,18 @@ pub fn parse_grace_seconds(value: String) -> Int {
   }
 }
 
+fn require_env(name: String) -> String {
+  let value = envoy.get(name)
+  use <- bool.lazy_guard(when: result.is_error(value), return: fn() {
+    panic as { "missing " <> name }
+  })
+  let assert Ok(found) = value
+  found
+}
+
 fn read_config(stage: Stage) -> Config {
-  let client_id = case envoy.get("TWITCH_APP_ID") {
-    Ok(id) -> id
-    Error(_) -> panic as "missing TWITCH_APP_ID"
-  }
-  let client_secret = case envoy.get("TWITCH_APP_SECRET") {
-    Ok(secret) -> secret
-    Error(_) -> panic as "missing TWITCH_APP_SECRET"
-  }
+  let client_id = require_env("TWITCH_APP_ID")
+  let client_secret = require_env("TWITCH_APP_SECRET")
   let grace_seconds = case envoy.get("OFFLINE_GRACE_TIME") {
     Ok(value) -> parse_grace_seconds(value)
     Error(_) -> 1800
@@ -165,10 +169,7 @@ fn loop_forever(conn: db.Conn, config: Config) -> Nil {
 
 fn run_stage(stage: Stage) -> Nil {
   let config = read_config(stage)
-  let url = case envoy.get("POSTGRES_CONNECTION_STRING") {
-    Ok(url) -> url
-    Error(_) -> panic as "missing POSTGRES_CONNECTION_STRING"
-  }
+  let url = require_env("POSTGRES_CONNECTION_STRING")
   case db.connect(url) {
     Ok(conn) ->
       case stage {

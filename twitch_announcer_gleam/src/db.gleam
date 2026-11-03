@@ -79,8 +79,7 @@ fn to_db_row(row: sql.FetchEnabledRow) -> DbRow {
 fn timestamp_to_string(ts: Timestamp) -> String {
   let #(secs, nanos) = timestamp.to_unix_seconds_and_nanoseconds(ts)
   let t = birl.from_unix_milli(secs * 1000 + nanos / 1_000_000)
-  let formatted =
-    birl.to_naive_date_string(t) <> " " <> birl.to_naive_time_string(t)
+  let formatted = decide.format_naive(t)
   case string.starts_with(formatted, "1970-01-01") {
     True -> ""
     False -> formatted

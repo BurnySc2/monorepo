@@ -4,6 +4,7 @@
 //// All database and webhook side effects live in main.
 
 import birl
+import gleam/dict
 import gleam/list
 import gleam/string
 import humanize
@@ -46,6 +47,23 @@ pub type DbRow {
 
 const fallback_last_seen = "2000-01-01 01:01:01.000000"
 
+fn check_roundtrip(
+  parsed: birl.Time,
+  formatted: String,
+  original: String,
+) -> Result(Int, Nil) {
+  case formatted == original {
+    True -> Ok(birl.to_unix(parsed))
+    False -> Error(Nil)
+  }
+}
+
+pub fn format_naive(t: birl.Time) -> String {
+  birl.to_naive_date_string(t)
+  <> " "
+  <> string.slice(birl.to_naive_time_string(t), 0, 8)
+}
+
 // Strict Z-only: birl.parse also accepts offsets and lowercase z.
 pub fn parse_twitch_time(s: String) -> Result(Int, Nil) {
   case string.ends_with(s, "Z") {
@@ -59,10 +77,7 @@ pub fn parse_twitch_time(s: String) -> Result(Int, Nil) {
             <> "T"
             <> string.slice(birl.to_naive_time_string(t), 0, 8)
             <> "Z"
-          case back == s {
-            True -> Ok(birl.to_unix(t))
-            False -> Error(Nil)
-          }
+          check_roundtrip(t, back, s)
         }
       }
   }
@@ -76,14 +91,8 @@ pub fn parse_postgres_time(s: String) -> Result(Int, Nil) {
   case birl.from_naive(base) {
     Error(_) -> Error(Nil)
     Ok(t) -> {
-      let back =
-        birl.to_naive_date_string(t)
-        <> " "
-        <> string.slice(birl.to_naive_time_string(t), 0, 8)
-      case back == base {
-        True -> Ok(birl.to_unix(t))
-        False -> Error(Nil)
-      }
+      let back = format_naive(t)
+      check_roundtrip(t, back, base)
     }
   }
 }
@@ -100,10 +109,7 @@ fn duration_string(total: Int) -> String {
 
 pub fn webhook_age_string(live_since_epoch: Int, now_epoch: Int) -> String {
   let t = birl.from_unix(live_since_epoch)
-  let formatted =
-    birl.to_naive_date_string(t)
-    <> " "
-    <> string.slice(birl.to_naive_time_string(t), 0, 8)
+  let formatted = format_naive(t)
   let diff = case now_epoch - live_since_epoch < 0 {
     True -> 0
     False -> now_epoch - live_since_epoch
@@ -145,47 +151,40 @@ pub fn decide(
   now_epoch: Int,
   grace_s: Int,
 ) -> #(List(String), List(String), List(String), List(AnnounceInfo)) {
-  let result =
-    list.fold(rows, #([], [], [], []), fn(acc, row) {
-      case list.find(infos, fn(info) { info.username == row.twitch_name }) {
-        Error(_) -> acc
-        Ok(info) -> {
-          let #(announced, online, offline, to_announce) = acc
-          let offline = case row.status != "offline" && !info.live {
-            True -> [row.twitch_name, ..offline]
-            False -> offline
-          }
-          case info.live {
-            False -> #(announced, online, offline, to_announce)
-            True -> {
-              let online = [row.twitch_name, ..online]
-              let announce =
-                row.status != "online"
-                && should_announce(last_seen_epoch(row), now_epoch, grace_s)
-              case announce {
-                False -> #(announced, online, offline, to_announce)
-                True -> {
-                  let announced = case
-                    list.contains(announced, row.twitch_name)
-                  {
-                    True -> announced
-                    False -> [row.twitch_name, ..announced]
-                  }
-                  #(announced, online, offline, [
-                    to_announce_entry(row, info),
-                    ..to_announce
-                  ])
-                }
-              }
-            }
-          }
-        }
+  let by_name =
+    dict.from_list(list.map(infos, fn(info) { #(info.username, info) }))
+  let joined =
+    list.filter_map(rows, fn(row) {
+      case dict.get(by_name, row.twitch_name) {
+        Ok(info) -> Ok(#(row, info))
+        Error(_) -> Error(Nil)
       }
     })
-  #(
-    list.reverse(result.0),
-    list.reverse(result.1),
-    list.reverse(result.2),
-    list.reverse(result.3),
-  )
+  let #(online_rev, offline_rev, to_announce_rev) =
+    list.fold(joined, #([], [], []), fn(acc, pair) {
+      let #(row, info) = pair
+      let #(online, offline, to_announce) = acc
+      let online = case info.live {
+        True -> [row.twitch_name, ..online]
+        False -> online
+      }
+      let offline = case row.status != "offline" && !info.live {
+        True -> [row.twitch_name, ..offline]
+        False -> offline
+      }
+      let to_announce = case
+        info.live
+        && row.status != "online"
+        && should_announce(last_seen_epoch(row), now_epoch, grace_s)
+      {
+        True -> [to_announce_entry(row, info), ..to_announce]
+        False -> to_announce
+      }
+      #(online, offline, to_announce)
+    })
+  let online = list.reverse(online_rev)
+  let offline = list.reverse(offline_rev)
+  let to_announce = list.reverse(to_announce_rev)
+  let announced = list.unique(list.map(to_announce, fn(a) { a.username }))
+  #(announced, online, offline, to_announce)
 }

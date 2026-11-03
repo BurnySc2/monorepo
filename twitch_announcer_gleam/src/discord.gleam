@@ -5,6 +5,7 @@
 
 import birl
 import decide.{type AnnounceInfo}
+import gleam/bool
 import gleam/io
 import gleam/json
 import gleam/list
@@ -51,15 +52,13 @@ pub fn build_payload(announce: AnnounceInfo, age_string: String) -> json.Json {
 }
 
 fn validate_payload(payload: execute.ExecutePayload) -> Result(Nil, String) {
-  case execute.validate(payload) {
-    Ok(_) -> Ok(Nil)
-    Error(errors) ->
-      Error(
-        errors
-        |> list.map(fn(e) { e.path <> ": " <> validation.message(e) })
-        |> string.join(", "),
-      )
-  }
+  execute.validate(payload)
+  |> result.replace(Nil)
+  |> result.map_error(fn(errors) {
+    errors
+    |> list.map(fn(e) { e.path <> ": " <> validation.message(e) })
+    |> string.join(", ")
+  })
 }
 
 pub fn age_string_for(announce: AnnounceInfo, now_epoch: Int) -> String {
@@ -99,12 +98,10 @@ pub fn post_announcements(
   announces: List(AnnounceInfo),
   stage: String,
 ) -> Result(Nil, String) {
-  case is_prod(stage) {
-    True -> list.try_each(over: announces, with: post_one)
-    False -> {
-      let now_epoch = birl.now() |> birl.to_unix
-      list.each(announces, fn(announce) { log_one(announce, now_epoch) })
-      Ok(Nil)
-    }
-  }
+  use <- bool.lazy_guard(when: !is_prod(stage), return: fn() {
+    let now_epoch = birl.now() |> birl.to_unix
+    list.each(announces, fn(announce) { log_one(announce, now_epoch) })
+    Ok(Nil)
+  })
+  list.try_each(over: announces, with: post_one)
 }

@@ -8,6 +8,7 @@ import flwr_oauth2/authentication as auth
 import flwr_oauth2/common
 import flwr_oauth2/response as oauth_resp
 import flwr_oauth2/token_request
+import gleam/bool
 import gleam/dict.{type Dict}
 import gleam/dynamic/decode
 import gleam/http/request
@@ -90,12 +91,10 @@ pub fn merge_infos(
   live_infos: List(StreamInfo),
 ) -> Dict(String, StreamInfo) {
   let base =
-    list.fold(batch, dict.new(), fn(acc, name) {
-      dict.insert(acc, name, offline_info(name))
-    })
-  list.fold(live_infos, base, fn(acc, info) {
-    dict.insert(acc, info.username, info)
-  })
+    dict.from_list(list.map(batch, fn(name) { #(name, offline_info(name)) }))
+  let live =
+    dict.from_list(list.map(live_infos, fn(info) { #(info.username, info) }))
+  dict.merge(base, live)
 }
 
 pub fn parse_streams_json(body: String) -> Result(List(StreamInfo), String) {
@@ -132,13 +131,10 @@ fn fetch_batch(
 }
 
 pub fn chunks(names: List(String), size: Int) -> List(List(String)) {
-  case size <= 0 {
-    True -> []
-    False ->
-      case names {
-        [] -> []
-        _ -> list.sized_chunk(names, size)
-      }
+  use <- bool.guard(when: size <= 0, return: [])
+  case names {
+    [] -> []
+    _ -> list.sized_chunk(names, size)
   }
 }
 
@@ -149,9 +145,8 @@ pub fn get_stream_infos(
 ) -> Result(Dict(String, StreamInfo), String) {
   let lowered = normalize_names(names)
   let batches = chunks(lowered, 20)
-  list.fold(batches, Ok(dict.new()), fn(acc, batch) {
-    use done <- result.try(acc)
+  list.try_fold(batches, dict.new(), fn(acc, batch) {
     use got <- result.try(fetch_batch(batch, token, client_id))
-    Ok(dict.merge(done, got))
+    Ok(dict.merge(acc, got))
   })
 }
