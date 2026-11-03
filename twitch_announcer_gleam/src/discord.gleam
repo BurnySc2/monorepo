@@ -15,6 +15,13 @@ import kitazith/embed
 import kitazith/validation
 import kitazith/webhook/execute
 
+// WHY String stage: Stage lives privately in main which imports here, so reuse would cycle — see src/main.gleam
+const prod_stage = "PROD"
+
+fn is_prod(stage: String) -> Bool {
+  stage == prod_stage
+}
+
 fn build_embed(announce: AnnounceInfo, age_string: String) -> embed.Embed {
   embed.new()
   |> embed.with_title(announce.displayname <> " is now live on Twitch!")
@@ -92,9 +99,9 @@ pub fn post_announcements(
   announces: List(AnnounceInfo),
   stage: String,
 ) -> Result(Nil, String) {
-  case stage {
-    "PROD" -> list.try_each(over: announces, with: post_one)
-    _ -> {
+  case is_prod(stage) {
+    True -> list.try_each(over: announces, with: post_one)
+    False -> {
       let now_epoch = birl.now() |> birl.to_unix
       list.each(announces, fn(announce) { log_one(announce, now_epoch) })
       Ok(Nil)

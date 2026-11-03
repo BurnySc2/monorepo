@@ -148,7 +148,7 @@ pub fn get_stream_infos(
   client_id: String,
 ) -> Result(Dict(String, StreamInfo), String) {
   let lowered = normalize_names(names)
-  use batches <- result.try(Ok(chunks(lowered, 20)))
+  let batches = chunks(lowered, 20)
   list.fold(batches, Ok(dict.new()), fn(acc, batch) {
     use done <- result.try(acc)
     use got <- result.try(fetch_batch(batch, token, client_id))

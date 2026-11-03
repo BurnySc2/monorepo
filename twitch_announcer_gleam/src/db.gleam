@@ -4,15 +4,13 @@
 //// Writes take a Timestamp from main straight into the sql queries.
 ////
 
+import birl
 import decide.{type DbRow, DbRow}
 import gleam/erlang/process
-import gleam/int
 import gleam/list
-import gleam/option
 import gleam/otp/actor
 import gleam/result
 import gleam/string
-import gleam/time/calendar
 import gleam/time/timestamp.{type Timestamp}
 import pog
 import sql
@@ -68,10 +66,10 @@ pub fn mark_status(
 
 fn to_db_row(row: sql.FetchEnabledRow) -> DbRow {
   DbRow(
-    twitch_name: option.unwrap(row.twitch_name, ""),
-    discord_webhook: option.unwrap(row.discord_webhook, ""),
-    announce_message: option.unwrap(row.announce_message, ""),
-    status: option.unwrap(row.status, "offline"),
+    twitch_name: row.twitch_name,
+    discord_webhook: row.discord_webhook,
+    announce_message: row.announce_message,
+    status: row.status,
     last_seen_online: timestamp_to_string(row.last_seen_online),
   )
 }
@@ -79,33 +77,14 @@ fn to_db_row(row: sql.FetchEnabledRow) -> DbRow {
 // WHY epoch-to-empty: decide treats "" as unknown (fallback_last_seen) while a
 // raw 1970 stamp would parse as a real date; both are ancient, this keeps "" semantics.
 fn timestamp_to_string(ts: Timestamp) -> String {
-  let #(date, time) = timestamp.to_calendar(ts, calendar.utc_offset)
+  let #(secs, nanos) = timestamp.to_unix_seconds_and_nanoseconds(ts)
+  let t = birl.from_unix_milli(secs * 1000 + nanos / 1_000_000)
   let formatted =
-    int.to_string(date.year)
-    <> "-"
-    <> pad(calendar.month_to_int(date.month))
-    <> "-"
-    <> pad(date.day)
-    <> " "
-    <> pad(time.hours)
-    <> ":"
-    <> pad(time.minutes)
-    <> ":"
-    <> pad(time.seconds)
-    <> "."
-    <> string.pad_start(
-      int.to_string(time.nanoseconds / 1_000_000),
-      to: 3,
-      with: "0",
-    )
+    birl.to_naive_date_string(t) <> " " <> birl.to_naive_time_string(t)
   case string.starts_with(formatted, "1970-01-01") {
     True -> ""
     False -> formatted
   }
-}
-
-fn pad(n: Int) -> String {
-  string.pad_start(int.to_string(n), to: 2, with: "0")
 }
 
 fn query_error(err: pog.QueryError) -> String {

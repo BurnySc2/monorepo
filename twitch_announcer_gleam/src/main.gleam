@@ -108,31 +108,17 @@ fn update_entries(
   now_offline: List(String),
 ) -> Result(Nil, String) {
   let at = utc_now()
-  use _ <- result.try(
-    write_if_present(
-      "Updating announced streams in db: ",
-      announced,
-      config.stage,
-      fn() { db.mark_status(conn, announced, at, db.Announced) },
-    ),
-  )
-  use _ <- result.try(
-    write_if_present(
-      "Updating online streams in db: ",
-      online,
-      config.stage,
-      fn() { db.mark_status(conn, online, at, db.Online) },
-    ),
-  )
-  use _ <- result.try(
-    write_if_present(
-      "Updating offline streams in db: ",
-      now_offline,
-      config.stage,
-      fn() { db.mark_status(conn, now_offline, at, db.Offline) },
-    ),
-  )
-  Ok(Nil)
+  let updates = [
+    #("Updating announced streams in db: ", announced, db.Announced),
+    #("Updating online streams in db: ", online, db.Online),
+    #("Updating offline streams in db: ", now_offline, db.Offline),
+  ]
+  list.try_each(updates, fn(update) {
+    let #(label, names, kind) = update
+    write_if_present(label, names, config.stage, fn() {
+      db.mark_status(conn, names, at, kind)
+    })
+  })
 }
 
 fn run_once(conn: db.Conn, config: Config) -> Nil {
