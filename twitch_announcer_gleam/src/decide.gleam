@@ -84,16 +84,37 @@ pub fn parse_postgres_time(s: String) -> Result(Int, Nil) {
   }
 }
 
-fn plural(n: Int, word: String) -> String {
-  case n {
-    1 -> "1 " <> word
-    _ -> int.to_string(n) <> " " <> word <> "s"
-  }
-}
-
-fn join_human(parts: List(String)) -> String {
+fn duration_string(total: Int) -> String {
+  let parts =
+    birl.difference(birl.from_unix(0), birl.from_unix(total))
+    |> duration.decompose
+    |> list.filter_map(fn(p) {
+      case p {
+        #(n, duration.Day) ->
+          case n {
+            1 -> Ok("1 day")
+            _ -> Ok(int.to_string(n) <> " days")
+          }
+        #(n, duration.Hour) ->
+          case n {
+            1 -> Ok("1 hour")
+            _ -> Ok(int.to_string(n) <> " hours")
+          }
+        #(n, duration.Minute) ->
+          case n {
+            1 -> Ok("1 minute")
+            _ -> Ok(int.to_string(n) <> " minutes")
+          }
+        #(n, duration.Second) ->
+          case n {
+            1 -> Ok("1 second")
+            _ -> Ok(int.to_string(n) <> " seconds")
+          }
+        _ -> Error(Nil)
+      }
+    })
   case list.reverse(parts) {
-    [] -> ""
+    [] -> "0 seconds"
     [single] -> single
     [last, ..rest_reversed] -> {
       let head = string.join(list.reverse(rest_reversed), ", ")
@@ -102,25 +123,6 @@ fn join_human(parts: List(String)) -> String {
         _ -> head <> ", and " <> last
       }
     }
-  }
-}
-
-fn duration_string(total: Int) -> String {
-  let parts =
-    birl.difference(birl.from_unix(0), birl.from_unix(total))
-    |> duration.decompose
-    |> list.filter_map(fn(p) {
-      case p {
-        #(n, duration.Day) -> Ok(plural(n, "day"))
-        #(n, duration.Hour) -> Ok(plural(n, "hour"))
-        #(n, duration.Minute) -> Ok(plural(n, "minute"))
-        #(n, duration.Second) -> Ok(plural(n, "second"))
-        _ -> Error(Nil)
-      }
-    })
-  case parts {
-    [] -> "0 seconds"
-    _ -> join_human(parts)
   }
 }
 
@@ -137,81 +139,6 @@ pub fn webhook_age_string(live_since_epoch: Int, now_epoch: Int) -> String {
   "since " <> formatted <> " (which was " <> duration_string(diff) <> " ago)"
 }
 
-fn maybe_announce(
-  acc: #(List(String), List(String), List(String), List(AnnounceInfo)),
-  row: DbRow,
-  info: StreamInfo,
-  now_epoch: Int,
-  grace_s: Int,
-) -> #(List(String), List(String), List(String), List(AnnounceInfo)) {
-  let #(announced, online, offline, to_announce) = acc
-  let raw = case row.last_seen_online {
-    "" -> fallback_last_seen
-    s -> s
-  }
-  let last_seen = case parse_postgres_time(raw) {
-    Ok(t) -> t
-    Error(_) -> 0
-  }
-  case now_epoch - last_seen < grace_s {
-    True -> acc
-    False -> {
-      let announced = case list.contains(announced, row.twitch_name) {
-        True -> announced
-        False -> [row.twitch_name, ..announced]
-      }
-      let entry =
-        AnnounceInfo(
-          username: row.twitch_name,
-          displayname: info.displayname,
-          live: info.live,
-          stream_title: info.stream_title,
-          live_since: info.live_since,
-          stream_category: info.stream_category,
-          webhook_url: row.discord_webhook,
-          announce_message: row.announce_message,
-        )
-      #(announced, online, offline, [entry, ..to_announce])
-    }
-  }
-}
-
-fn decide_row(
-  acc: #(List(String), List(String), List(String), List(AnnounceInfo)),
-  row: DbRow,
-  infos: List(StreamInfo),
-  now_epoch: Int,
-  grace_s: Int,
-) -> #(List(String), List(String), List(String), List(AnnounceInfo)) {
-  let #(announced, online, offline, to_announce) = acc
-  case list.find(infos, fn(info) { info.username == row.twitch_name }) {
-    Error(_) -> acc
-    Ok(info) -> {
-      let offline = case row.status != "offline" && info.live == False {
-        True -> [row.twitch_name, ..offline]
-        False -> offline
-      }
-      case info.live {
-        False -> #(announced, online, offline, to_announce)
-        True -> {
-          let online = [row.twitch_name, ..online]
-          case row.status == "online" {
-            True -> #(announced, online, offline, to_announce)
-            False ->
-              maybe_announce(
-                #(announced, online, offline, to_announce),
-                row,
-                info,
-                now_epoch,
-                grace_s,
-              )
-          }
-        }
-      }
-    }
-  }
-}
-
 pub fn decide(
   rows: List(DbRow),
   infos: List(StreamInfo),
@@ -220,7 +147,58 @@ pub fn decide(
 ) -> #(List(String), List(String), List(String), List(AnnounceInfo)) {
   let result =
     list.fold(rows, #([], [], [], []), fn(acc, row) {
-      decide_row(acc, row, infos, now_epoch, grace_s)
+      case list.find(infos, fn(info) { info.username == row.twitch_name }) {
+        Error(_) -> acc
+        Ok(info) -> {
+          let #(announced, online, offline, to_announce) = acc
+          let offline = case row.status != "offline" && info.live == False {
+            True -> [row.twitch_name, ..offline]
+            False -> offline
+          }
+          case info.live {
+            False -> #(announced, online, offline, to_announce)
+            True -> {
+              let online = [row.twitch_name, ..online]
+              case row.status == "online" {
+                True -> #(announced, online, offline, to_announce)
+                False -> {
+                  let raw = case row.last_seen_online {
+                    "" -> fallback_last_seen
+                    s -> s
+                  }
+                  let last_seen = case parse_postgres_time(raw) {
+                    Ok(t) -> t
+                    Error(_) -> 0
+                  }
+                  case now_epoch - last_seen < grace_s {
+                    True -> #(announced, online, offline, to_announce)
+                    False -> {
+                      let announced = case
+                        list.contains(announced, row.twitch_name)
+                      {
+                        True -> announced
+                        False -> [row.twitch_name, ..announced]
+                      }
+                      let entry =
+                        AnnounceInfo(
+                          username: row.twitch_name,
+                          displayname: info.displayname,
+                          live: info.live,
+                          stream_title: info.stream_title,
+                          live_since: info.live_since,
+                          stream_category: info.stream_category,
+                          webhook_url: row.discord_webhook,
+                          announce_message: row.announce_message,
+                        )
+                      #(announced, online, offline, [entry, ..to_announce])
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     })
   #(
     list.reverse(result.0),

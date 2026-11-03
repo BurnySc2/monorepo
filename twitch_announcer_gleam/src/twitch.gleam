@@ -3,13 +3,13 @@ import gleam/dict.{type Dict}
 import gleam/dynamic/decode
 import gleam/http
 import gleam/http/request
-import gleam/httpc
 import gleam/int
 import gleam/json
 import gleam/list
 import gleam/result
 import gleam/string
 import gleam/uri
+import http_helpers
 
 // WHY helix-logins-lowercase: Twitch user_login values are lowercase-only, Nim asserts/toLowers at fetch site — see main.nim get_twitch_info_for_20/get_twitch_infos.
 
@@ -37,13 +37,14 @@ pub fn get_access_token(
     |> request.set_method(http.Post)
     |> request.set_header("content-type", "application/x-www-form-urlencoded")
     |> request.set_body(body)
-  use resp <- result.try(httpc.send(req) |> result.map_error(string.inspect))
-  case resp.status {
-    200 ->
-      json.parse(resp.body, token_decoder())
-      |> result.map_error(string.inspect)
-    status -> Error("token request status: " <> int.to_string(status))
-  }
+  use resp <- result.try(http_helpers.send(req))
+  use resp <- result.try(
+    http_helpers.require_status(resp, fn(status) { status == 200 }, fn(status) {
+      "token request status: " <> int.to_string(status)
+    }),
+  )
+  json.parse(resp.body, token_decoder())
+  |> result.map_error(string.inspect)
 }
 
 fn stream_entry_decoder() -> decode.Decoder(StreamInfo) {
@@ -116,17 +117,17 @@ fn fetch_batch(
     req
     |> request.set_header("authorization", "Bearer " <> token)
     |> request.set_header("client-id", client_id)
-  use resp <- result.try(httpc.send(req) |> result.map_error(string.inspect))
-  case resp.status {
-    200 -> {
-      use live_infos <- result.try(
-        json.parse(resp.body, streams_decoder())
-        |> result.map_error(string.inspect),
-      )
-      Ok(merge_infos(batch, live_infos))
-    }
-    status -> Error("streams request status: " <> int.to_string(status))
-  }
+  use resp <- result.try(http_helpers.send(req))
+  use resp <- result.try(
+    http_helpers.require_status(resp, fn(status) { status == 200 }, fn(status) {
+      "streams request status: " <> int.to_string(status)
+    }),
+  )
+  use live_infos <- result.try(
+    json.parse(resp.body, streams_decoder())
+    |> result.map_error(string.inspect),
+  )
+  Ok(merge_infos(batch, live_infos))
 }
 
 pub fn chunks(names: List(String), size: Int) -> List(List(String)) {

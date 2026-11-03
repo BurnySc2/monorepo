@@ -126,7 +126,7 @@ fn update_entries(
       "Updating announced streams in db: ",
       announced,
       config.stage,
-      fn() { db.mark_announced(conn, announced, timestamp) },
+      fn() { db.mark_status(conn, announced, timestamp, db.Announced) },
     ),
   )
   use _ <- result.try(
@@ -134,7 +134,7 @@ fn update_entries(
       "Updating online streams in db: ",
       online,
       config.stage,
-      fn() { db.mark_online(conn, online, timestamp) },
+      fn() { db.mark_status(conn, online, timestamp, db.Online) },
     ),
   )
   use _ <- result.try(
@@ -142,7 +142,7 @@ fn update_entries(
       "Updating offline streams in db: ",
       now_offline,
       config.stage,
-      fn() { db.mark_offline(conn, now_offline, timestamp) },
+      fn() { db.mark_status(conn, now_offline, timestamp, db.Offline) },
     ),
   )
   Ok(Nil)

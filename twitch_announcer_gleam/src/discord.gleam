@@ -2,13 +2,13 @@ import birl
 import decide.{type AnnounceInfo}
 import gleam/http
 import gleam/http/request
-import gleam/httpc
 import gleam/int
 import gleam/io
 import gleam/json
 import gleam/list
 import gleam/result
 import gleam/string
+import http_helpers
 import kitazith/embed
 import kitazith/validation
 import kitazith/webhook/execute
@@ -74,33 +74,40 @@ fn log_one(announce: AnnounceInfo, now_epoch: Int) -> Nil {
   )
 }
 
-fn post_one(announce: AnnounceInfo) -> Result(Nil, String) {
-  let now_epoch = birl.now() |> birl.to_unix
-  let payload = execute_payload(announce, age_string_for(announce, now_epoch))
-  use _ <- result.try(validate_payload(payload))
-  let body = execute.to_string(payload)
+fn send_webhook(url: String, body: String) -> Result(Nil, String) {
   use req <- result.try(
-    request.to(announce.webhook_url)
-    |> result.replace_error("invalid webhook url: " <> announce.webhook_url),
+    request.to(url)
+    |> result.replace_error("invalid webhook url: " <> url),
   )
   let req =
     req
     |> request.set_method(http.Post)
     |> request.set_header("content-type", "application/json")
     |> request.set_body(body)
-  use resp <- result.try(httpc.send(req) |> result.map_error(string.inspect))
-  case resp.status {
-    status if status >= 200 && status < 300 -> Ok(Nil)
-    status ->
-      Error(
+  use resp <- result.try(http_helpers.send(req))
+  use _ <- result.try(
+    http_helpers.require_status(
+      resp,
+      fn(status) { status >= 200 && status < 300 },
+      fn(status) {
         "Status: "
         <> int.to_string(status)
         <> ", url: "
-        <> announce.webhook_url
+        <> url
         <> ", announce_message: "
-        <> announce.announce_message,
-      )
-  }
+        <> body
+      },
+    ),
+  )
+  Ok(Nil)
+}
+
+fn post_one(announce: AnnounceInfo) -> Result(Nil, String) {
+  let now_epoch = birl.now() |> birl.to_unix
+  let payload = execute_payload(announce, age_string_for(announce, now_epoch))
+  use _ <- result.try(validate_payload(payload))
+  let body = execute.to_string(payload)
+  send_webhook(announce.webhook_url, body)
 }
 
 pub fn post_announcements(

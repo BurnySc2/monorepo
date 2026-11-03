@@ -98,35 +98,32 @@ pub fn fetch_enabled(conn: Conn) -> Result(List(DbRow), String) {
   Ok(list.map(rows, to_db_row))
 }
 
-pub fn mark_announced(
+pub type MarkKind {
+  Announced
+  Online
+  Offline
+}
+
+pub fn mark_status(
   conn: Conn,
   names: List(String),
   timestamp: String,
+  kind: MarkKind,
 ) -> Result(Nil, String) {
-  mark(
-    conn,
-    "announced_at = $1, status = 'online', last_seen_online = $2",
-    names,
-    [dynamic.string(timestamp), dynamic.string(timestamp)],
-  )
-}
-
-pub fn mark_online(
-  conn: Conn,
-  names: List(String),
-  timestamp: String,
-) -> Result(Nil, String) {
-  mark(conn, "status = 'online', last_seen_online = $1", names, [
-    dynamic.string(timestamp),
-  ])
-}
-
-pub fn mark_offline(
-  conn: Conn,
-  names: List(String),
-  _timestamp: String,
-) -> Result(Nil, String) {
-  mark(conn, "status = 'offline'", names, [])
+  case kind {
+    Announced ->
+      mark(
+        conn,
+        "announced_at = $1, status = 'online', last_seen_online = $2",
+        names,
+        [dynamic.string(timestamp), dynamic.string(timestamp)],
+      )
+    Online ->
+      mark(conn, "status = 'online', last_seen_online = $1", names, [
+        dynamic.string(timestamp),
+      ])
+    Offline -> mark(conn, "status = 'offline'", names, [])
+  }
 }
 
 fn mark(
