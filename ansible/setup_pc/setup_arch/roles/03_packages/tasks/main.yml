@@ -85,6 +85,9 @@
       - playerctl
       # Mic audio control gui (remove background noise, improve voice quality)
       - easyeffects
+      # Gleam
+      - gleam
+      - rebar3
     state: present
   become: true
 - name: Install bigger packages (>10mb)
