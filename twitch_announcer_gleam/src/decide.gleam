@@ -145,6 +145,18 @@ fn to_announce_entry(row: DbRow, info: StreamInfo) -> AnnounceInfo {
   )
 }
 
+fn distinct_rows(rows: List(DbRow)) -> List(DbRow) {
+  let #(deduped_rev, _) =
+    list.fold(rows, #([], dict.new()), fn(acc, row) {
+      let #(deduped, seen) = acc
+      case dict.has_key(seen, row.twitch_name) {
+        True -> acc
+        False -> #([row, ..deduped], dict.insert(seen, row.twitch_name, Nil))
+      }
+    })
+  list.reverse(deduped_rev)
+}
+
 pub fn decide(
   rows: List(DbRow),
   infos: List(StreamInfo),
@@ -154,7 +166,7 @@ pub fn decide(
   let by_name =
     dict.from_list(list.map(infos, fn(info) { #(info.username, info) }))
   let joined =
-    list.filter_map(rows, fn(row) {
+    list.filter_map(distinct_rows(rows), fn(row) {
       case dict.get(by_name, row.twitch_name) {
         Ok(info) -> Ok(#(row, info))
         Error(_) -> Error(Nil)

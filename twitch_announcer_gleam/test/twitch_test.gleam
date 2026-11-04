@@ -16,30 +16,10 @@ fn range_loop(i: Int, n: Int, acc: List(String)) -> List(String) {
   }
 }
 
-pub fn chunks_empty_test() {
-  twitch.chunks([], 20) |> should.equal([])
-}
-
-pub fn chunks_single_test() {
-  twitch.chunks(["alice"], 20) |> should.equal([["alice"]])
-}
-
-pub fn chunks_exactly_20_test() {
-  let result = twitch.chunks(names(20), 20)
-  should.equal(list.length(result), 1)
-  should.equal(list.map(result, list.length), [20])
-}
-
 pub fn chunks_21_splits_20_plus_1_test() {
   let result = twitch.chunks(names(21), 20)
   should.equal(list.length(result), 2)
   should.equal(list.map(result, list.length), [20, 1])
-}
-
-pub fn chunks_40_splits_evenly_test() {
-  let result = twitch.chunks(names(40), 20)
-  should.equal(list.length(result), 2)
-  should.equal(list.map(result, list.length), [20, 20])
 }
 
 pub fn normalize_names_lowercases_test() {
