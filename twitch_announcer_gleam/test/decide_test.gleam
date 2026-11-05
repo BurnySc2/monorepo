@@ -132,9 +132,32 @@ pub fn already_online_live_stays_quiet_test() {
       1800,
     )
   should.equal(result.0, [])
-  should.equal(result.1, ["alice"])
+  should.equal(result.1, [])
   should.equal(result.2, [])
   should.equal(result.3, [])
+}
+
+// WHY strict offline-only: non-offline statuses never announce, even when live past grace
+pub fn non_offline_status_live_stays_quiet_test() {
+  let result =
+    decide.decide(
+      [db_row("alice", "", "2000-01-01 01:01:01.000000")],
+      [live_info("alice")],
+      1_736_133_412,
+      1800,
+    )
+  should.equal(result, #([], ["alice"], [], []))
+}
+
+pub fn junk_status_live_stays_quiet_test() {
+  let result =
+    decide.decide(
+      [db_row("alice", "junk", "2000-01-01 01:01:01.000000")],
+      [live_info("alice")],
+      1_736_133_412,
+      1800,
+    )
+  should.equal(result, #([], ["alice"], [], []))
 }
 
 pub fn parse_twitch_time_test() {

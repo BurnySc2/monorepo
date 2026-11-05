@@ -176,7 +176,7 @@ pub fn decide(
     list.fold(joined, #([], [], []), fn(acc, pair) {
       let #(row, info) = pair
       let #(online, offline, to_announce) = acc
-      let online = case info.live {
+      let online = case info.live && row.status != "online" {
         True -> [row.twitch_name, ..online]
         False -> online
       }
@@ -184,9 +184,10 @@ pub fn decide(
         True -> [row.twitch_name, ..offline]
         False -> offline
       }
+      // WHY strict offline-only: announce solely on offline->online transition
       let to_announce = case
         info.live
-        && row.status != "online"
+        && row.status == "offline"
         && should_announce(last_seen_epoch(row), now_epoch, grace_s)
       {
         True -> [to_announce_entry(row, info), ..to_announce]
