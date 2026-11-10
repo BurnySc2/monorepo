@@ -6,6 +6,7 @@ Uses the singleton ``bot``/``my_reminder`` from :mod:`bot` so there is exactly o
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
+from time import perf_counter
 
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 
@@ -18,10 +19,20 @@ from commands.public_fetch_aoe4 import (
 from commands.public_leaderboard import public_leaderboard
 from commands.public_mmr import public_mmr
 from commands.public_twss import public_twss
+from handlers.dismiss import add_dismiss_emoji
+
 
 # Dispatch table: command string (without PREFIX) -> handler.
 # Built lazily via function to avoid import-time binding issues in tests,
 # Also exposed as COMMAND_MAP const for direct import and tests.
+async def public_ping(_bot, event, _message) -> None:
+    # Self-sends placeholder then edits; returns None so generic_command_caller sends nothing further.
+    start = perf_counter()
+    sent_message = await event.message.respond("Pong! measuring...", reply=False)
+    rest_ms = (perf_counter() - start) * 1000
+    await sent_message.edit(f"Pong! {rest_ms:.0f}ms")
+
+
 COMMAND_MAP: dict[str, Callable[[GatewayBot, GuildMessageCreateEvent, str], Awaitable[Embed | str | None]]] = {
     "reminder": bot_module.my_reminder.public_remind_in,
     "r": bot_module.my_reminder.public_remind_in,
@@ -39,6 +50,7 @@ COMMAND_MAP: dict[str, Callable[[GatewayBot, GuildMessageCreateEvent, str], Awai
     "aoe4bo": public_fetch_aoe4_bo,
     "aoe4analyse": public_analyse_aoe4_game,
     "aoe4analyze": public_analyse_aoe4_game,
+    "ping": public_ping,
 }
 
 
@@ -72,8 +84,7 @@ async def generic_command_caller(
         # Error message or raw string response
         sent_message = await event.message.respond(f"{event.author.mention} {response}", reply=False)
     if add_remove_emoji:
-        # https://www.fileformat.info/info/unicode/char/274c/index.htm
-        await sent_message.add_reaction("\u274c")
+        await add_dismiss_emoji(sent_message)
 
 
 async def handle_commands(event: GuildMessageCreateEvent, command: str, message: str) -> None:
@@ -83,14 +94,5 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
             event,
             function,  # pyrefly: ignore
             message,
-            add_remove_emoji=True,
+            add_remove_emoji=(command != "ping"),
         )
-
-    if command == "ping":
-        guild = event.get_guild()
-        if not guild:
-            return
-        b = await guild.fetch_emojis()
-
-        animated = next(i for i in b if i.is_animated)
-        await event.message.respond(f"Pong! {bot_module.bot.heartbeat_latency * 1_000:.0f}ms {b[0]} {animated}")
