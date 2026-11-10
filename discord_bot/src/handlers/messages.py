@@ -21,9 +21,18 @@ from commands.public_mmr import public_mmr
 from commands.public_twss import public_twss
 from handlers.dismiss import add_dismiss_emoji
 
+
 # Dispatch table: command string (without PREFIX) -> handler.
 # Built lazily via function to avoid import-time binding issues in tests,
 # Also exposed as COMMAND_MAP const for direct import and tests.
+async def public_ping(_bot, event, _message) -> None:
+    # Self-sends placeholder then edits; returns None so generic_command_caller sends nothing further.
+    start = perf_counter()
+    sent_message = await event.message.respond("Pong! measuring...", reply=False)
+    rest_ms = (perf_counter() - start) * 1000
+    await sent_message.edit(f"Pong! {rest_ms:.0f}ms")
+
+
 COMMAND_MAP: dict[str, Callable[[GatewayBot, GuildMessageCreateEvent, str], Awaitable[Embed | str | None]]] = {
     "reminder": bot_module.my_reminder.public_remind_in,
     "r": bot_module.my_reminder.public_remind_in,
@@ -41,6 +50,7 @@ COMMAND_MAP: dict[str, Callable[[GatewayBot, GuildMessageCreateEvent, str], Awai
     "aoe4bo": public_fetch_aoe4_bo,
     "aoe4analyse": public_analyse_aoe4_game,
     "aoe4analyze": public_analyse_aoe4_game,
+    "ping": public_ping,
 }
 
 
@@ -84,11 +94,5 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
             event,
             function,  # pyrefly: ignore
             message,
-            add_remove_emoji=True,
+            add_remove_emoji=(command != "ping"),
         )
-
-    if command == "ping":
-        start = perf_counter()
-        sent_message = await event.message.respond("Pong! measuring...", reply=False)
-        rest_ms = (perf_counter() - start) * 1000
-        await sent_message.edit(f"Pong! {rest_ms:.0f}ms")
