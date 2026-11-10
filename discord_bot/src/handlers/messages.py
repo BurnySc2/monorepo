@@ -6,6 +6,7 @@ Uses the singleton ``bot``/``my_reminder`` from :mod:`bot` so there is exactly o
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
+from time import perf_counter
 
 from hikari import Embed, GatewayBot, GuildMessageCreateEvent  # pyrefly: ignore
 
@@ -87,10 +88,7 @@ async def handle_commands(event: GuildMessageCreateEvent, command: str, message:
         )
 
     if command == "ping":
-        guild = event.get_guild()
-        if not guild:
-            return
-        b = await guild.fetch_emojis()
-
-        animated = next(i for i in b if i.is_animated)
-        await event.message.respond(f"Pong! {bot_module.bot.heartbeat_latency * 1_000:.0f}ms {b[0]} {animated}")
+        start = perf_counter()
+        sent_message = await event.message.respond("Pong! measuring...", reply=False)
+        rest_ms = (perf_counter() - start) * 1000
+        await sent_message.edit(f"Pong! {rest_ms:.0f}ms")
