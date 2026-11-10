@@ -64,6 +64,9 @@ class Settings(BaseSettings):
 
     # Language data and cache
     nltk_data_dir: str = Field(default="./data/nltk")
+    tts_samples_dir: str = Field(
+        default="./data/tts_samples", description="Disk cache dir for canonical TTS sample MP3s"
+    )
 
 
 @lru_cache

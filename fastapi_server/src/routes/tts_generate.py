@@ -1,11 +1,24 @@
+import asyncio
 import base64
+from contextlib import suppress
+from io import BytesIO
 from typing import cast
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from mutagen import MutagenError
+from mutagen.mp3 import MP3
+from pydantic import BaseModel, Field
 
 from components.audiobook.epub_reader import ensure_nltk_data
 from components.tts_generate import generate_audio, list_all_voices
+from components.tts_generate.tts_sample_cache import (
+    MAX_TEXT_LENGTH,
+    get_key_lock,
+    is_canonical_sample,
+    read_cached,
+    sample_cache_key,
+    write_cached_atomic,
+)
 from schemas.tts import ENGINES
 from schemas.tts.engine import TTSEngine
 from schemas.tts.voice_info import VoiceInfo
@@ -13,7 +26,7 @@ from schemas.tts.voice_info import VoiceInfo
 
 class TTSGenerateRequest(BaseModel):
     voice: str
-    text: str
+    text: str = Field(max_length=MAX_TEXT_LENGTH)
 
 
 tts_generate_router = APIRouter()
@@ -56,7 +69,33 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
 
     ensure_nltk_data()
     engine = cast(TTSEngine, engine_str)
-    audio_bytes, duration = await generate_audio(engine, voice_name, request.text)
+    if is_canonical_sample(request.text):
+        normalized_label = voice_name.lower().replace("_", " ")
+        key = sample_cache_key(engine, normalized_label, request.text)
+        async with get_key_lock(key):
+            cached = await read_cached(key)
+            if cached is not None:
+                try:
+                    audio = await asyncio.to_thread(MP3, BytesIO(cached))
+                except MutagenError as exc:
+                    raise HTTPException(status_code=502, detail="Invalid cached audio") from exc
+                if audio.info is None:
+                    raise HTTPException(status_code=502, detail="Invalid cached audio")
+                audio_b64 = base64.b64encode(cached).decode("utf-8")
+                return {"audio_b64": audio_b64, "duration": audio.info.length}
+            try:
+                audio_bytes, duration = await generate_audio(engine, voice_name, request.text)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+            with suppress(Exception):
+                await write_cached_atomic(key, audio_bytes)
+            audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
+            return {"audio_b64": audio_b64, "duration": duration}
+
+    try:
+        audio_bytes, duration = await generate_audio(engine, voice_name, request.text)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     audio_b64 = base64.b64encode(audio_bytes).decode("utf-8")
     return {"audio_b64": audio_b64, "duration": duration}

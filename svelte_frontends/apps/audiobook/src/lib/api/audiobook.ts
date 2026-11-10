@@ -147,3 +147,15 @@ export async function refresh_chapters(book_id: number, chapter_numbers: number[
     const data: ChapterDetail[] = await response.json()
     return data
 }
+
+export async function generate_voice_sample(
+    voice: string,
+    text: string,
+): Promise<{ audio_b64: string; duration: number }> {
+    const response = await api_fetch("/tts-generate/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voice, text }),
+    })
+    return response.json()
+}
