@@ -63,7 +63,13 @@ Example usage:
                 link: str = message.make_link(message.guild_id) + "\n"
             except NotFoundError:
                 link = ""
-            await person.send(f"{link}You wanted to be reminded of: {self.next_reminder.message}")
+            sent = await person.send(f"{link}You wanted to be reminded of: {self.next_reminder.message}")
+            from handlers.dismiss import add_dismiss_emoji
+
+            try:
+                await add_dismiss_emoji(sent)
+            except Exception as e:  # noqa: BLE001
+                logger.debug(f"Could not add dismiss emoji: {e}")
 
             # Remove reminder from db
             # pyrefly: ignore

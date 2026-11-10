@@ -6,10 +6,11 @@ from :mod:`bot` so ``on_start`` updates are always visible.
 
 from __future__ import annotations
 
-from hikari import GuildReactionAddEvent, Message  # pyrefly: ignore
+from hikari import DMReactionAddEvent, GuildReactionAddEvent, Message  # pyrefly: ignore
 from loguru import logger
 
 import bot as bot_module
+from handlers.dismiss import DISMISS_EMOJI, is_dismiss_press, is_guild_dismiss_press
 from models import DiscordQuote
 
 ALLOWED_EMOJI: set[str] = {"twss"}
@@ -42,15 +43,8 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     if not message:
         return
 
-    # Message is by bot
-    # Message has mention
-    # Mention is same user who reacted
-    # Remove message if :x: was reacted to it
-    if (
-        message.author.id == bot_module.BOT_USER_ID
-        and message.content
-        and f"<@{event.user_id}>" in message.content
-        and event.is_for_emoji("\u274c")
+    if is_guild_dismiss_press(
+        message=message, user_id=event.user_id, is_for_dismiss_emoji=event.is_for_emoji(DISMISS_EMOJI)
     ):
         await message.delete()
         return
@@ -84,3 +78,15 @@ async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
                 )
                 await channel.send(response_message)  # pyrefly: ignore
                 return
+
+
+async def handle_dm_reaction_add(event: DMReactionAddEvent) -> None:
+    if event.user_id == bot_module.BOT_USER_ID:
+        return
+
+    message: Message = await bot_module.bot.rest.fetch_message(event.channel_id, event.message_id)
+    if not message:
+        return
+
+    if is_dismiss_press(message=message, user_id=event.user_id, is_for_dismiss_emoji=event.is_for_emoji(DISMISS_EMOJI)):
+        await message.delete()

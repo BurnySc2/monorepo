@@ -18,6 +18,7 @@ from commands.public_fetch_aoe4 import (
 from commands.public_leaderboard import public_leaderboard
 from commands.public_mmr import public_mmr
 from commands.public_twss import public_twss
+from handlers.dismiss import add_dismiss_emoji
 
 # Dispatch table: command string (without PREFIX) -> handler.
 # Built lazily via function to avoid import-time binding issues in tests,
@@ -72,8 +73,7 @@ async def generic_command_caller(
         # Error message or raw string response
         sent_message = await event.message.respond(f"{event.author.mention} {response}", reply=False)
     if add_remove_emoji:
-        # https://www.fileformat.info/info/unicode/char/274c/index.htm
-        await sent_message.add_reaction("\u274c")
+        await add_dismiss_emoji(sent_message)
 
 
 async def handle_commands(event: GuildMessageCreateEvent, command: str, message: str) -> None:
