@@ -1,99 +1,99 @@
 <script lang="ts">
-    import { onMount } from "svelte"
-    import type { VoiceInfo } from "@repo/api-types"
-    import { Spinner, toast } from "@repo/ui"
-    import { generate_voice_sample, get_available_voices } from "$lib/api/audiobook"
-    import { SAMPLE_TEXT_VERSION, pickSample } from "$lib/sample_texts"
+import type { VoiceInfo } from "@repo/api-types"
+import { Spinner, toast } from "@repo/ui"
+import { onMount } from "svelte"
+import { generate_voice_sample, get_available_voices } from "$lib/api/audiobook"
+import { pickSample, SAMPLE_TEXT_VERSION } from "$lib/sample_texts"
 
-    const MAX_CACHED_SAMPLES = 30
+const MAX_CACHED_SAMPLES = 30
 
-    let voices: VoiceInfo[] = $state([])
-    let is_loading = $state(true)
-    let load_error: string | null = $state(null)
-    let audio_map = $state(new Map<string, string>())
-    let statuses = $state(new Map<string, string>())
-    let voice_errors = $state(new Map<string, string>())
+let voices: VoiceInfo[] = $state([])
+let is_loading = $state(true)
+let load_error: string | null = $state(null)
+let audio_map = $state(new Map<string, string>())
+let statuses = $state(new Map<string, string>())
+let voice_errors = $state(new Map<string, string>())
 
-    let active_count = $derived([...statuses.values()].filter((s) => s === "loading").length)
-    let generate_disabled = $derived(active_count >= 3)
+let active_count = $derived([...statuses.values()].filter((s) => s === "loading").length)
+let generate_disabled = $derived(active_count >= 3)
 
-    function list_key(voice: VoiceInfo): string {
-        return `${voice.engine}|${voice.locale}|${voice.internal_name}`
+function list_key(voice: VoiceInfo): string {
+    return `${voice.engine}|${voice.locale}|${voice.internal_name}`
+}
+
+function request_key(voice: VoiceInfo): string {
+    return `${voice.engine}_${voice.label.replace(/ /g, "_")}`
+}
+
+function language_name(locale: string): string {
+    try {
+        return new Intl.DisplayNames(["en"], { type: "language" }).of(locale) ?? locale
+    } catch {
+        return locale
     }
+}
 
-    function request_key(voice: VoiceInfo): string {
-        return `${voice.engine}_${voice.label.replace(/ /g, "_")}`
+function pause_others(event: Event): void {
+    const current = event.currentTarget as HTMLAudioElement | null
+    if (!current) {
+        return
     }
-
-    function language_name(locale: string): string {
-        try {
-            return new Intl.DisplayNames(["en"], { type: "language" }).of(locale) ?? locale
-        } catch {
-            return locale
+    document.querySelectorAll("audio").forEach((other) => {
+        const el = other as HTMLAudioElement
+        if (el !== current && !el.paused) {
+            el.pause()
         }
-    }
-
-    function pause_others(event: Event): void {
-        const current = event.currentTarget as HTMLAudioElement | null
-        if (!current) {
-            return
-        }
-        document.querySelectorAll("audio").forEach((other) => {
-            const el = other as HTMLAudioElement
-            if (el !== current && !el.paused) {
-                el.pause()
-            }
-        })
-    }
-
-    function store_audio(voice_key: string, data_url: string): void {
-        if (!audio_map.has(voice_key) && audio_map.size >= MAX_CACHED_SAMPLES) {
-            const oldest = audio_map.keys().next().value
-            if (oldest !== undefined) {
-                audio_map.delete(oldest)
-            }
-        }
-        audio_map.set(voice_key, data_url)
-    }
-
-    async function load_voices(): Promise<void> {
-        is_loading = true
-        load_error = null
-        try {
-            voices = await get_available_voices()
-        } catch (e) {
-            console.error("Failed to load voices:", e)
-            load_error = e instanceof Error ? e.message : "Failed to load voices"
-        } finally {
-            is_loading = false
-        }
-    }
-
-    async function play_sample(voice: VoiceInfo): Promise<void> {
-        const list_id = list_key(voice)
-        const voice_id = request_key(voice)
-        if (statuses.get(list_id) === "loading" || generate_disabled) {
-            return
-        }
-        statuses.set(list_id, "loading")
-        voice_errors.delete(list_id)
-        try {
-            const sample = pickSample(voice.locale)
-            const result = await generate_voice_sample(voice_id, sample.text)
-            store_audio(list_id, `data:audio/mpeg;base64,${result.audio_b64}`)
-            statuses.set(list_id, "idle")
-        } catch (e) {
-            console.error("Failed to generate voice sample:", e)
-            const message = e instanceof Error ? e.message : "Failed to generate sample"
-            statuses.set(list_id, "error")
-            voice_errors.set(list_id, message)
-            toast.error("Failed to generate voice sample")
-        }
-    }
-
-    onMount(() => {
-        void load_voices()
     })
+}
+
+function store_audio(voice_key: string, data_url: string): void {
+    if (!audio_map.has(voice_key) && audio_map.size >= MAX_CACHED_SAMPLES) {
+        const oldest = audio_map.keys().next().value
+        if (oldest !== undefined) {
+            audio_map.delete(oldest)
+        }
+    }
+    audio_map.set(voice_key, data_url)
+}
+
+async function load_voices(): Promise<void> {
+    is_loading = true
+    load_error = null
+    try {
+        voices = await get_available_voices()
+    } catch (e) {
+        console.error("Failed to load voices:", e)
+        load_error = e instanceof Error ? e.message : "Failed to load voices"
+    } finally {
+        is_loading = false
+    }
+}
+
+async function play_sample(voice: VoiceInfo): Promise<void> {
+    const list_id = list_key(voice)
+    const voice_id = request_key(voice)
+    if (statuses.get(list_id) === "loading" || generate_disabled) {
+        return
+    }
+    statuses.set(list_id, "loading")
+    voice_errors.delete(list_id)
+    try {
+        const sample = pickSample(voice.locale)
+        const result = await generate_voice_sample(voice_id, sample.text)
+        store_audio(list_id, `data:audio/mpeg;base64,${result.audio_b64}`)
+        statuses.set(list_id, "idle")
+    } catch (e) {
+        console.error("Failed to generate voice sample:", e)
+        const message = e instanceof Error ? e.message : "Failed to generate sample"
+        statuses.set(list_id, "error")
+        voice_errors.set(list_id, message)
+        toast.error("Failed to generate voice sample")
+    }
+}
+
+onMount(() => {
+    void load_voices()
+})
 </script>
 
 <div class="container mx-auto max-w-6xl px-4 py-8">
@@ -107,7 +107,8 @@
     <p class="text-sm text-gray-600 mb-6">
         Tap Play to hear a sample of each voice. Sample text v{SAMPLE_TEXT_VERSION}.
         {#if active_count > 0}
-            ({active_count} loading…)
+            ({active_count}
+            loading…)
         {/if}
     </p>
 
@@ -154,7 +155,8 @@
                                 : `Play sample for ${voice.label}`}
                         >
                             {#if status === "loading"}
-                                <Spinner /> Loading…
+                                <Spinner />
+                                Loading…
                             {:else if audio_src}
                                 Replay
                             {:else}
@@ -168,7 +170,9 @@
                             controls
                             src={audio_src}
                             onplay={pause_others}
-                        ></audio>
+                        >
+                            <track kind="captions">
+                        </audio>
                     {/if}
                     {#if voice_error}
                         <p class="text-sm text-red-600 mt-2">{voice_error}</p>

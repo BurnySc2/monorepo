@@ -1,6 +1,6 @@
 import * as fc from "fast-check"
 import { describe, expect, it } from "vitest"
-import { SAMPLE_TEXTS, SAMPLE_TEXT_VERSION, langSubtag, pickSample } from "./sample_texts"
+import { langSubtag, pickSample, SAMPLE_TEXT_VERSION, SAMPLE_TEXTS } from "./sample_texts"
 
 const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
