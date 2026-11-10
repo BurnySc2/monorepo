@@ -64,12 +64,10 @@ Example usage:
             except NotFoundError:
                 link = ""
             sent = await person.send(f"{link}You wanted to be reminded of: {self.next_reminder.message}")
+            # Local import avoids bot->Remind->dismiss->bot cycle; add_dismiss_emoji already swallows errors.
             from handlers.dismiss import add_dismiss_emoji
 
-            try:
-                await add_dismiss_emoji(sent)
-            except Exception as e:  # noqa: BLE001
-                logger.debug(f"Could not add dismiss emoji: {e}")
+            await add_dismiss_emoji(sent)
 
             # Remove reminder from db
             # pyrefly: ignore
