@@ -13,7 +13,7 @@ on:
     paths:
       - fastapi_server/**
       - discord_bot/**
-      - twitch_stream_announcer/**
+      - twitch_announcer_gleam/**
       - transcribe_website/transcriber_backend/**
       - .github/workflows/docker_build.yml
   pull_request:
@@ -21,7 +21,7 @@ on:
     paths:
       - fastapi_server/**
       - discord_bot/**
-      - twitch_stream_announcer/**
+      - twitch_announcer_gleam/**
       - transcribe_website/transcriber_backend/**
       - .github/workflows/docker_build.yml
       # NOTE: burny_common/** intentionally excluded
@@ -37,7 +37,7 @@ jobs:
         docker-dir:
           - fastapi_server
           - discord_bot
-          - twitch_stream_announcer
+          - twitch_announcer_gleam
           - transcribe_website/transcriber_backend
     steps:
       - uses: actions/checkout@v6

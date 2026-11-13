@@ -1,0 +1,88 @@
+name: Test Twitch Announcer Gleam
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    paths:
+      - twitch_announcer_gleam/**
+      - .github/workflows/twitch_announcer_gleam.yml
+  pull_request:
+    paths:
+      - twitch_announcer_gleam/**
+      - .github/workflows/twitch_announcer_gleam.yml
+  workflow_dispatch:
+
+env:
+  SUBDIRECTORY: twitch_announcer_gleam
+
+jobs:
+  test_twitch_announcer_gleam:
+    name: test_twitch_announcer_gleam
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      PGHOST: localhost
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Erlang and Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: "27"
+          gleam-version: "1.19.2"
+          rebar3-version: "3.24.0"
+
+      - name: Download dependencies
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: gleam deps download
+
+      - name: Build
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: gleam build
+
+      - name: Check
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: gleam check
+
+      - name: Check formatting
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: gleam format --check src test
+
+      - name: Prepare Postgres fixture
+        env:
+          PGPASSWORD: postgres
+        run: |
+          pg_isready -h localhost -p 5432
+          psql -h $PGHOST -U $PGUSER -d $PGDATABASE -v ON_ERROR_STOP=1 \
+            -f twitch_announcer_gleam/test/fixtures/c3_fixture.sql
+
+      - name: Run tests
+        working-directory: ${{ env.SUBDIRECTORY }}
+        run: gleam test

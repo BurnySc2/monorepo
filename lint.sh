@@ -35,7 +35,7 @@ check_workflow_greps() {
 }
 # WHY catch trailing whitespace in non-Python files without extra binary.
 check_whitespace() {
-  if grep -rnE '[[:blank:]]+$' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.sql' --include='*.toml' --include='*.sh' --include='Dockerfile*' --exclude-dir=.venv --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.ruff_cache .github/ fastapi_server/ discord_bot/ transcribe_website/transcriber_backend/ python_examples/ problem_sites/leetcode/python/ burny_common/ twitch_stream_announcer/ ansible/; then
+  if grep -rnE '[[:blank:]]+$' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.sql' --include='*.toml' --include='*.sh' --include='Dockerfile*' --exclude-dir=.venv --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.ruff_cache .github/ fastapi_server/ discord_bot/ transcribe_website/transcriber_backend/ python_examples/ problem_sites/leetcode/python/ burny_common/ twitch_announcer_gleam/ ansible/; then
     echo "FAIL: trailing whitespace found"
     return 1
   fi
@@ -46,7 +46,7 @@ check_whitespace() {
 check_docker_syntax() {
   command -v docker >/dev/null || { strict_skip "docker" || return 1; return 0; }
   local fails=0
-  for d in fastapi_server discord_bot twitch_stream_announcer transcribe_website/transcriber_backend; do
+  for d in fastapi_server discord_bot twitch_announcer_gleam transcribe_website/transcriber_backend; do
     echo "==> $d"
     if docker build --help 2>&1 | grep -q -- '--check'; then
       docker build --check -f "$d/Dockerfile" "$d" || { echo "FAIL $d"; fails=$((fails+1)); }
@@ -61,7 +61,7 @@ check_docker_syntax() {
 # WHY fail strict gates on findings so CI blocks drift.
 check_optional() {
   if command -v hadolint >/dev/null; then
-    hadolint fastapi_server/Dockerfile discord_bot/Dockerfile twitch_stream_announcer/Dockerfile transcribe_website/transcriber_backend/Dockerfile || {
+    hadolint fastapi_server/Dockerfile discord_bot/Dockerfile twitch_announcer_gleam/Dockerfile transcribe_website/transcriber_backend/Dockerfile || {
       if [[ ${LINT_STRICT:-0} == 1 ]]; then echo "FAIL: hadolint findings (strict)"; return 1; fi
     }
   else
@@ -79,7 +79,7 @@ check_optional() {
 check_projects() {
   local fails=0
   # WHY: transcriber checks disabled temporarily
-  for d in fastapi_server discord_bot python_examples problem_sites/leetcode/python burny_common twitch_stream_announcer ansible; do
+  for d in fastapi_server discord_bot python_examples problem_sites/leetcode/python burny_common ansible; do
     echo "==> $d"
     if [ ! -x "$d/lint.sh" ]; then strict_skip "$d/lint.sh" || fails=$((fails+1)); continue; fi
     "$d/lint.sh" || { echo "FAIL $d"; fails=$((fails+1)); }

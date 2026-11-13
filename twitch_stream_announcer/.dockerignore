@@ -1,7 +1,0 @@
-.env*
-.git/
-.vscode/
-bin/
-main
-nimcache/
-slim.report.json
