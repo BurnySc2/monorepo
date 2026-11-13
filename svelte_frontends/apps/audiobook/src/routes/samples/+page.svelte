@@ -4,6 +4,8 @@ import { Spinner, toast } from "@repo/ui"
 import { onMount } from "svelte"
 import { generate_voice_sample, get_available_voices } from "$lib/api/audiobook"
 import { matches_voice, pick_sample, SAMPLE_TEXT_VERSION } from "$lib/sample_texts"
+// WHY engine+internal_name: backend resolves voices by engine_internal_name
+import { list_key, request_key } from "$lib/samples_keys"
 
 interface CardState {
     status: "idle" | "loading" | "ready" | "error"
@@ -21,15 +23,6 @@ let filter_text = $state("")
 
 let filtered = $derived(voices.filter((v) => matches_voice(v, filter_text)))
 let active_count = $derived(Object.values(cards).filter((c) => c.status === "loading").length)
-
-function list_key(voice: VoiceInfo): string {
-    return `${voice.engine}|${voice.locale}|${voice.internal_name}`
-}
-
-// WHY engine+internal_name: backend resolves voices by engine_internal_name
-function request_key(voice: VoiceInfo): string {
-    return `${voice.engine}_${voice.internal_name}`
-}
 
 function get_card(card_key: string): CardState {
     return cards[card_key] ?? IDLE_CARD

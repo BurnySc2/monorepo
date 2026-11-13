@@ -52,7 +52,7 @@ let poll_interval: ReturnType<typeof setTimeout> | null = null
 
 $effect(() => {
     if (params.twitchUser && params.server && running) {
-        pollSc2Api()
+        poll_sc2_api()
     }
     return () => {
         if (poll_interval) {
@@ -61,13 +61,13 @@ $effect(() => {
     }
 })
 
-const pollSc2Api = async () => {
+const poll_sc2_api = async () => {
     if (!running) {
         return
     }
 
     poll_interval = setTimeout(() => {
-        pollSc2Api()
+        poll_sc2_api()
     }, params.sc2PollFrequency)
 
     try {
