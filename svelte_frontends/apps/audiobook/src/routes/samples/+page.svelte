@@ -24,7 +24,6 @@ let cards = $state<Record<string, CardState>>({})
 let filter_text = $state("")
 
 let filtered = $derived(voices.filter((v) => matches_voice(v, filter_text)))
-let active_count = $derived(Object.values(cards).filter((c) => c.status === "loading").length)
 
 function get_card(card_key: string): CardState {
     return cards[card_key] ?? IDLE_CARD
@@ -79,7 +78,7 @@ async function load_voices(): Promise<void> {
 async function play_sample(voice: VoiceInfo): Promise<void> {
     const list_id = list_key(voice)
     const voice_id = request_key(voice)
-    if (get_card(list_id).status === "loading" || active_count >= 3) {
+    if (get_card(list_id).status === "loading") {
         return
     }
     set_card(list_id, { status: "loading", error: null })
@@ -153,14 +152,14 @@ onMount(() => {
                             <button
                                 type="button"
                                 class="btn btn-primary"
-                                disabled={get_card(list_key(voice)).status === "loading" || active_count >= 3}
+                                disabled={get_card(list_key(voice)).status === "loading"}
                                 aria-busy={get_card(list_key(voice)).status === "loading"}
                                 onclick={() => void play_sample(voice)}
                                 aria-label={`Play sample for ${voice.label}`}
                             >
                                 {#if get_card(list_key(voice)).status === "loading"}
                                     <Spinner />
-                                    Loading…
+                                    Generating…
                                 {:else}
                                     Play
                                 {/if}
@@ -185,7 +184,6 @@ onMount(() => {
                         <button
                             type="button"
                             class="btn btn-secondary mt-2"
-                            disabled={active_count >= 3}
                             onclick={() => void play_sample(voice)}
                         >
                             Retry
