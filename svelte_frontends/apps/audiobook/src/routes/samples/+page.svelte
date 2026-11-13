@@ -3,7 +3,9 @@ import type { VoiceInfo } from "@repo/api-types"
 import { Spinner, toast } from "@repo/ui"
 import { onMount } from "svelte"
 import { generate_voice_sample, get_available_voices } from "$lib/api/audiobook"
-import { matches_voice, pick_sample, SAMPLE_TEXT_VERSION } from "$lib/sample_texts"
+import { audio_settings } from "$lib/audio_settings.svelte"
+import { matches_voice, pick_sample } from "$lib/sample_texts"
+import { clamp_volume_percent, clamp_volume_ratio } from "$lib/sample_volume"
 // WHY engine+internal_name: backend resolves voices by engine_internal_name
 import { list_key, request_key } from "$lib/samples_keys"
 
@@ -56,6 +58,11 @@ function pause_others(event: Event): void {
     })
 }
 
+function handle_volume_change(event: Event): void {
+    const el = event.currentTarget as HTMLAudioElement
+    audio_settings.sample_volume = clamp_volume_percent(el.volume * 100)
+}
+
 async function load_voices(): Promise<void> {
     is_loading = true
     load_error = null
@@ -102,7 +109,7 @@ onMount(() => {
     </a>
     <h1 class="text-3xl font-bold mb-2">Voice Samples ({filtered.length} of {voices.length} voices)</h1>
     <p class="text-sm text-gray-600 mb-4">
-        Tap Play to hear a sample of each voice. Sample text v{SAMPLE_TEXT_VERSION}.
+        Tap Play to hear a sample of each voice.
         {#if active_count > 0}
             ({active_count}
             loading…)
@@ -134,7 +141,7 @@ onMount(() => {
             data-samples-list
         >
             {#each filtered as voice (list_key(voice))}
-                <div class="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                <div class="bg-white rounded-lg shadow-md p-1 border border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900">{voice.label}</h3>
                     <div class="flex flex-wrap gap-2 mt-2">
                         <span class="text-xs bg-gray-100 text-gray-700 rounded px-2 py-1">{voice.locale}</span>
@@ -174,7 +181,9 @@ onMount(() => {
                             class="mt-3 w-full"
                             controls
                             src={get_card(list_key(voice)).audio_src}
+                            volume={clamp_volume_ratio(audio_settings.sample_volume)}
                             onplay={pause_others}
+                            onvolumechange={handle_volume_change}
                         ></audio>
                     {/if}
                     {#if get_card(list_key(voice)).error}
