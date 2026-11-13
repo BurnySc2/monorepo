@@ -85,30 +85,64 @@ export interface SampleTextPick {
     is_fallback: boolean
 }
 
-export function langSubtag(locale: string): string {
+export function lang_subtag(locale: string): string {
     return locale.trim().toLowerCase().split(/[-_]/)[0] ?? ""
 }
 
-function normalizeLocale(locale: string): string {
+function normalize_locale(locale: string): string {
     return locale.trim().toLowerCase().replace(/_/g, "-")
 }
 
-export function sampleKey(locale: string): string {
-    const full = normalizeLocale(locale)
+export function sample_key(locale: string): string {
+    const full = normalize_locale(locale)
     if (full && SAMPLE_TEXTS[full]) {
         return full
     }
-    const sub = langSubtag(locale)
+    const sub = lang_subtag(locale)
     if (sub && SAMPLE_TEXTS[sub]) {
         return sub
     }
     return "en"
 }
 
-export function pickSample(locale: string, key?: string): SampleTextPick {
+export function pick_sample(locale: string, key?: string): SampleTextPick {
     if (key && SAMPLE_TEXTS[key]) {
-        return { key, text: SAMPLE_TEXTS[key], is_fallback: key !== normalizeLocale(locale) }
+        return { key, text: SAMPLE_TEXTS[key], is_fallback: key !== normalize_locale(locale) }
     }
-    const resolved = sampleKey(locale)
-    return { key: resolved, text: SAMPLE_TEXTS[resolved], is_fallback: resolved !== normalizeLocale(locale) }
+    const resolved = sample_key(locale)
+    return { key: resolved, text: SAMPLE_TEXTS[resolved], is_fallback: resolved !== normalize_locale(locale) }
+}
+
+export interface VoiceFilterable {
+    label: string
+    locale: string
+    engine: string
+    gender: string
+}
+
+export function matches_voice(voice: VoiceFilterable, filter_text: string): boolean {
+    const needle = filter_text.trim().toLowerCase()
+    if (!needle) {
+        return true
+    }
+    const locale = String(voice.locale ?? "")
+    const base = lang_subtag(locale)
+    const names: string[] = []
+    try {
+        names.push(new Intl.DisplayNames(["en"], { type: "language" }).of(base) ?? "")
+    } catch {
+        /* ignore */
+    }
+    try {
+        names.push(new Intl.DisplayNames([locale], { type: "language" }).of(base) ?? "")
+    } catch {
+        /* ignore */
+    }
+    try {
+        names.push(new Intl.DisplayNames([base], { type: "language" }).of(base) ?? "")
+    } catch {
+        /* ignore */
+    }
+    const haystack = [voice.label, locale, base, voice.engine, voice.gender, ...names].join(" ").toLowerCase()
+    return haystack.includes(needle)
 }

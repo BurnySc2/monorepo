@@ -10,7 +10,7 @@ from mutagen.mp3 import MP3
 from pydantic import BaseModel, Field
 
 from components.audiobook.epub_reader import ensure_nltk_data
-from components.tts_generate import generate_audio, list_all_voices
+from components.tts_generate import generate_audio, get_voice_by_internal, get_voice_by_label, list_all_voices
 from components.tts_generate.tts_sample_cache import (
     MAX_TEXT_LENGTH,
     get_key_lock,
@@ -69,8 +69,12 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
 
     ensure_nltk_data()
     engine = cast(TTSEngine, engine_str)
+    await list_all_voices()
+    voice_info = get_voice_by_internal(engine_str, voice_name) or get_voice_by_label(engine_str, voice_name)
+    resolved_voice = voice_info.internal_name if voice_info is not None else voice_name
+    cache_source = voice_info.label if voice_info is not None else voice_name
     if is_canonical_sample(request.text):
-        normalized_label = voice_name.lower().replace("_", " ")
+        normalized_label = cache_source.lower().replace("_", " ")
         key = sample_cache_key(engine, normalized_label, request.text)
         async with get_key_lock(key):
             cached = await read_cached(key)
@@ -84,7 +88,7 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
                 audio_b64 = base64.b64encode(cached).decode("utf-8")
                 return {"audio_b64": audio_b64, "duration": audio.info.length}
             try:
-                audio_bytes, duration = await generate_audio(engine, voice_name, request.text)
+                audio_bytes, duration = await generate_audio(engine, resolved_voice, request.text)
             except ValueError as exc:
                 raise HTTPException(status_code=400, detail=str(exc)) from exc
             with suppress(Exception):
@@ -93,7 +97,7 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
             return {"audio_b64": audio_b64, "duration": duration}
 
     try:
-        audio_bytes, duration = await generate_audio(engine, voice_name, request.text)
+        audio_bytes, duration = await generate_audio(engine, resolved_voice, request.text)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

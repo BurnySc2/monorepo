@@ -417,6 +417,17 @@ export async function fetch_login_status() { ... }
 export async function fetch_voices() { ... }
 ```
 
+All function names (local + exported + helpers like pickSample -> pick_sample) MUST be snake_case. No camelCase (langSubtag, sampleKey, normalizeLocale) allowed. Linter enforces via biome organize + review.
+
+Bad -> good (`sample_texts.ts`):
+
+| Bad (camelCase)   | Good (snake_case)  |
+| ----------------- | ------------------ |
+| `langSubtag`      | `lang_subtag`      |
+| `sampleKey`       | `sample_key`       |
+| `normalizeLocale` | `normalize_locale` |
+| `pickSample`      | `pick_sample`      |
+
 ### Interface and Type Properties
 
 Use `snake_case` for all interface and type properties:
