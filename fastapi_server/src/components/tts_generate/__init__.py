@@ -22,6 +22,7 @@ from . import edge_engine, kitten_engine, kokoro_engine, tiktok_engine
 
 _all_voices_cache: TTLCache = TTLCache(maxsize=50, ttl=600)
 _label_to_voice_info: dict[tuple[str, str], VoiceInfo] = {}
+_internal_to_voice_info: dict[tuple[str, str], VoiceInfo] = {}
 
 ENGINE_REGISTRY: dict[str, Any] = {
     "edge": edge_engine,
@@ -56,18 +57,21 @@ async def list_voices(engine: TTSEngine) -> list[VoiceInfo]:
 
 async def list_all_voices() -> list[VoiceInfo]:
     """List all available voices from all TTS engines as VoiceInfo objects."""
-    global _label_to_voice_info
+    global _label_to_voice_info, _internal_to_voice_info
     if "voices" not in _all_voices_cache:
         result: list[VoiceInfo] = []
         label_map: dict[tuple[str, str], VoiceInfo] = {}
+        internal_map: dict[tuple[str, str], VoiceInfo] = {}
         for engine in ENGINES:
             voices = await list_voices(engine)
             result.extend(voices)
             for vi in voices:
                 label_map[(engine, vi.label.lower())] = vi
+                internal_map[(engine, vi.internal_name.lower())] = vi
         result.sort(key=lambda v: f"{v.locale} {v.engine} {v.label} ({v.gender})")
         _all_voices_cache["voices"] = result
         _label_to_voice_info = label_map
+        _internal_to_voice_info = internal_map
     return _all_voices_cache["voices"]
 
 
@@ -99,7 +103,7 @@ async def generate_audio(
 
     # Populate or update the cache
     _voices = await list_all_voices()
-    voice = get_voice_by_label(normalized_engine, voice_label)
+    voice = get_voice_by_internal(normalized_engine, voice_label) or get_voice_by_label(normalized_engine, voice_label)
     if voice is None:
         raise ValueError(f"Voice '{voice_label}' not found")
 
@@ -111,6 +115,11 @@ async def generate_audio(
     duration = audio.info.length
 
     return audio_bytes, duration
+
+
+def get_voice_by_internal(engine: str, internal_name: str) -> VoiceInfo | None:
+    """Look up a VoiceInfo by its internal_name and optionally by engine."""
+    return _internal_to_voice_info.get((engine.lower(), internal_name.lower()))
 
 
 def get_voice_by_label(engine: str, label: str) -> VoiceInfo | None:
@@ -131,6 +140,7 @@ __all__ = [
     "list_voices",
     "list_all_voices",
     "generate_audio",
+    "get_voice_by_internal",
     "get_voice_by_label",
     "edge_engine",
     "kokoro_engine",

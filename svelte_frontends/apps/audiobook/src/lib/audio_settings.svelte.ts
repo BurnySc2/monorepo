@@ -3,6 +3,8 @@ import { z } from "zod"
 
 export const AudioSettingsSchema = z.object({
     value: z.string().default(""),
+    // WHY sample_volume default 100: frontend-only preview gain, stripped at api.
+    sample_volume: z.number().int().min(0).max(100).default(100),
 })
 
 export type AudioSettings = z.infer<typeof AudioSettingsSchema>
