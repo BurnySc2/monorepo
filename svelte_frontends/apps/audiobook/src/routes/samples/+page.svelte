@@ -108,13 +108,7 @@ onMount(() => {
         ← Back to Books
     </a>
     <h1 class="text-3xl font-bold mb-2">Voice Samples ({filtered.length} of {voices.length} voices)</h1>
-    <p class="text-sm text-gray-600 mb-4">
-        Tap Play to hear a sample of each voice.
-        {#if active_count > 0}
-            ({active_count}
-            loading…)
-        {/if}
-    </p>
+    <p class="text-sm text-gray-600 mb-4">Tap Play to hear a sample of each voice.</p>
     <input
         type="search"
         bind:value={filter_text}
@@ -155,23 +149,23 @@ onMount(() => {
                         {pick_sample(voice.locale).text}
                     </p>
                     {#if !get_card(list_key(voice)).audio_src && get_card(list_key(voice)).status !== "error"}
-                    <div class="mt-4 flex items-center gap-2">
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            disabled={get_card(list_key(voice)).status === "loading" || active_count >= 3}
-                            aria-busy={get_card(list_key(voice)).status === "loading"}
-                            onclick={() => void play_sample(voice)}
-                            aria-label={`Play sample for ${voice.label}`}
-                        >
-                            {#if get_card(list_key(voice)).status === "loading"}
-                                <Spinner />
-                                Loading…
-                            {:else}
-                                Play
-                            {/if}
-                        </button>
-                    </div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                disabled={get_card(list_key(voice)).status === "loading" || active_count >= 3}
+                                aria-busy={get_card(list_key(voice)).status === "loading"}
+                                onclick={() => void play_sample(voice)}
+                                aria-label={`Play sample for ${voice.label}`}
+                            >
+                                {#if get_card(list_key(voice)).status === "loading"}
+                                    <Spinner />
+                                    Loading…
+                                {:else}
+                                    Play
+                                {/if}
+                            </button>
+                        </div>
                     {/if}
                     {#if get_card(list_key(voice)).audio_src}
                         <!-- biome-ignore lint/a11y/useMediaCaption: generated TTS preview has no captions file; full sample text shown as transcript in card -->
