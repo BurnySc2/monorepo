@@ -154,6 +154,7 @@ onMount(() => {
                     <p class="text-sm text-gray-600 mt-3">
                         {pick_sample(voice.locale).text}
                     </p>
+                    {#if !get_card(list_key(voice)).audio_src && get_card(list_key(voice)).status !== "error"}
                     <div class="mt-4 flex items-center gap-2">
                         <button
                             type="button"
@@ -161,20 +162,17 @@ onMount(() => {
                             disabled={get_card(list_key(voice)).status === "loading" || active_count >= 3}
                             aria-busy={get_card(list_key(voice)).status === "loading"}
                             onclick={() => void play_sample(voice)}
-                            aria-label={get_card(list_key(voice)).audio_src
-                                ? `Replay sample for ${voice.label}`
-                                : `Play sample for ${voice.label}`}
+                            aria-label={`Play sample for ${voice.label}`}
                         >
                             {#if get_card(list_key(voice)).status === "loading"}
                                 <Spinner />
                                 Loading…
-                            {:else if get_card(list_key(voice)).audio_src}
-                                Replay
                             {:else}
                                 Play
                             {/if}
                         </button>
                     </div>
+                    {/if}
                     {#if get_card(list_key(voice)).audio_src}
                         <!-- biome-ignore lint/a11y/useMediaCaption: generated TTS preview has no captions file; full sample text shown as transcript in card -->
                         <audio
