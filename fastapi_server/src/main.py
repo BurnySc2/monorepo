@@ -13,6 +13,7 @@ from fastapi.responses import RedirectResponse
 from loguru import logger
 
 from components.audiobook.epub_reader import ensure_nltk_data
+from components.tts_generate.tts_sample_cache import clear_samples_dir
 from db_startup import initialize_database
 from routes.audiobook import audiobook_router
 from routes.index import IndexRouter
@@ -51,6 +52,10 @@ async def lifespan(app: FastAPI):
         ensure_nltk_data()
     except (LookupError, OSError, RuntimeError):
         logger.warning("NLTK data unavailable at startup; continuing without it", exc_info=True)
+    try:
+        clear_samples_dir()
+    except Exception:  # noqa: BLE001
+        logger.warning("TTS sample cache clear failed at startup; continuing without it", exc_info=True)
     yield
 
 

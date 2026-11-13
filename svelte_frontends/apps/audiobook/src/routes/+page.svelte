@@ -133,6 +133,15 @@ onMount(() => {
         storage.
     </p>
 
+    <div class="text-center mb-6">
+        <a
+            href="/samples"
+            class="btn btn-secondary inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg transition-colors"
+        >
+            🎧 Preview voices
+        </a>
+    </div>
+
     <div class="mb-8">
         <BookUpload
             on_upload={handle_upload}

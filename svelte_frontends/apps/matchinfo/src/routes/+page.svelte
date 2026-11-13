@@ -56,7 +56,7 @@ let poll_interval: ReturnType<typeof setTimeout> | null = null
 
 $effect(() => {
     if (params.twitchUser && params.server && running) {
-        pollSc2Api()
+        poll_sc2_api()
     }
     return () => {
         if (poll_interval) {
@@ -65,13 +65,13 @@ $effect(() => {
     }
 })
 
-const pollSc2Api = async () => {
+const poll_sc2_api = async () => {
     if (!running) {
         return
     }
 
     poll_interval = setTimeout(() => {
-        pollSc2Api()
+        poll_sc2_api()
     }, params.sc2PollFrequency)
 
     // /game
@@ -140,14 +140,14 @@ const pollSc2Api = async () => {
 
         // Get my mmr
         if (info.myName && info.myRace && params.server) {
-            await nephestQuery(info.myName, info.myRace, params.server)
+            await nephest_query(info.myName, info.myRace, params.server)
             if (
                 (valid_game === "1v1" || valid_game === "vsComputer") &&
                 info.myMmr !== -1 &&
                 info.opponentName &&
                 info.opponentRace
             ) {
-                await nephestQuery(info.opponentName, info.opponentRace, params.server, info.myMmr)
+                await nephest_query(info.opponentName, info.opponentRace, params.server, info.myMmr)
             }
         }
     } catch (e) {
@@ -155,7 +155,7 @@ const pollSc2Api = async () => {
     }
 }
 
-const nephestQuery = async (name: string, race: ISc2Race, server: ISc2Server, myMmr?: number): Promise<boolean> => {
+const nephest_query = async (name: string, race: ISc2Race, server: ISc2Server, myMmr?: number): Promise<boolean> => {
     const url = `${nephestUrl}${encodeURIComponent(name)}`
     try {
         const response = await fetch(url)
