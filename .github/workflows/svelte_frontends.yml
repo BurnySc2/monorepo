@@ -55,7 +55,7 @@ jobs:
 
       - name: Install Playwright chromium
         working-directory: svelte_frontends
-        run: node ./node_modules/playwright/cli.js install chromium --with-deps
+        run: npx playwright install chromium --with-deps
 
       - name: Lint
         if: always()
