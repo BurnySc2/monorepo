@@ -65,6 +65,7 @@
       - openssh
       - sshpass  # Allow ssh/ansible to login with password
       - ansible
+      - acl  # for ansible become_user (setfacl)
       - git
       - lazygit  # git gui for terminal
       - helix
@@ -84,7 +85,9 @@
       # Media player command-line controller
       - playerctl
       # Mic audio control gui (remove background noise, improve voice quality)
-      - easyeffects
+      # - easyeffects
+      # Noise suppresion using pipewire instead of easyeffects
+      - noise-suppression-for-voice
     state: present
   become: true
 - name: Install bigger packages (>10mb)
@@ -168,30 +171,21 @@
 #     state: directory
 #   loop:
 #     - "~/syncthing"
-- name: Create user systemd directory
-  file:
-    path: '{{ item }}'
-    recurse: true
+- name: Create pipewire user config directory
+  ansible.builtin.file:
+    path: ~/.config/pipewire/pipewire.conf.d
     state: directory
-  loop:
-    - ~/.config/systemd/user
-- name: Copy audio.sh script
-  ansible.builtin.template:
-    src: audio.sh
-    dest: ~/.config/systemd/user/audiosh.sh
-- name: Copy audio.sh service file
-  ansible.builtin.template:
-    src: audiosh.service
-    dest: ~/.config/systemd/user/audiosh.service
-- name: Start twitch audio sinks service for user
+    mode: '0755'
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
-  ansible.builtin.systemd_service:
-    name: audiosh.service
-    scope: user
-    state: started
-    daemon_reload: true
-    enabled: true
-  when: not ansible_check_mode
+- name: Copy pipewire drop-in configs
+  ansible.builtin.copy:
+    src: 'pipewire/{{ item }}'
+    dest: '~/.config/pipewire/pipewire.conf.d/{{ item }}'
+    mode: '0644'
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
+  loop:
+    - 99-audio-setup.conf
+  notify: restart pipewire
 - name: Ensure local directory exists
   ansible.builtin.file:
     path: /media/burnylaptopd
