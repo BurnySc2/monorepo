@@ -185,6 +185,20 @@
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
   loop:
     - 99-audio-setup.conf
+    - custom-latency.conf
+  notify: restart pipewire
+- name: Create pipewire-pulse user config directory
+  ansible.builtin.file:
+    path: ~/.config/pipewire/pipewire-pulse.conf.d
+    state: directory
+    mode: '0755'
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
+- name: Copy pipewire-pulse drop-in configs
+  ansible.builtin.copy:
+    src: pipewire-pulse/pipewire-pulse.conf.d/99-combined-remap.conf
+    dest: ~/.config/pipewire/pipewire-pulse.conf.d/99-combined-remap.conf
+    mode: '0644'
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
   notify: restart pipewire
 - name: Ensure local directory exists
   ansible.builtin.file:
