@@ -29,6 +29,7 @@
   become_user: aur_builder
   kewlfft.aur.aur:
     name:
+      - xautolock  # autolock after time
       # Browser
       - google-chrome
       - zen-browser-bin

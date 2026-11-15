@@ -10,7 +10,6 @@
       - rofi  # dmenu alternative
       - alacritty  # terminal emulator
       - ghostty  # terminal emulator
-      - xautolock  # autolock after time
       - i3lock  # lock screen / screensaver
       - xorg-xsetroot  # set background image
       # --- end of i3wm ---
@@ -137,11 +136,10 @@
   ansible.builtin.group:
     name: docker
     state: present
-- name: Start docker service for user
+  become: true
+- name: Enable docker service
   ansible.builtin.systemd_service:
     name: docker.service
-    state: started
-    daemon_reload: true
     enabled: true
   become: true
   when: not ansible_check_mode
@@ -153,7 +151,9 @@
       - docker
       - wheel  # sudo rights
     shell: /usr/bin/fish
+    append: true
   become: true
+  when: not ansible_check_mode
 - name: Start syncthing service for user
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
   ansible.builtin.systemd_service:
