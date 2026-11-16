@@ -93,7 +93,8 @@ export async function queue_chapter_audio(
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(audio_settings),
+            // WHY strip sample_volume: frontend-only, wire accepts {value} only
+            body: JSON.stringify({ value: audio_settings.value }),
         },
     )
 }
@@ -113,7 +114,8 @@ export async function queue_all_chapters(book_id: number, audio_settings: AudioS
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(audio_settings),
+        // WHY strip sample_volume: frontend-only, wire accepts {value} only
+        body: JSON.stringify({ value: audio_settings.value }),
     })
 }
 
@@ -146,4 +148,16 @@ export async function refresh_chapters(book_id: number, chapter_numbers: number[
     })
     const data: ChapterDetail[] = await response.json()
     return data
+}
+
+export async function generate_voice_sample(
+    voice: string,
+    text: string,
+): Promise<{ audio_b64: string; duration: number }> {
+    const response = await api_fetch("/tts-generate/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ voice, text }),
+    })
+    return response.json()
 }

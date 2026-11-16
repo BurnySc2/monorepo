@@ -17,7 +17,7 @@ import {
 
 const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
-const createGameData = (overrides: Partial<IGameData> = {}): IGameData => ({
+const create_game_data = (overrides: Partial<IGameData> = {}): IGameData => ({
     isReplay: false,
     displayTime: 0,
     players: [
@@ -27,26 +27,26 @@ const createGameData = (overrides: Partial<IGameData> = {}): IGameData => ({
     ...overrides,
 })
 
-const createUiData = (overrides: Partial<IUiData> = {}): IUiData => ({
+const create_ui_data = (overrides: Partial<IUiData> = {}): IUiData => ({
     activeScreens: [],
     ...overrides,
 })
 
 describe("validate_game_from_game_data", () => {
     it("returns '1v1' when there are 2 players", () => {
-        const gameData = createGameData()
+        const gameData = create_game_data()
         expect(validate_game_from_game_data(gameData)).toBe("1v1")
     })
 
     it("returns 'other' when there are not 2 players", () => {
-        const gameData = createGameData({
+        const gameData = create_game_data({
             players: [{ id: 1, name: "Solo", type: "user", race: "Terr", result: "winidk" }],
         })
         expect(validate_game_from_game_data(gameData)).toBe("other")
     })
 
     it("returns 'other' when there are 3 players", () => {
-        const gameData = createGameData({
+        const gameData = create_game_data({
             players: [
                 { id: 1, name: "P1", type: "user", race: "Terr", result: "winidk" },
                 { id: 2, name: "P2", type: "user", race: "Prot", result: "lossidk" },
@@ -59,26 +59,26 @@ describe("validate_game_from_game_data", () => {
 
 describe("get_current_scene", () => {
     it("returns 'game' when no active screens and not replay", () => {
-        const gameData = createGameData({ isReplay: false })
-        const uiData = createUiData({ activeScreens: [] })
+        const gameData = create_game_data({ isReplay: false })
+        const uiData = create_ui_data({ activeScreens: [] })
         expect(get_current_scene(gameData, uiData)).toBe("game")
     })
 
     it("returns 'replay' when no active screens and is replay", () => {
-        const gameData = createGameData({ isReplay: true })
-        const uiData = createUiData({ activeScreens: [] })
+        const gameData = create_game_data({ isReplay: true })
+        const uiData = create_ui_data({ activeScreens: [] })
         expect(get_current_scene(gameData, uiData)).toBe("replay")
     })
 
     it("returns 'loading' when ScreenLoading is active", () => {
-        const gameData = createGameData()
-        const uiData = createUiData({ activeScreens: ["ScreenLoading/ScreenLoading"] })
+        const gameData = create_game_data()
+        const uiData = create_ui_data({ activeScreens: ["ScreenLoading/ScreenLoading"] })
         expect(get_current_scene(gameData, uiData)).toBe("loading")
     })
 
     it("returns 'menu' when other screens are active", () => {
-        const gameData = createGameData()
-        const uiData = createUiData({ activeScreens: ["ScreenGameMode"] })
+        const gameData = create_game_data()
+        const uiData = create_ui_data({ activeScreens: ["ScreenGameMode"] })
         expect(get_current_scene(gameData, uiData)).toBe("menu")
     })
 })

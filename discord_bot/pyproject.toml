@@ -33,8 +33,11 @@ dev = [
 ]
 
 [tool.pyrefly]
-search_path = [
-    "src"
+search-path = [
+    "src",
+]
+project-includes = [
+    "src/**/*.py",
 ]
 
 [tool.ruff]

@@ -23,11 +23,13 @@
     update_cache: true
     upgrade: true
     state: latest
+  when: not ansible_check_mode
 - name: Install AUR packages
   become: true
   become_user: aur_builder
   kewlfft.aur.aur:
     name:
+      - xautolock  # autolock after time
       # Browser
       - google-chrome
       - zen-browser-bin

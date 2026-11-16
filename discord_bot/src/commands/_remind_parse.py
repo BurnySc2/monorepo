@@ -83,8 +83,7 @@ def parse_date_and_time(message: str, now: arrow.Arrow) -> tuple[arrow.Arrow, st
 
     try:
         future_reminder_time = arrow.get(
-            f"{str(year).zfill(2)}-{str(month).zfill(2)}-{str(day).zfill(2)} "
-            f"{str(hour).zfill(2)}:{str(minute).zfill(2)}:{str(second).zfill(2)}",
+            f"{year.zfill(2)}-{month.zfill(2)}-{day.zfill(2)} {hour.zfill(2)}:{minute.zfill(2)}:{second.zfill(2)}",
             ["YYYY-MM-DD HH:mm:ss"],
         )
     except (ValueError, arrow.parser.ParserError):

@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import re
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from hikari import Embed  # pyrefly: ignore
 
-from handlers.messages import COMMAND_MAP, generic_command_caller, handle_commands
+from handlers.messages import COMMAND_MAP, generic_command_caller, handle_commands, public_ping
 
 
 def _make_event(channel=None, mention="@user"):
@@ -41,6 +42,7 @@ def test_command_map_contains_expected_keys():
         "aoe4bo",
         "aoe4analyse",
         "aoe4analyze",
+        "ping",
     }
     assert expected.issubset(set(COMMAND_MAP.keys()))
 
@@ -61,6 +63,7 @@ def test_command_map_targets_real_functions():
     assert COMMAND_MAP["mmr"] is public_mmr
     assert COMMAND_MAP["twss"] is public_twss
     assert COMMAND_MAP["leaderboard"] is public_leaderboard
+    assert COMMAND_MAP["ping"] is public_ping
 
 
 @pytest.mark.asyncio
@@ -151,3 +154,32 @@ async def test_handle_commands_unknown_does_nothing():
     with patch("handlers.messages.generic_command_caller", new=AsyncMock()) as caller_mock:
         await handle_commands(event, "unknown_cmd_xyz", "msg")
         caller_mock.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_handle_commands_ping_dispatched_via_table_no_emoji():
+    event = MagicMock()
+    with patch("handlers.messages.generic_command_caller", new=AsyncMock()) as caller_mock:
+        await handle_commands(event, "ping", "")
+        caller_mock.assert_awaited_once()
+        _args, kwargs = caller_mock.call_args
+        assert kwargs.get("add_remove_emoji") is False or _args[3] is False
+
+
+@pytest.mark.asyncio
+async def test_public_ping_respond_edit():
+    event = _make_event(channel=MagicMock())
+    sent = _make_sent_message()
+    sent.edit = AsyncMock()
+    event.message.respond.return_value = sent
+
+    await public_ping(MagicMock(), event, "")
+
+    event.message.respond.assert_awaited_once()
+    args, kwargs = event.message.respond.call_args
+    assert "measuring" in args[0]
+    assert kwargs.get("reply") is False
+    sent.edit.assert_awaited_once()
+    edit_args, _ = sent.edit.call_args
+    assert re.fullmatch(r"Pong! \d+ms", edit_args[0])
+    sent.add_reaction.assert_not_called()

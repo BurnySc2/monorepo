@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import asyncio
 
-from hikari import GuildMessageCreateEvent, GuildReactionAddEvent, StartedEvent  # pyrefly: ignore
+from hikari import DMReactionAddEvent, GuildMessageCreateEvent, GuildReactionAddEvent, StartedEvent  # pyrefly: ignore
 from loguru import logger
 
 import bot as bot_module
@@ -46,6 +46,7 @@ __all__ = [
     "get_all_servers",
     "get_text_channels_of_server",
     "handle_commands",
+    "handle_dm_reaction_add",
     "handle_new_message",
     "handle_reaction_add",
     "insert_messages_of_channel_to_db",
@@ -71,6 +72,11 @@ async def on_start(_event: StartedEvent) -> None:
 @bot.listen()
 async def handle_reaction_add(event: GuildReactionAddEvent) -> None:
     await reactions_handler.handle_reaction_add(event)
+
+
+@bot.listen()
+async def handle_dm_reaction_add(event: DMReactionAddEvent) -> None:
+    await reactions_handler.handle_dm_reaction_add(event)
 
 
 @bot.listen()

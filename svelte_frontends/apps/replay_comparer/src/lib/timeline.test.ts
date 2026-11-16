@@ -11,7 +11,7 @@ import { EVENT_TIMELINE_OPTIONS, SPENDING_OPTIONS, TIMELINE_OPTIONS, type Timeli
 
 const FC_SEED = Number(process.env.FC_SEED ?? 42)
 
-const createTimelineData = (overrides: Partial<TimelineData> = {}): TimelineData => ({
+const create_timeline_data = (overrides: Partial<TimelineData> = {}): TimelineData => ({
     gameloop: 0,
     workers_active: 12,
     workers_produced: 12,
@@ -148,22 +148,22 @@ describe("merge_timelines", () => {
     it("merges timelines with correct interleaving by gameloop", () => {
         const realTimeline: TimelineData[][] = [
             [
-                createTimelineData({ gameloop: 0, workers_active: 12 }),
-                createTimelineData({ gameloop: 0, workers_active: 14 }),
+                create_timeline_data({ gameloop: 0, workers_active: 12 }),
+                create_timeline_data({ gameloop: 0, workers_active: 14 }),
             ],
             [
-                createTimelineData({ gameloop: 224, workers_active: 16 }),
-                createTimelineData({ gameloop: 224, workers_active: 18 }),
+                create_timeline_data({ gameloop: 224, workers_active: 16 }),
+                create_timeline_data({ gameloop: 224, workers_active: 18 }),
             ],
         ]
         const idealTimeline: TimelineData[][] = [
             [
-                createTimelineData({ gameloop: 0, workers_active: 13 }),
-                createTimelineData({ gameloop: 0, workers_active: 15 }),
+                create_timeline_data({ gameloop: 0, workers_active: 13 }),
+                create_timeline_data({ gameloop: 0, workers_active: 15 }),
             ],
             [
-                createTimelineData({ gameloop: 224, workers_active: 17 }),
-                createTimelineData({ gameloop: 224, workers_active: 19 }),
+                create_timeline_data({ gameloop: 224, workers_active: 17 }),
+                create_timeline_data({ gameloop: 224, workers_active: 19 }),
             ],
         ]
 
@@ -179,14 +179,14 @@ describe("merge_timelines", () => {
     it("handles different player selections", () => {
         const realTimeline: TimelineData[][] = [
             [
-                createTimelineData({ gameloop: 0, workers_active: 12 }),
-                createTimelineData({ gameloop: 0, workers_active: 100 }),
+                create_timeline_data({ gameloop: 0, workers_active: 12 }),
+                create_timeline_data({ gameloop: 0, workers_active: 100 }),
             ],
         ]
         const idealTimeline: TimelineData[][] = [
             [
-                createTimelineData({ gameloop: 0, workers_active: 13 }),
-                createTimelineData({ gameloop: 0, workers_active: 200 }),
+                create_timeline_data({ gameloop: 0, workers_active: 13 }),
+                create_timeline_data({ gameloop: 0, workers_active: 200 }),
             ],
         ]
 
@@ -199,22 +199,22 @@ describe("merge_timelines", () => {
     it("maintains running state for each player", () => {
         const realTimeline: TimelineData[][] = [
             [
-                createTimelineData({ gameloop: 0, workers_active: 12 }),
-                createTimelineData({ gameloop: 0, workers_active: 20 }),
+                create_timeline_data({ gameloop: 0, workers_active: 12 }),
+                create_timeline_data({ gameloop: 0, workers_active: 20 }),
             ],
             [
-                createTimelineData({ gameloop: 448, workers_active: 16 }),
-                createTimelineData({ gameloop: 448, workers_active: 24 }),
+                create_timeline_data({ gameloop: 448, workers_active: 16 }),
+                create_timeline_data({ gameloop: 448, workers_active: 24 }),
             ],
         ]
         const idealTimeline: TimelineData[][] = [
             [
-                createTimelineData({ gameloop: 0, workers_active: 13 }),
-                createTimelineData({ gameloop: 0, workers_active: 21 }),
+                create_timeline_data({ gameloop: 0, workers_active: 13 }),
+                create_timeline_data({ gameloop: 0, workers_active: 21 }),
             ],
             [
-                createTimelineData({ gameloop: 448, workers_active: 17 }),
-                createTimelineData({ gameloop: 448, workers_active: 25 }),
+                create_timeline_data({ gameloop: 448, workers_active: 17 }),
+                create_timeline_data({ gameloop: 448, workers_active: 25 }),
             ],
         ]
 

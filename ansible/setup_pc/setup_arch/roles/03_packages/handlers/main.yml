@@ -1,0 +1,8 @@
+---
+- name: restart pipewire
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
+  ansible.builtin.systemd_service:
+    name: pipewire.service
+    scope: user
+    state: restarted
+  when: not ansible_check_mode

@@ -10,7 +10,6 @@
       - rofi  # dmenu alternative
       - alacritty  # terminal emulator
       - ghostty  # terminal emulator
-      - xautolock  # autolock after time
       - i3lock  # lock screen / screensaver
       - xorg-xsetroot  # set background image
       # --- end of i3wm ---
@@ -65,6 +64,7 @@
       - openssh
       - sshpass  # Allow ssh/ansible to login with password
       - ansible
+      - acl  # for ansible become_user (setfacl)
       - git
       - lazygit  # git gui for terminal
       - helix
@@ -84,7 +84,9 @@
       # Media player command-line controller
       - playerctl
       # Mic audio control gui (remove background noise, improve voice quality)
-      - easyeffects
+      # - easyeffects
+      # Noise suppresion using pipewire instead of easyeffects
+      - noise-suppression-for-voice
       # Gleam
       - gleam
       - rebar3
@@ -137,11 +139,10 @@
   ansible.builtin.group:
     name: docker
     state: present
-- name: Start docker service for user
+  become: true
+- name: Enable docker service
   ansible.builtin.systemd_service:
     name: docker.service
-    state: started
-    daemon_reload: true
     enabled: true
   become: true
   when: not ansible_check_mode
@@ -153,7 +154,9 @@
       - docker
       - wheel  # sudo rights
     shell: /usr/bin/fish
+    append: true
   become: true
+  when: not ansible_check_mode
 - name: Start syncthing service for user
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
   ansible.builtin.systemd_service:
@@ -171,30 +174,35 @@
 #     state: directory
 #   loop:
 #     - "~/syncthing"
-- name: Create user systemd directory
-  file:
-    path: '{{ item }}'
-    recurse: true
+- name: Create pipewire user config directory
+  ansible.builtin.file:
+    path: ~/.config/pipewire/pipewire.conf.d
     state: directory
-  loop:
-    - ~/.config/systemd/user
-- name: Copy audio.sh script
-  ansible.builtin.template:
-    src: audio.sh
-    dest: ~/.config/systemd/user/audiosh.sh
-- name: Copy audio.sh service file
-  ansible.builtin.template:
-    src: audiosh.service
-    dest: ~/.config/systemd/user/audiosh.service
-- name: Start twitch audio sinks service for user
+    mode: '0755'
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
-  ansible.builtin.systemd_service:
-    name: audiosh.service
-    scope: user
-    state: started
-    daemon_reload: true
-    enabled: true
-  when: not ansible_check_mode
+- name: Copy pipewire drop-in configs
+  ansible.builtin.copy:
+    src: 'pipewire/{{ item }}'
+    dest: '~/.config/pipewire/pipewire.conf.d/{{ item }}'
+    mode: '0644'
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
+  loop:
+    - 99-audio-setup.conf
+    - custom-latency.conf
+  notify: restart pipewire
+- name: Create pipewire-pulse user config directory
+  ansible.builtin.file:
+    path: ~/.config/pipewire/pipewire-pulse.conf.d
+    state: directory
+    mode: '0755'
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
+- name: Copy pipewire-pulse drop-in configs
+  ansible.builtin.copy:
+    src: pipewire-pulse/pipewire-pulse.conf.d/99-combined-remap.conf
+    dest: ~/.config/pipewire/pipewire-pulse.conf.d/99-combined-remap.conf
+    mode: '0644'
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
+  notify: restart pipewire
 - name: Ensure local directory exists
   ansible.builtin.file:
     path: /media/burnylaptopd
