@@ -1,0 +1,1 @@
+SELECT COALESCE(twitch_name, '') AS twitch_name, COALESCE(discord_webhook, '') AS discord_webhook, COALESCE(announce_message, '') AS announce_message, COALESCE(status, 'offline') AS status, last_seen_online, announced_at FROM stream_announcer_streams WHERE enabled IS TRUE ORDER BY id;

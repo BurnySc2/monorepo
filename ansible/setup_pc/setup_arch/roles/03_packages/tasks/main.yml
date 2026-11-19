@@ -87,6 +87,9 @@
       # - easyeffects
       # Noise suppresion using pipewire instead of easyeffects
       - noise-suppression-for-voice
+      # Gleam
+      - gleam
+      - rebar3
     state: present
   become: true
 - name: Install bigger packages (>10mb)
