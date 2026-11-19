@@ -7,8 +7,8 @@ compose file, and starts the stack.
 
 ## 1. Inventory Map
 
-Groups are defined in `hosts` at the `ansible/` root.
-Run playbooks from inside `ansible/` so `-i ../hosts` resolves.
+Groups are defined in `inventory/hosts`.
+Run playbooks from inside `ansible/` so `-i inventory` resolves.
 
 | Group          | Members                         | Use when                    |
 | -------------- | ------------------------------- | --------------------------- |
@@ -32,10 +32,10 @@ Playbooks read them through a second inventory entry:
 
 ```sh
 export ANSIBLE_SECRETS=/home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-ansible-playbook service_filebrowser/filebrowser_setup.yml -i ../hosts -i $ANSIBLE_SECRETS
+ansible-playbook service_filebrowser/filebrowser_setup.yml -i inventory -i $ANSIBLE_SECRETS
 ```
 
-The pattern is always `-i ../hosts -i $ANSIBLE_SECRETS`.
+The pattern is always `-i inventory -i $ANSIBLE_SECRETS`.
 Templates reference values as `{{ secrets.MY_PUBLIC_DOMAIN }}` and similar
 placeholders; no real values belong in this repo.
 
@@ -59,7 +59,7 @@ Run one service at a time from `ansible/`. This example deploys
 Filebrowser to `server_group4`:
 
 ```sh
-ansible-playbook service_filebrowser/filebrowser_setup.yml -i ../hosts -i $ANSIBLE_SECRETS
+ansible-playbook service_filebrowser/filebrowser_setup.yml -i inventory -i $ANSIBLE_SECRETS
 ```
 
 The playbook creates the service user, writes
@@ -118,3 +118,4 @@ uv run --group dev yamllint .
 ```
 
 Run `yamlfix` before `yamllint`; review `git diff` after first run (block_style/null can cause cosmetic diffs).
+Diff output is always on via `[diff] always = True` in `ansible.cfg`, so `--diff` is redundant.

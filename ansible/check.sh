@@ -28,7 +28,7 @@ check_syntax() {
   command -v ansible-playbook >/dev/null || { strict_skip "ansible"; return $?; }
   for play in service_*/*_setup.yml; do
     echo "==> $play"
-    ansible-playbook -i hosts "$play" --syntax-check --check
+    ansible-playbook -i inventory "$play" --syntax-check --check
   done
 }
 # WHY verify vault-backed runs without printing values.
@@ -42,7 +42,7 @@ check_secrets() {
   fi
   for play in service_*/*_setup.yml; do
     echo "==> $play + secrets"
-    ansible-playbook -i hosts -i "$SECRETS" "$play" --syntax-check --check --diff
+    ansible-playbook -i inventory -i "$SECRETS" "$play" --syntax-check --check
   done
 }
 main() {
