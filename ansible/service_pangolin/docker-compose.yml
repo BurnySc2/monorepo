@@ -11,9 +11,9 @@ services:
     restart: unless-stopped
     volumes:
       - ./config:/app/config
-    #   - /var/run/docker.sock:/var/run/docker.sock:ro
+      #   - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-    #   - DOCKER_SOCKET=/var/run/docker.sock
+      #   - DOCKER_SOCKET=/var/run/docker.sock
       - DISABLE_BACKUP_ON_MIGRATION=true
     healthcheck:
       test:

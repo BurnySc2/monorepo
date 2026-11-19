@@ -135,7 +135,8 @@ def extract_chapters(data: io.BytesIO) -> list[EpubChapter]:
         # Assumption: was created with callibre
         if len(chapters) <= 1:
             for chapter in c.book.items:
-                follow_link(chapter)
+                if isinstance(chapter, (Link, Section, EpubHtml)):
+                    follow_link(chapter)
     finally:
         # Fixes memory leak?
         del c
