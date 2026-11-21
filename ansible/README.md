@@ -119,3 +119,5 @@ uv run --group dev yamllint .
 
 Run `yamlfix` before `yamllint`; review `git diff` after first run (block_style/null can cause cosmetic diffs).
 Diff output is always on via `[diff] always = True` in `ansible.cfg`, so `--diff` is redundant.
+
+`ansible-lint` (`check.sh check_ansible_lint`) is check-only in CI: `uv run --group dev ansible-lint --strict site.yml provision_docker_networks.yml setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/`. Baseline is 361 violations (var-naming 129, fqcn 71, risky-file-permissions 42, rest mixed) burned down separately, not gated to zero. Local auto-fix is `ansible-lint --fix=yaml,fqcn,key-order,jinja` only, then review `git diff`. Order is `yamlfix` first, then `yamllint`/`ansible-lint`; `.venv` and `service_*/templates/*.j2` are excluded. `check.sh` ends with `PASS: compose, syntax, secrets checks done`, which names compose/syntax/secrets only — yaml/lint gates run earlier in the same script.

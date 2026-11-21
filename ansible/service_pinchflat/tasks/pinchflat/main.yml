@@ -9,14 +9,17 @@
       - pinchflat_subdomain is defined
       - pinchflat_port is defined
     fail_msg: Missing inventory/host_vars for pinchflat_username, pinchflat_subdomain, pinchflat_port
+
 - name: Ensure A record exists
   ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
   loop:
     - {domain: '{{ secrets.MY_PRIVATE_DOMAIN }}', subdomain: '{{ pinchflat_subdomain }}'}
+
 - name: Create group
   ansible.builtin.group:
     name: '{{ pinchflat_username }}'
     state: present
+
 - name: Create user
   ansible.builtin.user:
     name: '{{ pinchflat_username }}'
@@ -24,27 +27,32 @@
       - '{{ pinchflat_username }}'
       - docker
     shell: '{{ secrets.DEFAULT_SHELL }}'
+
 # WHY id syncthing fails unless syncthing user exists: run syncthing first on prodesk
 - name: Get syncthing user id
   ansible.builtin.shell:
     cmd: id syncthing -u
   register: SYNCTHING_USER_ID
   changed_when: false
+
 - name: Get syncthing group id
   ansible.builtin.shell:
     cmd: id syncthing -g
   register: SYNCTHING_GROUP_ID
   changed_when: false
+
 - name: Get user id
   ansible.builtin.shell:
     cmd: id {{ pinchflat_username }} -u
   register: USER_ID
   changed_when: false
+
 - name: Get group id
   ansible.builtin.shell:
     cmd: id {{ pinchflat_username }} -g
   register: GROUP_ID
   changed_when: false
+
 - name: Create directories
   ansible.builtin.file:
     path: '{{ item }}'
@@ -55,6 +63,7 @@
   loop:
     - /home/{{ pinchflat_username }}/config
     - /media/ssd480/pinchflat/downloads
+
 - name: Template docker-compose.yml file
   ansible.builtin.template:
     src: ../../templates/docker-compose.yml.j2

@@ -1,6 +1,7 @@
 ---
 - name: Ensure pangolin_newt network exists
   ansible.builtin.import_tasks: ../../../tasks/docker/networks.yml
+
 - name: Assert jellyfin inventory variables are defined
   ansible.builtin.assert:
     that:
@@ -8,14 +9,17 @@
       - jellyfin_subdomain is defined
       - jellyfin_port is defined
     fail_msg: Missing inventory/host_vars for jellyfin_username, jellyfin_subdomain, jellyfin_port
+
 - name: Ensure A record exists
   ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
   loop:
     - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ jellyfin_subdomain }}'}
+
 - name: Create group
   ansible.builtin.group:
     name: '{{ jellyfin_username }}'
     state: present
+
 - name: Create user
   ansible.builtin.user:
     name: '{{ jellyfin_username }}'
@@ -23,16 +27,19 @@
       - '{{ jellyfin_username }}'
       - docker
     shell: '{{ secrets.DEFAULT_SHELL }}'
+
 - name: Get user id
   ansible.builtin.shell:
     cmd: id {{ jellyfin_username }} -u
   register: USER_ID
   changed_when: false
+
 - name: Get group id
   ansible.builtin.shell:
     cmd: id {{ jellyfin_username }} -g
   register: GROUP_ID
   changed_when: false
+
 - name: Create directories
   ansible.builtin.file:
     path: '{{ item }}'
@@ -42,6 +49,7 @@
     group: '{{ GROUP_ID.stdout }}'
   loop:
     - /home/{{ jellyfin_username }}/config
+
 - name: Template docker-compose.yml file
   ansible.builtin.template:
     src: ../../templates/docker-compose.yml.j2

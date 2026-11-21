@@ -9,10 +9,12 @@
       - NEWT_ID is defined
       - NEWT_SECRET is defined
     fail_msg: Missing inventory/host_vars for pangolin_newt_username, NEWT_ID, NEWT_SECRET (pass -e NEWT_ID=... -e NEWT_SECRET=...)
+
 - name: Create group
   ansible.builtin.group:
     name: '{{ pangolin_newt_username }}'
     state: present
+
 - name: Create user
   ansible.builtin.user:
     name: '{{ pangolin_newt_username }}'
@@ -20,16 +22,19 @@
       - '{{ pangolin_newt_username }}'
       - docker
     shell: '{{ secrets.DEFAULT_SHELL }}'
+
 - name: Get user id
   ansible.builtin.shell:
     cmd: id {{ pangolin_newt_username }} -u
   register: USER_ID
   changed_when: false
+
 - name: Get group id
   ansible.builtin.shell:
     cmd: id {{ pangolin_newt_username }} -g
   register: GROUP_ID
   changed_when: false
+
 - name: Create directories
   ansible.builtin.file:
     path: '{{ item }}'
@@ -39,6 +44,7 @@
     group: '{{ GROUP_ID.stdout }}'
   loop:
     - /home/{{ pangolin_newt_username }}
+
 - name: Template docker-compose.yml file
   ansible.builtin.template:
     src: ../../templates/docker-compose.yml.j2

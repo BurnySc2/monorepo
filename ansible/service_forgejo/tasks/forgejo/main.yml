@@ -10,14 +10,17 @@
       - forgejo_port is defined
       - forgejo_ssh_port is defined
     fail_msg: Missing inventory/host_vars for forgejo_username, forgejo_subdomain, forgejo_port, forgejo_ssh_port
+
 - name: Ensure A record exists
   ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
   loop:
     - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ forgejo_subdomain }}'}
+
 - name: Create group
   ansible.builtin.group:
     name: '{{ forgejo_username }}'
     state: present
+
 - name: Create user
   ansible.builtin.user:
     name: '{{ forgejo_username }}'
@@ -25,16 +28,19 @@
       - '{{ forgejo_username }}'
       - docker
     shell: '{{ secrets.DEFAULT_SHELL }}'
+
 - name: Get user id
   ansible.builtin.shell:
     cmd: id {{ forgejo_username }} -u
   register: USER_ID
   changed_when: false
+
 - name: Get group id
   ansible.builtin.shell:
     cmd: id {{ forgejo_username }} -g
   register: GROUP_ID
   changed_when: false
+
 - name: Create directories
   ansible.builtin.file:
     path: '{{ item }}'
@@ -44,6 +50,7 @@
     group: '{{ GROUP_ID.stdout }}'
   loop:
     - /home/{{ forgejo_username }}/forgejo
+
 - name: Template docker-compose.yml file
   ansible.builtin.template:
     src: ../../templates/docker-compose.yml.j2

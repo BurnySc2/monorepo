@@ -14,6 +14,11 @@ check_yaml_format() {
   uv run --group dev yamlfix --check --exclude '.venv/**/*' .
   uv run --group dev yamllint --strict .
 }
+# WHY lint playbooks before compose/syntax checks.
+check_ansible_lint() {
+  command -v uv >/dev/null || { strict_skip "uv"; return $?; }
+  uv run --group dev ansible-lint --strict site.yml provision_docker_networks.yml setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/
+}
 # WHY catch compose errors before ansible runs.
 check_compose() {
   command -v docker >/dev/null || { strict_skip "docker"; return $?; }
@@ -47,6 +52,7 @@ check_secrets() {
 }
 main() {
   check_yaml_format
+  check_ansible_lint
   check_compose
   check_syntax
   check_secrets
