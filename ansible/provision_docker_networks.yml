@@ -1,0 +1,6 @@
+---
+- name: Provision shared Docker networks
+  # covers prodesk/burnylaptopd/contabo2 (bridge nets are host-local)
+  hosts: my_servers
+  tasks:
+    - ansible.builtin.include_tasks: tasks/docker/networks.yml

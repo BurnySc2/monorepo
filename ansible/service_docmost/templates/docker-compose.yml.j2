@@ -11,9 +11,9 @@ services:
       - db
       - redis
     environment:
-      APP_URL: https://{{ secrets.DOCMOST.SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+      APP_URL: https://{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       APP_SECRET: '{{ secrets.DOCMOST.APP_SECRET }}'
-      DATABASE_URL: postgresql://docmost:STRONG_DB_PASSWORD@db:5432/docmost?schema=public
+      DATABASE_URL: postgresql://docmost:{{ secrets.DOCMOST.DB_PASSWORD }}@db:5432/docmost?schema=public
       REDIS_URL: redis://redis:6379
     restart: unless-stopped
     volumes:
@@ -35,7 +35,7 @@ services:
     environment:
       POSTGRES_DB: docmost
       POSTGRES_USER: docmost
-      POSTGRES_PASSWORD: STRONG_DB_PASSWORD
+      POSTGRES_PASSWORD: '{{ secrets.DOCMOST.DB_PASSWORD }}'
     restart: unless-stopped
     volumes:
       - db_data:/var/lib/postgresql/data
@@ -49,6 +49,5 @@ services:
     networks:
       - docmost-net
 volumes:
-  docmost: null
   db_data: null
   redis_data: null

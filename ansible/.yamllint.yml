@@ -7,3 +7,4 @@ rules:
   line-length: disable
 ignore: |-
   .venv
+  service_*/templates/*.j2

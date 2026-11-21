@@ -1,0 +1,50 @@
+---
+- name: Ensure pangolin_newt network exists
+  ansible.builtin.import_tasks: ../../../tasks/docker/networks.yml
+
+- name: Assert syncthing inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - syncthing_username is defined
+      - syncthing_port is defined
+      - SYNCTHING_URL is defined
+    fail_msg: Missing inventory/host_vars for syncthing_username, syncthing_port, SYNCTHING_URL from secrets
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ syncthing_username }}'
+    state: present
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ syncthing_username }}'
+    groups:
+      - '{{ syncthing_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+- name: Get user id
+  ansible.builtin.shell:
+    cmd: id {{ syncthing_username }} -u
+  register: USER_ID
+  changed_when: false
+- name: Get group id
+  ansible.builtin.shell:
+    cmd: id {{ syncthing_username }} -g
+  register: GROUP_ID
+  changed_when: false
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+  loop:
+    - /home/{{ syncthing_username }}/config
+    - /home/{{ syncthing_username }}/data1
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ syncthing_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: restart syncthing

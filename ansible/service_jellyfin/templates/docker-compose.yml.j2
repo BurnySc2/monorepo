@@ -43,9 +43,5 @@ services:
     volumes:
       - ./config:/config
       - '{{ secrets.JELLYFIN.MEDIA_FOLDER }}:/media'
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 2048M
+    cpus: '0.5'
+    mem_limit: 2048M

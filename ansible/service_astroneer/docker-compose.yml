@@ -17,8 +17,5 @@ services:
       - OWNER_GUID={{ secrets.ASTRONEER.STEAM_GUID }}
       # - SERVER_PASSWORD={{ secrets.ASTRONEER.SERVER_PASSWORD }}
       - SAVE_NAME=SAVE_3
-    deploy:
-      resources:
-        limits:
-          # cpus: '0.5'
-          memory: 6000M
+    mem_limit: 6000M
+    # cpus: '0.5'

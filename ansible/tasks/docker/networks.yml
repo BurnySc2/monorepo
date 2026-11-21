@@ -1,0 +1,9 @@
+---
+- name: Ensure shared Docker networks exist
+  community.docker.docker_network:
+    name: "{{ item.name }}"
+    driver: bridge
+    attachable: true
+    internal: false
+    state: present
+  loop: "{{ docker_external_networks | default([{'name': 'pangolin_newt'}]) }}"

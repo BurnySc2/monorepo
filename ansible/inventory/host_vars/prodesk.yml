@@ -1,0 +1,14 @@
+---
+# host_vars for prodesk.
+# SAFE IN-REPO: service usernames, subdomains, and ports. These are
+# visible anyway via `id`, `docker ps`, and public DNS, so storing them here is fine.
+# STAYS SECRET in $ANSIBLE_SECRETS: MY_PRIVATE_DOMAIN, MEDIA paths,
+# server specifics (DEFAULT_SHELL), and all passwords/tokens.
+pinchflat_username: pinchflat
+pinchflat_subdomain: pinch
+pinchflat_port: 8945
+openchamber_username: openchamber
+openchamber_subdomain: openchamber
+openchamber_port: 3000
+syncthing_username: syncthing
+syncthing_port: 8384

@@ -1,0 +1,7 @@
+---
+# WHY no pull/build: wrapper image is locally built, inline task already builds it.
+- name: Restart openchamber
+  listen: restart openchamber
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ USERNAME }}"
+    state: present

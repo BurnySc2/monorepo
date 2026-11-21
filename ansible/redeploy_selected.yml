@@ -4,25 +4,43 @@
 # ansible-playbook redeploy_selected.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 # Forward extra vars if a service needs them, e.g. -e NEWT_ID=... -e NEWT_SECRET=...
 # Each imported play keeps its original `hosts:`.
+# Select services with tags, e.g.
+# ansible-playbook redeploy_selected.yml --tags filebrowser,forgejo
+# ansible-playbook redeploy_selected.yml --tags apps
+# ansible-playbook redeploy_selected.yml --list-tags
+- name: Provision shared networks first
+  ansible.builtin.import_playbook: provision_docker_networks.yml
+  tags: [networks, infra]
 - name: Redeploy pangolin newt first
   ansible.builtin.import_playbook: service_pangolin_newt/pangolin_newt_setup.yml
+  tags: [newt, infra]
 - name: Redeploy pangolin
   ansible.builtin.import_playbook: service_pangolin/pangolin_setup.yml
+  tags: [pangolin, infra]
 - name: Redeploy filebrowser
   ansible.builtin.import_playbook: service_filebrowser/filebrowser_setup.yml
+  tags: [filebrowser, apps]
 - name: Redeploy docmost
   ansible.builtin.import_playbook: service_docmost/docmost_setup.yml
+  tags: [docmost, apps]
 - name: Redeploy forgejo
   ansible.builtin.import_playbook: service_forgejo/forgejo_setup.yml
+  tags: [forgejo, apps]
 - name: Redeploy audiobookshelf
   ansible.builtin.import_playbook: service_audiobookshelf/audiobookshelf_setup.yml
+  tags: [audiobookshelf, apps]
 - name: Redeploy jellyfin
   ansible.builtin.import_playbook: service_jellyfin/jellyfin_setup.yml
+  tags: [jellyfin, apps]
 - name: Redeploy syncthing
   ansible.builtin.import_playbook: service_syncthing/syncthing_setup.yml
+  tags: [syncthing, apps]
 - name: Redeploy rustfs
   ansible.builtin.import_playbook: service_rustfs/rustfs_setup.yml
+  tags: [rustfs, apps]
 - name: Redeploy pinchflat
   ansible.builtin.import_playbook: service_pinchflat/pinchflat_setup.yml
+  tags: [pinchflat, apps]
 - name: Redeploy openchamber
   ansible.builtin.import_playbook: service_openchamber/openchamber_setup.yml
+  tags: [openchamber, apps]

@@ -27,9 +27,5 @@ services:
       - pangolin.public-resources.syncthing_{{ inventory_hostname }}.auth.sso-enabled=true
       - pangolin.public-resources.syncthing_{{ inventory_hostname }}.targets[0].method=http
       - pangolin.public-resources.syncthing_{{ inventory_hostname }}.targets[0].port={{ APPLICATION_PORT }}
-    deploy:
-      replicas: 1
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 2048M
+    cpus: '0.5'
+    mem_limit: 2048M

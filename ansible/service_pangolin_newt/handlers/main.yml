@@ -1,0 +1,8 @@
+---
+- name: Restart newt
+  listen: restart newt
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ USERNAME }}"
+    state: present
+    pull: always
+    remove_orphans: true

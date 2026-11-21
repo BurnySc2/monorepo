@@ -1,0 +1,3 @@
+---
+# Provision-first invariant: redeploy_selected.yml imports provision first; newt->pangolin order must stay.
+- ansible.builtin.import_playbook: redeploy_selected.yml

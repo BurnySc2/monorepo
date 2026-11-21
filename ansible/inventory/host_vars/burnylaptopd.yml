@@ -1,0 +1,14 @@
+---
+# host_vars for burnylaptopd.
+# SAFE IN-REPO: service usernames, subdomains, and well-known ports. These are
+# visible anyway via `id`, `docker ps`, and public DNS, so storing them here is fine.
+# STAYS SECRET in $ANSIBLE_SECRETS: MY_PUBLIC_DOMAIN, CLOUDFLARE.DNS_API_TOKEN,
+# server IPv4, DEFAULT_SHELL, and all passwords/tokens.
+audiobookshelf_username: audiobookshelf
+audiobookshelf_subdomain: audiobookshelf
+audiobookshelf_port: 80
+jellyfin_username: jellyfin
+jellyfin_subdomain: jellyfin
+jellyfin_port: 8096
+syncthing_username: syncthing
+syncthing_port: 8384
