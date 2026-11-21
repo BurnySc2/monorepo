@@ -22,121 +22,145 @@
   tags:
     - newt
     - infra
+
 - name: Redeploy pangolin
   ansible.builtin.import_playbook: service_pangolin/pangolin_setup.yml
   tags:
     - pangolin
     - infra
+
 - name: Redeploy filebrowser
   ansible.builtin.import_playbook: service_filebrowser/filebrowser_setup.yml
   tags:
     - filebrowser
     - apps
+
 - name: Redeploy docmost
   ansible.builtin.import_playbook: service_docmost/docmost_setup.yml
   tags:
     - docmost
     - apps
+
 - name: Redeploy forgejo
   ansible.builtin.import_playbook: service_forgejo/forgejo_setup.yml
   tags:
     - forgejo
     - apps
+
 - name: Redeploy audiobookshelf
   ansible.builtin.import_playbook: service_audiobookshelf/audiobookshelf_setup.yml
   tags:
     - audiobookshelf
     - apps
+
 - name: Redeploy jellyfin
   ansible.builtin.import_playbook: service_jellyfin/jellyfin_setup.yml
   tags:
     - jellyfin
     - apps
+
 - name: Redeploy syncthing
   ansible.builtin.import_playbook: service_syncthing/syncthing_setup.yml
   tags:
     - syncthing
     - apps
+
 - name: Redeploy rustfs
   ansible.builtin.import_playbook: service_rustfs/rustfs_setup.yml
   tags:
     - rustfs
     - apps
+
 - name: Redeploy pinchflat
   ansible.builtin.import_playbook: service_pinchflat/pinchflat_setup.yml
   tags:
     - pinchflat
     - apps
+
 - name: Redeploy openchamber
   ansible.builtin.import_playbook: service_openchamber/openchamber_setup.yml
   tags:
     - openchamber
     - apps
+
 - name: Redeploy baikal
   ansible.builtin.import_playbook: service_baikal/baikal_setup.yml
   tags:
     - baikal
     - apps
+
 - name: Redeploy comfyui
   ansible.builtin.import_playbook: service_comfyui/comfyui_setup.yml
   tags:
     - comfyui
     - apps
+
 - name: Redeploy drawio
   ansible.builtin.import_playbook: service_drawio/drawio_setup.yml
   tags:
     - drawio
     - apps
+
 - name: Redeploy excalidraw
   ansible.builtin.import_playbook: service_excalidraw/excalidraw_setup.yml
   tags:
     - excalidraw
     - apps
+
 - name: Redeploy mealie
   ansible.builtin.import_playbook: service_mealie/mealie_setup.yml
   tags:
     - mealie
     - apps
+
 - name: Redeploy navidrome
   ansible.builtin.import_playbook: service_navidrome/navidrome_setup.yml
   tags:
     - navidrome
     - apps
+
 - name: Redeploy stirling
   ansible.builtin.import_playbook: service_stirling/stirling_setup.yml
   tags:
     - stirling
     - apps
+
 - name: Redeploy uptime_kuma
   ansible.builtin.import_playbook: service_uptime_kuma/uptime_kuma_setup.yml
   tags:
     - uptime_kuma
     - apps
+
 - name: Redeploy mirotalk
   ansible.builtin.import_playbook: service_mirotalk/mirotalk_setup.yml
   tags:
     - mirotalk
     - apps
+
 - name: Redeploy satisfactory
   ansible.builtin.import_playbook: service_satisfactory/satisfactory_setup.yml
   tags:
     - satisfactory
     - games
+
 - name: Redeploy v_rising
   ansible.builtin.import_playbook: service_v_rising/vrising_setup.yml
   tags:
     - v_rising
     - games
+
 - name: Redeploy space_engineers
   ansible.builtin.import_playbook: service_space_engineers/spaceeng_setup.yml
   tags:
     - space_engineers
     - games
+
 - name: Redeploy astroneer
   ansible.builtin.import_playbook: service_astroneer/astroneer_setup.yml
   tags:
     - astroneer
     - games
+
 - name: Global Docker cleanup (opt-in)
   ansible.builtin.import_playbook: docker_cleanup.yml
   tags:
