@@ -9,11 +9,14 @@
 # ansible-playbook redeploy_selected.yml --tags apps
 # ansible-playbook redeploy_selected.yml --tags games
 # ansible-playbook redeploy_selected.yml --list-tags
-- name: Provision shared networks first
-  ansible.builtin.import_playbook: provision_docker_networks.yml
-  tags:
-    - networks
-    - infra
+- name: Provision shared Docker networks
+  # covers prodesk/burnylaptopd/contabo2 (bridge nets are host-local)
+  hosts: my_servers
+  tasks:
+    - ansible.builtin.include_tasks: tasks/docker/networks.yml
+      tags: [networks, always]
+  tags: [networks, always]
+
 - name: Redeploy pangolin newt first
   ansible.builtin.import_playbook: service_pangolin_newt/pangolin_newt_setup.yml
   tags:

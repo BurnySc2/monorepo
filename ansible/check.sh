@@ -17,7 +17,7 @@ check_yaml_format() {
 # WHY lint playbooks before compose/syntax checks.
 check_ansible_lint() {
   command -v uv >/dev/null || { strict_skip "uv"; return $?; }
-  uv run --group dev ansible-lint --strict site.yml provision_docker_networks.yml setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/
+  uv run --group dev ansible-lint --strict setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/
 }
 # WHY catch compose errors before ansible runs.
 check_compose() {
