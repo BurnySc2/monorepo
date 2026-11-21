@@ -70,8 +70,7 @@ references left across playbook headers; converting them to the
 
 ## 5. Ingress Decision
 
-Pangolin is the entrypoint for public traffic.
-See `service_traefik/DEPRECATED.md` for the frozen legacy stack.
+Pangolin is the entrypoint for public traffic (legacy traefik stack removed).
 
 - `gerbil` in `service_pangolin/docker-compose.yml` binds `80:80`
   and `443:443`; no other stack binds those ports.
