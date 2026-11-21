@@ -18,3 +18,10 @@ baikal_port: 80
 mealie_username: mealie
 mealie_subdomain: mealie
 mealie_port: 9000
+backup_jobs:
+  - {name: baikal_config, src: "/home/baikal/config/", excludes: []}
+  - {name: baikal_data, src: "/home/baikal/data/", excludes: []}
+  - {name: audiobookshelf, src: "/home/lissen/config", excludes: []}
+  # WHY ** prefix: match at any depth below SOURCE (e.g. config/data/metadata when SOURCE is config)
+  - {name: jellyfin, src: "/home/vodching/config", excludes: ["**data/transcodes", "**data/metadata", "**cache"]}
+  - {name: mealie, src: "/home/mealie/mealie-data", excludes: []}

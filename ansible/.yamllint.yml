@@ -12,3 +12,4 @@ rules:
 ignore: |-
   .venv
   service_*/templates/*.j2
+  backup/templates/*.j2

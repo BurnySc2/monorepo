@@ -1,0 +1,5 @@
+---
+# Rdiff retention defaults
+RDIFF_KEEP_DAILY: 3
+RDIFF_KEEP_WEEKLY: 3
+RDIFF_KEEP_MONTHLY: 3

@@ -47,3 +47,11 @@ uptime_kuma_port: 3001
 mirotalk_username: mirotalk
 mirotalk_subdomain: mirotalk
 mirotalk_port: 3000
+backup_jobs:
+  - {name: navidrome, src: "/home/catjam/data", excludes: []}
+  - {name: filebrowser, src: "/home/cloud/database/", excludes: []}
+  - {name: docmost, src: "/home/docmost/docmost/", excludes: []}
+  - {name: drawio, src: "/home/drawio/data/", excludes: []}
+  - {name: excalidraw, src: "/home/excalidraw/data/", excludes: []}
+  - {name: forgejo, src: "/home/forgejo/forgejo/", excludes: []}
+  - {name: pangolin, src: "/home/pangolin/config/", excludes: []}

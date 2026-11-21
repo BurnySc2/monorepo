@@ -24,3 +24,5 @@ space_engineers_username: space_engineers
 space_engineers_port: 8384
 astroneer_username: astroneer
 astroneer_port: 30877
+backup_jobs:
+  - {name: pinchflat, src: "/home/pinchflat/config", excludes: []}
