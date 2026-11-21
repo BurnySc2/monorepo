@@ -1,0 +1,68 @@
+---
+- name: Ensure pangolin_newt network exists
+  ansible.builtin.import_tasks: ../../../tasks/docker/networks.yml
+
+- name: Assert space_engineers inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - space_engineers_username is defined
+      - space_engineers_port is defined
+    fail_msg: Missing inventory/host_vars for space_engineers_username, space_engineers_port
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ space_engineers_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ space_engineers_username }}'
+    groups:
+      - '{{ space_engineers_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.shell:
+    cmd: id {{ space_engineers_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.shell:
+    cmd: id {{ space_engineers_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+  loop:
+    - /home/{{ space_engineers_username }}/instances/{{ secrets.SPACE_ENGINEERS.INSTANCE_NAME }}/Saves/World
+
+- name: Print reminder
+  ansible.builtin.debug:
+    msg:
+      - Copy your savegame (e.g. files with .vx2 ending) into the "Saves/World/" path
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ space_engineers_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: restart space_engineers
+
+- name: Template SpaceEngineers-Dedicated.cfg file
+  ansible.builtin.template:
+    src: ../../templates/SpaceEngineers-Dedicated.cfg.j2
+    dest: /home/{{ space_engineers_username }}/instances/{{ secrets.SPACE_ENGINEERS.INSTANCE_NAME }}/SpaceEngineers-Dedicated.cfg
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: restart space_engineers

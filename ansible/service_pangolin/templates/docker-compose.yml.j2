@@ -53,6 +53,14 @@ services:
       # The TCP port (postgres: 5432, mariadb: 3306)
       - 5432:5432
       - 3306:3306
+      - 7777:7777/udp
+      - 7777:7777/tcp
+      - 9876:9876/udp
+      - 9877:9877/udp
+      - 9878:9878/tcp
+      - 27016:27016/udp
+      - 30877:30877/udp
+      - 30877:30877/tcp
   traefik:
     image: docker.io/traefik:v3.6  # WHY v3.6 SSOT: pangolin stack
     container_name: traefik

@@ -1,27 +1,14 @@
 ---
+# https://github.com/wolveix/satisfactory-server
+# https://github.com/wolveix/satisfactory-server/wiki/Troubleshooting-FAQ
 # Execute with
-# ansible-playbook satisfactory_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook satisfactory_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [satisfactory]
-  hosts: my_servers
+  hosts: prodesk
   vars:
-    USERNAME: '{{ secrets.SATISFACTORY.USERNAME }}'
+    USERNAME: "{{ satisfactory_username }}"
+    APPLICATION_PORT: "{{ satisfactory_port }}"
   tasks:
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Copy docker-compose.yml file
-      ansible.builtin.template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - ansible.builtin.include_tasks: tasks/satisfactory/main.yml
+  handlers:
+    - ansible.builtin.import_tasks: handlers/main.yml

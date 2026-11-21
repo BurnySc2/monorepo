@@ -1,0 +1,7 @@
+---
+- name: Restart drawio
+  listen: restart drawio
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ USERNAME }}"
+    state: present
+    pull: always

@@ -1,0 +1,60 @@
+---
+- name: Ensure pangolin_newt network exists
+  ansible.builtin.import_tasks: ../../../tasks/docker/networks.yml
+
+- name: Assert mealie inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - mealie_username is defined
+      - mealie_subdomain is defined
+      - mealie_port is defined
+    fail_msg: Missing inventory/host_vars for mealie_username, mealie_subdomain, mealie_port
+
+- name: Ensure A record exists
+  ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
+  loop:
+    - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ mealie_subdomain }}'}
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ mealie_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ mealie_username }}'
+    groups:
+      - '{{ mealie_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.shell:
+    cmd: id {{ mealie_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.shell:
+    cmd: id {{ mealie_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+  loop:
+    - /home/{{ mealie_username }}/mealie-data
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ mealie_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: restart mealie

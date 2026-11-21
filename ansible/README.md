@@ -64,7 +64,11 @@ ansible-playbook service_filebrowser/filebrowser_setup.yml -i inventory -i $ANSI
 
 The playbook creates the service user, writes
 `/home/<service>/docker-compose.yml` on the target, then runs
-compose down and up. There are 41 absolute `/home/burny/syncthing`
+compose down and up. For `redeploy_selected.yml`, `--tags apps` redeploys
+the 18 web services, `--tags games` redeploys only the 4 game servers
+on prodesk (satisfactory, v_rising, space_engineers, astroneer),
+`--tags <service>` redeploys one, and `--tags apps,games` redeploys
+all 22. Cleanup stays opt-in via `--tags cleanup`. There are 41 absolute `/home/burny/syncthing`
 references left across playbook headers; converting them to the
 `$ANSIBLE_SECRETS` pattern is recorded but left for a later change.
 
@@ -90,16 +94,16 @@ services.
 
 ## 6. Pinning Policy
 
-| Image            | Pin                       | Policy                                                                                                             |
-| ---------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| mariadb          | 10.11                     | Long-term release line in Bookstack                                                                                |
-| redis            | 7-alpine, 8-alpine        | Major-pinned per service (Paperless and Reactive Resume on 7, Docmost on 8)                                        |
-| postgres         | 15-alpine, 16-alpine      | 16 is the fleet standard; Reactive Resume stays on 15 for app support                                              |
-| pihole           | rolling release           | Tracks upstream, pin to dated release later                                                                        |
-| pangolin, gerbil | rolling release           | Tracks upstream, pin to dated release later                                                                        |
-| traefik          | 3.3.4 frozen, v3.6 active | 3.3.4 stays frozen in legacy stack; v3.6 serves the Pangolin stack                                                 |
-| wireguard        | rolling release           | Intentional rolling tag in legacy traefik compose files                                                            |
-| compose pull     | missing                   | 7 setup playbooks use `pull: missing` (docmost, paperless, pangolin, pihole, bookstack, reactive_resume, postgres) |
+| Image            | Pin                       | Policy                                                                                 |
+| ---------------- | ------------------------- | -------------------------------------------------------------------------------------- |
+| mariadb          | 10.11                     | Long-term release line in Bookstack                                                    |
+| redis            | 7-alpine, 8-alpine        | Major-pinned per service (Docmost on 8)                                                |
+| postgres         | 15-alpine, 16-alpine      | 16 is fleet standard                                                                   |
+| pihole           | rolling release           | Tracks upstream, pin to dated release later                                            |
+| pangolin, gerbil | rolling release           | Tracks upstream, pin to dated release later                                            |
+| traefik          | 3.3.4 frozen, v3.6 active | 3.3.4 stays frozen in legacy stack; v3.6 serves the Pangolin stack                     |
+| wireguard        | rolling release           | Intentional rolling tag in legacy traefik compose files                                |
+| compose pull     | missing                   | 5 setup playbooks use `pull: missing` (docmost, pangolin, pihole, bookstack, postgres) |
 
 ## 7. Formatting
 

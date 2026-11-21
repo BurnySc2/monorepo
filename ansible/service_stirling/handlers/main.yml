@@ -1,0 +1,7 @@
+---
+- name: Restart stirling
+  listen: restart stirling
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ USERNAME }}"
+    state: present
+    pull: always

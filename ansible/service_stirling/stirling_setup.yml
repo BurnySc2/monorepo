@@ -1,33 +1,13 @@
 ---
-# https://github.com/Stirling-Tools/Stirling-PDF
 # Execute with
-# ansible-playbook stirling_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook stirling_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [stirling]
   hosts: server_group4
   vars:
-    USERNAME: '{{ secrets.STIRLING.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.STIRLING.SUBDOMAIN }}'
-    APPLICATION_PORT: '8080'
+    USERNAME: "{{ stirling_username }}"
+    SUBDOMAIN: "{{ stirling_subdomain }}"
+    APPLICATION_PORT: "{{ stirling_port }}"
   tasks:
-    - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Copy docker-compose.yml file
-      ansible.builtin.template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - ansible.builtin.include_tasks: tasks/stirling/main.yml
+  handlers:
+    - ansible.builtin.import_tasks: handlers/main.yml

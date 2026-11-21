@@ -1,36 +1,11 @@
 ---
-# https://hub.docker.com/r/excalidraw/excalidraw
-# https://docs.excalidraw.com/docs/introduction/development
-# Execute with
-# ansible-playbook excalidraw_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [excalidraw]
   hosts: server_group4
   vars:
-    USERNAME: '{{ secrets.EXCALIDRAW.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.EXCALIDRAW.SUBDOMAIN }}'
-    APPLICATION_PORT: '80'
+    USERNAME: "{{ excalidraw_username }}"
+    SUBDOMAIN: "{{ excalidraw_subdomain }}"
+    APPLICATION_PORT: "{{ excalidraw_port }}"
   tasks:
-    - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Copy docker-compose.yml file
-      ansible.builtin.template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run docker-compose up
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        files:
-          - docker-compose.yml
-        pull: always
+    - ansible.builtin.include_tasks: tasks/excalidraw/main.yml
+  handlers:
+    - ansible.builtin.import_tasks: handlers/main.yml

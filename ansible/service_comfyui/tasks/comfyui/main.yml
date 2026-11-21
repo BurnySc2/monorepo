@@ -1,0 +1,60 @@
+---
+- name: Ensure pangolin_newt network exists
+  ansible.builtin.import_tasks: ../../../tasks/docker/networks.yml
+
+- name: Assert comfyui inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - comfyui_username is defined
+      - comfyui_subdomain is defined
+      - comfyui_port is defined
+    fail_msg: Missing inventory/host_vars for comfyui_username, comfyui_subdomain, comfyui_port
+
+- name: Ensure A record exists
+  ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
+  loop:
+    - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ comfyui_subdomain }}'}
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ comfyui_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ comfyui_username }}'
+    groups:
+      - '{{ comfyui_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.shell:
+    cmd: id {{ comfyui_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.shell:
+    cmd: id {{ comfyui_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+  loop:
+    - /home/{{ comfyui_username }}/storage
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ comfyui_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: restart comfyui

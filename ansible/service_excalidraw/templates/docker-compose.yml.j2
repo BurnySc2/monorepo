@@ -1,14 +1,9 @@
 ---
-# Excalidraw - Self-hosted whiteboard tool
-# https://hub.docker.com/r/excalidraw/excalidraw
-# https://docs.excalidraw.com/docs/introduction/development
-# No external database needed - uses local storage for exports
 networks:
   pangolin_newt:
     external: true
 services:
   excalidraw:
-    # https://hub.docker.com/r/excalidraw/excalidraw/tags
     image: excalidraw/excalidraw:latest
     container_name: excalidraw_docker
     hostname: excalidraw_docker

@@ -1,29 +1,13 @@
 ---
 # Execute with
-# ansible-playbook baikal_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+# ansible-playbook baikal_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [baikal]
   hosts: server_group2
   vars:
-    USERNAME: '{{ secrets.BAIKAL.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.BAIKAL.SUBDOMAIN }}'
-    APPLICATION_PORT: '80'
+    USERNAME: "{{ baikal_username }}"
+    SUBDOMAIN: "{{ baikal_subdomain }}"
+    APPLICATION_PORT: "{{ baikal_port }}"
   tasks:
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Copy docker-compose.yml file
-      ansible.builtin.template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - ansible.builtin.include_tasks: tasks/baikal/main.yml
+  handlers:
+    - ansible.builtin.import_tasks: handlers/main.yml

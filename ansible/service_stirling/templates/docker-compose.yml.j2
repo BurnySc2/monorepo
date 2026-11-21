@@ -1,10 +1,11 @@
 ---
+# https://github.com/Stirling-Tools/Stirling-PDF
 networks:
   pangolin_newt:
     external: true
 services:
   stirling-pdf:
-    image: frooodle/s-pdf:latest  # TODO pin release: WHY latest tracks rolling
+    image: frooodle/s-pdf:latest
     networks:
       - pangolin_newt
     labels:

@@ -12,3 +12,9 @@ jellyfin_subdomain: jellyfin
 jellyfin_port: 8096
 syncthing_username: syncthing
 syncthing_port: 8384
+baikal_username: baikal
+baikal_subdomain: baikal
+baikal_port: 80
+mealie_username: mealie
+mealie_subdomain: mealie
+mealie_port: 9000

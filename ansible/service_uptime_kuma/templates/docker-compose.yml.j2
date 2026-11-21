@@ -11,7 +11,6 @@ services:
     networks:
       - pangolin_newt
     labels:
-      # WHY sso-disabled: was authelia@docker, now pangolin sso-enabled=false
       - pangolin.public-resources.uptime-kuma.name=Uptime Kuma
       - pangolin.public-resources.uptime-kuma.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
       - pangolin.public-resources.uptime-kuma.protocol=http

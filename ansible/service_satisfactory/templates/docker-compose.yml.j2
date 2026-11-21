@@ -1,0 +1,44 @@
+---
+# https://github.com/wolveix/satisfactory-server
+# https://github.com/wolveix/satisfactory-server/wiki/Troubleshooting-FAQ
+services:
+  satisfactory-server:
+    container_name: satisfactory-server
+    hostname: satisfactory-server
+    image: wolveix/satisfactory-server:latest
+    pull_policy: always
+    networks:
+      - pangolin_newt
+    volumes:
+      - ./satisfactory-server:/config
+    environment:
+      - MAXPLAYERS=8
+      - PUID={{ USER_ID.stdout }}
+      - PGID={{ GROUP_ID.stdout }}
+      - ROOTLESS=false
+      - STEAMBETA=false
+    restart: unless-stopped
+    healthcheck:
+      test: bash /healthcheck.sh
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    mem_limit: 6G
+    mem_reservation: 4G
+    labels:
+      - pangolin.public-resources.satisfactory-udp.name=Satisfactory UDP
+      - pangolin.public-resources.satisfactory-udp.protocol=udp
+      - pangolin.public-resources.satisfactory-udp.proxy-port=7777
+      - pangolin.public-resources.satisfactory-udp.targets[0].site=local
+      - pangolin.public-resources.satisfactory-udp.targets[0].hostname=satisfactory-server
+      - pangolin.public-resources.satisfactory-udp.targets[0].port=7777
+      - pangolin.public-resources.satisfactory-tcp.name=Satisfactory TCP
+      - pangolin.public-resources.satisfactory-tcp.protocol=tcp
+      - pangolin.public-resources.satisfactory-tcp.proxy-port=7777
+      - pangolin.public-resources.satisfactory-tcp.targets[0].site=local
+      - pangolin.public-resources.satisfactory-tcp.targets[0].hostname=satisfactory-server
+      - pangolin.public-resources.satisfactory-tcp.targets[0].port=7777
+networks:
+  pangolin_newt:
+    external: true

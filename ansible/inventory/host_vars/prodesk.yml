@@ -12,3 +12,15 @@ openchamber_subdomain: openchamber
 openchamber_port: 3000
 syncthing_username: syncthing
 syncthing_port: 8384
+
+comfyui_username: comfyui
+comfyui_subdomain: comfyui
+comfyui_port: 8188
+satisfactory_username: satisfactory
+satisfactory_port: 7777
+v_rising_username: v_rising
+v_rising_port: 9876
+space_engineers_username: space_engineers
+space_engineers_port: 8384
+astroneer_username: astroneer
+astroneer_port: 30877
