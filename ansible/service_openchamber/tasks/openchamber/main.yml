@@ -166,8 +166,3 @@
   community.docker.docker_compose_v2:
     project_src: /home/{{ openchamber_username }}
     build: always
-
-- name: Prune unused Docker images to free disk space
-  community.docker.docker_prune:
-    images: true
-    builder_cache: true

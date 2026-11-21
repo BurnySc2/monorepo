@@ -47,7 +47,7 @@
         cmd: id syncthing -g
       register: SYNCTHING_GROUP_ID
     - name: Create directories
-      file:
+      ansible.builtin.file:
         path: '{{ item }}'
         recurse: true
         state: directory
@@ -56,7 +56,7 @@
       loop:
         - '{{ secrets.RDIFF_BACKUP.BACKUP_TARGET_PATH }}'
     - name: Copy backup script
-      template:
+      ansible.builtin.template:
         src: backup_script.sh
         dest: '{{ BACKUP_SCRIPT_PATH }}'
         owner: '{{ SYNCTHING_USER_ID.stdout }}'

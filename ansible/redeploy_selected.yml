@@ -55,3 +55,7 @@
 - name: Redeploy openchamber
   ansible.builtin.import_playbook: service_openchamber/openchamber_setup.yml
   tags: [openchamber, apps]
+
+- name: Global Docker cleanup (opt-in)
+  ansible.builtin.import_playbook: docker_cleanup.yml
+  tags: [cleanup]

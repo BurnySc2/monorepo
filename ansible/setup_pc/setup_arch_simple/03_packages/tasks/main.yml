@@ -86,7 +86,7 @@
     shell: /usr/bin/fish
   become: true
 - name: Create user systemd directory
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     recurse: true
     state: directory

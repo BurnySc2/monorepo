@@ -4,35 +4,12 @@
 - name: Create service [rustfs]
   hosts: server_group4
   vars:
-    USERNAME: '{{ secrets.RUSTFS.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.RUSTFS.SUBDOMAIN }}'
-    ADMINSUBDOMAIN: '{{ secrets.RUSTFS.ADMINSUBDOMAIN }}'
+    USERNAME: "{{ rustfs_username }}"
+    SUBDOMAIN: "{{ rustfs_subdomain }}"
+    ADMINSUBDOMAIN: "{{ rustfs_adminsubdomain }}"
+    APPLICATION_PORT: "{{ rustfs_port }}"
+    ADMIN_PORT: "{{ rustfs_admin_port }}"
   tasks:
-    - include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ ADMINSUBDOMAIN }}'}
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: docker-compose stop
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        state: stopped
-      failed_when: false
-    - name: Copy rustfs docker-compose.yml file
-      template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run docker-compose up
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - ansible.builtin.include_tasks: tasks/rustfs/main.yml
+  handlers:
+    - ansible.builtin.import_tasks: handlers/main.yml

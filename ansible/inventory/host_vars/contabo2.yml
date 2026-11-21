@@ -24,3 +24,8 @@ syncthing_port: 8384
 pangolin_username: pangolin
 pangolin_subdomain: pangolin
 pangolin_newt_username: pangolin_newt
+rustfs_username: rustfs
+rustfs_subdomain: rustfs
+rustfs_adminsubdomain: rustfsadmin
+rustfs_port: 9000
+rustfs_admin_port: 9001

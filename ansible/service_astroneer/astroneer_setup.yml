@@ -19,15 +19,15 @@
           - docker
         shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Copy Dockerfile file
-      template:
+      ansible.builtin.template:
         src: Dockerfile
         dest: /home/{{ USERNAME }}/Dockerfile
     - name: Copy entrypoint.sh file
-      template:
+      ansible.builtin.template:
         src: entrypoint.sh
         dest: /home/{{ USERNAME }}/entrypoint.sh
     - name: Copy docker-compose.yml file
-      template:
+      ansible.builtin.template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
     - name: Tear down existing services

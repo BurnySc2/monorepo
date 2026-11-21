@@ -18,7 +18,7 @@
           - docker
         shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Copy docker-compose.yml file
-      template:
+      ansible.builtin.template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
     - name: Run `docker-compose up` again

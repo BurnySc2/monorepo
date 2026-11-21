@@ -35,13 +35,13 @@
         var: GROUP_ID.stdout
         verbosity: 0
     - name: Create systemd file
-      template:
+      ansible.builtin.template:
         src: files/factorio.service
         dest: /etc/systemd/system/{{ USERNAME }}.service
         owner: '{{ USER_ID.stdout }}'
         group: '{{ GROUP_ID.stdout }}'
     - name: Create directories
-      file:
+      ansible.builtin.file:
         path: '{{ item }}'
         recurse: true
         state: directory
@@ -51,19 +51,19 @@
         - /home/{{ USERNAME }}/data/config
         - /home/{{ USERNAME }}/data/mods
     - name: Copy admin list file
-      template:
+      ansible.builtin.template:
         src: files/server-adminlist.json
         dest: /home/{{ USERNAME }}/data/config/server-adminlist.json
         owner: '{{ USER_ID.stdout }}'
         group: '{{ GROUP_ID.stdout }}'
     - name: Copy server settings file
-      template:
+      ansible.builtin.template:
         src: files/server-settings.json
         dest: /home/{{ USERNAME }}/data/config/server-settings.json
         owner: '{{ USER_ID.stdout }}'
         group: '{{ GROUP_ID.stdout }}'
     - name: Copy mod list settings
-      template:
+      ansible.builtin.template:
         src: files/mod-list.json
         dest: /home/{{ USERNAME }}/data/mods/mod-list.json
         owner: '{{ USER_ID.stdout }}'

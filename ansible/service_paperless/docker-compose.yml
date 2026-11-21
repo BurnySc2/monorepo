@@ -1,7 +1,7 @@
 ---
 # DEPRECATED
 networks:
-  '{{secrets.TRAEFIK_NETWORK}}':
+  pangolin_newt:
     external: true
 services:
   broker:
@@ -10,7 +10,7 @@ services:
     image: docker.io/library/redis:7-alpine  # WHY 7-alpine: smaller base explicit major
     restart: unless-stopped
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     volumes:
       - redisdata:/data
   webserver:
@@ -20,14 +20,16 @@ services:
     depends_on:
       - broker
     networks:
-      - '{{ secrets.TRAEFIK_NETWORK }}'
+      - pangolin_newt
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.{{ USERNAME }}.rule=Host(`{{ USERNAME }}.{{ secrets.MY_PUBLIC_DOMAIN }}`)
-      - traefik.http.services.{{ USERNAME }}.loadbalancer.server.port={{ APPLICATION_PORT }}
-      - traefik.http.routers.{{ USERNAME }}.tls=true
-      - traefik.http.routers.{{ USERNAME }}.tls.certresolver=production
-      - traefik.http.routers.{{ USERNAME }}.middlewares=authelia@docker
+      - pangolin.public-resources.paperless.name=Paperless
+      - pangolin.public-resources.paperless.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+      - pangolin.public-resources.paperless.protocol=http
+      - pangolin.public-resources.paperless.auth.sso-enabled=true
+      - pangolin.public-resources.paperless.targets[0].site=local
+      - pangolin.public-resources.paperless.targets[0].method=http
+      - pangolin.public-resources.paperless.targets[0].hostname=paperless
+      - pangolin.public-resources.paperless.targets[0].port={{ APPLICATION_PORT }}
     healthcheck:
       test:
         - CMD

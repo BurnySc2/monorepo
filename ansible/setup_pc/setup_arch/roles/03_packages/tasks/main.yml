@@ -208,7 +208,7 @@
     group: '{{ USERNAME | default(ansible_user_id) }}'
     mode: '0755'
 - name: Mount burnylaptopd:/home
-  ansible.builtin.mount:
+  ansible.posix.mount:
     name: /media/burnylaptopd
     src: burnylaptopd:/home
     fstype: fuse.sshfs
@@ -225,7 +225,7 @@
     group: '{{ USERNAME | default(ansible_user_id) }}'
     mode: '0755'
 - name: Mount prodesk:/home
-  ansible.builtin.mount:
+  ansible.posix.mount:
     name: /media/prodesk
     src: prodesk:/home
     fstype: fuse.sshfs

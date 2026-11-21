@@ -23,11 +23,11 @@
         recurse: true
         state: directory
     - name: Copy ServerHostSettings file
-      template:
+      ansible.builtin.template:
         src: ServerHostSettings.json
         dest: /home/{{ USERNAME }}/vrising_saves/Settings/ServerHostSettings.json
     - name: Copy docker-compose.yml file
-      template:
+      ansible.builtin.template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
     - name: Run `docker-compose up` again

@@ -10,7 +10,7 @@
     SUBDOMAIN: '{{ secrets.DRAWIO.SUBDOMAIN }}'
     APPLICATION_PORT: '8080'
   tasks:
-    - include_tasks: ../setup_cloudflare_a_record.yml
+    - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
       loop:
         - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
     - name: Create group
@@ -25,7 +25,7 @@
           - docker
         shell: '{{ secrets.DEFAULT_SHELL }}'
     - name: Copy docker-compose.yml file
-      template:
+      ansible.builtin.template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
     - name: Run docker-compose up

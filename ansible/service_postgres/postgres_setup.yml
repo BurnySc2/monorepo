@@ -12,7 +12,7 @@
     APPLICATION2_PORT: '8080'
     BACKUP_PASSWORD: '{{ secrets.RDIFF_BACKUP.BACKUP_PASSWORD }}'
   tasks:
-    - include_tasks: ../setup_cloudflare_a_record.yml
+    - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
       loop:
         - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: postgres}
         - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: db}
@@ -37,7 +37,7 @@
         cmd: id syncthing -g
       register: SYNCTHING_GROUP_ID
     - name: Create directories
-      file:
+      ansible.builtin.file:
         path: /home/{{ USERNAME }}/pgadmindata
         recurse: true
         state: directory
@@ -50,7 +50,7 @@
         state: stopped
       failed_when: false
     - name: Copy docker-compose.yml file
-      template:
+      ansible.builtin.template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
     - name: Run `docker-compose up` again
@@ -58,20 +58,20 @@
         project_src: /home/{{ USERNAME }}
         pull: missing
     - name: Create directories
-      file:
+      ansible.builtin.file:
         path: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}'
         recurse: true
         state: directory
         owner: '{{ SYNCTHING_USER_ID.stdout }}'
         group: '{{ SYNCTHING_GROUP_ID.stdout }}'
     - name: Copy backup script file
-      template:
+      ansible.builtin.template:
         src: backup_postgres.sh
         dest: '{{ secrets.POSTGRES.BACKUP_MOUNT_PATH }}/backup_postgres.sh'
         # owner: '{{ USER_ID.stdout }}'
         # group: '{{ GROUP_ID.stdout }}'
     - name: Copy SSL renewal script file
-      template:
+      ansible.builtin.template:
         src: ssl_cron_script.sh
         dest: /home/{{ USERNAME }}/ssl_cron_script.sh
     - name: Create cron job for SSL certificate renewal
