@@ -3,7 +3,7 @@
 # https://docs.excalidraw.com/docs/introduction/development
 # Execute with
 # ansible-playbook excalidraw_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [excalidraw]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.EXCALIDRAW.USERNAME }}'

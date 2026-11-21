@@ -4,7 +4,7 @@
 # https://www.navidrome.org/docs/overview/#apps
 # Execute with
 # ansible-playbook navidrome_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [navidrome]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.NAVIDROME.USERNAME }}'

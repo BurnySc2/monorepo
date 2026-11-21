@@ -2,7 +2,7 @@
 # DEPRECATED
 # Execute with
 # ansible-playbook pihole_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [pihole]
   hosts: my_servers
   vars:
     USERNAME: '{{ secrets.PIHOLE.USERNAME }}'

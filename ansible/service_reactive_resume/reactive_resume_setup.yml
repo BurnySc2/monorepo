@@ -2,7 +2,7 @@
 # DEPRECATED
 # Execute with
 # ansible-playbook reactive_resume_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [reactive_resume]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.REACTIVE_RESUME.USERNAME }}'

@@ -1,7 +1,7 @@
 ---
 # Execute with
 # ansible-playbook syncthing_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [syncthing]
   hosts: my_servers
   vars:
     USERNAME: "{{ syncthing_username }}"

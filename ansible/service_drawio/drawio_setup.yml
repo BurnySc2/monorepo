@@ -3,7 +3,7 @@
 # https://www.drawio.com/
 # Execute with
 # ansible-playbook drawio_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [drawio]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.DRAWIO.USERNAME }}'

@@ -1,7 +1,7 @@
 ---
 # Execute with
 # ansible-playbook forgejo_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [forgejo]
   hosts: server_group4
   vars:
     USERNAME: "{{ forgejo_username }}"

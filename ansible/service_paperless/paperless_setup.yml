@@ -3,7 +3,7 @@
 # https://github.com/paperless-ngx/paperless-ngx
 # Execute with
 # ansible-playbook paperless_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [paperless]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.PAPERLESS.USERNAME }}'

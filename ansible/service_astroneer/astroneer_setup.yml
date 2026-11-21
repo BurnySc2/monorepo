@@ -1,7 +1,7 @@
 ---
 # Execute with
 # ansible-playbook astroneer_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start syncthing service
+- name: Create service [astroneer]
   hosts: my_servers
   vars:
     USERNAME: '{{ secrets.ASTRONEER.USERNAME }}'

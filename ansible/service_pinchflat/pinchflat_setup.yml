@@ -2,7 +2,7 @@
 # https://github.com/kieraneglin/pinchflat
 # Execute with
 # ansible-playbook pinchflat_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [pinchflat]
   hosts: server_group1
   vars:
     USERNAME: "{{ pinchflat_username }}"

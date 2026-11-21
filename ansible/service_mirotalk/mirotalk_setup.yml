@@ -2,7 +2,7 @@
 # https://github.com/miroslavpejic85/mirotalk
 # Execute with
 # ansible-playbook mirotalk_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [mirotalk]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.MIROTALK.USERNAME }}'

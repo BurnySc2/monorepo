@@ -2,7 +2,7 @@
 # https://hub.docker.com/r/factoriotools/factorio/
 # Execute with
 # ansible-playbook factorio_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start factorio service
+- name: Create service [factorio]
   hosts: my_servers
   vars:
     USERNAME: factorio

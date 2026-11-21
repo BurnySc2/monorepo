@@ -3,7 +3,7 @@
 # https://github.com/agent0ai/agent-zero
 # Execute with
 # ansible-playbook agent_zero_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [agent_zero]
   hosts: server_group1
   vars:
     USERNAME: '{{ secrets.AGENTZERO.USERNAME }}'

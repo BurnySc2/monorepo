@@ -1,7 +1,7 @@
 ---
 # Execute with
 # ansible-playbook mealie_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start mealie service
+- name: Create service [mealie]
   hosts: server_group2
   vars:
     USERNAME: '{{ secrets.MEALIE.USERNAME }}'

@@ -2,7 +2,7 @@
 # https://github.com/Stirling-Tools/Stirling-PDF
 # Execute with
 # ansible-playbook stirling_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [stirling]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.STIRLING.USERNAME }}'

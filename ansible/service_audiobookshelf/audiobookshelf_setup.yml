@@ -3,7 +3,7 @@
 # https://www.audiobookshelf.org/docs#docker-install
 # Execute with
 # ansible-playbook audiobookshelf_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [audiobookshelf]
   hosts: server_group2
   vars:
     USERNAME: "{{ audiobookshelf_username }}"

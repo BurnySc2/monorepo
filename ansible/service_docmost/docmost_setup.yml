@@ -2,7 +2,7 @@
 # https://docmost.com/docs/
 # Execute with
 # ansible-playbook docmost_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [docmost]
   hosts: server_group4
   vars:
     USERNAME: "{{ docmost_username }}"

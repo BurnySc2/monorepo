@@ -2,7 +2,7 @@
 # https://github.com/louislam/uptime-kuma
 # Execute with
 # ansible-playbook uptime_kuma_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [uptime_kuma]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.UPTIME_KUMA.USERNAME }}'

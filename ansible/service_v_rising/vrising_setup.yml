@@ -1,7 +1,7 @@
 ---
 # Execute with
 # ansible-playbook vrising_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [v_rising]
   hosts: my_servers
   vars:
     USERNAME: '{{ secrets.VRISING.USERNAME }}'

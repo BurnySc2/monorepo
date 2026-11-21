@@ -3,7 +3,7 @@
 # https://hub.docker.com/r/linuxserver/code-server
 # Execute with
 # ansible-playbook code_server_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [code_server]
   hosts: server_group1
   vars:
     USERNAME: '{{ secrets.CODESERVER.USERNAME }}'

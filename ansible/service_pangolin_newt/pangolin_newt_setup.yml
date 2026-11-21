@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook pangolin_newt_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets -e "NEWT_ID=xxx NEWT_SECRET=yyy"
 # Multi-site newt needs per-host vars with distinct NEWT_ID/SECRET per site.
-- name: Create service
+- name: Create service [pangolin_newt]
   hosts: server_group4
   vars:
     USERNAME: "{{ pangolin_newt_username }}"

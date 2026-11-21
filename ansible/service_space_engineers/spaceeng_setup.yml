@@ -1,7 +1,7 @@
 ---
 # Execute with
 # ansible-playbook spaceeng_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start syncthing service
+- name: Create service [space_engineers]
   hosts: my_servers
   vars:
     USERNAME: '{{ secrets.SPACE_ENGINEERS.USERNAME }}'

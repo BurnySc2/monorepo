@@ -2,7 +2,7 @@
 # https://github.com/rdiff-backup/rdiff-backup
 # Execute with
 # ansible-playbook rdiff_backup_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start duplicati service
+- name: Create service [rdiff_backup]
   hosts: my_servers
   vars:
     USERNAME: root

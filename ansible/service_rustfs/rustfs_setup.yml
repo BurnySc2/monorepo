@@ -1,7 +1,7 @@
 ---
 # Execute with
 # ansible-playbook rustfs_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start rustfs service
+- name: Create service [rustfs]
   hosts: server_group4
   vars:
     USERNAME: '{{ secrets.RUSTFS.USERNAME }}'

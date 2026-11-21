@@ -1,7 +1,7 @@
 ---
 # Execute with
 # ansible-playbook baikal_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
+- name: Create service [baikal]
   hosts: server_group2
   vars:
     USERNAME: '{{ secrets.BAIKAL.USERNAME }}'

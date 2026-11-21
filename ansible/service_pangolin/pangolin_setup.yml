@@ -3,7 +3,7 @@
 # ansible-playbook pangolin_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 # Secrets stay in templates: PANGOLIN_URL, PANGOLIN.SECRET, TRAEFIK.MY_EMAIL, CLOUDFLARE/MY_PUBLIC_DOMAIN.
 # Network converged to literal pangolin_newt via shared guard; legacy secrets.TRAEFIK_NETWORK no longer referenced.
-- name: Create service
+- name: Create service [pangolin]
   hosts: server_group4
   vars:
     USERNAME: "{{ pangolin_username }}"
