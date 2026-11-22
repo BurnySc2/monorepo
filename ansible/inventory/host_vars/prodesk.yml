@@ -29,4 +29,3 @@ gatus_subdomain: gatus
 gatus_port: 8080
 backup_jobs:
   - {name: pinchflat, src: "/home/pinchflat/config", excludes: []}
-  - {name: gatus, src: "/home/gatus/config", excludes: []}
