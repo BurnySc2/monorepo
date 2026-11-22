@@ -42,8 +42,8 @@ check_render_lint() {
   local tmp
   tmp=$(mktemp -d)
   trap 'rm -rf "$tmp"' RETURN
-  ansible localhost -c local -i localhost, -m ansible.builtin.template -a "src=service_syncthing/templates/docker-compose.yml.j2 dest=$tmp/member.yml" -e '{"group_names":["server_group1"],"USER_ID":{"stdout":"1000"},"GROUP_ID":{"stdout":"1000"},"inventory_hostname":"dummy","SYNCTHING_URL":"https://example.com","APPLICATION_PORT":"8384"}' >/dev/null
-  ansible localhost -c local -i localhost, -m ansible.builtin.template -a "src=service_syncthing/templates/docker-compose.yml.j2 dest=$tmp/plain.yml" -e '{"group_names":[],"USER_ID":{"stdout":"1000"},"GROUP_ID":{"stdout":"1000"},"inventory_hostname":"dummy","SYNCTHING_URL":"https://example.com","APPLICATION_PORT":"8384"}' >/dev/null
+  ansible localhost -c local -i localhost, -m ansible.builtin.template -a "src=service_syncthing/templates/docker-compose.yml.j2 dest=$tmp/member.yml" -e '{"USER_ID":{"stdout":"1000"},"GROUP_ID":{"stdout":"1000"},"inventory_hostname":"prodesk","SYNCTHING_URL":"https://example.com","APPLICATION_PORT":"8384"}' >/dev/null
+  ansible localhost -c local -i localhost, -m ansible.builtin.template -a "src=service_syncthing/templates/docker-compose.yml.j2 dest=$tmp/plain.yml" -e '{"USER_ID":{"stdout":"1000"},"GROUP_ID":{"stdout":"1000"},"inventory_hostname":"contabo2","SYNCTHING_URL":"https://example.com","APPLICATION_PORT":"8384"}' >/dev/null
   uv run --group dev yamllint --strict "$tmp/member.yml" "$tmp/plain.yml"
   docker compose -f "$tmp/member.yml" config --no-interpolate >/dev/null
   docker compose -f "$tmp/plain.yml" config --no-interpolate >/dev/null

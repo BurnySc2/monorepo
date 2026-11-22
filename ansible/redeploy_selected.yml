@@ -78,6 +78,12 @@
     - pinchflat
     - apps
 
+- name: Redeploy gatus
+  ansible.builtin.import_playbook: service_gatus/gatus_setup.yml
+  tags:
+    - gatus
+    - apps
+
 - name: Redeploy openchamber
   ansible.builtin.import_playbook: service_openchamber/openchamber_setup.yml
   tags:

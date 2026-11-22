@@ -1,0 +1,40 @@
+---
+web:
+  address: "0.0.0.0"
+  port: 8080
+storage:
+  type: sqlite
+  path: /data/db.sqlite
+endpoints:
+  - name: pinchflat
+    url: https://{{ pinchflat_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: openchamber
+    url: https://{{ openchamber_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: sync1
+    url: https://{{ syncthing_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: comfyui
+    url: https://{{ comfyui_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
