@@ -62,4 +62,4 @@
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
     mode: '0640'
-  notify: converge space_engineers
+  notify: restart space_engineers
