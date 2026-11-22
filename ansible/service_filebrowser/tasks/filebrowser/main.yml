@@ -57,7 +57,7 @@
     group: '{{ GROUP_ID.stdout }}'
     mode: '0640'
     force: true
-  notify: converge filebrowser
+  notify: restart filebrowser
 
 - name: Template docker-compose.yml file
   ansible.builtin.template:

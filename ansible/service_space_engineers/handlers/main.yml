@@ -5,3 +5,8 @@
     project_src: "/home/{{ USERNAME }}"
     state: present
     pull: missing
+- name: Restart space_engineers
+  listen: restart space_engineers
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ USERNAME }}"
+    state: restarted

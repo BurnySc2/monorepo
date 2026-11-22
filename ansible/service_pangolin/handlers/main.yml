@@ -6,3 +6,9 @@
     state: present
     pull: missing
     remove_orphans: true
+
+- name: Restart pangolin
+  listen: restart pangolin
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ USERNAME }}"
+    state: restarted
