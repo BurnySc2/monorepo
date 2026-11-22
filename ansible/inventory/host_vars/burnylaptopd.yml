@@ -4,19 +4,20 @@
 # visible anyway via `id`, `docker ps`, and public DNS, so storing them here is fine.
 # STAYS SECRET in $ANSIBLE_SECRETS: MY_PUBLIC_DOMAIN, CLOUDFLARE.DNS_API_TOKEN,
 # server IPv4, DEFAULT_SHELL, and all passwords/tokens.
-audiobookshelf_username: audiobookshelf
-audiobookshelf_subdomain: audiobookshelf
+audiobookshelf_username: lissen
+audiobookshelf_subdomain: lissen
 audiobookshelf_port: 80
-jellyfin_username: jellyfin
-jellyfin_subdomain: jellyfin
+jellyfin_username: vodching
+jellyfin_subdomain: vodching
 jellyfin_port: 8096
 syncthing_username: syncthing
+syncthing_subdomain: sync2
 syncthing_port: 8384
 baikal_username: baikal
 baikal_subdomain: baikal
 baikal_port: 80
 mealie_username: mealie
-mealie_subdomain: mealie
+mealie_subdomain: recipes
 mealie_port: 9000
 backup_jobs:
   - {name: baikal_config, src: "/home/baikal/config/", excludes: []}

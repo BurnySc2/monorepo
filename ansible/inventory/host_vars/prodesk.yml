@@ -11,8 +11,8 @@ openchamber_username: openchamber
 openchamber_subdomain: openchamber
 openchamber_port: 3000
 syncthing_username: syncthing
+syncthing_subdomain: sync1
 syncthing_port: 8384
-
 comfyui_username: comfyui
 comfyui_subdomain: comfyui
 comfyui_port: 8188
