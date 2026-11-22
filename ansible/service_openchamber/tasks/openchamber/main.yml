@@ -38,11 +38,6 @@
   register: GROUP_ID
   changed_when: false
 
-- name: Set container UID/GID facts
-  ansible.builtin.set_fact:
-    openchamber_container_uid: 1000
-    openchamber_container_gid: 1000
-
 - name: Create volume directories
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/{{ item }}
@@ -70,6 +65,39 @@
     cmd: ssh-keygen -t ed25519 -f /home/{{ openchamber_username }}/data/ssh/id_ed25519 -N '' -C 'openchamber@{{ openchamber_username }}'
     creates: /home/{{ openchamber_username }}/data/ssh/id_ed25519
   changed_when: true
+
+- name: Ensure SSH private key files ownership and permissions
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/data/ssh/{{ item }}
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0600'
+  loop:
+    - id_rsa
+    - id_ed25519
+
+- name: Ensure SSH public key files ownership and permissions
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/data/ssh/{{ item }}
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0644'
+  loop:
+    - id_rsa.pub
+    - id_ed25519.pub
+
+- name: Check openchamber log file exists
+  ansible.builtin.stat:
+    path: /home/{{ openchamber_username }}/openchamber-3000.log
+  register: openchamber_log
+
+- name: Ensure openchamber log file ownership and permissions
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/openchamber-3000.log
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0644'
+  when: openchamber_log.stat.exists
 
 - name: Ensure known_hosts file exists
   ansible.builtin.file:
@@ -109,69 +137,6 @@
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
     mode: '0755'
-
-- name: Reconcile data ownership to container UID/GID
-  ansible.builtin.file:
-    path: /home/{{ openchamber_username }}/{{ item }}
-    state: directory
-    recurse: true
-    owner: '{{ openchamber_container_uid }}'
-    group: '{{ openchamber_container_gid }}'
-  loop:
-    - data
-    - workspaces
-
-- name: Harden ssh directory permissions
-  ansible.builtin.file:
-    path: /home/{{ openchamber_username }}/data/ssh
-    state: directory
-    owner: '{{ openchamber_container_uid }}'
-    group: '{{ openchamber_container_gid }}'
-    mode: '0700'
-
-- name: Set rsa private key permissions
-  ansible.builtin.file:
-    path: /home/{{ openchamber_username }}/data/ssh/id_rsa
-    owner: '{{ openchamber_container_uid }}'
-    group: '{{ openchamber_container_gid }}'
-    mode: '0600'
-
-- name: Set rsa public key permissions
-  ansible.builtin.file:
-    path: /home/{{ openchamber_username }}/data/ssh/id_rsa.pub
-    owner: '{{ openchamber_container_uid }}'
-    group: '{{ openchamber_container_gid }}'
-    mode: '0644'
-
-- name: Set ed25519 private key permissions
-  ansible.builtin.file:
-    path: /home/{{ openchamber_username }}/data/ssh/id_ed25519
-    owner: '{{ openchamber_container_uid }}'
-    group: '{{ openchamber_container_gid }}'
-    mode: '0600'
-
-- name: Set ed25519 public key permissions
-  ansible.builtin.file:
-    path: /home/{{ openchamber_username }}/data/ssh/id_ed25519.pub
-    owner: '{{ openchamber_container_uid }}'
-    group: '{{ openchamber_container_gid }}'
-    mode: '0644'
-
-- name: Ensure openchamber logs directory exists
-  ansible.builtin.file:
-    path: /home/{{ openchamber_username }}/data/openchamber/logs
-    state: directory
-    owner: '{{ openchamber_container_uid }}'
-    group: '{{ openchamber_container_gid }}'
-    mode: '0755'
-
-- name: Reconcile openchamber logs ownership
-  ansible.builtin.file:
-    path: /home/{{ openchamber_username }}/data/openchamber/logs
-    state: directory
-    recurse: true
-    owner: '{{ openchamber_container_uid }}'
-    group: '{{ openchamber_container_gid }}'
 
 - name: Tear down existing services
   community.docker.docker_compose_v2:
