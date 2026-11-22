@@ -85,7 +85,7 @@
 - name: Add SSH host keys to known_hosts
   ansible.builtin.known_hosts:
     name: '{{ item.name }}'
-    key: "{{ lookup('pipe', item.keyscan) }}"
+    key: "{{ lookup('ansible.builtin.pipe', item.keyscan) }}"
     path: /home/{{ openchamber_username }}/data/ssh/known_hosts
     state: present
   loop:

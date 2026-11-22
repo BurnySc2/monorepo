@@ -22,4 +22,22 @@ services:
       - pangolin.public-resources.pinchflat.protocol=http
       - pangolin.public-resources.pinchflat.auth.sso-enabled=true
       - pangolin.public-resources.pinchflat.targets[0].method=http
+      - pangolin.public-resources.pinchflat.targets[0].site=local
+      - pangolin.public-resources.pinchflat.targets[0].hostname=pinchflat
       - pangolin.public-resources.pinchflat.targets[0].port={{ APPLICATION_PORT }}
+      - pangolin.public-resources.pinchflat.healthcheck.enabled=true
+      - pangolin.public-resources.pinchflat.healthcheck.hostname=pinchflat
+      - pangolin.public-resources.pinchflat.healthcheck.port={{ APPLICATION_PORT }}
+      - pangolin.public-resources.pinchflat.healthcheck.path=/
+      - pangolin.public-resources.pinchflat.healthcheck.method=GET
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -q
+        - --spider
+        - http://localhost:{{ APPLICATION_PORT }}
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s

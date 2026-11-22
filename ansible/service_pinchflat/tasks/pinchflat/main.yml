@@ -27,25 +27,25 @@
 
 # WHY id syncthing fails unless syncthing user exists: run syncthing first on prodesk
 - name: Get syncthing user id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id syncthing -u
   register: SYNCTHING_USER_ID
   changed_when: false
 
 - name: Get syncthing group id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id syncthing -g
   register: SYNCTHING_GROUP_ID
   changed_when: false
 
 - name: Get user id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id {{ pinchflat_username }} -u
   register: USER_ID
   changed_when: false
 
 - name: Get group id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id {{ pinchflat_username }} -g
   register: GROUP_ID
   changed_when: false
@@ -57,6 +57,7 @@
     state: directory
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
   loop:
     - /home/{{ pinchflat_username }}/config
     - /media/ssd480/pinchflat/downloads

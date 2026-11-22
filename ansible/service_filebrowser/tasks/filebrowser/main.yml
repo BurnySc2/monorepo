@@ -63,4 +63,5 @@
   ansible.builtin.template:
     src: ../../templates/docker-compose.yml.j2
     dest: /home/{{ filebrowser_username }}/docker-compose.yml
+    mode: '0640'
   notify: converge filebrowser

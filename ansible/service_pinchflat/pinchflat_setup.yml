@@ -9,6 +9,8 @@
     SUBDOMAIN: "{{ pinchflat_subdomain }}"
     APPLICATION_PORT: "{{ pinchflat_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/pinchflat/main.yml
+    - name: Include tasks [pinchflat]
+      ansible.builtin.include_tasks: tasks/pinchflat/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [pinchflat]
+      ansible.builtin.import_tasks: handlers/main.yml

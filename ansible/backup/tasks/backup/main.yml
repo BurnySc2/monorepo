@@ -11,13 +11,13 @@
     fail_msg: "Missing backup config: define BACKUP_KEEP_DAILY/WEEKLY/MONTHLY in group_vars/all.yml, backup_jobs in host_vars, secrets.BACKUP.BACKUP_TARGET_PATH/BACKUP_PASSWORD in secrets"
 
 - name: Get user id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id syncthing -u
   register: USER_ID
   changed_when: false
 
 - name: Get group id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id syncthing -g
   register: GROUP_ID
   changed_when: false
