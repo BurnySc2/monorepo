@@ -19,12 +19,9 @@ forgejo_username: forgejo
 forgejo_subdomain: git
 forgejo_port: 3000
 forgejo_ssh_port: 2222
-syncthing_username: syncthing
 syncthing_subdomain: sync4
-syncthing_port: 8384
 pangolin_username: pangolin
 pangolin_subdomain: pangolin
-pangolin_newt_username: pangolin_newt
 rustfs_username: rustfs
 rustfs_subdomain: rustfs
 rustfs_adminsubdomain: rustfsadmin

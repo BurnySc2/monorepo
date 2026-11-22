@@ -10,9 +10,7 @@ audiobookshelf_port: 80
 jellyfin_username: vodching
 jellyfin_subdomain: vodching
 jellyfin_port: 8096
-syncthing_username: syncthing
 syncthing_subdomain: sync2
-syncthing_port: 8384
 baikal_username: baikal
 baikal_subdomain: baikal
 baikal_port: 80
