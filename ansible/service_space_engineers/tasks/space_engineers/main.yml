@@ -1,7 +1,4 @@
 ---
-- name: Ensure pangolin_newt network exists
-  ansible.builtin.import_tasks: ../../../tasks/docker/networks.yml
-
 - name: Assert space_engineers inventory variables are defined
   ansible.builtin.assert:
     that:
