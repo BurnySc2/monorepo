@@ -1,0 +1,12 @@
+---
+# Execute with
+# ansible-playbook backup_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [backup]
+  hosts: my_servers
+  vars:
+    USERNAME: root
+    BACKUP_SCRIPT_PATH: "{{ secrets.BACKUP.BACKUP_TARGET_PATH }}/backup_script.sh"
+    BACKUP_PASSWORD: "{{ secrets.BACKUP.BACKUP_PASSWORD }}"
+  tasks:
+    - ansible.builtin.include_tasks: tasks/backup/main.yml
+    # cron needs no handler

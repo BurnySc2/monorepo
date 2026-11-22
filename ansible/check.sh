@@ -17,7 +17,7 @@ check_yaml_format() {
 # WHY lint playbooks before compose/syntax checks.
 check_ansible_lint() {
   command -v uv >/dev/null || { strict_skip "uv"; return $?; }
-  uv run --group dev ansible-lint --strict setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml backup/rdiff_backup_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/ --exclude backup/templates/
+  uv run --group dev ansible-lint --strict setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml backup/backup_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/ --exclude backup/templates/
 }
 # WHY catch compose errors before ansible runs.
 check_compose() {
@@ -53,7 +53,7 @@ check_render_lint() {
 # WHY reuse one play list for syntax and secrets checks.
 check_syntax() {
   command -v ansible-playbook >/dev/null || { strict_skip "ansible"; return $?; }
-  for play in service_*/*_setup.yml backup/rdiff_backup_setup.yml; do
+  for play in service_*/*_setup.yml backup/backup_setup.yml; do
     echo "==> $play"
     ansible-playbook -i inventory "$play" --syntax-check --check
   done
@@ -67,7 +67,7 @@ check_secrets() {
     echo "SKIP: secrets not found (vault not in CI; set ANSIBLE_SECRETS to enable)"
     return 0
   fi
-  for play in service_*/*_setup.yml backup/rdiff_backup_setup.yml; do
+  for play in service_*/*_setup.yml backup/backup_setup.yml; do
     echo "==> $play + secrets"
     ansible-playbook -i inventory -i "$SECRETS" "$play" --syntax-check --check
   done

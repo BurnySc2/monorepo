@@ -155,6 +155,12 @@
     - astroneer
     - games
 
+- name: Redeploy backup
+  ansible.builtin.import_playbook: backup/backup_setup.yml
+  tags:
+    - backup
+    - infra
+
 - name: Global Docker cleanup (opt-in)
   ansible.builtin.import_playbook: docker_cleanup.yml
   tags:
