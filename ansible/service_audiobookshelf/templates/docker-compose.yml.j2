@@ -4,9 +4,8 @@ networks:
     external: true
 services:
   audiobookshelf:
-    container_name: audiobookshelf
-    hostname: audiobookshelf
     image: ghcr.io/advplyr/audiobookshelf
+    container_name: audiobookshelf
     restart: unless-stopped
     networks:
       - pangolin_newt

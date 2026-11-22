@@ -6,7 +6,6 @@ services:
   mirotalk:
     image: mirotalk/p2p:latest
     container_name: mirotalk
-    hostname: mirotalk
     restart: unless-stopped
     volumes:
       - ./.env:/src/.env:ro

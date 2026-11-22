@@ -5,10 +5,9 @@ networks:
 # Don't forget to change IP in GUI from 127.0.0.1 to 0.0.0.0 if you want to expose it to the web
 services:
   syncthing:
-    container_name: syncthing
-    hostname: syncthing
-    restart: unless-stopped
     image: syncthing/syncthing:latest
+    container_name: syncthing
+    restart: unless-stopped
     volumes:
       - ./config:/var/syncthing/config
       - ./data1:/data1

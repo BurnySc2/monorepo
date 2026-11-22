@@ -5,8 +5,6 @@ networks:
 services:
   excalidraw:
     image: excalidraw/excalidraw:latest
-    container_name: excalidraw_docker
-    hostname: excalidraw_docker
     networks:
       - pangolin_newt
     restart: unless-stopped
@@ -17,7 +15,7 @@ services:
       - pangolin.public-resources.excalidraw.auth.sso-enabled=true
       - pangolin.public-resources.excalidraw.targets[0].site=local
       - pangolin.public-resources.excalidraw.targets[0].method=http
-      - pangolin.public-resources.excalidraw.targets[0].hostname=excalidraw_docker
+      - pangolin.public-resources.excalidraw.targets[0].hostname=excalidraw
       - pangolin.public-resources.excalidraw.targets[0].port={{ APPLICATION_PORT }}
     healthcheck:
       test:

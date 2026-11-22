@@ -4,9 +4,8 @@ networks:
     external: true
 services:
   navidrome:
-    container_name: navidrome
-    hostname: navidrome
     image: deluan/navidrome
+    container_name: navidrome
     restart: unless-stopped
     networks:
       - pangolin_newt

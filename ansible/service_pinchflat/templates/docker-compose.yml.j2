@@ -4,9 +4,9 @@ networks:
     external: true
 services:
   pinchflat:
+    image: ghcr.io/kieraneglin/pinchflat:latest
     container_name: pinchflat
     restart: unless-stopped
-    image: ghcr.io/kieraneglin/pinchflat:latest
     user: 0:{{ SYNCTHING_GROUP_ID.stdout }}
     volumes:
       - ./config:/config

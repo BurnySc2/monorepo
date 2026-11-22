@@ -3,9 +3,8 @@
 # https://github.com/wolveix/satisfactory-server/wiki/Troubleshooting-FAQ
 services:
   satisfactory-server:
-    container_name: satisfactory-server
-    hostname: satisfactory-server
     image: wolveix/satisfactory-server:latest
+    container_name: satisfactory-server
     pull_policy: always
     networks:
       - pangolin_newt

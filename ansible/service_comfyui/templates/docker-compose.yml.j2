@@ -4,11 +4,10 @@ networks:
     external: true
 services:
   comfyui:
-    container_name: comfyui-cpu
+    image: yanwk/comfyui-boot:cpu-20250630
     # build:
     #  context: .
     #  dockerfile: Dockerfile
-    image: yanwk/comfyui-boot:cpu-20250630
     volumes:
       - ./storage:/root
     environment:

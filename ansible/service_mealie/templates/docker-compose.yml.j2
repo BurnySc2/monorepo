@@ -5,8 +5,8 @@ networks:
     external: true
 services:
   mealie:
-    container_name: mealie
     image: hkotel/mealie:latest
+    container_name: mealie
     restart: unless-stopped
     volumes:
       - ./mealie-data:/app/data/

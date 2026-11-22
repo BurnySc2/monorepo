@@ -10,8 +10,6 @@ services:
   drawio:
     # https://hub.docker.com/r/jgraph/drawio/tags
     image: jgraph/drawio:latest
-    container_name: drawio_docker
-    hostname: drawio_docker
     networks:
       - pangolin_newt
     restart: unless-stopped
@@ -22,7 +20,7 @@ services:
       - pangolin.public-resources.drawio.auth.sso-enabled=true
       - pangolin.public-resources.drawio.targets[0].site=local
       - pangolin.public-resources.drawio.targets[0].method=http
-      - pangolin.public-resources.drawio.targets[0].hostname=drawio_docker
+      - pangolin.public-resources.drawio.targets[0].hostname=drawio
       - pangolin.public-resources.drawio.targets[0].port={{ APPLICATION_PORT }}
     environment:
       - DRAWIO_PERSISTENCE=data
