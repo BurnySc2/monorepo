@@ -85,3 +85,13 @@
     group: "{{ GROUP_ID.stdout }}"
     mode: '0640'
   notify: restart pangolin
+
+- name: Ensure acme.json exists with secure permissions
+  ansible.builtin.file:
+    path: /home/{{ pangolin_username }}/config/letsencrypt/acme.json
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+    owner: "{{ USER_ID.stdout }}"
+    group: "{{ GROUP_ID.stdout }}"
+    mode: '0600'
