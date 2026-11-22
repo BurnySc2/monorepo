@@ -1,7 +1,7 @@
 ---
-- name: Restart pinchflat
-  listen: restart pinchflat
+- name: Converge pinchflat
+  listen: converge pinchflat
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing

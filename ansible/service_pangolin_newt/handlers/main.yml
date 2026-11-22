@@ -1,8 +1,8 @@
 ---
-- name: Restart newt
-  listen: restart newt
+- name: Converge newt
+  listen: converge newt
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing
     remove_orphans: true

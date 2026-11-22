@@ -55,4 +55,4 @@
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
     mode: '0640'
-  notify: restart forgejo
+  notify: converge forgejo

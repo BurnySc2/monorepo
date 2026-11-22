@@ -54,4 +54,4 @@
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
     mode: '0640'
-  notify: restart mealie
+  notify: converge mealie

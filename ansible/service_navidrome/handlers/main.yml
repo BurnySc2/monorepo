@@ -1,7 +1,7 @@
 ---
-- name: Restart navidrome
-  listen: restart navidrome
+- name: Converge navidrome
+  listen: converge navidrome
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing

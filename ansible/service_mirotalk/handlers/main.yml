@@ -1,7 +1,7 @@
 ---
-- name: Restart mirotalk
-  listen: restart mirotalk
+- name: Converge mirotalk
+  listen: converge mirotalk
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing

@@ -1,8 +1,8 @@
 ---
-- name: Restart pangolin
-  listen: restart pangolin
+- name: Converge pangolin
+  listen: converge pangolin
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing
     remove_orphans: true

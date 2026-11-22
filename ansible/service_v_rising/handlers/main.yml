@@ -1,7 +1,7 @@
 ---
-- name: Restart v_rising
-  listen: restart v_rising
+- name: Converge v_rising
+  listen: converge v_rising
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing

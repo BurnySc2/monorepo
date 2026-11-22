@@ -148,7 +148,7 @@
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
     mode: '0640'
-  notify: restart openchamber
+  notify: converge openchamber
 
 - name: Template Dockerfile file
   ansible.builtin.template:
@@ -157,7 +157,7 @@
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
     mode: '0644'
-  notify: restart openchamber
+  notify: converge openchamber
 
 - name: Run `docker-compose up` again
   community.docker.docker_compose_v2:

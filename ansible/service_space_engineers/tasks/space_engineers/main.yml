@@ -53,7 +53,7 @@
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
     mode: '0640'
-  notify: restart space_engineers
+  notify: converge space_engineers
 
 - name: Template SpaceEngineers-Dedicated.cfg file
   ansible.builtin.template:
@@ -62,4 +62,4 @@
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
     mode: '0640'
-  notify: restart space_engineers
+  notify: converge space_engineers

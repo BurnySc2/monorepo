@@ -1,7 +1,7 @@
 ---
-- name: Restart syncthing
-  listen: restart syncthing
+- name: Converge syncthing
+  listen: converge syncthing
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing

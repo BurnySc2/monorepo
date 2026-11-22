@@ -1,6 +1,6 @@
 ---
-- name: Restart astroneer
-  listen: restart astroneer
+- name: Converge astroneer
+  listen: converge astroneer
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present

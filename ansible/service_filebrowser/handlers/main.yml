@@ -1,7 +1,7 @@
 ---
-- name: Restart filebrowser
-  listen: restart filebrowser
+- name: Converge filebrowser
+  listen: converge filebrowser
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing

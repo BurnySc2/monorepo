@@ -1,7 +1,7 @@
 ---
-- name: Restart excalidraw
-  listen: restart excalidraw
+- name: Converge excalidraw
+  listen: converge excalidraw
   community.docker.docker_compose_v2:
     project_src: "/home/{{ USERNAME }}"
     state: present
-    pull: always
+    pull: missing
