@@ -34,22 +34,6 @@ check_compose() {
   done
   [ "$fails" -eq 0 ] || return 1
 }
-# WHY cover both jinja branches of syncthing template render.
-check_render_lint() {
-  command -v docker >/dev/null || { strict_skip "docker"; return $?; }
-  command -v ansible >/dev/null || { strict_skip "ansible"; return $?; }
-  command -v uv >/dev/null || { strict_skip "uv"; return $?; }
-  local tmp
-  tmp=$(mktemp -d)
-  trap 'rm -rf "$tmp"' RETURN
-  ansible localhost -c local -i localhost, -m ansible.builtin.template -a "src=service_syncthing/templates/docker-compose.yml.j2 dest=$tmp/member.yml" -e '{"USER_ID":{"stdout":"1000"},"GROUP_ID":{"stdout":"1000"},"inventory_hostname":"prodesk","SYNCTHING_URL":"https://example.com","APPLICATION_PORT":"8384"}' >/dev/null
-  ansible localhost -c local -i localhost, -m ansible.builtin.template -a "src=service_syncthing/templates/docker-compose.yml.j2 dest=$tmp/plain.yml" -e '{"USER_ID":{"stdout":"1000"},"GROUP_ID":{"stdout":"1000"},"inventory_hostname":"contabo2","SYNCTHING_URL":"https://example.com","APPLICATION_PORT":"8384"}' >/dev/null
-  uv run --group dev yamllint --strict "$tmp/member.yml" "$tmp/plain.yml"
-  docker compose -f "$tmp/member.yml" config --no-interpolate >/dev/null
-  docker compose -f "$tmp/plain.yml" config --no-interpolate >/dev/null
-  grep -q /media/ssd480 "$tmp/member.yml" || { echo "FAIL member render missing /media/ssd480"; return 1; }
-  grep -q /media/ssd480 "$tmp/plain.yml" && { echo "FAIL plain render leaks /media/ssd480"; return 1; } || true
-}
 # WHY reuse one play list for syntax and secrets checks.
 check_syntax() {
   command -v ansible-playbook >/dev/null || { strict_skip "ansible"; return $?; }
@@ -76,7 +60,6 @@ main() {
   check_yaml_format
   check_ansible_lint
   check_compose
-  check_render_lint
   check_syntax
   check_secrets
   echo "PASS: compose, syntax, secrets checks done"

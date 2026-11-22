@@ -21,7 +21,7 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.syncthing_{{ inventory_hostname }}.name=Syncthing_{{ inventory_hostname }}
-      - pangolin.public-resources.syncthing_{{ inventory_hostname }}.full-domain={{ SYNCTHING_URL }}
+      - pangolin.public-resources.syncthing_{{ inventory_hostname }}.full-domain={{ syncthing_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
       - pangolin.public-resources.syncthing_{{ inventory_hostname }}.protocol=http
       - pangolin.public-resources.syncthing_{{ inventory_hostname }}.auth.sso-enabled=true
       - pangolin.public-resources.syncthing_{{ inventory_hostname }}.targets[0].method=http

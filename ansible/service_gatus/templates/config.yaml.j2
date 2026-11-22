@@ -68,7 +68,7 @@ endpoints:
     client:
       timeout: 10s
   - name: sync2
-    url: https://{{ hostvars['burnylaptopd']['syncthing_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    url: https://{{ hostvars['burnylaptopd']['syncthing_subdomain'] }}.{{ secrets.MY_PRIVATE_DOMAIN }}
     interval: 60s
     conditions:
       - "[STATUS] == 302"
@@ -133,13 +133,6 @@ endpoints:
       - "[STATUS] == 200"
     client:
       timeout: 10s
-  - name: rustfs
-    url: https://{{ hostvars['contabo2']['rustfs_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
-    interval: 60s
-    conditions:
-      - "[STATUS] == 200"
-    client:
-      timeout: 10s
   - name: rustfsadmin
     url: https://{{ hostvars['contabo2']['rustfs_adminsubdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
     interval: 60s
@@ -149,7 +142,7 @@ endpoints:
       ignore-redirect: true
       timeout: 10s
   - name: sync4
-    url: https://{{ hostvars['contabo2']['syncthing_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    url: https://{{ hostvars['contabo2']['syncthing_subdomain'] }}.{{ secrets.MY_PRIVATE_DOMAIN }}
     interval: 60s
     conditions:
       - "[STATUS] == 302"

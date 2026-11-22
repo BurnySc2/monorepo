@@ -4,8 +4,7 @@
     that:
       - syncthing_username is defined
       - syncthing_port is defined
-      - SYNCTHING_URL is defined
-    fail_msg: Missing inventory/host_vars for syncthing_username, syncthing_port, SYNCTHING_URL from secrets
+    fail_msg: Missing inventory/host_vars for syncthing_username, syncthing_port from secrets
 
 - name: Create group
   ansible.builtin.group:

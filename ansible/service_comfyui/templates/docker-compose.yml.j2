@@ -4,7 +4,7 @@ networks:
     external: true
 services:
   comfyui:
-    image: yanwk/comfyui-boot:cpu-20250630
+    image: yanwk/comfyui-boot:cpu-20261116
     # build:
     #  context: .
     #  dockerfile: Dockerfile
@@ -16,9 +16,9 @@ services:
       - pangolin_newt
     labels:
       - pangolin.public-resources.comfyui.name=Comfyui
-      - pangolin.public-resources.comfyui.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+      - pangolin.public-resources.comfyui.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PRIVATE_DOMAIN }}
       - pangolin.public-resources.comfyui.protocol=http
-      - pangolin.public-resources.comfyui.auth.sso-enabled=false
+      - pangolin.public-resources.comfyui.auth.sso-enabled=true
       - pangolin.public-resources.comfyui.targets[0].site=local
       - pangolin.public-resources.comfyui.targets[0].method=http
       - pangolin.public-resources.comfyui.targets[0].hostname=comfyui
