@@ -13,7 +13,7 @@ filebrowser_port: 80
 # syncthing_subdomain: sync
 # syncthing_port: 8384
 docmost_username: docmost
-docmost_subdomain: docs
+docmost_subdomain: docmost
 docmost_port: 3000
 forgejo_username: forgejo
 forgejo_subdomain: git
