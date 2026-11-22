@@ -84,8 +84,7 @@ Pangolin is the entrypoint for public traffic (legacy traefik stack removed).
   Reference contracts: `service_filebrowser/docker-compose.yml`,
   `service_docmost/docker-compose.yml`,
   `service_comfyui/docker-compose.yml`,
-  `service_stirling/docker-compose.yml`,
-  `service_uptime_kuma/docker-compose.yml`.
+  `service_stirling/docker-compose.yml`.
 - Edge routing source is `service_pangolin/traefik_config.yml`
   with `traefik_dynamic.yml` and `config.yml`.
 

@@ -125,12 +125,6 @@
     - stirling
     - apps
 
-- name: Redeploy uptime_kuma
-  ansible.builtin.import_playbook: service_uptime_kuma/uptime_kuma_setup.yml
-  tags:
-    - uptime_kuma
-    - apps
-
 - name: Redeploy mirotalk
   ansible.builtin.import_playbook: service_mirotalk/mirotalk_setup.yml
   tags:

@@ -42,9 +42,6 @@ navidrome_port: 4533
 stirling_username: pdf
 stirling_subdomain: pdf
 stirling_port: 8080
-uptime_kuma_username: uptime_kuma
-uptime_kuma_subdomain: uptime_kuma
-uptime_kuma_port: 3001
 mirotalk_username: mirotalk
 mirotalk_subdomain: zoom
 mirotalk_port: 3000

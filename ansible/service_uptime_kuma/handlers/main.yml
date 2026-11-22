@@ -1,7 +1,0 @@
----
-- name: Converge uptime_kuma
-  listen: converge uptime_kuma
-  community.docker.docker_compose_v2:
-    project_src: "/home/{{ USERNAME }}"
-    state: present
-    pull: missing
