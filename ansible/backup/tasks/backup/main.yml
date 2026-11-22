@@ -33,9 +33,9 @@
   loop:
     - '{{ secrets.BACKUP.BACKUP_TARGET_PATH }}'
 
-- name: Template backup script file
-  ansible.builtin.template:
-    src: ../../templates/backup_script.sh.j2
+- name: Copy backup script file
+  ansible.builtin.copy:
+    src: ../../files/backup_script.sh
     dest: '{{ BACKUP_SCRIPT_PATH }}'
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'

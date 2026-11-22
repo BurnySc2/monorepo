@@ -7,6 +7,5 @@ warn_list:
 exclude_paths:
   - .venv/
   - service_*/templates/
-  - backup/templates/
 skip_list:
   - yaml
