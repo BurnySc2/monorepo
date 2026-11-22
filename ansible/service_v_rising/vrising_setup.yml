@@ -8,6 +8,8 @@
     USERNAME: "{{ v_rising_username }}"
     APPLICATION_PORT: "{{ v_rising_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/v_rising/main.yml
+    - name: Include tasks [v_rising]
+      ansible.builtin.include_tasks: tasks/v_rising/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [v_rising]
+      ansible.builtin.import_tasks: handlers/main.yml

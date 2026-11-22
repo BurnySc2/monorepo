@@ -26,13 +26,13 @@
     shell: '{{ secrets.DEFAULT_SHELL }}'
 
 - name: Get user id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id {{ openchamber_username }} -u
   register: USER_ID
   changed_when: false
 
 - name: Get group id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id {{ openchamber_username }} -g
   register: GROUP_ID
   changed_when: false
@@ -54,9 +54,10 @@
     - workspaces
 
 - name: Create RSA key pair if missing
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: ssh-keygen -t rsa -b 4096 -f /home/{{ openchamber_username }}/data/ssh/id_rsa -N '' -C 'openchamber@{{ openchamber_username }}'
     creates: /home/{{ openchamber_username }}/data/ssh/id_rsa
+  changed_when: true
 
 - name: Set key permissions
   ansible.builtin.file:

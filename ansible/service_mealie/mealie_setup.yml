@@ -8,6 +8,8 @@
     SUBDOMAIN: "{{ mealie_subdomain }}"
     APPLICATION_PORT: "{{ mealie_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/mealie/main.yml
+    - name: Include tasks [mealie]
+      ansible.builtin.include_tasks: tasks/mealie/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [mealie]
+      ansible.builtin.import_tasks: handlers/main.yml

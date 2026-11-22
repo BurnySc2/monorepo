@@ -9,6 +9,8 @@
     SUBDOMAIN: "{{ mirotalk_subdomain }}"
     APPLICATION_PORT: "{{ mirotalk_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/mirotalk/main.yml
+    - name: Include tasks [mirotalk]
+      ansible.builtin.include_tasks: tasks/mirotalk/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [mirotalk]
+      ansible.builtin.import_tasks: handlers/main.yml

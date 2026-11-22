@@ -26,13 +26,13 @@
     shell: '{{ secrets.DEFAULT_SHELL }}'
 
 - name: Get user id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id {{ filebrowser_username }} -u
   register: USER_ID
   changed_when: false
 
 - name: Get group id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id {{ filebrowser_username }} -g
   register: GROUP_ID
   changed_when: false

@@ -8,6 +8,8 @@
     SUBDOMAIN: "{{ stirling_subdomain }}"
     APPLICATION_PORT: "{{ stirling_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/stirling/main.yml
+    - name: Include tasks [stirling]
+      ansible.builtin.include_tasks: tasks/stirling/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [stirling]
+      ansible.builtin.import_tasks: handlers/main.yml

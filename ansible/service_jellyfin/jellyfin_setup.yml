@@ -11,6 +11,8 @@
     SUBDOMAIN: "{{ jellyfin_subdomain }}"
     APPLICATION_PORT: "{{ jellyfin_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/jellyfin/main.yml
+    - name: Include tasks [jellyfin]
+      ansible.builtin.include_tasks: tasks/jellyfin/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [jellyfin]
+      ansible.builtin.import_tasks: handlers/main.yml

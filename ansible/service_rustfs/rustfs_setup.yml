@@ -10,6 +10,8 @@
     APPLICATION_PORT: "{{ rustfs_port }}"
     ADMIN_PORT: "{{ rustfs_admin_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/rustfs/main.yml
+    - name: Include tasks [rustfs]
+      ansible.builtin.include_tasks: tasks/rustfs/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [rustfs]
+      ansible.builtin.import_tasks: handlers/main.yml

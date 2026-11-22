@@ -7,6 +7,8 @@
   vars:
     USERNAME: "{{ pangolin_newt_username }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/pangolin_newt/main.yml
+    - name: Include tasks [pangolin_newt]
+      ansible.builtin.include_tasks: tasks/pangolin_newt/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [pangolin_newt]
+      ansible.builtin.import_tasks: handlers/main.yml

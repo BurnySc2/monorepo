@@ -2,5 +2,6 @@
 - name: Global Docker cleanup (opt-in)
   hosts: my_servers
   tasks:
-    - ansible.builtin.include_tasks: tasks/docker/cleanup.yml
+    - name: Include Docker cleanup tasks
+      ansible.builtin.include_tasks: tasks/docker/cleanup.yml
   tags: [cleanup]

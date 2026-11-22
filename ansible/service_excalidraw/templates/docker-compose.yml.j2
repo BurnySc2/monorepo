@@ -17,11 +17,6 @@ services:
       - pangolin.public-resources.excalidraw.targets[0].method=http
       - pangolin.public-resources.excalidraw.targets[0].hostname=excalidraw
       - pangolin.public-resources.excalidraw.targets[0].port={{ APPLICATION_PORT }}
-      - pangolin.public-resources.excalidraw.targets[0].healthcheck.enabled=true
-      - pangolin.public-resources.excalidraw.targets[0].healthcheck.hostname=excalidraw
-      - pangolin.public-resources.excalidraw.targets[0].healthcheck.port={{ APPLICATION_PORT }}
-      - pangolin.public-resources.excalidraw.targets[0].healthcheck.path=/
-      - pangolin.public-resources.excalidraw.targets[0].healthcheck.method=GET
     healthcheck:
       test:
         - CMD

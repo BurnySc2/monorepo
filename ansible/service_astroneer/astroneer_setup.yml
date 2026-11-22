@@ -8,6 +8,8 @@
     USERNAME: "{{ astroneer_username }}"
     APPLICATION_PORT: "{{ astroneer_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/astroneer/main.yml
+    - name: Include tasks [astroneer]
+      ansible.builtin.include_tasks: tasks/astroneer/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [astroneer]
+      ansible.builtin.import_tasks: handlers/main.yml

@@ -8,6 +8,8 @@
     SUBDOMAIN: "{{ comfyui_subdomain }}"
     APPLICATION_PORT: "{{ comfyui_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/comfyui/main.yml
+    - name: Include tasks [comfyui]
+      ansible.builtin.include_tasks: tasks/comfyui/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [comfyui]
+      ansible.builtin.import_tasks: handlers/main.yml

@@ -8,6 +8,8 @@
     SUBDOMAIN: "{{ drawio_subdomain }}"
     APPLICATION_PORT: "{{ drawio_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/drawio/main.yml
+    - name: Include tasks [drawio]
+      ansible.builtin.include_tasks: tasks/drawio/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [drawio]
+      ansible.builtin.import_tasks: handlers/main.yml

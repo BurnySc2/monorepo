@@ -11,6 +11,8 @@
     SUBDOMAIN: "{{ navidrome_subdomain }}"
     APPLICATION_PORT: "{{ navidrome_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/navidrome/main.yml
+    - name: Include tasks [navidrome]
+      ansible.builtin.include_tasks: tasks/navidrome/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [navidrome]
+      ansible.builtin.import_tasks: handlers/main.yml

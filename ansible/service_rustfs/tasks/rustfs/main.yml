@@ -29,13 +29,13 @@
     shell: '{{ secrets.DEFAULT_SHELL }}'
 
 - name: Get user id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id {{ rustfs_username }} -u
   register: USER_ID
   changed_when: false
 
 - name: Get group id
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: id {{ rustfs_username }} -g
   register: GROUP_ID
   changed_when: false
@@ -47,6 +47,7 @@
     state: directory
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
   loop:
     - /home/{{ rustfs_username }}/data
     - /home/{{ rustfs_username }}/logs

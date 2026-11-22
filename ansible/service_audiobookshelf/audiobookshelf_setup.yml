@@ -10,6 +10,8 @@
     SUBDOMAIN: "{{ audiobookshelf_subdomain }}"
     APPLICATION_PORT: "{{ audiobookshelf_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/audiobookshelf/main.yml
+    - name: Include tasks [audiobookshelf]
+      ansible.builtin.include_tasks: tasks/audiobookshelf/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [audiobookshelf]
+      ansible.builtin.import_tasks: handlers/main.yml

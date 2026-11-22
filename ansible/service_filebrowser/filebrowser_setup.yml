@@ -8,6 +8,8 @@
     SUBDOMAIN: "{{ filebrowser_subdomain }}"
     APPLICATION_PORT: "{{ filebrowser_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/filebrowser/main.yml
+    - name: Include tasks [filebrowser]
+      ansible.builtin.include_tasks: tasks/filebrowser/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [filebrowser]
+      ansible.builtin.import_tasks: handlers/main.yml

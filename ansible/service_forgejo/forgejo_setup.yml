@@ -9,6 +9,8 @@
     APPLICATION_PORT: "{{ forgejo_port }}"
     SSH_PORT: "{{ forgejo_ssh_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/forgejo/main.yml
+    - name: Include tasks [forgejo]
+      ansible.builtin.include_tasks: tasks/forgejo/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [forgejo]
+      ansible.builtin.import_tasks: handlers/main.yml

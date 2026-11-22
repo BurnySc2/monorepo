@@ -6,6 +6,8 @@
     SUBDOMAIN: "{{ excalidraw_subdomain }}"
     APPLICATION_PORT: "{{ excalidraw_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/excalidraw/main.yml
+    - name: Include tasks [excalidraw]
+      ansible.builtin.include_tasks: tasks/excalidraw/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [excalidraw]
+      ansible.builtin.import_tasks: handlers/main.yml

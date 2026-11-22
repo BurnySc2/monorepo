@@ -7,6 +7,8 @@
     USERNAME: "{{ syncthing_username }}"
     APPLICATION_PORT: "{{ syncthing_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/syncthing/main.yml
+    - name: Include tasks [syncthing]
+      ansible.builtin.include_tasks: tasks/syncthing/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [syncthing]
+      ansible.builtin.import_tasks: handlers/main.yml

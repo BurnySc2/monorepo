@@ -9,6 +9,8 @@
     SUBDOMAIN: "{{ docmost_subdomain }}"
     APPLICATION_PORT: "{{ docmost_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/docmost/main.yml
+    - name: Include tasks [docmost]
+      ansible.builtin.include_tasks: tasks/docmost/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [docmost]
+      ansible.builtin.import_tasks: handlers/main.yml

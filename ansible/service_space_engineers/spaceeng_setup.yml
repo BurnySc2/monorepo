@@ -7,6 +7,8 @@
     USERNAME: "{{ space_engineers_username }}"
     APPLICATION_PORT: "{{ space_engineers_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/space_engineers/main.yml
+    - name: Include tasks [space_engineers]
+      ansible.builtin.include_tasks: tasks/space_engineers/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [space_engineers]
+      ansible.builtin.import_tasks: handlers/main.yml

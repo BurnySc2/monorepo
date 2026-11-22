@@ -9,6 +9,8 @@
     USERNAME: "{{ pangolin_username }}"
     SUBDOMAIN: "{{ pangolin_subdomain }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/pangolin/main.yml
+    - name: Include tasks [pangolin]
+      ansible.builtin.include_tasks: tasks/pangolin/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [pangolin]
+      ansible.builtin.import_tasks: handlers/main.yml

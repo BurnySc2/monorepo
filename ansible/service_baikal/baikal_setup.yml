@@ -8,6 +8,8 @@
     SUBDOMAIN: "{{ baikal_subdomain }}"
     APPLICATION_PORT: "{{ baikal_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/baikal/main.yml
+    - name: Include tasks [baikal]
+      ansible.builtin.include_tasks: tasks/baikal/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [baikal]
+      ansible.builtin.import_tasks: handlers/main.yml

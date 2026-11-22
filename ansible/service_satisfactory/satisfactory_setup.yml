@@ -9,6 +9,8 @@
     USERNAME: "{{ satisfactory_username }}"
     APPLICATION_PORT: "{{ satisfactory_port }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/satisfactory/main.yml
+    - name: Include tasks [satisfactory]
+      ansible.builtin.include_tasks: tasks/satisfactory/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [satisfactory]
+      ansible.builtin.import_tasks: handlers/main.yml

@@ -9,6 +9,8 @@
     APPLICATION_PORT: "{{ openchamber_port }}"
     OPENCHAMBER_UPSTREAM_REF: "{{ openchamber_upstream_ref | default('v2.7.2') }}"
   tasks:
-    - ansible.builtin.include_tasks: tasks/openchamber/main.yml
+    - name: Include tasks [openchamber]
+      ansible.builtin.include_tasks: tasks/openchamber/main.yml
   handlers:
-    - ansible.builtin.import_tasks: handlers/main.yml
+    - name: Import handlers [openchamber]
+      ansible.builtin.import_tasks: handlers/main.yml
