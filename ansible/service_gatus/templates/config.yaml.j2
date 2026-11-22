@@ -7,7 +7,7 @@ storage:
   path: /data/db.sqlite
 endpoints:
   - name: pinchflat
-    url: https://{{ pinchflat_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    url: https://{{ hostvars['prodesk']['pinchflat_subdomain'] }}.{{ secrets.MY_PRIVATE_DOMAIN }}
     interval: 60s
     conditions:
       - "[STATUS] == 302"
@@ -15,7 +15,7 @@ endpoints:
       ignore-redirect: true
       timeout: 10s
   - name: openchamber
-    url: https://{{ openchamber_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    url: https://{{ hostvars['prodesk']['openchamber_subdomain'] }}.{{ secrets.MY_PRIVATE_DOMAIN }}
     interval: 60s
     conditions:
       - "[STATUS] == 302"
@@ -23,7 +23,7 @@ endpoints:
       ignore-redirect: true
       timeout: 10s
   - name: sync1
-    url: https://{{ syncthing_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    url: https://{{ hostvars['prodesk']['syncthing_subdomain'] }}.{{ secrets.MY_PRIVATE_DOMAIN }}
     interval: 60s
     conditions:
       - "[STATUS] == 302"
@@ -31,7 +31,125 @@ endpoints:
       ignore-redirect: true
       timeout: 10s
   - name: comfyui
-    url: https://{{ comfyui_subdomain }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    url: https://{{ hostvars['prodesk']['comfyui_subdomain'] }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: lissen
+    url: https://{{ hostvars['burnylaptopd']['audiobookshelf_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: vodching
+    url: https://{{ hostvars['burnylaptopd']['jellyfin_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: baikal
+    url: https://{{ hostvars['burnylaptopd']['baikal_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: recipes
+    url: https://{{ hostvars['burnylaptopd']['mealie_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: sync2
+    url: https://{{ hostvars['burnylaptopd']['syncthing_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: cloud
+    url: https://{{ hostvars['contabo2']['filebrowser_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: docmost
+    url: https://{{ hostvars['contabo2']['docmost_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: git
+    url: https://{{ hostvars['contabo2']['forgejo_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: drawio
+    url: https://{{ hostvars['contabo2']['drawio_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: excalidraw
+    url: https://{{ hostvars['contabo2']['excalidraw_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: catjam
+    url: https://{{ hostvars['contabo2']['navidrome_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: pdf
+    url: https://{{ hostvars['contabo2']['stirling_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: zoom
+    url: https://{{ hostvars['contabo2']['mirotalk_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: rustfs
+    url: https://{{ hostvars['contabo2']['rustfs_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 200"
+    client:
+      timeout: 10s
+  - name: rustfsadmin
+    url: https://{{ hostvars['contabo2']['rustfs_adminsubdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+    interval: 60s
+    conditions:
+      - "[STATUS] == 302"
+    client:
+      ignore-redirect: true
+      timeout: 10s
+  - name: sync4
+    url: https://{{ hostvars['contabo2']['syncthing_subdomain'] }}.{{ secrets.MY_PUBLIC_DOMAIN }}
     interval: 60s
     conditions:
       - "[STATUS] == 302"

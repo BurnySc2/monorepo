@@ -10,20 +10,11 @@ compose file, and starts the stack.
 Groups are defined in `inventory/hosts`.
 Run playbooks from inside `ansible/` so `-i inventory` resolves.
 
-| Group          | Members                         | Use when                    |
-| -------------- | ------------------------------- | --------------------------- |
-| my_servers     | prodesk, burnylaptopd, contabo2 | Target every host           |
-| local_servers  | prodesk, burnylaptopd           | Target LAN hosts only       |
-| remote_servers | contabo2                        | Target rented host only     |
-| server_group1  | prodesk                         | Single local workstation    |
-| server_group2  | burnylaptopd                    | Single local laptop         |
-| server_group3  | contabo2                        | Remote host services        |
-| server_group4  | contabo2                        | Remote host services        |
-| traefik_front  | contabo2                        | Legacy edge entrypoint host |
-
-`server_group3` points at `contabo2`. Both `server_group3` and
-`server_group4` currently resolve to the same remote host; pick the
-group named in the playbook you run.
+| Group          | Members                         | Use when                |
+| -------------- | ------------------------------- | ----------------------- |
+| my_servers     | prodesk, burnylaptopd, contabo2 | Target every host       |
+| local_servers  | prodesk, burnylaptopd           | Target LAN hosts only   |
+| remote_servers | contabo2                        | Target rented host only |
 
 ## 2. Secrets Bootstrap
 
@@ -56,7 +47,7 @@ Use the requirements file when bootstrapping a fresh laptop.
 ## 4. Deploy Example
 
 Run one service at a time from `ansible/`. This example deploys
-Filebrowser to `server_group4`:
+Filebrowser to `contabo2`:
 
 ```sh
 ansible-playbook service_filebrowser/filebrowser_setup.yml -i inventory -i $ANSIBLE_SECRETS
