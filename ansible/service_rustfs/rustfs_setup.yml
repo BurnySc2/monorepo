@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook rustfs_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [rustfs]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ rustfs_username }}"
     SUBDOMAIN: "{{ rustfs_subdomain }}"

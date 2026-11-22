@@ -98,7 +98,7 @@
         opts: noatime
         state: mounted
       become: true
-      when: "'server_group1' in group_names"
+      when: inventory_hostname == 'prodesk'
 
       # Disable ssh login with password by modifying
       # nano /etc/ssh/sshd_config

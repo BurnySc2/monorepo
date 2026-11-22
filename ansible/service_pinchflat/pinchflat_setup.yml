@@ -3,7 +3,7 @@
 # Execute with
 # ansible-playbook pinchflat_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [pinchflat]
-  hosts: server_group1
+  hosts: prodesk
   vars:
     USERNAME: "{{ pinchflat_username }}"
     SUBDOMAIN: "{{ pinchflat_subdomain }}"

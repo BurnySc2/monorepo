@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook stirling_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [stirling]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ stirling_username }}"
     SUBDOMAIN: "{{ stirling_subdomain }}"

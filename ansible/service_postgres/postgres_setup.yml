@@ -4,7 +4,7 @@
 # Execute with
 # ansible-playbook postgres_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [postgres]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: '{{ secrets.POSTGRES.USERNAME }}'
     SUBDOMAIN: '{{ secrets.POSTGRES.PGADMIN_USERNAME }}'

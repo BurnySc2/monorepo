@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook comfyui_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [comfyui]
-  hosts: server_group1
+  hosts: prodesk
   vars:
     USERNAME: "{{ comfyui_username }}"
     SUBDOMAIN: "{{ comfyui_subdomain }}"

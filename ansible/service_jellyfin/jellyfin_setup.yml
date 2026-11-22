@@ -5,7 +5,7 @@
 # Execute with
 # ansible-playbook jellyfin_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [jellyfin]
-  hosts: server_group2
+  hosts: burnylaptopd
   vars:
     USERNAME: "{{ jellyfin_username }}"
     SUBDOMAIN: "{{ jellyfin_subdomain }}"

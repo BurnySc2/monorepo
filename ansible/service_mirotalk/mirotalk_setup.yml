@@ -3,7 +3,7 @@
 # Execute with
 # ansible-playbook mirotalk_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [mirotalk]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ mirotalk_username }}"
     SUBDOMAIN: "{{ mirotalk_subdomain }}"

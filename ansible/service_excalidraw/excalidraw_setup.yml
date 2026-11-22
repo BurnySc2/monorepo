@@ -1,6 +1,6 @@
 ---
 - name: Create service [excalidraw]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ excalidraw_username }}"
     SUBDOMAIN: "{{ excalidraw_subdomain }}"

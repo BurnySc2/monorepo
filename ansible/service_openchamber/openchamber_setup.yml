@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook openchamber_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [openchamber]
-  hosts: server_group1
+  hosts: prodesk
   vars:
     USERNAME: "{{ openchamber_username }}"
     SUBDOMAIN: "{{ openchamber_subdomain }}"

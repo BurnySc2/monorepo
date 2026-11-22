@@ -5,7 +5,7 @@
 # Execute with
 # ansible-playbook navidrome_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [navidrome]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ navidrome_username }}"
     SUBDOMAIN: "{{ navidrome_subdomain }}"

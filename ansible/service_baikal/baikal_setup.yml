@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook baikal_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [baikal]
-  hosts: server_group2
+  hosts: burnylaptopd
   vars:
     USERNAME: "{{ baikal_username }}"
     SUBDOMAIN: "{{ baikal_subdomain }}"

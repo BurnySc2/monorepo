@@ -3,7 +3,7 @@
 # Execute with
 # ansible-playbook docmost_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [docmost]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ docmost_username }}"
     SUBDOMAIN: "{{ docmost_subdomain }}"

@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook drawio_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [drawio]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ drawio_username }}"
     SUBDOMAIN: "{{ drawio_subdomain }}"

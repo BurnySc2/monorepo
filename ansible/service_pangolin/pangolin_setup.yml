@@ -4,7 +4,7 @@
 # Secrets stay in templates: PANGOLIN_URL, PANGOLIN.SECRET, TRAEFIK.MY_EMAIL, CLOUDFLARE/MY_PUBLIC_DOMAIN.
 # Network converged to literal pangolin_newt via shared guard; legacy secrets.TRAEFIK_NETWORK no longer referenced.
 - name: Create service [pangolin]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ pangolin_username }}"
     SUBDOMAIN: "{{ pangolin_subdomain }}"

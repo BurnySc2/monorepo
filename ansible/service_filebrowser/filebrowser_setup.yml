@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook filebrowser_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [filebrowser]
-  hosts: server_group4
+  hosts: contabo2
   vars:
     USERNAME: "{{ filebrowser_username }}"
     SUBDOMAIN: "{{ filebrowser_subdomain }}"

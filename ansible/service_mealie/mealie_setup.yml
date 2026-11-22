@@ -2,7 +2,7 @@
 # Execute with
 # ansible-playbook mealie_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service [mealie]
-  hosts: server_group2
+  hosts: burnylaptopd
   vars:
     USERNAME: "{{ mealie_username }}"
     SUBDOMAIN: "{{ mealie_subdomain }}"
