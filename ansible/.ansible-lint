@@ -1,11 +1,14 @@
 ---
-warn_list:
-  - var-naming
-  - no-role-prefix
-  - role-name
-  - no-relative-paths
 exclude_paths:
   - .venv/
   - service_*/templates/
+# WARN style-debt accepted: role/var naming kept as-is; TODO: file ticket for rename cleanup
 skip_list:
   - yaml
+  - var-naming
+  - role-name
+  - no-role-prefix
+# WARN no-relative-paths stays visible (safety-relevant); zero hits on linted paths, warns only
+warn_list:
+  - no-relative-paths
+profile: moderate

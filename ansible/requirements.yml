@@ -1,8 +1,15 @@
 ---
+# WHY superset of setup_pc/setup_arch/requirements.yml: top-level install covers nested setup
 collections:
   - name: community.docker
     version: "4.3.0"
+    source: https://galaxy.ansible.com
   - name: community.general
     version: "13.5.0"
+    source: https://galaxy.ansible.com
   - name: ansible.posix
     version: "2.1.0"
+    source: https://galaxy.ansible.com
+  - name: kewlfft.aur
+    version: "0.13.0"
+    source: https://galaxy.ansible.com

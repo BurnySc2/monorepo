@@ -8,6 +8,12 @@ strict_skip() {
   echo "SKIP: $1 missing"
   return 0
 }
+# WHY install collections before lint/syntax so fully-qualified names resolve.
+check_galaxy() {
+  if [[ ${ANSIBLE_GALAXY_SKIP:-0} == 1 ]]; then echo "SKIP: galaxy (ANSIBLE_GALAXY_SKIP=1)"; return 0; fi
+  command -v ansible-galaxy >/dev/null || { strict_skip "ansible-galaxy"; return $?; }
+  ansible-galaxy collection install -r requirements.yml
+}
 # WHY gate YAML format before compose/syntax checks.
 check_yaml_format() {
   command -v uv >/dev/null || { strict_skip "uv"; return $?; }
@@ -40,6 +46,10 @@ check_syntax() {
     echo "==> $play"
     ansible-playbook -i inventory "$play" --syntax-check --check
   done
+  for play in setup_pc/*/main.yml; do
+    echo "==> $play"
+    ansible-playbook -i "$(dirname "$play")/hosts" "$play" --syntax-check --check
+  done
 }
 # WHY verify vault-backed runs without printing values.
 # WHY always SKIP when secrets file missing even in strict: vault not in CI, syntax already gated by check_syntax; set ANSIBLE_SECRETS to enable.
@@ -54,8 +64,10 @@ check_secrets() {
     echo "==> $play + secrets"
     ansible-playbook -i inventory -i "$SECRETS" "$play" --syntax-check --check
   done
+  # WHY SKIP setup_pc: vault-free, sibling-hosts syntax already gated by check_syntax.
 }
 main() {
+  check_galaxy
   check_yaml_format
   check_ansible_lint
   check_compose

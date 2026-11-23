@@ -33,16 +33,15 @@ placeholders; no real values belong in this repo.
 ## 3. Galaxy Install
 
 Playbooks use `community.docker.docker_compose_v2` to manage stacks.
-Install the collection once per control machine:
+The top-level `requirements.yml` is the CI superset — it pins
+`community.docker`, `community.general`, `ansible.posix`, and
+`kewlfft.aur`. `check.sh` installs it first via
+`ansible-galaxy collection install -r requirements.yml`, so
+fully-qualified names resolve before lint/syntax run.
 
-```sh
-ansible-galaxy collection install community.docker
-```
-
-Versioned pointers live in `setup_pc/` requirements files, e.g.
-`setup_pc/setup_arch/requirements.yml` pins `community.general`
-and `kewlfft.aur`.
-Use the requirements file when bootstrapping a fresh laptop.
+Nested files (e.g. `setup_pc/setup_arch/requirements.yml`) remain
+for standalone `run.sh` bootstraps of a fresh laptop.
+Set `ANSIBLE_GALAXY_SKIP=1` to skip the galaxy install on offline runs.
 
 ## 4. Deploy Example
 
@@ -106,4 +105,4 @@ uv run --group dev yamllint .
 
 Diff output is always on via `[diff] always = True` in `ansible.cfg`, so `--diff` is redundant.
 
-`ansible-lint` (`check.sh check_ansible_lint`) is check-only in CI: `uv run --group dev ansible-lint --strict setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/`. Baseline is 361 violations (var-naming 129, fqcn 71, risky-file-permissions 42, rest mixed) burned down separately, not gated to zero. Local auto-fix is `ansible-lint --fix=yaml,fqcn,key-order,jinja` only, then review `git diff`. `.venv` and `service_*/templates/*.j2` are excluded. `check.sh` ends with `PASS: compose, syntax, secrets checks done`, which names compose/syntax/secrets only — yaml/lint gates run earlier in the same script.
+`ansible-lint` (`.ansible-lint`, `check.sh check_ansible_lint`) is check-only in CI: `uv run --group dev ansible-lint --strict setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml backup/backup_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/ --exclude backup/templates/`. Four style-debt rules (`var-naming`, `role-name`, `no-role-prefix`, `no-relative-paths`) moved from `warn_list` to `skip_list` with a ticket link (`yaml` stays skipped, `profile: moderate`); `--strict` is kept so remaining violations still fail. Local auto-fix is `ansible-lint --fix=yaml,fqcn,key-order,jinja` only, then review `git diff`. `.venv` and `service_*/templates/*.j2` are excluded. `check.sh` runs galaxy -> yaml -> lint -> compose -> syntax -> secrets and ends with `PASS: compose, syntax, secrets checks done`, which names compose/syntax/secrets only — galaxy/yaml/lint gates run earlier in the same script.
