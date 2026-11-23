@@ -5,6 +5,7 @@ rules:
   truthy: disable
   line-length: {max: 120}
   comments-indentation: enable
+  empty-lines: {max: 1, max-start: 0, max-end: 0}
 ignore: |
   .venv
   .venv/**
