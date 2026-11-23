@@ -41,7 +41,6 @@
 - name: Create volume directories
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/{{ item }}
-    recurse: true
     state: directory
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
