@@ -26,24 +26,10 @@
     append: true
     shell: '{{ secrets.DEFAULT_SHELL }}'
 
-- name: Get user id
-  ansible.builtin.command:
-    cmd: id {{ openchamber_username }} -u
-  register: USER_ID
-  changed_when: false
-
-- name: Get group id
-  ansible.builtin.command:
-    cmd: id {{ openchamber_username }} -g
-  register: GROUP_ID
-  changed_when: false
-
 - name: Create volume directories
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/{{ item }}
     state: directory
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0755'
   loop:
     - data/openchamber
@@ -68,8 +54,6 @@
 - name: Ensure SSH private key files ownership and permissions
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/data/ssh/{{ item }}
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0600'
   loop:
     - id_rsa
@@ -78,8 +62,6 @@
 - name: Ensure SSH public key files ownership and permissions
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/data/ssh/{{ item }}
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0644'
   loop:
     - id_rsa.pub
@@ -93,8 +75,6 @@
 - name: Ensure openchamber log file ownership and permissions
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/openchamber-3000.log
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0644'
   when: openchamber_log.stat.exists
 
@@ -102,8 +82,6 @@
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/data/ssh/known_hosts
     state: touch
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0644'
     modification_time: preserve
     access_time: preserve
@@ -133,8 +111,6 @@
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/data/opencode/share
     state: directory
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0755'
 
 - name: Tear down existing services
@@ -159,16 +135,12 @@
   ansible.builtin.file:
     path: /home/{{ openchamber_username }}/dockerfiles
     state: directory
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0755'
 
 - name: Template docker-compose.yml file
   ansible.builtin.template:
     src: ../../templates/docker-compose.yml.j2
     dest: /home/{{ openchamber_username }}/docker-compose.yml
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0640'
   notify: converge openchamber
 
@@ -176,8 +148,6 @@
   ansible.builtin.template:
     src: ../../templates/Dockerfile.j2
     dest: /home/{{ openchamber_username }}/dockerfiles/Dockerfile
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
     mode: '0644'
   notify: converge openchamber
 
