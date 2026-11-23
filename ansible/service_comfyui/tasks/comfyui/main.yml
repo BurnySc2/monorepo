@@ -10,7 +10,7 @@
 - name: Ensure A record exists
   ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
   loop:
-    - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ comfyui_subdomain }}'}
+    - {domain: '{{ secrets.MY_PRIVATE_DOMAIN }}', subdomain: '{{ comfyui_subdomain }}'}
 
 - name: Create group
   ansible.builtin.group:
