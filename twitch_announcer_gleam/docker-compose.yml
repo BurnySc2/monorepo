@@ -3,7 +3,7 @@
 services:
   twitch_announcer_gleam:
     image: burnysc2/twitch_announcer_gleam:latest
-    pull_policy: always
+    pull_policy: never
     restart: unless-stopped
     env_file:
       - .env
