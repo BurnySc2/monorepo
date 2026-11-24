@@ -17,6 +17,5 @@ RUN apk add --no-cache libpq
 
 COPY --from=build /app/build/erlang-shipment /
 
-ENV ERL_LIBS=/
-# WHY ERL_LIBS=/: shipment root on path so run(pkg) resolves without -pa — see gleam export erlang-shipment
-ENTRYPOINT ["erl", "-noshell", "-noinput", "-eval", "twitch_announcer_gleam@@main:run(twitch_announcer_gleam), init:stop()."]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["run"]
