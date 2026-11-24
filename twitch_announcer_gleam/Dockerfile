@@ -20,4 +20,4 @@ ENV ERL_LIBS=/app
 
 COPY --from=build /app/build/erlang-shipment /app
 
-ENTRYPOINT ["erl", "-pa", "/app/twitch_announcer_gleam/ebin", "-noshell", "-eval", "twitch_announcer_gleam@@main:run(twitch_announcer_gleam)"]
+ENTRYPOINT ["erl", "-pa", "/app/twitch_announcer_gleam/ebin", "-noshell", "-eval", "main:main()"]
