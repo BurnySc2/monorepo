@@ -17,5 +17,6 @@ RUN apk add --no-cache libpq
 
 COPY --from=build /app/build/erlang-shipment /
 
-ENTRYPOINT ["/twitch_announcer_gleam/entrypoint.sh"]
-CMD ["run"]
+ENV ERL_LIBS=/
+# Direct erl call replaces entrypoint.sh run; init:stop exits BUILD/DEV, PROD loop never returns.
+ENTRYPOINT ["erl", "-pa", "/twitch_announcer_gleam/ebin", "-noshell", "-noinput", "-eval", "twitch_announcer_gleam@@main:main(), init:stop()."]
