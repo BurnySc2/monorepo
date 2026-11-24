@@ -10,13 +10,11 @@ RUN gleam build
 # RUN gleam test
 RUN gleam export erlang-shipment
 
-# NOTE digest pin skipped: docker unavailable, keeping erlang:27-alpine
-FROM erlang:27-alpine
+# NOTE digest pin skipped: docker unavailable, keeping erlang:28-alpine (min supported Gleam 1.19.2)
+FROM erlang:28-alpine
 
 # WHY libpq: runtime parity with twitch_stream_announcer image per deploy spec
-RUN apk add --no-cache libpq && mkdir -p /var/crash
-
-ENV ERL_LIBS=/app
+RUN apk add --no-cache libpq ca-certificates && mkdir -p /var/crash
 
 COPY --from=build /app/build/erlang-shipment /app
 
