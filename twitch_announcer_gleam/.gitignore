@@ -1,2 +1,4 @@
 .env
 .env.server
+crash/
+erl_crash.dump

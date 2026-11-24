@@ -7,3 +7,12 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      ERL_CRASH_DUMP: /var/crash/erl_crash.dump
+    volumes:
+      - ./crash:/var/crash
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
