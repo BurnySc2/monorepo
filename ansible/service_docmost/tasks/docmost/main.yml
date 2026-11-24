@@ -1,0 +1,58 @@
+---
+- name: Assert docmost inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - docmost_username is defined
+      - docmost_subdomain is defined
+      - docmost_port is defined
+    fail_msg: Missing inventory/host_vars for docmost_username, docmost_subdomain, docmost_port
+
+- name: Ensure A record exists
+  ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
+  loop:
+    - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ docmost_subdomain }}'}
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ docmost_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ docmost_username }}'
+    groups:
+      - '{{ docmost_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.command:
+    cmd: id {{ docmost_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.command:
+    cmd: id {{ docmost_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+  loop:
+    - /home/{{ docmost_username }}/docmost
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ docmost_username }}/docker-compose.yml
+    owner: "{{ USER_ID.stdout }}"
+    group: "{{ GROUP_ID.stdout }}"
+    mode: '0640'
+  notify: converge docmost

@@ -34,7 +34,7 @@
   become: true
   changed_when: true
 - name: Ensure swapfile is enabled on boot by editing /etc/fstab
-  ansible.builtin.mount:
+  ansible.posix.mount:
     name: swap
     src: /swapfile
     fstype: swap

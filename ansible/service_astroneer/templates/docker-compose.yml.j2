@@ -1,0 +1,32 @@
+---
+# https://gitlab.com/altercode/astroneer-linux
+networks:
+  pangolin_newt:
+    external: true
+services:
+  astroneer-server:
+    build:
+      context: .
+    container_name: astroneer
+    restart: unless-stopped
+    volumes:
+      - ./astroneer:/astroneer
+    environment:
+      # Can be found through 'https://www.steamidfinder.com/'
+      - OWNER_NAME={{ secrets.ASTRONEER.STEAM_NAME }}
+      - OWNER_GUID={{ secrets.ASTRONEER.STEAM_GUID }}
+      # - SERVER_PASSWORD={{ secrets.ASTRONEER.SERVER_PASSWORD }}
+      - SAVE_NAME=SAVE_3
+    mem_limit: 6000M
+    # cpus: '0.5'
+    networks:
+      - pangolin_newt
+    labels:
+      - pangolin.public-resources.astroneer-udp.protocol=udp
+      - pangolin.public-resources.astroneer-udp.proxy-port=30877
+      - pangolin.public-resources.astroneer-udp.targets[0].site=local
+      - pangolin.public-resources.astroneer-udp.targets[0].port=30877
+      - pangolin.public-resources.astroneer-tcp.protocol=tcp
+      - pangolin.public-resources.astroneer-tcp.proxy-port=30877
+      - pangolin.public-resources.astroneer-tcp.targets[0].site=local
+      - pangolin.public-resources.astroneer-tcp.targets[0].port=30877

@@ -1,37 +1,16 @@
 ---
 # https://github.com/miroslavpejic85/mirotalk
 # Execute with
-# ansible-playbook mirotalk_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
-  hosts: server_group4
+# ansible-playbook mirotalk_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [mirotalk]
+  hosts: contabo2
   vars:
-    USERNAME: '{{ secrets.MIROTALK.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.MIROTALK.SUBDOMAIN }}'
-    APPLICATION_PORT: '3000'
+    USERNAME: "{{ mirotalk_username }}"
+    SUBDOMAIN: "{{ mirotalk_subdomain }}"
+    APPLICATION_PORT: "{{ mirotalk_port }}"
   tasks:
-    - include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Copy env file
-      template:
-        src: mirotalk.env
-        dest: /home/{{ USERNAME }}/.env
-    - name: Copy docker-compose.yml file
-      template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - name: Include tasks [mirotalk]
+      ansible.builtin.include_tasks: tasks/mirotalk/main.yml
+  handlers:
+    - name: Import handlers [mirotalk]
+      ansible.builtin.import_tasks: handlers/main.yml

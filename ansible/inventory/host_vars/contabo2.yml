@@ -1,0 +1,52 @@
+---
+# host_vars for contabo2.
+# SAFE IN-REPO: service usernames, subdomains, and well-known ports. These are
+# visible anyway via `id`, `docker ps`, and public DNS, so storing them here is fine.
+# STAYS SECRET in $ANSIBLE_SECRETS: MY_PUBLIC_DOMAIN, CLOUDFLARE.DNS_API_TOKEN,
+# server IPv4, DEFAULT_SHELL, and all passwords/tokens.
+filebrowser_username: cloud
+filebrowser_subdomain: cloud
+filebrowser_port: 80
+
+# Template for next service (syncthing):
+# syncthing_username: syncthing
+# syncthing_subdomain: sync
+# syncthing_port: 8384
+docmost_username: docmost
+docmost_subdomain: docmost
+docmost_port: 3000
+forgejo_username: forgejo
+forgejo_subdomain: git
+forgejo_port: 3000
+forgejo_ssh_port: 2222
+syncthing_subdomain: sync4
+pangolin_username: pangolin
+pangolin_subdomain: pangolin
+rustfs_username: rustfs
+rustfs_subdomain: rustfs
+rustfs_adminsubdomain: rustfsadmin
+rustfs_port: 9000
+rustfs_admin_port: 9001
+drawio_username: drawio
+drawio_subdomain: drawio
+drawio_port: 8080
+excalidraw_username: excalidraw
+excalidraw_subdomain: excalidraw
+excalidraw_port: 80
+navidrome_username: catjam
+navidrome_subdomain: catjam
+navidrome_port: 4533
+stirling_username: pdf
+stirling_subdomain: pdf
+stirling_port: 8080
+mirotalk_username: mirotalk
+mirotalk_subdomain: zoom
+mirotalk_port: 3000
+backup_jobs:
+  - {name: navidrome, src: "/home/catjam/data", excludes: []}
+  - {name: filebrowser, src: "/home/cloud/database/", excludes: []}
+  - {name: docmost, src: "/home/docmost/docmost/", excludes: []}
+  - {name: drawio, src: "/home/drawio/data/", excludes: []}
+  - {name: excalidraw, src: "/home/excalidraw/data/", excludes: []}
+  - {name: forgejo, src: "/home/forgejo/forgejo/", excludes: []}
+  - {name: pangolin, src: "/home/pangolin/config/", excludes: []}

@@ -1,0 +1,43 @@
+---
+# https://github.com/Didstopia/vrising-server
+networks:
+  pangolin_newt:
+    external: true
+services:
+  vrising:
+    image: didstopia/vrising-server:latest
+    # build: .
+    container_name: vrising
+    restart: unless-stopped
+    environment:
+      # Configure the server
+      V_RISING_SERVER_PERSISTENT_DATA_PATH: /app/vrising
+      V_RISING_SERVER_BRANCH: public
+      # V_RISING_SERVER_START_MODE: "0"  # Install/update and start server
+      # V_RISING_SERVER_START_MODE: "1"  # Install/update and exit
+      V_RISING_SERVER_START_MODE: '2'  # Install, skip update check and start server
+      V_RISING_SERVER_UPDATE_MODE: '1'  # Enable update checking
+      V_RISING_SERVER_DEFAULT_HOST_SETTINGS: false
+    volumes:
+      - ./vrising_saves:/app/vrising
+      - ./vrising_data:/steamcmd/vrising
+    mem_limit: 6000M
+    # cpus: '0.5'
+    networks:
+      - pangolin_newt
+    labels:
+      - pangolin.public-resources.vrising-9876-udp.protocol=udp
+      - pangolin.public-resources.vrising-9876-udp.proxy-port=9876
+      - pangolin.public-resources.vrising-9876-udp.targets[0].site=local
+      - pangolin.public-resources.vrising-9876-udp.targets[0].hostname=vrising
+      - pangolin.public-resources.vrising-9876-udp.targets[0].port=9876
+      - pangolin.public-resources.vrising-9877-udp.protocol=udp
+      - pangolin.public-resources.vrising-9877-udp.proxy-port=9877
+      - pangolin.public-resources.vrising-9877-udp.targets[0].site=local
+      - pangolin.public-resources.vrising-9877-udp.targets[0].hostname=vrising
+      - pangolin.public-resources.vrising-9877-udp.targets[0].port=9877
+      - pangolin.public-resources.vrising-9878-tcp.protocol=tcp
+      - pangolin.public-resources.vrising-9878-tcp.proxy-port=9878
+      - pangolin.public-resources.vrising-9878-tcp.targets[0].site=local
+      - pangolin.public-resources.vrising-9878-tcp.targets[0].hostname=vrising
+      - pangolin.public-resources.vrising-9878-tcp.targets[0].port=9878

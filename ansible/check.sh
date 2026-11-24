@@ -8,27 +8,47 @@ strict_skip() {
   echo "SKIP: $1 missing"
   return 0
 }
+# WHY install collections before lint/syntax so fully-qualified names resolve.
+check_galaxy() {
+  if [[ ${ANSIBLE_GALAXY_SKIP:-0} == 1 ]]; then echo "SKIP: galaxy (ANSIBLE_GALAXY_SKIP=1)"; return 0; fi
+  command -v ansible-galaxy >/dev/null || { strict_skip "ansible-galaxy"; return $?; }
+  ansible-galaxy collection install -r requirements.yml
+}
 # WHY gate YAML format before compose/syntax checks.
 check_yaml_format() {
   command -v uv >/dev/null || { strict_skip "uv"; return $?; }
-  uv run --group dev yamlfix --check --exclude '.venv/**/*' .
   uv run --group dev yamllint --strict .
+}
+# WHY lint playbooks before compose/syntax checks.
+check_ansible_lint() {
+  command -v uv >/dev/null || { strict_skip "uv"; return $?; }
+  uv run --group dev ansible-lint --strict setup_cloudflare_a_record.yml redeploy_selected.yml service_*/*_setup.yml backup/backup_setup.yml tasks/ setup_pc/ --exclude .venv/ --exclude service_*/templates/ --exclude backup/templates/
 }
 # WHY catch compose errors before ansible runs.
 check_compose() {
   command -v docker >/dev/null || { strict_skip "docker"; return $?; }
   local fails=0
-  for f in service_*/docker-compose.yml; do
-    docker compose -f "$f" config --no-interpolate || { echo "FAIL $f"; fails=$((fails+1)); }
+  for f in service_*/docker-compose.yml service_*/templates/docker-compose.yml.j2; do
+    [ -e "$f" ] || continue
+    if [[ "$f" == *.j2 ]]; then
+      echo "==> $f (template - skip engine config, covered by render-then-lint)"
+      continue
+    else
+      docker compose -f "$f" config --no-interpolate || { echo "FAIL $f"; fails=$((fails+1)); }
+    fi
   done
   [ "$fails" -eq 0 ] || return 1
 }
 # WHY reuse one play list for syntax and secrets checks.
 check_syntax() {
   command -v ansible-playbook >/dev/null || { strict_skip "ansible"; return $?; }
-  for play in service_*/*_setup.yml; do
+  for play in service_*/*_setup.yml backup/backup_setup.yml; do
     echo "==> $play"
-    ansible-playbook -i hosts "$play" --syntax-check --check
+    ansible-playbook -i inventory "$play" --syntax-check --check
+  done
+  for play in setup_pc/*/main.yml; do
+    echo "==> $play"
+    ansible-playbook -i "$(dirname "$play")/hosts" "$play" --syntax-check --check
   done
 }
 # WHY verify vault-backed runs without printing values.
@@ -40,13 +60,16 @@ check_secrets() {
     echo "SKIP: secrets not found (vault not in CI; set ANSIBLE_SECRETS to enable)"
     return 0
   fi
-  for play in service_*/*_setup.yml; do
+  for play in service_*/*_setup.yml backup/backup_setup.yml; do
     echo "==> $play + secrets"
-    ansible-playbook -i hosts -i "$SECRETS" "$play" --syntax-check --check --diff
+    ansible-playbook -i inventory -i "$SECRETS" "$play" --syntax-check --check
   done
+  # WHY SKIP setup_pc: vault-free, sibling-hosts syntax already gated by check_syntax.
 }
 main() {
+  check_galaxy
   check_yaml_format
+  check_ansible_lint
   check_compose
   check_syntax
   check_secrets

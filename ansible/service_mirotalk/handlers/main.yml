@@ -1,0 +1,12 @@
+---
+- name: Converge mirotalk
+  listen: converge mirotalk
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ USERNAME }}"
+    state: present
+    pull: missing
+- name: Restart mirotalk
+  listen: restart mirotalk
+  community.docker.docker_compose_v2:
+    project_src: "/home/{{ USERNAME }}"
+    state: restarted

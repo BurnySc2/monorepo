@@ -5,14 +5,6 @@ requires-python = ">=3.10, <3.13"
 
 [dependency-groups]
 dev = [
-    "yamlfix>=1.17.0",
+    "ansible-lint>=26.0.0,<27",
     "yamllint>=1.37.0",
 ]
-
-[tool.yamlfix]
-allow_duplicate_keys = true
-line_length = 200
-none_representation = "null"
-sequence_style = "block_style"
-# WHY keep intentional quotes on Jinja URLs (e.g. git#{{ ... }} fragment would read as comment-risk unquoted).
-preserve_quotes = true

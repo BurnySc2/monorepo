@@ -155,6 +155,7 @@
   become: true
   when: not ansible_check_mode
 - name: Start syncthing service for user
+  become: true
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
   ansible.builtin.systemd_service:
     name: syncthing.service
@@ -172,16 +173,18 @@
 #   loop:
 #     - "~/syncthing"
 - name: Create pipewire user config directory
+  become: true
+  become_user: '{{ USERNAME | default(ansible_user_id) }}'
   ansible.builtin.file:
     path: ~/.config/pipewire/pipewire.conf.d
     state: directory
     mode: '0755'
-  become_user: '{{ USERNAME | default(ansible_user_id) }}'
 - name: Copy pipewire drop-in configs
   ansible.builtin.copy:
     src: 'pipewire/{{ item }}'
     dest: '~/.config/pipewire/pipewire.conf.d/{{ item }}'
     mode: '0644'
+  become: true
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
   loop:
     - 99-audio-setup.conf
@@ -192,12 +195,14 @@
     path: ~/.config/pipewire/pipewire-pulse.conf.d
     state: directory
     mode: '0755'
+  become: true
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
 - name: Copy pipewire-pulse drop-in configs
   ansible.builtin.copy:
     src: pipewire-pulse/pipewire-pulse.conf.d/99-combined-remap.conf
     dest: ~/.config/pipewire/pipewire-pulse.conf.d/99-combined-remap.conf
     mode: '0644'
+  become: true
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
   notify: restart pipewire
 - name: Ensure local directory exists
@@ -208,7 +213,7 @@
     group: '{{ USERNAME | default(ansible_user_id) }}'
     mode: '0755'
 - name: Mount burnylaptopd:/home
-  ansible.builtin.mount:
+  ansible.posix.mount:
     name: /media/burnylaptopd
     src: burnylaptopd:/home
     fstype: fuse.sshfs
@@ -225,7 +230,7 @@
     group: '{{ USERNAME | default(ansible_user_id) }}'
     mode: '0755'
 - name: Mount prodesk:/home
-  ansible.builtin.mount:
+  ansible.posix.mount:
     name: /media/prodesk
     src: prodesk:/home
     fstype: fuse.sshfs

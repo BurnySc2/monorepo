@@ -25,9 +25,11 @@
           # Compression for backup
           - p7zip-full
         update_cache: true
-        state: latest
+        # rolling upgrades intended
+        state: latest  # noqa: package-latest
         autoclean: true
         autoremove: true
+      become: true
     - name: Set default shell
       ansible.builtin.user:
         name: root
@@ -35,21 +37,26 @@
           - root
         append: true
         shell: /usr/bin/fish
+      become: true
 
     # https://www.digitalocean.com/community/tutorials/how-to-use-ansible-to-install-and-set-up-docker-on-ubuntu-20-04
     - name: Add Docker GPG apt Key
       ansible.builtin.apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
+      become: true
     - name: Add Docker Repository
       ansible.builtin.apt_repository:
         repo: deb https://download.docker.com/linux/ubuntu focal stable
         state: present
+      become: true
     - name: Update apt and install docker-ce
       ansible.builtin.apt:
         name: docker-ce
-        state: latest
+        # rolling upgrades intended
+        state: latest  # noqa: package-latest
         update_cache: true
+      become: true
 
     # Set up swap memory
     # Swap size is fixed at first creation; an existing non-empty /swapfile is never resized.
@@ -74,7 +81,7 @@
       become: true
       changed_when: true
     - name: Ensure swapfile is enabled on boot by editing /etc/fstab
-      ansible.builtin.mount:
+      ansible.posix.mount:
         name: swap
         src: /swapfile
         fstype: swap
@@ -91,7 +98,7 @@
         opts: noatime
         state: mounted
       become: true
-      when: "'server_group1' in group_names"
+      when: inventory_hostname == 'prodesk'
 
       # Disable ssh login with password by modifying
       # nano /etc/ssh/sshd_config

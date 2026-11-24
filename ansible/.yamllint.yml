@@ -5,5 +5,19 @@ yaml-files:
   - '*.yml'
 rules:
   line-length: disable
+  comments:
+    min-spaces-from-content: 1
+  comments-indentation: disable
+  braces:
+    max-spaces-inside: 1
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+  empty-lines:
+    max: 1
 ignore: |-
   .venv
+  .ansible/
+  .ansible/**/*
+  service_*/templates/*.j2
+  backup/templates/*.j2

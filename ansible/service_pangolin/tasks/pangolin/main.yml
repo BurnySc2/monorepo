@@ -1,0 +1,97 @@
+---
+- name: Assert pangolin inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - pangolin_username is defined
+      - pangolin_subdomain is defined
+    fail_msg: Missing inventory/host_vars for pangolin_username, pangolin_subdomain
+
+- name: Ensure A record exists
+  ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
+  loop:
+    - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ pangolin_subdomain }}'}
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ pangolin_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ pangolin_username }}'
+    groups:
+      - '{{ pangolin_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.command:
+    cmd: id {{ pangolin_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.command:
+    cmd: id {{ pangolin_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+  loop:
+    - /home/{{ pangolin_username }}/config
+    - /home/{{ pangolin_username }}/config/traefik
+    - /home/{{ pangolin_username }}/config/letsencrypt
+    - /home/{{ pangolin_username }}/config/traefik/logs
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ pangolin_username }}/docker-compose.yml
+    owner: "{{ USER_ID.stdout }}"
+    group: "{{ GROUP_ID.stdout }}"
+    mode: '0640'
+  notify: converge pangolin
+
+- name: Template pangolin config.yml file
+  ansible.builtin.template:
+    src: ../../templates/config.yml.j2
+    dest: /home/{{ pangolin_username }}/config/config.yml
+    owner: "{{ USER_ID.stdout }}"
+    group: "{{ GROUP_ID.stdout }}"
+    mode: '0640'
+  notify: restart pangolin
+
+- name: Template traefik traefik_config.yml file
+  ansible.builtin.template:
+    src: ../../templates/traefik_config.yml.j2
+    dest: /home/{{ pangolin_username }}/config/traefik/traefik_config.yml
+    owner: "{{ USER_ID.stdout }}"
+    group: "{{ GROUP_ID.stdout }}"
+    mode: '0640'
+  notify: restart pangolin
+
+- name: Template traefik dynamic_config.yml file
+  ansible.builtin.template:
+    src: ../../templates/traefik_dynamic.yml.j2
+    dest: /home/{{ pangolin_username }}/config/traefik/dynamic_config.yml
+    owner: "{{ USER_ID.stdout }}"
+    group: "{{ GROUP_ID.stdout }}"
+    mode: '0640'
+  notify: restart pangolin
+
+- name: Ensure acme.json exists with secure permissions
+  ansible.builtin.file:
+    path: /home/{{ pangolin_username }}/config/letsencrypt/acme.json
+    state: touch
+    modification_time: preserve
+    access_time: preserve
+    owner: "{{ USER_ID.stdout }}"
+    group: "{{ GROUP_ID.stdout }}"
+    mode: '0600'

@@ -128,3 +128,6 @@ todos.db
 
 # npm
 package-lock.json
+
+# Ansible
+.ansible

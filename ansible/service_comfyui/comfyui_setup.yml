@@ -1,32 +1,15 @@
 ---
 # Execute with
-# ansible-playbook comfyui_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start comfyui service
-  hosts: server_group1
+# ansible-playbook comfyui_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [comfyui]
+  hosts: prodesk
   vars:
-    USERNAME: '{{ secrets.COMFYUI.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.COMFYUI.SUBDOMAIN }}'
-    APPLICATION_PORT: '8188'
+    USERNAME: "{{ comfyui_username }}"
+    SUBDOMAIN: "{{ comfyui_subdomain }}"
+    APPLICATION_PORT: "{{ comfyui_port }}"
   tasks:
-    - include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Copy docker-compose.yml file
-      template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - name: Include tasks [comfyui]
+      ansible.builtin.include_tasks: tasks/comfyui/main.yml
+  handlers:
+    - name: Import handlers [comfyui]
+      ansible.builtin.import_tasks: handlers/main.yml

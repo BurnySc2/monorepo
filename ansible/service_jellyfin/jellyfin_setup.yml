@@ -3,34 +3,16 @@
 # https://jellyfin.org/docs/general/installation/container/
 # https://play.google.com/store/apps/details?id=org.jellyfin.mobile&hl=de
 # Execute with
-# ansible-playbook jellyfin_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
-  hosts: server_group2
+# ansible-playbook jellyfin_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [jellyfin]
+  hosts: burnylaptopd
   vars:
-    USERNAME: '{{ secrets.JELLYFIN.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.JELLYFIN.SUBDOMAIN }}'
-    APPLICATION_PORT: '8096'
+    USERNAME: "{{ jellyfin_username }}"
+    SUBDOMAIN: "{{ jellyfin_subdomain }}"
+    APPLICATION_PORT: "{{ jellyfin_port }}"
   tasks:
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Tear down existing services
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        state: absent
-    - name: Copy docker-compose.yml file
-      template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - name: Include tasks [jellyfin]
+      ansible.builtin.include_tasks: tasks/jellyfin/main.yml
+  handlers:
+    - name: Import handlers [jellyfin]
+      ansible.builtin.import_tasks: handlers/main.yml

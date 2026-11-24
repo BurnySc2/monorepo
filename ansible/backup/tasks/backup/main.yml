@@ -1,0 +1,51 @@
+---
+- name: Assert backup inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - secrets.BACKUP.BACKUP_TARGET_PATH is defined
+      - secrets.BACKUP.BACKUP_PASSWORD is defined
+      - BACKUP_KEEP_DAILY is defined
+      - BACKUP_KEEP_WEEKLY is defined
+      - BACKUP_KEEP_MONTHLY is defined
+      - backup_jobs is defined
+    fail_msg: "Missing backup config: define BACKUP_KEEP_DAILY/WEEKLY/MONTHLY in group_vars/all.yml, backup_jobs in host_vars, secrets.BACKUP.BACKUP_TARGET_PATH/BACKUP_PASSWORD in secrets"
+
+- name: Get user id
+  ansible.builtin.command:
+    cmd: id syncthing -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.command:
+    cmd: id syncthing -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+  loop:
+    - '{{ secrets.BACKUP.BACKUP_TARGET_PATH }}'
+
+- name: Copy backup script file
+  ansible.builtin.copy:
+    src: ../../files/backup_script.sh
+    dest: '{{ BACKUP_SCRIPT_PATH }}'
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+
+- name: Add backups
+  ansible.builtin.cron:
+    name: Run {{ item.name }} backup
+    job: /bin/bash '{{ BACKUP_SCRIPT_PATH }}' '{{ item.src | default(item.SOURCE_DIRECTORY) }}' '{{ secrets.BACKUP.BACKUP_TARGET_PATH }}/{{ item.name }}' '{{ item.keep_daily | default(BACKUP_KEEP_DAILY) }}' '{{ item.keep_weekly | default(BACKUP_KEEP_WEEKLY) }}' '{{ item.keep_monthly | default(BACKUP_KEEP_MONTHLY) }}' '{{ BACKUP_PASSWORD }}' '{{ item.excludes | default([]) | join(",") }}' >> '{{ secrets.BACKUP.BACKUP_TARGET_PATH }}/backup_{{ item.name }}.log' 2>&1
+    minute: '0'
+    hour: '4'
+    user: root
+  loop: '{{ backup_jobs }}'

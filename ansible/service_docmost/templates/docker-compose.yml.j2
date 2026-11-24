@@ -1,0 +1,53 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+  docmost-net:
+    driver: bridge
+services:
+  docmost:
+    image: docmost/docmost:latest  # TODO pin release: WHY latest tracks rolling
+    depends_on:
+      - db
+      - redis
+    environment:
+      APP_URL: https://{{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+      APP_SECRET: '{{ secrets.DOCMOST.APP_SECRET }}'
+      DATABASE_URL: postgresql://docmost:{{ secrets.DOCMOST.DB_PASSWORD }}@db:5432/docmost?schema=public
+      REDIS_URL: redis://redis:6379
+    restart: unless-stopped
+    volumes:
+      - ./docmost:/app/data/storage
+    networks:
+      - pangolin_newt
+      - docmost-net
+    labels:
+      - pangolin.public-resources.docmost.name=Docmost
+      - pangolin.public-resources.docmost.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+      - pangolin.public-resources.docmost.protocol=http
+      - pangolin.public-resources.docmost.auth.sso-enabled=false
+      - pangolin.public-resources.docmost.targets[0].site=local
+      - pangolin.public-resources.docmost.targets[0].method=http
+      - pangolin.public-resources.docmost.targets[0].hostname=docmost
+      - pangolin.public-resources.docmost.targets[0].port={{ APPLICATION_PORT }}
+  db:
+    image: postgres:16-alpine  # WHY pg16 SSOT: align postgres fleet
+    environment:
+      POSTGRES_DB: docmost
+      POSTGRES_USER: docmost
+      POSTGRES_PASSWORD: '{{ secrets.DOCMOST.DB_PASSWORD }}'
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - docmost-net
+  redis:
+    image: redis:8-alpine  # WHY major-pinned 8-alpine: ok stable
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - docmost-net
+volumes:
+  db_data: null
+  redis_data: null

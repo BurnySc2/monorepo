@@ -1,0 +1,62 @@
+---
+- name: Assert rustfs inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - rustfs_username is defined
+      - rustfs_subdomain is defined
+      - rustfs_adminsubdomain is defined
+      - rustfs_port is defined
+      - rustfs_admin_port is defined
+    fail_msg: Missing inventory/host_vars for rustfs_username, rustfs_subdomain, rustfs_adminsubdomain, rustfs_port, rustfs_admin_port
+
+- name: Ensure A record exists
+  ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
+  loop:
+    - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ rustfs_subdomain }}'}
+    - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ rustfs_adminsubdomain }}'}
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ rustfs_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ rustfs_username }}'
+    groups:
+      - '{{ rustfs_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.command:
+    cmd: id {{ rustfs_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.command:
+    cmd: id {{ rustfs_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    recurse: true
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+  loop:
+    - /home/{{ rustfs_username }}/data
+    - /home/{{ rustfs_username }}/logs
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ rustfs_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: converge rustfs

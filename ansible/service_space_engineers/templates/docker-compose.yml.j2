@@ -1,0 +1,49 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+services:
+  se-server:
+    image: devidian/spaceengineers:latest
+    container_name: se
+    networks:
+      - pangolin_newt
+    restart: unless-stopped
+    volumes:
+      # left side: your docker-host machine
+      # right side: the paths in the image (!!do not change!!)
+      - ./plugins:/appdata/space-engineers/plugins
+      - ./instances:/appdata/space-engineers/instances
+      - ./SpaceEngineersDedicated:/appdata/space-engineers/SpaceEngineersDedicated
+      - ./steamcmd:/root/.steam
+    labels:
+      - pangolin.public-resources.space-engineers-udp.protocol=udp
+      - pangolin.public-resources.space-engineers-udp.proxy-port=27016/udp
+      - pangolin.public-resources.space-engineers-udp.targets[0].site=local
+      - pangolin.public-resources.space-engineers-udp.targets[0].port=27016
+    environment:
+      - WINEDEBUG=-all
+      - INSTANCE_NAME={{ secrets.SPACE_ENGINEERS.SALT }}
+      - PUBLIC_IP={{ secrets.SPACE_ENGINEERS.PUBLIC_IP }}
+      # public ip required for healthcheck
+    mem_limit: 6000M
+    # cpus: '0.5'
+# Savegame found in:
+# .../SteamLibrary/steamapps/compatdata/244850/pfx/drive_c/users/steamuser/AppData/Roaming/SpaceEngineers/Saves
+
+# May lower "PhysicsIterations" to reduce cpu usage
+# Password hashing:
+# https://sepg.einarjegorov.com/
+
+# Project structure:
+# ├── docker-compose.yml
+# ├── instances
+# │   └── tromtrom
+# │       ├── cache
+# │       ├── Mods
+# │       ├── Saves
+# │       ├── SpaceEngineersDedicated_20240419_084309847.log
+# │       ├── SpaceEngineers-Dedicated.cfg
+# │       └── temp
+# ├── plugins
+# ├── SpaceEngineersDedicated

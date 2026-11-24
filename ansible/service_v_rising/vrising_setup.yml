@@ -1,36 +1,15 @@
 ---
+# https://github.com/Didstopia/vrising-server
 # Execute with
-# ansible-playbook vrising_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
-  hosts: my_servers
+# ansible-playbook vrising_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [v_rising]
+  hosts: prodesk
   vars:
-    USERNAME: '{{ secrets.VRISING.USERNAME }}'
+    USERNAME: "{{ v_rising_username }}"
+    APPLICATION_PORT: "{{ v_rising_port }}"
   tasks:
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Create "Settings" directory
-      ansible.builtin.file:
-        path: /home/{{ USERNAME }}/vrising_saves/Settings/
-        recurse: true
-        state: directory
-    - name: Copy ServerHostSettings file
-      template:
-        src: ServerHostSettings.json
-        dest: /home/{{ USERNAME }}/vrising_saves/Settings/ServerHostSettings.json
-    - name: Copy docker-compose.yml file
-      template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - name: Include tasks [v_rising]
+      ansible.builtin.include_tasks: tasks/v_rising/main.yml
+  handlers:
+    - name: Import handlers [v_rising]
+      ansible.builtin.import_tasks: handlers/main.yml

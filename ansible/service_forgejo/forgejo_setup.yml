@@ -1,58 +1,16 @@
 ---
 # Execute with
-# ansible-playbook forgejo_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create service
-  hosts: server_group4
+# ansible-playbook forgejo_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [forgejo]
+  hosts: contabo2
   vars:
-    USERNAME: '{{ secrets.FORGEJO.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.FORGEJO.SUBDOMAIN }}'
-    APPLICATION_PORT: '3000'
-    SSH_PORT: '2222'
+    USERNAME: "{{ forgejo_username }}"
+    SUBDOMAIN: "{{ forgejo_subdomain }}"
+    APPLICATION_PORT: "{{ forgejo_port }}"
+    SSH_PORT: "{{ forgejo_ssh_port }}"
   tasks:
-    - include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Get user id
-      ansible.builtin.shell:
-        cmd: id {{ USERNAME }} -u
-      register: USER_ID
-    - name: Get group id
-      ansible.builtin.shell:
-        cmd: id {{ USERNAME }} -g
-      register: GROUP_ID
-    - name: Create directories
-      file:
-        path: '{{ item }}'
-        recurse: true
-        state: directory
-        owner: '{{ USER_ID.stdout }}'
-        group: '{{ GROUP_ID.stdout }}'
-      loop:
-        - /home/{{ USERNAME }}/forgejo
-    - name: Copy docker-compose.yml file
-      template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-        owner: '{{ USER_ID.stdout }}'
-        group: '{{ GROUP_ID.stdout }}'
-        mode: '0640'
-    - name: Run `docker-compose down`
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        state: stopped
-      failed_when: false
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - name: Include tasks [forgejo]
+      ansible.builtin.include_tasks: tasks/forgejo/main.yml
+  handlers:
+    - name: Import handlers [forgejo]
+      ansible.builtin.import_tasks: handlers/main.yml

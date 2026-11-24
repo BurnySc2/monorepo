@@ -1,0 +1,29 @@
+---
+# host_vars for prodesk.
+# SAFE IN-REPO: service usernames, subdomains, and ports. These are
+# visible anyway via `id`, `docker ps`, and public DNS, so storing them here is fine.
+# STAYS SECRET in $ANSIBLE_SECRETS: MY_PRIVATE_DOMAIN, MEDIA paths,
+# server specifics (DEFAULT_SHELL), and all passwords/tokens.
+pinchflat_username: pinchflat
+pinchflat_subdomain: pinchflat
+pinchflat_port: 8945
+openchamber_username: openchamber2
+openchamber_subdomain: openchamber
+openchamber_port: 3000
+syncthing_subdomain: sync1
+comfyui_username: comfyui
+comfyui_subdomain: comfyui
+comfyui_port: 8188
+satisfactory_username: satisfactory
+satisfactory_port: 7777
+v_rising_username: v_rising
+v_rising_port: 9876
+space_engineers_username: space_engineers
+space_engineers_port: 8384
+astroneer_username: astroneer
+astroneer_port: 30877
+gatus_username: gatus
+gatus_subdomain: gatus
+gatus_port: 8080
+backup_jobs:
+  - {name: pinchflat, src: "/home/pinchflat/config", excludes: []}
