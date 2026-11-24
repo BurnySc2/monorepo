@@ -1,7 +1,7 @@
 ---
 # Run as root (user/group creation + writes under /home/<user> need root):
 # ansible-playbook deploy_playbook.yml -i ../ansible/hosts
-# Local .env must exist with STAGE=PROD.
+# Local .env.server must exist with STAGE=PROD.
 - name: Create service
   hosts: contabo2
   vars:
@@ -30,7 +30,7 @@
 
     - name: Copy .env file
       ansible.builtin.copy:
-        src: .env
+        src: .env.server
         dest: /home/{{ USERNAME }}/.env
         owner: "{{ USERNAME }}"
         group: "{{ USERNAME }}"
