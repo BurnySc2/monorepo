@@ -16,7 +16,8 @@ FROM erlang:27-alpine
 # WHY libpq: runtime parity with twitch_stream_announcer image per deploy spec
 RUN apk add --no-cache libpq && mkdir -p /var/crash
 
-COPY --from=build /app/build/erlang-shipment /
+ENV ERL_LIBS=/app
 
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["run"]
+COPY --from=build /app/build/erlang-shipment /app
+
+ENTRYPOINT ["erl", "-pa", "/app/twitch_announcer_gleam/ebin", "-noshell", "-eval", "twitch_announcer_gleam@@main:run(twitch_announcer_gleam)"]
