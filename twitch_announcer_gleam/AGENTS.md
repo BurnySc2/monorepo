@@ -2,7 +2,7 @@
 
 Compact reference for LLM agents. Scannable in <2 minutes.
 
-> Single-source note: `src/main.gleam` (stages, loop, table-driven
+> Single-source note: `src/twitch_announcer_gleam.gleam` (stages, loop, table-driven
 > `update_entries`, `utc_now` `Timestamp`), `src/decide.gleam` (pure
 > announce logic, `birl` + `humanize`), `src/db.gleam` (`pog` pool +
 > squirrel queries, `timestamp_to_string` via `birl`, `COALESCE` reads,
@@ -22,10 +22,10 @@ Gleam (Erlang target) Twitch stream announcer:
 
 - Polls Twitch API for enabled streams, posts Discord webhooks for newly-live
   ones, updates status in Postgres.
-- `src/main.gleam`: stage dispatch — `BUILD` skips (no DB/API), `DEV` runs
+- `src/twitch_announcer_gleam.gleam`: stage dispatch — `BUILD` skips (no DB/API), `DEV` runs
   once, `PROD` loops forever with 20 s sleep; no per-stage timing logs
   (plain `io.println` only). DB connects for `DEV`/`PROD`.
-- `src/main.gleam`: `update_entries` is table-driven (announced / online /
+- `src/twitch_announcer_gleam.gleam`: `update_entries` is table-driven (announced / online /
   now-offline triples via `list.try_each`, stamped with `utc_now`
   `Timestamp`); writes are `PROD`-only (`write_if_present`).
 - `src/decide.gleam`: pure decision function
@@ -57,25 +57,25 @@ Stack: Gleam 1.19.2 on OTP 27 + PostgreSQL (`pog` driver).
 | `gleam run`                     | Run once (`DEV`) or forever (`PROD`) per `STAGE`      |
 | `./scripts/generate_sql.sh`     | Local squirrel regen (needs live DB; never in CI)     |
 
-| Path                      | Purpose                                                           |
-| ------------------------- | ----------------------------------------------------------------- |
-| `src/main.gleam`          | Entry `main`, `STAGE` dispatch, `run_once`, `loop_forever` (20 s) |
-| `src/decide.gleam`        | Pure announce-decision logic + time parsing/formatting            |
-| `src/db.gleam`            | `pog` pool, squirrel queries, row mapping to `DbRow`              |
-| `src/sql.gleam`           | Generated bindings (never hand-edit)                              |
-| `src/sql/`                | Query sources (`COALESCE` read; `ANY($1/$2)` writes)              |
-| `src/twitch.gleam`        | Twitch token + stream-info fetching                               |
-| `src/discord.gleam`       | Discord webhook posting (`kitazith`, `prod_stage` gate)           |
-| `src/dotenv.gleam`        | `.env` loading via `dot_env` (file values overwrite OS env)       |
-| `src/http_helpers.gleam`  | Shared `httpc` send + status assertion + `post_json`              |
-| `scripts/generate_sql.sh` | `squirrel` + `squirrel check` via `DATABASE_URL`                  |
-| `gleam.toml`              | Manifest, Erlang target (`pog`, `gleam_time`, `gleam_otp`)        |
-| `Dockerfile`              | Multi-stage build → Erlang shipment on `erlang:27-alpine`         |
+| Path                               | Purpose                                                           |
+| ---------------------------------- | ----------------------------------------------------------------- |
+| `src/twitch_announcer_gleam.gleam` | Entry `main`, `STAGE` dispatch, `run_once`, `loop_forever` (20 s) |
+| `src/decide.gleam`                 | Pure announce-decision logic + time parsing/formatting            |
+| `src/db.gleam`                     | `pog` pool, squirrel queries, row mapping to `DbRow`              |
+| `src/sql.gleam`                    | Generated bindings (never hand-edit)                              |
+| `src/sql/`                         | Query sources (`COALESCE` read; `ANY($1/$2)` writes)              |
+| `src/twitch.gleam`                 | Twitch token + stream-info fetching                               |
+| `src/discord.gleam`                | Discord webhook posting (`kitazith`, `prod_stage` gate)           |
+| `src/dotenv.gleam`                 | `.env` loading via `dot_env` (file values overwrite OS env)       |
+| `src/http_helpers.gleam`           | Shared `httpc` send + status assertion + `post_json`              |
+| `scripts/generate_sql.sh`          | `squirrel` + `squirrel check` via `DATABASE_URL`                  |
+| `gleam.toml`                       | Manifest, Erlang target (`pog`, `gleam_time`, `gleam_otp`)        |
+| `Dockerfile`                       | Multi-stage build → Erlang shipment on `erlang:27-alpine`         |
 
 ```
 twitch_announcer_gleam/
 ├── src/
-│   ├── main.gleam      # stage dispatch + announce cycle
+│   ├── twitch_announcer_gleam.gleam  # stage dispatch + announce cycle
 │   ├── decide.gleam    # pure decision logic
 │   ├── db.gleam        # pog access + squirrel queries
 │   ├── sql.gleam       # generated (do not hand-edit)

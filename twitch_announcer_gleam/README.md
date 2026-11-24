@@ -6,7 +6,7 @@ posts Discord webhooks, and updates stream status in Postgres.
 
 ## Behavior
 
-Entry point is `main` in `src/main.gleam`, driven by the `STAGE` env var:
+Entry point is `main` in `src/twitch_announcer_gleam.gleam`, driven by the `STAGE` env var:
 
 | `STAGE` | Behavior                                              |
 | ------- | ----------------------------------------------------- |
@@ -20,7 +20,7 @@ non-empty status list, and `run_once failed: ...` on cycle failure — there
 are no per-stage timing logs. A failing cycle is logged and the `PROD` loop
 continues with the next iteration.
 
-Each cycle (`run_once` in `src/main.gleam`):
+Each cycle (`run_once` in `src/twitch_announcer_gleam.gleam`):
 
 1. Fetches enabled rows from Postgres (`db.fetch_enabled`, via the
    squirrel-generated `sql.fetch_enabled` on a `pog` pool).
@@ -43,7 +43,7 @@ Each cycle (`run_once` in `src/main.gleam`):
 
 ## Environment variables
 
-Runtime (read via `envoy` in `src/main.gleam` / `src/db.gleam`):
+Runtime (read via `envoy` in `src/twitch_announcer_gleam.gleam` / `src/db.gleam`):
 
 | Name                         | Required | Default | Notes                                                                                                                                               |
 | ---------------------------- | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -110,7 +110,7 @@ gleam format --check src test
 ```
 twitch_announcer_gleam/
 ├── src/
-│   ├── main.gleam        # stage dispatch + announce cycle (table-driven update_entries)
+│   ├── twitch_announcer_gleam.gleam # stage dispatch + announce cycle (table-driven update_entries)
 │   ├── decide.gleam      # pure decision logic (birl + humanize)
 │   ├── db.gleam          # pog pool + squirrel queries, Timestamp <-> String mapping
 │   ├── sql.gleam         # checked-in squirrel output (do not hand-edit)

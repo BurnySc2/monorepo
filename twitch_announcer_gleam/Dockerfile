@@ -20,8 +20,5 @@ ENV ERL_LIBS=/app
 
 COPY --from=build /app/build/erlang-shipment /app
 
-COPY entrypoint-debug.sh /app/entrypoint-debug.sh
-RUN chmod +x /app/entrypoint-debug.sh
-
-ENTRYPOINT ["/app/entrypoint-debug.sh"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["run"]

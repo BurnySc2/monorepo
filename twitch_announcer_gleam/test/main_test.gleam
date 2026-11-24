@@ -4,7 +4,7 @@ import gleam/int
 import gleam/list
 import gleam/string
 import gleeunit/should
-import main
+import twitch_announcer_gleam
 
 fn all_digits(s: String) -> Bool {
   string.to_graphemes(s)
@@ -48,12 +48,12 @@ pub fn db_timestamp_format_test() {
 }
 
 pub fn grace_parse_valid_test() {
-  main.parse_grace_seconds("30") |> should.equal(30)
+  twitch_announcer_gleam.parse_grace_seconds("30") |> should.equal(30)
 }
 
 pub fn grace_parse_garbage_defaults_test() {
-  main.parse_grace_seconds("abc") |> should.equal(1800)
-  main.parse_grace_seconds("-1") |> should.equal(1800)
-  main.parse_grace_seconds("") |> should.equal(1800)
-  main.parse_grace_seconds(" 30 ") |> should.equal(1800)
+  twitch_announcer_gleam.parse_grace_seconds("abc") |> should.equal(1800)
+  twitch_announcer_gleam.parse_grace_seconds("-1") |> should.equal(1800)
+  twitch_announcer_gleam.parse_grace_seconds("") |> should.equal(1800)
+  twitch_announcer_gleam.parse_grace_seconds(" 30 ") |> should.equal(1800)
 }
