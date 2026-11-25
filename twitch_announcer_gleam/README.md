@@ -8,11 +8,11 @@ posts Discord webhooks, and updates stream status in Postgres.
 
 Entry point is `main` in `src/twitch_announcer_gleam.gleam`, driven by the `STAGE` env var:
 
-| `STAGE` | Behavior                                              |
-| ------- | ----------------------------------------------------- |
-| `BUILD` | Prints a skip message and exits (no DB, no API calls) |
-| `DEV`   | Runs the announce cycle exactly once                  |
-| `PROD`  | Runs the cycle forever, sleeping 20 s between runs    |
+| `STAGE` | Behavior                                                        |
+| ------- | --------------------------------------------------------------- |
+| `BUILD` | Prints a skip message and exits (no DB, no API calls)           |
+| `DEV`   | Runs the announce cycle exactly once                            |
+| `PROD`  | Runs the cycle forever, sleeping `POLL_INTERVAL_S` between runs |
 
 Anything else panics. Logging is plain `io.println` (no logging library):
 startup line, `Running once` per iteration, one `Updating ...` line per
@@ -52,6 +52,7 @@ Runtime (read via `envoy` in `src/twitch_announcer_gleam.gleam` / `src/db.gleam`
 | `TWITCH_APP_ID`              | yes      | —       | Twitch client ID; missing value panics                                                                                                              |
 | `TWITCH_APP_SECRET`          | yes      | —       | Twitch client secret; missing value panics                                                                                                          |
 | `OFFLINE_GRACE_TIME`         | no       | `1800`  | Seconds since `last_seen_online` before a stream may be re-announced; unparsable or negative values fall back to `1800` (see `parse_grace_seconds`) |
+| `POLL_INTERVAL_S`            | no       | `60`    | PROD sleep between cycles in seconds; 10..3600, invalid values fall back to `60`, restart to apply                                                  |
 
 Tests only (`test/db_contract_test.gleam` builds a live URL from these;
 tests are skipped when they are absent):
@@ -146,9 +147,9 @@ pushing query changes — CI performs no drift check.
 ## Docker
 
 Multi-stage `Dockerfile`: builds with the `ghcr.io/gleam-lang/gleam`
-Erlang image and exports an Erlang shipment onto an `erlang:27-alpine`
-runtime image (with `libpq` for Postgres parity). The entrypoint script
-runs the shipped `run` command.
+Erlang image and exports an Erlang shipment onto an `erlang:28-alpine`
+runtime image (with `ca-certificates` only, no `libpq` — `pog` is pure
+Erlang). The entrypoint script runs the shipped `run` command.
 
 ```bash
 docker build -t twitch_announcer_gleam ./twitch_announcer_gleam

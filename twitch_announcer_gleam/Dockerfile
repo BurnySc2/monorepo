@@ -6,15 +6,13 @@ COPY gleam.toml manifest.toml ./
 RUN gleam deps download
 
 COPY src ./src
-RUN gleam build
 # RUN gleam test
 RUN gleam export erlang-shipment
 
-# NOTE digest pin skipped: docker unavailable, keeping erlang:28-alpine (min supported Gleam 1.19.2)
+# WHY slim runtime: libpq removed (pgo/pog pure-Erlang no libpq linkage), ca-certificates kept (HTTPS Twitch/Discord); digest pin skipped: docker unavailable
 FROM erlang:28-alpine
 
-# WHY libpq: runtime parity with twitch_stream_announcer image per deploy spec
-RUN apk add --no-cache libpq ca-certificates && mkdir -p /var/crash
+RUN apk add --no-cache ca-certificates && mkdir -p /var/crash
 
 COPY --from=build /app/build/erlang-shipment /app
 

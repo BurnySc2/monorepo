@@ -57,3 +57,16 @@ pub fn grace_parse_garbage_defaults_test() {
   twitch_announcer_gleam.parse_grace_seconds("") |> should.equal(1800)
   twitch_announcer_gleam.parse_grace_seconds(" 30 ") |> should.equal(1800)
 }
+
+pub fn poll_parse_valid_test() {
+  twitch_announcer_gleam.parse_poll_interval_seconds("30") |> should.equal(30)
+}
+
+pub fn poll_parse_garbage_defaults_test() {
+  twitch_announcer_gleam.parse_poll_interval_seconds("abc")
+  |> should.equal(60)
+  twitch_announcer_gleam.parse_poll_interval_seconds("") |> should.equal(60)
+  twitch_announcer_gleam.parse_poll_interval_seconds("5") |> should.equal(10)
+  twitch_announcer_gleam.parse_poll_interval_seconds("9999")
+  |> should.equal(3600)
+}

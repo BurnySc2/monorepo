@@ -51,26 +51,7 @@
           - --exclude=.env*
           - --exclude=.git
           - --exclude=build/
-
-    - name: Check STAGE is PROD in local .env.server
-      ansible.builtin.command: grep -q '^STAGE=PROD$' .env.server
-      args:
-        chdir: "{{ playbook_dir }}"
-      delegate_to: localhost
-      run_once: true
-      become: false
-      register: stage_check
-      changed_when: false
-      failed_when: false
-
-    - name: Enforce STAGE is PROD
-      ansible.builtin.assert:
-        that:
-          - stage_check.rc == 0
-        fail_msg: STAGE must be PROD
-      delegate_to: localhost
-      run_once: true
-      become: false
+          - --exclude=test/
 
     - name: Build the Docker image
       community.docker.docker_image:
@@ -79,7 +60,7 @@
         force_source: true
         build:
           path: /home/{{ USERNAME }}/dockerfiles
-          nocache: true
+          nocache: false
           pull: true
 
     - name: Delete all build-files

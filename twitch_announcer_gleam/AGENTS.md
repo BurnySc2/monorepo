@@ -23,7 +23,7 @@ Gleam (Erlang target) Twitch stream announcer:
 - Polls Twitch API for enabled streams, posts Discord webhooks for newly-live
   ones, updates status in Postgres.
 - `src/twitch_announcer_gleam.gleam`: stage dispatch — `BUILD` skips (no DB/API), `DEV` runs
-  once, `PROD` loops forever with 20 s sleep; no per-stage timing logs
+  once, `PROD` loops forever with `POLL_INTERVAL_S` sleep; no per-stage timing logs
   (plain `io.println` only). DB connects for `DEV`/`PROD`.
 - `src/twitch_announcer_gleam.gleam`: `update_entries` is table-driven (announced / online /
   now-offline triples via `list.try_each`, stamped with `utc_now`
@@ -41,7 +41,7 @@ Gleam (Erlang target) Twitch stream announcer:
   `http_helpers.post_json` only in `PROD` (`prod_stage` const), payload
   only logged otherwise.
 
-Stack: Gleam 1.19.2 on OTP 27 + PostgreSQL (`pog` driver).
+Stack: Gleam 1.19.2 on OTP 27 (CI) + PostgreSQL (`pog` driver); runtime `erlang:28-alpine` (`ca-certificates` only, no `libpq`).
 
 ---
 
@@ -57,20 +57,20 @@ Stack: Gleam 1.19.2 on OTP 27 + PostgreSQL (`pog` driver).
 | `gleam run`                     | Run once (`DEV`) or forever (`PROD`) per `STAGE`      |
 | `./scripts/generate_sql.sh`     | Local squirrel regen (needs live DB; never in CI)     |
 
-| Path                               | Purpose                                                           |
-| ---------------------------------- | ----------------------------------------------------------------- |
-| `src/twitch_announcer_gleam.gleam` | Entry `main`, `STAGE` dispatch, `run_once`, `loop_forever` (20 s) |
-| `src/decide.gleam`                 | Pure announce-decision logic + time parsing/formatting            |
-| `src/db.gleam`                     | `pog` pool, squirrel queries, row mapping to `DbRow`              |
-| `src/sql.gleam`                    | Generated bindings (never hand-edit)                              |
-| `src/sql/`                         | Query sources (`COALESCE` read; `ANY($1/$2)` writes)              |
-| `src/twitch.gleam`                 | Twitch token + stream-info fetching                               |
-| `src/discord.gleam`                | Discord webhook posting (`kitazith`, `prod_stage` gate)           |
-| `src/dotenv.gleam`                 | `.env` loading via `dot_env` (file values overwrite OS env)       |
-| `src/http_helpers.gleam`           | Shared `httpc` send + status assertion + `post_json`              |
-| `scripts/generate_sql.sh`          | `squirrel` + `squirrel check` via `DATABASE_URL`                  |
-| `gleam.toml`                       | Manifest, Erlang target (`pog`, `gleam_time`, `gleam_otp`)        |
-| `Dockerfile`                       | Multi-stage build → Erlang shipment on `erlang:27-alpine`         |
+| Path                               | Purpose                                                                                        |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `src/twitch_announcer_gleam.gleam` | Entry `main`, `STAGE` dispatch, `run_once`, `loop_forever` (`POLL_INTERVAL_S`)                 |
+| `src/decide.gleam`                 | Pure announce-decision logic + time parsing/formatting                                         |
+| `src/db.gleam`                     | `pog` pool, squirrel queries, row mapping to `DbRow`                                           |
+| `src/sql.gleam`                    | Generated bindings (never hand-edit)                                                           |
+| `src/sql/`                         | Query sources (`COALESCE` read; `ANY($1/$2)` writes)                                           |
+| `src/twitch.gleam`                 | Twitch token + stream-info fetching                                                            |
+| `src/discord.gleam`                | Discord webhook posting (`kitazith`, `prod_stage` gate)                                        |
+| `src/dotenv.gleam`                 | `.env` loading via `dot_env` (file values overwrite OS env)                                    |
+| `src/http_helpers.gleam`           | Shared `httpc` send + status assertion + `post_json`                                           |
+| `scripts/generate_sql.sh`          | `squirrel` + `squirrel check` via `DATABASE_URL`                                               |
+| `gleam.toml`                       | Manifest, Erlang target (`pog`, `gleam_time`, `gleam_otp`)                                     |
+| `Dockerfile`                       | Multi-stage build → Erlang shipment on `erlang:28-alpine` (`ca-certificates` only, no `libpq`) |
 
 ```
 twitch_announcer_gleam/
@@ -101,6 +101,7 @@ twitch_announcer_gleam/
 | `POSTGRES_CONNECTION_STRING`                         | Required at runtime (`DEV`/`PROD`); parsed for `pog` pool config         |
 | `TWITCH_APP_ID` / `TWITCH_APP_SECRET`                | Required Twitch credentials                                              |
 | `OFFLINE_GRACE_TIME`                                 | Optional, default `1800`; invalid/negative → `1800`                      |
+| `POLL_INTERVAL_S`                                    | Optional, default `60`; invalid → `60`, clamp + restart                  |
 | `PGHOST`/`PGPORT`/`PGUSER`/`PGPASSWORD`/`PGDATABASE` | Tests only: live-DB contract tests; skipped when absent                  |
 | `DATABASE_URL`                                       | Tooling only: set from `POSTGRES_CONNECTION_STRING` by `generate_sql.sh` |
 

@@ -1,6 +1,6 @@
 //// CLI entry for this Gleam port of the Twitch announcer.
 //// Dispatches on STAGE: DEV runs the announce cycle once,
-//// PROD repeats it forever with a 20s sleep; owns all I/O.
+//// PROD repeats it forever with a POLL_INTERVAL_S sleep; owns all I/O.
 //// Pure announce choice lives in decide; DB writes fire in PROD only.
 
 import birl
@@ -32,6 +32,7 @@ type Config {
     client_id: String,
     client_secret: String,
     grace_seconds: Int,
+    poll_interval_seconds: Int,
   )
 }
 
@@ -59,6 +60,15 @@ pub fn parse_grace_seconds(value: String) -> Int {
   }
 }
 
+pub fn parse_poll_interval_seconds(value: String) -> Int {
+  case int.parse(value) {
+    Ok(seconds) if seconds < 10 -> 10
+    Ok(seconds) if seconds > 3600 -> 3600
+    Ok(seconds) -> seconds
+    _ -> 60
+  }
+}
+
 fn require_env(name: String) -> String {
   let value = envoy.get(name)
   use <- bool.lazy_guard(when: result.is_error(value), return: fn() {
@@ -75,7 +85,17 @@ fn read_config(stage: Stage) -> Config {
     Ok(value) -> parse_grace_seconds(value)
     Error(_) -> 1800
   }
-  Config(stage:, client_id:, client_secret:, grace_seconds:)
+  let poll_interval_seconds = case envoy.get("POLL_INTERVAL_S") {
+    Ok(value) -> parse_poll_interval_seconds(value)
+    Error(_) -> 60
+  }
+  Config(
+    stage:,
+    client_id:,
+    client_secret:,
+    grace_seconds:,
+    poll_interval_seconds:,
+  )
 }
 
 fn utc_now() -> Timestamp {
@@ -126,6 +146,7 @@ fn update_entries(
 }
 
 fn run_once(conn: db.Conn, config: Config) -> Nil {
+  io.println("Running once")
   let outcome = {
     use rows <- result.try(db.fetch_enabled(conn))
     use token <- result.try(twitch.get_access_token(
@@ -161,9 +182,8 @@ fn run_once(conn: db.Conn, config: Config) -> Nil {
 }
 
 fn loop_forever(conn: db.Conn, config: Config) -> Nil {
-  io.println("Running once")
   run_once(conn, config)
-  process.sleep(20_000)
+  process.sleep(config.poll_interval_seconds * 1000)
   loop_forever(conn, config)
 }
 
