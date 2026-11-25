@@ -1,3 +1,4 @@
+import birl
 import decide
 import gleam/list
 import gleam/string
@@ -276,4 +277,22 @@ pub fn webhook_age_known_timestamp_exact_test() {
   |> should.equal(
     "since 2025-01-06 01:44:43 (which was 1 hour, 1 minute, and 1 second ago)",
   )
+}
+
+pub fn format_stamp_exact_vector_test() {
+  let assert Ok(t) = birl.from_naive("2026-01-02 03:04:05.006")
+  decide.format_stamp(t) |> should.equal("2026-01-02 03:04:05.006")
+}
+
+pub fn format_stamp_length_23_no_tz_test() {
+  let assert Ok(t) = birl.from_naive("2026-01-02 03:04:05.006")
+  let s = decide.format_stamp(t)
+  should.equal(string.length(s), 23)
+  should.equal(string.contains(s, "T"), False)
+  should.equal(string.contains(s, "Z"), False)
+}
+
+pub fn format_stamp_millis_pad3_test() {
+  let assert Ok(t) = birl.from_naive("2026-01-02 03:04:05.007")
+  decide.format_stamp(t) |> should.equal("2026-01-02 03:04:05.007")
 }

@@ -68,12 +68,13 @@ pub fn age_string_for(announce: AnnounceInfo, now_epoch: Int) -> String {
   }
 }
 
-fn log_one(announce: AnnounceInfo, now_epoch: Int) -> Nil {
+fn log_one(announce: AnnounceInfo, now_epoch: Int, stamp: String) -> Nil {
   let body =
     build_payload(announce, age_string_for(announce, now_epoch))
     |> json.to_string
   io.println(
-    "Announcing stream "
+    stamp
+    <> " Announcing stream "
     <> announce.username
     <> " in webhook "
     <> announce.webhook_url
@@ -87,7 +88,7 @@ fn send_webhook(url: String, body: String) -> Result(Nil, String) {
 }
 
 fn post_one(announce: AnnounceInfo) -> Result(Nil, String) {
-  let now_epoch = birl.now() |> birl.to_unix
+  let now_epoch = birl.utc_now() |> birl.to_unix
   let payload = execute_payload(announce, age_string_for(announce, now_epoch))
   use _ <- result.try(validate_payload(payload))
   let body = execute.to_string(payload)
@@ -99,8 +100,10 @@ pub fn post_announcements(
   stage: String,
 ) -> Result(Nil, String) {
   use <- bool.lazy_guard(when: !is_prod(stage), return: fn() {
-    let now_epoch = birl.now() |> birl.to_unix
-    list.each(announces, fn(announce) { log_one(announce, now_epoch) })
+    let now = birl.utc_now()
+    let now_epoch = birl.to_unix(now)
+    let stamp = decide.format_stamp(now)
+    list.each(announces, fn(announce) { log_one(announce, now_epoch, stamp) })
     Ok(Nil)
   })
   list.try_each(over: announces, with: post_one)

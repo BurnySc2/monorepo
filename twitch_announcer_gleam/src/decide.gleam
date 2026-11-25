@@ -64,6 +64,10 @@ pub fn format_naive(t: birl.Time) -> String {
   <> string.slice(birl.to_naive_time_string(t), 0, 8)
 }
 
+pub fn format_stamp(t: birl.Time) -> String {
+  birl.to_naive_date_string(t) <> " " <> birl.to_naive_time_string(t)
+}
+
 // Strict Z-only: birl.parse also accepts offsets and lowercase z.
 pub fn parse_twitch_time(s: String) -> Result(Int, Nil) {
   case string.ends_with(s, "Z") {

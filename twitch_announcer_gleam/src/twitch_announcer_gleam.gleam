@@ -99,11 +99,15 @@ fn read_config(stage: Stage) -> Config {
 }
 
 fn utc_now() -> Timestamp {
-  let now = birl.now()
+  let now = birl.utc_now()
   timestamp.from_unix_seconds_and_nanoseconds(
     birl.to_unix(now),
     { birl.to_unix_micro(now) % 1_000_000 } * 1000,
   )
+}
+
+fn log_stamp() -> String {
+  birl.utc_now() |> decide.format_stamp()
 }
 
 fn write_if_present(
@@ -115,7 +119,7 @@ fn write_if_present(
   case names {
     [] -> Ok(Nil)
     _ -> {
-      io.println(label <> string.inspect(names))
+      io.println(log_stamp() <> " " <> label <> string.inspect(names))
       case stage {
         Prod -> write()
         _ -> Ok(Nil)
@@ -146,7 +150,7 @@ fn update_entries(
 }
 
 fn run_once(conn: db.Conn, config: Config) -> Nil {
-  io.println("Running once")
+  io.println(log_stamp() <> " Running once")
   let outcome = {
     use rows <- result.try(db.fetch_enabled(conn))
     use token <- result.try(twitch.get_access_token(
@@ -159,7 +163,7 @@ fn run_once(conn: db.Conn, config: Config) -> Nil {
       token,
       config.client_id,
     ))
-    let now_epoch = birl.now() |> birl.to_unix
+    let now_epoch = birl.utc_now() |> birl.to_unix
     let #(announced, online, now_offline, to_announce) =
       decide.decide(rows, dict.values(infos), now_epoch, config.grace_seconds)
     use _ <- result.try(update_entries(
@@ -177,7 +181,7 @@ fn run_once(conn: db.Conn, config: Config) -> Nil {
   }
   case outcome {
     Ok(Nil) -> Nil
-    Error(reason) -> io.println("run_once failed: " <> reason)
+    Error(reason) -> io.println(log_stamp() <> " run_once failed: " <> reason)
   }
 }
 
@@ -201,10 +205,10 @@ fn run_stage(stage: Stage) -> Nil {
 }
 
 pub fn main() {
-  io.println("Started twitch_announcer_gleam.main")
+  io.println(log_stamp() <> " Started twitch_announcer_gleam.main")
   dotenv.load_dotenv()
   case read_stage() {
-    Build -> io.println("BUILD stage: skipping announcer run")
+    Build -> io.println(log_stamp() <> " BUILD stage: skipping announcer run")
     Dev -> run_stage(Dev)
     Prod -> run_stage(Prod)
   }
