@@ -23,19 +23,9 @@ env:
 
 jobs:
   test_twitch_announcer_gleam:
-    name: test_twitch_announcer_gleam ${{ matrix.compat.otp }}/${{ matrix.compat.gleam }}/${{ matrix.compat.rebar3 }}
-    runs-on: ubuntu-24.04
+    name: test_twitch_announcer_gleam
+    runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        compat:
-          - otp: "28"
-            gleam: "1.19.2"
-            rebar3: "3.25.1"
-          - otp: "29"
-            gleam: "1.19.2"
-            rebar3: "3.27.0"
 
     services:
       postgres:
@@ -65,10 +55,9 @@ jobs:
       - name: Setup Erlang and Gleam
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{ matrix.compat.otp }}
-          gleam-version: ${{ matrix.compat.gleam }}
-          rebar3-version: ${{ matrix.compat.rebar3 }}
-          version-type: strict
+          otp-version: "27"
+          gleam-version: "1.19.2"
+          rebar3-version: "3.24.0"
 
       - name: Download dependencies
         working-directory: ${{ env.SUBDIRECTORY }}
