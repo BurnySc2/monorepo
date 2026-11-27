@@ -7,7 +7,7 @@
     USERNAME: "{{ openchamber_username }}"
     SUBDOMAIN: "{{ openchamber_subdomain }}"
     APPLICATION_PORT: "{{ openchamber_port }}"
-    OPENCHAMBER_UPSTREAM_REF: "{{ openchamber_upstream_ref | default('v2.8.0') }}"
+    OPENCHAMBER_UPSTREAM_REF: "{{ openchamber_upstream_ref | default('v2.8.1') }}"
   tasks:
     - name: Include tasks [openchamber]
       ansible.builtin.include_tasks: tasks/openchamber/main.yml
