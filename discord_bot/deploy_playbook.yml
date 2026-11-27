@@ -1,4 +1,6 @@
+---
 # Execute with
+# yamllint disable-line rule:line-length
 # ansible-playbook deploy_playbook.yml -i ../ansible/hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 - name: Create service
   hosts: server_group1
@@ -19,17 +21,17 @@
         shell: "/bin/fish"
 
     - name: Copy docker-compose.yml file
-      template:
+      ansible.builtin.template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
 
     - name: Copy .env file
-      template:
+      ansible.builtin.template:
         src: .env.server
         dest: /home/{{ USERNAME }}/.env
 
     - name: Ensure destination directory exists
-      file:
+      ansible.builtin.file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: directory
         mode: "0755"
@@ -56,15 +58,12 @@
         force_source: true
 
     - name: Delete all build-files
-      file:
+      ansible.builtin.file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: absent
-
-    - name: Run `docker-compose down`
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        state: stopped
 
     - name: Run `docker-compose up` again
       community.docker.docker_compose_v2:
         project_src: /home/{{ USERNAME }}
+        state: present
+        recreate: always
