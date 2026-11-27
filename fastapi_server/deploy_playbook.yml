@@ -1,6 +1,6 @@
 ---
 # Execute with
-# yamllint disable rule:line-length
+# yamllint disable-line rule:line-length
 # ansible-playbook deploy_playbook.yml -i ../ansible/hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
 # yamllint enable rule:line-length
 - name: Create service
@@ -12,29 +12,34 @@
       ansible.builtin.group:
         name: "{{ USERNAME }}"
         state: present
+
     - name: Create user
       ansible.builtin.user:
         name: "{{ USERNAME }}"
         groups:
           - "{{ USERNAME }}"
           - docker
-        shell: /bin/fish
+        shell: "/bin/fish"
+
     - name: Copy docker-compose.yml file
-      template:
+      ansible.builtin.template:
         src: docker-compose.yml
         dest: /home/{{ USERNAME }}/docker-compose.yml
+
     - name: Copy .env file
-      template:
+      ansible.builtin.template:
         src: .env.server
         dest: /home/{{ USERNAME }}/.env
+
     - name: Ensure destination directory exists
-      file:
+      ansible.builtin.file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: directory
         mode: "0755"
+
     - name: Copy files except .env to the destination directory
       ansible.posix.synchronize:
-        src: ./
+        src: "./"
         dest: /home/{{ USERNAME }}/dockerfiles/
         rsync_opts:
           - --filter=':- .gitignore'
@@ -42,6 +47,7 @@
           - --exclude=.git
           - --exclude=.vscode
           - --exclude=test
+
     - name: Build the Docker image
       community.docker.docker_image:
         name: burnysc2/fastapi_server:latest_dev
@@ -51,8 +57,9 @@
         source: build
         # Force building even if image already exists
         force_source: true
+
     - name: Delete all build-files
-      file:
+      ansible.builtin.file:
         path: /home/{{ USERNAME }}/dockerfiles
         state: absent
 
@@ -64,3 +71,5 @@
         state: present
         recreate: always
         remove_orphans: true
+        state: present
+        recreate: always

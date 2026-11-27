@@ -1,0 +1,23 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+services:
+  comfyui:
+    image: yanwk/comfyui-boot:cpu-20261116
+    # build:
+    #  context: .
+    #  dockerfile: Dockerfile
+    volumes:
+      - ./storage:/root
+    environment:
+      - CLI_ARGS=--cpu
+    networks:
+      - pangolin_newt
+    labels:
+      - pangolin.public-resources.comfyui.name=Comfyui
+      - pangolin.public-resources.comfyui.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+      - pangolin.public-resources.comfyui.protocol=http
+      - pangolin.public-resources.comfyui.auth.sso-enabled=true
+      - pangolin.public-resources.comfyui.targets[0].method=http
+      - pangolin.public-resources.comfyui.targets[0].port={{ APPLICATION_PORT }}

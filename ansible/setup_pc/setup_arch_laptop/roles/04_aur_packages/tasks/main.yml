@@ -22,7 +22,7 @@
   kewlfft.aur.aur:
     update_cache: true
     upgrade: true
-    state: latest
+    state: present
 - name: Install AUR packages
   become: true
   become_user: aur_builder

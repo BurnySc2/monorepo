@@ -1,142 +1,16 @@
 ---
 # Execute with
-# ansible-playbook openchamber_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start openchamber service
-  hosts: server_group1
+# ansible-playbook openchamber_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [openchamber]
+  hosts: prodesk
   vars:
-    USERNAME: '{{ secrets.OPENCHAMBER.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.OPENCHAMBER.SUBDOMAIN }}'
-    APPLICATION_PORT: '3000'
-    # Upstream tags: https://github.com/openchamber/openchamber/tags
-    OPENCHAMBER_UPSTREAM_REF: 'v2.7.2'
+    USERNAME: "{{ openchamber_username }}"
+    SUBDOMAIN: "{{ openchamber_subdomain }}"
+    APPLICATION_PORT: "{{ openchamber_port }}"
+    OPENCHAMBER_UPSTREAM_REF: "{{ openchamber_upstream_ref | default('v2.8.1') }}"
   tasks:
-    - ansible.builtin.include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - {domain: '{{ secrets.MY_PRIVATE_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Create volume directories
-      ansible.builtin.file:
-        path: /home/{{ USERNAME }}/{{ item }}
-        state: directory
-        owner: '1000'
-        group: '1000'
-        mode: '0755'
-      loop:
-        - data/openchamber
-        - data/opencode/share
-        - data/opencode/state
-        - data/opencode/config
-        - data/ssh
-        - workspaces
-    - name: Create RSA key pair if missing
-      ansible.builtin.shell:
-        cmd: ssh-keygen -t rsa -b 4096 -f /home/{{ USERNAME }}/data/ssh/id_rsa -N '' -C 'openchamber@{{ USERNAME }}'
-        creates: /home/{{ USERNAME }}/data/ssh/id_rsa
-        # deterministic filename id_rsa so it is not recreated
-    - name: Set key permissions
-      ansible.builtin.file:
-        path: /home/{{ USERNAME }}/data/ssh/id_rsa
-        owner: '1000'
-        group: '1000'
-        mode: '0600'
-    - name: Set pub key permissions
-      ansible.builtin.file:
-        path: /home/{{ USERNAME }}/data/ssh/id_rsa.pub
-        owner: '1000'
-        group: '1000'
-        mode: '0644'
-    - name: Ensure known_hosts file exists
-      ansible.builtin.file:
-        path: /home/{{ USERNAME }}/data/ssh/known_hosts
-        state: touch
-        owner: '1000'
-        group: '1000'
-        mode: '0644'
-        modification_time: preserve
-        access_time: preserve
-    - name: Add SSH host keys to known_hosts
-      ansible.builtin.known_hosts:
-        name: '{{ item.name }}'
-        key: "{{ lookup('pipe', item.keyscan) }}"
-        path: /home/{{ USERNAME }}/data/ssh/known_hosts
-        state: present
-      loop:
-        - name: 'github.com'
-          keyscan: 'ssh-keyscan -T 10 -t rsa,ecdsa,ed25519 github.com'
-        - name: '[git.burnysc2.xyz]:2222'
-          keyscan: 'ssh-keyscan -T 10 -p 2222 -t rsa,ecdsa,ed25519 git.burnysc2.xyz'
-    # Optional permission fix - try without first, uncomment if container hits permission errors (image runs as 1000:1000):
-    # - name: Fix ownership for openchamber data (optional, try without first)
-    #   ansible.builtin.shell:
-    #     cmd: chown -R 1000:1000 /home/{{ USERNAME }}/data /home/{{ USERNAME }}/workspaces && chmod 700 /home/{{ USERNAME }}/data/ssh && chmod 600 /home/{{ USERNAME }}/data/ssh/id_rsa
-    - name: Upload opencode config directory (source of truth with delete)
-      ansible.posix.synchronize:
-        src: /home/burny/.config/opencode/
-        dest: /home/{{ USERNAME }}/data/opencode/config/
-        delete: true
-        rsync_opts:
-          - --delete
-      delegate_to: localhost
-    - name: Ensure opencode share dir exists
-      ansible.builtin.file:
-        path: /home/{{ USERNAME }}/data/opencode/share
-        state: directory
-        owner: '1000'
-        group: '1000'
-        mode: '0755'
-    - name: Tear down existing services
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        state: stopped
-      failed_when: false
-    - name: Build upstream openchamber image
-      # Daemon clones the full repo to a temp dir for this remote-URL build, then auto-cleans it.
-      ansible.builtin.command:
-        argv:
-          - docker
-          - build
-          - https://github.com/openchamber/openchamber.git#{{ OPENCHAMBER_UPSTREAM_REF }}
-          - -t
-          - openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF }}
-          - --pull
-      changed_when: true
-    - name: Create dockerfiles directory
-      ansible.builtin.file:
-        path: /home/{{ USERNAME }}/dockerfiles
-        state: directory
-        owner: '{{ USERNAME }}'
-        group: '{{ USERNAME }}'
-        mode: '0755'
-    - name: Copy docker-compose.yml file
-      ansible.builtin.template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Copy Dockerfile file
-      ansible.builtin.template:
-        src: Dockerfile
-        dest: /home/{{ USERNAME }}/dockerfiles/Dockerfile
-        owner: '{{ USERNAME }}'
-        group: '{{ USERNAME }}'
-        mode: '0644'
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        build: always
-    - name: Remove dockerfiles build context
-      ansible.builtin.file:
-        path: /home/{{ USERNAME }}/dockerfiles
-        state: absent
-    - name: Prune unused Docker images to free disk space
-      community.docker.docker_prune:
-        images: true
-        builder_cache: true
+    - name: Include tasks [openchamber]
+      ansible.builtin.include_tasks: tasks/openchamber/main.yml
+  handlers:
+    - name: Import handlers [openchamber]
+      ansible.builtin.import_tasks: handlers/main.yml

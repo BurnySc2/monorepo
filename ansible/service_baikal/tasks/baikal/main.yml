@@ -1,0 +1,58 @@
+---
+- name: Assert baikal inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - baikal_username is defined
+      - baikal_subdomain is defined
+      - baikal_port is defined
+    fail_msg: Missing inventory/host_vars for baikal_username, baikal_subdomain, baikal_port
+
+- name: Ensure A record exists
+  ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
+  loop:
+    - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ baikal_subdomain }}'}
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ baikal_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ baikal_username }}'
+    groups:
+      - '{{ baikal_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.command:
+    cmd: id {{ baikal_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.command:
+    cmd: id {{ baikal_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+  loop:
+    - /home/{{ baikal_username }}/config
+    - /home/{{ baikal_username }}/data
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ baikal_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: converge baikal

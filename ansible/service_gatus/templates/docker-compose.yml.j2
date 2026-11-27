@@ -1,0 +1,37 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+services:
+  gatus:
+    image: ghcr.io/twin/gatus:v5.38.0
+    container_name: gatus
+    restart: unless-stopped
+    volumes:
+      - ./config:/config:ro
+      - ./data:/data
+    networks:
+      - pangolin_newt
+    labels:
+      - pangolin.public-resources.gatus.name=Gatus
+      - pangolin.public-resources.gatus.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PRIVATE_DOMAIN }}
+      - pangolin.public-resources.gatus.protocol=http
+      - pangolin.public-resources.gatus.auth.sso-enabled=true
+      - pangolin.public-resources.gatus.targets[0].method=http
+      - pangolin.public-resources.gatus.targets[0].port={{ APPLICATION_PORT }}
+      - pangolin.public-resources.gatus.healthcheck.enabled=true
+      - pangolin.public-resources.gatus.healthcheck.hostname=gatus
+      - pangolin.public-resources.gatus.healthcheck.port={{ APPLICATION_PORT }}
+      - pangolin.public-resources.gatus.healthcheck.path=/health
+      - pangolin.public-resources.gatus.healthcheck.method=GET
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -q
+        - --spider
+        - http://localhost:8080/health
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s

@@ -1,0 +1,67 @@
+---
+- name: Assert gatus inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - gatus_username is defined
+      - gatus_subdomain is defined
+      - gatus_port is defined
+    fail_msg: Missing inventory/host_vars for gatus_username, gatus_subdomain, gatus_port
+
+- name: Ensure A record exists
+  ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
+  loop:
+    - {domain: '{{ secrets.MY_PRIVATE_DOMAIN }}', subdomain: '{{ gatus_subdomain }}'}
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ gatus_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ gatus_username }}'
+    groups:
+      - '{{ gatus_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.command:
+    cmd: id {{ gatus_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.command:
+    cmd: id {{ gatus_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+  loop:
+    - /home/{{ gatus_username }}/config
+    - /home/{{ gatus_username }}/data
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ gatus_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: converge gatus
+
+- name: Template config.yaml file
+  ansible.builtin.template:
+    src: ../../templates/config.yaml.j2
+    dest: /home/{{ gatus_username }}/config/config.yaml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: converge gatus

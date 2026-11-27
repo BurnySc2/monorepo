@@ -1,0 +1,51 @@
+---
+- name: Assert satisfactory inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - satisfactory_username is defined
+      - satisfactory_port is defined
+    fail_msg: Missing inventory/host_vars for satisfactory_username, satisfactory_port
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ satisfactory_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ satisfactory_username }}'
+    groups:
+      - '{{ satisfactory_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.command:
+    cmd: id {{ satisfactory_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.command:
+    cmd: id {{ satisfactory_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+  loop:
+    - /home/{{ satisfactory_username }}/satisfactory-server
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ satisfactory_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: converge satisfactory

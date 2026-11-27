@@ -1,0 +1,52 @@
+---
+- name: Assert pangolin_newt inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - pangolin_newt_username is defined
+      - NEWT_ID is defined
+      - NEWT_SECRET is defined
+    fail_msg: Missing inventory/host_vars for pangolin_newt_username, NEWT_ID, NEWT_SECRET (pass -e NEWT_ID=... -e NEWT_SECRET=...)
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ pangolin_newt_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ pangolin_newt_username }}'
+    groups:
+      - '{{ pangolin_newt_username }}'
+      - docker
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Get user id
+  ansible.builtin.command:
+    cmd: id {{ pangolin_newt_username }} -u
+  register: USER_ID
+  changed_when: false
+
+- name: Get group id
+  ansible.builtin.command:
+    cmd: id {{ pangolin_newt_username }} -g
+  register: GROUP_ID
+  changed_when: false
+
+- name: Create directories
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0750'
+  loop:
+    - /home/{{ pangolin_newt_username }}
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ pangolin_newt_username }}/docker-compose.yml
+    owner: '{{ USER_ID.stdout }}'
+    group: '{{ GROUP_ID.stdout }}'
+    mode: '0640'
+  notify: converge newt

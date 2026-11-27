@@ -1,0 +1,31 @@
+---
+networks:
+  pangolin_newt:
+    external: true
+services:
+  excalidraw:
+    image: excalidraw/excalidraw:latest
+    networks:
+      - pangolin_newt
+    restart: unless-stopped
+    labels:
+      - pangolin.public-resources.excalidraw.name=Excalidraw
+      - pangolin.public-resources.excalidraw.full-domain={{ SUBDOMAIN }}.{{ secrets.MY_PUBLIC_DOMAIN }}
+      - pangolin.public-resources.excalidraw.protocol=http
+      - pangolin.public-resources.excalidraw.auth.sso-enabled=true
+      - pangolin.public-resources.excalidraw.targets[0].site=local
+      - pangolin.public-resources.excalidraw.targets[0].method=http
+      - pangolin.public-resources.excalidraw.targets[0].hostname=excalidraw
+      - pangolin.public-resources.excalidraw.targets[0].port={{ APPLICATION_PORT }}
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -q
+        - --spider
+        - http://localhost:8080
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./data:/var/app/public/files

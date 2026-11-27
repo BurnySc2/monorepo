@@ -155,6 +155,7 @@
   become: true
   when: not ansible_check_mode
 - name: Start syncthing service for user
+  become: true
   become_user: '{{ USERNAME | default(ansible_user_id) }}'
   ansible.builtin.systemd_service:
     name: syncthing.service

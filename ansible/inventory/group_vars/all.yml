@@ -1,0 +1,8 @@
+---
+pangolin_newt_username: pangolin_newt
+syncthing_username: syncthing
+syncthing_port: 8384
+# Backup retention defaults
+BACKUP_KEEP_DAILY: 3
+BACKUP_KEEP_WEEKLY: 3
+BACKUP_KEEP_MONTHLY: 3

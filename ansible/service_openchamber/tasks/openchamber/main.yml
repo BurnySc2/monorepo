@@ -1,0 +1,166 @@
+---
+- name: Assert openchamber inventory variables are defined
+  ansible.builtin.assert:
+    that:
+      - openchamber_username is defined
+      - openchamber_subdomain is defined
+      - openchamber_port is defined
+    fail_msg: Missing inventory/host_vars for openchamber_username, openchamber_subdomain, openchamber_port
+
+- name: Ensure A record exists
+  ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
+  loop:
+    - {domain: '{{ secrets.MY_PRIVATE_DOMAIN }}', subdomain: '{{ openchamber_subdomain }}'}
+
+- name: Create group
+  ansible.builtin.group:
+    name: '{{ openchamber_username }}'
+    state: present
+
+- name: Create user
+  ansible.builtin.user:
+    name: '{{ openchamber_username }}'
+    groups:
+      - '{{ openchamber_username }}'
+      - docker
+    append: true
+    shell: '{{ secrets.DEFAULT_SHELL }}'
+
+- name: Create volume directories
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/{{ item }}
+    state: directory
+    mode: '0755'
+  loop:
+    - data/openchamber
+    - data/opencode/share
+    - data/opencode/state
+    - data/opencode/config
+    - data/ssh
+    - workspaces
+
+- name: Create RSA key pair if missing
+  ansible.builtin.command:
+    cmd: ssh-keygen -t rsa -b 4096 -f /home/{{ openchamber_username }}/data/ssh/id_rsa -N '' -C 'openchamber@{{ openchamber_username }}'
+    creates: /home/{{ openchamber_username }}/data/ssh/id_rsa
+  changed_when: true
+
+- name: Create ED25519 key pair if missing
+  ansible.builtin.command:
+    cmd: ssh-keygen -t ed25519 -f /home/{{ openchamber_username }}/data/ssh/id_ed25519 -N '' -C 'openchamber@{{ openchamber_username }}'
+    creates: /home/{{ openchamber_username }}/data/ssh/id_ed25519
+  changed_when: true
+
+- name: Ensure SSH private key files ownership and permissions
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/data/ssh/{{ item }}
+    mode: '0600'
+  loop:
+    - id_rsa
+    - id_ed25519
+
+- name: Ensure SSH public key files ownership and permissions
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/data/ssh/{{ item }}
+    mode: '0644'
+  loop:
+    - id_rsa.pub
+    - id_ed25519.pub
+
+- name: Check openchamber log file exists
+  ansible.builtin.stat:
+    path: /home/{{ openchamber_username }}/openchamber-3000.log
+  register: openchamber_log
+
+- name: Ensure openchamber log file ownership and permissions
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/openchamber-3000.log
+    mode: '0644'
+  when: openchamber_log.stat.exists
+
+- name: Ensure known_hosts file exists
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/data/ssh/known_hosts
+    state: touch
+    mode: '0644'
+    modification_time: preserve
+    access_time: preserve
+
+- name: Add SSH host keys to known_hosts
+  ansible.builtin.known_hosts:
+    name: '{{ item.name }}'
+    key: "{{ lookup('ansible.builtin.pipe', item.keyscan) }}"
+    path: /home/{{ openchamber_username }}/data/ssh/known_hosts
+    state: present
+  loop:
+    - name: 'github.com'
+      keyscan: 'ssh-keyscan -T 10 -t rsa,ecdsa,ed25519 github.com'
+    - name: '[git.burnysc2.xyz]:2222'
+      keyscan: 'ssh-keyscan -T 10 -p 2222 -t rsa,ecdsa,ed25519 git.burnysc2.xyz'
+
+- name: Upload opencode config directory (source of truth with delete)
+  ansible.posix.synchronize:
+    src: /home/burny/.config/opencode/
+    dest: /home/{{ openchamber_username }}/data/opencode/config/
+    delete: true
+    rsync_opts:
+      - --delete
+  delegate_to: localhost
+
+- name: Ensure opencode share dir exists
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/data/opencode/share
+    state: directory
+    mode: '0755'
+
+- name: Tear down existing services
+  community.docker.docker_compose_v2:
+    project_src: /home/{{ openchamber_username }}
+    state: stopped
+  failed_when: false
+
+- name: Build upstream openchamber image
+  # Daemon clones the full repo to a temp dir for this remote-URL build, then auto-cleans it.
+  ansible.builtin.command:
+    argv:
+      - docker
+      - build
+      - https://github.com/openchamber/openchamber.git#{{ OPENCHAMBER_UPSTREAM_REF }}
+      - -t
+      - openchamber-upstream:{{ OPENCHAMBER_UPSTREAM_REF }}
+      - --pull
+  changed_when: true
+
+- name: Create dockerfiles directory
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}/dockerfiles
+    state: directory
+    mode: '0755'
+
+- name: Template docker-compose.yml file
+  ansible.builtin.template:
+    src: ../../templates/docker-compose.yml.j2
+    dest: /home/{{ openchamber_username }}/docker-compose.yml
+    mode: '0640'
+  notify: converge openchamber
+
+- name: Template Dockerfile file
+  ansible.builtin.template:
+    src: ../../templates/Dockerfile.j2
+    dest: /home/{{ openchamber_username }}/dockerfiles/Dockerfile
+    mode: '0644'
+  notify: converge openchamber
+
+- name: Set ownership of home folder to 1000:1000 recursively
+  # WHY converge-to-container-uid: Dockerfile USER is UID 1000, explicit entire-home converge preserves modes
+  ansible.builtin.file:
+    path: /home/{{ openchamber_username }}
+    state: directory
+    owner: '1000'
+    group: '1000'
+    recurse: true
+
+- name: Run `docker-compose up` again
+  community.docker.docker_compose_v2:
+    project_src: /home/{{ openchamber_username }}
+    build: always

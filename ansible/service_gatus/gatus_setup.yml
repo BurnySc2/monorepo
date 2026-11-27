@@ -1,0 +1,16 @@
+---
+# https://github.com/TwiN/gatus
+# Execute with
+# ansible-playbook gatus_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [gatus]
+  hosts: prodesk
+  vars:
+    USERNAME: "{{ gatus_username }}"
+    SUBDOMAIN: "{{ gatus_subdomain }}"
+    APPLICATION_PORT: "{{ gatus_port }}"
+  tasks:
+    - name: Include tasks [gatus]
+      ansible.builtin.include_tasks: tasks/gatus/main.yml
+  handlers:
+    - name: Import handlers [gatus]
+      ansible.builtin.import_tasks: handlers/main.yml

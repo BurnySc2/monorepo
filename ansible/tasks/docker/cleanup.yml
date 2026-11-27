@@ -1,0 +1,9 @@
+---
+# WHY dangling-only prune: tagged images/volumes/containers hold live data — see community.docker.docker_prune docs
+- name: Prune dangling Docker images and builder cache (opt-in)
+  community.docker.docker_prune:
+    images: true
+    images_filters:
+      dangling: true
+    builder_cache: true
+  when: docker_prune_enabled | default(false) | bool

@@ -1,32 +1,15 @@
 ---
 # Execute with
-# ansible-playbook mealie_setup.yml -i ../hosts -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
-- name: Create and start mealie service
-  hosts: server_group2
+# ansible-playbook mealie_setup.yml -i inventory -i /home/burny/syncthing/secrets/ansible_secrets/.ansible_secrets
+- name: Create service [mealie]
+  hosts: burnylaptopd
   vars:
-    USERNAME: '{{ secrets.MEALIE.USERNAME }}'
-    SUBDOMAIN: '{{ secrets.MEALIE.SUBDOMAIN }}'
-    APPLICATION_PORT: '9000'
+    USERNAME: "{{ mealie_username }}"
+    SUBDOMAIN: "{{ mealie_subdomain }}"
+    APPLICATION_PORT: "{{ mealie_port }}"
   tasks:
-    - include_tasks: ../setup_cloudflare_a_record.yml
-      loop:
-        - {domain: '{{ secrets.MY_PUBLIC_DOMAIN }}', subdomain: '{{ SUBDOMAIN }}'}
-    - name: Create group
-      ansible.builtin.group:
-        name: '{{ USERNAME }}'
-        state: present
-    - name: Create user
-      ansible.builtin.user:
-        name: '{{ USERNAME }}'
-        groups:
-          - '{{ USERNAME }}'
-          - docker
-        shell: '{{ secrets.DEFAULT_SHELL }}'
-    - name: Copy docker-compose.yml file
-      template:
-        src: docker-compose.yml
-        dest: /home/{{ USERNAME }}/docker-compose.yml
-    - name: Run `docker-compose up` again
-      community.docker.docker_compose_v2:
-        project_src: /home/{{ USERNAME }}
-        pull: always
+    - name: Include tasks [mealie]
+      ansible.builtin.include_tasks: tasks/mealie/main.yml
+  handlers:
+    - name: Import handlers [mealie]
+      ansible.builtin.import_tasks: handlers/main.yml
