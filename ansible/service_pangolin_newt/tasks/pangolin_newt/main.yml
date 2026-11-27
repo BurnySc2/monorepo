@@ -35,7 +35,6 @@
 - name: Create directories
   ansible.builtin.file:
     path: '{{ item }}'
-    recurse: true
     state: directory
     owner: '{{ USER_ID.stdout }}'
     group: '{{ GROUP_ID.stdout }}'
