@@ -2,7 +2,6 @@ import asyncio
 import base64
 from contextlib import suppress
 from io import BytesIO
-from typing import cast
 
 from fastapi import APIRouter, HTTPException
 from mutagen import MutagenError
@@ -68,14 +67,13 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
         raise HTTPException(status_code=400, detail=f"Unknown engine: {engine_str}. Supported: {ENGINES}")
 
     ensure_nltk_data()
-    engine = cast(TTSEngine, engine_str)
     await list_all_voices()
     voice_info = get_voice_by_internal(engine_str, voice_name) or get_voice_by_label(engine_str, voice_name)
     resolved_voice = voice_info.internal_name if voice_info is not None else voice_name
     cache_source = voice_info.label if voice_info is not None else voice_name
     if is_canonical_sample(request.text):
         normalized_label = cache_source.lower().replace("_", " ")
-        key = sample_cache_key(engine, normalized_label, request.text)
+        key = sample_cache_key(engine_str, normalized_label, request.text)
         async with get_key_lock(key):
             cached = await read_cached(key)
             if cached is not None:
@@ -88,7 +86,7 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
                 audio_b64 = base64.b64encode(cached).decode("utf-8")
                 return {"audio_b64": audio_b64, "duration": audio.info.length}
             try:
-                audio_bytes, duration = await generate_audio(engine, resolved_voice, request.text)
+                audio_bytes, duration = await generate_audio(engine_str, resolved_voice, request.text)
             except ValueError as exc:
                 raise HTTPException(status_code=400, detail=str(exc)) from exc
             with suppress(Exception):
@@ -97,7 +95,7 @@ async def generate_tts(request: TTSGenerateRequest) -> dict:
             return {"audio_b64": audio_b64, "duration": duration}
 
     try:
-        audio_bytes, duration = await generate_audio(engine, resolved_voice, request.text)
+        audio_bytes, duration = await generate_audio(engine_str, resolved_voice, request.text)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

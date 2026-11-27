@@ -1,0 +1,5 @@
+build/
+.env*
+.git
+crash/
+**/erl_crash.dump

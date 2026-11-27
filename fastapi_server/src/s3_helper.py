@@ -28,7 +28,7 @@ def _is_retryable_s3_error(exc: BaseException) -> bool:
         return False
     response = getattr(exc, "response", None)
     error = response.get("Error", {}) if isinstance(response, dict) else {}
-    code = str(error.get("Code", ""))
+    code = error.get("Code", "")
     return code not in _NON_RETRYABLE_S3_CODES
 
 
@@ -41,7 +41,7 @@ async def ensure_bucket(bucket: str, days: int, *, raise_on_error: bool = True) 
             except ClientError as e:
                 response = getattr(e, "response", None)
                 error = response.get("Error", {}) if isinstance(response, dict) else {}
-                code = str(error.get("Code", ""))
+                code = error.get("Code", "")
                 if code not in ("BucketAlreadyOwnedByYou", "BucketAlreadyExists"):
                     raise
                 logger.debug(f"Bucket already exists: {bucket}")

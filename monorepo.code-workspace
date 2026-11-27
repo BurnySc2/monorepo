@@ -23,7 +23,7 @@
       "path": "transcribe_website/transcriber_backend"
     },
     {
-      "path": "twitch_stream_announcer"
+      "path": "twitch_announcer_gleam"
     }
   ],
   "settings": {}

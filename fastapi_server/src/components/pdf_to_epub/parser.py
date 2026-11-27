@@ -216,7 +216,7 @@ def _flatten_outline(reader: PdfReader, items: list[object], out: list[OutlineEn
             page_index = None
         if page_index is None:
             continue
-        out.append(OutlineEntry(title=title, start_page=int(page_index) + 1))
+        out.append(OutlineEntry(title=title, start_page=page_index + 1))
 
 
 def extract_outline(data: bytes) -> list[OutlineEntry]:
