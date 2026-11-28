@@ -25,7 +25,7 @@ AUDIO_CLEAR_FIELDS: dict[Any, Any] = {
 def book_to_list_item(book: AudiobookBook) -> BookListItem:
     """Convert an AudiobookBook row to its API list-item representation."""
     return BookListItem(
-        id=book.id,  # pyrefly: ignore[missing-attribute]
+        id=book.id,  # pyrefly: ignore[missing-attribute,bad-argument-type]
         uploaded_by=book.uploaded_by,
         book_title=book.book_title,
         book_author=book.book_author,

@@ -1,0 +1,18 @@
+# Validate with: docker compose -f twitch_announcer_gleam/docker-compose.yml config --no-interpolate
+# Run from the twitch_announcer_gleam/ directory so .env resolves.
+services:
+  twitch_announcer_gleam:
+    image: burnysc2/twitch_announcer_gleam:latest
+    pull_policy: never
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ERL_CRASH_DUMP: /var/crash/erl_crash.dump
+    volumes:
+      - ./crash:/var/crash
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

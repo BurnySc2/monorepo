@@ -32,7 +32,7 @@ def _is_retryable_audio_error(exc: BaseException) -> bool:
     if isinstance(exc, ClientError):
         response = getattr(exc, "response", None)
         error = response.get("Error", {}) if isinstance(response, dict) else {}
-        code = str(error.get("Code", ""))
+        code = error.get("Code", "")
         if code in ("404", "NoSuchKey", "NoSuchBucket", "NotFound"):
             return False
         return code == "" or code.startswith("5") or "Throttle" in code or "TooMany" in code or "Timeout" in code

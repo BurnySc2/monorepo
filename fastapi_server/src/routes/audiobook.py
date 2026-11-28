@@ -141,7 +141,7 @@ async def upload_epub(
             )
             await chapter_record.save()
 
-    return UploadSuccess(id=book.id, title=book.book_title)  # pyrefly: ignore[missing-attribute]
+    return UploadSuccess(id=book.id, title=book.book_title)  # pyrefly: ignore[missing-attribute,bad-argument-type]
 
 
 @audiobook_router.delete("/books", response_model=DeleteResponse)
