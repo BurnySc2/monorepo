@@ -13,8 +13,8 @@ services:
     #   - 10000:{{ APPLICATION_PORT }}
     environment:
       # Same as user id
-      - PUID={{ USER_ID.stdout }}
-      - PGID={{ GROUP_ID.stdout }}
+      - PUID={{ SYNCTHING_USER_ID.stdout }}
+      - PGID={{ SYNCTHING_GROUP_ID.stdout }}
       - TZ=Etc/UTC
     labels:
       - pangolin.public-resources.jellyfin.name=Jellyfin

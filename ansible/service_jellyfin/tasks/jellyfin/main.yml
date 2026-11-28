@@ -3,9 +3,10 @@
   ansible.builtin.assert:
     that:
       - jellyfin_username is defined
+      - syncthing_username is defined
       - jellyfin_subdomain is defined
       - jellyfin_port is defined
-    fail_msg: Missing inventory/host_vars for jellyfin_username, jellyfin_subdomain, jellyfin_port
+    fail_msg: Missing inventory/host_vars for jellyfin_username, syncthing_username, jellyfin_subdomain, jellyfin_port
 
 - name: Ensure A record exists
   ansible.builtin.include_tasks: ../../../setup_cloudflare_a_record.yml
@@ -14,35 +15,44 @@
 
 - name: Create group
   ansible.builtin.group:
-    name: '{{ jellyfin_username }}'
+    name: '{{ syncthing_username }}'
     state: present
 
 - name: Create user
   ansible.builtin.user:
-    name: '{{ jellyfin_username }}'
+    name: '{{ syncthing_username }}'
     groups:
-      - '{{ jellyfin_username }}'
+      - '{{ syncthing_username }}'
       - docker
     shell: '{{ secrets.DEFAULT_SHELL }}'
 
 - name: Get user id
   ansible.builtin.command:
-    cmd: id {{ jellyfin_username }} -u
-  register: USER_ID
+    cmd: id {{ syncthing_username }} -u
+  register: SYNCTHING_USER_ID
   changed_when: false
 
 - name: Get group id
   ansible.builtin.command:
-    cmd: id {{ jellyfin_username }} -g
-  register: GROUP_ID
+    cmd: id {{ syncthing_username }} -g
+  register: SYNCTHING_GROUP_ID
   changed_when: false
+
+# WHY project path keyed by jellyfin_username, runtime identity is syncthing.
+- name: Ensure project parent directory exists
+  ansible.builtin.file:
+    path: /home/{{ jellyfin_username }}
+    state: directory
+    owner: '{{ SYNCTHING_USER_ID.stdout }}'
+    group: '{{ SYNCTHING_GROUP_ID.stdout }}'
+    mode: '0750'
 
 - name: Create directories
   ansible.builtin.file:
     path: '{{ item }}'
     state: directory
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
+    owner: '{{ SYNCTHING_USER_ID.stdout }}'
+    group: '{{ SYNCTHING_GROUP_ID.stdout }}'
     mode: '0750'
   loop:
     - /home/{{ jellyfin_username }}/config
@@ -51,7 +61,7 @@
   ansible.builtin.template:
     src: ../../templates/docker-compose.yml.j2
     dest: /home/{{ jellyfin_username }}/docker-compose.yml
-    owner: '{{ USER_ID.stdout }}'
-    group: '{{ GROUP_ID.stdout }}'
+    owner: '{{ SYNCTHING_USER_ID.stdout }}'
+    group: '{{ SYNCTHING_GROUP_ID.stdout }}'
     mode: '0640'
   notify: converge jellyfin
